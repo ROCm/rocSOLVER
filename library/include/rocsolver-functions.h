@@ -10913,7 +10913,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is all; ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n The leading dimension of V.
+                set to singular; or ldv >= 1 otherwise.\n
+                The leading dimension of V.
     @param[out]
     E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
                 This array is used to work internally with the bidiagonal matrix
@@ -10930,7 +10931,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
                 If info = i > 0, \ref rocsolver_sbdsqr "BDSQR" did not converge. i elements of E did not converge to zero.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd(rocblas_handle handle,
@@ -11125,7 +11125,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd_batched(rocblas_handle handle,
@@ -11344,7 +11343,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvd_strided_batched(rocblas_handle handle,
@@ -11469,37 +11467,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_i stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_i stored as columns.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_i stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A.
     @param[out]
-    D         pointer to type. Array on the GPU of dimension n.\n
-              The diagonal elements of T.
+    D           pointer to type. Array on the GPU of dimension n.\n
+                The diagonal elements of T.
     @param[out]
-    E         pointer to type. Array on the GPU of dimension n-1.\n
-              The off-diagonal elements of T.
+    E           pointer to type. Array on the GPU of dimension n-1.\n
+                The off-diagonal elements of T.
     @param[out]
-    tau       pointer to type. Array on the GPU of dimension n-1.\n
-              The Householder scalars.
-
+    tau         pointer to type. Array on the GPU of dimension n-1.\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytd2(rocblas_handle handle,
@@ -11554,37 +11551,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the hermitian matrix A is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the hermitian matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T; the elements above the superdiagonal contain
-              the first i-1 elements of the Householders vector v_i stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_i stored as columns.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T; the elements above the superdiagonal contain
+                the first i-1 elements of the Householders vector v_i stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A.
     @param[out]
-    D         pointer to real type. Array on the GPU of dimension n.\n
-              The diagonal elements of T.
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                The diagonal elements of T.
     @param[out]
-    E         pointer to real type. Array on the GPU of dimension n-1.\n
-              The off-diagonal elements of T.
+    E           pointer to real type. Array on the GPU of dimension n-1.\n
+                The off-diagonal elements of T.
     @param[out]
-    tau       pointer to type. Array on the GPU of dimension n-1.\n
-              The Householder scalars.
-
+    tau         pointer to type. Array on the GPU of dimension n-1.\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetd2(rocblas_handle handle,
@@ -11640,53 +11636,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytd2_batched(rocblas_handle handle,
@@ -11749,52 +11744,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
 
     ********************************************************************/
 
@@ -11858,57 +11853,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytd2_strided_batched(rocblas_handle handle,
@@ -11973,57 +11967,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetd2_strided_batched(rocblas_handle handle,
@@ -12088,37 +12081,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
     the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_i stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_i stored as columns.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_i stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A.
     @param[out]
-    D         pointer to type. Array on the GPU of dimension n.\n
-              The diagonal elements of T.
+    D           pointer to type. Array on the GPU of dimension n.\n
+                The diagonal elements of T.
     @param[out]
-    E         pointer to type. Array on the GPU of dimension n-1.\n
-              The off-diagonal elements of T.
+    E           pointer to type. Array on the GPU of dimension n-1.\n
+                The off-diagonal elements of T.
     @param[out]
-    tau       pointer to type. Array on the GPU of dimension n-1.\n
-              The Householder scalars.
-
+    tau         pointer to type. Array on the GPU of dimension n-1.\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytrd(rocblas_handle handle,
@@ -12173,37 +12165,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the hermitian matrix A is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the hermitian matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_i stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_i stored as columns.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_i stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A.
     @param[out]
-    D         pointer to real type. Array on the GPU of dimension n.\n
-              The diagonal elements of T.
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                The diagonal elements of T.
     @param[out]
-    E         pointer to real type. Array on the GPU of dimension n-1.\n
-              The off-diagonal elements of T.
+    E           pointer to real type. Array on the GPU of dimension n-1.\n
+                The off-diagonal elements of T.
     @param[out]
-    tau       pointer to type. Array on the GPU of dimension n-1.\n
-              The Householder scalars.
-
+    tau         pointer to type. Array on the GPU of dimension n-1.\n
+                The Householder scalars.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetrd(rocblas_handle handle,
@@ -12259,53 +12250,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytrd_batched(rocblas_handle handle,
@@ -12368,53 +12358,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E          pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetrd_batched(rocblas_handle handle,
@@ -12477,57 +12466,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D         pointer to type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssytrd_strided_batched(rocblas_handle handle,
@@ -12592,57 +12580,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
     the last n-i elements of the Householder vector \f$v_{j_i}\f$ are zero, and \f$v_{j_i}[i] = 1\f$.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
-              If uplo indicates lower (or upper), then the upper (or lower)
-              part of A is not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the hermitian matrix A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrices A_j.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrices A_j.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_j to be factored.
-              On exit, if upper, then the elements on the diagonal and superdiagonal
-              contain the tridiagonal form T_j; the elements above the superdiagonal contain
-              the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
-              If lower, then the elements on the diagonal and subdiagonal
-              contain the tridiagonal form T_j; the elements below the subdiagonal contain
-              the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j to be factored.
+                On exit, if upper, then the elements on the diagonal and superdiagonal
+                contain the tridiagonal form T_j; the elements above the superdiagonal contain
+                the first i-1 elements of the Householder vectors v_(j_i) stored as columns.
+                If lower, then the elements on the diagonal and subdiagonal
+                contain the tridiagonal form T_j; the elements below the subdiagonal contain
+                the last n-i-1 elements of the Householder vectors v_(j_i) stored as columns.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              The leading dimension of A_j.
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D         pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
-              The diagonal elements of T_j.
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+                The diagonal elements of T_j.
     @param[in]
-    strideD   rocblas_stride.\n
-              Stride from the start of one vector D_j to the next one D_(j+1).
-              There is no restriction for the value of strideD. Normal use case is strideD >= n.
+    strideD     rocblas_stride.\n
+                Stride from the start of one vector D_j to the next one D_(j+1).
+                There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E         pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
-              The off-diagonal elements of T_j.
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+                The off-diagonal elements of T_j.
     @param[in]
-    strideE   rocblas_stride.\n
-              Stride from the start of one vector E_j to the next one E_(j+1).
-              There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
+    strideE     rocblas_stride.\n
+                Stride from the start of one vector E_j to the next one E_(j+1).
+                There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau       pointer to type. Array on the GPU (the size depends on the value of strideP).\n
-              Contains the vectors tau_j of corresponding Householder scalars.
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+                Contains the vectors tau_j of corresponding Householder scalars.
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector tau_j to the next one tau_(j+1).
-              There is no restriction for the value
-              of strideP. Normal use is strideP >= n-1.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector tau_j to the next one tau_(j+1).
+                There is no restriction for the value
+                of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chetrd_strided_batched(rocblas_handle handle,
