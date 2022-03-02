@@ -8147,7 +8147,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
     @param[in]
     ldb         rocblas_int. ldb >= n.\n
                 The leading dimension of B.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs(rocblas_handle handle,
@@ -8243,7 +8242,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_batched(rocblas_handle handle,
@@ -8355,7 +8353,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrs_strided_batched(rocblas_handle handle,
@@ -8460,7 +8457,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
                 If info = 0, successful exit.
                 If info = i > 0, U is singular, and the solution could not be computed.
                 U[i,i] is the first zero element in the diagonal.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesv(rocblas_handle handle,
@@ -8557,7 +8553,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesv_batched(rocblas_handle handle,
@@ -8621,7 +8616,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
     \f]
 
     where \f$A_j\f$ is a general n-by-n matrix. Matrix \f$A_j\f$ is first factorized in triangular factors \f$L_j\f$ and \f$U_j\f$
-    using \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED"; then, the solutions are computed with \ref rocsolver_sgetrs_strided_batched "GETRS_STRIDED_BATCHED".
+    using \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED"; then, the solutions are computed with
+    \ref rocsolver_sgetrs_strided_batched "GETRS_STRIDED_BATCHED".
 
     @param[in]
     handle      rocblas_handle.
@@ -8670,7 +8666,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of instances (systems) in the batch.
-
    ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesv_strided_batched(rocblas_handle handle,
@@ -8745,25 +8740,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_strided_batched(rocblas_handle h
     upper triangular factor.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
-              On exit, the inverse of A if info = 0; otherwise undefined.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
+                On exit, the inverse of A if info = 0; otherwise undefined.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU of dimension n.\n
-              The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = i > 0, U is singular. U[i,i] is the first zero pivot.
-
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri(rocblas_handle handle,
@@ -8810,33 +8804,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
     upper triangular factor.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the factors L_j and U_j of the factorization A = P_j*L_j*U_j returned by
-              \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
-              On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the factors L_j and U_j of the factorization A = P_j*L_j*U_j returned by
+                \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+                On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(i+j).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_batched(rocblas_handle handle,
@@ -8891,37 +8884,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
     upper triangular factor.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
-              \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
-              On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the factors L_j and U_j of the factorization A_j = P_j*L_j*U_j returned by
+                \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+                On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[in]
-    ipiv      pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
-              The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+                The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    strideP   rocblas_stride.\n
-              Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
-              There is no restriction for the value of strideP. Normal use case is strideP >= n.
+    strideP     rocblas_stride.\n
+                Stride from the start of one vector ipiv_j to the next one ipiv_(j+1).
+                There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_strided_batched(rocblas_handle handle,
@@ -8980,22 +8972,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     upper triangular factor.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of the matrix A.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the matrix A.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the factors L and U of the factorization A = L*U returned by \ref rocsolver_sgetrf_npvt "GETRF_NPVT".
-              On exit, the inverse of A if info = 0; otherwise undefined.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the factors L and U of the factorization A = L*U returned by \ref rocsolver_sgetrf_npvt "GETRF_NPVT".
+                On exit, the inverse of A if info = 0; otherwise undefined.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    info      pointer to a rocblas_int on the GPU.\n
-              If info = 0, successful exit.
-              If info = i > 0, U is singular. U[i,i] is the first zero pivot.
-
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_npvt(rocblas_handle handle,
@@ -9038,26 +9029,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt(rocblas_handle handle,
     upper triangular factor.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the factors L_j and U_j of the factorization A = L_j*U_j returned by
-              \ref rocsolver_sgetrf_npvt_batched "GETRF_NPVT_BATCHED".
-              On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the factors L_j and U_j of the factorization A = L_j*U_j returned by
+                \ref rocsolver_sgetrf_npvt_batched "GETRF_NPVT_BATCHED".
+                On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_npvt_batched(rocblas_handle handle,
@@ -9104,30 +9094,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_batched(rocblas_handle han
     upper triangular factor.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The number of rows and columns of all matrices A_j in the batch.
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of all matrices A_j in the batch.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the factors L_j and U_j of the factorization A_j = L_j*U_j returned by
-              \ref rocsolver_sgetrf_npvt_strided_batched "GETRF_NPVT_STRIDED_BATCHED".
-              On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the factors L_j and U_j of the factorization A_j = L_j*U_j returned by
+                \ref rocsolver_sgetrf_npvt_strided_batched "GETRF_NPVT_STRIDED_BATCHED".
+                On exit, the inverses of A_j if info[j] = 0; otherwise undefined.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of matrices A_j.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_j to the next one A_(j+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info      pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-              If info[j] = 0, successful exit for inversion of A_j.
-              If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for inversion of A_j.
+                If info[j] = i > 0, U_j is singular. U_j[i,i] is the first zero pivot.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
-
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgetri_npvt_strided_batched(rocblas_handle handle,
