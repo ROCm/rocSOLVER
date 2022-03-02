@@ -12689,8 +12689,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
         \end{array}
     \f]
 
-    where the symmetric-definite matrix B has been factorized as either \f$U^T U\f$ or \f$L L^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the symmetric-definite matrix B has been factorized as either \f$U^T U\f$ or
+    \f$L L^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
@@ -12704,33 +12704,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrix A is stored, and
-              whether the factorization applied to B was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
-              B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrix A is stored, and
+                whether the factorization applied to B was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+                B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix associated with
-              the equivalent standard eigenvalue problem.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the transformed matrix associated with
+                the equivalent standard eigenvalue problem.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
-
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygs2(rocblas_handle handle,
@@ -12779,8 +12778,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
         \end{array}
     \f]
 
-    where the hermitian-definite matrix B has been factorized as either \f$U^H U\f$ or \f$L L^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the hermitian-definite matrix B has been factorized as either \f$U^H U\f$ or
+    \f$L L^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
@@ -12794,33 +12793,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrix A is stored, and
-              whether the factorization applied to B was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
-              B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrix A is stored, and
+                whether the factorization applied to B was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+                B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix associated with
-              the equivalent standard eigenvalue problem.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the transformed matrix associated with
+                the equivalent standard eigenvalue problem.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
-
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegs2(rocblas_handle handle,
@@ -12853,68 +12851,67 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-T} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-T},
+        U_j^{-T} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^T U_i\f$ or \f$L_i L_i^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the symmetric-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^T U_j\f$ or
+    \f$L_j L_j^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^T, & \: \text{or}\\
-        L_i^T A_i L_i,
+        U_j A_j U_j^T, & \: \text{or}\\
+        L_j^T A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygs2_batched(rocblas_handle handle,
@@ -12949,68 +12946,67 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-H} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-H},
+        U_j^{-H} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^H U_i\f$ or \f$L_i L_i^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the hermitian-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^H U_j\f$ or
+    \f$L_j L_j^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^H, & \: \text{or}\\
-        L_i^H A_i L_i,
+        U_j A_j U_j^H, & \: \text{or}\\
+        L_j^H A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegs2_batched(rocblas_handle handle,
@@ -13045,76 +13041,75 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-T} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-T},
+        U_j^{-T} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^T U_i\f$ or \f$L_i L_i^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the symmetric-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^T U_j\f$ or
+    \f$L_j L_j^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^T, & \: \text{or}\\
-        L_i^T A_i L_i,
+        U_j A_j U_j^T, & \: \text{or}\\
+        L_j^T A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygs2_strided_batched(rocblas_handle handle,
@@ -13153,76 +13148,75 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-H} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-H},
+        U_j^{-H} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^H U_i\f$ or \f$L_i L_i^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the hermitian-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^H U_j\f$ or
+    \f$L_j L_j^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^H, & \: \text{or}\\
-        L_i^H A_i L_i,
+        U_j A_j U_j^H, & \: \text{or}\\
+        L_j^H A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegs2_strided_batched(rocblas_handle handle,
@@ -13278,8 +13272,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
         \end{array}
     \f]
 
-    where the symmetric-definite matrix B has been factorized as either \f$U^T U\f$ or \f$L L^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the symmetric-definite matrix B has been factorized as either \f$U^T U\f$ or
+    \f$L L^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
@@ -13293,33 +13287,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrix A is stored, and
-              whether the factorization applied to B was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
-              B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrix A is stored, and
+                whether the factorization applied to B was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+                B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix associated with
-              the equivalent standard eigenvalue problem.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the transformed matrix associated with
+                the equivalent standard eigenvalue problem.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
-
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygst(rocblas_handle handle,
@@ -13368,8 +13361,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
         \end{array}
     \f]
 
-    where the hermitian-definite matrix B has been factorized as either \f$U^H U\f$ or \f$L L^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the hermitian-definite matrix B has been factorized as either \f$U^H U\f$ or
+    \f$L L^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
@@ -13383,33 +13376,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblem.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrix A is stored, and
-              whether the factorization applied to B was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A and
-              B are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrix A is stored, and
+                whether the factorization applied to B was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A and
+                B are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU of dimension lda*n.\n
-              On entry, the matrix A. On exit, the transformed matrix associated with
-              the equivalent standard eigenvalue problem.
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the transformed matrix associated with
+                the equivalent standard eigenvalue problem.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A.
     @param[out]
-    B         pointer to type. Array on the GPU of dimension ldb*n.\n
-              The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B.
-
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegst(rocblas_handle handle,
@@ -13442,68 +13434,67 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-T} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-T},
+        U_j^{-T} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^T U_i\f$ or \f$L_i L_i^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the symmetric-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^T U_j\f$ or
+    \f$L_j L_j^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^T, & \: \text{or}\\
-        L_i^T A_i L_i,
+        U_j A_j U_j^T, & \: \text{or}\\
+        L_j^T A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygst_batched(rocblas_handle handle,
@@ -13538,68 +13529,67 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-H} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-H},
+        U_j^{-H} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^H U_i\f$ or \f$L_i L_i^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the hermitian-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^H U_j\f$ or
+    \f$L_j L_j^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^H, & \: \text{or}\\
-        L_i^H A_i L_i,
+        U_j A_j U_j^H, & \: \text{or}\\
+        L_j^H A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[out]
-    B         array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegst_batched(rocblas_handle handle,
@@ -13634,76 +13624,75 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-T} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-T},
+        U_j^{-T} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^T U_i\f$ or \f$L_i L_i^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the symmetric-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^T U_j\f$ or
+    \f$L_j L_j^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^T, & \: \text{or}\\
-        L_i^T A_i L_i,
+        U_j A_j U_j^T, & \: \text{or}\\
+        L_j^T A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssygst_strided_batched(rocblas_handle handle,
@@ -13742,76 +13731,75 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        A_i X_i = \lambda B_i X_i & \: \text{1st form,}\\
-        A_i B_i X_i = \lambda X_i & \: \text{2nd form, or}\\
-        B_i A_i X_i = \lambda X_i & \: \text{3rd form,}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
         \end{array}
     \f]
 
     depending on the value of itype.
 
-    If the problem is of the 1st form, then \f$A_i\f$ is overwritten with
+    If the problem is of the 1st form, then \f$A_j\f$ is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i^{-H} A_i U_i^{-1}, & \: \text{or}\\
-        L_i^{-1} A_i L_i^{-H},
+        U_j^{-H} A_j U_j^{-1}, & \: \text{or}\\
+        L_j^{-1} A_j L_j^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_i\f$ has been factorized as either \f$U_i^H U_i\f$ or \f$L_i L_i^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending
-    on the value of uplo.
+    where the hermitian-definite matrix \f$B_j\f$ has been factorized as either \f$U_j^H U_j\f$ or
+    \f$L_j L_j^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_i A_i U_i^H, & \: \text{or}\\
-        L_i^H A_i L_i,
+        U_j A_j U_j^H, & \: \text{or}\\
+        L_j^H A_j L_j,
         \end{array}
     \f]
 
     also depending on the value of uplo.
 
     @param[in]
-    handle    rocblas_handle.
+    handle      rocblas_handle.
     @param[in]
-    itype     #rocblas_eform.\n
-              Specifies the form of the generalized eigenproblems.
+    itype       #rocblas_eform.\n
+                Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo      rocblas_fill.\n
-              Specifies whether the upper or lower part of the matrices A_i are stored, and
-              whether the factorization applied to B_i was upper or lower triangular.
-              If uplo indicates lower (or upper), then the upper (or lower) parts of A_i and
-              B_i are not used.
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the matrices A_j are stored, and
+                whether the factorization applied to B_j was upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and
+                B_j are not used.
     @param[in]
-    n         rocblas_int. n >= 0.\n
-              The matrix dimensions.
+    n           rocblas_int. n >= 0.\n
+                The matrix dimensions.
     @param[inout]
-    A         pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-              On entry, the matrices A_i. On exit, the transformed matrices associated with
-              the equivalent standard eigenvalue problems.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the transformed matrices associated with
+                the equivalent standard eigenvalue problems.
     @param[in]
-    lda       rocblas_int. lda >= n.\n
-              Specifies the leading dimension of A_i.
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of A_j.
     @param[in]
-    strideA   rocblas_stride.\n
-              Stride from the start of one matrix A_i to the next one A_(i+1).
-              There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B         pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-              The triangular factors of the matrices B_i, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                The triangular factors of the matrices B_j, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb       rocblas_int. ldb >= n.\n
-              Specifies the leading dimension of B_i.
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of B_j.
     @param[in]
-    strideB   rocblas_stride.\n
-              Stride from the start of one matrix B_i to the next one B_(i+1).
-              There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count  rocblas_int. batch_count >= 0.\n
-                 Number of matrices in the batch.
-
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegst_strided_batched(rocblas_handle handle,
