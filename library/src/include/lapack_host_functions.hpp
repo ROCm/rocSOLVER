@@ -195,6 +195,8 @@ void rocsolver_trsm_mem(const rocblas_side side,
     }
     else
     {
+        // inblocked = true when called from inside blocked algorithms like GETRF.
+
         // (Note: rocblas TRSM workspace size is less than expected when the number of rows is multiple of 128.
         //  For this reason, when trying to set up a workspace that fits all the TRSM calls for m <= blk,
         //  blk cannot be multiple of 128.)

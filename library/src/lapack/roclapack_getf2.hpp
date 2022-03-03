@@ -472,6 +472,8 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     }
 #endif
 
+    // inblocked = true when called from inside blocked algorithms like GETRF.
+
     // for scalars
     *size_scalars = sizeof(T) * 3;
 
