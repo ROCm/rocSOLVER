@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -1363,6 +1363,68 @@ inline rocblas_status rocsolver_stedc(rocblas_handle handle,
                                       rocblas_int* info)
 {
     return rocsolver_zstedc(handle, evect, n, D, E, C, ldc, info);
+}
+/********************************************************/
+
+/******************** STEIN ********************/
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      rocblas_int* nev,
+                                      float* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      float* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_sstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+}
+
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      rocblas_int* nev,
+                                      double* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      double* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_dstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+}
+
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      rocblas_int* nev,
+                                      float* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      rocblas_float_complex* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_cstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+}
+
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      rocblas_int* nev,
+                                      double* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      rocblas_double_complex* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_zstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
 }
 /********************************************************/
 
