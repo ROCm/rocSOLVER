@@ -1379,7 +1379,7 @@ inline rocblas_status rocsolver_stein(rocblas_handle handle,
                                       rocblas_int ldz,
                                       rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_sstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+    return rocsolver_sstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
 }
 
 inline rocblas_status rocsolver_stein(rocblas_handle handle,
@@ -1394,7 +1394,7 @@ inline rocblas_status rocsolver_stein(rocblas_handle handle,
                                       rocblas_int ldz,
                                       rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_dstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+    return rocsolver_dstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
 }
 
 inline rocblas_status rocsolver_stein(rocblas_handle handle,
@@ -1409,7 +1409,7 @@ inline rocblas_status rocsolver_stein(rocblas_handle handle,
                                       rocblas_int ldz,
                                       rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_cstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+    return rocsolver_cstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
 }
 
 inline rocblas_status rocsolver_stein(rocblas_handle handle,
@@ -1424,7 +1424,7 @@ inline rocblas_status rocsolver_stein(rocblas_handle handle,
                                       rocblas_int ldz,
                                       rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_zstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+    return rocsolver_zstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
 }
 /********************************************************/
 
