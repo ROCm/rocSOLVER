@@ -46,13 +46,7 @@ find_package(fmt REQUIRED)
 # ########################################################################
 
 # Get rocm-cmake
-# By default, rocm software stack is expected at /opt/rocm
-# set environment variable ROCM_PATH to change location
-if(NOT ROCM_PATH)
-  set(ROCM_PATH /opt/rocm)
-endif()
-
-find_package(ROCM 0.7.3 CONFIG QUIET PATHS ${ROCM_PATH})
+include(get-rocm-cmake)
 
 # Include the rocm-cmake components we use
 include(ROCMSetupVersion)
@@ -159,17 +153,15 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
   add_subdirectory(clients)
 endif()
 
-
-
 # Package-specific CPACK vars
-rocm_package_add_dependencies(DEPENDS "rocblas >= 2.44" "rocblas < 2.45")
+rocm_package_add_dependencies("rocblas >= 2.44" "rocblas < 2.45")
 
 if(OS_ID_sles)
-  rocm_package_add_rpm_dependencies(DEPENDS "libLLVM >= 7.0.1")
+  rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")
 endif()
-set(CPACK_RPM_PACKAGE_REQUIRES ${RPM_REQUIREMENTS})
 
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_RPM_PACKAGE_LICENSE "BSD")
 
 if(WIN32)
   set(CPACK_SOURCE_GENERATOR "ZIP")

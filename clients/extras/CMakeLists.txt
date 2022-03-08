@@ -32,6 +32,5 @@ if(UNIX AND BUILD_SHARED_LIBS)
     NAME test-rocsolver-dlopen
     COMMAND test-rocsolver-dlopen
   )
-
   rocm_install(TARGETS test-rocsolver-dlopen COMPONENT tests)
 endif()
