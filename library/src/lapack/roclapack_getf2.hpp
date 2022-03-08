@@ -174,12 +174,12 @@ inline rocblas_int getf2_get_checksingularity_blksize(const rocblas_int n)
     return singular_thds;
 }
 
-/** This funcitons test if one of the specialized kernels can be used.
-    Returns 1 if the small kernel can be used.
-    Returns 2 if the panel kernel can be used.
-    Returns 0 otehrwise **/
+/** This function tests if one of the specialized kernels should be used.
+    Returns 1 when the use of the small kernel will give better performance,
+    Returns 2 when the use of the panel kernel will give better performance,
+    Returns 0 when it would be better to use the normal code. **/
 template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
-inline int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
+int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
 {
     int ker = 0;
 
@@ -277,7 +277,7 @@ inline int select_spkernel(const rocblas_int m, const rocblas_int n, const bool 
 
 /** Complex type version **/
 template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
-inline int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
+int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
 {
     int ker = 0;
 

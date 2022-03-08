@@ -217,23 +217,23 @@ void rocsolver_trsm_mem(const rocblas_side side,
     This is blocked implementation that calls the  internal trsm2_kernel
     to solve the diagonal blocks, and uses gemm to update the right-hand-sides **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-void rocsolver_trsmL(rocblas_handle handle,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     U MM,
-                     const rocblas_int shiftA,
-                     const rocblas_int shiftB,
-                     const rocblas_int ldim,
-                     const rocblas_stride stride,
-                     const rocblas_int batch_count,
-                     const bool optim_mem,
-                     void* work1,
-                     void* work2,
-                     void* work3,
-                     void* work4)
+void rocsolver_trsm_lower(rocblas_handle handle,
+                          const rocblas_int m,
+                          const rocblas_int n,
+                          U MM,
+                          const rocblas_int shiftA,
+                          const rocblas_int shiftB,
+                          const rocblas_int ldim,
+                          const rocblas_stride stride,
+                          const rocblas_int batch_count,
+                          const bool optim_mem,
+                          void* work1,
+                          void* work2,
+                          void* work3,
+                          void* work4)
 {
-    ROCSOLVER_ENTER("trsmL", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", ldim, "shiftB:", shiftB,
-                    "ldb:", ldim, "bc:", batch_count);
+    ROCSOLVER_ENTER("trsm_lower", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", ldim,
+                    "shiftB:", shiftB, "ldb:", ldim, "bc:", batch_count);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -272,7 +272,7 @@ void rocsolver_trsmL(rocblas_handle handle,
         grid = dim3(1, blocks, batch_count);
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
-        ROCSOLVER_LAUNCH_KERNEL(trsm2L_kernel<T>, grid, threads, lmemsize, stream, jb, n, MM,
+        ROCSOLVER_LAUNCH_KERNEL(trsm2_lower_kernel<T>, grid, threads, lmemsize, stream, jb, n, MM,
                                 shiftA + idx2D(j, j, ldim), shiftB + idx2D(j, 0, ldim), ldim, stride);
 
         // update right hand sides
@@ -296,23 +296,23 @@ void rocsolver_trsmL(rocblas_handle handle,
     This is blocked implementation that calls the  internal trsm2_kernel
     to solve the diagonal blocks, and uses gemm to update the right-hand-sides **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-void rocsolver_trsmU(rocblas_handle handle,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     U MM,
-                     const rocblas_int shiftA,
-                     const rocblas_int shiftB,
-                     const rocblas_int ldim,
-                     const rocblas_stride stride,
-                     const rocblas_int batch_count,
-                     const bool optim_mem,
-                     void* work1,
-                     void* work2,
-                     void* work3,
-                     void* work4)
+void rocsolver_trsm_upper(rocblas_handle handle,
+                          const rocblas_int m,
+                          const rocblas_int n,
+                          U MM,
+                          const rocblas_int shiftA,
+                          const rocblas_int shiftB,
+                          const rocblas_int ldim,
+                          const rocblas_stride stride,
+                          const rocblas_int batch_count,
+                          const bool optim_mem,
+                          void* work1,
+                          void* work2,
+                          void* work3,
+                          void* work4)
 {
-    ROCSOLVER_ENTER("trsmU", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", ldim, "shiftB:", shiftB,
-                    "ldb:", ldim, "bc:", batch_count);
+    ROCSOLVER_ENTER("trsm_upper", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", ldim,
+                    "shiftB:", shiftB, "ldb:", ldim, "bc:", batch_count);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -351,7 +351,7 @@ void rocsolver_trsmU(rocblas_handle handle,
         grid = dim3(blocks, 1, batch_count);
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimx * sizeof(T);
-        ROCSOLVER_LAUNCH_KERNEL(trsm2U_kernel<T>, grid, threads, lmemsize, stream, m, jb, MM,
+        ROCSOLVER_LAUNCH_KERNEL(trsm2_upper_kernel<T>, grid, threads, lmemsize, stream, m, jb, MM,
                                 shiftA + idx2D(j, j, ldim), shiftB + idx2D(0, j, ldim), ldim, stride);
 
         // update right hand sides

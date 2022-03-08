@@ -892,13 +892,13 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
     Size of shared memory per group should be:
     lmemsize = hipBlockDim_y * sizeof(T); **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void trsm2L_kernel(const rocblas_int m,
-                                    const rocblas_int n,
-                                    U MM,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int ldim,
-                                    const rocblas_stride stride)
+ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
+                                         const rocblas_int n,
+                                         U MM,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int shiftB,
+                                         const rocblas_int ldim,
+                                         const rocblas_stride stride)
 {
     int id = hipBlockIdx_z;
     int i = hipThreadIdx_x;
@@ -946,13 +946,13 @@ ROCSOLVER_KERNEL void trsm2L_kernel(const rocblas_int m,
     Size of shared memory per group should be:
     lmemsize = hipBlockDim_x * sizeof(T); **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void trsm2U_kernel(const rocblas_int m,
-                                    const rocblas_int n,
-                                    U MM,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int ldim,
-                                    const rocblas_stride stride)
+ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
+                                         const rocblas_int n,
+                                         U MM,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int shiftB,
+                                         const rocblas_int ldim,
+                                         const rocblas_stride stride)
 {
     int id = hipBlockIdx_z;
     int j = hipThreadIdx_y;
