@@ -3901,6 +3901,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
                                                  rocblas_int* info);
 //! @}
 
+/*! @{
+    \brief STEBZ
+
+    *****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sstebz(rocblas_handle handle,
+                                                 const rocblas_eval_range range,
+                                                 const rocblas_eval_order order,
+                                                 const rocblas_int n,
+                                                 const float vlow,
+                                                 const float vup,
+                                                 const rocblas_int ilow,
+                                                 const rocblas_int iup,
+                                                 const float abstol,
+                                                 float* D,
+                                                 float* E,
+                                                 rocblas_int* nev,
+                                                 rocblas_int* nsplit,
+                                                 float* W,
+                                                 rocblas_int* IB,
+                                                 rocblas_int* IS,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
+                                                 const rocblas_eval_range range,
+                                                 const rocblas_eval_order order,
+                                                 const rocblas_int n,
+                                                 const double vlow,
+                                                 const double vup,
+                                                 const rocblas_int ilow,
+                                                 const rocblas_int iup,
+                                                 const double abstol,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_int* nev,
+                                                 rocblas_int* nsplit,
+                                                 double* W,
+                                                 rocblas_int* IB,
+                                                 rocblas_int* IS,
+                                                 rocblas_int* info);
+//! @}
+
 /*
  * ===========================================================================
  *      LAPACK functions
