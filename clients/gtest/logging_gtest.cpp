@@ -364,7 +364,7 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_bench_tree)
     verify_file(log_filepath, expected_lines);
 }
 
-TEST_F(checkin_misc_LOGGING, trace_file_open_failure)
+TEST_F(checkin_misc_LOGGING, trace_invalid_file_open)
 {
     scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH",
                                    invalid_log_filepath.generic_string().c_str());
@@ -374,7 +374,7 @@ TEST_F(checkin_misc_LOGGING, trace_file_open_failure)
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
 }
 
-TEST_F(checkin_misc_LOGGING, profile_file_open_failure)
+TEST_F(checkin_misc_LOGGING, profile_invalid_file_open)
 {
     scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH",
                                    invalid_log_filepath.generic_string().c_str());
@@ -384,7 +384,7 @@ TEST_F(checkin_misc_LOGGING, profile_file_open_failure)
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
 }
 
-TEST_F(checkin_misc_LOGGING, bench_file_open_failure)
+TEST_F(checkin_misc_LOGGING, bench_invalid_file_open)
 {
     scoped_envvar logpath_variable("ROCSOLVER_LOG_BENCH_PATH",
                                    invalid_log_filepath.generic_string().c_str());
@@ -394,7 +394,7 @@ TEST_F(checkin_misc_LOGGING, bench_file_open_failure)
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
 }
 
-TEST_F(checkin_misc_LOGGING, begin_twice_failure)
+TEST_F(checkin_misc_LOGGING, begin_twice)
 {
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     EXPECT_EQ(rocsolver_log_begin(), rocblas_status_internal_error);
@@ -402,14 +402,14 @@ TEST_F(checkin_misc_LOGGING, begin_twice_failure)
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
 }
 
-TEST_F(checkin_misc_LOGGING, end_twice_failure)
+TEST_F(checkin_misc_LOGGING, end_twice)
 {
     ASSERT_EQ(rocsolver_log_begin(), rocblas_status_success);
     EXPECT_EQ(rocsolver_log_end(), rocblas_status_success);
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_internal_error);
 }
 
-TEST_F(checkin_misc_LOGGING, end_before_begin_failure)
+TEST_F(checkin_misc_LOGGING, end_before_begin)
 {
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_internal_error);
 }
