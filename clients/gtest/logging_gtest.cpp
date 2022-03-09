@@ -364,7 +364,7 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_bench_tree)
     verify_file(log_filepath, expected_lines);
 }
 
-TEST_F(checkin_misc_LOGGING, trace_invalid_file_open)
+TEST_F(checkin_misc_LOGGING, invalid_trace_file_open)
 {
     scoped_envvar logpath_variable("ROCSOLVER_LOG_TRACE_PATH",
                                    invalid_log_filepath.generic_string().c_str());
@@ -374,7 +374,7 @@ TEST_F(checkin_misc_LOGGING, trace_invalid_file_open)
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
 }
 
-TEST_F(checkin_misc_LOGGING, profile_invalid_file_open)
+TEST_F(checkin_misc_LOGGING, invalid_profile_file_open)
 {
     scoped_envvar logpath_variable("ROCSOLVER_LOG_PROFILE_PATH",
                                    invalid_log_filepath.generic_string().c_str());
@@ -384,7 +384,7 @@ TEST_F(checkin_misc_LOGGING, profile_invalid_file_open)
     ASSERT_EQ(rocsolver_log_end(), rocblas_status_success);
 }
 
-TEST_F(checkin_misc_LOGGING, bench_invalid_file_open)
+TEST_F(checkin_misc_LOGGING, invalid_bench_file_open)
 {
     scoped_envvar logpath_variable("ROCSOLVER_LOG_BENCH_PATH",
                                    invalid_log_filepath.generic_string().c_str());
