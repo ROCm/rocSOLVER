@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testset>
+<testset failure-regex="$.^">
     <var name="COMMAND">rocsolver-test --gtest_color=yes </var>
     <test sets="psdb">
         <run name="all-psdb">{COMMAND} --gtest_filter=checkin*-*known_bug* --gtest_output=xml </run>
