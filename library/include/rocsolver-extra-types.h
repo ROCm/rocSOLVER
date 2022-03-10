@@ -85,19 +85,19 @@ typedef enum rocblas_eform_
  ********************************************************************************/
 typedef enum rocblas_eval_range_
 {
-    rocblas_eval_all = 231, /**< All eigenvalues will be found. */
-    rocblas_eval_value
+    rocblas_range_all = 231, /**< All eigenvalues will be found. */
+    rocblas_range_value
     = 232, /**< All eigenvalues in the half-open interval \f$(vlow, vup]\f$ will be found. */
-    rocblas_eval_index = 233, /**< The \f$ilow\f$-th through \f$iup\f$-th. eigenvalues will be found.*/
+    rocblas_range_index = 233, /**< The \f$ilow\f$-th through \f$iup\f$-th. eigenvalues will be found.*/
 } rocblas_eval_range;
 
 /*! \brief Used to specify whether the eigenvalues are grouped and ordered by blocks
  ********************************************************************************/
 typedef enum rocblas_eval_order_
 {
-    rocblas_eval_blocks
+    rocblas_order_blocks
     = 241, /**< The computed eigenvalues will be grouped by split-off blocks and arranged in increasing order within each block. */
-    rocblas_eval_whole
+    rocblas_order_entire
     = 242, /**< All computed eigenvalues of the entire matrix will be ordered from smallest to largest. */
 } rocblas_eval_order;
 

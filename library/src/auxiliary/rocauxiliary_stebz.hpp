@@ -52,7 +52,7 @@ rocblas_status rocsolver_stebz_argCheck(rocblas_handle handle,
     // 1. invalid/non-supported values
     if(range != rocblas_range_all && range != rocblas_range_value && range != rocblas_range_index)
         return rocblas_status_invalid_value;
-    if(order != rocblas_order_blocks && order != rocblas_order_whole)
+    if(order != rocblas_order_blocks && order != rocblas_order_entire)
         return rocblas_status_invalid_value;
 
     // 2. invalid size
@@ -70,7 +70,7 @@ rocblas_status rocsolver_stebz_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && (!D || !IB || !IS)) || (n > 1 && !E) || !info || !nev || !nsplit)
+    if((n && (!D || !W || !IB || !IS)) || (n > 1 && !E) || !info || !nev || !nsplit)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -103,9 +103,9 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER("stebz", "range:", range, "order:", order, "n:", n, "vlow:", vlow, "vup:", vup,
-                    "ilow:", ilow, "iup:", iup, "abstol:", abstol, "shiftD:", shiftD,
-                    "shiftE:", shiftE, "bc:", batch_count);
+    //    ROCSOLVER_ENTER("stebz", "range:", range, "order:", order, "n:", n, "vlow:", vlow, "vup:", vup,
+    //                    "ilow:", ilow, "iup:", iup, "abstol:", abstol, "shiftD:", shiftD,
+    //                    "shiftE:", shiftE, "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)

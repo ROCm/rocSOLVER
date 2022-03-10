@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <hip/hip_runtime.h>
-#include <limits>
 #include <rocblas.h>
 
 /*
@@ -19,41 +18,9 @@
  * ===========================================================================
  */
 
-template <typename T>
-constexpr double get_epsilon()
-{
-    using S = decltype(std::real(T{}));
-    return std::numeric_limits<S>::epsilon();
-}
-
-template <typename T>
-constexpr double get_safemin()
-{
-    using S = decltype(std::real(T{}));
-    auto eps = get_epsilon<S>();
-    auto s1 = std::numeric_limits<S>::min();
-    auto s2 = 1 / std::numeric_limits<S>::max();
-    if(s2 > s1)
-        return s2 * (1 + eps);
-    return s1;
-}
-
 inline size_t idx2D(const size_t i, const size_t j, const size_t lda)
 {
     return j * lda + i;
-}
-
-template <typename T>
-inline T machine_precision();
-template <>
-inline float machine_precision()
-{
-    return static_cast<float>(1.19e-07);
-}
-template <>
-inline double machine_precision()
-{
-    return static_cast<double>(2.22e-16);
 }
 
 template <typename T>

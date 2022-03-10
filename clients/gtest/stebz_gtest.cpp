@@ -14,7 +14,7 @@ typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 
 // each size_range vector is a {n, ord}
 // if ord = 1, then order eigenvalues by blocks
-// if ord = 0, then order eigenvalues of the whole matrix
+// if ord = 0, then order eigenvalues of the entire matrix
 
 // each ops_range vector is a {rng, vl, vu, il, iu}
 // if rng = 0, then find all eigenvalues

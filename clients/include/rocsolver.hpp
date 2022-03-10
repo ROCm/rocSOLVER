@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -1263,6 +1263,52 @@ inline rocblas_status
     rocsolver_sterf(rocblas_handle handle, rocblas_int n, double* D, double* E, rocblas_int* info)
 {
     return rocsolver_dsterf(handle, n, D, E, info);
+}
+/********************************************************/
+
+/******************** STEBZ ********************/
+inline rocblas_status rocsolver_stebz(rocblas_handle handle,
+                                      rocblas_eval_range range,
+                                      rocblas_eval_order order,
+                                      rocblas_int n,
+                                      float vlow,
+                                      float vup,
+                                      rocblas_int ilow,
+                                      rocblas_int iup,
+                                      float abstol,
+                                      float* D,
+                                      float* E,
+                                      rocblas_int* nev,
+                                      rocblas_int* nsplit,
+                                      float* W,
+                                      rocblas_int* IB,
+                                      rocblas_int* IS,
+                                      rocblas_int* info)
+{
+    return rocsolver_sstebz(handle, range, order, n, vlow, vup, ilow, iup, abstol, D, E, nev,
+                            nsplit, W, IB, IS, info);
+}
+
+inline rocblas_status rocsolver_stebz(rocblas_handle handle,
+                                      rocblas_eval_range range,
+                                      rocblas_eval_order order,
+                                      rocblas_int n,
+                                      double vlow,
+                                      double vup,
+                                      rocblas_int ilow,
+                                      rocblas_int iup,
+                                      double abstol,
+                                      double* D,
+                                      double* E,
+                                      rocblas_int* nev,
+                                      rocblas_int* nsplit,
+                                      double* W,
+                                      rocblas_int* IB,
+                                      rocblas_int* IS,
+                                      rocblas_int* info)
+{
+    return rocsolver_dstebz(handle, range, order, n, vlow, vup, ilow, iup, abstol, D, E, nev,
+                            nsplit, W, IB, IS, info);
 }
 /********************************************************/
 

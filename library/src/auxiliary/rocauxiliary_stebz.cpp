@@ -23,8 +23,8 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
                                     rocblas_int* IS,
                                     rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("stebz", "--range", range, "--order", order, "-n", n, "--vlow", vlow,
-                        "--vup", vup, "--ilow", ilow, "--iup", iup, "--abstol", abstol);
+    //    ROCSOLVER_ENTER_TOP("stebz", "--range", range, "--order", order, "-n", n, "--vlow", vlow,
+    //                        "--vup", vup, "--ilow", ilow, "--iup", iup, "--abstol", abstol);
 
     if(!handle)
         return rocblas_status_invalid_handle;

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #include "lapack_host_reference.hpp"
@@ -1505,6 +1505,43 @@ void zgesvd_(char* jobu,
 
 void ssterf_(int* n, float* D, float* E, int* info);
 void dsterf_(int* n, double* D, double* E, int* info);
+
+void sstebz_(char* range,
+             char* order,
+             int* n,
+             float* vlow,
+             float* vup,
+             int* ilow,
+             int* iup,
+             float* atol,
+             float* D,
+             float* E,
+             int* nev,
+             int* nsplit,
+             float* W,
+             int* IB,
+             int* IS,
+             float* work,
+             int* iwork,
+             int* info);
+void dstebz_(char* range,
+             char* order,
+             int* n,
+             double* vlow,
+             double* vup,
+             int* ilow,
+             int* iup,
+             double* atol,
+             double* D,
+             double* E,
+             int* nev,
+             int* nsplit,
+             double* W,
+             int* IB,
+             int* IS,
+             double* work,
+             int* iwork,
+             int* info);
 
 void ssteqr_(char* evect, int* n, float* D, float* E, float* C, int* ldc, float* work, int* info);
 void dsteqr_(char* evect, int* n, double* D, double* E, double* C, int* ldc, double* work, int* info);
@@ -5616,6 +5653,59 @@ void cblas_sytd2_hetd2<rocblas_double_complex, double>(rocblas_fill uplo,
     int info;
     char uploC = rocblas2char_fill(uplo);
     zhetd2_(&uploC, &n, A, &lda, D, E, tau, &info);
+}
+
+// stebz
+template <>
+void cblas_stebz<float>(rocblas_eval_range range,
+                        rocblas_eval_order order,
+                        rocblas_int n,
+                        float vlow,
+                        float vup,
+                        rocblas_int ilow,
+                        rocblas_int iup,
+                        float abstol,
+                        float* D,
+                        float* E,
+                        rocblas_int* nev,
+                        rocblas_int* nsplit,
+                        float* W,
+                        rocblas_int* IB,
+                        rocblas_int* IS,
+                        float* work,
+                        rocblas_int* iwork,
+                        rocblas_int* info)
+{
+    char rangeC = rocblas2char_eval_range(range);
+    char orderC = rocblas2char_eval_order(order);
+    sstebz_(&rangeC, &orderC, &n, &vlow, &vup, &ilow, &iup, &abstol, D, E, nev, nsplit, W, IB, IS,
+            work, iwork, info);
+}
+
+template <>
+void cblas_stebz<double>(rocblas_eval_range range,
+                         rocblas_eval_order order,
+                         rocblas_int n,
+                         double vlow,
+                         double vup,
+                         rocblas_int ilow,
+                         rocblas_int iup,
+                         double abstol,
+                         double* D,
+                         double* E,
+                         rocblas_int* nev,
+                         rocblas_int* nsplit,
+                         double* W,
+                         rocblas_int* IB,
+                         rocblas_int* IS,
+                         double* work,
+                         rocblas_int* iwork,
+                         rocblas_int* info)
+{
+    char rangeC = rocblas2char_eval_range(range);
+    char orderC = rocblas2char_eval_order(order);
+    dstebz_(&rangeC, &orderC, &n, &vlow, &vup, &ilow, &iup, &abstol, D, E, nev, nsplit, W, IB, IS,
+            work, iwork, info);
 }
 
 // sterf
