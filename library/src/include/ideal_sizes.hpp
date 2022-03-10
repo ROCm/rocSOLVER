@@ -184,22 +184,37 @@
 
 /**************************** getf2/getfr *************************************
 *******************************************************************************/
-#define GETF2_MAX_COLS 64 //always <= wavefront size
-#define GETF2_MAX_THDS 64
+#define GETF2_SPKER_MAX_M 1024 //always <= 1024
+#define GETF2_SPKER_MAX_N 256 //always <= 256
+#define GETF2_SSKER_MAX_M 512 //always <= 512 and <= GETF2_SPKER_MAX_M
+#define GETF2_SSKER_MAX_N 64 //always <= wavefront and <= GETF2_SPKER_MAX_N
 #define GETF2_OPTIM_NGRP \
     16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
-#define GETRF_NUM_INTERVALS 4
-#define GETRF_INTERVALS 64, 512, 1536, 4096
-#define GETRF_BLKSIZES 0, 1, 32, 128, 384
-#define GETRF_BATCH_NUM_INTERVALS 3
-#define GETRF_BATCH_INTERVALS 52, 148, 1376
-#define GETRF_BATCH_BLKSIZES 0, 16, 32, 288
-#define GETRF_NPVT_NUM_INTERVALS 2
-#define GETRF_NPVT_INTERVALS 65, 1536
-#define GETRF_NPVT_BLKSIZES 0, 32, 256
-#define GETRF_NPVT_BATCH_NUM_INTERVALS 3
-#define GETRF_NPVT_BATCH_INTERVALS 33, 148, 1216
-#define GETRF_NPVT_BATCH_BLKSIZES 0, 16, 32, 256
+#define GETRF_NUM_INTERVALS_REAL 4
+#define GETRF_INTERVALS_REAL 64, 512, 1856, 2944
+#define GETRF_BLKSIZES_REAL 0, 1, 32, 256, 512
+#define GETRF_BATCH_NUM_INTERVALS_REAL 9
+#define GETRF_BATCH_INTERVALS_REAL 40, 42, 46, 49, 52, 58, 112, 800, 1024
+#define GETRF_BATCH_BLKSIZES_REAL 0, 32, 0, 16, 0, 32, 1, 32, 64, 160
+#define GETRF_NPVT_NUM_INTERVALS_REAL 2
+#define GETRF_NPVT_INTERVALS_REAL 64, 512
+#define GETRF_NPVT_BLKSIZES_REAL 0, -1, 512
+#define GETRF_NPVT_BATCH_NUM_INTERVALS_REAL 6
+#define GETRF_NPVT_BATCH_INTERVALS_REAL 40, 168, 448, 512, 896, 1408
+#define GETRF_NPVT_BATCH_BLKSIZES_REAL 0, -24, -32, -64, 32, 96, 512
+
+#define GETRF_NUM_INTERVALS_COMPLEX 4
+#define GETRF_INTERVALS_COMPLEX 64, 512, 1024, 2944
+#define GETRF_BLKSIZES_COMPLEX 0, 1, 32, 96, 512
+#define GETRF_BATCH_NUM_INTERVALS_COMPLEX 10
+#define GETRF_BATCH_INTERVALS_COMPLEX 23, 28, 30, 32, 40, 48, 56, 64, 768, 1024
+#define GETRF_BATCH_BLKSIZES_COMPLEX 0, 16, 0, 1, 24, 16, 24, 16, 48, 64, 160
+#define GETRF_NPVT_NUM_INTERVALS_COMPLEX 2
+#define GETRF_NPVT_INTERVALS_COMPLEX 64, 512
+#define GETRF_NPVT_BLKSIZES_COMPLEX 0, -1, 512
+#define GETRF_NPVT_BATCH_NUM_INTERVALS_COMPLEX 5
+#define GETRF_NPVT_BATCH_INTERVALS_COMPLEX 20, 32, 42, 512, 1408
+#define GETRF_NPVT_BATCH_BLKSIZES_COMPLEX 0, -16, -32, -48, 64, 128
 
 /****************************** getri *****************************************
 *******************************************************************************/

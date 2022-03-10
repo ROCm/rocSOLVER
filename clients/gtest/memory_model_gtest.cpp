@@ -39,13 +39,13 @@ protected:
 
     const rocblas_int m = 1500;
     const rocblas_int n = 1500;
-    const rocblas_int m_small = 750;
-    const rocblas_int n_small = 750;
+    const rocblas_int m_small = 65;
+    const rocblas_int n_small = 65;
     const rocblas_int lda = m;
     const rocblas_stride stA = lda * n;
     const rocblas_stride stP = n;
     const rocblas_int bc = 8;
-    const rocblas_int bc_small = 8;
+    const rocblas_int bc_small = 5;
 };
 
 /*************************************/
