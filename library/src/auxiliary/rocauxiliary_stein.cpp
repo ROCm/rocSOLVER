@@ -44,12 +44,27 @@ rocblas_status rocsolver_stein_impl(rocblas_handle handle,
     rocblas_int batch_count = 1;
 
     // memory workspace sizes:
-    // to be completed
+    // size for lagtf/stein workspace
+    size_t size_work, size_iwork;
+    rocsolver_stein_getMemorySize<T, S>(n, batch_count, &size_work, &size_iwork);
+
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_set_optimal_device_memory_size(handle, size_work, size_iwork);
+
+    // memory workspace allocation
+    void *work, *iwork;
+    rocblas_device_malloc mem(handle, size_work, size_iwork);
+    if(!mem)
+        return rocblas_status_memory_error;
+
+    work = mem[0];
+    iwork = mem[1];
 
     // execution
     return rocsolver_stein_template<T>(handle, n, D, shiftD, strideD, E, shiftE, strideE, nev, W,
                                        shiftW, strideW, iblock, strideIblock, isplit, strideIsplit,
-                                       Z, shiftZ, ldz, strideZ, info, batch_count);
+                                       Z, shiftZ, ldz, strideZ, info, batch_count, (S*)work,
+                                       (rocblas_int*)iwork);
 }
 
 /*
