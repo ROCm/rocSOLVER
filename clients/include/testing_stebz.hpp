@@ -38,10 +38,10 @@ void stebz_checkBadArgs(const rocblas_handle handle,
     // values
     EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, rocblas_eval_range(-1), order, n, vlow, vup, ilow,
                                           iup, abstol, dD, dE, dnev, dnsplit, dW, dIB, dIS, dinfo),
-                          rocblas_status_invalid_handle);
+                          rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, rocblas_eval_order(-1), n, vlow, vup, ilow,
                                           iup, abstol, dD, dE, dnev, dnsplit, dW, dIB, dIS, dinfo),
-                          rocblas_status_invalid_handle);
+                          rocblas_status_invalid_value);
 
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vlow, vup, ilow, iup, abstol,
@@ -81,7 +81,7 @@ void testing_stebz_bad_arg()
 {
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_int n = 1;
+    rocblas_int n = 2;
     rocblas_eval_range range = rocblas_range_all;
     rocblas_eval_order order = rocblas_order_entire;
     T vlow = 0;
@@ -335,11 +335,11 @@ void testing_stebz(Arguments& argus)
     char rangeC = argus.get<char>("range");
     char orderC = argus.get<char>("order");
     rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int vlow = argus.get<T>("vlow", 0);
-    rocblas_int vup = argus.get<T>("vup", 0);
-    rocblas_int ilow = argus.get<rocblas_int>("ilow", 0);
-    rocblas_int iup = argus.get<rocblas_int>("iup", 0);
-    rocblas_int abstol = argus.get<T>("abstol", 0);
+    T vlow = T(argus.get<double>("vlow", 0));
+    T vup = T(argus.get<double>("vup", rangeC == 'V' ? 1 : 0));
+    rocblas_int ilow = argus.get<rocblas_int>("ilow", rangeC == 'I' ? 1 : 0);
+    rocblas_int iup = argus.get<rocblas_int>("iup", rangeC == 'I' ? 1 : 0);
+    T abstol = T(argus.get<double>("abstol"));
 
     rocblas_eval_range range = char2rocblas_eval_range(rangeC);
     rocblas_eval_order order = char2rocblas_eval_order(orderC);

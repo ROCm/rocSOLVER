@@ -55,7 +55,7 @@ const vector<vector<int>> ops_range = {
     {1, 5, 15, 0, 0}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {{120, 1}, {256, 0}, {350, 1}};
+const vector<vector<int>> large_size_range = {{120, 1}, {256, 0}, {350, 1}, {512, 0}};
 const vector<vector<int>> large_ops_range = {{0, 0, 0, 0, 0}, {1, -15, 15, 0, 0}, {2, 0, 0, 50, 75}};
 
 Arguments stebz_setup_arguments(stebz_tuple tup)
@@ -69,10 +69,13 @@ Arguments stebz_setup_arguments(stebz_tuple tup)
     arg.set<char>("order", (size[1] == 0 ? 'E' : 'B'));
 
     arg.set<char>("range", (op[0] == 0 ? 'A' : (op[0] == 1 ? 'V' : 'I')));
-    arg.set<rocblas_int>("vlow", op[1]);
-    arg.set<rocblas_int>("vup", op[2]);
+    arg.set<double>("vlow", op[1]);
+    arg.set<double>("vup", op[2]);
     arg.set<rocblas_int>("ilow", op[3]);
     arg.set<rocblas_int>("iup", op[4]);
+
+    // always use max accuracy for the tests
+    arg.set<double>("abstol", 0);
 
     arg.timing = 0;
 

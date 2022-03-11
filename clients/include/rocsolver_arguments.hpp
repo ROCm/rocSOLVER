@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -226,6 +226,28 @@ public:
 
         char diag = val->second.as<char>();
         if(diag != 'N' && diag != 'U')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_evrange(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char range = val->second.as<char>();
+        if(range != 'A' && range != 'V' && range != 'I')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_evorder(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char order = val->second.as<char>();
+        if(order != 'B' && order != 'E')
             throw std::invalid_argument("Invalid value for " + name);
     }
 };
