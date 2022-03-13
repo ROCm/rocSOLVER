@@ -39,8 +39,7 @@ rocsolver_logvalue<T> rocsolver_make_logvalue(T value)
 
 namespace fmt
 {
-/* By default, forward log values to the original printer for their type.
- */
+/* By default, forward log values to the original printer for their type. */
 template <typename T>
 struct formatter<rocsolver_logvalue<T>> : formatter<T>
 {
@@ -50,9 +49,9 @@ struct formatter<rocsolver_logvalue<T>> : formatter<T>
         return formatter<T>::format(wrapper.value, ctx);
     }
 };
+
 /* Specialize bool to print 0 or 1 rather than true or false, to match the
-   rocsolver-bench CLI.
- */
+   rocsolver-bench CLI.*/
 template <>
 struct formatter<rocsolver_logvalue<bool>> : formatter<char>
 {
@@ -62,6 +61,7 @@ struct formatter<rocsolver_logvalue<bool>> : formatter<char>
         return formatter<char>::format(wrapper.value ? '1' : '0', ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_operation>> : formatter<char>
 {
@@ -71,6 +71,7 @@ struct formatter<rocsolver_logvalue<rocblas_operation>> : formatter<char>
         return formatter<char>::format(rocblas2char_operation(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_fill>> : formatter<char>
 {
@@ -80,6 +81,7 @@ struct formatter<rocsolver_logvalue<rocblas_fill>> : formatter<char>
         return formatter<char>::format(rocblas2char_fill(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_diagonal>> : formatter<char>
 {
@@ -89,6 +91,7 @@ struct formatter<rocsolver_logvalue<rocblas_diagonal>> : formatter<char>
         return formatter<char>::format(rocblas2char_diagonal(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_side>> : formatter<char>
 {
@@ -98,6 +101,7 @@ struct formatter<rocsolver_logvalue<rocblas_side>> : formatter<char>
         return formatter<char>::format(rocblas2char_side(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_direct>> : formatter<char>
 {
@@ -117,6 +121,7 @@ struct formatter<rocsolver_logvalue<rocblas_storev>> : formatter<char>
         return formatter<char>::format(rocblas2char_storev(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_workmode>> : formatter<char>
 {
@@ -126,6 +131,7 @@ struct formatter<rocsolver_logvalue<rocblas_workmode>> : formatter<char>
         return formatter<char>::format(rocblas2char_workmode(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_svect>> : formatter<char>
 {
@@ -135,6 +141,7 @@ struct formatter<rocsolver_logvalue<rocblas_svect>> : formatter<char>
         return formatter<char>::format(rocblas2char_svect(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_evect>> : formatter<char>
 {
@@ -144,6 +151,7 @@ struct formatter<rocsolver_logvalue<rocblas_evect>> : formatter<char>
         return formatter<char>::format(rocblas2char_evect(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_eform>> : formatter<char>
 {
@@ -153,6 +161,27 @@ struct formatter<rocsolver_logvalue<rocblas_eform>> : formatter<char>
         return formatter<char>::format(rocblas2char_eform(wrapper.value), ctx);
     }
 };
+
+template <>
+struct formatter<rocsolver_logvalue<rocblas_eval_range>> : formatter<char>
+{
+    template <typename FormatCtx>
+    auto format(rocsolver_logvalue<rocblas_eval_range> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    {
+        return formatter<char>::format(rocblas2char_eval_range(wrapper.value), ctx);
+    }
+};
+
+template <>
+struct formatter<rocsolver_logvalue<rocblas_eval_order>> : formatter<char>
+{
+    template <typename FormatCtx>
+    auto format(rocsolver_logvalue<rocblas_eval_order> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    {
+        return formatter<char>::format(rocblas2char_eval_order(wrapper.value), ctx);
+    }
+};
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_datatype>> : formatter<string_view>
 {
@@ -162,6 +191,7 @@ struct formatter<rocsolver_logvalue<rocblas_datatype>> : formatter<string_view>
         return formatter<string_view>::format(rocblas2string_datatype(wrapper.value), ctx);
     }
 };
+
 template <>
 struct formatter<rocsolver_logvalue<rocblas_initialization>> : formatter<string_view>
 {
@@ -171,4 +201,5 @@ struct formatter<rocsolver_logvalue<rocblas_initialization>> : formatter<string_
         return formatter<string_view>::format(rocblas2string_initialization(wrapper.value), ctx);
     }
 };
-}
+
+} // namespace

@@ -201,19 +201,19 @@ void stebz_getError(const rocblas_handle handle,
                    hW[0], hIB[0], hIS[0], work.data(), iwork.data(), hinfo[0]);
 
     rocblas_int nn = hnev[0][0];
-    rocblas_int ns = hnsplit[0][0];
+    //    rocblas_int ns = hnsplit[0][0];
     hinfoRes[0][0] = hinfo[0][0];
     hnevRes[0][0] = hnev[0][0];
-    hnsplitRes[0][0] = hnsplit[0][0];
+    //    hnsplitRes[0][0] = hnsplit[0][0];
     for(int k = 0; k < nn; ++k)
     {
         hWRes[0][k] = hW[0][k];
         hIBRes[0][k] = hIB[0][k];
     }
-    for(int k = 0; k < ns; ++k)
-    {
-        hISRes[0][k] = hIS[0][k];
-    }
+    //    for(int k = 0; k < ns; ++k)
+    //    {
+    //        hISRes[0][k] = hIS[0][k];
+    //    }
 
     // check info
     if(hinfo[0][0] != hinfoRes[0][0])
@@ -221,17 +221,20 @@ void stebz_getError(const rocblas_handle handle,
     else
         *max_err = 0;
 
+    // check number of split blocks
+    rocblas_int ns = hnsplit[0][0];
+    *max_err += ns - hnsplitRes[0][0];
+
+    // check split blocks limits
+    for(int k = 0; k < ns; ++k)
+        *max_err += hIS[0][k] - hISRes[0][k];
+
     // if finding eigenvalues succeded, check values
     if(hinfo[0][0] == 0)
     {
-        // check number of computed eigenvalues and split-off blocks
-        *max_err += hnev[0][0] - hnevRes[0][0] + hnsplit[0][0] - hnsplitRes[0][0];
+        // check number of computed eigenvalues
         //        rocblas_int nn = hnev[0][0];
-        //        rocblas_int ns = hnsplit[0][0];
-
-        // check blocks limits
-        for(int k = 0; k < ns; ++k)
-            *max_err += hIS[0][k] - hISRes[0][k];
+        *max_err += nn - hnevRes[0][0];
 
         // check block indices
         for(int k = 0; k < nn; ++k)

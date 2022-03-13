@@ -23,8 +23,8 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
                                     rocblas_int* IS,
                                     rocblas_int* info)
 {
-    //    ROCSOLVER_ENTER_TOP("stebz", "--range", range, "--order", order, "-n", n, "--vlow", vlow,
-    //                        "--vup", vup, "--ilow", ilow, "--iup", iup, "--abstol", abstol);
+    ROCSOLVER_ENTER_TOP("stebz", "--range", range, "--order", order, "-n", n, "--vlow", vlow,
+                        "--vup", vup, "--ilow", ilow, "--iup", iup, "--abstol", abstol);
 
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -48,25 +48,30 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
     rocblas_int batch_count = 1;
 
     // memory workspace sizes:
-    // size for lasrt stack
-    //    size_t size_stack;
-    //    rocsolver_stebz_getMemorySize<T>(n, batch_count, &size_stack);
+    size_t size_work, size_pivmin, size_Esqr, size_bounds;
+    rocsolver_stebz_getMemorySize<T>(n, batch_count, &size_work, &size_pivmin, &size_Esqr,
+                                     &size_bounds);
 
-    //    if(rocblas_is_device_memory_size_query(handle))
-    //        return rocblas_set_optimal_device_memory_size(handle, size_stack);
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_set_optimal_device_memory_size(handle, size_work, size_pivmin, size_Esqr,
+                                                      size_bounds);
 
     // memory workspace allocation
-    //    void* stack;
-    //    rocblas_device_malloc mem(handle, size_stack);
-    //    if(!mem)
-    //        return rocblas_status_memory_error;
+    void *work, *pivmin, *Esqr, *bounds;
+    rocblas_device_malloc mem(handle, size_work, size_pivmin, size_Esqr, size_bounds);
+    if(!mem)
+        return rocblas_status_memory_error;
 
-    //    stack = mem[0];
+    work = mem[0];
+    pivmin = mem[1];
+    Esqr = mem[2];
+    bounds = mem[3];
 
     // execution
     return rocsolver_stebz_template<T>(handle, range, order, n, vlow, vup, ilow, iup, abstol, D,
                                        shiftD, strideD, E, shiftE, strideE, nev, nsplit, W, strideW,
-                                       IB, strideIB, IS, strideIS, info, batch_count);
+                                       IB, strideIB, IS, strideIS, info, batch_count,
+                                       (rocblas_int*)work, (T*)pivmin, (T*)Esqr, (T*)bounds);
 }
 
 /*

@@ -35,6 +35,7 @@ const vector<vector<int>> size_range = {
     // invalid
     {-1, 0},
     // normal (valid) samples
+    {1, 1},
     {15, 0},
     {20, 1}};
 const vector<vector<int>> ops_range = {
@@ -55,7 +56,7 @@ const vector<vector<int>> ops_range = {
     {1, 5, 15, 0, 0}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {{120, 1}, {256, 0}, {350, 1}, {512, 0}};
+const vector<vector<int>> large_size_range = {{120, 1}, {256, 0}, {350, 1}, {512, 0}, {1024, 1}};
 const vector<vector<int>> large_ops_range = {{0, 0, 0, 0, 0}, {1, -15, 15, 0, 0}, {2, 0, 0, 50, 75}};
 
 Arguments stebz_setup_arguments(stebz_tuple tup)
