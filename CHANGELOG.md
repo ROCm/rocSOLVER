@@ -4,6 +4,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- Packages for test and benchmark executables on all supported OSes using CPack.
+
 ### Optimized
 ### Changed
 ### Deprecated
