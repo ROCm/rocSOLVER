@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -340,12 +340,16 @@ void print_host_matrix(std::ostream& os,
                        const rocblas_int lda)
 {
     std::string s;
+    bool empty = name.empty();
+    if(!empty)
+        s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
+
     for(size_t i = 0; i < m; i++)
     {
         for(size_t j = 0; j < n; j++)
         {
-            s += fmt::format("matrix  col {}, row {}, CPU result={}, GPU result={}\n", i, j,
-                             CPU_result[j + i * lda], GPU_result[j + i * lda]);
+            s += fmt::format("matrix  row {}, col {}, CPU result={}, GPU result={}\n", i, j,
+                             CPU_result[j * lda + i], GPU_result[j * lda + i]);
         }
     }
     s += '\n';
@@ -364,14 +368,18 @@ void print_host_matrix(std::ostream& os,
                        double error_tolerance)
 {
     std::string s;
+    bool empty = name.empty();
+    if(!empty)
+        s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
+
     for(size_t i = 0; i < m; i++)
     {
         for(size_t j = 0; j < n; j++)
         {
-            T comp = (CPU_result[j + i * lda] - GPU_result[j + i * lda]) / CPU_result[j + i * lda];
+            T comp = (CPU_result[j * lda + i] - GPU_result[j * lda + i]) / CPU_result[j * lda + i];
             if(abs(comp) > error_tolerance)
-                s += fmt::format("matrix  col {}, row {}, CPU result={}, GPU result={}\n", i, j,
-                                 CPU_result[j + i * lda], GPU_result[j + i * lda]);
+                s += fmt::format("matrix  row {}, col {}, CPU result={}, GPU result={}\n", i, j,
+                                 CPU_result[j * lda + i], GPU_result[j * lda + i]);
         }
     }
     s += '\n';
@@ -390,14 +398,18 @@ void print_host_matrix(std::ostream& os,
                        double error_tolerance)
 {
     std::string s;
+    bool empty = name.empty();
+    if(!empty)
+        s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
+
     for(size_t i = 0; i < m; i++)
     {
         for(size_t j = 0; j < n; j++)
         {
-            T comp = (CPU_result[j + i * lda] - GPU_result[j + i * lda]) / CPU_result[j + i * lda];
+            T comp = (CPU_result[j * lda + i] - GPU_result[j * lda + i]) / CPU_result[j * lda + i];
             if(sqrt(comp.real() * comp.real() + comp.imag() * comp.imag()) > error_tolerance)
-                s += fmt::format("matrix  col {}, row {}, CPU result={}, GPU result={}\n", i, j,
-                                 CPU_result[j + i * lda], GPU_result[j + i * lda]);
+                s += fmt::format("matrix  row {}, col {}, CPU result={}, GPU result={}\n", i, j,
+                                 CPU_result[j * lda + i], GPU_result[j * lda + i]);
         }
     }
     s += '\n';
