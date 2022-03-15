@@ -40,9 +40,9 @@ Options:
   -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
                               (Default build type is Release)
 
-  -p | --package              Pass this flag to generate library package after build.
+  -p | --package              Pass this flag to generate library and client packages after build.
 
-  -i | --install              Pass this flag to generate and install library package after build.
+  -i | --install              Pass this flag to generate and install library and client packages after build.
 
   -d | --dependencies         Pass this flag to also build and install external dependencies.
                               Dependecies are to be installed in /usr/local. This should be done only once.
