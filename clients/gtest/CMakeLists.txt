@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 find_package(GTest REQUIRED)
@@ -74,6 +74,10 @@ set(others_test_source
   managed_malloc_gtest.cpp
   # rocblas memory model
   memory_model_gtest.cpp
+  # rocsolver logging
+  logging_gtest.cpp
+  # helpers
+  client_environment_helpers.cpp
 )
 
 set(rocsolver_test_source
@@ -122,6 +126,7 @@ target_link_libraries(rocsolver-test PRIVATE
   hip::device
   rocsolver-common
   clients-common
+  $<$<PLATFORM_ID:Linux>:stdc++fs>
   $<$<PLATFORM_ID:Linux>:m>
   roc::rocsolver
 )
