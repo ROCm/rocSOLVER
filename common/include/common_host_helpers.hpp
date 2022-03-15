@@ -344,9 +344,9 @@ void print_host_matrix(std::ostream& os,
     if(!empty)
         s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
 
-    for(size_t i = 0; i < m; i++)
+    for(size_t j = 0; j < n; j++)
     {
-        for(size_t j = 0; j < n; j++)
+        for(size_t i = 0; i < m; i++)
         {
             s += fmt::format("matrix  row {}, col {}, CPU result={}, GPU result={}\n", i, j,
                              CPU_result[j * lda + i], GPU_result[j * lda + i]);
@@ -372,9 +372,9 @@ void print_host_matrix(std::ostream& os,
     if(!empty)
         s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
 
-    for(size_t i = 0; i < m; i++)
+    for(size_t j = 0; j < n; j++)
     {
-        for(size_t j = 0; j < n; j++)
+        for(size_t i = 0; i < m; i++)
         {
             T comp = (CPU_result[j * lda + i] - GPU_result[j * lda + i]) / CPU_result[j * lda + i];
             if(abs(comp) > error_tolerance)
@@ -402,9 +402,9 @@ void print_host_matrix(std::ostream& os,
     if(!empty)
         s += fmt::format("{}-by-{} matrix: {}\n", m, n, name);
 
-    for(size_t i = 0; i < m; i++)
+    for(size_t j = 0; j < n; j++)
     {
-        for(size_t j = 0; j < n; j++)
+        for(size_t i = 0; i < m; i++)
         {
             T comp = (CPU_result[j * lda + i] - GPU_result[j * lda + i]) / CPU_result[j * lda + i];
             if(sqrt(comp.real() * comp.real() + comp.imag() * comp.imag()) > error_tolerance)
