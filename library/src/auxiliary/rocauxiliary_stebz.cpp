@@ -48,17 +48,18 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
     rocblas_int batch_count = 1;
 
     // memory workspace sizes:
-    size_t size_work, size_pivmin, size_Esqr, size_bounds;
+    size_t size_work, size_pivmin, size_Esqr, size_bounds, size_inter, size_ninter;
     rocsolver_stebz_getMemorySize<T>(n, batch_count, &size_work, &size_pivmin, &size_Esqr,
-                                     &size_bounds);
+                                     &size_bounds, &size_inter, &size_ninter);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work, size_pivmin, size_Esqr,
-                                                      size_bounds);
+                                                      size_bounds, size_inter, size_ninter);
 
     // memory workspace allocation
-    void *work, *pivmin, *Esqr, *bounds;
-    rocblas_device_malloc mem(handle, size_work, size_pivmin, size_Esqr, size_bounds);
+    void *work, *pivmin, *Esqr, *bounds, *inter, *ninter;
+    rocblas_device_malloc mem(handle, size_work, size_pivmin, size_Esqr, size_bounds, size_inter,
+                              size_ninter);
     if(!mem)
         return rocblas_status_memory_error;
 
@@ -66,12 +67,14 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
     pivmin = mem[1];
     Esqr = mem[2];
     bounds = mem[3];
+    inter = mem[4];
+    ninter = mem[5];
 
     // execution
-    return rocsolver_stebz_template<T>(handle, range, order, n, vlow, vup, ilow, iup, abstol, D,
-                                       shiftD, strideD, E, shiftE, strideE, nev, nsplit, W, strideW,
-                                       IB, strideIB, IS, strideIS, info, batch_count,
-                                       (rocblas_int*)work, (T*)pivmin, (T*)Esqr, (T*)bounds);
+    return rocsolver_stebz_template<T>(
+        handle, range, order, n, vlow, vup, ilow, iup, abstol, D, shiftD, strideD, E, shiftE,
+        strideE, nev, nsplit, W, strideW, IB, strideIB, IS, strideIS, info, batch_count,
+        (rocblas_int*)work, (T*)pivmin, (T*)Esqr, (T*)bounds, (T*)inter, (rocblas_int*)ninter);
 }
 
 /*

@@ -46,9 +46,9 @@ const vector<vector<int>> ops_range = {
     // valid only when n=0
     {2, 0, 0, 1, 0},
     // valid only when n>0
-    {2, 0, 0, 1, 5},
-    {2, 0, 0, 1, 15},
-    {2, 0, 0, 7, 12},
+    //    {2, 0, 0, 1, 5},
+    //    {2, 0, 0, 1, 15},
+    //    {2, 0, 0, 7, 12},
     // always valid samples
     {0, 0, 0, 0, 0},
     {1, -15, -5, 0, 0},
@@ -57,7 +57,8 @@ const vector<vector<int>> ops_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {{120, 1}, {256, 0}, {350, 1}, {512, 0}, {1024, 1}};
-const vector<vector<int>> large_ops_range = {{0, 0, 0, 0, 0}, {1, -15, 15, 0, 0}, {2, 0, 0, 50, 75}};
+const vector<vector<int>> large_ops_range
+    = {{0, 0, 0, 0, 0}, {1, -15, 15, 0, 0}}; //, {2, 0, 0, 50, 75}};
 
 Arguments stebz_setup_arguments(stebz_tuple tup)
 {
