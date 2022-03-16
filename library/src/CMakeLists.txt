@@ -289,18 +289,7 @@ endif()
 
 ############################################################
 # Installation
-#execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocsolver)
-
-rocm_install(
-	DIRECTORY
-	${PROJECT_SOURCE_DIR}/library/include
-	DESTINATION
-	${PROJECT_BINARY_DIR}/include/rocsolver
-	FILES_MATCHING
-	PATTERN *.h
-	PATTERN *.hpp
-	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
-	)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocsolver)
 
 rocm_install_targets(
   TARGETS ${package_targets}
