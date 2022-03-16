@@ -200,21 +200,6 @@ void stebz_getError(const rocblas_handle handle,
     cblas_stebz<T>(range, order, n, vlow, vup, ilow, iup, atol, hD[0], hE[0], hnev[0], hnsplit[0],
                    hW[0], hIB[0], hIS[0], work.data(), iwork.data(), hinfo[0]);
 
-    //rocblas_int nn = hnev[0][0];
-    //    rocblas_int ns = hnsplit[0][0];
-    hinfoRes[0][0] = hinfo[0][0];
-    //hnevRes[0][0] = hnev[0][0];
-    //    hnsplitRes[0][0] = hnsplit[0][0];
-    //for(int k = 0; k < nn; ++k)
-    //{
-    //    hWRes[0][k] = hW[0][k];
-    //    hIBRes[0][k] = hIB[0][k];
-    //}
-    //    for(int k = 0; k < ns; ++k)
-    //    {
-    //        hISRes[0][k] = hIS[0][k];
-    //    }
-
     // check info
     if(hinfo[0][0] != hinfoRes[0][0])
         *max_err = 1;

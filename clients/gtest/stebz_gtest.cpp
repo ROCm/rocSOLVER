@@ -12,7 +12,7 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 
-// each size_range vector is a {n, ord}
+// each size_range vector is a {n, ord, tol}
 // if ord = 1, then order eigenvalues by blocks
 // if ord = 0, then order eigenvalues of the entire matrix
 
@@ -31,18 +31,19 @@ typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
     // quick return
-    {0, 0},
+    {0, 0, 0},
     // invalid
-    {-1, 0},
+    {-1, 0, 0},
     // normal (valid) samples
-    {1, 1},
-    {15, 0},
-    {20, 1}};
+    {1, 1, 0},
+    {15, 0, 0},
+    {20, 1, 1},
+    {64, 0, -1}};
 const vector<vector<int>> ops_range = {
     // always invalid
     {1, 2, 1, 0, 0},
     {2, 0, 0, 0, -1},
-    {2, 0, 0, 1, 25},
+    {2, 0, 0, 1, 80},
     // valid only when n=0
     {2, 0, 0, 1, 0},
     // valid only when n>0
@@ -52,13 +53,19 @@ const vector<vector<int>> ops_range = {
     // always valid samples
     {0, 0, 0, 0, 0},
     {1, -15, -5, 0, 0},
+    {1, -15, 15, 0, 0},
     {1, -5, 5, 0, 0},
-    {1, 5, 15, 0, 0}};
+    {1, 5, 15, 0, 0},
+    {1, 35, 55, 0, 0}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range = {{120, 1}, {256, 0}, {350, 1}, {512, 0}, {1024, 1}};
+const vector<vector<int>> large_size_range
+    = {{120, 1, -1}, {256, 0, 1}, {350, 1, 0}, {512, 0, 0}, {1024, 1, 0}};
 const vector<vector<int>> large_ops_range
-    = {{0, 0, 0, 0, 0}, {1, -15, 15, 0, 0}}; //, {2, 0, 0, 50, 75}};
+    = {{0, 0, 0, 0, 0},
+       {1, -15, 15, 0, 0},
+       {1, -25, 0, 0, 0},
+       {1, 0, 15, 0, 0}}; //, {2, 0, 0, 50, 75}, {2, 0, 0, 1, 25}};
 
 Arguments stebz_setup_arguments(stebz_tuple tup)
 {
@@ -69,15 +76,13 @@ Arguments stebz_setup_arguments(stebz_tuple tup)
 
     arg.set<rocblas_int>("n", size[0]);
     arg.set<char>("order", (size[1] == 0 ? 'E' : 'B'));
+    arg.set<double>("abstol", size[2]);
 
     arg.set<char>("range", (op[0] == 0 ? 'A' : (op[0] == 1 ? 'V' : 'I')));
     arg.set<double>("vlow", op[1]);
     arg.set<double>("vup", op[2]);
     arg.set<rocblas_int>("ilow", op[3]);
     arg.set<rocblas_int>("iup", op[4]);
-
-    // always use max accuracy for the tests
-    arg.set<double>("abstol", 0);
 
     arg.timing = 0;
 
