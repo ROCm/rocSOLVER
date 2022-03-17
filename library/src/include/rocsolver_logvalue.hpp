@@ -157,7 +157,7 @@ template <>
 struct formatter<rocsolver_logvalue<rocblas_erange>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocsolver_logvalue<rocblas_erange> wrapper, FormatCtx& ctx)
+    auto format(rocsolver_logvalue<rocblas_erange> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
     {
         return formatter<char>::format(rocblas2char_erange(wrapper.value), ctx);
     }
