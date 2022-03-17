@@ -128,13 +128,13 @@ void stein_initData(const rocblas_handle handle,
         // scale matrix
         for(rocblas_int i = 0; i < n; i++)
         {
-            hD[0][i] += 400;
+            hD[0][i] += 10;
             hE[0][i] -= 5;
         }
 
         // compute a subset of the eigenvalues
         S vl = 0.0;
-        S vu = 400.0;
+        S vu = 10.0;
         S abstol = 2 * get_safemin<S>();
         cblas_stebz<S>(rocblas_erange_value, rocblas_eorder_blocks, n, vl, vu, 0, 0, abstol, hD[0],
                        hE[0], hNev[0], &nsplit, hW[0], hIblock[0], hIsplit[0], work.data(),
@@ -455,9 +455,9 @@ void testing_stein(Arguments& argus)
                              hot_calls, argus.profile, argus.perf);
 
     // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
+    // using 2 * n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
 
     // output results for rocsolver-bench
     if(argus.timing)
