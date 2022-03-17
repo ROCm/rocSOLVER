@@ -56,6 +56,7 @@ include(ROCMPackageConfigHelpers)
 include(ROCMInstallSymlinks)
 include(ROCMCheckTargetIds)
 include(ROCMClients)
+include(ROCMHeaderWrapper)
 
 include(os-detection)
 get_os_id(OS_ID)
@@ -109,6 +110,18 @@ cmake_dependent_option(BUILD_CLIENTS_EXTRA_TESTS "Build extra tests" OFF BUILD_T
 option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
+
+# FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
+option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
+if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+  rocm_wrap_header_dir(
+    ${CMAKE_SOURCE_DIR}/library/include
+    PATTERNS "*.h"
+    GUARDS SYMLINK WRAPPER
+    WRAPPER_LOCATIONS include
+  )
+endif()
+
 
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")

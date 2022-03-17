@@ -6,6 +6,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - Package generation for test and benchmark executables on all supported OSes using CPack.
 - Added tests for multi-level logging
+- File/Folder Reorg
+  - Added File/Folder Reorg Changes with backward compatibility support using ROCM-CMAKE wrapper functions.
 
 ### Optimized
 ### Changed
