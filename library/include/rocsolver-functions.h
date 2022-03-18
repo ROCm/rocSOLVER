@@ -3902,7 +3902,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief STEIN computes the eigenvectors of a symmetric tridiagonal matrix.
+    \brief STEIN computes a set of the eigenvectors of a symmetric tridiagonal matrix.
 
     \details
     The eigenvectors of the symmetric tridiagonal matrix are computed using
@@ -3925,12 +3925,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     E           pointer to real type. Array on the GPU of dimension n-1.\n
                 The off-diagonal elements of the tridiagonal matrix.
     @param[in]
-    nev         pointer to a rocblas_int on the GPU. m <= n.\n
+    nev         pointer to a rocblas_int on the GPU. nev <= n.\n
                 The number of provided eigenvalues, and the number of eigenvectors
                 to be computed.
     @param[in]
-    W           pointer to real type. Array on the GPU of dimension m.\n
-                A subset of m eigenvalues of the tridiagonal matrix, as returned
+    W           pointer to real type. Array on the GPU of dimension nev.\n
+                A subset of nev eigenvalues of the tridiagonal matrix, as returned
                 by \ref rocsolver_sstebz "STEBZ".
     @param[in]
     inblock     pointer to rocblas_int. Array on the GPU of dimension n.\n
@@ -3945,7 +3945,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
                 submatrix (or the top left corner of the tridiagonal matrix,
                 in the case of the 1st submatrix) to the isplit[k]-th row/column.
     @param[out]
-    Z           pointer to type. Array on the GPU of dimension ldz*m.\n
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
                 On exit, contains the eigenvectors of the tridiagonal matrix
                 corresponding to the provided eigenvalues.
     @param[in]
