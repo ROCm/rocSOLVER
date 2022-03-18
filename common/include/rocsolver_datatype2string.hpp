@@ -138,23 +138,23 @@ constexpr auto rocblas2char_eform(rocblas_eform value)
     return '\0';
 }
 
-constexpr auto rocblas2char_eval_range(rocblas_eval_range value)
+constexpr auto rocblas2char_erange(rocblas_erange value)
 {
     switch(value)
     {
-    case rocblas_range_all: return 'A';
-    case rocblas_range_value: return 'V';
-    case rocblas_range_index: return 'I';
+    case rocblas_erange_all: return 'A';
+    case rocblas_erange_value: return 'V';
+    case rocblas_erange_index: return 'I';
     }
     return '\0';
 }
 
-constexpr auto rocblas2char_eval_order(rocblas_eval_order value)
+constexpr auto rocblas2char_eorder(rocblas_eorder value)
 {
     switch(value)
     {
-    case rocblas_order_blocks: return 'B';
-    case rocblas_order_entire: return 'E';
+    case rocblas_eorder_blocks: return 'B';
+    case rocblas_eorder_entire: return 'E';
     }
     return '\0';
 }
@@ -313,24 +313,24 @@ constexpr rocblas_eform char2rocblas_eform(char value)
     }
 }
 
-constexpr rocblas_eval_range char2rocblas_eval_range(char value)
+constexpr rocblas_erange char2rocblas_erange(char value)
 {
     switch(value)
     {
-    case 'A': return rocblas_range_all;
-    case 'V': return rocblas_range_value;
-    case 'I': return rocblas_range_index;
-    default: return static_cast<rocblas_eval_range>(-1);
+    case 'A': return rocblas_erange_all;
+    case 'V': return rocblas_erange_value;
+    case 'I': return rocblas_erange_index;
+    default: return static_cast<rocblas_erange>(-1);
     }
 }
 
-constexpr rocblas_eval_order char2rocblas_eval_order(char value)
+constexpr rocblas_eorder char2rocblas_eorder(char value)
 {
     switch(value)
     {
-    case 'B': return rocblas_order_blocks;
-    case 'E': return rocblas_order_entire;
-    default: return static_cast<rocblas_eval_order>(-1);
+    case 'B': return rocblas_eorder_blocks;
+    case 'E': return rocblas_eorder_entire;
+    default: return static_cast<rocblas_eorder>(-1);
     }
 }
 

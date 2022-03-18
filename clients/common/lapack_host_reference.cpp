@@ -1506,43 +1506,6 @@ void zgesvd_(char* jobu,
 void ssterf_(int* n, float* D, float* E, int* info);
 void dsterf_(int* n, double* D, double* E, int* info);
 
-void sstebz_(char* range,
-             char* order,
-             int* n,
-             float* vlow,
-             float* vup,
-             int* ilow,
-             int* iup,
-             float* atol,
-             float* D,
-             float* E,
-             int* nev,
-             int* nsplit,
-             float* W,
-             int* IB,
-             int* IS,
-             float* work,
-             int* iwork,
-             int* info);
-void dstebz_(char* range,
-             char* order,
-             int* n,
-             double* vlow,
-             double* vup,
-             int* ilow,
-             int* iup,
-             double* atol,
-             double* D,
-             double* E,
-             int* nev,
-             int* nsplit,
-             double* W,
-             int* IB,
-             int* IS,
-             double* work,
-             int* iwork,
-             int* info);
-
 void ssteqr_(char* evect, int* n, float* D, float* E, float* C, int* ldc, float* work, int* info);
 void dsteqr_(char* evect, int* n, double* D, double* E, double* C, int* ldc, double* work, int* info);
 void csteqr_(char* evect,
@@ -1609,6 +1572,43 @@ void zstedc_(char* evect,
              int* lrwork,
              int* iwork,
              int* liwork,
+             int* info);
+
+void sstebz_(char* erange,
+             char* order,
+             int* n,
+             float* vl,
+             float* vu,
+             int* il,
+             int* iu,
+             float* abstol,
+             float* D,
+             float* E,
+             int* nev,
+             int* nsplit,
+             float* W,
+             int* iblock,
+             int* isplit,
+             float* work,
+             int* iwork,
+             int* info);
+void dstebz_(char* erange,
+             char* order,
+             int* n,
+             double* vl,
+             double* vu,
+             int* il,
+             int* iu,
+             double* abstol,
+             double* D,
+             double* E,
+             int* nev,
+             int* nsplit,
+             double* W,
+             int* iblock,
+             int* isplit,
+             double* work,
+             int* iwork,
              int* info);
 
 void ssygs2_(int* itype, char* uplo, int* n, float* A, int* lda, float* B, int* ldb, int* info);
@@ -5655,59 +5655,6 @@ void cblas_sytd2_hetd2<rocblas_double_complex, double>(rocblas_fill uplo,
     zhetd2_(&uploC, &n, A, &lda, D, E, tau, &info);
 }
 
-// stebz
-template <>
-void cblas_stebz<float>(rocblas_eval_range range,
-                        rocblas_eval_order order,
-                        rocblas_int n,
-                        float vlow,
-                        float vup,
-                        rocblas_int ilow,
-                        rocblas_int iup,
-                        float abstol,
-                        float* D,
-                        float* E,
-                        rocblas_int* nev,
-                        rocblas_int* nsplit,
-                        float* W,
-                        rocblas_int* IB,
-                        rocblas_int* IS,
-                        float* work,
-                        rocblas_int* iwork,
-                        rocblas_int* info)
-{
-    char rangeC = rocblas2char_eval_range(range);
-    char orderC = rocblas2char_eval_order(order);
-    sstebz_(&rangeC, &orderC, &n, &vlow, &vup, &ilow, &iup, &abstol, D, E, nev, nsplit, W, IB, IS,
-            work, iwork, info);
-}
-
-template <>
-void cblas_stebz<double>(rocblas_eval_range range,
-                         rocblas_eval_order order,
-                         rocblas_int n,
-                         double vlow,
-                         double vup,
-                         rocblas_int ilow,
-                         rocblas_int iup,
-                         double abstol,
-                         double* D,
-                         double* E,
-                         rocblas_int* nev,
-                         rocblas_int* nsplit,
-                         double* W,
-                         rocblas_int* IB,
-                         rocblas_int* IS,
-                         double* work,
-                         rocblas_int* iwork,
-                         rocblas_int* info)
-{
-    char rangeC = rocblas2char_eval_range(range);
-    char orderC = rocblas2char_eval_order(order);
-    dstebz_(&rangeC, &orderC, &n, &vlow, &vup, &ilow, &iup, &abstol, D, E, nev, nsplit, W, IB, IS,
-            work, iwork, info);
-}
-
 // sterf
 template <>
 void cblas_sterf<float>(rocblas_int n, float* D, float* E)
@@ -5853,6 +5800,59 @@ void cblas_stedc<rocblas_double_complex, double>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     zstedc_(&evectC, &n, D, E, C, &ldc, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
+}
+
+// stebz
+template <>
+void cblas_stebz<float>(rocblas_erange range,
+                        rocblas_eorder order,
+                        rocblas_int n,
+                        float vl,
+                        float vu,
+                        rocblas_int il,
+                        rocblas_int iu,
+                        float abstol,
+                        float* D,
+                        float* E,
+                        rocblas_int* m,
+                        rocblas_int* nsplit,
+                        float* W,
+                        rocblas_int* iblock,
+                        rocblas_int* isplit,
+                        float* work,
+                        rocblas_int* iwork,
+                        rocblas_int* info)
+{
+    char erangeC = rocblas2char_erange(range);
+    char eorderC = rocblas2char_eorder(order);
+    sstebz_(&erangeC, &eorderC, &n, &vl, &vu, &il, &iu, &abstol, D, E, m, nsplit, W, iblock, isplit,
+            work, iwork, info);
+}
+
+template <>
+void cblas_stebz<double>(rocblas_erange range,
+                         rocblas_eorder order,
+                         rocblas_int n,
+                         double vl,
+                         double vu,
+                         rocblas_int il,
+                         rocblas_int iu,
+                         double abstol,
+                         double* D,
+                         double* E,
+                         rocblas_int* m,
+                         rocblas_int* nsplit,
+                         double* W,
+                         rocblas_int* iblock,
+                         rocblas_int* isplit,
+                         double* work,
+                         rocblas_int* iwork,
+                         rocblas_int* info)
+{
+    char erangeC = rocblas2char_erange(range);
+    char eorderC = rocblas2char_eorder(order);
+    dstebz_(&erangeC, &eorderC, &n, &vl, &vu, &il, &iu, &abstol, D, E, m, nsplit, W, iblock, isplit,
+            work, iwork, info);
 }
 
 // sygs2 & hegs2

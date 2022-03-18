@@ -163,22 +163,22 @@ struct formatter<rocsolver_logvalue<rocblas_eform>> : formatter<char>
 };
 
 template <>
-struct formatter<rocsolver_logvalue<rocblas_eval_range>> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_erange>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocsolver_logvalue<rocblas_eval_range> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    auto format(rocsolver_logvalue<rocblas_erange> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
     {
-        return formatter<char>::format(rocblas2char_eval_range(wrapper.value), ctx);
+        return formatter<char>::format(rocblas2char_erange(wrapper.value), ctx);
     }
 };
 
 template <>
-struct formatter<rocsolver_logvalue<rocblas_eval_order>> : formatter<char>
+struct formatter<rocsolver_logvalue<rocblas_eorder>> : formatter<char>
 {
     template <typename FormatCtx>
-    auto format(rocsolver_logvalue<rocblas_eval_order> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    auto format(rocsolver_logvalue<rocblas_eorder> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
     {
-        return formatter<char>::format(rocblas2char_eval_order(wrapper.value), ctx);
+        return formatter<char>::format(rocblas2char_eorder(wrapper.value), ctx);
     }
 };
 

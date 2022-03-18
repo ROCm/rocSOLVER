@@ -1268,47 +1268,47 @@ inline rocblas_status
 
 /******************** STEBZ ********************/
 inline rocblas_status rocsolver_stebz(rocblas_handle handle,
-                                      rocblas_eval_range range,
-                                      rocblas_eval_order order,
+                                      rocblas_erange range,
+                                      rocblas_eorder order,
                                       rocblas_int n,
-                                      float vlow,
-                                      float vup,
-                                      rocblas_int ilow,
-                                      rocblas_int iup,
+                                      float vl,
+                                      float vu,
+                                      rocblas_int il,
+                                      rocblas_int iu,
                                       float abstol,
                                       float* D,
                                       float* E,
                                       rocblas_int* nev,
                                       rocblas_int* nsplit,
                                       float* W,
-                                      rocblas_int* IB,
-                                      rocblas_int* IS,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
                                       rocblas_int* info)
 {
-    return rocsolver_sstebz(handle, range, order, n, vlow, vup, ilow, iup, abstol, D, E, nev,
-                            nsplit, W, IB, IS, info);
+    return rocsolver_sstebz(handle, range, order, n, vl, vu, il, iu, abstol, D, E, nev, nsplit, W,
+                            iblock, isplit, info);
 }
 
 inline rocblas_status rocsolver_stebz(rocblas_handle handle,
-                                      rocblas_eval_range range,
-                                      rocblas_eval_order order,
+                                      rocblas_erange range,
+                                      rocblas_eorder order,
                                       rocblas_int n,
-                                      double vlow,
-                                      double vup,
-                                      rocblas_int ilow,
-                                      rocblas_int iup,
+                                      double vl,
+                                      double vu,
+                                      rocblas_int il,
+                                      rocblas_int iu,
                                       double abstol,
                                       double* D,
                                       double* E,
                                       rocblas_int* nev,
                                       rocblas_int* nsplit,
                                       double* W,
-                                      rocblas_int* IB,
-                                      rocblas_int* IS,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
                                       rocblas_int* info)
 {
-    return rocsolver_dstebz(handle, range, order, n, vlow, vup, ilow, iup, abstol, D, E, nev,
-                            nsplit, W, IB, IS, info);
+    return rocsolver_dstebz(handle, range, order, n, vl, vu, il, iu, abstol, D, E, nev, nsplit, W,
+                            iblock, isplit, info);
 }
 /********************************************************/
 

@@ -145,6 +145,17 @@ public:
             throw std::invalid_argument("Invalid value for " + name);
     }
 
+    void validate_diag(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char diag = val->second.as<char>();
+        if(diag != 'N' && diag != 'U')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_direct(const std::string name) const
     {
         auto val = find(name);
@@ -200,6 +211,28 @@ public:
             throw std::invalid_argument("Invalid value for " + name);
     }
 
+    void validate_erange(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char range = val->second.as<char>();
+        if(range != 'A' && range != 'V' && range != 'I')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_eorder(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char order = val->second.as<char>();
+        if(order != 'B' && order != 'E')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_itype(const std::string name) const
     {
         auto val = find(name);
@@ -216,38 +249,5 @@ public:
         if(!to_consume.empty())
             throw std::invalid_argument(
                 fmt::format("Not all arguments were consumed: {}", fmt::join(to_consume, " ")));
-    }
-
-    void validate_diag(const std::string name) const
-    {
-        auto val = find(name);
-        if(val == end())
-            return;
-
-        char diag = val->second.as<char>();
-        if(diag != 'N' && diag != 'U')
-            throw std::invalid_argument("Invalid value for " + name);
-    }
-
-    void validate_evrange(const std::string name) const
-    {
-        auto val = find(name);
-        if(val == end())
-            return;
-
-        char range = val->second.as<char>();
-        if(range != 'A' && range != 'V' && range != 'I')
-            throw std::invalid_argument("Invalid value for " + name);
-    }
-
-    void validate_evorder(const std::string name) const
-    {
-        auto val = find(name);
-        if(val == end())
-            return;
-
-        char order = val->second.as<char>();
-        if(order != 'B' && order != 'E')
-            throw std::invalid_argument("Invalid value for " + name);
     }
 };
