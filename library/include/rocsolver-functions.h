@@ -3952,6 +3952,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     ldc         rocblas_int. ldz >= n.\n
                 Specifies the leading dimension of Z.
     @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+                If info = 0, the first nev elements of ifail are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge.
+    @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
                 If info = i > 0, STEIN did not converge. i eigenvectors of the
@@ -3968,6 +3973,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sstein(rocblas_handle handle,
                                                  rocblas_int* isplit,
                                                  float* Z,
                                                  const rocblas_int ldz,
+                                                 rocblas_int* ifail,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dstein(rocblas_handle handle,
@@ -3980,6 +3986,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstein(rocblas_handle handle,
                                                  rocblas_int* isplit,
                                                  double* Z,
                                                  const rocblas_int ldz,
+                                                 rocblas_int* ifail,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cstein(rocblas_handle handle,
@@ -3992,6 +3999,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cstein(rocblas_handle handle,
                                                  rocblas_int* isplit,
                                                  rocblas_float_complex* Z,
                                                  const rocblas_int ldz,
+                                                 rocblas_int* ifail,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
@@ -4004,6 +4012,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                                                  rocblas_int* isplit,
                                                  rocblas_double_complex* Z,
                                                  const rocblas_int ldz,
+                                                 rocblas_int* ifail,
                                                  rocblas_int* info);
 //! @}
 

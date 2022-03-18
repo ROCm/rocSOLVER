@@ -22,45 +22,50 @@ void stein_checkBadArgs(const rocblas_handle handle,
                         U dIsplit,
                         T dZ,
                         const rocblas_int ldz,
+                        U dIfail,
                         U dInfo)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(nullptr, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dInfo),
+        rocsolver_stein(nullptr, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dIfail, dInfo),
         rocblas_status_invalid_handle);
 
     // values
     // N/A
 
     // pointers
+    EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, (S) nullptr, dE, dNev, dW, dIblock, dIsplit,
+                                          dZ, ldz, dIfail, dInfo),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, dD, (S) nullptr, dNev, dW, dIblock, dIsplit,
+                                          dZ, ldz, dIfail, dInfo),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, dD, dE, (U) nullptr, dW, dIblock, dIsplit, dZ,
+                                          ldz, dIfail, dInfo),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, dD, dE, dNev, (S) nullptr, dIblock, dIsplit,
+                                          dZ, ldz, dIfail, dInfo),
+                          rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, (S) nullptr, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dInfo),
+        rocsolver_stein(handle, n, dD, dE, dNev, dW, (U) nullptr, dIsplit, dZ, ldz, dIfail, dInfo),
         rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, dD, (S) nullptr, dNev, dW, dIblock, dIsplit, dZ, ldz, dInfo),
+        rocsolver_stein(handle, n, dD, dE, dNev, dW, dIblock, (U) nullptr, dZ, ldz, dIfail, dInfo),
         rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, dD, dE, dNev, dW, dIblock, dIsplit,
+                                          (T) nullptr, ldz, dIfail, dInfo),
+                          rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, dD, dE, (U) nullptr, dW, dIblock, dIsplit, dZ, ldz, dInfo),
+        rocsolver_stein(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, (U) nullptr, dInfo),
         rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, dD, dE, dNev, (S) nullptr, dIblock, dIsplit, dZ, ldz, dInfo),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, dD, dE, dNev, dW, (U) nullptr, dIsplit, dZ, ldz, dInfo),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, dD, dE, dNev, dW, dIblock, (U) nullptr, dZ, ldz, dInfo),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, (T) nullptr, ldz, dInfo),
-        rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_stein(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, (U) nullptr),
-        rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz,
+                                          dIfail, (U) nullptr),
+                          rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, 0, (S) nullptr, (S) nullptr, dNev, (S) nullptr,
-                                          (U) nullptr, (U) nullptr, (T) nullptr, ldz, dInfo),
+                                          (U) nullptr, (U) nullptr, (T) nullptr, ldz, (U) nullptr,
+                                          dInfo),
                           rocblas_status_success);
 }
 
@@ -82,6 +87,7 @@ void testing_stein_bad_arg()
     device_strided_batch_vector<rocblas_int> dIblock(1, 1, 1, 1);
     device_strided_batch_vector<rocblas_int> dIsplit(1, 1, 1, 1);
     device_strided_batch_vector<T> dZ(1, 1, 1, 1);
+    device_strided_batch_vector<rocblas_int> dIfail(1, 1, 1, 1);
     device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
     CHECK_HIP_ERROR(dD.memcheck());
     CHECK_HIP_ERROR(dE.memcheck());
@@ -90,11 +96,12 @@ void testing_stein_bad_arg()
     CHECK_HIP_ERROR(dIblock.memcheck());
     CHECK_HIP_ERROR(dIsplit.memcheck());
     CHECK_HIP_ERROR(dZ.memcheck());
+    CHECK_HIP_ERROR(dIfail.memcheck());
     CHECK_HIP_ERROR(dInfo.memcheck());
 
     // check bad arguments
     stein_checkBadArgs(handle, n, dD.data(), dE.data(), dNev.data(), dW.data(), dIblock.data(),
-                       dIsplit.data(), dZ.data(), ldz, dInfo.data());
+                       dIsplit.data(), dZ.data(), ldz, dIfail.data(), dInfo.data());
 }
 
 template <bool CPU, bool GPU, typename T, typename Sd, typename Ud, typename Sh, typename Uh>
@@ -164,6 +171,7 @@ void stein_getError(const rocblas_handle handle,
                     Ud& dIsplit,
                     Td& dZ,
                     const rocblas_int ldz,
+                    Ud& dIfail,
                     Ud& dInfo,
                     Sh& hD,
                     Sh& hE,
@@ -173,6 +181,8 @@ void stein_getError(const rocblas_handle handle,
                     Uh& hIsplit,
                     Th& hZ,
                     Th& hZRes,
+                    Uh& hIfail,
+                    Uh& hIfailRes,
                     Uh& hInfo,
                     Uh& hInfoRes,
                     double* max_err)
@@ -184,7 +194,6 @@ void stein_getError(const rocblas_handle handle,
     size_t lifail = n;
     std::vector<S> work(lwork);
     std::vector<rocblas_int> iwork(liwork);
-    std::vector<rocblas_int> ifail(lifail);
 
     // input data initialization
     stein_initData<true, true, T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev, hW,
@@ -193,8 +202,10 @@ void stein_getError(const rocblas_handle handle,
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_stein(handle, n, dD.data(), dE.data(), dNev.data(), dW.data(),
-                                        dIblock.data(), dIsplit.data(), dZ.data(), ldz, dInfo.data()));
+                                        dIblock.data(), dIsplit.data(), dZ.data(), ldz,
+                                        dIfail.data(), dInfo.data()));
     CHECK_HIP_ERROR(hZRes.transfer_from(dZ));
+    CHECK_HIP_ERROR(hIfailRes.transfer_from(dIfail));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // Prepare matrix A (upper triangular) for implicit tests
@@ -216,7 +227,7 @@ void stein_getError(const rocblas_handle handle,
 
     // CPU lapack
     cblas_stein<T>(n, hD[0], hE[0], hNev[0], hW[0], hIblock[0], hIsplit[0], hZ[0], ldz, work.data(),
-                   iwork.data(), ifail.data(), hInfo[0]);
+                   iwork.data(), hIfail[0], hInfo[0]);
 
     // check info
     if(hInfo[0][0] != hInfoRes[0][0])
@@ -228,6 +239,15 @@ void stein_getError(const rocblas_handle handle,
 
     if(hInfo[0][0] == 0)
     {
+        // check ifail
+        err = 0;
+        for(int j = 0; j < hNev[0][0]; j++)
+        {
+            if(hIfailRes[0][j] != 0)
+                err++;
+        }
+        *max_err = err > *max_err ? err : *max_err;
+
         // need to implicitly test eigenvectors due to non-uniqueness of eigenvectors under scaling
 
         // multiply A with each of the nev eigenvectors and divide by corresponding
@@ -246,6 +266,17 @@ void stein_getError(const rocblas_handle handle,
         err = norm_error('F', n, hNev[0][0], ldz, hZ[0], hZRes[0]);
         *max_err = err > *max_err ? err : *max_err;
     }
+    else
+    {
+        // check ifail
+        err = 0;
+        for(int j = 0; j < hInfo[0][0]; j++)
+        {
+            if(hIfailRes[0][j] == 0)
+                err++;
+        }
+        *max_err = err > *max_err ? err : *max_err;
+    }
 }
 
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
@@ -259,6 +290,7 @@ void stein_getPerfData(const rocblas_handle handle,
                        Ud& dIsplit,
                        Td& dZ,
                        const rocblas_int ldz,
+                       Ud& dIfail,
                        Ud& dInfo,
                        Sh& hD,
                        Sh& hE,
@@ -267,6 +299,7 @@ void stein_getPerfData(const rocblas_handle handle,
                        Uh& hIblock,
                        Uh& hIsplit,
                        Th& hZ,
+                       Uh& hIfail,
                        Uh& hInfo,
                        double* gpu_time_used,
                        double* cpu_time_used,
@@ -281,7 +314,6 @@ void stein_getPerfData(const rocblas_handle handle,
     size_t lifail = n;
     std::vector<S> work(lwork);
     std::vector<rocblas_int> iwork(liwork);
-    std::vector<rocblas_int> ifail(lifail);
 
     if(!perf)
     {
@@ -291,7 +323,7 @@ void stein_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         cblas_stein<T>(n, hD[0], hE[0], hNev[0], hW[0], hIblock[0], hIsplit[0], hZ[0], ldz,
-                       work.data(), iwork.data(), ifail.data(), hInfo[0]);
+                       work.data(), iwork.data(), hIfail[0], hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
@@ -306,7 +338,7 @@ void stein_getPerfData(const rocblas_handle handle,
 
         CHECK_ROCBLAS_ERROR(rocsolver_stein(handle, n, dD.data(), dE.data(), dNev.data(), dW.data(),
                                             dIblock.data(), dIsplit.data(), dZ.data(), ldz,
-                                            dInfo.data()));
+                                            dIfail.data(), dInfo.data()));
     }
 
     // gpu-lapack performance
@@ -327,7 +359,7 @@ void stein_getPerfData(const rocblas_handle handle,
 
         start = get_time_us_sync(stream);
         rocsolver_stein(handle, n, dD.data(), dE.data(), dNev.data(), dW.data(), dIblock.data(),
-                        dIsplit.data(), dZ.data(), ldz, dInfo.data());
+                        dIsplit.data(), dZ.data(), ldz, dIfail.data(), dInfo.data());
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -355,19 +387,21 @@ void testing_stein(Arguments& argus)
     size_t size_iblock = size_D;
     size_t size_isplit = size_D;
     size_t size_Z = ldz * n;
+    size_t size_ifail = size_D;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_ZRes = (argus.unit_check || argus.norm_check) ? size_Z : 0;
+    size_t size_ifailRes = (argus.unit_check || argus.norm_check) ? size_ifail : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || ldz < n);
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, (S*)nullptr, (S*)nullptr,
-                                              (rocblas_int*)nullptr, (S*)nullptr,
-                                              (rocblas_int*)nullptr, (rocblas_int*)nullptr,
-                                              (T*)nullptr, ldz, (rocblas_int*)nullptr),
-                              rocblas_status_invalid_size);
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_stein(handle, n, (S*)nullptr, (S*)nullptr, (rocblas_int*)nullptr, (S*)nullptr,
+                            (rocblas_int*)nullptr, (rocblas_int*)nullptr, (T*)nullptr, ldz,
+                            (rocblas_int*)nullptr, (rocblas_int*)nullptr),
+            rocblas_status_invalid_size);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_size);
@@ -379,9 +413,10 @@ void testing_stein(Arguments& argus)
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_stein(handle, n, (S*)nullptr, (S*)nullptr, (rocblas_int*)nullptr,
-                                          (S*)nullptr, (rocblas_int*)nullptr, (rocblas_int*)nullptr,
-                                          (T*)nullptr, ldz, (rocblas_int*)nullptr));
+        CHECK_ALLOC_QUERY(rocsolver_stein(handle, n, (S*)nullptr, (S*)nullptr,
+                                          (rocblas_int*)nullptr, (S*)nullptr, (rocblas_int*)nullptr,
+                                          (rocblas_int*)nullptr, (T*)nullptr, ldz,
+                                          (rocblas_int*)nullptr, (rocblas_int*)nullptr));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -404,6 +439,8 @@ void testing_stein(Arguments& argus)
     host_strided_batch_vector<rocblas_int> hIsplit(size_isplit, 1, size_isplit, 1);
     host_strided_batch_vector<T> hZ(size_Z, 1, size_Z, 1);
     host_strided_batch_vector<T> hZRes(size_ZRes, 1, size_ZRes, 1);
+    host_strided_batch_vector<rocblas_int> hIfail(size_ifail, 1, size_ifail, 1);
+    host_strided_batch_vector<rocblas_int> hIfailRes(size_ifailRes, 1, size_ifailRes, 1);
     host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, 1);
     host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, 1);
     // device
@@ -414,6 +451,7 @@ void testing_stein(Arguments& argus)
     device_strided_batch_vector<rocblas_int> dIblock(size_iblock, 1, size_iblock, 1);
     device_strided_batch_vector<rocblas_int> dIsplit(size_isplit, 1, size_isplit, 1);
     device_strided_batch_vector<T> dZ(size_Z, 1, size_Z, 1);
+    device_strided_batch_vector<rocblas_int> dIfail(size_ifail, 1, size_ifail, 1);
     device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
     if(size_D)
         CHECK_HIP_ERROR(dD.memcheck());
@@ -428,6 +466,8 @@ void testing_stein(Arguments& argus)
         CHECK_HIP_ERROR(dIsplit.memcheck());
     if(size_Z)
         CHECK_HIP_ERROR(dZ.memcheck());
+    if(size_ifail)
+        CHECK_HIP_ERROR(dIfail.memcheck());
     CHECK_HIP_ERROR(dInfo.memcheck());
 
     // check quick return
@@ -435,7 +475,7 @@ void testing_stein(Arguments& argus)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, dD.data(), dE.data(), dNev.data(),
                                               dW.data(), hIblock.data(), hIsplit.data(), dZ.data(),
-                                              ldz, dInfo.data()),
+                                              ldz, dIfail.data(), dInfo.data()),
                               rocblas_status_success);
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);
@@ -445,14 +485,15 @@ void testing_stein(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        stein_getError<T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dInfo, hD, hE,
-                          hNev, hW, hIblock, hIsplit, hZ, hZRes, hInfo, hInfoRes, &max_error);
+        stein_getError<T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dIfail, dInfo, hD,
+                          hE, hNev, hW, hIblock, hIsplit, hZ, hZRes, hIfail, hIfailRes, hInfo,
+                          hInfoRes, &max_error);
 
     // collect performance data
     if(argus.timing)
-        stein_getPerfData<T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dInfo, hD, hE,
-                             hNev, hW, hIblock, hIsplit, hZ, hInfo, &gpu_time_used, &cpu_time_used,
-                             hot_calls, argus.profile, argus.perf);
+        stein_getPerfData<T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dIfail, dInfo,
+                             hD, hE, hNev, hW, hIblock, hIsplit, hZ, hIfail, hInfo, &gpu_time_used,
+                             &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
     // validate results for rocsolver-test
     // using 2 * n * machine_precision as tolerance

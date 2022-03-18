@@ -15,6 +15,7 @@ rocblas_status rocsolver_stein_impl(rocblas_handle handle,
                                     rocblas_int* isplit,
                                     T* Z,
                                     const rocblas_int ldz,
+                                    rocblas_int* ifail,
                                     rocblas_int* info)
 {
     ROCSOLVER_ENTER_TOP("stein", "-n", n, "--ldz", ldz);
@@ -24,7 +25,7 @@ rocblas_status rocsolver_stein_impl(rocblas_handle handle,
 
     // argument checking
     rocblas_status st
-        = rocsolver_stein_argCheck(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+        = rocsolver_stein_argCheck(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, ifail, info);
     if(st != rocblas_status_continue)
         return st;
 
@@ -41,6 +42,7 @@ rocblas_status rocsolver_stein_impl(rocblas_handle handle,
     rocblas_stride strideIblock = 0;
     rocblas_stride strideIsplit = 0;
     rocblas_stride strideZ = 0;
+    rocblas_stride strideIfail = 0;
     rocblas_int batch_count = 1;
 
     // memory workspace sizes:
@@ -63,8 +65,8 @@ rocblas_status rocsolver_stein_impl(rocblas_handle handle,
     // execution
     return rocsolver_stein_template<T>(handle, n, D, shiftD, strideD, E, shiftE, strideE, nev, W,
                                        shiftW, strideW, iblock, strideIblock, isplit, strideIsplit,
-                                       Z, shiftZ, ldz, strideZ, info, batch_count, (S*)work,
-                                       (rocblas_int*)iwork);
+                                       Z, shiftZ, ldz, strideZ, ifail, strideIfail, info,
+                                       batch_count, (S*)work, (rocblas_int*)iwork);
 }
 
 /*
@@ -85,9 +87,11 @@ rocblas_status rocsolver_sstein(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 float* Z,
                                 const rocblas_int ldz,
+                                rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<float, float>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, info);
+    return rocsolver_stein_impl<float, float>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
+                                              ifail, info);
 }
 
 rocblas_status rocsolver_dstein(rocblas_handle handle,
@@ -100,10 +104,11 @@ rocblas_status rocsolver_dstein(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 double* Z,
                                 const rocblas_int ldz,
+                                rocblas_int* ifail,
                                 rocblas_int* info)
 {
     return rocsolver_stein_impl<double, double>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
-                                                info);
+                                                ifail, info);
 }
 
 rocblas_status rocsolver_cstein(rocblas_handle handle,
@@ -116,10 +121,11 @@ rocblas_status rocsolver_cstein(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 rocblas_float_complex* Z,
                                 const rocblas_int ldz,
+                                rocblas_int* ifail,
                                 rocblas_int* info)
 {
     return rocsolver_stein_impl<rocblas_float_complex, float>(handle, n, D, E, nev, W, iblock,
-                                                              isplit, Z, ldz, info);
+                                                              isplit, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_zstein(rocblas_handle handle,
@@ -132,10 +138,11 @@ rocblas_status rocsolver_zstein(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 rocblas_double_complex* Z,
                                 const rocblas_int ldz,
+                                rocblas_int* ifail,
                                 rocblas_int* info)
 {
     return rocsolver_stein_impl<rocblas_double_complex, double>(handle, n, D, E, nev, W, iblock,
-                                                                isplit, Z, ldz, info);
+                                                                isplit, Z, ldz, ifail, info);
 }
 
 } // extern C

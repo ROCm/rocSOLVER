@@ -76,6 +76,7 @@ __device__ void run_stein(const int tid,
                           rocblas_int* isplit,
                           T* Z,
                           const rocblas_int ldz,
+                          rocblas_int* ifail,
                           rocblas_int* info,
                           S* work,
                           rocblas_int* iwork,
@@ -85,8 +86,15 @@ __device__ void run_stein(const int tid,
                           S eps,
                           S ssfmin)
 {
+    __shared__ rocblas_int _info;
     rocblas_int i, j, j1 = 0, b1, bn, blksize, gpind;
     S scl, onenrm, ortol, stpcrt, xj, xjm;
+
+    // zero info and ifail
+    if(tid == 0)
+        _info = 0;
+    for(i = tid; i < nev; i += MAX_THDS)
+        ifail[i] = 0;
 
     // iterate over submatrix blocks
     for(rocblas_int nblk = 0; nblk < iblock[nev - 1]; nblk++)
@@ -194,9 +202,11 @@ __device__ void run_stein(const int tid,
                     iters++;
                 }
 
-                if(nrmchk < STEIN_MAX_NRMCHK)
-                    info++;
-                // ifail?
+                if(tid == 0 && nrmchk < STEIN_MAX_NRMCHK)
+                {
+                    ifail[_info] = j + 1;
+                    _info++;
+                }
 
                 iamax<MAX_THDS, S>(tid, blksize, work, 1, sval1, sidx);
                 nrm2<MAX_THDS, S>(tid, blksize, work, 1, sval2);
@@ -220,6 +230,9 @@ __device__ void run_stein(const int tid,
             xjm = xj;
         }
     }
+
+    if(tid == 0)
+        *info = _info;
 }
 
 template <typename T, typename S, typename U>
@@ -240,6 +253,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEIN_MAX_THDS)
                  const rocblas_int shiftZ,
                  const rocblas_int ldz,
                  const rocblas_stride strideZ,
+                 rocblas_int* ifail,
+                 const rocblas_stride strideIfail,
                  rocblas_int* info,
                  S* work,
                  rocblas_int* iwork,
@@ -261,10 +276,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEIN_MAX_THDS)
     rocblas_int* sidx = reinterpret_cast<rocblas_int*>(sval2 + STEIN_MAX_THDS);
 
     // execute
-    run_stein<STEIN_MAX_THDS, T>(
-        tid, n, D + (bid * strideD), E + (bid * strideE), nev[bid], W + (bid * strideW),
-        iblock + (bid * strideIblock), isplit + (bid * strideIsplit), Z, ldz, info + bid,
-        work + (bid * stride_work), iwork + (bid * stride_iwork), sval1, sval2, sidx, eps, ssfmin);
+    run_stein<STEIN_MAX_THDS, T>(tid, n, D + (bid * strideD), E + (bid * strideE), nev[bid],
+                                 W + (bid * strideW), iblock + (bid * strideIblock),
+                                 isplit + (bid * strideIsplit), Z, ldz, ifail + (bid * strideIfail),
+                                 info + bid, work + (bid * stride_work),
+                                 iwork + (bid * stride_iwork), sval1, sval2, sidx, eps, ssfmin);
 }
 
 template <typename T, typename S>
@@ -299,6 +315,7 @@ rocblas_status rocsolver_stein_argCheck(rocblas_handle handle,
                                         rocblas_int* isplit,
                                         T* Z,
                                         const rocblas_int ldz,
+                                        rocblas_int* ifail,
                                         rocblas_int* info)
 {
     // order is important for unit tests:
@@ -316,7 +333,7 @@ rocblas_status rocsolver_stein_argCheck(rocblas_handle handle,
 
     // 3. invalid pointers
     if((n && !D) || (n && !E) || !nev || (n && !W) || (n && !iblock) || (n && !isplit) || (n && !Z)
-       || !info)
+       || (n && !ifail) || !info)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -343,6 +360,8 @@ rocblas_status rocsolver_stein_template(rocblas_handle handle,
                                         const rocblas_int shiftZ,
                                         const rocblas_int ldz,
                                         const rocblas_stride strideZ,
+                                        rocblas_int* ifail,
+                                        const rocblas_stride strideIfail,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
                                         S* work,
@@ -377,8 +396,8 @@ rocblas_status rocsolver_stein_template(rocblas_handle handle,
     size_t lmemsize = STEIN_MAX_THDS * (2 * sizeof(S) + sizeof(rocblas_int));
     ROCSOLVER_LAUNCH_KERNEL(stein_kernel<T>, grid, threads, lmemsize, stream, n, D + shiftD,
                             strideD, E + shiftE, strideE, nev, W + shiftW, strideW, iblock,
-                            strideIblock, isplit, strideIsplit, Z, shiftZ, ldz, strideZ, info, work,
-                            iwork, eps, ssfmin);
+                            strideIblock, isplit, strideIsplit, Z, shiftZ, ldz, strideZ, ifail,
+                            strideIfail, info, work, iwork, eps, ssfmin);
 
     return rocblas_status_success;
 }
