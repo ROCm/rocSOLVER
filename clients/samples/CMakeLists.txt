@@ -61,6 +61,7 @@ endif()
 # set flags for building the sample programs
 foreach(exe ${c_samples} ${cpp_samples} ${fortran_samples})
   target_link_libraries(${exe} PRIVATE roc::rocsolver)
+  rocm_install(TARGETS ${exe} COMPONENT samples)
 endforeach()
 
 foreach(exe ${cpp_samples})

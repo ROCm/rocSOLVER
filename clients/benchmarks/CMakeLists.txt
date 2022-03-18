@@ -23,3 +23,5 @@ target_compile_definitions(rocsolver-bench PRIVATE
   ROCM_USE_FLOAT16
   ROCSOLVER_CLIENTS_BENCH
 )
+
+rocm_install(TARGETS rocsolver-bench COMPONENT benchmarks)
