@@ -8,6 +8,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Added tests for multi-level logging
 - File/Folder Reorg
   - Added File/Folder Reorg Changes with backward compatibility support using ROCM-CMAKE wrapper functions.
+- Partial eigenvalue decomposition routines:
+    - STEBZ
 
 ### Optimized
 ### Changed
