@@ -114,7 +114,7 @@ if(WIN32)
   add_custom_command(TARGET rocsolver-test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/library ${PROJECT_BINARY_DIR}/staging/library
+    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/rocblas/library ${PROJECT_BINARY_DIR}/staging/library
   )
 endif()
 
