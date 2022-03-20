@@ -12,11 +12,11 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 
-// each size_range vector is a {n, ord, tol}
+// each size_range vector is a {n, ord}
 // if ord = 1, then order eigenvalues by blocks
 // if ord = 0, then order eigenvalues of the entire matrix
 
-// each ops_range vector is a {rng, vl, vu, il, iu}
+// each ops_range vector is a {rng, vl, vu, il, iu, tol}
 // if rng = 0, then find all eigenvalues
 // if rng = 1, then find eigenavlues in (vl, vu]
 // if rng = 2, then find the il-th to the iu-th eigenvalue
@@ -31,39 +31,38 @@ typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
     // quick return
-    {0, 0, 0},
+    {0, 0},
     // invalid
-    {-1, 0, 0},
+    {-1, 0},
     // normal (valid) samples
-    {1, 1, 0},
-    {15, 0, 0},
-    {20, 1, -1},
-    {64, 0, -1}};
+    {1, 1},
+    {15, 0},
+    {20, 1},
+    {64, 0}};
 const vector<vector<int>> ops_range = {
     // always invalid
-    {1, 2, 1, 0, 0},
-    {2, 0, 0, 0, -1},
-    {2, 0, 0, 1, 80},
+    {1, 2, 1, 0, 0, 0},
+    {2, 0, 0, 0, -1, 0},
+    {2, 0, 0, 1, 80, 0},
     // valid only when n=0
-    {2, 0, 0, 1, 0},
+    {2, 0, 0, 1, 0, 0},
     // valid only when n>0
-    {2, 0, 0, 1, 5},
-    {2, 0, 0, 1, 15},
-    {2, 0, 0, 7, 12},
+    {2, 0, 0, 1, 5, 0},
+    {2, 0, 0, 1, 15, 0},
+    {2, 0, 0, 7, 12, 0},
     // always valid samples
-    {0, 0, 0, 0, 0},
-    {1, -15, -5, 0, 0},
-    {1, -15, 15, 0, 0},
-    {1, -5, 5, 0, 0},
-    {1, 5, 15, 0, 0},
-    {1, 35, 55, 0, 0}};
+    {0, 0, 0, 0, 0, 0},
+    {1, -15, -5, 0, 0, -1},
+    {1, -15, 15, 0, 0, 1},
+    {1, -5, 5, 0, 0, 0},
+    {1, 5, 15, 0, 0, -1},
+    {1, 35, 55, 0, 0, 0}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_size_range
-    = {{120, 1, -1}, {256, 0, 0}, {350, 1, 0}, {512, 0, 0}, {1024, 1, -1}};
+const vector<vector<int>> large_size_range = {{120, 1}, {256, 0}, {350, 1}, {512, 0}, {1024, 1}};
 const vector<vector<int>> large_ops_range
-    = {{0, 0, 0, 0, 0},  {1, -15, 15, 0, 0}, {1, -25, 0, 0, 0},
-       {1, 0, 15, 0, 0}, {2, 0, 0, 50, 75},  {2, 0, 0, 1, 25}};
+    = {{0, 0, 0, 0, 0, -1}, {1, -15, 15, 0, 0, 0}, {1, -25, 0, 0, 0, 1},
+       {1, 0, 15, 0, 0, 0}, {2, 0, 0, 50, 75, -1}, {2, 0, 0, 1, 25, 0}};
 
 Arguments stebz_setup_arguments(stebz_tuple tup)
 {
