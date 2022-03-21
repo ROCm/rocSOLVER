@@ -326,6 +326,13 @@ try
             "                           Indicates how the right singular vectors are to be calculated and stored.\n"
             "                           ")
 
+        // stein options
+         ("nev",
+         value<rocblas_int>(),
+            "Number of eigenvectors to compute in a partial decomposition.\n"
+            "                           Only applicable to stein.\n"
+            "                           ")
+
         // trtri options
         ("diag",
          value<char>()->default_value('N'),

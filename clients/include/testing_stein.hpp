@@ -107,6 +107,7 @@ void testing_stein_bad_arg()
 template <bool CPU, bool GPU, typename T, typename Sd, typename Ud, typename Sh, typename Uh>
 void stein_initData(const rocblas_handle handle,
                     const rocblas_int n,
+                    const rocblas_int nev,
                     Sd& dD,
                     Sd& dE,
                     Ud& dNev,
@@ -137,13 +138,17 @@ void stein_initData(const rocblas_handle handle,
         {
             hD[0][i] += 10;
             hE[0][i] -= 5;
+            if(i == n / 4 || i == n / 2 || i == n - 1)
+                hE[0][i] = 0;
+            if(i == n / 7 || i == n / 5 || i == n / 3)
+                hD[0][i] *= -1;
         }
 
         // compute a subset of the eigenvalues
-        S vl = 0.0;
-        S vu = 10.0;
+        S il = n - nev + 1;
+        S iu = n;
         S abstol = 2 * get_safemin<S>();
-        cblas_stebz<S>(rocblas_erange_value, rocblas_eorder_blocks, n, vl, vu, 0, 0, abstol, hD[0],
+        cblas_stebz<S>(rocblas_erange_index, rocblas_eorder_blocks, n, 0, 0, il, iu, abstol, hD[0],
                        hE[0], hNev[0], &nsplit, hW[0], hIblock[0], hIsplit[0], work.data(),
                        iwork.data(), &info);
     }
@@ -163,6 +168,7 @@ void stein_initData(const rocblas_handle handle,
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void stein_getError(const rocblas_handle handle,
                     const rocblas_int n,
+                    const rocblas_int nev,
                     Sd& dD,
                     Sd& dE,
                     Ud& dNev,
@@ -196,8 +202,8 @@ void stein_getError(const rocblas_handle handle,
     std::vector<rocblas_int> iwork(liwork);
 
     // input data initialization
-    stein_initData<true, true, T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev, hW,
-                                  hIblock, hIsplit);
+    stein_initData<true, true, T>(handle, n, nev, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev,
+                                  hW, hIblock, hIsplit);
 
     // execute computations
     // GPU lapack
@@ -207,23 +213,6 @@ void stein_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hZRes.transfer_from(dZ));
     CHECK_HIP_ERROR(hIfailRes.transfer_from(dIfail));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
-
-    // Prepare matrix A (upper triangular) for implicit tests
-    rocblas_int lda = n;
-    size_t size_A = lda * n;
-    host_strided_batch_vector<T> hA(size_A, 1, size_A, 1);
-    for(rocblas_int i = 0; i < n; i++)
-    {
-        for(rocblas_int j = i; j < n; j++)
-        {
-            if(i == j)
-                hA[0][i + j * lda] = hD[0][i];
-            else if(i + 1 == j)
-                hA[0][i + j * lda] = hE[0][i];
-            else
-                hA[0][i + j * lda] = 0;
-        }
-    }
 
     // CPU lapack
     cblas_stein<T>(n, hD[0], hE[0], hNev[0], hW[0], hIblock[0], hIsplit[0], hZ[0], ldz, work.data(),
@@ -250,18 +239,28 @@ void stein_getError(const rocblas_handle handle,
 
         // need to implicitly test eigenvectors due to non-uniqueness of eigenvectors under scaling
 
-        // multiply A with each of the nev eigenvectors and divide by corresponding
-        // eigenvalues
-        T alpha;
-        T beta = 0;
+        // for each of the nev eigenvalues w_j, verify that the associated eigenvector is in the
+        // null space of (A - w_i * I)
+        T alpha, t1, t2;
         for(int j = 0; j < hNev[0][0]; j++)
         {
-            alpha = T(1) / hW[0][j];
-            cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hZRes[0] + j * ldz, 1, beta,
-                            hZ[0] + j * ldz, 1);
+            for(int i = 0; i < n; i++)
+            {
+                alpha = hW[0][j] - hD[0][i];
+                hZ[0][i + j * ldz] = hZRes[0][i + j * ldz] * alpha;
+            }
+            t1 = hZRes[0][j * ldz];
+            hZRes[0][j * ldz] = hE[0][0] * hZRes[0][1 + j * ldz];
+            for(int i = 1; i < n - 1; i++)
+            {
+                t2 = hZRes[0][i + j * ldz];
+                hZRes[0][i + j * ldz] = hE[0][i - 1] * t1 + hE[0][i] * hZRes[0][(i + 1) + j * ldz];
+                t1 = t2;
+            }
+            hZRes[0][(n - 1) + j * ldz] = hE[0][n - 2] * t1;
         }
 
-        // error is ||hZ - hZRes|| / ||hZ||
+        // error is then ||hZ - hZRes|| / ||hZ||
         // using frobenius norm
         err = norm_error('F', n, hNev[0][0], ldz, hZ[0], hZRes[0]);
         *max_err = err > *max_err ? err : *max_err;
@@ -282,6 +281,7 @@ void stein_getError(const rocblas_handle handle,
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void stein_getPerfData(const rocblas_handle handle,
                        const rocblas_int n,
+                       const rocblas_int nev,
                        Sd& dD,
                        Sd& dE,
                        Ud& dNev,
@@ -317,8 +317,8 @@ void stein_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        stein_initData<true, false, T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev,
-                                       hW, hIblock, hIsplit);
+        stein_initData<true, false, T>(handle, n, nev, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE,
+                                       hNev, hW, hIblock, hIsplit);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -327,14 +327,14 @@ void stein_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    stein_initData<true, false, T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev, hW,
-                                   hIblock, hIsplit);
+    stein_initData<true, false, T>(handle, n, nev, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev,
+                                   hW, hIblock, hIsplit);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        stein_initData<false, true, T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev,
-                                       hW, hIblock, hIsplit);
+        stein_initData<false, true, T>(handle, n, nev, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE,
+                                       hNev, hW, hIblock, hIsplit);
 
         CHECK_ROCBLAS_ERROR(rocsolver_stein(handle, n, dD.data(), dE.data(), dNev.data(), dW.data(),
                                             dIblock.data(), dIsplit.data(), dZ.data(), ldz,
@@ -354,8 +354,8 @@ void stein_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        stein_initData<false, true, T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE, hNev,
-                                       hW, hIblock, hIsplit);
+        stein_initData<false, true, T>(handle, n, nev, dD, dE, dNev, dW, dIblock, dIsplit, hD, hE,
+                                       hNev, hW, hIblock, hIsplit);
 
         start = get_time_us_sync(stream);
         rocsolver_stein(handle, n, dD.data(), dE.data(), dNev.data(), dW.data(), dIblock.data(),
@@ -373,6 +373,7 @@ void testing_stein(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int nev = argus.get<rocblas_int>("nev", n < 5 ? n : 5);
     rocblas_int ldz = argus.get<rocblas_int>("ldz", n);
 
     rocblas_int hot_calls = argus.iters;
@@ -485,15 +486,15 @@ void testing_stein(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        stein_getError<T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dIfail, dInfo, hD,
-                          hE, hNev, hW, hIblock, hIsplit, hZ, hZRes, hIfail, hIfailRes, hInfo,
-                          hInfoRes, &max_error);
+        stein_getError<T>(handle, n, nev, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dIfail,
+                          dInfo, hD, hE, hNev, hW, hIblock, hIsplit, hZ, hZRes, hIfail, hIfailRes,
+                          hInfo, hInfoRes, &max_error);
 
     // collect performance data
     if(argus.timing)
-        stein_getPerfData<T>(handle, n, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dIfail, dInfo,
-                             hD, hE, hNev, hW, hIblock, hIsplit, hZ, hIfail, hInfo, &gpu_time_used,
-                             &cpu_time_used, hot_calls, argus.profile, argus.perf);
+        stein_getPerfData<T>(handle, n, nev, dD, dE, dNev, dW, dIblock, dIsplit, dZ, ldz, dIfail,
+                             dInfo, hD, hE, hNev, hW, hIblock, hIsplit, hZ, hIfail, hInfo,
+                             &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
     // validate results for rocsolver-test
     // using 2 * n * machine_precision as tolerance
@@ -506,8 +507,8 @@ void testing_stein(Arguments& argus)
         if(!argus.perf)
         {
             rocsolver_bench_header("Arguments:");
-            rocsolver_bench_output("n", "ldz");
-            rocsolver_bench_output(n, ldz);
+            rocsolver_bench_output("n", "nev", "ldz");
+            rocsolver_bench_output(n, nev, ldz);
 
             rocsolver_bench_header("Results:");
             if(argus.norm_check)

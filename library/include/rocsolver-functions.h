@@ -3902,7 +3902,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief STEIN computes a set of the eigenvectors of a symmetric tridiagonal matrix.
+    \brief STEIN computes the eigenvectors associated with a set of 
+    provided eigenvalues of a symmetric tridiagonal matrix.
 
     \details
     The eigenvectors of the symmetric tridiagonal matrix are computed using
@@ -3910,8 +3911,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
 
     The matrix is not represented explicitly, but rather as the array of
     diagonal elements D and the array of symmetric off-diagonal elements E.
-    A subset of the matrix eigenvalues must be provided in the array W,
-    as returned by \ref rocsolver_sstebz "STEBZ".
+    The eigenvalues must be provided in the array W, as returned by \ref rocsolver_sstebz "STEBZ".
 
     @param[in]
     handle      rocblas_handle.
@@ -3925,29 +3925,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     E           pointer to real type. Array on the GPU of dimension n-1.\n
                 The off-diagonal elements of the tridiagonal matrix.
     @param[in]
-    nev         pointer to a rocblas_int on the GPU. nev <= n.\n
+    nev         pointer to a rocblas_int on the GPU. 0 <= nev <= n.\n
                 The number of provided eigenvalues, and the number of eigenvectors
                 to be computed.
     @param[in]
-    W           pointer to real type. Array on the GPU of dimension nev.\n
+    W           pointer to real type. Array on the GPU of dimension >= nev.\n
                 A subset of nev eigenvalues of the tridiagonal matrix, as returned
                 by \ref rocsolver_sstebz "STEBZ".
     @param[in]
-    inblock     pointer to rocblas_int. Array on the GPU of dimension n.\n
-                The submatrix indices corresponding to each eigenvalue, as
+    iblock      pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The block indices corresponding to each eigenvalue, as
                 returned by \ref rocsolver_sstebz "STEBZ". If iblock[i] = k,
-                then eigenvalue W[i] belongs to the k-th submatrix from the top.
+                then eigenvalue W[i] belongs to the k-th block from the top.
     @param[in]
     isplit      pointer to rocblas_int. Array on the GPU of dimension n.\n
                 The splitting indices that divide the tridiagonal matrix into
-                submatrices, as returned by \ref rocsolver_sstebz "STEBZ".
-                The k-th submatrix stretches from the end of the (k-1)-th
-                submatrix (or the top left corner of the tridiagonal matrix,
-                in the case of the 1st submatrix) to the isplit[k]-th row/column.
+                diagonal blocks, as returned by \ref rocsolver_sstebz "STEBZ".
+                The k-th block stretches from the end of the (k-1)-th
+                block (or the top left corner of the tridiagonal matrix,
+                in the case of the 1st block) to the isplit[k]-th row/column.
     @param[out]
     Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
                 On exit, contains the eigenvectors of the tridiagonal matrix
-                corresponding to the provided eigenvalues.
+                corresponding to the provided eigenvalues, stored by columns.
     @param[in]
     ldc         rocblas_int. ldz >= n.\n
                 Specifies the leading dimension of Z.
@@ -3959,8 +3959,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
-                If info = i > 0, STEIN did not converge. i eigenvectors of the
-                matrix did not converge.
+                If info = i > 0, i eigenvectors did not converge; their indices are stored in
+                IFAIL.
+
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sstein(rocblas_handle handle,
