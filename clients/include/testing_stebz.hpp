@@ -352,8 +352,8 @@ void testing_stebz(Arguments& argus)
 
     // check invalid sizes
     bool invalid_size = (n < 0) || (range == rocblas_erange_value && vl >= vu)
-        || (range == rocblas_erange_index && (il < 1 || iu < 0))
-        || (range == rocblas_erange_index && (iu > n || (n > 0 && il > iu)));
+        || (range == rocblas_erange_index && (iu > n || (n > 0 && il > iu)))
+        || (range == rocblas_erange_index && (il < 1 || iu < 0));
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(

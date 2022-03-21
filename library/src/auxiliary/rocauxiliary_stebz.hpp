@@ -136,7 +136,7 @@ ROCSOLVER_KERNEL void stebz_case1_kernel(const rocblas_erange range,
 
     if(bid < batch_count)
     {
-        // select bacth instance
+        // select batch instance
         T* D = load_ptr_batch<T>(DA, bid, shiftD, strideD);
         T* W = WA + bid * strideW;
         rocblas_int* IB = IBA + bid * strideIB;
@@ -165,31 +165,31 @@ ROCSOLVER_KERNEL void stebz_case1_kernel(const rocblas_erange range,
     for the computations in the iterative bisection **/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
-    stebz_spliting_kernel(const rocblas_erange range,
-                          const rocblas_int n,
-                          const T vlow,
-                          const T vup,
-                          const rocblas_int ilow,
-                          const rocblas_int iup,
-                          U DA,
-                          const rocblas_int shiftD,
-                          const rocblas_int strideD,
-                          U EA,
-                          const rocblas_int shiftE,
-                          const rocblas_int strideE,
-                          rocblas_int* nsplit,
-                          T* WA,
-                          const rocblas_stride strideW,
-                          rocblas_int* ISA,
-                          const rocblas_stride strideIS,
-                          rocblas_int* tmpISA,
-                          T* pivmin,
-                          T* EsqrA,
-                          T* boundsA,
-                          T* interA,
-                          rocblas_int* ninterA,
-                          T eps,
-                          T sfmin)
+    stebz_splitting_kernel(const rocblas_erange range,
+                           const rocblas_int n,
+                           const T vlow,
+                           const T vup,
+                           const rocblas_int ilow,
+                           const rocblas_int iup,
+                           U DA,
+                           const rocblas_int shiftD,
+                           const rocblas_int strideD,
+                           U EA,
+                           const rocblas_int shiftE,
+                           const rocblas_int strideE,
+                           rocblas_int* nsplit,
+                           T* WA,
+                           const rocblas_stride strideW,
+                           rocblas_int* ISA,
+                           const rocblas_stride strideIS,
+                           rocblas_int* tmpISA,
+                           T* pivmin,
+                           T* EsqrA,
+                           T* boundsA,
+                           T* interA,
+                           rocblas_int* ninterA,
+                           T eps,
+                           T sfmin)
 {
     // batch instance
     const int bid = hipBlockIdx_y;
@@ -342,8 +342,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
             inter[2 * n - 1] = vu + tmp * eps * n + pmin;
 
             // find lower bound for the set of indices
-            j = -1;
-            for(rocblas_int i = 0; i < 2 * n; ++i)
+            j = 0;
+            for(rocblas_int i = 1; i < 2 * n; ++i)
             {
                 if(ninter[i] < ilow)
                     j++;
@@ -353,8 +353,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
             vl = inter[j];
 
             // find upper bound for the set of indices
-            j = -1;
-            for(rocblas_int i = 0; i < 2 * n; ++i)
+            j = 0;
+            for(rocblas_int i = 1; i < 2 * n; ++i)
             {
                 j++;
                 if(ninter[i] >= iup)
@@ -877,9 +877,9 @@ rocblas_status rocsolver_stebz_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_size;
     if(range == rocblas_erange_value && vlow >= vup)
         return rocblas_status_invalid_size;
-    if(range == rocblas_erange_index && (ilow < 1 || iup < 0))
-        return rocblas_status_invalid_size;
     if(range == rocblas_erange_index && (iup > n || (n > 0 && ilow > iup)))
+        return rocblas_status_invalid_size;
+    if(range == rocblas_erange_index && (ilow < 1 || iup < 0))
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -927,8 +927,8 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
                                         T* inter,
                                         rocblas_int* ninter)
 {
-    ROCSOLVER_ENTER("stebz", "range:", range, "order:", order, "n:", n, "vlow:", vlow, "vup:", vup,
-                    "ilow:", ilow, "iup:", iup, "abstol:", abstol, "shiftD:", shiftD,
+    ROCSOLVER_ENTER("stebz", "range:", range, "order:", order, "n:", n, "vl:", vlow, "vu:", vup,
+                    "il:", ilow, "iu:", iup, "abstol:", abstol, "shiftD:", shiftD,
                     "shiftE:", shiftE, "bc:", batch_count);
 
     // quick return (no batch)
@@ -972,7 +972,7 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
     T atol = (abstol == 0) ? 2 * sfmin : abstol;
 
     // split matrix into independent blocks and prepare for iterative bisection
-    ROCSOLVER_LAUNCH_KERNEL(stebz_spliting_kernel<T>, dim3(1, batch_count), dim3(SPLIT_THDS), 0,
+    ROCSOLVER_LAUNCH_KERNEL(stebz_splitting_kernel<T>, dim3(1, batch_count), dim3(SPLIT_THDS), 0,
                             stream, range, n, vlow, vup, ilow, iup, D, shiftD, strideD, E, shiftE,
                             strideE, nsplit, W, strideW, IS, strideIS, work, pivmin, Esqr, bounds,
                             inter, ninter, eps, sfmin);

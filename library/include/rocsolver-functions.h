@@ -3926,7 +3926,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     @param[in]
     vl          real type. vl < vu.\n
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
-                for all the eigenvalues or the eigenvalues within a set of indices.
+                for all the eigenvalues of T or the eigenvalues within a set of indices.
     @param[in]
     vu          real type. vl < vu.\n
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
@@ -3936,13 +3936,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
     @param[in]
     abstol      real type.\n
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol in negative, then machine-epsilon times
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[in]
@@ -3964,7 +3964,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     @param[out]
     iblock      pointer to rocblas_int. Array on the GPU of dimension n.\n
                 The block indices corresponding to each eigenvalue. When matrix T has
-                split off blocks (nsplit > 1) then, if iblock[i] = k, the
+                split off blocks (nsplit > 1), then if iblock[i] = k, the
                 eigenvalue W[i] belongs to the k-th diagonal block from the top.
     @param[out]
     isplit      pointer to rocblas_int. Array on the GPU of dimension n.\n
