@@ -4,6 +4,11 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- Package generation for test and benchmark executables on all supported OSes using CPack.
+- Added tests for multi-level logging
+- File/Folder Reorg
+  - Added File/Folder Reorg Changes with backward compatibility support using ROCM-CMAKE wrapper functions.
+
 ### Optimized
 ### Changed
 ### Deprecated
@@ -16,9 +21,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 
 ## (Unreleased) rocSOLVER 3.17.0
-### Changed
-- Moved license directory from `share/doc/rocSOLVER` to `share/doc/rocsolver`.
-
 ### Fixed
 - Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
   result in incorrect pivot values.

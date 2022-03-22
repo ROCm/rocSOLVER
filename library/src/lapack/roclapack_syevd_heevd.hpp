@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -173,9 +173,10 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
             (T*)work3, workArr);
 
         // copy matrix product into A
-        const rocblas_int copyblocks = (n - 1) / 32 + 1;
-        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32),
-                                0, stream, n, n, tmptau_W, 0, ldw, strideW, A, shiftA, lda, strideA);
+        const rocblas_int copyblocks = (n - 1) / BS2 + 1;
+        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count),
+                                dim3(BS2, BS2), 0, stream, n, n, tmptau_W, 0, ldw, strideW, A,
+                                shiftA, lda, strideA);
     }
 
     return rocblas_status_success;

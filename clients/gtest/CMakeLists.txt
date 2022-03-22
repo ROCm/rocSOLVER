@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 find_package(GTest REQUIRED)
@@ -74,6 +74,10 @@ set(others_test_source
   managed_malloc_gtest.cpp
   # rocblas memory model
   memory_model_gtest.cpp
+  # rocsolver logging
+  logging_gtest.cpp
+  # helpers
+  client_environment_helpers.cpp
 )
 
 set(rocsolver_test_source
@@ -110,7 +114,7 @@ if(WIN32)
   add_custom_command(TARGET rocsolver-test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/library ${PROJECT_BINARY_DIR}/staging/library
+    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/rocblas/library ${PROJECT_BINARY_DIR}/staging/library
   )
 endif()
 
@@ -122,6 +126,7 @@ target_link_libraries(rocsolver-test PRIVATE
   hip::device
   rocsolver-common
   clients-common
+  $<$<PLATFORM_ID:Linux>:stdc++fs>
   $<$<PLATFORM_ID:Linux>:m>
   roc::rocsolver
 )
@@ -137,3 +142,5 @@ add_test(
   NAME rocsolver-test
   COMMAND rocsolver-test
 )
+
+rocm_install(TARGETS rocsolver-test COMPONENT tests)
