@@ -50,7 +50,9 @@ To run the rocSOLVER test suite, first build the rocSOLVER test client following
 binary will be found at `./build/release/clients/staging/rocsolver-test`.
 
 The full test suite is quite large and may take a long time to complete, so passing the
-[`--gtest_filter=<pattern>`][2] option to rocsolver-test may be useful during development.
+[`--gtest_filter=<pattern>`][2] option to rocsolver-test may be useful during development. A fast
+subset of tests can be run with `--gtest_filter='checkin*'`, while the extended tests can be run
+with `--gtest_filter='daily*'`.
 
 ## Rejected contributions
 
