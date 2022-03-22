@@ -413,7 +413,7 @@ void testing_labrd(Arguments& argus)
                              hot_calls, argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, nb * max(m, n) * machine_precision<T>());
+    ASSERT_LE(max_error, nb * max(m, n) * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

@@ -712,7 +712,7 @@ void testing_sygvd_hegvd(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, n * machine_precision<T>());
+    ASSERT_LE(max_error, n * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

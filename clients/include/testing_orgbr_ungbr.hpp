@@ -341,7 +341,7 @@ void testing_orgbr_ungbr(Arguments& argus)
 
 #ifdef ROCSOLVER_CLIENTS_TEST
     rocblas_int s = row ? n : m;
-    ASSERT_LE(max_error, s * machine_precision<T>());
+    ASSERT_LE(max_error, s * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

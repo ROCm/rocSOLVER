@@ -11,6 +11,8 @@
 #include <limits>
 #include <rocblas.h>
 
+#include "common_host_helpers.hpp"
+
 /*
  * ===========================================================================
  *    common location for functions that are used across several rocSOLVER
@@ -23,7 +25,7 @@ template <typename T>
 constexpr double get_safemin()
 {
     using S = decltype(std::real(T{}));
-    auto eps = machine_precision<S>();
+    auto eps = machine_epsilon<S>();
     auto s1 = std::numeric_limits<S>::min();
     auto s2 = 1 / std::numeric_limits<S>::max();
     if(s2 > s1)
@@ -34,19 +36,6 @@ constexpr double get_safemin()
 inline size_t idx2D(const size_t i, const size_t j, const size_t lda)
 {
     return j * lda + i;
-}
-
-template <typename T>
-inline T machine_precision();
-template <>
-inline float machine_precision()
-{
-    return static_cast<float>(1.19e-07);
-}
-template <>
-inline double machine_precision()
-{
-    return static_cast<double>(2.22e-16);
 }
 
 template <typename T>

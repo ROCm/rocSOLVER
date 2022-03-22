@@ -422,7 +422,7 @@ void testing_ormbr_unmbr(Arguments& argus)
 
 #ifdef ROCSOLVER_CLIENTS_TEST
     rocblas_int s = left ? m : n;
-    ASSERT_LE(max_error, s * machine_precision<T>());
+    ASSERT_LE(max_error, s * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

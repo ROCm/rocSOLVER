@@ -593,7 +593,7 @@ void testing_gebd2_gebrd(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, m * n * machine_precision<T>());
+    ASSERT_LE(max_error, m * n * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

@@ -286,7 +286,7 @@ void testing_orgxr_ungxr(Arguments& argus)
                                         &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, m * machine_precision<T>());
+    ASSERT_LE(max_error, m * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

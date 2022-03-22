@@ -296,7 +296,7 @@ void testing_managed_malloc(Arguments& argus)
     hipFree(dYRes);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, nb * max(m, n) * machine_precision<T>());
+    ASSERT_LE(max_error, nb * max(m, n) * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

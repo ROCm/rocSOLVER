@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -22,11 +23,21 @@
  * ===========================================================================
  */
 
-template <typename T>
-constexpr double machine_precision()
+/* The machine epsilon is equivalent to std::nextafter(S(1), S(2)) - S(1), where
+   S is a floating point type. It is the magnitude of the increment from 1 to the
+   next representable number. */
+template <typename T, typename S = decltype(std::real(T{}))>
+constexpr S machine_epsilon() noexcept
 {
-    using S = decltype(std::real(T{}));
     return std::numeric_limits<S>::epsilon();
+}
+
+/* The machine precision is the largest relative error of any of the floating point operations
+   +, -, *, or /. This is the value returned by xlamch('E'). */
+template <typename T, typename S = decltype(std::real(T{}))>
+constexpr S machine_precision() noexcept
+{
+    return machine_epsilon<T> / 2;
 }
 
 /* =============================================================================================== */

@@ -585,9 +585,9 @@ void testing_bdsqr(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, 2 * n * machine_precision<T>());
+    ASSERT_LE(max_error, 2 * n * machine_epsilon<T>());
     if(nv || nu || nc)
-        ASSERT_LE(max_errorv, 2 * n * machine_precision<T>());
+        ASSERT_LE(max_errorv, 2 * n * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

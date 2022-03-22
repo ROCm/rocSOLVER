@@ -391,7 +391,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         rocblas_int blocks = (n - 1) / 32 + 1;
 
         // constants
-        S eps = machine_precision<S>();
+        S eps = machine_epsilon<S>();
         S ssfmin = get_safemin<S>();
         S ssfmax = S(1.0) / ssfmin;
         ssfmin = sqrt(ssfmin) / (eps * eps);

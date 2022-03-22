@@ -520,7 +520,7 @@ void testing_gels(Arguments& argus)
     }
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, max(m, n) * machine_precision<T>());
+    ASSERT_LE(max_error, max(m, n) * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

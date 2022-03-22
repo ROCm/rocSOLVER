@@ -352,7 +352,7 @@ void testing_larft(Arguments& argus)
                              &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-    ASSERT_LE(max_error, n * machine_precision<T>());
+    ASSERT_LE(max_error, n * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench

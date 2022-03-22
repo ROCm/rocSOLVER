@@ -395,7 +395,7 @@ void testing_gelq2_gelqf(Arguments& argus)
 
 #ifdef ROCSOLVER_CLIENTS_TEST
     // (for possibly singular of ill-conditioned matrices we could use n*min(m,n))
-    ASSERT_LE(max_error, n * machine_precision<T>());
+    ASSERT_LE(max_error, n * machine_epsilon<T>());
 #endif
 
     // output results for rocsolver-bench
