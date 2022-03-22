@@ -6,15 +6,6 @@ AMD welcomes contributions from the community. Whether those contributions are b
 bug fixes, documentation additions, performance notes, or other improvements, we value
 collaboration with our users. We can build better solutions together.
 
-## License agreement
-
-Contributors must agree to the following terms:
-
-1. The code I am contributing is mine, and I have the right to license it.
-
-2. By submitting a pull request for this project I am granting you a license to distribute
-   said code under the BSD License for the project.
-
 # Submitting a Pull Request
 
 To contribute changes to rocSOLVER, open a pull request targeting the `develop` branch. Pull
