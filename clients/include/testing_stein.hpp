@@ -475,7 +475,7 @@ void testing_stein(Arguments& argus)
     if(n == 0)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_stein(handle, n, dD.data(), dE.data(), dNev.data(),
-                                              dW.data(), hIblock.data(), hIsplit.data(), dZ.data(),
+                                              dW.data(), dIblock.data(), dIsplit.data(), dZ.data(),
                                               ldz, dIfail.data(), dInfo.data()),
                               rocblas_status_success);
         if(argus.timing)

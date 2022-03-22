@@ -146,7 +146,7 @@ __device__ void run_stein(const int tid,
                 // initialize starting eigenvector
                 // TODO: how to make it random?
                 for(i = tid; i < blksize; i += MAX_THDS)
-                    work[i] = (i == j - j1 ? 1 : 0);
+                    work[i] = (i == j - j1 ? S(1) : S(-1) / (blksize - 1));
 
                 // copy the matrix so it won't be destroyed by factorization
                 for(i = tid; i < blksize - 1; i += MAX_THDS)
