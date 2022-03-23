@@ -4,8 +4,8 @@
 Clients
 *********
 
-rocSOLVER has an infrastructure for testing and benchmarking similar to that of the
-`rocBLAS testing and benchmarking <https://rocblas.readthedocs.io/en/latest/Programmers_Guide.html#rocblas-benchmarking-testing>`_,
+rocSOLVER has an infrastructure for testing and benchmarking similar to that of
+`rocBLAS's testing and benchmarking <https://rocblas.readthedocs.io/en/latest/Programmers_Guide.html#rocblas-benchmarking-testing>`_,
 as well as sample code illustrating basic use of the library.
 
 Client binaries are not built by default; they require specific flags to be passed to the install script
