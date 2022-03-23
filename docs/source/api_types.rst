@@ -4,8 +4,8 @@ Types
 *******
 
 rocSOLVER uses types and enumerations defined by the rocBLAS API. For more information, see the
-`rocBLAS types <https://rocblas.readthedocs.io/en/latest/functions.html#rocblas-types>`_ documentation.
-Next we present additional types, only used in rocSOLVER, that extend the rocBLAS API.
+`rocBLAS types <https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#rocblas-datatypes>`_
+documentation. Next we present additional types, only used in rocSOLVER, that extend the rocBLAS API.
 
 
 Additional types
@@ -47,4 +47,6 @@ rocblas_eorder
 ---------------
 .. doxygenenum:: rocblas_eorder
 
-
+rocblas_layer_mode_flags
+------------------------
+.. doxygentypedef:: rocblas_layer_mode_flags
