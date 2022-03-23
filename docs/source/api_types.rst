@@ -39,4 +39,6 @@ rocblas_eform
 ---------------
 .. doxygenenum:: rocblas_eform
 
-
+rocblas_layer_mode_flags
+------------------------
+.. doxygentypedef:: rocblas_layer_mode_flags
