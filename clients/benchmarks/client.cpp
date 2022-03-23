@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <fmt/core.h>
@@ -341,6 +341,52 @@ try
             "                           Only applicable to trtri.\n"
             "                           ")
 
+        // stebz options
+        ("order",
+         value<char>()->default_value('E'),
+            "E = entire matrix, B = by blocks.\n"
+            "                           Indicates whether the computed eigenvalues are ordered by blocks or for the entire matrix.\n"
+            "                           Only applicable to stebz.\n"
+            "                           ")
+
+        // partial eigenvalue decomposition options
+        ("abstol",
+         value<double>()->default_value(0),
+            "Absolute tolerance at which an eigenvalue is accepted as converged.\n"
+            "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           ")
+
+        ("il",
+         value<rocblas_int>(),
+            "Lower index in ordered subset of eigenvalues.\n"
+            "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           ")
+
+        ("iu",
+         value<rocblas_int>(),
+            "Upper index in ordered subset of eigenvalues.\n"
+            "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           ")
+
+        ("range",
+         value<char>()->default_value('A'),
+            "A = all eigenvalues, V = in (vl, vu], I = from the il-th to the iu-th.\n"
+            "                           For partial eigenvalue decompositions, it indicates the type of interval in which\n"
+            "                           the eigenvalues will be found.\n"
+            "                           ")
+
+        ("vl",
+         value<double>(),
+            "Lower bound of half-open interval (vl, vu].\n"
+            "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           ")
+
+        ("vu",
+         value<double>(),
+            "Upper bound of half-open interval (vl, vu].\n"
+            "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           ")
+
         // other options
         ("direct",
          value<char>()->default_value('F'),
@@ -395,6 +441,7 @@ try
             "U = upper, L = lower.\n"
             "                           Indicates where the data for a triangular or symmetric/hermitian matrix is stored.\n"
             "                           ");
+
     // clang-format on
 
     variables_map vm;
@@ -434,6 +481,8 @@ try
     argus.validate_svect("right_svect");
     argus.validate_workmode("fast_alg");
     argus.validate_evect("evect");
+    argus.validate_erange("range");
+    argus.validate_eorder("order");
     argus.validate_itype("itype");
 
     // prepare logging infrastructure and ignore environment variables

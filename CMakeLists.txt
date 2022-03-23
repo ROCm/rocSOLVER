@@ -55,6 +55,8 @@ include(ROCMInstallTargets)
 include(ROCMPackageConfigHelpers)
 include(ROCMInstallSymlinks)
 include(ROCMCheckTargetIds)
+include(ROCMClients)
+include(ROCMHeaderWrapper)
 
 include(os-detection)
 get_os_id(OS_ID)
@@ -109,6 +111,18 @@ option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
 
+# FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
+option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
+if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+  rocm_wrap_header_dir(
+    ${CMAKE_SOURCE_DIR}/library/include
+    PATTERNS "*.h"
+    GUARDS SYMLINK WRAPPER
+    WRAPPER_LOCATIONS include
+  )
+endif()
+
+
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
@@ -142,8 +156,69 @@ if(BUILD_LIBRARY)
 endif()
 
 if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
+  if(NOT CLIENTS_OS)
+    rocm_set_os_id(CLIENTS_OS)
+    string(TOLOWER "${CLIENTS_OS}" CLIENTS_OS)
+    rocm_read_os_release(CLIENTS_OS_VERSION VERSION_ID)
+  endif()
+  set(GFORTRAN_RPM "libgfortran4")
+  set(GFORTRAN_DEB "libgfortran4") 
+  if(CLIENTS_OS STREQUAL "centos" AND CLIENTS_OS_VERSION EQUAL 8)
+    set(GFORTRAN_RPM "libgfortran")
+  elseif(CLIENTS_OS STREQUAL "ubuntu" AND CLIENTS_OS_VERSION STREQUAL "20.04")
+    set(GFORTRAN_DEB "libgfortran5")
+  endif()
+  rocm_package_setup_component(clients)
+  if(BUILD_CLIENTS_TESTS)
+    rocm_package_setup_client_component(tests DEPENDS DEB "${GFORTRAN_DEB}" RPM "${GFORTRAN_RPM}")
+  endif()
+  if(BUILD_CLIENTS_BENCHMARKS)
+    rocm_package_setup_client_component(benchmarks DEPENDS DEB "${GFORTRAN_DEB}" RPM "${GFORTRAN_RPM}")
+  endif()
   add_subdirectory(clients)
 endif()
+
+# Package-specific CPACK vars
+rocm_package_add_dependencies("rocblas >= 2.44" "rocblas < 2.45")
+
+if(OS_ID_sles)
+  rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")
+endif()
+
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_RPM_PACKAGE_LICENSE "BSD")
+
+if(WIN32)
+  set(CPACK_SOURCE_GENERATOR "ZIP")
+  set(CPACK_GENERATOR "ZIP")
+  set(CMAKE_INSTALL_PREFIX "C:/hipSDK" CACHE PATH "Install path" FORCE)
+  set(INSTALL_PREFIX "C:/hipSDK")
+  set(CPACK_SET_DESTDIR OFF)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/hipSDK")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "")
+  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+else()
+  if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
+    set(CPACK_PACKAGING_INSTALL_PREFIX "${ROCM_PATH}")
+  endif()
+endif()
+
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/include"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib"
+)
+
+set(ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+  CACHE PATH "Path placed into ldconfig file")
+
+rocm_create_package(
+  NAME rocsolver
+  DESCRIPTION "AMD ROCm SOLVER library"
+  MAINTAINER "RocSOLVER maintainer <rocsolver-maintainer@amd.com>"
+  LDCONFIG
+  LDCONFIG_DIR ${ROCSOLVER_CONFIG_DIR}
+)
 
 # Code Coverage Build Commands:
 #   make coverage_cleanup (clean coverage related files)

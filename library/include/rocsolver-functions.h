@@ -3902,6 +3902,123 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
 //! @}
 
 /*! @{
+    \brief STEBZ computes a set of eigenvalues of a symmetric tridiagonal matrix T.
+
+    \details
+    This function computes all the eigenvalues of T, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
+    or the il-th through iu-th eigenvalues, depending on the value of range.
+
+    The eigenvalues are returned in increasing order either for the entire matrix, or grouped by independent
+    diagonal blocks (if they exist), depending on the value of order.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    range       #rocblas_erange.\n
+                Specifies the type of range or interval of the eigenvalues to be computed.
+    @param[in]
+    order       #rocblas_eorder.\n
+                Specifies whether the computed eigenvalues will be ordered by their position in the
+                entire spectrum, or grouped by independent diagonal (split off) blocks.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the tridiagonal matrix T.
+    @param[in]
+    vl          real type. vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues within a set of indices.
+    @param[in]
+    vu          real type. vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. An eigenvalue is considered to be located if it lies
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
+                the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
+                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
+    @param[in]
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                The diagonal elements of the tridiagonal matrix.
+    @param[in]
+    E           pointer to real type. Array on the GPU of dimension n-1.\n
+                The off-diagonal elements of the tridiagonal matrix.
+    @param[out]
+    nev         pointer to a rocblas_int on the GPU. \n
+                The total number of eigenvalues found.
+    @param[out]
+    nsplit      pointer to a rocblas_int on the GPU.\n
+                The number of split off blocks in the matrix.
+    @param[out]
+    W           pointer to real type. Array on the GPU of dimension n.\n
+                The first nev elements contain the computed eigenvalues. (The remaining elements
+                can be used as workspace for internal computations).
+    @param[out]
+    iblock      pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The block indices corresponding to each eigenvalue. When matrix T has
+                split off blocks (nsplit > 1), then if iblock[i] = k, the
+                eigenvalue W[i] belongs to the k-th diagonal block from the top.
+    @param[out]
+    isplit      pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The splitting indices that divide the tridiagonal matrix into
+                diagonal blocks. The k-th block stretches from the end of the (k-1)-th
+                block (or the top left corner of the tridiagonal matrix,
+                in the case of the 1st block) to the isplit[k]-th row/column.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = 1, the bisection did not converge for some eigenvalues, i.e. the returned
+                values are not as accurate as the given tolerance. The non-converged eigenvalues
+                are flagged by negative entries in iblock.
+
+    *****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sstebz(rocblas_handle handle,
+                                                 const rocblas_erange range,
+                                                 const rocblas_eorder order,
+                                                 const rocblas_int n,
+                                                 const float vl,
+                                                 const float vu,
+                                                 const rocblas_int il,
+                                                 const rocblas_int iu,
+                                                 const float abstol,
+                                                 float* D,
+                                                 float* E,
+                                                 rocblas_int* nev,
+                                                 rocblas_int* nsplit,
+                                                 float* W,
+                                                 rocblas_int* iblock,
+                                                 rocblas_int* isplit,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
+                                                 const rocblas_erange range,
+                                                 const rocblas_eorder order,
+                                                 const rocblas_int n,
+                                                 const double vl,
+                                                 const double vu,
+                                                 const rocblas_int il,
+                                                 const rocblas_int iu,
+                                                 const double abstol,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_int* nev,
+                                                 rocblas_int* nsplit,
+                                                 double* W,
+                                                 rocblas_int* iblock,
+                                                 rocblas_int* isplit,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
     \brief STEIN computes the eigenvectors associated with a set of 
     provided eigenvalues of a symmetric tridiagonal matrix.
 
@@ -3949,7 +4066,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
                 On exit, contains the eigenvectors of the tridiagonal matrix
                 corresponding to the provided eigenvalues, stored by columns.
     @param[in]
-    ldc         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.\n
                 Specifies the leading dimension of Z.
     @param[out]
     ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n

@@ -64,6 +64,7 @@ set(rocauxiliary_test_source
   sterf_gtest.cpp
   steqr_gtest.cpp
   stedc_gtest.cpp
+  stebz_gtest.cpp
   stein_gtest.cpp
   latrd_gtest.cpp
   # symmetric matrices
@@ -115,7 +116,7 @@ if(WIN32)
   add_custom_command(TARGET rocsolver-test
     POST_BUILD
     COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/library ${PROJECT_BINARY_DIR}/staging/library
+    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/rocblas/library ${PROJECT_BINARY_DIR}/staging/library
   )
 endif()
 
@@ -143,3 +144,5 @@ add_test(
   NAME rocsolver-test
   COMMAND rocsolver-test
 )
+
+rocm_install(TARGETS rocsolver-test COMPONENT tests)

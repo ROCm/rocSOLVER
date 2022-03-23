@@ -48,6 +48,7 @@
 #include "testing_potf2_potrf.hpp"
 #include "testing_potri.hpp"
 #include "testing_potrs.hpp"
+#include "testing_stebz.hpp"
 #include "testing_stedc.hpp"
 #include "testing_stein.hpp"
 #include "testing_steqr.hpp"
@@ -223,6 +224,7 @@ class rocsolver_dispatcher
         // Map for functions that support only single and double precisions
         static const func_map map_real = {
             {"sterf", testing_sterf<T>},
+            {"stebz", testing_stebz<T>},
             // orgxx
             {"org2r", testing_orgxr_ungxr<T, 0>},
             {"orgqr", testing_orgxr_ungxr<T, 1>},
