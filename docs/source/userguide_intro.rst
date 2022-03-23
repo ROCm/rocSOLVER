@@ -61,7 +61,7 @@ LAPACK auxiliary functions
     :ref:`rocsolver_latrd <latrd>`, x, x, x, x
     :ref:`rocsolver_steqr <steqr>`, x, x, x, x
     :ref:`rocsolver_stedc <stedc>`, x, x, x, x
-    :ref:`rocsolver_stedc <stein>`, x, x, x, x
+    :ref:`rocsolver_stein <stein>`, x, x, x, x
 
 .. csv-table:: Symmetric matrices
     :header: "Function", "single", "double", "single complex", "double complex"
