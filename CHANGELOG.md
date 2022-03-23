@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSOLVER
+## (Unreleased) rocSOLVER 3.18.0
 ### Added
 - Partial eigenvalue decomposition routines:
     - STEBZ
@@ -12,24 +12,21 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - File/Folder Reorg
   - Added File/Folder Reorg Changes with backward compatibility support using ROCM-CMAKE wrapper functions.
 
-### Optimized
-### Changed
-### Deprecated
-### Removed
 ### Fixed
 - Fixed compatibility with libfmt 8.1
 
-### Known Issues
-### Security
 
+## rocSOLVER 3.17.0 for ROCm 5.1.0
+### Optimized
+- Optimized non-pivoting and batch cases of the LU factorization
 
-## (Unreleased) rocSOLVER 3.17.0
 ### Fixed
 - Fixed missing synchronization in SYTRF with `rocblas_fill_lower` that could potentially
   result in incorrect pivot values.
 - Fixed multi-level logging output to file with the `ROCSOLVER_LOG_PATH`,
   `ROCSOLVER_LOG_TRACE_PATH`, `ROCSOLVER_LOG_BENCH_PATH` and `ROCSOLVER_LOG_PROFILE_PATH`
   environment variables.
+- Fixed performance regression in the batched LU factorization of tiny matrices 
 
 
 ## rocSOLVER 3.16.0 for ROCm 5.0.0
