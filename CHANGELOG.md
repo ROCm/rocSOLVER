@@ -6,6 +6,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - Partial eigenvalue decomposition routines:
     - STEBZ
+    - STEIN
 - Package generation for test and benchmark executables on all supported OSes using CPack.
 - Added tests for multi-level logging
 - File/Folder Reorg

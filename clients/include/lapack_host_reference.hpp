@@ -598,6 +598,21 @@ void cblas_stebz(rocblas_erange range,
                  rocblas_int* iwork,
                  rocblas_int* info);
 
+template <typename T, typename S>
+void cblas_stein(rocblas_int n,
+                 S* D,
+                 S* E,
+                 rocblas_int* nev,
+                 S* W,
+                 rocblas_int* iblock,
+                 rocblas_int* isplit,
+                 T* Z,
+                 rocblas_int ldz,
+                 S* work,
+                 rocblas_int* iwork,
+                 rocblas_int* ifail,
+                 rocblas_int* info);
+
 template <typename T>
 void cblas_sygs2_hegs2(rocblas_eform itype,
                        rocblas_fill uplo,

@@ -1412,6 +1412,72 @@ inline rocblas_status rocsolver_stedc(rocblas_handle handle,
 }
 /********************************************************/
 
+/******************** STEIN ********************/
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      rocblas_int* nev,
+                                      float* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      float* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* ifail,
+                                      rocblas_int* info)
+{
+    return rocsolver_sstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, ifail, info);
+}
+
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      rocblas_int* nev,
+                                      double* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      double* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* ifail,
+                                      rocblas_int* info)
+{
+    return rocsolver_dstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, ifail, info);
+}
+
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      float* D,
+                                      float* E,
+                                      rocblas_int* nev,
+                                      float* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      rocblas_float_complex* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* ifail,
+                                      rocblas_int* info)
+{
+    return rocsolver_cstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, ifail, info);
+}
+
+inline rocblas_status rocsolver_stein(rocblas_handle handle,
+                                      rocblas_int n,
+                                      double* D,
+                                      double* E,
+                                      rocblas_int* nev,
+                                      double* W,
+                                      rocblas_int* iblock,
+                                      rocblas_int* isplit,
+                                      rocblas_double_complex* Z,
+                                      rocblas_int ldz,
+                                      rocblas_int* ifail,
+                                      rocblas_int* info)
+{
+    return rocsolver_zstein(handle, n, D, E, nev, W, iblock, isplit, Z, ldz, ifail, info);
+}
+/********************************************************/
+
 /******************** LASYF ********************/
 inline rocblas_status rocsolver_lasyf(rocblas_handle handle,
                                       rocblas_fill uplo,
