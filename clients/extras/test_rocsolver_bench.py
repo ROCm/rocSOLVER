@@ -1674,5 +1674,566 @@ class TestRocsolverBench(unittest.TestCase):
         self.assertGreaterEqual(float(results['cpu_time']), 0)
         self.assertGreaterEqual(float(results['gpu_time']), 0)
 
+    def test_trtri(self):
+        out, err, exitcode = call_rocsolver_bench('-f trtri -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'diag': 'N',
+            'n': '10',
+            'lda': '10',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_trtri_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f trtri_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'diag': 'N',
+            'n': '10',
+            'lda': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_trtri_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f trtri_strided_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'diag': 'N',
+            'n': '10',
+            'lda': '10',
+            'strideA': '100',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_strided_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'strideA': '100',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_npvt(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_npvt -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_npvt_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_npvt_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_npvt_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_npvt_strided_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'strideA': '100',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_outofplace(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_outofplace -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'ldc': '10',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_outofplace_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_outofplace_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'strideP': '10',
+            'ldc': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_outofplace_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_outofplace_strided_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'strideA': '100',
+            'strideP': '10',
+            'ldc': '10',
+            'strideC': '100',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_npvt_outofplace(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_npvt_outofplace -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'ldc': '10',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_npvt_outofplace_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_npvt_outofplace_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'ldc': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_getri_npvt_outofplace_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f getri_npvt_outofplace_strided_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'n': '10',
+            'lda': '10',
+            'strideA': '100',
+            'ldc': '10',
+            'strideC': '100',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gels(self):
+        out, err, exitcode = call_rocsolver_bench('-f gels -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'trans': 'N',
+            'm': '15',
+            'n': '10',
+            'nrhs': '10',
+            'lda': '15',
+            'ldb': '15',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gels_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f gels_batched -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'trans': 'N',
+            'm': '15',
+            'n': '10',
+            'nrhs': '10',
+            'lda': '15',
+            'ldb': '15',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gels_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f gels_strided_batched -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'trans': 'N',
+            'm': '15',
+            'n': '10',
+            'nrhs': '10',
+            'lda': '15',
+            'ldb': '15',
+            'strideA': '150',
+            'strideB': '150',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gebd2(self):
+        out, err, exitcode = call_rocsolver_bench('-f gebd2 -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'm': '15',
+            'n': '10',
+            'lda': '15',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gebd2_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f gebd2_batched -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'm': '15',
+            'n': '10',
+            'lda': '15',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gebd2_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f gebd2_strided_batched -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'm': '15',
+            'n': '10',
+            'lda': '15',
+            'strideA': '150',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gebrd(self):
+        out, err, exitcode = call_rocsolver_bench('-f gebrd -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'm': '15',
+            'n': '10',
+            'lda': '15',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gebrd_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f gebrd_batched -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'm': '15',
+            'n': '10',
+            'lda': '15',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_gebrd_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f gebrd_strided_batched -n 10 -m 15')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'm': '15',
+            'n': '10',
+            'lda': '15',
+            'strideA': '150',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_sytf2(self):
+        out, err, exitcode = call_rocsolver_bench('-f sytf2 -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'n': '10',
+            'lda': '10',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_sytf2_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f sytf2_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'n': '10',
+            'lda': '10',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_sytf2_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f sytf2_strided_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'n': '10',
+            'lda': '10',
+            'strideA': '100',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_sytrf(self):
+        out, err, exitcode = call_rocsolver_bench('-f sytrf -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'n': '10',
+            'lda': '10',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_sytrf_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f sytrf_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'n': '10',
+            'lda': '10',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
+    def test_sytrf_strided_batched(self):
+        out, err, exitcode = call_rocsolver_bench('-f sytrf_strided_batched -n 10')
+        self.assertEqual(err, '')
+        self.assertEqual(exitcode, 0)
+
+        args = self.parse_arguments(out)
+        expected_args = {
+            'uplo': 'U',
+            'n': '10',
+            'lda': '10',
+            'strideA': '100',
+            'strideP': '10',
+            'batch_c': '1',
+        }
+        self.assertEqual(args, expected_args)
+
+        results = self.parse_results(out)
+        self.assertGreaterEqual(float(results['cpu_time']), 0)
+        self.assertGreaterEqual(float(results['gpu_time']), 0)
+
 if __name__ == '__main__':
     unittest.main()
