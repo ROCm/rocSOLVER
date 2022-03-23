@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #ifndef ROCSOLVER_EXTRAS_H_
@@ -79,5 +79,26 @@ typedef enum rocblas_eform_
     rocblas_eform_abx = 222, /**< The problem is \f$ABx = \lambda x\f$. */
     rocblas_eform_bax = 223, /**< The problem is \f$BAx = \lambda x\f$. */
 } rocblas_eform;
+
+/*! \brief Used to specify the type of range in which eigenvalues will be found
+ *in partial eigenvalue decompositions
+ ********************************************************************************/
+typedef enum rocblas_erange_
+{
+    rocblas_erange_all = 231, /**< All eigenvalues will be found. */
+    rocblas_erange_value = 232, /**< All eigenvalues in the half-open interval
+                                     \f$(vl, vu]\f$ will be found. */
+    rocblas_erange_index = 233, /**< The \f$il\f$-th through \f$iu\f$-th eigenvalues will be found.*/
+} rocblas_erange;
+
+/*! \brief Used to specify whether the eigenvalues are grouped and ordered by blocks
+ ********************************************************************************/
+typedef enum rocblas_eorder_
+{
+    rocblas_eorder_blocks = 241, /**< The computed eigenvalues will be grouped by split-off
+                                      blocks and arranged in increasing order within each block. */
+    rocblas_eorder_entire = 242, /**< All computed eigenvalues of the entire matrix will be
+                                      ordered from smallest to largest. */
+} rocblas_eorder;
 
 #endif /* ROCSOLVER_EXTRAS_H_ */
