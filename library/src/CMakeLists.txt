@@ -152,6 +152,7 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_labrd.cpp
   # tridiagonal matrices
   auxiliary/rocauxiliary_sterf.cpp
+  auxiliary/rocauxiliary_stebz.cpp
   auxiliary/rocauxiliary_steqr.cpp
   auxiliary/rocauxiliary_stedc.cpp
   auxiliary/rocauxiliary_latrd.cpp

@@ -182,6 +182,14 @@ rocsolver_<type>sterf()
    :outline:
 .. doxygenfunction:: rocsolver_ssterf
 
+.. _stebz:
+
+rocsolver_<type>stebz()
+---------------------------------------
+.. doxygenfunction:: rocsolver_dstebz
+   :outline:
+.. doxygenfunction:: rocsolver_sstebz
+
 .. _steqr:
 
 rocsolver_<type>steqr()

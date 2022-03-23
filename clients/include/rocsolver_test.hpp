@@ -1,12 +1,11 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
 #include <cstdarg>
 #include <cstdio>
-#include <limits>
 #include <ostream>
 
 #include <fmt/core.h>
@@ -16,13 +15,6 @@
 // If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
 // reallocate workspace
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
-
-template <typename T>
-constexpr double get_epsilon()
-{
-    using S = decltype(std::real(T{}));
-    return std::numeric_limits<S>::epsilon();
-}
 
 #ifdef ROCSOLVER_CLIENTS_TEST
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())

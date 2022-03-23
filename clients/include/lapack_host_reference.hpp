@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #pragma once
@@ -576,6 +576,26 @@ void cblas_stedc(rocblas_evect evect,
                  rocblas_int lrwork,
                  rocblas_int* iwork,
                  rocblas_int liwork,
+                 rocblas_int* info);
+
+template <typename T>
+void cblas_stebz(rocblas_erange range,
+                 rocblas_eorder order,
+                 rocblas_int n,
+                 T vl,
+                 T vu,
+                 rocblas_int il,
+                 rocblas_int iu,
+                 T abstol,
+                 T* D,
+                 T* E,
+                 rocblas_int* nev,
+                 rocblas_int* nsplit,
+                 T* W,
+                 rocblas_int* iblock,
+                 rocblas_int* isplit,
+                 T* work,
+                 rocblas_int* iwork,
                  rocblas_int* info);
 
 template <typename T>
