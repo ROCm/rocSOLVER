@@ -1611,6 +1611,59 @@ void dstebz_(char* erange,
              int* iwork,
              int* info);
 
+void sstein_(int* n,
+             float* D,
+             float* E,
+             int* nev,
+             float* W,
+             int* iblock,
+             int* isplit,
+             float* Z,
+             int* ldz,
+             float* work,
+             int* iwork,
+             int* ifail,
+             int* info);
+void dstein_(int* n,
+             double* D,
+             double* E,
+             int* nev,
+             double* W,
+             int* iblock,
+             int* isplit,
+             double* Z,
+             int* ldz,
+             double* work,
+             int* iwork,
+             int* ifail,
+             int* info);
+void cstein_(int* n,
+             float* D,
+             float* E,
+             int* nev,
+             float* W,
+             int* iblock,
+             int* isplit,
+             rocblas_float_complex* Z,
+             int* ldz,
+             float* work,
+             int* iwork,
+             int* ifail,
+             int* info);
+void zstein_(int* n,
+             double* D,
+             double* E,
+             int* nev,
+             double* W,
+             int* iblock,
+             int* isplit,
+             rocblas_double_complex* Z,
+             int* ldz,
+             double* work,
+             int* iwork,
+             int* ifail,
+             int* info);
+
 void ssygs2_(int* itype, char* uplo, int* n, float* A, int* lda, float* B, int* ldb, int* info);
 void dsygs2_(int* itype, char* uplo, int* n, double* A, int* lda, double* B, int* ldb, int* info);
 void chegs2_(int* itype,
@@ -5853,6 +5906,79 @@ void cblas_stebz<double>(rocblas_erange range,
     char eorderC = rocblas2char_eorder(order);
     dstebz_(&erangeC, &eorderC, &n, &vl, &vu, &il, &iu, &abstol, D, E, m, nsplit, W, iblock, isplit,
             work, iwork, info);
+}
+
+// stein
+template <>
+void cblas_stein<float, float>(rocblas_int n,
+                               float* D,
+                               float* E,
+                               rocblas_int* nev,
+                               float* W,
+                               rocblas_int* iblock,
+                               rocblas_int* isplit,
+                               float* Z,
+                               rocblas_int ldz,
+                               float* work,
+                               rocblas_int* iwork,
+                               rocblas_int* ifail,
+                               rocblas_int* info)
+{
+    sstein_(&n, D, E, nev, W, iblock, isplit, Z, &ldz, work, iwork, ifail, info);
+}
+
+template <>
+void cblas_stein<double, double>(rocblas_int n,
+                                 double* D,
+                                 double* E,
+                                 rocblas_int* nev,
+                                 double* W,
+                                 rocblas_int* iblock,
+                                 rocblas_int* isplit,
+                                 double* Z,
+                                 rocblas_int ldz,
+                                 double* work,
+                                 rocblas_int* iwork,
+                                 rocblas_int* ifail,
+                                 rocblas_int* info)
+{
+    dstein_(&n, D, E, nev, W, iblock, isplit, Z, &ldz, work, iwork, ifail, info);
+}
+
+template <>
+void cblas_stein<rocblas_float_complex, float>(rocblas_int n,
+                                               float* D,
+                                               float* E,
+                                               rocblas_int* nev,
+                                               float* W,
+                                               rocblas_int* iblock,
+                                               rocblas_int* isplit,
+                                               rocblas_float_complex* Z,
+                                               rocblas_int ldz,
+                                               float* work,
+                                               rocblas_int* iwork,
+                                               rocblas_int* ifail,
+                                               rocblas_int* info)
+{
+    cstein_(&n, D, E, nev, W, iblock, isplit, Z, &ldz, work, iwork, ifail, info);
+}
+
+template <>
+void cblas_stein<rocblas_double_complex, double>(rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_int* nev,
+                                                 double* W,
+                                                 rocblas_int* iblock,
+                                                 rocblas_int* isplit,
+                                                 rocblas_double_complex* Z,
+                                                 rocblas_int ldz,
+                                                 double* work,
+                                                 rocblas_int* iwork,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info)
+{
+    zstein_(&n, D, E, nev, W, iblock, isplit, Z, &ldz, work, iwork, ifail, info);
 }
 
 // sygs2 & hegs2

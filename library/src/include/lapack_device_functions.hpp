@@ -790,6 +790,221 @@ __device__ void iamax(const rocblas_int tid,
     // after the reduction, the maximum of the elements is in sval[0] and sidx[0]
 }
 
+/** NRM2 finds the euclidean norm of a given vector.
+    MAX_THDS should be 128, 256, 512, or 1024, and sval should
+    be a shared array of size MAX_THDS. **/
+template <int MAX_THDS, typename T>
+__device__ void nrm2(const rocblas_int tid, const rocblas_int n, T* A, const rocblas_int incA, T* sval)
+{
+    // local memory setup
+    T val = 0;
+
+    // read into shared memory while doing initial step
+    // (each thread reduce as many elements as needed to cover the original array)
+    for(int i = tid; i < n; i += MAX_THDS)
+        val = val + A[i * incA] * A[i * incA];
+    sval[tid] = val;
+    __syncthreads();
+
+    if(n <= 1)
+    {
+        if(tid == 0)
+            sval[0] = sqrt(sval[0]);
+        return;
+    }
+
+    /** <========= Next do the reduction on the shared memory array =========>
+        (We halve the number of active threads at each step
+        reducing two elements in the shared array. **/
+
+#pragma unroll
+    for(int i = MAX_THDS / 2; i > warpSize; i /= 2)
+    {
+        if(tid < i)
+            val = val + sval[tid + i];
+        __syncthreads();
+        if(tid < i)
+            sval[tid] = val;
+        __syncthreads();
+    }
+
+    // from this point, as all the active threads will form a single wavefront
+    // and work in lock-step, there is no need for synchronizations and barriers
+    if(tid < warpSize)
+    {
+        if(warpSize >= 64)
+        {
+            sval[tid] = sval[tid] + sval[tid + 64];
+            __threadfence();
+        }
+        sval[tid] = sval[tid] + sval[tid + 32];
+        __threadfence();
+        sval[tid] = sval[tid] + sval[tid + 16];
+        __threadfence();
+        sval[tid] = sval[tid] + sval[tid + 8];
+        __threadfence();
+        sval[tid] = sval[tid] + sval[tid + 4];
+        __threadfence();
+        sval[tid] = sval[tid] + sval[tid + 2];
+        __threadfence();
+        sval[tid] = sval[tid] + sval[tid + 1];
+        __threadfence();
+    }
+
+    // after the reduction, the euclidean norm of the elements is in sval[0]
+    if(tid == 0)
+        sval[0] = sqrt(sval[0]);
+}
+
+/** LAGTF computes an LU factorization of a matrix T - lambda*I, where T
+    is a tridiagonal matrix and lambda is a scalar. **/
+template <typename T>
+__device__ void lagtf(rocblas_int n, T* a, T lambda, T* b, T* c, T tol, T* d, rocblas_int* in, T eps)
+{
+    T scale1, scale2, piv1, piv2, mult, temp;
+
+    a[0] = a[0] - lambda;
+    in[n - 1] = 0;
+    if(n == 1)
+    {
+        if(a[0] == 0)
+            in[0] = 1;
+        return;
+    }
+
+    tol = max(tol, eps);
+    scale1 = abs(a[0]) + abs(b[0]);
+    for(rocblas_int k = 0; k < n - 1; k++)
+    {
+        temp = a[k + 1] - lambda;
+        a[k + 1] = temp;
+        scale2 = abs(c[k]) + abs(temp);
+        if(k < n - 2)
+            scale2 = scale2 + abs(b[k + 1]);
+        piv1 = (a[k] == 0 ? 0 : abs(a[k]) / scale1);
+
+        if(c[k] == 0)
+        {
+            in[k] = 0;
+            piv2 = 0;
+            scale1 = scale2;
+            if(k < n - 2)
+                d[k] = 0;
+        }
+        else
+        {
+            piv2 = abs(c[k]) / scale2;
+            if(piv2 <= piv1)
+            {
+                in[k] = 0;
+                scale1 = scale2;
+                mult = c[k] / a[k];
+                c[k] = mult;
+                a[k + 1] = a[k + 1] - mult * b[k];
+                if(k < n - 2)
+                    d[k] = 0;
+            }
+            else
+            {
+                in[k] = 1;
+                mult = a[k] / c[k];
+                a[k] = c[k];
+                a[k + 1] = b[k] - mult * temp;
+                if(k < n - 2)
+                {
+                    d[k] = b[k + 1];
+                    b[k + 1] = -mult * b[k + 1];
+                }
+                b[k] = temp;
+                c[k] = mult;
+            }
+        }
+
+        if(max(piv1, piv2) <= tol && in[n - 1] == 0)
+            in[n - 1] = k + 1;
+    }
+
+    if(abs(a[n - 1]) <= scale1 * tol && in[n - 1] == 0)
+        in[n - 1] = n;
+}
+
+/** LAGTS_TYPE1_PERTURB solves the system of equations (T - lambda*I)x = y,
+    where T is a tridiagonal matrix and lambda is a scalar. If overflow were
+    to occur, the diagonal elements are perturbed. **/
+template <typename T>
+__device__ void
+    lagts_type1_perturb(rocblas_int n, T* a, T* b, T* c, T* d, rocblas_int* in, T* y, T tol, T eps, T ssfmin)
+{
+    rocblas_int k;
+    T temp, pert, ak, absak;
+
+    T bignum = T(1) / ssfmin;
+    if(tol <= 0)
+    {
+        tol = abs(a[0]);
+        if(n > 1)
+            tol = max(tol, max(abs(a[1]), abs(b[0])));
+        for(k = 2; k < n; k++)
+            tol = max(max(tol, abs(a[k])), max(abs(b[k - 1]), abs(d[k - 2])));
+        tol = tol * eps;
+        if(tol == 0)
+            tol = eps;
+    }
+
+    for(k = 1; k < n; k++)
+    {
+        if(in[k - 1] == 0)
+            y[k] = y[k] - c[k - 1] * y[k - 1];
+        else
+        {
+            temp = y[k - 1];
+            y[k - 1] = y[k];
+            y[k] = temp - c[k - 1] * y[k];
+        }
+    }
+
+    for(k = n - 1; k >= 0; k--)
+    {
+        temp = y[k];
+        if(k < n - 1)
+            temp = temp - b[k] * y[k + 1];
+        if(k < n - 2)
+            temp = temp - d[k] * y[k + 2];
+
+        ak = a[k];
+        pert = (ak >= 0 ? abs(tol) : -abs(tol));
+        while((absak = abs(ak)) < 1)
+        {
+            if(absak < ssfmin)
+            {
+                if(absak == 0 || abs(temp) * ssfmin > absak)
+                {
+                    ak = ak + pert;
+                    pert = 2 * pert;
+                }
+                else
+                {
+                    temp = temp * bignum;
+                    ak = ak * bignum;
+                    break;
+                }
+            }
+            else
+            {
+                if(abs(temp) > absak * bignum)
+                {
+                    ak = ak + pert;
+                    pert = 2 * pert;
+                }
+                else
+                    break;
+            }
+        }
+
+        y[k] = temp / ak;
+    }
+}
+
 /** AXPY computes a constant times a vector plus a vector. **/
 template <typename T, typename U, typename V>
 ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,

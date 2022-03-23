@@ -4018,6 +4018,122 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
                                                  rocblas_int* info);
 //! @}
 
+/*! @{
+    \brief STEIN computes the eigenvectors associated with a set of 
+    provided eigenvalues of a symmetric tridiagonal matrix.
+
+    \details
+    The eigenvectors of the symmetric tridiagonal matrix are computed using
+    inverse iteration.
+
+    The matrix is not represented explicitly, but rather as the array of
+    diagonal elements D and the array of symmetric off-diagonal elements E.
+    The eigenvalues must be provided in the array W, as returned by \ref rocsolver_sstebz "STEBZ".
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of rows and columns of the tridiagonal matrix.
+    @param[in]
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                The diagonal elements of the tridiagonal matrix.
+    @param[in]
+    E           pointer to real type. Array on the GPU of dimension n-1.\n
+                The off-diagonal elements of the tridiagonal matrix.
+    @param[in]
+    nev         pointer to a rocblas_int on the GPU. 0 <= nev <= n.\n
+                The number of provided eigenvalues, and the number of eigenvectors
+                to be computed.
+    @param[in]
+    W           pointer to real type. Array on the GPU of dimension >= nev.\n
+                A subset of nev eigenvalues of the tridiagonal matrix, as returned
+                by \ref rocsolver_sstebz "STEBZ".
+    @param[in]
+    iblock      pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The block indices corresponding to each eigenvalue, as
+                returned by \ref rocsolver_sstebz "STEBZ". If iblock[i] = k,
+                then eigenvalue W[i] belongs to the k-th block from the top.
+    @param[in]
+    isplit      pointer to rocblas_int. Array on the GPU of dimension n.\n
+                The splitting indices that divide the tridiagonal matrix into
+                diagonal blocks, as returned by \ref rocsolver_sstebz "STEBZ".
+                The k-th block stretches from the end of the (k-1)-th
+                block (or the top left corner of the tridiagonal matrix,
+                in the case of the 1st block) to the isplit[k]-th row/column.
+    @param[out]
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+                On exit, contains the eigenvectors of the tridiagonal matrix
+                corresponding to the provided eigenvalues, stored by columns.
+    @param[in]
+    ldz         rocblas_int. ldz >= n.\n
+                Specifies the leading dimension of Z.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+                If info = 0, the first nev elements of ifail are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, i eigenvectors did not converge; their indices are stored in
+                IFAIL.
+
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sstein(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 float* D,
+                                                 float* E,
+                                                 rocblas_int* nev,
+                                                 float* W,
+                                                 rocblas_int* iblock,
+                                                 rocblas_int* isplit,
+                                                 float* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dstein(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_int* nev,
+                                                 double* W,
+                                                 rocblas_int* iblock,
+                                                 rocblas_int* isplit,
+                                                 double* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cstein(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 float* D,
+                                                 float* E,
+                                                 rocblas_int* nev,
+                                                 float* W,
+                                                 rocblas_int* iblock,
+                                                 rocblas_int* isplit,
+                                                 rocblas_float_complex* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 double* D,
+                                                 double* E,
+                                                 rocblas_int* nev,
+                                                 double* W,
+                                                 rocblas_int* iblock,
+                                                 rocblas_int* isplit,
+                                                 rocblas_double_complex* Z,
+                                                 const rocblas_int ldz,
+                                                 rocblas_int* ifail,
+                                                 rocblas_int* info);
+//! @}
+
 /*
  * ===========================================================================
  *      LAPACK functions

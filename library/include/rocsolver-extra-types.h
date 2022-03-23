@@ -44,9 +44,9 @@ typedef enum rocblas_svect_
 {
     rocblas_svect_all = 191, /**< The entire associated orthogonal/unitary matrix is computed. */
     rocblas_svect_singular = 192, /**< Only the singular vectors are computed and
-                                    stored in output array. */
+                                       stored in output array. */
     rocblas_svect_overwrite = 193, /**< Only the singular vectors are computed and
-                                    overwrite the input matrix. */
+                                        overwrite the input matrix. */
     rocblas_svect_none = 194, /**< No singular vectors are computed. */
 } rocblas_svect;
 
@@ -56,7 +56,7 @@ typedef enum rocblas_svect_
 typedef enum rocblas_workmode_
 {
     rocblas_outofplace = 201, /**< Out-of-place computations are allowed; this
-                               requires extra device memory for workspace. */
+                                   requires extra device memory for workspace. */
     rocblas_inplace = 202, /**< If not enough memory is available, this forces in-place computations.  */
 } rocblas_workmode;
 
@@ -65,9 +65,9 @@ typedef enum rocblas_workmode_
 typedef enum rocblas_evect_
 {
     rocblas_evect_original = 211, /**< Compute eigenvectors for the original symmetric/Hermitian
-                                    matrix. */
+                                       matrix. */
     rocblas_evect_tridiagonal = 212, /**< Compute eigenvectors for the symmetric tridiagonal
-                                    matrix. */
+                                           matrix. */
     rocblas_evect_none = 213, /**< No eigenvectors are computed. */
 } rocblas_evect;
 

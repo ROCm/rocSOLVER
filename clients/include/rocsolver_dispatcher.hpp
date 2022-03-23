@@ -50,6 +50,7 @@
 #include "testing_potrs.hpp"
 #include "testing_stebz.hpp"
 #include "testing_stedc.hpp"
+#include "testing_stein.hpp"
 #include "testing_steqr.hpp"
 #include "testing_sterf.hpp"
 #include "testing_syev_heev.hpp"
@@ -90,6 +91,7 @@ class rocsolver_dispatcher
             {"bdsqr", testing_bdsqr<T>},
             {"steqr", testing_steqr<T>},
             {"stedc", testing_stedc<T>},
+            {"stein", testing_stein<T>},
             {"lasyf", testing_lasyf<T>},
             // potrf
             {"potf2", testing_potf2_potrf<false, false, 0, T>},

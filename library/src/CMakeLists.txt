@@ -155,6 +155,7 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_stebz.cpp
   auxiliary/rocauxiliary_steqr.cpp
   auxiliary/rocauxiliary_stedc.cpp
+  auxiliary/rocauxiliary_stein.cpp
   auxiliary/rocauxiliary_latrd.cpp
   # symmetric matrices
   auxiliary/rocauxiliary_lasyf.cpp
