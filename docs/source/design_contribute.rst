@@ -14,6 +14,6 @@ AMD welcomes contributions from the community. Whether those contributions are b
 bug fixes, documentation additions, performance notes, or other improvements, we value
 collaboration with our users. We can build better solutions together.
 
-For the most up-to-date guidelines, please refer to
-`CONTRIBUTING.md <https://github.com/ROCmSoftwarePlatform/rocSOLVER/blob/develop/CONTRIBUTING.md>`_
-on the ``develop`` branch of the rocSOLVER GitHub repository.
+For the most up-to-date guidelines, please refer to the ``CONTRIBUTING``
+document on the ``develop`` branch of the
+`rocSOLVER GitHub repository <https://github.com/ROCmSoftwarePlatform/rocSOLVER>`_.
