@@ -214,6 +214,18 @@ rocsolver_<type>stedc()
    :outline:
 .. doxygenfunction:: rocsolver_sstedc
 
+.. _stein:
+
+rocsolver_<type>stein()
+---------------------------------------
+.. doxygenfunction:: rocsolver_zstein
+   :outline:
+.. doxygenfunction:: rocsolver_cstein
+   :outline:
+.. doxygenfunction:: rocsolver_dstein
+   :outline:
+.. doxygenfunction:: rocsolver_sstein
+
 
 
 .. _symmetric:
