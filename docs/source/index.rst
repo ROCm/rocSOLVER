@@ -10,10 +10,12 @@ The information contained herein is for informational purposes only, and is subj
 
 **Contents**
 
-rocSOLVER's documentation consists of 3 main Chapters. The User Guide is the starting point for
-new users of the library, and a basic reference for current users and/or users of LAPACK. Advanced users and developers who want to further understand or extend the
-rocSOLVER library may wish to refer to the Library Design Guide. For a list of currently implemented routines, and a description of each's functionality and input and output parameters,
-see the rocSOLVER API.
+rocSOLVER's documentation consists of three main chapters. The :doc:`User Guide <userguide_index>`
+is the starting point for new users of the library and a basic reference for current rocSOLVER or
+LAPACK users. The :doc:`Library Design Guide <design_index>` describes rocSOLVER for advanced
+users and developers who want to further understand or extend the library. Finally, the
+:doc:`rocSOLVER API <api_index>` provides a list of currently implemented routines, as well as
+descriptions of their functionality and parameters.
 
 .. toctree::
    :maxdepth: 1

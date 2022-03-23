@@ -4,7 +4,7 @@
 Multi-level Logging
 *************************
 
-Similar to `rocBLAS logging <https://rocblas.readthedocs.io/en/latest/logging.html>`_,
+Similar to `rocBLAS logging <https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#logging-in-rocblas>`_,
 rocSOLVER provides logging facilities that can be used to output information
 on rocSOLVER function calls. Three modes of logging are supported: trace logging, bench logging,
 and profile logging.
