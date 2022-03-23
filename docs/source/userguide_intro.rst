@@ -57,6 +57,7 @@ LAPACK auxiliary functions
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_sterf <sterf>`, x, x, ,
+    :ref:`rocsolver_stebz <stebz>`, x, x, ,
     :ref:`rocsolver_latrd <latrd>`, x, x, x, x
     :ref:`rocsolver_steqr <steqr>`, x, x, x, x
     :ref:`rocsolver_stedc <stedc>`, x, x, x, x
