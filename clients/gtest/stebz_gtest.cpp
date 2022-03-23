@@ -73,13 +73,13 @@ Arguments stebz_setup_arguments(stebz_tuple tup)
 
     arg.set<rocblas_int>("n", size[0]);
     arg.set<char>("order", (size[1] == 0 ? 'E' : 'B'));
-    arg.set<double>("abstol", size[2]);
 
     arg.set<char>("range", (op[0] == 0 ? 'A' : (op[0] == 1 ? 'V' : 'I')));
     arg.set<double>("vl", op[1]);
     arg.set<double>("vu", op[2]);
     arg.set<rocblas_int>("il", op[3]);
     arg.set<rocblas_int>("iu", op[4]);
+    arg.set<double>("abstol", op[5]);
 
     arg.timing = 0;
 
