@@ -63,7 +63,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.18.0")
+set(VERSION_STRING "3.19.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -162,7 +162,7 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
     rocm_read_os_release(CLIENTS_OS_VERSION VERSION_ID)
   endif()
   set(GFORTRAN_RPM "libgfortran4")
-  set(GFORTRAN_DEB "libgfortran4") 
+  set(GFORTRAN_DEB "libgfortran4")
   if(CLIENTS_OS STREQUAL "centos" AND CLIENTS_OS_VERSION EQUAL 8)
     set(GFORTRAN_RPM "libgfortran")
   elseif(CLIENTS_OS STREQUAL "ubuntu" AND CLIENTS_OS_VERSION STREQUAL "20.04")
@@ -179,7 +179,7 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
 endif()
 
 # Package-specific CPACK vars
-rocm_package_add_dependencies("rocblas >= 2.44" "rocblas < 2.45")
+rocm_package_add_dependencies("rocblas >= 2.45" "rocblas < 2.46")
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")

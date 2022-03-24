@@ -2,6 +2,17 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
+## (Unreleased) rocSOLVER
+### Added
+### Optimized
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Known Issues
+### Security
+
+
 ## (Unreleased) rocSOLVER 3.18.0
 ### Added
 - Partial eigenvalue decomposition routines:
@@ -27,7 +38,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Fixed multi-level logging output to file with the `ROCSOLVER_LOG_PATH`,
   `ROCSOLVER_LOG_TRACE_PATH`, `ROCSOLVER_LOG_BENCH_PATH` and `ROCSOLVER_LOG_PROFILE_PATH`
   environment variables.
-- Fixed performance regression in the batched LU factorization of tiny matrices 
+- Fixed performance regression in the batched LU factorization of tiny matrices
 
 
 ## rocSOLVER 3.16.0 for ROCm 5.0.0
