@@ -48,6 +48,8 @@ def runTestCommand (platform, project, gfilter)
                   ./test-rocsolver-dlopen --gtest_color=yes
                 fi
                 ${hmmTestCommand}
+                cd ../..
+                CTEST_OUTPUT_ON_FAILURE=1 ctest -R '^test-rocsolver-bench'
                 """
 
 
