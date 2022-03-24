@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -13,7 +13,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 typedef std::tuple<int, int, int, int, int> gels_params_A;
-typedef std::tuple<int, rocsolver_op_char> gels_params_B;
+typedef std::tuple<int, printable_char> gels_params_B;
 
 typedef std::tuple<gels_params_A, gels_params_B> gels_tuple;
 

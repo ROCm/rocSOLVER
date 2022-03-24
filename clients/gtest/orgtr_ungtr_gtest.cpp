@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -11,14 +11,14 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, int> orgtr_tuple;
+typedef std::tuple<vector<int>, printable_char> orgtr_tuple;
 
 // each size_range vector is a {n, lda}
 
 // case when n = 0 and uplo = 'U' will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<int> uplo_range = {0, 1};
+const vector<printable_char> uplo_range = {'L', 'U'};
 
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
@@ -39,14 +39,14 @@ const vector<vector<int>> large_size_range = {{192, 192}, {500, 600}, {640, 640}
 Arguments orgtr_setup_arguments(orgtr_tuple tup)
 {
     vector<int> size = std::get<0>(tup);
-    int uplo = std::get<1>(tup);
+    char uplo = std::get<1>(tup);
 
     Arguments arg;
 
     arg.set<rocblas_int>("n", size[0]);
     arg.set<rocblas_int>("lda", size[1]);
 
-    arg.set<char>("uplo", uplo == 1 ? 'U' : 'L');
+    arg.set<char>("uplo", uplo);
 
     arg.timing = 0;
 
