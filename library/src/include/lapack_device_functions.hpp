@@ -1109,11 +1109,14 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
 template <typename T, typename U>
 ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
                                          const rocblas_int n,
-                                         U MM,
+                                         U AA,
                                          const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         U BB,
                                          const rocblas_int shiftB,
-                                         const rocblas_int ldim,
-                                         const rocblas_stride stride)
+                                         const rocblas_int ldb,
+                                         const rocblas_stride strideB)
 {
     int id = hipBlockIdx_z;
     int i = hipThreadIdx_x;
@@ -1122,8 +1125,8 @@ ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
     int j = hipBlockIdx_y * bdy + ty;
 
     // batch instance
-    T* A = load_ptr_batch(MM, id, shiftA, stride);
-    T* B = load_ptr_batch(MM, id, shiftB, stride);
+    T* A = load_ptr_batch(AA, id, shiftA, strideA);
+    T* B = load_ptr_batch(BB, id, shiftB, strideB);
 
     // shared mem setup
     extern __shared__ double lmem[];
@@ -1133,7 +1136,7 @@ ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
     if(j < n)
     {
         // read data
-        c = B[i + j * ldim];
+        c = B[i + j * ldb];
 
         // solve for right-hand sides
         for(int k = 0; k < m - 1; ++k)
@@ -1142,11 +1145,11 @@ ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
             if(i == k)
                 b[ty] = c;
             __syncthreads();
-            c -= (i > k) ? A[i + k * ldim] * b[ty] : 0;
+            c -= (i > k) ? A[i + k * lda] * b[ty] : 0;
         }
 
         // move results back to global
-        B[i + j * ldim] = c;
+        B[i + j * ldb] = c;
     }
 }
 
@@ -1163,11 +1166,14 @@ ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
 template <typename T, typename U>
 ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
                                          const rocblas_int n,
-                                         U MM,
+                                         U AA,
                                          const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         U BB,
                                          const rocblas_int shiftB,
-                                         const rocblas_int ldim,
-                                         const rocblas_stride stride)
+                                         const rocblas_int ldb,
+                                         const rocblas_stride strideB)
 {
     int id = hipBlockIdx_z;
     int j = hipThreadIdx_y;
@@ -1176,8 +1182,8 @@ ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
     int i = hipBlockIdx_x * bdx + tx;
 
     // batch instance
-    T* A = load_ptr_batch(MM, id, shiftA, stride);
-    T* B = load_ptr_batch(MM, id, shiftB, stride);
+    T* A = load_ptr_batch(AA, id, shiftA, strideA);
+    T* B = load_ptr_batch(BB, id, shiftB, strideB);
 
     // shared mem setup
     extern __shared__ double lmem[];
@@ -1187,7 +1193,7 @@ ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
     if(i < m)
     {
         // read data
-        c = B[i + j * ldim];
+        c = B[i + j * ldb];
 
         // solve for right-hand sides
         for(int k = 0; k < n - 1; ++k)
@@ -1195,20 +1201,20 @@ ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
             __syncthreads();
             if(j == k)
             {
-                d = A[j + j * ldim];
+                d = A[j + j * lda];
                 c = d != 0 ? c / d : c;
                 b[tx] = c;
             }
             __syncthreads();
-            c -= (j > k) ? A[k + j * ldim] * b[tx] : 0;
+            c -= (j > k) ? A[k + j * lda] * b[tx] : 0;
         }
         if(j == n - 1)
         {
-            d = A[j + j * ldim];
+            d = A[j + j * lda];
             c = d != 0 ? c / d : c;
         }
 
         // move results back to global
-        B[i + j * ldim] = c;
+        B[i + j * ldb] = c;
     }
 }

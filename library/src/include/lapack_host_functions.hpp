@@ -220,11 +220,14 @@ template <bool BATCHED, bool STRIDED, typename T, typename U>
 void rocsolver_trsm_lower(rocblas_handle handle,
                           const rocblas_int m,
                           const rocblas_int n,
-                          U MM,
+                          U A,
                           const rocblas_int shiftA,
+                          const rocblas_int lda,
+                          const rocblas_stride strideA,
+                          U B,
                           const rocblas_int shiftB,
-                          const rocblas_int ldim,
-                          const rocblas_stride stride,
+                          const rocblas_int ldb,
+                          const rocblas_stride strideB,
                           const rocblas_int batch_count,
                           const bool optim_mem,
                           void* work1,
@@ -232,8 +235,8 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                           void* work3,
                           void* work4)
 {
-    ROCSOLVER_ENTER("trsm_lower", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", ldim,
-                    "shiftB:", shiftB, "ldb:", ldim, "bc:", batch_count);
+    ROCSOLVER_ENTER("trsm_lower", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda,
+                    "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -253,8 +256,8 @@ void rocsolver_trsm_lower(rocblas_handle handle,
     if(blk == 0)
     {
         rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                     rocblas_operation_none, rocblas_diagonal_unit, m, n, &one, MM,
-                                     shiftA, ldim, stride, MM, shiftB, ldim, stride, batch_count,
+                                     rocblas_operation_none, rocblas_diagonal_unit, m, n, &one, A,
+                                     shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                      optim_mem, work1, work2, work3, work4);
         return;
     }
@@ -272,16 +275,16 @@ void rocsolver_trsm_lower(rocblas_handle handle,
         grid = dim3(1, blocks, batch_count);
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
-        ROCSOLVER_LAUNCH_KERNEL(trsm2_lower_kernel<T>, grid, threads, lmemsize, stream, jb, n, MM,
-                                shiftA + idx2D(j, j, ldim), shiftB + idx2D(j, 0, ldim), ldim, stride);
+        ROCSOLVER_LAUNCH_KERNEL(trsm2_lower_kernel<T>, grid, threads, lmemsize, stream, jb, n, A,
+                                shiftA + idx2D(j, j, lda), lda, strideA, B, shiftB + idx2D(j, 0, ldb), ldb, strideB);
 
         // update right hand sides
         if(nextpiv < m)
         {
             rocblasCall_gemm<BATCHED, STRIDED, T>(
                 handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, jb, &minone,
-                MM, shiftA + idx2D(nextpiv, j, ldim), ldim, stride, MM, shiftB + idx2D(j, 0, ldim),
-                ldim, stride, &one, MM, shiftB + idx2D(nextpiv, 0, ldim), ldim, stride, batch_count,
+                A, shiftA + idx2D(nextpiv, j, lda), lda, strideA, B, shiftB + idx2D(j, 0, ldb),
+                ldb, strideB, &one, B, shiftB + idx2D(nextpiv, 0, ldb), ldb, strideB, batch_count,
                 nullptr);
         }
     }
@@ -299,11 +302,14 @@ template <bool BATCHED, bool STRIDED, typename T, typename U>
 void rocsolver_trsm_upper(rocblas_handle handle,
                           const rocblas_int m,
                           const rocblas_int n,
-                          U MM,
+                          U A,
                           const rocblas_int shiftA,
+                          const rocblas_int lda,
+                          const rocblas_stride strideA,
+                          U B,
                           const rocblas_int shiftB,
-                          const rocblas_int ldim,
-                          const rocblas_stride stride,
+                          const rocblas_int ldb,
+                          const rocblas_stride strideB,
                           const rocblas_int batch_count,
                           const bool optim_mem,
                           void* work1,
@@ -311,8 +317,8 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                           void* work3,
                           void* work4)
 {
-    ROCSOLVER_ENTER("trsm_upper", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", ldim,
-                    "shiftB:", shiftB, "ldb:", ldim, "bc:", batch_count);
+    ROCSOLVER_ENTER("trsm_upper", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda,
+                    "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -333,7 +339,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
     {
         rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, rocblas_fill_upper,
                                      rocblas_operation_none, rocblas_diagonal_non_unit, m, n, &one,
-                                     MM, shiftA, ldim, stride, MM, shiftB, ldim, stride,
+                                     A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
                                      batch_count, optim_mem, work1, work2, work3, work4);
         return;
     }
@@ -351,16 +357,16 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         grid = dim3(blocks, 1, batch_count);
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimx * sizeof(T);
-        ROCSOLVER_LAUNCH_KERNEL(trsm2_upper_kernel<T>, grid, threads, lmemsize, stream, m, jb, MM,
-                                shiftA + idx2D(j, j, ldim), shiftB + idx2D(0, j, ldim), ldim, stride);
+        ROCSOLVER_LAUNCH_KERNEL(trsm2_upper_kernel<T>, grid, threads, lmemsize, stream, m, jb, A,
+                                shiftA + idx2D(j, j, lda), lda, strideA, B, shiftB + idx2D(0, j, ldb), ldb, strideB);
 
         // update right hand sides
         if(nextpiv < n)
         {
             rocblasCall_gemm<BATCHED, STRIDED, T>(
                 handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, jb, &minone,
-                MM, shiftB + idx2D(0, j, ldim), ldim, stride, MM, shiftA + idx2D(j, nextpiv, ldim),
-                ldim, stride, &one, MM, shiftB + idx2D(0, nextpiv, ldim), ldim, stride, batch_count,
+                B, shiftB + idx2D(0, j, ldb), ldb, strideB, A, shiftA + idx2D(j, nextpiv, lda),
+                lda, strideA, &one, B, shiftB + idx2D(0, nextpiv, ldb), ldb, strideB, batch_count,
                 nullptr);
         }
     }
