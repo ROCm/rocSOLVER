@@ -494,8 +494,9 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         if(k + jb < nn)
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
-                handle, jb, nn - k - jb, A, shiftA + idx2D(k, k, lda), lda, strideA, A, shiftA + idx2D(k, k + jb, lda),
-                lda, strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                handle, jb, nn - k - jb, A, shiftA + idx2D(k, k, lda), lda, strideA, A,
+                shiftA + idx2D(k, k + jb, lda), lda, strideA, batch_count, optim_mem, work1, work2,
+                work3, work4);
 
             if(k + jb < mm)
                 rocblasCall_gemm<BATCHED, STRIDED, T>(
@@ -703,8 +704,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
             // update remaining rows in outer panel
             rocsolver_trsm_upper<BATCHED, STRIDED, T>(
-                handle, m - j - jb, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(jb + j, j, lda),
-                lda, strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                handle, m - j - jb, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, A,
+                shiftA + idx2D(jb + j, j, lda), lda, strideA, batch_count, optim_mem, work1, work2,
+                work3, work4);
         }
 
         // update trailing matrix
@@ -714,8 +716,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         if(nextpiv < n)
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
-                handle, jb, nn, A, shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(j, nextpiv, lda), lda,
-                strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                handle, jb, nn, A, shiftA + idx2D(j, j, lda), lda, strideA, A,
+                shiftA + idx2D(j, nextpiv, lda), lda, strideA, batch_count, optim_mem, work1, work2,
+                work3, work4);
 
             if(nextpiv < m)
             {

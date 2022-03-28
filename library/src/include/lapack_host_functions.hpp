@@ -276,15 +276,16 @@ void rocsolver_trsm_lower(rocblas_handle handle,
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
         ROCSOLVER_LAUNCH_KERNEL(trsm2_lower_kernel<T>, grid, threads, lmemsize, stream, jb, n, A,
-                                shiftA + idx2D(j, j, lda), lda, strideA, B, shiftB + idx2D(j, 0, ldb), ldb, strideB);
+                                shiftA + idx2D(j, j, lda), lda, strideA, B,
+                                shiftB + idx2D(j, 0, ldb), ldb, strideB);
 
         // update right hand sides
         if(nextpiv < m)
         {
             rocblasCall_gemm<BATCHED, STRIDED, T>(
                 handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, jb, &minone,
-                A, shiftA + idx2D(nextpiv, j, lda), lda, strideA, B, shiftB + idx2D(j, 0, ldb),
-                ldb, strideB, &one, B, shiftB + idx2D(nextpiv, 0, ldb), ldb, strideB, batch_count,
+                A, shiftA + idx2D(nextpiv, j, lda), lda, strideA, B, shiftB + idx2D(j, 0, ldb), ldb,
+                strideB, &one, B, shiftB + idx2D(nextpiv, 0, ldb), ldb, strideB, batch_count,
                 nullptr);
         }
     }
@@ -339,8 +340,8 @@ void rocsolver_trsm_upper(rocblas_handle handle,
     {
         rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, rocblas_fill_upper,
                                      rocblas_operation_none, rocblas_diagonal_non_unit, m, n, &one,
-                                     A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                     batch_count, optim_mem, work1, work2, work3, work4);
+                                     A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
+                                     optim_mem, work1, work2, work3, work4);
         return;
     }
 
@@ -358,15 +359,16 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimx * sizeof(T);
         ROCSOLVER_LAUNCH_KERNEL(trsm2_upper_kernel<T>, grid, threads, lmemsize, stream, m, jb, A,
-                                shiftA + idx2D(j, j, lda), lda, strideA, B, shiftB + idx2D(0, j, ldb), ldb, strideB);
+                                shiftA + idx2D(j, j, lda), lda, strideA, B,
+                                shiftB + idx2D(0, j, ldb), ldb, strideB);
 
         // update right hand sides
         if(nextpiv < n)
         {
             rocblasCall_gemm<BATCHED, STRIDED, T>(
                 handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, jb, &minone,
-                B, shiftB + idx2D(0, j, ldb), ldb, strideB, A, shiftA + idx2D(j, nextpiv, lda),
-                lda, strideA, &one, B, shiftB + idx2D(0, nextpiv, ldb), ldb, strideB, batch_count,
+                B, shiftB + idx2D(0, j, ldb), ldb, strideB, A, shiftA + idx2D(j, nextpiv, lda), lda,
+                strideA, &one, B, shiftB + idx2D(0, nextpiv, ldb), ldb, strideB, batch_count,
                 nullptr);
         }
     }
