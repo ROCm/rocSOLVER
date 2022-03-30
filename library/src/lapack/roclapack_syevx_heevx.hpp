@@ -306,19 +306,30 @@ rocblas_status rocsolver_syevx_heevx_template(rocblas_handle handle,
                                     strideF, info, batch_count, (S*)work1, (rocblas_int*)work2);
 
         // apply unitary matrix to eigenvectors
-        // TODO: this is a suboptimal implementation and should be replaced by a kernel call
-        rocblas_int* h_nev = new rocblas_int[batch_count];
-        hipMemcpy(h_nev, nev, sizeof(rocblas_int) * batch_count, hipMemcpyDeviceToHost);
-        for(rocblas_int b = 0; b < batch_count; b++)
+        if(erange != rocblas_erange_value)
         {
-            rocblas_stride bshiftA = (BATCHED ? b : b * strideA);
-            rocblas_stride bshiftZ = (BATCHED ? b : b * strideZ);
+            rocblas_int h_nev = (erange == rocblas_erange_all ? n : iu - il + 1);
             rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
-                handle, rocblas_side_left, uplo, rocblas_operation_none, n, h_nev[b], A + bshiftA,
-                shiftA, lda, strideA, tau + b * stride, stride, Z + bshiftZ, shiftZ, ldz, strideZ,
-                1, scalars, (T*)work1, (T*)work2, (T*)work3, (T**)nsplit_workArr);
+                handle, rocblas_side_left, uplo, rocblas_operation_none, n, h_nev, A, shiftA, lda,
+                strideA, tau, stride, Z, shiftZ, ldz, strideZ, batch_count, scalars, (T*)work1,
+                (T*)work2, (T*)work3, (T**)nsplit_workArr);
         }
-        delete[] h_nev;
+        else
+        {
+            // TODO: this is a suboptimal implementation and should be replaced by a kernel call
+            rocblas_int* h_nev = new rocblas_int[batch_count];
+            hipMemcpy(h_nev, nev, sizeof(rocblas_int) * batch_count, hipMemcpyDeviceToHost);
+            for(rocblas_int b = 0; b < batch_count; b++)
+            {
+                rocblas_stride bshiftA = (BATCHED ? b : b * strideA);
+                rocblas_stride bshiftZ = (BATCHED ? b : b * strideZ);
+                rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
+                    handle, rocblas_side_left, uplo, rocblas_operation_none, n, h_nev[b],
+                    A + bshiftA, shiftA, lda, strideA, tau + b * stride, stride, Z + bshiftZ, shiftZ,
+                    ldz, strideZ, 1, scalars, (T*)work1, (T*)work2, (T*)work3, (T**)nsplit_workArr);
+            }
+            delete[] h_nev;
+        }
 
         // sort eigenvalues and eigenvectors
         rocblas_int blocks = (n - 1) / BS1 + 1;

@@ -4,7 +4,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
-- Eigensolver routines for symmetric/hermitian matrices with range specifiers:
+- Partial eigensolver routines for symmetric/hermitian matrices:
     - SYEVX (with batched and strided\_batched versions)
     - HEEVX (with batched and strided\_batched versions)
 
@@ -14,7 +14,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Removed
 ### Fixed
 ### Known Issues
-- Performance of SYEVX/HEEVX is degraded, particularly for larger batch counts.
+- Performance of SYEVX/HEEVX is degraded when `erange` is `rocblas_erange_value`, particularly for larger batch counts.
 
 ### Security
 
