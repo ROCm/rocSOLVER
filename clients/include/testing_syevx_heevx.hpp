@@ -334,7 +334,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
                 }
                 *max_err = err > *max_err ? err : *max_err;
 
-                // multiply A with each of the m eigenvectors and divide by corresponding
+                // multiply A with each of the nev eigenvectors and divide by corresponding
                 // eigenvalues
                 T alpha;
                 T beta = 0;

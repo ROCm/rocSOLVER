@@ -15009,7 +15009,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
 
     \details
     This function computes all the eigenvalues of A, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
-    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    or the il-th through iu-th eigenvalues, depending on the value of erange. If evect is rocblas_evect_original,
     the eigenvectors for these eigenvalues will be computed as well.
 
     @param[in]
@@ -15125,7 +15125,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
 
     \details
     This function computes all the eigenvalues of A, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
-    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    or the il-th through iu-th eigenvalues, depending on the value of erange. If evect is rocblas_evect_original,
     the eigenvectors for these eigenvalues will be computed as well.
 
     @param[in]
@@ -15241,7 +15241,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
 
     \details
     This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
-    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    or the il-th through iu-th eigenvalues, depending on the value of erange. If evect is rocblas_evect_original,
     the eigenvectors for these eigenvalues will be computed as well.
 
     @param[in]
@@ -15374,7 +15374,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
 
     \details
     This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
-    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    or the il-th through iu-th eigenvalues, depending on the value of erange. If evect is rocblas_evect_original,
     the eigenvectors for these eigenvalues will be computed as well.
 
     @param[in]
@@ -15507,7 +15507,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
 
     \details
     This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
-    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    or the il-th through iu-th eigenvalues, depending on the value of erange. If evect is rocblas_evect_original,
     the eigenvectors for these eigenvalues will be computed as well.
 
     @param[in]
@@ -15530,8 +15530,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
-                the algorithm converged; otherwise the contents of A_j are destroyed.
+                On entry, the matrices A_j. On exit, the contents of A_j are destroyed.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
@@ -15653,7 +15652,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
 
     \details
     This function computes all the eigenvalues of A_j, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
-    or the il-th through iu-th eigenvalues, depending on the value of range. If evect is rocblas_evect_original,
+    or the il-th through iu-th eigenvalues, depending on the value of erange. If evect is rocblas_evect_original,
     the eigenvectors for these eigenvalues will be computed as well.
 
     @param[in]
@@ -15676,8 +15675,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
                 Number of rows and columns of matrices A_j.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
-                the algorithm converged; otherwise the contents of A_j are destroyed.
+                On entry, the matrices A_j. On exit, the contents of A_j are destroyed.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
