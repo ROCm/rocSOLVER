@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -11,7 +11,7 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<rocsolver_op_char>> sygv_tuple;
+typedef std::tuple<vector<int>, vector<printable_char>> sygv_tuple;
 
 // each matrix_size_range is a {n, lda, ldb, singular}
 // if singular = 1, then the used matrix for the tests is not positive definite
@@ -21,7 +21,7 @@ typedef std::tuple<vector<int>, vector<rocsolver_op_char>> sygv_tuple;
 // case when n = 0, itype = 1, evect = 'N', and uplo = U will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<vector<rocsolver_op_char>> type_range
+const vector<vector<printable_char>> type_range
     = {{'1', 'N', 'U'}, {'2', 'N', 'L'}, {'3', 'N', 'U'},
        {'1', 'V', 'L'}, {'2', 'V', 'U'}, {'3', 'V', 'L'}};
 
@@ -47,7 +47,7 @@ const vector<vector<int>> large_matrix_size_range = {
 Arguments sygv_setup_arguments(sygv_tuple tup)
 {
     vector<int> matrix_size = std::get<0>(tup);
-    vector<rocsolver_op_char> type = std::get<1>(tup);
+    vector<printable_char> type = std::get<1>(tup);
 
     Arguments arg;
 
