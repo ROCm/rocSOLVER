@@ -4,6 +4,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- Added --profile_kernels option to rocsolver-bench, which will include kernel calls in the
+  profile log (if profile logging is enabled with --profile).
+
 ### Optimized
 ### Changed
 ### Deprecated
