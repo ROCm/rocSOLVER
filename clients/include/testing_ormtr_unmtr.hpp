@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -210,6 +210,7 @@ void ormtr_unmtr_getPerfData(const rocblas_handle handle,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
                              const int profile,
+                             const bool profile_kernels,
                              const bool perf)
 {
     size_t size_W = (side == rocblas_side_left ? m : n) * 32;
@@ -247,7 +248,11 @@ void ormtr_unmtr_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -387,7 +392,7 @@ void testing_ormtr_unmtr(Arguments& argus)
     if(argus.timing)
         ormtr_unmtr_getPerfData<T>(handle, side, uplo, trans, m, n, dA, lda, dIpiv, dC, ldc, hA,
                                    hIpiv, hC, &gpu_time_used, &cpu_time_used, hot_calls,
-                                   argus.profile, argus.perf);
+                                   argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using s * machine_precision as tolerance

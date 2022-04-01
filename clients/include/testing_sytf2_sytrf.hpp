@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -280,6 +280,7 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
                              const int profile,
+                             const bool profile_kernels,
                              const bool perf,
                              const bool singular)
 {
@@ -321,7 +322,11 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -467,10 +472,10 @@ void testing_sytf2_sytrf(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
-                                                       dInfo, bc, hA, hIpiv, hInfo, &gpu_time_used,
-                                                       &cpu_time_used, hot_calls, argus.profile,
-                                                       argus.perf, argus.singular);
+            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(
+                handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hIpiv, hInfo,
+                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels,
+                argus.perf, argus.singular);
     }
 
     else
@@ -511,10 +516,10 @@ void testing_sytf2_sytrf(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP,
-                                                       dInfo, bc, hA, hIpiv, hInfo, &gpu_time_used,
-                                                       &cpu_time_used, hot_calls, argus.profile,
-                                                       argus.perf, argus.singular);
+            sytf2_sytrf_getPerfData<STRIDED, SYTRF, T>(
+                handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hIpiv, hInfo,
+                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels,
+                argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test
