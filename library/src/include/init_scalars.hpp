@@ -7,7 +7,7 @@
 #include <cassert>
 
 #include <hip/hip_runtime.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #include "lib_macros.hpp"
 #include "rocsolver_logger.hpp"
