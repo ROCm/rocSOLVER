@@ -17,6 +17,7 @@ rocblas_status rocsolver_syevx_heevx_strided_batched_impl(rocblas_handle handle,
                                                           const S vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
+                                                          const S abstol,
                                                           rocblas_int* nev,
                                                           S* W,
                                                           const rocblas_stride strideW,
@@ -31,8 +32,8 @@ rocblas_status rocsolver_syevx_heevx_strided_batched_impl(rocblas_handle handle,
     const char* name = (!is_complex<T> ? "syevx_strided_batched" : "heevx_strided_batched");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--erange", erange, "--uplo", uplo, "-n", n,
                         "--lda", lda, "--strideA", strideA, "--vl", vl, "--vu", vu, "--il", il,
-                        "--iu", iu, "--strideW", strideW, "--ldz", ldz, "--strideZ", strideZ,
-                        "--strideF", strideF, "--batch_count", batch_count);
+                        "--iu", iu, "--abstol", abstol, "--strideW", strideW, "--ldz", ldz,
+                        "--strideZ", strideZ, "--strideF", strideF, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -94,10 +95,10 @@ rocblas_status rocsolver_syevx_heevx_strided_batched_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_syevx_heevx_template<false, true, T>(
-        handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z,
-        shiftZ, ldz, strideZ, ifail, strideF, info, batch_count, (T*)scalars, work1, work2, work3,
-        work4, work5, work6, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit, (T*)tau,
-        nsplit_workArr);
+        handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, abstol, nev, W,
+        strideW, Z, shiftZ, ldz, strideZ, ifail, strideF, info, batch_count, (T*)scalars, work1,
+        work2, work3, work4, work5, work6, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit,
+        (T*)tau, nsplit_workArr);
 }
 
 /*
@@ -120,6 +121,7 @@ rocblas_status rocsolver_ssyevx_strided_batched(rocblas_handle handle,
                                                 const float vu,
                                                 const rocblas_int il,
                                                 const rocblas_int iu,
+                                                const float abstol,
                                                 rocblas_int* nev,
                                                 float* W,
                                                 const rocblas_stride strideW,
@@ -132,8 +134,8 @@ rocblas_status rocsolver_ssyevx_strided_batched(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     return rocsolver_syevx_heevx_strided_batched_impl<float>(
-        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z, ldz,
-        strideZ, ifail, strideF, info, batch_count);
+        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, abstol, nev, W, strideW, Z,
+        ldz, strideZ, ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle handle,
@@ -148,6 +150,7 @@ rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle handle,
                                                 const double vu,
                                                 const rocblas_int il,
                                                 const rocblas_int iu,
+                                                const double abstol,
                                                 rocblas_int* nev,
                                                 double* W,
                                                 const rocblas_stride strideW,
@@ -160,8 +163,8 @@ rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     return rocsolver_syevx_heevx_strided_batched_impl<double>(
-        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z, ldz,
-        strideZ, ifail, strideF, info, batch_count);
+        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, abstol, nev, W, strideW, Z,
+        ldz, strideZ, ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_cheevx_strided_batched(rocblas_handle handle,
@@ -176,6 +179,7 @@ rocblas_status rocsolver_cheevx_strided_batched(rocblas_handle handle,
                                                 const float vu,
                                                 const rocblas_int il,
                                                 const rocblas_int iu,
+                                                const float abstol,
                                                 rocblas_int* nev,
                                                 float* W,
                                                 const rocblas_stride strideW,
@@ -188,8 +192,8 @@ rocblas_status rocsolver_cheevx_strided_batched(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     return rocsolver_syevx_heevx_strided_batched_impl<rocblas_float_complex>(
-        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z, ldz,
-        strideZ, ifail, strideF, info, batch_count);
+        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, abstol, nev, W, strideW, Z,
+        ldz, strideZ, ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle handle,
@@ -204,6 +208,7 @@ rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle handle,
                                                 const double vu,
                                                 const rocblas_int il,
                                                 const rocblas_int iu,
+                                                const double abstol,
                                                 rocblas_int* nev,
                                                 double* W,
                                                 const rocblas_stride strideW,
@@ -216,8 +221,8 @@ rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     return rocsolver_syevx_heevx_strided_batched_impl<rocblas_double_complex>(
-        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z, ldz,
-        strideZ, ifail, strideF, info, batch_count);
+        handle, evect, erange, uplo, n, A, lda, strideA, vl, vu, il, iu, abstol, nev, W, strideW, Z,
+        ldz, strideZ, ifail, strideF, info, batch_count);
 }
 
 } // extern C

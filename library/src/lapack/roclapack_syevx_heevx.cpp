@@ -16,6 +16,7 @@ rocblas_status rocsolver_syevx_heevx_impl(rocblas_handle handle,
                                           const S vu,
                                           const rocblas_int il,
                                           const rocblas_int iu,
+                                          const S abstol,
                                           rocblas_int* nev,
                                           S* W,
                                           U Z,
@@ -25,7 +26,8 @@ rocblas_status rocsolver_syevx_heevx_impl(rocblas_handle handle,
 {
     const char* name = (!is_complex<T> ? "syevx" : "heevx");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--erange", erange, "--uplo", uplo, "-n", n,
-                        "--lda", lda, "--vl", vl, "--vu", vu, "--il", il, "--iu", iu, "--ldz", ldz);
+                        "--lda", lda, "--vl", vl, "--vu", vu, "--il", il, "--iu", iu, "--abstol",
+                        abstol, "--ldz", ldz);
 
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -93,10 +95,10 @@ rocblas_status rocsolver_syevx_heevx_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_syevx_heevx_template<false, false, T>(
-        handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z,
-        shiftZ, ldz, strideZ, ifail, strideF, info, batch_count, (T*)scalars, work1, work2, work3,
-        work4, work5, work6, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit, (T*)tau,
-        nsplit_workArr);
+        handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, abstol, nev, W,
+        strideW, Z, shiftZ, ldz, strideZ, ifail, strideF, info, batch_count, (T*)scalars, work1,
+        work2, work3, work4, work5, work6, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit,
+        (T*)tau, nsplit_workArr);
 }
 
 /*
@@ -118,6 +120,7 @@ rocblas_status rocsolver_ssyevx(rocblas_handle handle,
                                 const float vu,
                                 const rocblas_int il,
                                 const rocblas_int iu,
+                                const float abstol,
                                 rocblas_int* nev,
                                 float* W,
                                 float* Z,
@@ -126,7 +129,7 @@ rocblas_status rocsolver_ssyevx(rocblas_handle handle,
                                 rocblas_int* info)
 {
     return rocsolver_syevx_heevx_impl<float>(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu,
-                                             nev, W, Z, ldz, ifail, info);
+                                             abstol, nev, W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dsyevx(rocblas_handle handle,
@@ -140,6 +143,7 @@ rocblas_status rocsolver_dsyevx(rocblas_handle handle,
                                 const double vu,
                                 const rocblas_int il,
                                 const rocblas_int iu,
+                                const double abstol,
                                 rocblas_int* nev,
                                 double* W,
                                 double* Z,
@@ -148,7 +152,7 @@ rocblas_status rocsolver_dsyevx(rocblas_handle handle,
                                 rocblas_int* info)
 {
     return rocsolver_syevx_heevx_impl<double>(handle, evect, erange, uplo, n, A, lda, vl, vu, il,
-                                              iu, nev, W, Z, ldz, ifail, info);
+                                              iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_cheevx(rocblas_handle handle,
@@ -162,6 +166,7 @@ rocblas_status rocsolver_cheevx(rocblas_handle handle,
                                 const float vu,
                                 const rocblas_int il,
                                 const rocblas_int iu,
+                                const float abstol,
                                 rocblas_int* nev,
                                 float* W,
                                 rocblas_float_complex* Z,
@@ -170,7 +175,7 @@ rocblas_status rocsolver_cheevx(rocblas_handle handle,
                                 rocblas_int* info)
 {
     return rocsolver_syevx_heevx_impl<rocblas_float_complex>(
-        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, Z, ldz, ifail, info);
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_zheevx(rocblas_handle handle,
@@ -184,6 +189,7 @@ rocblas_status rocsolver_zheevx(rocblas_handle handle,
                                 const double vu,
                                 const rocblas_int il,
                                 const rocblas_int iu,
+                                const double abstol,
                                 rocblas_int* nev,
                                 double* W,
                                 rocblas_double_complex* Z,
@@ -192,7 +198,7 @@ rocblas_status rocsolver_zheevx(rocblas_handle handle,
                                 rocblas_int* info)
 {
     return rocsolver_syevx_heevx_impl<rocblas_double_complex>(
-        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, nev, W, Z, ldz, ifail, info);
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
 } // extern C

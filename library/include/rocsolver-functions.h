@@ -15004,7 +15004,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief SYEVX computes a set of the eigenvalues and optionally the eigenvectors of a
+    \brief SYEVX computes a set of the eigenvalues and optionally the corresponding eigenvectors of a
     real symmetric matrix A.
 
     \details
@@ -15052,6 +15052,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    abstol      type.\n
+                The absolute tolerance. An eigenvalue is considered to be located if it lies
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
+                the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
+                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to a rocblas_int on the GPU.\n
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
@@ -15065,9 +15071,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
                 On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
                 the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
-                Note: If erange is rocblas_range_value, then the value of nev is not known in advance.
-                The user should use an upper bound for nev (e.g. n, in the worst case) in order to make
-                Z large enough to hold all output eigenvectors.
+                Note: If erange is rocblas_range_value, then the values of nev are not known in advance.
+                The user should ensure that Z is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
     @param[in]
     ldz         rocblas_int. ldz >= n.\n
                 Specifies the leading dimension of matrix Z.
@@ -15093,6 +15099,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevx(rocblas_handle handle,
                                                  const float vu,
                                                  const rocblas_int il,
                                                  const rocblas_int iu,
+                                                 const float abstol,
                                                  rocblas_int* nev,
                                                  float* W,
                                                  float* Z,
@@ -15111,6 +15118,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
                                                  const double vu,
                                                  const rocblas_int il,
                                                  const rocblas_int iu,
+                                                 const double abstol,
                                                  rocblas_int* nev,
                                                  double* W,
                                                  double* Z,
@@ -15120,7 +15128,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief HEEVX computes a set of the eigenvalues and optionally the eigenvectors of a
+    \brief HEEVX computes a set of the eigenvalues and optionally the corresponding eigenvectors of a
     Hermitian matrix A.
 
     \details
@@ -15168,6 +15176,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. An eigenvalue is considered to be located if it lies
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
+                the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
+                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to a rocblas_int on the GPU.\n
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
@@ -15181,9 +15195,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
                 On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
                 the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
-                Note: If erange is rocblas_range_value, then the value of nev is not known in advance.
-                The user should use an upper bound for nev (e.g. n, in the worst case) in order to make
-                Z large enough to hold all output eigenvectors.
+                Note: If erange is rocblas_range_value, then the values of nev are not known in advance.
+                The user should ensure that Z is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
     @param[in]
     ldz         rocblas_int. ldz >= n.\n
                 Specifies the leading dimension of matrix Z.
@@ -15209,6 +15223,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevx(rocblas_handle handle,
                                                  const float vu,
                                                  const rocblas_int il,
                                                  const rocblas_int iu,
+                                                 const float abstol,
                                                  rocblas_int* nev,
                                                  float* W,
                                                  rocblas_float_complex* Z,
@@ -15227,6 +15242,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
                                                  const double vu,
                                                  const rocblas_int il,
                                                  const rocblas_int iu,
+                                                 const double abstol,
                                                  rocblas_int* nev,
                                                  double* W,
                                                  rocblas_double_complex* Z,
@@ -15236,7 +15252,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYEVX_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    \brief SYEVX_BATCHED computes a set of the eigenvalues and optionally the corresponding eigenvectors
     of a batch of real symmetric matrices A_j.
 
     \details
@@ -15284,6 +15300,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    abstol      type.\n
+                The absolute tolerance. An eigenvalue is considered to be located if it lies
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
+                the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
+                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
@@ -15302,8 +15324,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
                 the eigenvectors of A_j corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
                 Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
-                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
-                Z_j large enough to hold all output eigenvectors.
+                The user should ensure that Z_j is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
     @param[in]
     ldz         rocblas_int. ldz >= n.\n
                 Specifies the leading dimension of matrices Z_j.
@@ -15336,6 +15358,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevx_batched(rocblas_handle handle,
                                                          const float vu,
                                                          const rocblas_int il,
                                                          const rocblas_int iu,
+                                                         const float abstol,
                                                          rocblas_int* nev,
                                                          float* W,
                                                          const rocblas_stride strideW,
@@ -15357,6 +15380,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
                                                          const double vu,
                                                          const rocblas_int il,
                                                          const rocblas_int iu,
+                                                         const double abstol,
                                                          rocblas_int* nev,
                                                          double* W,
                                                          const rocblas_stride strideW,
@@ -15369,7 +15393,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief HEEVX_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    \brief HEEVX_BATCHED computes a set of the eigenvalues and optionally the corresponding eigenvectors
     of a batch of Hermitian matrices A_j.
 
     \details
@@ -15417,6 +15441,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. An eigenvalue is considered to be located if it lies
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
+                the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
+                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
@@ -15435,8 +15465,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
                 the eigenvectors of A_j corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
                 Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
-                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
-                Z_j large enough to hold all output eigenvectors.
+                The user should ensure that Z_j is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
     @param[in]
     ldz         rocblas_int. ldz >= n.\n
                 Specifies the leading dimension of matrices Z_j.
@@ -15469,6 +15499,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevx_batched(rocblas_handle handle,
                                                          const float vu,
                                                          const rocblas_int il,
                                                          const rocblas_int iu,
+                                                         const float abstol,
                                                          rocblas_int* nev,
                                                          float* W,
                                                          const rocblas_stride strideW,
@@ -15490,6 +15521,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
                                                          const double vu,
                                                          const rocblas_int il,
                                                          const rocblas_int iu,
+                                                         const double abstol,
                                                          rocblas_int* nev,
                                                          double* W,
                                                          const rocblas_stride strideW,
@@ -15502,7 +15534,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYEVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    \brief SYEVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally the corresponding eigenvectors
     of a batch of real symmetric matrices A_j.
 
     \details
@@ -15554,6 +15586,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    abstol      type.\n
+                The absolute tolerance. An eigenvalue is considered to be located if it lies
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
+                the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
+                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
@@ -15579,8 +15617,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
                 Stride from the start of one matrix Z_j to the next one Z_(j+1).
                 There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev_j.
                 Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
-                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
-                Z_j large enough to hold all output eigenvectors.
+                The user should ensure that Z_j is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
     @param[out]
     ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
                 If info[j] = 0, the first nev_j elements of ifail_j are zero.
@@ -15611,6 +15649,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevx_strided_batched(rocblas_handle 
                                                                  const float vu,
                                                                  const rocblas_int il,
                                                                  const rocblas_int iu,
+                                                                 const float abstol,
                                                                  rocblas_int* nev,
                                                                  float* W,
                                                                  const rocblas_stride strideW,
@@ -15634,6 +15673,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
                                                                  const double vu,
                                                                  const rocblas_int il,
                                                                  const rocblas_int iu,
+                                                                 const double abstol,
                                                                  rocblas_int* nev,
                                                                  double* W,
                                                                  const rocblas_stride strideW,
@@ -15647,7 +15687,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief HEEVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally the eigenvectors
+    \brief HEEVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally the corresponding eigenvectors
     of a batch of Hermitian matrices A_j.
 
     \details
@@ -15699,6 +15739,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. An eigenvalue is considered to be located if it lies
+                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
+                the 1-norm of T will be used as tolerance. If abstol=0, then the tolerance will be set
+                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev_j = n.
@@ -15724,8 +15770,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
                 Stride from the start of one matrix Z_j to the next one Z_(j+1).
                 There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev_j.
                 Note: If erange is rocblas_range_value, then the values of nev_j are not known in advance.
-                The user should use an upper bound for nev_j (e.g. n, in the worst case) in order to make
-                Z_j large enough to hold all output eigenvectors.
+                The user should ensure that Z_j is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
     @param[out]
     ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
                 If info[j] = 0, the first nev_j elements of ifail_j are zero.
@@ -15756,6 +15802,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevx_strided_batched(rocblas_handle 
                                                                  const float vu,
                                                                  const rocblas_int il,
                                                                  const rocblas_int iu,
+                                                                 const float abstol,
                                                                  rocblas_int* nev,
                                                                  float* W,
                                                                  const rocblas_stride strideW,
@@ -15779,6 +15826,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle 
                                                                  const double vu,
                                                                  const rocblas_int il,
                                                                  const rocblas_int iu,
+                                                                 const double abstol,
                                                                  rocblas_int* nev,
                                                                  double* W,
                                                                  const rocblas_stride strideW,

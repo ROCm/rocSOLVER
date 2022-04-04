@@ -55,6 +55,7 @@
 #include "testing_sterf.hpp"
 #include "testing_syev_heev.hpp"
 #include "testing_syevd_heevd.hpp"
+#include "testing_syevx_heevx.hpp"
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sygv_hegv.hpp"
 #include "testing_sygvd_hegvd.hpp"
@@ -265,6 +266,10 @@ class rocsolver_dispatcher
             {"syevd", testing_syevd_heevd<false, false, T>},
             {"syevd_batched", testing_syevd_heevd<true, true, T>},
             {"syevd_strided_batched", testing_syevd_heevd<false, true, T>},
+            // syevx
+            {"syevx", testing_syevx_heevx<false, false, T>},
+            {"syevx_batched", testing_syevx_heevx<true, true, T>},
+            {"syevx_strided_batched", testing_syevx_heevx<false, true, T>},
             // sygv
             {"sygv", testing_sygv_hegv<false, false, T>},
             {"sygv_batched", testing_sygv_hegv<true, true, T>},
@@ -332,6 +337,10 @@ class rocsolver_dispatcher
             {"heevd", testing_syevd_heevd<false, false, T>},
             {"heevd_batched", testing_syevd_heevd<true, true, T>},
             {"heevd_strided_batched", testing_syevd_heevd<false, true, T>},
+            // heevx
+            {"heevx", testing_syevx_heevx<false, false, T>},
+            {"heevx_batched", testing_syevx_heevx<true, true, T>},
+            {"heevx_strided_batched", testing_syevx_heevx<false, true, T>},
             // hegv
             {"hegv", testing_sygv_hegv<false, false, T>},
             {"hegv_batched", testing_sygv_hegv<true, true, T>},
