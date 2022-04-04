@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "rocblas.h"
+#include "rocblas/rocblas.h"
 #include "rocsolver_arguments.hpp"
 #include <map>
 #include <string>
