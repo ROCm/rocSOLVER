@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -294,6 +294,7 @@ void gesv_outofplace_getPerfData(const rocblas_handle handle,
                                  double* cpu_time_used,
                                  const rocblas_int hot_calls,
                                  const int profile,
+                                 const bool profile_kernels,
                                  const bool perf,
                                  const bool singular)
 {
@@ -332,7 +333,11 @@ void gesv_outofplace_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -475,10 +480,10 @@ void testing_gesv_outofplace(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            gesv_outofplace_getPerfData<STRIDED, T>(handle, n, nrhs, dA, lda, stA, dIpiv, stP, dB,
-                                                    ldb, stB, dX, ldx, stX, dInfo, bc, hA, hIpiv, hB,
-                                                    hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                                    argus.profile, argus.perf, argus.singular);
+            gesv_outofplace_getPerfData<STRIDED, T>(
+                handle, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, dX, ldx, stX, dInfo, bc,
+                hA, hIpiv, hB, hInfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                argus.profile_kernels, argus.perf, argus.singular);
     }
 
     else
@@ -527,10 +532,10 @@ void testing_gesv_outofplace(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            gesv_outofplace_getPerfData<STRIDED, T>(handle, n, nrhs, dA, lda, stA, dIpiv, stP, dB,
-                                                    ldb, stB, dX, ldx, stX, dInfo, bc, hA, hIpiv, hB,
-                                                    hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                                    argus.profile, argus.perf, argus.singular);
+            gesv_outofplace_getPerfData<STRIDED, T>(
+                handle, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, dX, ldx, stX, dInfo, bc,
+                hA, hIpiv, hB, hInfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                argus.profile_kernels, argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test
