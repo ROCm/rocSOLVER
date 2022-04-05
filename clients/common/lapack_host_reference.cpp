@@ -108,6 +108,51 @@ void zhemm_(char* side,
             rocblas_double_complex* C,
             int* ldc);
 
+void strmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            float* alpha,
+            float* A,
+            int* lda,
+            float* B,
+            int* ldb);
+void dtrmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            double* alpha,
+            double* A,
+            int* lda,
+            double* B,
+            int* ldb);
+void ctrmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            rocblas_float_complex* alpha,
+            rocblas_float_complex* A,
+            int* lda,
+            rocblas_float_complex* B,
+            int* ldb);
+void ztrmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            rocblas_double_complex* alpha,
+            rocblas_double_complex* A,
+            int* lda,
+            rocblas_double_complex* B,
+            int* ldb);
+
 void strtri_(char* uplo, char* diag, int* n, float* A, int* lda, int* info);
 void dtrtri_(char* uplo, char* diag, int* n, double* A, int* lda, int* info);
 void ctrtri_(char* uplo, char* diag, int* n, rocblas_float_complex* A, int* lda, int* info);
@@ -4566,6 +4611,87 @@ void cblas_trsm<rocblas_double_complex>(
 }
 */
 
+// trmm
+template <>
+void cblas_trmm<float>(rocblas_side side,
+                       rocblas_fill uplo,
+                       rocblas_operation transA,
+                       rocblas_diagonal diag,
+                       rocblas_int m,
+                       rocblas_int n,
+                       float alpha,
+                       float* A,
+                       rocblas_int lda,
+                       float* B,
+                       rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    strmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
+
+template <>
+void cblas_trmm<double>(rocblas_side side,
+                        rocblas_fill uplo,
+                        rocblas_operation transA,
+                        rocblas_diagonal diag,
+                        rocblas_int m,
+                        rocblas_int n,
+                        double alpha,
+                        double* A,
+                        rocblas_int lda,
+                        double* B,
+                        rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    dtrmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
+
+template <>
+void cblas_trmm<rocblas_float_complex>(rocblas_side side,
+                                       rocblas_fill uplo,
+                                       rocblas_operation transA,
+                                       rocblas_diagonal diag,
+                                       rocblas_int m,
+                                       rocblas_int n,
+                                       rocblas_float_complex alpha,
+                                       rocblas_float_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_float_complex* B,
+                                       rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ctrmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
+
+template <>
+void cblas_trmm<rocblas_double_complex>(rocblas_side side,
+                                        rocblas_fill uplo,
+                                        rocblas_operation transA,
+                                        rocblas_diagonal diag,
+                                        rocblas_int m,
+                                        rocblas_int n,
+                                        rocblas_double_complex alpha,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_double_complex* B,
+                                        rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ztrmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
+
 // potf2
 template <>
 void cblas_potf2(rocblas_fill uplo, rocblas_int n, float* A, rocblas_int lda, rocblas_int* info)
@@ -4835,90 +4961,6 @@ void cblas_getf2(rocblas_int m,
 {
     zgetf2_(&m, &n, A, &lda, ipiv, info);
 }
-
-/*
-// trtri
-template <>
-rocblas_int cblas_trtri<float>(rocblas_fill uplo, rocblas_diagonal diag,
-rocblas_int n, float *A, rocblas_int lda) { rocblas_int info; char uploC =
-rocblas2char_fill(uplo); char diagC = rocblas2char_diagonal(diag);
-  strtri_(&uploC, &diagC, &n, A, &lda, &info);
-  return info;
-}
-
-template <>
-rocblas_int cblas_trtri<double>(rocblas_fill uplo, rocblas_diagonal diag,
-rocblas_int n, double *A, rocblas_int lda) { rocblas_int info; char uploC =
-rocblas2char_fill(uplo); char diagC = rocblas2char_diagonal(diag);
-  dtrtri_(&uploC, &diagC, &n, A, &lda, &info);
-  return info;
-}
-
-template <>
-rocblas_int cblas_trtri<rocblas_float_complex>(rocblas_fill uplo,
-rocblas_diagonal diag, rocblas_int n, rocblas_float_complex *A, rocblas_int lda)
-{ rocblas_int info; char uploC = rocblas2char_fill(uplo); char diagC =
-rocblas2char_diagonal(diag); ctrtri_(&uploC, &diagC, &n, A, &lda, &info); return
-info;
-}
-
-template <>
-rocblas_int cblas_trtri<rocblas_double_complex>(rocblas_fill uplo,
-rocblas_diagonal diag, rocblas_int n, rocblas_double_complex *A, rocblas_int
-lda) { rocblas_int info; char uploC = rocblas2char_fill(uplo); char diagC =
-rocblas2char_diagonal(diag); ztrtri_(&uploC, &diagC, &n, A, &lda, &info); return
-info;
-}
-
-// trmm
-template <>
-void cblas_trmm<float>(rocblas_side side, rocblas_fill uplo,
-                       rocblas_operation transA, rocblas_diagonal diag,
-                       rocblas_int m, rocblas_int n, float alpha,
-                       const float *A, rocblas_int lda, float *B,
-                       rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_strmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, alpha, A, lda, B,
-              ldb);
-}
-
-template <>
-void cblas_trmm<double>(rocblas_side side, rocblas_fill uplo,
-                        rocblas_operation transA, rocblas_diagonal diag,
-                        rocblas_int m, rocblas_int n, double alpha,
-                        const double *A, rocblas_int lda, double *B,
-                        rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_dtrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, alpha, A, lda, B,
-              ldb);
-}
-
-template <>
-void cblas_trmm<rocblas_float_complex>(
-    rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
-    rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-    rocblas_float_complex alpha, const rocblas_float_complex *A,
-    rocblas_int lda, rocblas_float_complex *B, rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_ctrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, &alpha, A, lda,
-              B, ldb);
-}
-
-template <>
-void cblas_trmm<rocblas_double_complex>(
-    rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
-    rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-    rocblas_double_complex alpha, const rocblas_double_complex *A,
-    rocblas_int lda, rocblas_double_complex *B, rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_ztrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, &alpha, A, lda,
-              B, ldb);
-}
-*/
 
 // getrf
 template <>
