@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -203,6 +203,7 @@ void latrd_getPerfData(const rocblas_handle handle,
                        double* cpu_time_used,
                        const rocblas_int hot_calls,
                        const int profile,
+                       const bool profile_kernels,
                        const bool perf)
 {
     if(!perf)
@@ -234,7 +235,11 @@ void latrd_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -360,7 +365,8 @@ void testing_latrd(Arguments& argus)
     // collect performance data
     if(argus.timing)
         latrd_getPerfData<T>(handle, uplo, n, k, dA, lda, dE, dTau, dW, ldw, hA, hE, hTau, hW,
-                             &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                             &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                             argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using k*n * machine_precision as tolerance

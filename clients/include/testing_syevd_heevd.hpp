@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -301,6 +301,7 @@ void syevd_heevd_getPerfData(const rocblas_handle handle,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
                              const int profile,
+                             const bool profile_kernels,
                              const bool perf)
 {
     constexpr bool COMPLEX = is_complex<T>;
@@ -354,7 +355,11 @@ void syevd_heevd_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -515,7 +520,8 @@ void testing_syevd_heevd(Arguments& argus)
         {
             syevd_heevd_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE,
                                                 stE, dinfo, bc, hA, hD, hinfo, &gpu_time_used,
-                                                &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                                                &cpu_time_used, hot_calls, argus.profile,
+                                                argus.profile_kernels, argus.perf);
         }
     }
 
@@ -554,7 +560,8 @@ void testing_syevd_heevd(Arguments& argus)
         {
             syevd_heevd_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE,
                                                 stE, dinfo, bc, hA, hD, hinfo, &gpu_time_used,
-                                                &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                                                &cpu_time_used, hot_calls, argus.profile,
+                                                argus.profile_kernels, argus.perf);
         }
     }
 

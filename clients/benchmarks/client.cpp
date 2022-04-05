@@ -128,6 +128,12 @@ try
             "                           If the argument is unset or <= 0, profile logging is disabled.\n"
             "                           ")
 
+        ("profile_kernels",
+         value<rocblas_int>(&argus.profile_kernels)->default_value(0),
+            "Include kernels in profile logging results? 0 = No, 1 = Yes.\n"
+            "                           Used in conjunction with --profile to include kernels in the profile log.\n"
+            "                           ")
+
         ("singular",
          value<rocblas_int>(&argus.singular)->default_value(0),
             "Test with degenerate matrices? 0 = No, 1 = Yes\n"
