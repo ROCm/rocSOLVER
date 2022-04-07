@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <hip/hip_runtime.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 /*
  * ===========================================================================

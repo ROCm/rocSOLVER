@@ -6,7 +6,7 @@
 
 #include <cstdio>
 #include <iostream>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 #include <string>
 #include <type_traits>
 #include <vector>

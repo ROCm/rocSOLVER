@@ -8,7 +8,7 @@
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #include "rocblascommon/program_options.hpp"
 
