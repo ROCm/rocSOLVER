@@ -409,7 +409,7 @@ void syevx_heevx_getPerfData(const rocblas_handle handle,
 {
     constexpr bool COMPLEX = is_complex<T>;
 
-    int lwork = !COMPLEX ? 8 * n : 2 * n;
+    int lwork = !COMPLEX ? 35 * n : 33 * n;
     int lrwork = !COMPLEX ? 0 : 7 * n;
     int liwork = 5 * n;
 
