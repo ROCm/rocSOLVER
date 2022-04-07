@@ -660,6 +660,29 @@ void cblas_syevd_heevd(rocblas_evect evect,
                        rocblas_int* info);
 
 template <typename T, typename S>
+void cblas_syevx_heevx(rocblas_evect evect,
+                       rocblas_erange erange,
+                       rocblas_fill uplo,
+                       rocblas_int n,
+                       T* A,
+                       rocblas_int lda,
+                       S vl,
+                       S vu,
+                       rocblas_int il,
+                       rocblas_int iu,
+                       S abstol,
+                       rocblas_int* nev,
+                       S* W,
+                       T* Z,
+                       rocblas_int ldz,
+                       T* work,
+                       rocblas_int lwork,
+                       S* rwork,
+                       rocblas_int* iwork,
+                       rocblas_int* ifail,
+                       rocblas_int* info);
+
+template <typename T, typename S>
 void cblas_sygv_hegv(rocblas_eform itype,
                      rocblas_evect evect,
                      rocblas_fill uplo,

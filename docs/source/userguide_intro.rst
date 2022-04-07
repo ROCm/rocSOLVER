@@ -168,10 +168,12 @@ LAPACK main functions
 
     :ref:`rocsolver_syev <syev>`, x, x, ,
     :ref:`rocsolver_syevd <syevd>`, x, x, ,
+    :ref:`rocsolver_syevx <syevx>`, x, x, ,
     :ref:`rocsolver_sygv <sygv>`, x, x, ,
     :ref:`rocsolver_sygvd <sygvd>`, x, x, ,
     :ref:`rocsolver_heev <heev>`, , , x, x
     :ref:`rocsolver_heevd <heevd>`, , , x, x
+    :ref:`rocsolver_heevx <heevx>`, , , x, x
     :ref:`rocsolver_hegv <hegv>`, , , x, x
     :ref:`rocsolver_hegvd <hegvd>`, , , x, x
 
