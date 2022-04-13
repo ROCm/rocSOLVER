@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #include "clientcommon.hpp"
 
