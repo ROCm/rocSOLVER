@@ -1,5 +1,5 @@
 #include <hip/hip_runtime_api.h> // for hip functions
-#include <rocsolver.h> // for all the rocsolver C interfaces and type declarations
+#include <rocsolver/rocsolver.h> // for all the rocsolver C interfaces and type declarations
 #include <stdio.h>   // for printf
 #include <stdlib.h> // for malloc
 

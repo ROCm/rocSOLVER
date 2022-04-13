@@ -8,7 +8,7 @@
 #include <cstdio>
 
 #include <fmt/core.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #include "rocblas_init.hpp"
 #include "rocblas_test.hpp"

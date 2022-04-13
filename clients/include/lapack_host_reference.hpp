@@ -6,7 +6,7 @@
 
 #include "clientcommon.hpp"
 #include "rocsolver_datatype2string.hpp"
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 /*!\file
  * \brief provide template functions interfaces to CBLAS and LAPACK interfaces,

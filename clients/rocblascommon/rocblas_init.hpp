@@ -9,7 +9,7 @@
 #include <vector>
 
 #include <fmt/core.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 
 #include "rocblas_math.hpp"
 #include "rocblas_random.hpp"
