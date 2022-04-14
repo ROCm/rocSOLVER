@@ -283,12 +283,12 @@ void testing_sterf(Arguments& argus)
             rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
-                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us", "error");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
             }
             else
             {
-                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();
