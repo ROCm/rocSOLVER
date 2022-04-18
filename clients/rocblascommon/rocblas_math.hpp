@@ -7,7 +7,7 @@
 #include <cmath>
 #include <hip/hip_runtime.h>
 #include <immintrin.h>
-#include <rocblas.h>
+#include <rocblas/rocblas.h>
 #include <type_traits>
 
 /* ============================================================================================

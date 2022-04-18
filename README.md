@@ -50,7 +50,7 @@ function, see the [rocSOLVER API documentation][6].
 #include <stddef.h>  // for size_t
 #include <vector>
 #include <hip/hip_runtime_api.h> // for hip functions
-#include <rocsolver.h> // for all the rocsolver C interfaces and type declarations
+#include <rocsolver/rocsolver.h> // for all the rocsolver C interfaces and type declarations
 
 int main() {
   rocblas_int M;

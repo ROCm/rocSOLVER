@@ -15,6 +15,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Optimized
 ### Changed
+- Changed rocsolver-bench result labels `cpu_time` and `gpu_time` to
+  `cpu_time_us` and `gpu_time_us`, respectively.
+
 ### Deprecated
 ### Removed
 ### Fixed
