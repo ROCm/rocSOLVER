@@ -119,9 +119,7 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
                           const rocblas_stride stB,
                           const rocblas_int bc,
                           Th& hA,
-                          Th& hB,
-                          host_strided_batch_vector<T>& M,
-                          const bool test)
+                          Th& hB)
 {
     if(CPU)
     {
@@ -129,11 +127,12 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
         const rocblas_int ldu = n;
         host_strided_batch_vector<T> U(n * n, 1, n * n, bc);
         rocblas_init<T>(hA, true);
-        rocblas_init<T>(U, false);
+        rocblas_init<T>(U, true);
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // for testing purposes, construct A and B such that the eigenvalue range of the generalized eigenproblem is known
+            // for testing purposes, we start with the reduced matrix M of the standard equivalent problem. 
+            // Then we construct the generalized pair (A, B) from there
             for(rocblas_int i = 0; i < n; i++)
             {
                 // scale matrices and set hA = M (symmetric/hermitian), hB = U (upper triangular) or hB = U'
@@ -141,15 +140,16 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
                 {
                     if(i == j)
                     {
-                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 100;
-                        hB[b][i + j * ldb] = U[b][i + j * ldu] = 1;
+                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) - 5;
+                        U[b][i + j * ldu] = std::real(U[b][i + j * ldu]) / 100 + 1;
+                        hB[b][i + j * ldb] = U[b][i + j * ldu];
                     }
                     else
                     {
                         hA[b][i + j * lda] -= 5;
                         hA[b][j + i * lda] = sconj(hA[b][i + j * lda]);
 
-                        U[b][i + j * ldu] /= 20;
+                        U[b][i + j * ldu] = (U[b][i + j * ldu] - 5) / 100;
                         if(uplo == rocblas_fill_upper)
                         {
                             hB[b][i + j * ldb] = U[b][i + j * ldu];
@@ -164,18 +164,10 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
                 }
             }
 
-            // store M = hA for testing purposes
-            if(test)
-            {
-                for(rocblas_int i = 0; i < n; i++)
-                    for(rocblas_int j = 0; j < n; j++)
-                        M[b][i + j * lda] = hA[b][i + j * lda];
-            }
-
-            // form A = U' M U or A = inv(U) M inv(U')
             T one = T(1);
             if(itype == rocblas_eform_ax)
             {
+                // form A = U' M U
                 cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper,
                               rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
                               n, one, U[b], ldu, hA[b], lda);
@@ -184,16 +176,13 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
             }
             else
             {
-                // print_host_matrix(std::cout, "U", n, n, U[b], ldu);
-
+                // form A = inv(U) M inv(U')
                 cblas_trtri<T>(rocblas_fill_upper, rocblas_diagonal_non_unit, n, U[b], ldu, &info);
                 cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
                               rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
                 cblas_trmm<T>(rocblas_side_right, rocblas_fill_upper,
                               rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
                               n, one, U[b], ldu, hA[b], lda);
-
-                // print_host_matrix(std::cout, "inv(U)", n, n, U[b], ldu);
             }
         }
     }
@@ -224,14 +213,8 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
                           Th& hBRes,
                           double* max_err)
 {
-    host_strided_batch_vector<T> M(lda * n, 1, lda * n, bc);
-
     // input data initialization
-    sygsx_hegsx_initData<true, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                        hB, M, true);
-
-    // print_host_matrix(std::cout, "M", n, n, M[0], lda);
-    // print_host_matrix(std::cout, "A before", n, n, hA[0], lda);
+    sygsx_hegsx_initData<true, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hB);
 
     // execute computations
     // GPU lapack
@@ -246,9 +229,6 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
         SYGST ? cblas_sygst_hegst<T>(itype, uplo, n, hA[b], lda, hB[b], ldb)
               : cblas_sygs2_hegs2<T>(itype, uplo, n, hA[b], lda, hB[b], ldb);
     }
-
-    // print_host_matrix(std::cout, "A after (CPU)", n, n, hA[0], lda, uplo);
-    // print_host_matrix(std::cout, "A after (GPU)", n, n, hARes[0], lda, uplo);
 
     // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -292,7 +272,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hB, M, false);
+                                             hA, hB);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -304,14 +284,13 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                         hB, M, false);
+    sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hB);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hB, M, false);
+                                             hA, hB);
 
         CHECK_ROCBLAS_ERROR(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(),
                                                   lda, stA, dB.data(), ldb, stB, bc));
@@ -335,7 +314,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hB, M, false);
+                                             hA, hB);
 
         start = get_time_us_sync(stream);
         rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(), lda, stA,

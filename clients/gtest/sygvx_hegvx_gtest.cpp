@@ -28,23 +28,23 @@ const vector<vector<printable_char>> type_range
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1, 1, 1, 390, 420, 1, 1, 0},
+    {0, 1, 1, 1, 0, 10, 1, 1, 0},
     // invalid
-    {-1, 1, 1, 1, 390, 420, 1, 1, 0},
-    {20, 5, 5, 20, 390, 420, 1, 1, 0},
-    {20, 20, 20, 5, 390, 420, 1, 1, 0},
+    {-1, 1, 1, 1, 0, 10, 1, 1, 0},
+    {20, 5, 5, 20, 0, 10, 1, 1, 0},
+    {20, 20, 20, 5, 0, 10, 1, 1, 0},
     // valid only when erange=A
-    {20, 20, 20, 20, 420, 390, 10, 1, 0},
+    {20, 20, 20, 20, 10, 0, 10, 1, 0},
     // normal (valid) samples
-    {20, 30, 20, 20, 390, 405, 1, 10, 1},
-    {35, 35, 35, 35, 400, 410, 1, 35, 0},
-    {50, 50, 60, 70, 405, 420, 25, 50, 1}};
+    {20, 30, 20, 20, 5, 15, 1, 10, 1},
+    {35, 35, 35, 35, -10, 10, 1, 35, 0},
+    {50, 50, 60, 70, -15, -5, 25, 50, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192, 192, 192, 390, 405, 100, 150, 0},
-    {256, 270, 256, 260, 400, 410, 1, 100, 0},
-    {300, 300, 310, 320, 405, 420, 200, 300, 0},
+    {192, 192, 192, 192, 5, 15, 100, 150, 0},
+    {256, 270, 256, 260, -10, 10, 1, 100, 0},
+    {300, 300, 310, 320, -15, -5, 200, 300, 0},
 };
 
 template <typename T>
@@ -61,17 +61,17 @@ Arguments sygvx_setup_arguments(sygvx_tuple tup)
     arg.set<rocblas_int>("lda", matrix_size[1]);
     arg.set<rocblas_int>("ldb", matrix_size[2]);
     arg.set<rocblas_int>("ldz", matrix_size[3]);
-    arg.set<S>("vl", matrix_size[4]);
-    arg.set<S>("vu", matrix_size[5]);
+    arg.set<double>("vl", matrix_size[4]);
+    arg.set<double>("vu", matrix_size[5]);
     arg.set<rocblas_int>("il", matrix_size[6]);
     arg.set<rocblas_int>("iu", matrix_size[7]);
 
     arg.set<char>("itype", type[0]);
     arg.set<char>("evect", type[1]);
-    arg.set<char>("erange", type[2]);
+    arg.set<char>("range", type[2]);
     arg.set<char>("uplo", type[3]);
 
-    arg.set<S>("abstol", 0);
+    arg.set<double>("abstol", 0);
 
     // only testing standard use case/defaults for strides
 
@@ -94,7 +94,7 @@ protected:
         Arguments arg = sygvx_setup_arguments<T>(GetParam());
 
         if(arg.peek<char>("itype") == '1' && arg.peek<char>("evect") == 'N'
-           && arg.peek<char>("erange") == 'A' && arg.peek<char>("uplo") == 'U'
+           && arg.peek<char>("range") == 'A' && arg.peek<char>("uplo") == 'U'
            && arg.peek<rocblas_int>("n") == 0)
             testing_sygvx_hegvx_bad_arg<BATCHED, STRIDED, T>();
 

@@ -144,7 +144,7 @@ void syev_heev_initData(const rocblas_handle handle,
                 for(rocblas_int j = 0; j < n; j++)
                 {
                     if(i == j)
-                        hA[b][i + j * lda] += 400;
+                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 400;
                     else
                         hA[b][i + j * lda] -= 4;
                 }
