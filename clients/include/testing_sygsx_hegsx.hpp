@@ -131,7 +131,7 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // for testing purposes, we start with the reduced matrix M of the standard equivalent problem. 
+            // for testing purposes, we start with the reduced matrix M of the standard equivalent problem.
             // Then we construct the generalized pair (A, B) from there
             for(rocblas_int i = 0; i < n; i++)
             {
@@ -214,7 +214,8 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
                           double* max_err)
 {
     // input data initialization
-    sygsx_hegsx_initData<true, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hB);
+    sygsx_hegsx_initData<true, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
+                                        hB);
 
     // execute computations
     // GPU lapack
@@ -267,8 +268,6 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    host_strided_batch_vector<T> M(lda * n, 1, lda * n, bc);
-
     if(!perf)
     {
         sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
@@ -284,7 +283,8 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA, hB);
+    sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
+                                         hB);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
@@ -494,9 +494,9 @@ void testing_sygsx_hegsx(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
+    // using 3 * n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 3 * n);
 
     // output results for rocsolver-bench
     if(argus.timing)

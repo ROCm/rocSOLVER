@@ -99,9 +99,27 @@ void cblas_gemm(rocblas_operation transA,
                 rocblas_int ldc);
 /*
 template <typename T>
-void cblas_trsm(rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
-                rocblas_diagonal diag, rocblas_int m, rocblas_int n, T alpha,
-                const T *A, rocblas_int lda, T *B, rocblas_int ldb);
+void cblas_trsm(rocblas_side side,
+                rocblas_fill uplo,
+                rocblas_operation transA,
+                rocblas_diagonal diag,
+                rocblas_int m,
+                rocblas_int n,
+                T alpha,
+                T* A,
+                rocblas_int lda,
+                T* B,
+                rocblas_int ldb);
+
+template <typename T>
+void cblas_trsv(rocblas_fill uplo,
+                rocblas_operation transA,
+                rocblas_diagonal diag,
+                rocblas_int n,
+                T* A,
+                rocblas_int lda,
+                T* x,
+                rocblas_int incx);
 */
 template <typename T>
 void cblas_trmm(rocblas_side side,

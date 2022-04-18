@@ -25,15 +25,16 @@ const vector<vector<printable_char>> type_range
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
-    // // quick return
-    // {0, 1, 1},
-    // // invalid
-    // {-1, 1, 1},
-    // {20, 5, 5},
-    // // normal (valid) samples
-    {10, 50, 50},
+    // quick return
+    {0, 1, 1},
+    // invalid
+    {-1, 1, 1},
+    {20, 5, 5},
+    // normal (valid) samples
+    {50, 50, 50},
     {70, 100, 110},
-    {130, 130, 130}};
+    {130, 130, 130},
+};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
