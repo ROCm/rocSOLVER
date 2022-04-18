@@ -212,6 +212,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     rocblas_int blocks_batch = (batch_count - 1) / BS1 + 1;
+    rocblas_int waves_batch = (batch_count - 1) / warpSize + 1;
+    dim3 blocks(blocks_batch, 1, 1);
+    dim3 threads(min(BS1, warpSize * waves_batch), 1, 1);
 
     if(itype == rocblas_eform_ax)
     {
@@ -223,9 +226,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             for(rocblas_int k = 0; k < n; k++)
             {
                 // Set A[k, k] and store coefficients in store_wcs
-                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag1, dim3(blocks_batch, 1, 1), dim3(BS1, 1, 1),
-                                        0, stream, k, A, shiftA, lda, strideA, B, shiftB, ldb,
-                                        strideB, (T*)store_wcs, batch_count);
+                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag1, blocks, threads, 0, stream, k, A, shiftA,
+                                        lda, strideA, B, shiftB, ldb, strideB, (T*)store_wcs,
+                                        batch_count);
 
                 if(k < n - 1)
                 {
@@ -279,9 +282,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             for(rocblas_int k = 0; k < n; k++)
             {
                 // Set A[k, k] and store coefficients in store_wcs
-                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag1, dim3(blocks_batch, 1, 1), dim3(BS1, 1, 1),
-                                        0, stream, k, A, shiftA, lda, strideA, B, shiftB, ldb,
-                                        strideB, (T*)store_wcs, batch_count);
+                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag1, blocks, threads, 0, stream, k, A, shiftA,
+                                        lda, strideA, B, shiftB, ldb, strideB, (T*)store_wcs,
+                                        batch_count);
 
                 if(k < n - 1)
                 {
@@ -321,9 +324,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             for(rocblas_int k = 0; k < n; k++)
             {
                 // Store coefficients in store_wcs
-                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag2, dim3(blocks_batch, 1, 1), dim3(BS1, 1, 1),
-                                        0, stream, k, A, shiftA, lda, strideA, B, shiftB, ldb,
-                                        strideB, (T*)store_wcs, batch_count);
+                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag2, blocks, threads, 0, stream, k, A, shiftA,
+                                        lda, strideA, B, shiftB, ldb, strideB, (T*)store_wcs,
+                                        batch_count);
 
                 rocblasCall_trmv<T>(handle, uplo, rocblas_operation_none, rocblas_diagonal_non_unit,
                                     k, B, shiftB, ldb, strideB, A, shiftA + idx2D(0, k, lda), 1,
@@ -345,9 +348,8 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                     1, strideA, batch_count);
 
                 // Set A[k, k]
-                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag3, dim3(blocks_batch, 1, 1), dim3(BS1, 1, 1),
-                                        0, stream, k, A, shiftA, lda, strideA, (T*)store_wcs,
-                                        batch_count);
+                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag3, blocks, threads, 0, stream, k, A, shiftA,
+                                        lda, strideA, (T*)store_wcs, batch_count);
             }
         }
         else
@@ -356,9 +358,9 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
             for(rocblas_int k = 0; k < n; k++)
             {
                 // Store coefficients in store_wcs
-                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag2, dim3(blocks_batch, 1, 1), dim3(BS1, 1, 1),
-                                        0, stream, k, A, shiftA, lda, strideA, B, shiftB, ldb,
-                                        strideB, (T*)store_wcs, batch_count);
+                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag2, blocks, threads, 0, stream, k, A, shiftA,
+                                        lda, strideA, B, shiftB, ldb, strideB, (T*)store_wcs,
+                                        batch_count);
 
                 if(COMPLEX)
                     rocsolver_lacgv_template<T>(handle, k, A, shiftA + idx2D(k, 0, lda), lda,
@@ -397,9 +399,8 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                                 strideA, batch_count);
 
                 // Set A[k, k]
-                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag3, dim3(blocks_batch, 1, 1), dim3(BS1, 1, 1),
-                                        0, stream, k, A, shiftA, lda, strideA, (T*)store_wcs,
-                                        batch_count);
+                ROCSOLVER_LAUNCH_KERNEL(sygs2_set_diag3, blocks, threads, 0, stream, k, A, shiftA,
+                                        lda, strideA, (T*)store_wcs, batch_count);
             }
         }
     }
