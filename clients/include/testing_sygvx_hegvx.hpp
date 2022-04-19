@@ -267,7 +267,7 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
                     }
                 }
                 if(i == n / 4 || i == n / 2 || i == n - 1 || i == n / 7 || i == n / 5 || i == n / 3)
-                    hA[b][i + i * lda] *= -1; 
+                    hA[b][i + i * lda] *= -1;
             }
 
             // form B = U' U
@@ -275,7 +275,7 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
             cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper,
                           rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, n,
                           one, U[b], ldu, hB[b], ldb);
-            
+
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
                 // make some matrices B not positive definite
@@ -293,7 +293,6 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
                 hB[b][i + i * ldb] = 0;
             }
 
-
             if(itype == rocblas_eform_ax)
             {
                 // form A = U' M U
@@ -306,14 +305,13 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
             else
             {
                 // form A = inv(U) M inv(U')
-                cblas_trtri<T>(rocblas_fill_upper, rocblas_diagonal_non_unit, n, U[b], ldu, &info);
-                cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                cblas_trsm<T>(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
                               rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
-                cblas_trmm<T>(rocblas_side_right, rocblas_fill_upper,
+                cblas_trsm<T>(rocblas_side_right, rocblas_fill_upper,
                               rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
                               n, one, U[b], ldu, hA[b], lda);
             }
-            
+
             // store A and B for testing purposes
             if(test && evect != rocblas_evect_none)
             {

@@ -177,10 +177,9 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
             else
             {
                 // form A = inv(U) M inv(U')
-                cblas_trtri<T>(rocblas_fill_upper, rocblas_diagonal_non_unit, n, U[b], ldu, &info);
-                cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                cblas_trsm<T>(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
                               rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
-                cblas_trmm<T>(rocblas_side_right, rocblas_fill_upper,
+                cblas_trsm<T>(rocblas_side_right, rocblas_fill_upper,
                               rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
                               n, one, U[b], ldu, hA[b], lda);
             }
