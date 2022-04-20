@@ -209,7 +209,7 @@ void syevx_heevx_initData(const rocblas_handle handle,
                     }
                 }
                 if(i == n / 4 || i == n / 2 || i == n - 1 || i == n / 7 || i == n / 5 || i == n / 3)
-                    hA[b][i + i * lda] *= -1; 
+                    hA[b][i + i * lda] *= -1;
             }
 
             // make copy of original data to test vectors if required

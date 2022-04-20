@@ -63,7 +63,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
                 W[i] = W[j];
                 W[j] = tmp1;
             }
-            
+
             for(int k = tid; k < n; k += hipBlockDim_x)
                 swap(Z[k + i * ldz], Z[k + j * ldz]);
 
