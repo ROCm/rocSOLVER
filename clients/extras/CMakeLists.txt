@@ -15,21 +15,23 @@ set_target_properties(test-header PROPERTIES
 )
 
 if(UNIX AND BUILD_SHARED_LIBS)
-  add_executable(test-rocsolver-dlopen
-    test_dlopen_main.cpp
-  )
-  target_compile_definitions(test-rocsolver-dlopen PRIVATE
-    ROCSOLVER_LIB_NAME="$<TARGET_FILE:rocsolver>"
-  )
-  target_link_libraries(test-rocsolver-dlopen PRIVATE
-    GTest::GTest
-    ${CMAKE_DL_LIBS}
-  )
+  if(TARGET rocsolver)
+    add_executable(test-rocsolver-dlopen
+      test_dlopen_main.cpp
+    )
+    target_compile_definitions(test-rocsolver-dlopen PRIVATE
+      ROCSOLVER_LIB_NAME="$<TARGET_FILE:rocsolver>"
+    )
+    target_link_libraries(test-rocsolver-dlopen PRIVATE
+      GTest::GTest
+      ${CMAKE_DL_LIBS}
+    )
 
-  add_test(
-    NAME test-rocsolver-dlopen
-    COMMAND test-rocsolver-dlopen
-  )
+    add_test(
+      NAME test-rocsolver-dlopen
+      COMMAND test-rocsolver-dlopen
+    )
+  endif()
 
   if(TARGET rocsolver-bench)
     find_package(Python3 COMPONENTS Interpreter)
