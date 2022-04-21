@@ -251,7 +251,7 @@ rocblas_status rocsolver_sygvx_hegvx_template(rocblas_handle handle,
     // info=0 (starting with no errors)
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
-    // quick return with m = 0
+    // quick return with n = 0
     if(n == 0)
     {
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, nev, batch_count, 0);

@@ -915,25 +915,26 @@ void testing_sygvx_hegvx(Arguments& argus)
             rocsolver_bench_header("Arguments:");
             if(BATCHED)
             {
-                rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb", "vl", "vu",
-                                       "il", "iu", "abstol", "strideW", "ldz", "strideF", "batch_c");
-                rocsolver_bench_output(itypeC, evectC, uploC, n, lda, ldb, vl, vu, il, iu, abstol,
-                                       stW, ldz, stF, bc);
+                rocsolver_bench_output("itype", "evect", "erange", "uplo", "n", "lda", "ldb", "vl",
+                                       "vu", "il", "iu", "abstol", "strideW", "ldz", "strideF",
+                                       "batch_c");
+                rocsolver_bench_output(itypeC, evectC, erangeC, uploC, n, lda, ldb, vl, vu, il, iu,
+                                       abstol, stW, ldz, stF, bc);
             }
             else if(STRIDED)
             {
-                rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb", "strideA",
-                                       "strideB", "vl", "vu", "il", "iu", "abstol", "strideW",
-                                       "ldz", "strideZ", "strideF", "batch_c");
-                rocsolver_bench_output(itypeC, evectC, uploC, n, lda, ldb, stA, stB, vl, vu, il, iu,
-                                       abstol, stW, ldz, stZ, stF, bc);
+                rocsolver_bench_output("itype", "evect", "erange", "uplo", "n", "lda", "ldb",
+                                       "strideA", "strideB", "vl", "vu", "il", "iu", "abstol",
+                                       "strideW", "ldz", "strideZ", "strideF", "batch_c");
+                rocsolver_bench_output(itypeC, evectC, erangeC, uploC, n, lda, ldb, stA, stB, vl,
+                                       vu, il, iu, abstol, stW, ldz, stZ, stF, bc);
             }
             else
             {
-                rocsolver_bench_output("itype", "evect", "uplo", "n", "lda", "ldb", "vl", "vu",
-                                       "il", "iu", "abstol", "ldz");
-                rocsolver_bench_output(itypeC, evectC, uploC, n, lda, ldb, vl, vu, il, iu, abstol,
-                                       ldz);
+                rocsolver_bench_output("itype", "evect", "erange", "uplo", "n", "lda", "ldb", "vl",
+                                       "vu", "il", "iu", "abstol", "ldz");
+                rocsolver_bench_output(itypeC, evectC, erangeC, uploC, n, lda, ldb, vl, vu, il, iu,
+                                       abstol, ldz);
             }
             rocsolver_bench_header("Results:");
             if(argus.norm_check)

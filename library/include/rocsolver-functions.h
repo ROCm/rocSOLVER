@@ -17332,7 +17332,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief SYGVX computes a set of the eigenvalues and (optionally) eigenvectors of
+    \brief SYGVX computes a set of the eigenvalues and optionally the corresponding eigenvectors of
     a real generalized symmetric-definite eigenproblem.
 
     \details
@@ -17497,7 +17497,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief HEGVX computes a set of the eigenvalues and (optionally) eigenvectors of
+    \brief HEGVX computes a set of the eigenvalues and optionally the corresponding eigenvectors of
     a complex generalized hermitian-definite eigenproblem.
 
     \details
@@ -17662,8 +17662,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYGVX_BATCHED computes a set of the eigenvalues and (optionally)
-    eigenvectors of a batch of real generalized symmetric-definite eigenproblems.
+    \brief SYGVX_BATCHED computes a set of the eigenvalues and optionally
+    the corresponding eigenvectors of a batch of real generalized symmetric-definite eigenproblems.
 
     \details
     For each instance in the batch, the problem solved by this function is either of the form
@@ -17844,8 +17844,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief HEGVX_BATCHED computes a set of the eigenvalues and (optionally)
-    eigenvectors of a batch of complex generalized hermitian-definite eigenproblems.
+    \brief HEGVX_BATCHED computes a set of the eigenvalues and optionally
+    the corresponding eigenvectors of a batch of complex generalized hermitian-definite eigenproblems.
 
     \details
     For each instance in the batch, the problem solved by this function is either of the form
@@ -18026,8 +18026,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx_batched(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief SYGVX_STRIDED_BATCHED computes a set of the eigenvalues and (optionally)
-    eigenvectors of a batch of real generalized symmetric-definite eigenproblems.
+    \brief SYGVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally
+    the corresponding eigenvectors of a batch of real generalized symmetric-definite eigenproblems.
 
     \details
     For each instance in the batch, the problem solved by this function is either of the form
@@ -18226,8 +18226,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief HEGVX_STRIDED_BATCHED computes a set of the eigenvalues and (optionally)
-    eigenvectors of a batch of complex generalized hermitian-definite eigenproblems.
+    \brief HEGVX_STRIDED_BATCHED computes a set of the eigenvalues and optionally
+    the corresponding eigenvectors of a batch of complex generalized hermitian-definite eigenproblems.
 
     \details
     For each instance in the batch, the problem solved by this function is either of the form
