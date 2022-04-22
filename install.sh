@@ -81,7 +81,14 @@ Options:
                               (Default build type is Release)
 
   --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
+
   --rm-legacy-include-dir     Remove legacy include dir Packaging added for file/folder reorg backward compatibility.
+
+    -D <arg>                         Pass '-D <arg>' to CMake during configuration.
+
+    -G <arg>                         Pass '-G <arg>' to CMake during configuration.
+
+    -C <arg>                         Pass '-C <arg>' to CMake during configuration.
 EOF
 }
 
@@ -345,7 +352,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdgsrnka:D:G:C: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -434,6 +441,15 @@ while true; do
         shift ;;
     --cmake-arg)
         cmake_common_options+=("${2}")
+        shift 2 ;;
+    -D)
+        cmake_common_options+=('-D' "${2}")
+        shift 2 ;;
+    -G)
+        cmake_common_options+=('-G' "${2}")
+        shift 2 ;;
+    -C)
+        cmake_common_options+=('-C' "${2}")
         shift 2 ;;
     --) shift ; break ;;
     *)
@@ -627,7 +643,7 @@ check_exit_code "$?"
 # #################################################
 # installing through package manager, which makes uninstalling easy
 if [[ "${build_package}" == true ]]; then
-  make package
+  cmake --build . --target package
   check_exit_code "$?"
 
   if [[ "${install_package}" == true ]]; then
