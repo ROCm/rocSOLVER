@@ -869,8 +869,8 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
 
     return rocblas_internal_trmm_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
-        cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB,
-        B, offsetB, ldb, strideB, batch_count);
+        cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB, B,
+        offsetB, ldb, strideB, batch_count);
 }
 
 // trmm overload
