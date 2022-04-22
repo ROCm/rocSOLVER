@@ -33,8 +33,14 @@ def parse_args():
                         help='Generate all client builds (optional, default: False)')
     parser.add_argument('-i', '--install', required=False, default = False, dest='install', action='store_true',
                         help='Install after build (optional, default: False)')
-    parser.add_argument(      '--cmake-darg', required=False, dest='cmake_dargs', action='append', default=[],
-                        help='List of additional cmake defines for builds (optional, e.g. CMAKE)')
+    parser.add_argument('-D', '--cmake-darg', required=False, dest='cmake_dargs', action='append', default=[],
+                        help='Additional cmake defines for builds (optional, e.g. CMAKE)')
+    parser.add_argument('-G', required=False, dest='generator',
+                        help="Pass '-G <arg>' to CMake during configuration. (optional)")
+    parser.add_argument('-C', required=False, dest='initial_cache',
+                        help="Pass '-C <arg>' to CMake during configuration. (optional)")
+    parser.add_argument(      '--cmake-arg', required=False, dest='cmake_args', action='append', default=[],
+                        help='Additional cmake arguments to pass during configuration (optional, e.g. --debug-find)')
     parser.add_argument('-v', '--verbose', required=False, default = False, action='store_true',
                         help='Verbose build (optional, default: False)')
     # rocsolver
@@ -116,7 +122,8 @@ def config_cmd():
         cmake_options.append("-DCMAKE_STATIC_LIBRARY_PREFIX=static_")
         cmake_options.append("-DCMAKE_SHARED_LIBRARY_SUFFIX=.dll")
         cmake_options.append("-DCMAKE_SHARED_LIBRARY_PREFIX=")
-        cmake_options.append("-G Ninja")
+        if not args.generator:
+            cmake_options.append('-G Ninja')
     else:
         rocm_path = os.getenv( 'ROCM_PATH', "/opt/rocm")
         cmake_executable = "cmake"
@@ -188,6 +195,14 @@ def config_cmd():
     if args.cmake_dargs:
         for i in args.cmake_dargs:
           cmake_options.append( f"-D{i}" )
+
+    cmake_options.extend(args.cmake_args)
+
+    if args.initial_cache:
+        cmake_options.append("-C {}".format(args.initial_cache))
+
+    if args.generator:
+        cmake_options.append("-G {}".format(args.generator))
 
     cmake_options.append( f"{src_path}")
     cmd_opts = " ".join(cmake_options)
