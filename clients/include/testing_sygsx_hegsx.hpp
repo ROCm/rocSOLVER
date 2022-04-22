@@ -119,7 +119,9 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
                           const rocblas_stride stB,
                           const rocblas_int bc,
                           Th& hA,
-                          Th& hB)
+                          Th& hB,
+                          host_strided_batch_vector<T>& M,
+                          const bool test)
 {
     if(CPU)
     {
@@ -140,13 +142,13 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
                 {
                     if(i == j)
                     {
-                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) - 5;
+                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 100;
                         U[b][i + j * ldu] = std::real(U[b][i + j * ldu]) / 100 + 1;
                         hB[b][i + j * ldb] = U[b][i + j * ldu];
                     }
                     else
                     {
-                        hA[b][i + j * lda] -= 5;
+                        hA[b][i + j * lda] = (hA[b][i + j * lda] - 5) / 10;
                         hA[b][j + i * lda] = sconj(hA[b][i + j * lda]);
 
                         U[b][i + j * ldu] = (U[b][i + j * ldu] - 5) / 100;
@@ -162,6 +164,14 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
                         }
                     }
                 }
+            }
+
+            // store M = hA for implicit testing
+            if(test)
+            {
+                for(rocblas_int i = 0; i < n; i++)
+                    for(rocblas_int j = 0; j < n; j++)
+                        M[b][i + j * lda] = hA[b][i + j * lda];
             }
 
             T one = T(1);
@@ -209,39 +219,45 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
                           Th& hA,
                           Th& hARes,
                           Th& hB,
-                          Th& hBRes,
                           double* max_err)
 {
+    constexpr bool VERIFY_IMPLICIT_TEST = false;
+    host_strided_batch_vector<T> M(lda * n, 1, lda * n, bc);
+
     // input data initialization
     sygsx_hegsx_initData<true, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                        hB);
+                                        hB, M, true);
 
     // execute computations
-    // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(),
-                                              lda, stA, dB.data(), ldb, stB, bc));
-    CHECK_HIP_ERROR(hARes.transfer_from(dA));
-    CHECK_HIP_ERROR(hBRes.transfer_from(dB));
-
+    // use verify_implicit_test to check correctness of the implicit test using
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    if(!VERIFY_IMPLICIT_TEST)
     {
-        SYGST ? cblas_sygst_hegst<T>(itype, uplo, n, hA[b], lda, hB[b], ldb)
-              : cblas_sygs2_hegs2<T>(itype, uplo, n, hA[b], lda, hB[b], ldb);
+        // GPU lapack
+        CHECK_ROCBLAS_ERROR(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(),
+                                                  lda, stA, dB.data(), ldb, stB, bc));
+        CHECK_HIP_ERROR(hARes.transfer_from(dA));
+    }
+    {
+        // CPU lapack
+        for(rocblas_int b = 0; b < bc; ++b)
+        {
+            memcpy(hARes[b], hA[b], lda * n * sizeof(T));
+            SYGST ? cblas_sygst_hegst<T>(itype, uplo, n, hARes[b], lda, hB[b], ldb)
+                  : cblas_sygs2_hegs2<T>(itype, uplo, n, hARes[b], lda, hB[b], ldb);
+        }
     }
 
-    // error is ||hA - hARes|| / ||hA||
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
-    // IT MIGHT BE REVISITED IN THE FUTURE)
+    // error is ||M - hARes|| / ||M||
     // using frobenius norm
     double err;
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
         if(uplo == rocblas_fill_upper)
-            err = norm_error_upperTr('F', n, n, lda, hA[b], hARes[b]);
+            err = norm_error_upperTr('F', n, n, lda, M[b], hARes[b]);
         else
-            err = norm_error_lowerTr('F', n, n, lda, hA[b], hARes[b]);
+            err = norm_error_lowerTr('F', n, n, lda, M[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 }
@@ -267,10 +283,12 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
+    host_strided_batch_vector<T> M(lda * n, 1, lda * n, bc);
+
     if(!perf)
     {
         sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hB);
+                                             hA, hB, M, false);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -283,13 +301,13 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
     }
 
     sygsx_hegsx_initData<true, false, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc, hA,
-                                         hB);
+                                         hB, M, false);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hB);
+                                             hA, hB, M, false);
 
         CHECK_ROCBLAS_ERROR(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(),
                                                   lda, stA, dB.data(), ldb, stB, bc));
@@ -313,7 +331,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
-                                             hA, hB);
+                                             hA, hB, M, false);
 
         start = get_time_us_sync(stream);
         rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, uplo, n, dA.data(), lda, stA,
@@ -370,7 +388,6 @@ void testing_sygsx_hegsx(Arguments& argus)
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_BRes = (argus.unit_check || argus.norm_check) ? size_B : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || ldb < n || bc < 0);
@@ -422,7 +439,6 @@ void testing_sygsx_hegsx(Arguments& argus)
         host_batch_vector<T> hA(size_A, 1, bc);
         host_batch_vector<T> hARes(size_ARes, 1, bc);
         host_batch_vector<T> hB(size_B, 1, bc);
-        host_batch_vector<T> hBRes(size_BRes, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
         device_batch_vector<T> dB(size_B, 1, bc);
         if(size_A)
@@ -445,7 +461,7 @@ void testing_sygsx_hegsx(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             sygsx_hegsx_getError<STRIDED, SYGST, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb,
-                                                    stB, bc, hA, hARes, hB, hBRes, &max_error);
+                                                    stB, bc, hA, hARes, hB, &max_error);
 
         // collect performance data
         if(argus.timing)
@@ -460,7 +476,6 @@ void testing_sygsx_hegsx(Arguments& argus)
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
         host_strided_batch_vector<T> hARes(size_ARes, 1, stARes, bc);
         host_strided_batch_vector<T> hB(size_B, 1, stB, bc);
-        host_strided_batch_vector<T> hBRes(size_BRes, 1, stBRes, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
         device_strided_batch_vector<T> dB(size_B, 1, stB, bc);
         if(size_A)
@@ -483,7 +498,7 @@ void testing_sygsx_hegsx(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             sygsx_hegsx_getError<STRIDED, SYGST, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb,
-                                                    stB, bc, hA, hARes, hB, hBRes, &max_error);
+                                                    stB, bc, hA, hARes, hB, &max_error);
 
         // collect performance data
         if(argus.timing)
@@ -493,9 +508,9 @@ void testing_sygsx_hegsx(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using 3 * n * machine_precision as tolerance
+    // using n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, 3 * n);
+        ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)
