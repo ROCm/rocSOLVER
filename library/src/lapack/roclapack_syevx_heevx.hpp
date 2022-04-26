@@ -68,7 +68,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
 
                 swap(Z[tid + i * ldz], Z[tid + j * ldz]);
 
-                if(tid < info)
+                if(ifail && tid < info)
                 {
                     if(ifail[tid] == i + 1)
                         ifail[tid] = j + 1;

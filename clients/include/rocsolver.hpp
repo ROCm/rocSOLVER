@@ -153,6 +153,70 @@ rocblas_status rocsolver_zgels_outofplace(rocblas_handle handle,
                                           const rocblas_int ldx,
                                           rocblas_int* info);
 
+rocblas_status rocsolver_ssyevx_inplace(rocblas_handle handle,
+                                        const rocblas_evect evect,
+                                        const rocblas_erange erange,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        float* A,
+                                        const rocblas_int lda,
+                                        const float vl,
+                                        const float vu,
+                                        const rocblas_int il,
+                                        const rocblas_int iu,
+                                        const float abstol,
+                                        rocblas_int* nev,
+                                        float* W,
+                                        rocblas_int* info);
+
+rocblas_status rocsolver_dsyevx_inplace(rocblas_handle handle,
+                                        const rocblas_evect evect,
+                                        const rocblas_erange erange,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        double* A,
+                                        const rocblas_int lda,
+                                        const double vl,
+                                        const double vu,
+                                        const rocblas_int il,
+                                        const rocblas_int iu,
+                                        const double abstol,
+                                        rocblas_int* nev,
+                                        double* W,
+                                        rocblas_int* info);
+
+rocblas_status rocsolver_cheevx_inplace(rocblas_handle handle,
+                                        const rocblas_evect evect,
+                                        const rocblas_erange erange,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        rocblas_float_complex* A,
+                                        const rocblas_int lda,
+                                        const float vl,
+                                        const float vu,
+                                        const rocblas_int il,
+                                        const rocblas_int iu,
+                                        const float abstol,
+                                        rocblas_int* nev,
+                                        float* W,
+                                        rocblas_int* info);
+
+rocblas_status rocsolver_zheevx_inplace(rocblas_handle handle,
+                                        const rocblas_evect evect,
+                                        const rocblas_erange erange,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        rocblas_double_complex* A,
+                                        const rocblas_int lda,
+                                        const double vl,
+                                        const double vu,
+                                        const rocblas_int il,
+                                        const rocblas_int iu,
+                                        const double abstol,
+                                        rocblas_int* nev,
+                                        double* W,
+                                        rocblas_int* info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -5897,7 +5961,8 @@ inline rocblas_status rocsolver_syevx_heevx_inplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_ssyevx_inplace_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_ssyevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, info);
+        : rocsolver_ssyevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol,
+                                   nev, W, info);
 }
 
 inline rocblas_status rocsolver_syevx_heevx_inplace(bool STRIDED,
@@ -5922,7 +5987,8 @@ inline rocblas_status rocsolver_syevx_heevx_inplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_dsyevx_inplace_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_dsyevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, info);
+        : rocsolver_dsyevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol,
+                                   nev, W, info);
 }
 
 inline rocblas_status rocsolver_syevx_heevx_inplace(bool STRIDED,
@@ -5947,7 +6013,8 @@ inline rocblas_status rocsolver_syevx_heevx_inplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_cheevx_inplace_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_cheevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, info);
+        : rocsolver_cheevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol,
+                                   nev, W, info);
 }
 
 inline rocblas_status rocsolver_syevx_heevx_inplace(bool STRIDED,
@@ -5972,7 +6039,8 @@ inline rocblas_status rocsolver_syevx_heevx_inplace(bool STRIDED,
 {
     return STRIDED
         ? rocblas_status_not_implemented // rocsolver_zheevx_inplace_strided_batched(handle, evect, erange, uplo, n, A, lda, stA, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
-        : rocblas_status_not_implemented; // rocsolver_zheevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, info);
+        : rocsolver_zheevx_inplace(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol,
+                                   nev, W, info);
 }
 
 // batched

@@ -93,8 +93,9 @@ __device__ void run_stein(const int tid,
     // zero info and ifail
     if(tid == 0)
         _info = 0;
-    for(i = tid; i < nev; i += MAX_THDS)
-        ifail[i] = 0;
+    if(ifail)
+        for(i = tid; i < nev; i += MAX_THDS)
+            ifail[i] = 0;
 
     // iterate over submatrix blocks
     for(rocblas_int nblk = 0; nblk < iblock[nev - 1]; nblk++)
@@ -202,7 +203,7 @@ __device__ void run_stein(const int tid,
                     iters++;
                 }
 
-                if(tid == 0 && nrmchk < STEIN_MAX_NRMCHK)
+                if(ifail && tid == 0 && nrmchk < STEIN_MAX_NRMCHK)
                 {
                     ifail[_info] = j + 1;
                     _info++;
