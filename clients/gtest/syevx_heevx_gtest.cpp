@@ -4,6 +4,7 @@
  * ************************************************************************ */
 
 #include "testing_syevx_heevx.hpp"
+#include "testing_syevx_heevx_inplace.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -46,7 +47,7 @@ const vector<vector<int>> large_size_range = {{192, 192, 192, 390, 420, 100, 170
                                               {300, 300, 330, 405, 420, 200, 300}};
 
 template <typename T>
-Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup)
+Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup, bool inplace)
 {
     using S = decltype(std::real(T{}));
 
@@ -57,7 +58,8 @@ Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup)
 
     arg.set<rocblas_int>("n", size[0]);
     arg.set<rocblas_int>("lda", size[1]);
-    arg.set<rocblas_int>("ldz", size[2]);
+    if(!inplace)
+        arg.set<rocblas_int>("ldz", size[2]);
     arg.set<S>("vl", size[3]);
     arg.set<S>("vu", size[4]);
     arg.set<rocblas_int>("il", size[5]);
@@ -88,7 +90,7 @@ protected:
     {
         using S = decltype(std::real(T{}));
 
-        Arguments arg = syevx_heevx_setup_arguments<T>(GetParam());
+        Arguments arg = syevx_heevx_setup_arguments<T>(GetParam(), false);
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N'
            && arg.peek<char>("erange") == 'V' && arg.peek<char>("uplo") == 'L')
@@ -99,11 +101,42 @@ protected:
     }
 };
 
+class SYEVX_HEEVX_INPLACE : public ::TestWithParam<syevx_heevx_tuple>
+{
+protected:
+    SYEVX_HEEVX_INPLACE() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        using S = decltype(std::real(T{}));
+
+        Arguments arg = syevx_heevx_setup_arguments<T>(GetParam(), true);
+
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N'
+           && arg.peek<char>("erange") == 'V' && arg.peek<char>("uplo") == 'L')
+            testing_syevx_heevx_inplace_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_syevx_heevx_inplace<BATCHED, STRIDED, T>(arg);
+    }
+};
+
 class SYEVX : public SYEVX_HEEVX
 {
 };
 
 class HEEVX : public SYEVX_HEEVX
+{
+};
+
+class SYEVX_INPLACE : public SYEVX_HEEVX_INPLACE
+{
+};
+
+class HEEVX_INPLACE : public SYEVX_HEEVX_INPLACE
 {
 };
 
@@ -125,6 +158,26 @@ TEST_P(HEEVX, __float_complex)
 }
 
 TEST_P(HEEVX, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(SYEVX_INPLACE, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(SYEVX_INPLACE, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(HEEVX_INPLACE, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(HEEVX_INPLACE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -173,13 +226,26 @@ TEST_P(HEEVX, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
-// daily_lapack tests normal execution with medium to large sizes
 INSTANTIATE_TEST_SUITE_P(daily_lapack, SYEVX, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, SYEVX, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack, HEEVX, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-// checkin_lapack tests normal execution with small sizes, invalid sizes,
-// quick returns, and corner cases
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, SYEVX, Combine(ValuesIn(size_range), ValuesIn(op_range)));
-
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, HEEVX, Combine(ValuesIn(size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         SYEVX_INPLACE,
+                         Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         SYEVX_INPLACE,
+                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         HEEVX_INPLACE,
+                         Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         HEEVX_INPLACE,
+                         Combine(ValuesIn(size_range), ValuesIn(op_range)));
