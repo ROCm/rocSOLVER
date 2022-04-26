@@ -30,7 +30,7 @@ rocblas_status rocsolver_syevx_heevx_inplace_argCheck(rocblas_handle handle,
                                                       const S vu,
                                                       const rocblas_int il,
                                                       const rocblas_int iu,
-                                                      rocblas_int* nev,
+                                                      rocblas_int* h_nev,
                                                       S* W,
                                                       rocblas_int* info,
                                                       const rocblas_int batch_count = 1)
@@ -61,7 +61,7 @@ rocblas_status rocsolver_syevx_heevx_inplace_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !W) || (batch_count && !nev) || (batch_count && !info))
+    if((n && !A) || (n && !W) || (batch_count && !h_nev) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -85,6 +85,7 @@ void rocsolver_syevx_heevx_inplace_getMemorySize(const rocblas_evect evect,
                                                  size_t* size_iblock,
                                                  size_t* size_isplit,
                                                  size_t* size_tau,
+                                                 size_t* size_nev,
                                                  size_t* size_nsplit_workArr)
 {
     // if quick return, set workspace to zero
@@ -102,6 +103,7 @@ void rocsolver_syevx_heevx_inplace_getMemorySize(const rocblas_evect evect,
         *size_iblock = 0;
         *size_isplit = 0;
         *size_tau = 0;
+        *size_nev = 0;
         *size_nsplit_workArr = 0;
         return;
     }
@@ -148,6 +150,9 @@ void rocsolver_syevx_heevx_inplace_getMemorySize(const rocblas_evect evect,
     // size of array for temporary householder scalars
     *size_tau = sizeof(T) * n * batch_count;
 
+    // size of array for number of eigenvalues on the device
+    *size_nev = sizeof(rocblas_int) * batch_count;
+
     // size of array for temporary split off block sizes
     *size_nsplit_workArr = max(*size_nsplit_workArr, sizeof(rocblas_int) * batch_count);
 }
@@ -167,7 +172,7 @@ rocblas_status rocsolver_syevx_heevx_inplace_template(rocblas_handle handle,
                                                       const rocblas_int il,
                                                       const rocblas_int iu,
                                                       const S abstol,
-                                                      rocblas_int* nev,
+                                                      rocblas_int* h_nev,
                                                       S* W,
                                                       const rocblas_stride strideW,
                                                       rocblas_int* info,
@@ -184,6 +189,7 @@ rocblas_status rocsolver_syevx_heevx_inplace_template(rocblas_handle handle,
                                                       rocblas_int* iblock,
                                                       rocblas_int* isplit,
                                                       T* tau,
+                                                      rocblas_int* d_nev,
                                                       void* nsplit_workArr)
 {
     ROCSOLVER_ENTER("syevx_heevx_inplace", "evect:", evect, "erange:", erange, "uplo:", uplo,
@@ -203,9 +209,9 @@ rocblas_status rocsolver_syevx_heevx_inplace_template(rocblas_handle handle,
         rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
         dim3 gridReset(blocksReset, 1, 1);
         dim3 threads(BS1, 1, 1);
-
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
-        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, nev, batch_count, 0);
+
+        memset(h_nev, 0, sizeof(rocblas_int) * batch_count);
         return rocblas_status_success;
     }
 
@@ -222,7 +228,7 @@ rocblas_status rocsolver_syevx_heevx_inplace_template(rocblas_handle handle,
     rocblas_eorder eorder
         = (evect == rocblas_evect_none ? rocblas_eorder_entire : rocblas_eorder_blocks);
     rocsolver_stebz_template<S>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, 0, stride, E,
-                                0, stride, nev, (rocblas_int*)nsplit_workArr, W, strideW, iblock,
+                                0, stride, d_nev, (rocblas_int*)nsplit_workArr, W, strideW, iblock,
                                 stride, isplit, stride, info, batch_count, (rocblas_int*)work1,
                                 (S*)work2, (S*)work3, (S*)work4, (S*)work5, (rocblas_int*)work6);
 
@@ -241,22 +247,25 @@ rocblas_status rocsolver_syevx_heevx_inplace_template(rocblas_handle handle,
                                 shiftA, lda, strideA, (T*)work4);
 
         // compute eigenvectors
-        rocsolver_stein_template<T>(handle, n, D, 0, stride, E, 0, stride, nev, W, 0, strideW,
+        rocsolver_stein_template<T>(handle, n, D, 0, stride, E, 0, stride, d_nev, W, 0, strideW,
                                     iblock, stride, isplit, stride, A, shiftA, lda, strideA,
                                     (rocblas_int*)nullptr, 0, info, batch_count, (S*)work1,
                                     (rocblas_int*)work2);
 
         // apply unitary matrix to eigenvectors
-        rocblas_int h_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
+        rocblas_int temp_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
-            handle, rocblas_side_left, uplo, rocblas_operation_none, n, h_nev, (T*)work4, 0, n,
+            handle, rocblas_side_left, uplo, rocblas_operation_none, n, temp_nev, (T*)work4, 0, n,
             n * n, tau, stride, A, shiftA, lda, strideA, batch_count, scalars, (T*)work1, (T*)work2,
             (T*)work3, (T**)nsplit_workArr);
 
         // sort eigenvalues and eigenvectors
-        ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, nev, W, strideW,
-                                A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info);
+        ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, d_nev, W,
+                                strideW, A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info);
     }
+
+    // copy nev from device to host
+    hipMemcpy(h_nev, d_nev, sizeof(rocblas_int) * batch_count, hipMemcpyDeviceToHost);
 
     return rocblas_status_success;
 }
