@@ -188,18 +188,28 @@ void syevx_heevx_initData(const rocblas_handle handle,
     {
         rocblas_init<T>(hA, true);
 
-        // scale A to avoid singularities
+        // construct well conditioned matrix A such that all eigenvalues are in (-20, 20)
         for(rocblas_int b = 0; b < bc; ++b)
         {
             for(rocblas_int i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(rocblas_int j = i; j < n; j++)
                 {
                     if(i == j)
-                        hA[b][i + j * lda] += 400;
+                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 10;
                     else
-                        hA[b][i + j * lda] -= 5;
+                    {
+                        if(j == i + 1)
+                        {
+                            hA[b][i + j * lda] = (hA[b][i + j * lda] - 5) / 10;
+                            hA[b][j + i * lda] = sconj(hA[b][i + j * lda]);
+                        }
+                        else
+                            hA[b][j + i * lda] = hA[b][i + j * lda] = 0;
+                    }
                 }
+                if(i == n / 4 || i == n / 2 || i == n - 1 || i == n / 7 || i == n / 5 || i == n / 3)
+                    hA[b][i + i * lda] *= -1;
             }
 
             // make copy of original data to test vectors if required
@@ -482,7 +492,7 @@ void testing_syevx_heevx(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char evectC = argus.get<char>("evect");
-    char erangeC = argus.get<char>("erange");
+    char erangeC = argus.get<char>("range");
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
@@ -492,11 +502,11 @@ void testing_syevx_heevx(Arguments& argus)
     rocblas_stride stZ = argus.get<rocblas_stride>("strideZ", ldz * n);
     rocblas_stride stF = argus.get<rocblas_stride>("strideF", n);
 
-    S vl = argus.get<S>("vl", 0);
-    S vu = argus.get<S>("vu", erangeC == 'V' ? 1 : 0);
+    S vl = S(argus.get<double>("vl", 0));
+    S vu = S(argus.get<double>("vu", erangeC == 'V' ? 1 : 0));
     rocblas_int il = argus.get<rocblas_int>("il", erangeC == 'I' ? 1 : 0);
     rocblas_int iu = argus.get<rocblas_int>("iu", erangeC == 'I' ? 1 : 0);
-    S abstol = argus.get<S>("abstol", 0);
+    S abstol = S(argus.get<double>("abstol", 0));
 
     rocblas_evect evect = char2rocblas_evect(evectC);
     rocblas_erange erange = char2rocblas_erange(erangeC);

@@ -398,12 +398,14 @@ try
          value<double>(),
             "Lower bound of half-open interval (vl, vu].\n"
             "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           Note: the used random input matrices have all eigenvalues in [-20, 20].\n"
             "                           ")
 
         ("vu",
          value<double>(),
             "Upper bound of half-open interval (vl, vu].\n"
             "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           Note: the used random input matrices have all eigenvalues in [-20, 20].\n"
             "                           ")
 
         // other options

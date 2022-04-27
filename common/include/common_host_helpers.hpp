@@ -172,7 +172,7 @@ void print_to_stream(std::ostream& os,
                 s += "    ";
             for(int j = 0; j < n; j++)
             {
-                s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                s += fmt::format("{}+{}*i", A[j * lda + i].real(), A[j * lda + i].imag());
                 if(j < n - 1)
                     s += ", ";
             }
@@ -191,16 +191,16 @@ void print_to_stream(std::ostream& os,
                 if(uplo == rocblas_fill_upper)
                 {
                     if(i < j)
-                        s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                        s += fmt::format("{}+{}*i", A[j * lda + i].real(), A[j * lda + i].imag());
                     else
-                        s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+                        s += fmt::format("{}+{}*i", A[i * lda + j].real(), A[i * lda + j].imag());
                 }
                 else
                 {
                     if(i > j)
-                        s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                        s += fmt::format("{}+{}*i", A[j * lda + i].real(), A[j * lda + i].imag());
                     else
-                        s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+                        s += fmt::format("{}+{}*i", A[i * lda + j].real(), A[i * lda + j].imag());
                 }
 
                 if(j < n - 1)

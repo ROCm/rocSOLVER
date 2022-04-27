@@ -59,6 +59,7 @@
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sygv_hegv.hpp"
 #include "testing_sygvd_hegvd.hpp"
+#include "testing_sygvx_hegvx.hpp"
 #include "testing_sytf2_sytrf.hpp"
 #include "testing_sytxx_hetxx.hpp"
 #include "testing_trtri.hpp"
@@ -278,6 +279,10 @@ class rocsolver_dispatcher
             {"sygvd", testing_sygvd_hegvd<false, false, T>},
             {"sygvd_batched", testing_sygvd_hegvd<true, true, T>},
             {"sygvd_strided_batched", testing_sygvd_hegvd<false, true, T>},
+            // sygvx
+            {"sygvx", testing_sygvx_hegvx<false, false, T>},
+            {"sygvx_batched", testing_sygvx_hegvx<true, true, T>},
+            {"sygvx_strided_batched", testing_sygvx_hegvx<false, true, T>},
         };
 
         // Grab function from the map and execute
@@ -349,6 +354,10 @@ class rocsolver_dispatcher
             {"hegvd", testing_sygvd_hegvd<false, false, T>},
             {"hegvd_batched", testing_sygvd_hegvd<true, true, T>},
             {"hegvd_strided_batched", testing_sygvd_hegvd<false, true, T>},
+            // hegvx
+            {"hegvx", testing_sygvx_hegvx<false, false, T>},
+            {"hegvx_batched", testing_sygvx_hegvx<true, true, T>},
+            {"hegvx_strided_batched", testing_sygvx_hegvx<false, true, T>},
         };
 
         // Grab function from the map and execute
