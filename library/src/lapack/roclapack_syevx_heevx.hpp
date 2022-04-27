@@ -31,7 +31,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
 {
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
-    rocblas_int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocblas_int tid = hipThreadIdx_x;
 
     // local variables
     rocblas_int nev = nevA[bid];
@@ -42,42 +42,40 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
     T* Z = load_ptr_batch<T>(ZZ, bid, shiftZ, strideZ);
     rocblas_int* ifail = ifailA + (bid * strideIfail);
 
-    if(tid < n)
+    for(j = 0; j < nev - 1; j++)
     {
-        for(j = 0; j < nev - 1; j++)
+        i = 0;
+        S tmp1 = W[j];
+        for(jj = j + 1; jj < nev; jj++)
         {
-            i = 0;
-            S tmp1 = W[j];
-            for(jj = j + 1; j < nev; j++)
+            if(W[jj] < tmp1)
             {
-                if(W[jj] < tmp1)
-                {
-                    i = jj;
-                    tmp1 = W[jj];
-                }
+                i = jj;
+                tmp1 = W[jj];
             }
-            __syncthreads();
-
-            if(i != 0)
-            {
-                if(tid == 0)
-                {
-                    W[i] = W[j];
-                    W[j] = tmp1;
-                }
-
-                swap(Z[tid + i * ldz], Z[tid + j * ldz]);
-
-                if(tid < info)
-                {
-                    if(ifail[tid] == i + 1)
-                        ifail[tid] = j + 1;
-                    else if(ifail[tid] == j + 1)
-                        ifail[tid] = i + 1;
-                }
-            }
-            __syncthreads();
         }
+        __syncthreads();
+
+        if(i != 0)
+        {
+            if(tid == 0)
+            {
+                W[i] = W[j];
+                W[j] = tmp1;
+            }
+
+            for(int k = tid; k < n; k += hipBlockDim_x)
+                swap(Z[k + i * ldz], Z[k + j * ldz]);
+
+            for(int k = tid; k < info; k += hipBlockDim_x)
+            {
+                if(ifail[k] == i + 1)
+                    ifail[k] = j + 1;
+                else if(ifail[k] == j + 1)
+                    ifail[k] = i + 1;
+            }
+        }
+        __syncthreads();
     }
 }
 
@@ -313,8 +311,7 @@ rocblas_status rocsolver_syevx_heevx_template(rocblas_handle handle,
             (T*)work2, (T*)work3, (T**)nsplit_workArr);
 
         // sort eigenvalues and eigenvectors
-        rocblas_int blocks = (n - 1) / BS1 + 1;
-        dim3 grid(blocks, batch_count, 1);
+        dim3 grid(1, batch_count, 1);
         dim3 threads(BS1, 1, 1);
         ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid, threads, 0, stream, n, nev, W, strideW, Z,
                                 shiftZ, ldz, strideZ, ifail, strideF, info);

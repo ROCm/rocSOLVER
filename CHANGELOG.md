@@ -7,6 +7,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Partial eigensolver routines for symmetric/hermitian matrices:
     - SYEVX (with batched and strided\_batched versions)
     - HEEVX (with batched and strided\_batched versions)
+- Generalized symmetric- and hermitian-definite partial eigensolvers:
+    - SYGVX (with batched and strided\_batched versions)
+    - HEGVX (with batched and strided\_batched versions)
 - Added --profile_kernels option to rocsolver-bench, which will include kernel calls in the
   profile log (if profile logging is enabled with --profile).
 
