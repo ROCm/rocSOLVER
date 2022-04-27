@@ -6,8 +6,8 @@
 
 template <typename T>
 rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
-                                    const rocblas_erange range,
-                                    const rocblas_eorder order,
+                                    const rocblas_erange erange,
+                                    const rocblas_eorder eorder,
                                     const rocblas_int n,
                                     const T vl,
                                     const T vu,
@@ -23,15 +23,15 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
                                     rocblas_int* isplit,
                                     rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("stebz", "--range", range, "--order", order, "-n", n, "--vl", vl, "--vu",
-                        vu, "--il", il, "--iu", iu, "--abstol", abstol);
+    ROCSOLVER_ENTER_TOP("stebz", "--erange", erange, "--eorder", eorder, "-n", n, "--vl", vl,
+                        "--vu", vu, "--il", il, "--iu", iu, "--abstol", abstol);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_stebz_argCheck(handle, range, order, n, vl, vu, il, iu, D, E, nev,
-                                                 nsplit, W, iblock, isplit, info);
+    rocblas_status st = rocsolver_stebz_argCheck(handle, erange, eorder, n, vl, vu, il, iu, D, E,
+                                                 nev, nsplit, W, iblock, isplit, info);
     if(st != rocblas_status_continue)
         return st;
 
@@ -72,7 +72,7 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_stebz_template<T>(
-        handle, range, order, n, vl, vu, il, iu, abstol, D, shiftD, strideD, E, shiftE, strideE,
+        handle, erange, eorder, n, vl, vu, il, iu, abstol, D, shiftD, strideD, E, shiftE, strideE,
         nev, nsplit, W, strideW, iblock, strideIblock, isplit, strideIsplit, info, batch_count,
         (rocblas_int*)work, (T*)pivmin, (T*)Esqr, (T*)bounds, (T*)inter, (rocblas_int*)ninter);
 }
@@ -86,8 +86,8 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_sstebz(rocblas_handle handle,
-                                const rocblas_erange range,
-                                const rocblas_eorder order,
+                                const rocblas_erange erange,
+                                const rocblas_eorder eorder,
                                 const rocblas_int n,
                                 const float vl,
                                 const float vu,
@@ -103,13 +103,13 @@ rocblas_status rocsolver_sstebz(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 rocblas_int* info)
 {
-    return rocsolver_stebz_impl<float>(handle, range, order, n, vl, vu, il, iu, abstol, D, E, nev,
+    return rocsolver_stebz_impl<float>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, E, nev,
                                        nsplit, W, iblock, isplit, info);
 }
 
 rocblas_status rocsolver_dstebz(rocblas_handle handle,
-                                const rocblas_erange range,
-                                const rocblas_eorder order,
+                                const rocblas_erange erange,
+                                const rocblas_eorder eorder,
                                 const rocblas_int n,
                                 const double vl,
                                 const double vu,
@@ -125,8 +125,8 @@ rocblas_status rocsolver_dstebz(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 rocblas_int* info)
 {
-    return rocsolver_stebz_impl<double>(handle, range, order, n, vl, vu, il, iu, abstol, D, E, nev,
-                                        nsplit, W, iblock, isplit, info);
+    return rocsolver_stebz_impl<double>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, E,
+                                        nev, nsplit, W, iblock, isplit, info);
 }
 
 } // extern C

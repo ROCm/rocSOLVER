@@ -64,7 +64,7 @@ Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup)
     arg.set<rocblas_int>("iu", size[6]);
 
     arg.set<char>("evect", op[0]);
-    arg.set<char>("range", op[1]);
+    arg.set<char>("erange", op[1]);
     arg.set<char>("uplo", op[2]);
 
     arg.set<double>("abstol", 0);
@@ -91,7 +91,7 @@ protected:
         Arguments arg = syevx_heevx_setup_arguments<T>(GetParam());
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N'
-           && arg.peek<char>("range") == 'V' && arg.peek<char>("uplo") == 'L')
+           && arg.peek<char>("erange") == 'V' && arg.peek<char>("uplo") == 'L')
             testing_syevx_heevx_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);

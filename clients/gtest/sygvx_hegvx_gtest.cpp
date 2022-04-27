@@ -68,7 +68,7 @@ Arguments sygvx_setup_arguments(sygvx_tuple tup)
 
     arg.set<char>("itype", type[0]);
     arg.set<char>("evect", type[1]);
-    arg.set<char>("range", type[2]);
+    arg.set<char>("erange", type[2]);
     arg.set<char>("uplo", type[3]);
 
     arg.set<double>("abstol", 0);
@@ -94,7 +94,7 @@ protected:
         Arguments arg = sygvx_setup_arguments<T>(GetParam());
 
         if(arg.peek<char>("itype") == '1' && arg.peek<char>("evect") == 'N'
-           && arg.peek<char>("range") == 'A' && arg.peek<char>("uplo") == 'U'
+           && arg.peek<char>("erange") == 'A' && arg.peek<char>("uplo") == 'U'
            && arg.peek<rocblas_int>("n") == 0)
             testing_sygvx_hegvx_bad_arg<BATCHED, STRIDED, T>();
 
