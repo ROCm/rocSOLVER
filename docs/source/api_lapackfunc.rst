@@ -1226,6 +1226,46 @@ rocsolver_<type>hegvd_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_chegvd_strided_batched
 
+.. _sygvx:
+
+rocsolver_<type>sygvx()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvx
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvx
+
+rocsolver_<type>sygvx_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvx_batched
+
+rocsolver_<type>sygvx_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvx_strided_batched
+
+.. _hegvx:
+
+rocsolver_<type>hegvx()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvx
+   :outline:
+.. doxygenfunction:: rocsolver_chegvx
+
+rocsolver_<type>hegvx_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvx_batched
+
+rocsolver_<type>hegvx_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvx_strided_batched
+
 
 
 .. _svds:

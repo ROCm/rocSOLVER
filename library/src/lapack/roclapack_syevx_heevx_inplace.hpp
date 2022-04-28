@@ -237,7 +237,7 @@ rocblas_status rocsolver_syevx_heevx_inplace_template(rocblas_handle handle,
         // kernel dimensions
         rocblas_int blocks1 = (n - 1) / BS1 + 1;
         rocblas_int blocks2 = (n - 1) / BS2 + 1;
-        dim3 grid1(blocks1, batch_count, 1);
+        dim3 grid1(1, batch_count, 1);
         dim3 grid2(blocks2, blocks2, batch_count);
         dim3 threads1(BS1, 1, 1);
         dim3 threads2(BS2, BS2, 1);

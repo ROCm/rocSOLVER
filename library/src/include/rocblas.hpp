@@ -867,9 +867,10 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
 
     constexpr rocblas_int nb = (!is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
 
-    return rocblas_internal_trmm_recursive_inplace_template<nb, BATCHED, T>(
+    return rocblas_internal_trmm_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
-        cast2constType<T>(A), offsetA, lda, strideA, B, offsetB, ldb, strideB, batch_count);
+        cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(B), offsetB, ldb, strideB, B,
+        offsetB, ldb, strideB, batch_count);
 }
 
 // trmm overload
@@ -908,10 +909,10 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, B, strideB,
                             batch_count);
 
-    return rocblas_internal_trmm_recursive_inplace_template<nb, BATCHED, T>(
+    return rocblas_internal_trmm_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
-        cast2constType<T>(A), offsetA, lda, strideA, cast2constPointer<T>(workArr), offsetB, ldb,
-        strideB, batch_count);
+        cast2constType<T>(A), offsetA, lda, strideA, cast2constType<T>(workArr), offsetB, ldb,
+        strideB, cast2constPointer<T>(workArr), offsetB, ldb, strideB, batch_count);
 }
 
 // syr2
@@ -1513,22 +1514,22 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_stride offset_A,
                                 rocblas_int lda,
                                 rocblas_stride stride_A,
-                                U B,
-                                rocblas_stride offset_B,
-                                rocblas_int ldb,
-                                rocblas_stride stride_B,
+                                U x,
+                                rocblas_stride offset_x,
+                                rocblas_int incx,
+                                rocblas_stride stride_x,
                                 rocblas_int batch_count,
                                 rocblas_int* w_completed_sec,
                                 T** workArr = nullptr)
 {
     ROCBLAS_ENTER("trsv", "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
-                  "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "shiftA:", offset_A, "lda:", lda, "shiftx:", offset_x, "incx:", incx,
                   "bc:", batch_count);
 
     // nullptr for optional alpha
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_BLOCK, T>(
-        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B,
-        offset_B, ldb, stride_B, batch_count, w_completed_sec);
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, x,
+        offset_x, incx, stride_x, batch_count, w_completed_sec);
 }
 
 template <bool BATCHED,
@@ -1544,22 +1545,22 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
                                 rocblas_stride offset_A,
                                 rocblas_int lda,
                                 rocblas_stride stride_A,
-                                U B,
-                                rocblas_stride offset_B,
-                                rocblas_int ldb,
-                                rocblas_stride stride_B,
+                                U x,
+                                rocblas_stride offset_x,
+                                rocblas_int incx,
+                                rocblas_stride stride_x,
                                 rocblas_int batch_count,
                                 rocblas_int* w_completed_sec,
                                 T** workArr = nullptr)
 {
     ROCBLAS_ENTER("trsv", "uplo:", uplo, "trans:", transA, "diag:", diag, "m:", m,
-                  "shiftA:", offset_A, "lda:", lda, "shiftB:", offset_B, "ldb:", ldb,
+                  "shiftA:", offset_A, "lda:", lda, "shiftx:", offset_x, "incx:", incx,
                   "bc:", batch_count);
 
     // nullptr for optional alpha
     return rocblas_internal_trsv_substitution_template<ROCBLAS_TRSV_Z_BLOCK, T>(
-        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, B,
-        offset_B, ldb, stride_B, batch_count, w_completed_sec);
+        handle, uplo, transA, diag, m, cast2constType(A), offset_A, lda, stride_A, nullptr, x,
+        offset_x, incx, stride_x, batch_count, w_completed_sec);
 }
 
 // trsm memory sizes
