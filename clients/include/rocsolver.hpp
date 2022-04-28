@@ -6817,6 +6817,234 @@ inline rocblas_status rocsolver_sygvx_hegvx(bool STRIDED,
 }
 /********************************************************/
 
+/******************** SYGVX/HEGVX_INPLACE ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      float* A,
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      float* B,
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      float vl,
+                                                      float vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      float abstol,
+                                                      rocblas_int* nev,
+                                                      float* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_ssygvdx_inplace_strided_batched(handle, itype, evect, erange, uplo, n, A, lda, stA, B, ldb, stB, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_ssygvdx_inplace(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, info);
+}
+
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      double* A,
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      double* B,
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      double vl,
+                                                      double vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      double abstol,
+                                                      rocblas_int* nev,
+                                                      double* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_dsygvdx_inplace_strided_batched(handle, itype, evect, erange, uplo, n, A, lda, stA, B, ldb, stB, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_dsygvdx_inplace(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, info);
+}
+
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      rocblas_float_complex* A,
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      rocblas_float_complex* B,
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      float vl,
+                                                      float vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      float abstol,
+                                                      rocblas_int* nev,
+                                                      float* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_chegvdx_inplace_strided_batched(handle, itype, evect, erange, uplo, n, A, lda, stA, B, ldb, stB, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_chegvdx_inplace(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, info);
+}
+
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      rocblas_double_complex* A,
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      rocblas_double_complex* B,
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      double vl,
+                                                      double vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      double abstol,
+                                                      rocblas_int* nev,
+                                                      double* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return STRIDED
+        ? rocblas_status_not_implemented // rocsolver_zhegvdx_inplace_strided_batched(handle, itype, evect, erange, uplo, n, A, lda, stA, B, ldb, stB, vl, vu, il, iu, abstol, nev, W, stW, info, bc)
+        : rocblas_status_not_implemented; // rocsolver_zhegvdx_inplace(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, info);
+}
+
+// batched
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      float* const A[],
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      float* const B[],
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      float vl,
+                                                      float vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      float abstol,
+                                                      rocblas_int* nev,
+                                                      float* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_ssygvdx_inplace_batched(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, stW, info, bc);
+}
+
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      double* const A[],
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      double* const B[],
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      double vl,
+                                                      double vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      double abstol,
+                                                      rocblas_int* nev,
+                                                      double* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_dsygvdx_inplace_batched(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, stW, info, bc);
+}
+
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      rocblas_float_complex* const A[],
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      rocblas_float_complex* const B[],
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      float vl,
+                                                      float vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      double abstol,
+                                                      rocblas_int* nev,
+                                                      float* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_chegvdx_inplace_batched(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, stW, info, bc);
+}
+
+inline rocblas_status rocsolver_sygvdx_hegvdx_inplace(bool STRIDED,
+                                                      rocblas_handle handle,
+                                                      rocblas_eform itype,
+                                                      rocblas_evect evect,
+                                                      rocblas_erange erange,
+                                                      rocblas_fill uplo,
+                                                      rocblas_int n,
+                                                      rocblas_double_complex* const A[],
+                                                      rocblas_int lda,
+                                                      rocblas_stride stA,
+                                                      rocblas_double_complex* const B[],
+                                                      rocblas_int ldb,
+                                                      rocblas_stride stB,
+                                                      double vl,
+                                                      double vu,
+                                                      rocblas_int il,
+                                                      rocblas_int iu,
+                                                      double abstol,
+                                                      rocblas_int* nev,
+                                                      double* W,
+                                                      rocblas_stride stW,
+                                                      rocblas_int* info,
+                                                      rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_zhegvdx_inplace_batched(handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, stW, info, bc);
+}
+/********************************************************/
+
 /******************** SYTF2_SYTRF ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_sytf2_sytrf(bool STRIDED,
