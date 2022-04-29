@@ -27,7 +27,7 @@ const vector<vector<printable_char>> op_range
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
     // quick return
-    {0, 1, 1, 0, 10, 1, 1},
+    {0, 1, 1, 0, 10, 1, 0},
     // invalid
     {-1, 1, 1, 0, 10, 1, 1},
     {10, 5, 10, 0, 10, 1, 1},
