@@ -40,7 +40,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
 
     S* W = WW + (bid * strideW);
     T* Z = load_ptr_batch<T>(ZZ, bid, shiftZ, strideZ);
-    rocblas_int* ifail = ifailA + (bid * strideIfail);
+    rocblas_int* ifail = nullptr;
+    if(ifailA)
+        ifail = ifailA + (bid * strideIfail);
 
     for(j = 0; j < nev - 1; j++)
     {
