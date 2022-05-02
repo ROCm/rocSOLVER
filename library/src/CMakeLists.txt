@@ -256,7 +256,7 @@ set_target_properties(rocsolver PROPERTIES
 )
 generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h)
 
-if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
   rocm_wrap_header_file(
     rocsolver-version.h rocsolver-export.h
     GUARDS SYMLINK WRAPPER
