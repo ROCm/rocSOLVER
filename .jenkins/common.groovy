@@ -22,7 +22,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
         }
     }
 
-    def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel,'develop', sameOrg)
+    def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel, null, sameOrg)
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
