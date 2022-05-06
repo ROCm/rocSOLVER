@@ -261,6 +261,7 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
     rocsolver-version.h rocsolver-export.h
     GUARDS SYMLINK WRAPPER
     WRAPPER_LOCATIONS include rocsolver/include
+    ORIGINAL_FILES ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h
   )
 endif( )
 
