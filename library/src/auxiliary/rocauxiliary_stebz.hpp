@@ -927,7 +927,7 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
                                         T* inter,
                                         rocblas_int* ninter)
 {
-    ROCSOLVER_ENTER("stebz", "range:", range, "order:", order, "n:", n, "vl:", vlow, "vu:", vup,
+    ROCSOLVER_ENTER("stebz", "erange:", range, "eorder:", order, "n:", n, "vl:", vlow, "vu:", vup,
                     "il:", ilow, "iu:", iup, "abstol:", abstol, "shiftD:", shiftD,
                     "shiftE:", shiftE, "bc:", batch_count);
 

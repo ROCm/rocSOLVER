@@ -72,9 +72,9 @@ Arguments stebz_setup_arguments(stebz_tuple tup)
     vector<int> op = std::get<1>(tup);
 
     arg.set<rocblas_int>("n", size[0]);
-    arg.set<char>("order", (size[1] == 0 ? 'E' : 'B'));
+    arg.set<char>("eorder", (size[1] == 0 ? 'E' : 'B'));
 
-    arg.set<char>("range", (op[0] == 0 ? 'A' : (op[0] == 1 ? 'V' : 'I')));
+    arg.set<char>("erange", (op[0] == 0 ? 'A' : (op[0] == 1 ? 'V' : 'I')));
     arg.set<double>("vl", op[1]);
     arg.set<double>("vu", op[2]);
     arg.set<rocblas_int>("il", op[3]);
@@ -98,8 +98,8 @@ protected:
     {
         Arguments arg = stebz_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("order") == 'E'
-           && arg.peek<char>("range") == 'A')
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("eorder") == 'E'
+           && arg.peek<char>("erange") == 'A')
             testing_stebz_bad_arg<T>();
 
         testing_stebz<T>(arg);

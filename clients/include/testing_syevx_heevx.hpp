@@ -492,7 +492,7 @@ void testing_syevx_heevx(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char evectC = argus.get<char>("evect");
-    char erangeC = argus.get<char>("range");
+    char erangeC = argus.get<char>("erange");
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);

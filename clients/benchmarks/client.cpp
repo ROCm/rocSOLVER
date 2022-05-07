@@ -361,7 +361,7 @@ try
             "                           ")
 
         // stebz options
-        ("order",
+        ("eorder",
          value<char>()->default_value('E'),
             "E = entire matrix, B = by blocks.\n"
             "                           Indicates whether the computed eigenvalues are ordered by blocks or for the entire matrix.\n"
@@ -387,7 +387,7 @@ try
             "                           Used in partial eigenvalue decomposition functions.\n"
             "                           ")
 
-        ("range",
+        ("erange",
          value<char>()->default_value('A'),
             "A = all eigenvalues, V = in (vl, vu], I = from the il-th to the iu-th.\n"
             "                           For partial eigenvalue decompositions, it indicates the type of interval in which\n"
@@ -502,8 +502,8 @@ try
     argus.validate_svect("right_svect");
     argus.validate_workmode("fast_alg");
     argus.validate_evect("evect");
-    argus.validate_erange("range");
-    argus.validate_eorder("order");
+    argus.validate_erange("erange");
+    argus.validate_eorder("eorder");
     argus.validate_itype("itype");
 
     // prepare logging infrastructure and ignore environment variables

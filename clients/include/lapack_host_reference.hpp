@@ -601,8 +601,8 @@ void cblas_stedc(rocblas_evect evect,
                  rocblas_int* info);
 
 template <typename T>
-void cblas_stebz(rocblas_erange range,
-                 rocblas_eorder order,
+void cblas_stebz(rocblas_erange erange,
+                 rocblas_eorder eorder,
                  rocblas_int n,
                  T vl,
                  T vu,
