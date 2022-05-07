@@ -3906,18 +3906,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
 
     \details
     This function computes all the eigenvalues of T, all the eigenvalues in the half-open interval \f$(vl, vu]\f$,
-    or the il-th through iu-th eigenvalues, depending on the value of range.
+    or the il-th through iu-th eigenvalues, depending on the value of erange.
 
     The eigenvalues are returned in increasing order either for the entire matrix, or grouped by independent
-    diagonal blocks (if they exist), depending on the value of order.
+    diagonal blocks (if they exist), depending on the value of eorder.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    range       #rocblas_erange.\n
+    erange      #rocblas_erange.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    order       #rocblas_eorder.\n
+    eorder      #rocblas_eorder.\n
                 Specifies whether the computed eigenvalues will be ordered by their position in the
                 entire spectrum, or grouped by independent diagonal (split off) blocks.
     @param[in]
@@ -3925,19 +3925,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
                 The order of the tridiagonal matrix T.
     @param[in]
     vl          real type. vl < vu.\n
-                The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
+                The lower bound of the search interval (vl, vu]. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues within a set of indices.
     @param[in]
     vu          real type. vl < vu.\n
-                The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
+                The upper bound of the search interval (vl, vu]. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
+                The index of the smallest eigenvalue to be computed. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the largest eigenvalue to be computed. Ignored if range indicates to look
+                The index of the largest eigenvalue to be computed. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
     @param[in]
     abstol      real type.\n
@@ -3982,8 +3982,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     *****************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sstebz(rocblas_handle handle,
-                                                 const rocblas_erange range,
-                                                 const rocblas_eorder order,
+                                                 const rocblas_erange erange,
+                                                 const rocblas_eorder eorder,
                                                  const rocblas_int n,
                                                  const float vl,
                                                  const float vu,
@@ -4000,8 +4000,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sstebz(rocblas_handle handle,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
-                                                 const rocblas_erange range,
-                                                 const rocblas_eorder order,
+                                                 const rocblas_erange erange,
+                                                 const rocblas_eorder eorder,
                                                  const rocblas_int n,
                                                  const double vl,
                                                  const double vu,

@@ -6236,8 +6236,8 @@ void cblas_stedc<rocblas_double_complex, double>(rocblas_evect evect,
 
 // stebz
 template <>
-void cblas_stebz<float>(rocblas_erange range,
-                        rocblas_eorder order,
+void cblas_stebz<float>(rocblas_erange erange,
+                        rocblas_eorder eorder,
                         rocblas_int n,
                         float vl,
                         float vu,
@@ -6255,15 +6255,15 @@ void cblas_stebz<float>(rocblas_erange range,
                         rocblas_int* iwork,
                         rocblas_int* info)
 {
-    char erangeC = rocblas2char_erange(range);
-    char eorderC = rocblas2char_eorder(order);
+    char erangeC = rocblas2char_erange(erange);
+    char eorderC = rocblas2char_eorder(eorder);
     sstebz_(&erangeC, &eorderC, &n, &vl, &vu, &il, &iu, &abstol, D, E, m, nsplit, W, iblock, isplit,
             work, iwork, info);
 }
 
 template <>
-void cblas_stebz<double>(rocblas_erange range,
-                         rocblas_eorder order,
+void cblas_stebz<double>(rocblas_erange erange,
+                         rocblas_eorder eorder,
                          rocblas_int n,
                          double vl,
                          double vu,
@@ -6281,8 +6281,8 @@ void cblas_stebz<double>(rocblas_erange range,
                          rocblas_int* iwork,
                          rocblas_int* info)
 {
-    char erangeC = rocblas2char_erange(range);
-    char eorderC = rocblas2char_eorder(order);
+    char erangeC = rocblas2char_erange(erange);
+    char eorderC = rocblas2char_eorder(eorder);
     dstebz_(&erangeC, &eorderC, &n, &vl, &vu, &il, &iu, &abstol, D, E, m, nsplit, W, iblock, isplit,
             work, iwork, info);
 }
