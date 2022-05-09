@@ -33,6 +33,7 @@ set(roclapack_test_source
   # symmetric eigensolvers
   syev_heev_gtest.cpp
   syevd_heevd_gtest.cpp
+  syevj_heevj_gtest.cpp
   syevx_heevx_gtest.cpp
   sygv_hegv_gtest.cpp
   sygvd_hegvd_gtest.cpp
