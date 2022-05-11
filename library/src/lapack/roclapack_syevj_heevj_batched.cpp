@@ -41,33 +41,30 @@ rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
     rocblas_stride strideA = 0;
 
     // memory workspace sizes:
-    // size for constants in rocblas calls
-    size_t size_scalars;
-    // size of array of pointers (only for batched case)
-    size_t size_workArr;
+    // size of temporary workspace
+    size_t size_Acpy, size_resarr, size_tbarr;
 
-    rocsolver_syevj_heevj_getMemorySize<true, T, S>(evect, uplo, n, batch_count, &size_scalars,
-                                                    &size_workArr);
+    rocsolver_syevj_heevj_getMemorySize<true, T, S>(evect, uplo, n, batch_count, &size_Acpy,
+                                                    &size_resarr, &size_tbarr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_Acpy, size_resarr, size_tbarr);
 
     // memory workspace allocation
-    void *scalars, *workArr;
-    rocblas_device_malloc mem(handle, size_scalars, size_workArr);
+    void *Acpy, *resarr, *tbarr;
+    rocblas_device_malloc mem(handle, size_Acpy, size_resarr, size_tbarr);
 
     if(!mem)
         return rocblas_status_memory_error;
 
-    scalars = mem[0];
-    workArr = mem[1];
-    if(size_scalars > 0)
-        init_scalars(handle, (T*)scalars);
+    Acpy = mem[0];
+    resarr = mem[1];
+    tbarr = mem[2];
 
     // execution
     return rocsolver_syevj_heevj_template<true, false, T>(
         handle, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W,
-        strideW, info, batch_count, (T*)scalars, (T**)workArr);
+        strideW, info, batch_count, (T*)Acpy, (S*)resarr, (rocblas_int*)tbarr);
 }
 
 /*

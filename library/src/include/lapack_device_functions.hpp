@@ -299,16 +299,18 @@ __device__ void gemm_btrans(const rocblas_int tid,
     to create a givens rotation such that:
     [  c s ]' * [ f ] = [ r ]
     [ -s c ]    [ g ]   [ 0 ] **/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T>
 __device__ void lartg(T& f, T& g, T& c, T& s, T& r)
 {
-    if(g == 0)
+    using S = decltype(std::real(T{}));
+
+    if(aabs<S>(g) == 0)
     {
         c = 1;
         s = 0;
         r = f;
     }
-    else if(f == 0)
+    else if(aabs<S>(f) == 0)
     {
         c = 0;
         s = 1;
@@ -317,16 +319,16 @@ __device__ void lartg(T& f, T& g, T& c, T& s, T& r)
     else
     {
         T t;
-        if(std::abs(g) > std::abs(f))
+        if(aabs<S>(g) > aabs<S>(f))
         {
             t = -f / g;
-            s = 1 / std::sqrt(1 + t * t);
+            s = 1 / std::sqrt(std::real(1 + t * t));
             c = s * t;
         }
         else
         {
             t = -g / f;
-            c = 1 / std::sqrt(1 + t * t);
+            c = 1 / std::sqrt(std::real(1 + t * t));
             s = c * t;
         }
         r = c * f - s * g;
