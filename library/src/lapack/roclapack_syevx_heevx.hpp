@@ -14,7 +14,7 @@
 #include "auxiliary/rocauxiliary_stein.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n,

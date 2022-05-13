@@ -15,7 +15,7 @@
 #include "rocblas.hpp"
 #include "roclapack_syev_heev.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** Helper to calculate workspace sizes **/
 template <bool BATCHED, typename T, typename S>

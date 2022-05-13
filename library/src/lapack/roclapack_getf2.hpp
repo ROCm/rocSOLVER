@@ -13,7 +13,7 @@
 #include "auxiliary/rocauxiliary_laswp.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
 // number of threads for the iamax reduction kernel

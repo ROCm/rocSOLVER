@@ -15,7 +15,7 @@
 #include "roclapack_gelqf.hpp"
 #include "roclapack_gels.hpp"
 #include "roclapack_geqrf.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_gels_outofplace_getMemorySize(const rocblas_operation trans,

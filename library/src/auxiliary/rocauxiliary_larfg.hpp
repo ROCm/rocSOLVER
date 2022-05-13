@@ -10,7 +10,7 @@
 #pragma once
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
