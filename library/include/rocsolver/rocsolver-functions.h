@@ -20004,3 +20004,4 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_strided_batched(rocblas_handle 
 #endif
 
 #endif /* _ROCLAPACK_FUNCTIONS_H */
+// changed rocsolver-functions erer

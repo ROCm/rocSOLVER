@@ -115,7 +115,7 @@ option(WERROR "Treat warnings as errors" OFF)
 option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   rocm_wrap_header_dir(
-    ${CMAKE_SOURCE_DIR}/library/include
+    ${CMAKE_SOURCE_DIR}/library/include/rocsolver
     PATTERNS "*.h"
     GUARDS SYMLINK WRAPPER
     WRAPPER_LOCATIONS include

@@ -237,6 +237,7 @@ target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
 target_include_directories(rocsolver
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include/rocsolver>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/rocsolver>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -302,7 +303,7 @@ endif()
 
 rocm_install(
 	DIRECTORY
-		"${PROJECT_SOURCE_DIR}/library/include/"
+		"${PROJECT_SOURCE_DIR}/library/include/rocsolver/"
 		"${PROJECT_BINARY_DIR}/include/rocsolver/"
 	DESTINATION include/rocsolver
 	FILES_MATCHING
