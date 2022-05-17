@@ -12,86 +12,86 @@
 #include "rocsolver_test.hpp"
 
 template <bool STRIDED, typename T, typename S, typename SS, typename U>
-void syevx_heevx_inplace_checkBadArgs(const rocblas_handle handle,
-                                      const rocblas_evect evect,
-                                      const rocblas_erange erange,
-                                      const rocblas_fill uplo,
-                                      const rocblas_int n,
-                                      T dA,
-                                      const rocblas_int lda,
-                                      const rocblas_stride stA,
-                                      const SS vl,
-                                      const SS vu,
-                                      const rocblas_int il,
-                                      const rocblas_int iu,
-                                      const SS abstol,
-                                      U hNev,
-                                      S dW,
-                                      const rocblas_stride stW,
-                                      U dinfo,
-                                      const rocblas_int bc)
+void syevdx_heevdx_inplace_checkBadArgs(const rocblas_handle handle,
+                                        const rocblas_evect evect,
+                                        const rocblas_erange erange,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        T dA,
+                                        const rocblas_int lda,
+                                        const rocblas_stride stA,
+                                        const SS vl,
+                                        const SS vu,
+                                        const rocblas_int il,
+                                        const rocblas_int iu,
+                                        const SS abstol,
+                                        U hNev,
+                                        S dW,
+                                        const rocblas_stride stW,
+                                        U dinfo,
+                                        const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, nullptr, evect, erange, uplo, n,
-                                                        dA, lda, stA, vl, vu, il, iu, abstol, hNev,
-                                                        dW, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, nullptr, evect, erange, uplo, n,
+                                                          dA, lda, stA, vl, vu, il, iu, abstol,
+                                                          hNev, dW, stW, dinfo, bc),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, rocblas_evect(-1), erange,
-                                                        uplo, n, dA, lda, stA, vl, vu, il, iu,
-                                                        abstol, hNev, dW, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, rocblas_evect(-1),
+                                                          erange, uplo, n, dA, lda, stA, vl, vu, il,
+                                                          iu, abstol, hNev, dW, stW, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, rocblas_erange(-1),
-                                                        uplo, n, dA, lda, stA, vl, vu, il, iu,
-                                                        abstol, hNev, dW, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, rocblas_erange(-1),
+                                                          uplo, n, dA, lda, stA, vl, vu, il, iu,
+                                                          abstol, hNev, dW, stW, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange,
-                                                        rocblas_fill_full, n, dA, lda, stA, vl, vu,
-                                                        il, iu, abstol, hNev, dW, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange,
+                                                          rocblas_fill_full, n, dA, lda, stA, vl, vu,
+                                                          il, iu, abstol, hNev, dW, stW, dinfo, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, n,
-                                                            dA, lda, stA, vl, vu, il, iu, abstol,
-                                                            hNev, dW, stW, dinfo, -1),
+        EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo,
+                                                              n, dA, lda, stA, vl, vu, il, iu,
+                                                              abstol, hNev, dW, stW, dinfo, -1),
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, n,
-                                                        (T) nullptr, lda, stA, vl, vu, il, iu,
-                                                        abstol, hNev, dW, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo, n,
+                                                          (T) nullptr, lda, stA, vl, vu, il, iu,
+                                                          abstol, hNev, dW, stW, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, n, dA,
-                                                        lda, stA, vl, vu, il, iu, abstol,
-                                                        (U) nullptr, dW, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo, n,
+                                                          dA, lda, stA, vl, vu, il, iu, abstol,
+                                                          (U) nullptr, dW, stW, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, n, dA,
-                                                        lda, stA, vl, vu, il, iu, abstol, hNev,
-                                                        (S) nullptr, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo, n,
+                                                          dA, lda, stA, vl, vu, il, iu, abstol,
+                                                          hNev, (S) nullptr, stW, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, n, dA,
-                                                        lda, stA, vl, vu, il, iu, abstol, hNev, dW,
-                                                        stW, (U) nullptr, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo, n,
+                                                          dA, lda, stA, vl, vu, il, iu, abstol,
+                                                          hNev, dW, stW, (U) nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, 0,
-                                                        (T) nullptr, lda, stA, vl, vu, il, iu,
-                                                        abstol, hNev, (S) nullptr, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo, 0,
+                                                          (T) nullptr, lda, stA, vl, vu, il, iu,
+                                                          abstol, hNev, (S) nullptr, stW, dinfo, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, n,
-                                                            dA, lda, stA, vl, vu, il, iu, abstol,
-                                                            (U) nullptr, dW, stW, (U) nullptr, 0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo,
+                                                              n, dA, lda, stA, vl, vu, il, iu, abstol,
+                                                              (U) nullptr, dW, stW, (U) nullptr, 0),
                               rocblas_status_success);
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_syevx_heevx_inplace_bad_arg()
+void testing_syevdx_heevdx_inplace_bad_arg()
 {
     using S = decltype(std::real(T{}));
 
@@ -124,9 +124,9 @@ void testing_syevx_heevx_inplace_bad_arg()
         CHECK_HIP_ERROR(dinfo.memcheck());
 
         // check bad arguments
-        syevx_heevx_inplace_checkBadArgs<STRIDED>(handle, evect, erange, uplo, n, dA.data(), lda,
-                                                  stA, vl, vu, il, iu, abstol, hNev.data(),
-                                                  dW.data(), stW, dinfo.data(), bc);
+        syevdx_heevdx_inplace_checkBadArgs<STRIDED>(handle, evect, erange, uplo, n, dA.data(), lda,
+                                                    stA, vl, vu, il, iu, abstol, hNev.data(),
+                                                    dW.data(), stW, dinfo.data(), bc);
     }
     else
     {
@@ -140,22 +140,22 @@ void testing_syevx_heevx_inplace_bad_arg()
         CHECK_HIP_ERROR(dinfo.memcheck());
 
         // check bad arguments
-        syevx_heevx_inplace_checkBadArgs<STRIDED>(handle, evect, erange, uplo, n, dA.data(), lda,
-                                                  stA, vl, vu, il, iu, abstol, hNev.data(),
-                                                  dW.data(), stW, dinfo.data(), bc);
+        syevdx_heevdx_inplace_checkBadArgs<STRIDED>(handle, evect, erange, uplo, n, dA.data(), lda,
+                                                    stA, vl, vu, il, iu, abstol, hNev.data(),
+                                                    dW.data(), stW, dinfo.data(), bc);
     }
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void syevx_heevx_inplace_initData(const rocblas_handle handle,
-                                  const rocblas_evect evect,
-                                  const rocblas_int n,
-                                  Td& dA,
-                                  const rocblas_int lda,
-                                  const rocblas_int bc,
-                                  Th& hA,
-                                  std::vector<T>& A,
-                                  bool test = true)
+void syevdx_heevdx_inplace_initData(const rocblas_handle handle,
+                                    const rocblas_evect evect,
+                                    const rocblas_int n,
+                                    Td& dA,
+                                    const rocblas_int lda,
+                                    const rocblas_int bc,
+                                    Th& hA,
+                                    std::vector<T>& A,
+                                    bool test = true)
 {
     if(CPU)
     {
@@ -205,32 +205,32 @@ void syevx_heevx_inplace_initData(const rocblas_handle handle,
 }
 
 template <bool STRIDED, typename T, typename S, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
-void syevx_heevx_inplace_getError(const rocblas_handle handle,
-                                  const rocblas_evect evect,
-                                  const rocblas_erange erange,
-                                  const rocblas_fill uplo,
-                                  const rocblas_int n,
-                                  Td& dA,
-                                  const rocblas_int lda,
-                                  const rocblas_stride stA,
-                                  const S vl,
-                                  const S vu,
-                                  const rocblas_int il,
-                                  const rocblas_int iu,
-                                  const S abstol,
-                                  Ih& hNevRes,
-                                  Sd& dW,
-                                  const rocblas_stride stW,
-                                  Id& dinfo,
-                                  const rocblas_int bc,
-                                  Th& hA,
-                                  Th& hARes,
-                                  Ih& hNev,
-                                  Sh& hW,
-                                  Sh& hWRes,
-                                  Ih& hinfo,
-                                  Ih& hinfoRes,
-                                  double* max_err)
+void syevdx_heevdx_inplace_getError(const rocblas_handle handle,
+                                    const rocblas_evect evect,
+                                    const rocblas_erange erange,
+                                    const rocblas_fill uplo,
+                                    const rocblas_int n,
+                                    Td& dA,
+                                    const rocblas_int lda,
+                                    const rocblas_stride stA,
+                                    const S vl,
+                                    const S vu,
+                                    const rocblas_int il,
+                                    const rocblas_int iu,
+                                    const S abstol,
+                                    Ih& hNevRes,
+                                    Sd& dW,
+                                    const rocblas_stride stW,
+                                    Id& dinfo,
+                                    const rocblas_int bc,
+                                    Th& hA,
+                                    Th& hARes,
+                                    Ih& hNev,
+                                    Sh& hW,
+                                    Sh& hWRes,
+                                    Ih& hinfo,
+                                    Ih& hinfoRes,
+                                    double* max_err)
 {
     constexpr bool COMPLEX = is_complex<T>;
 
@@ -247,11 +247,11 @@ void syevx_heevx_inplace_getError(const rocblas_handle handle,
     std::vector<int> ifail(n);
 
     // input data initialization
-    syevx_heevx_inplace_initData<true, true, T>(handle, evect, n, dA, lda, bc, hA, A);
+    syevdx_heevdx_inplace_initData<true, true, T>(handle, evect, n, dA, lda, bc, hA, A);
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_syevx_heevx_inplace(
+    CHECK_ROCBLAS_ERROR(rocsolver_syevdx_heevdx_inplace(
         STRIDED, handle, evect, erange, uplo, n, dA.data(), lda, stA, vl, vu, il, iu, abstol,
         hNevRes.data(), dW.data(), stW, dinfo.data(), bc));
 
@@ -324,34 +324,34 @@ void syevx_heevx_inplace_getError(const rocblas_handle handle,
 }
 
 template <bool STRIDED, typename T, typename S, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
-void syevx_heevx_inplace_getPerfData(const rocblas_handle handle,
-                                     const rocblas_evect evect,
-                                     const rocblas_erange erange,
-                                     const rocblas_fill uplo,
-                                     const rocblas_int n,
-                                     Td& dA,
-                                     const rocblas_int lda,
-                                     const rocblas_stride stA,
-                                     const S vl,
-                                     const S vu,
-                                     const rocblas_int il,
-                                     const rocblas_int iu,
-                                     const S abstol,
-                                     Ih& hNevRes,
-                                     Sd& dW,
-                                     const rocblas_stride stW,
-                                     Id& dinfo,
-                                     const rocblas_int bc,
-                                     Th& hA,
-                                     Ih& hNev,
-                                     Sh& hW,
-                                     Ih& hinfo,
-                                     double* gpu_time_used,
-                                     double* cpu_time_used,
-                                     const rocblas_int hot_calls,
-                                     const int profile,
-                                     const bool profile_kernels,
-                                     const bool perf)
+void syevdx_heevdx_inplace_getPerfData(const rocblas_handle handle,
+                                       const rocblas_evect evect,
+                                       const rocblas_erange erange,
+                                       const rocblas_fill uplo,
+                                       const rocblas_int n,
+                                       Td& dA,
+                                       const rocblas_int lda,
+                                       const rocblas_stride stA,
+                                       const S vl,
+                                       const S vu,
+                                       const rocblas_int il,
+                                       const rocblas_int iu,
+                                       const S abstol,
+                                       Ih& hNevRes,
+                                       Sd& dW,
+                                       const rocblas_stride stW,
+                                       Id& dinfo,
+                                       const rocblas_int bc,
+                                       Th& hA,
+                                       Ih& hNev,
+                                       Sh& hW,
+                                       Ih& hinfo,
+                                       double* gpu_time_used,
+                                       double* cpu_time_used,
+                                       const rocblas_int hot_calls,
+                                       const int profile,
+                                       const bool profile_kernels,
+                                       const bool perf)
 {
     constexpr bool COMPLEX = is_complex<T>;
 
@@ -372,7 +372,7 @@ void syevx_heevx_inplace_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        syevx_heevx_inplace_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+        syevdx_heevdx_inplace_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -383,14 +383,14 @@ void syevx_heevx_inplace_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    syevx_heevx_inplace_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+    syevdx_heevdx_inplace_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        syevx_heevx_inplace_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+        syevdx_heevdx_inplace_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_syevx_heevx_inplace(
+        CHECK_ROCBLAS_ERROR(rocsolver_syevdx_heevdx_inplace(
             STRIDED, handle, evect, erange, uplo, n, dA.data(), lda, stA, vl, vu, il, iu, abstol,
             hNevRes.data(), dW.data(), stW, dinfo.data(), bc));
     }
@@ -412,19 +412,19 @@ void syevx_heevx_inplace_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        syevx_heevx_inplace_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
+        syevdx_heevdx_inplace_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
         start = get_time_us_sync(stream);
-        rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange, uplo, n, dA.data(), lda, stA,
-                                      vl, vu, il, iu, abstol, hNevRes.data(), dW.data(), stW,
-                                      dinfo.data(), bc);
+        rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange, uplo, n, dA.data(), lda,
+                                        stA, vl, vu, il, iu, abstol, hNevRes.data(), dW.data(), stW,
+                                        dinfo.data(), bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_syevx_heevx_inplace(Arguments& argus)
+void testing_syevdx_heevdx_inplace(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
@@ -454,13 +454,13 @@ void testing_syevx_heevx_inplace(Arguments& argus)
     if(uplo == rocblas_fill_full || evect == rocblas_evect_tridiagonal)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(
                                       STRIDED, handle, evect, erange, uplo, n, (T* const*)nullptr,
                                       lda, stA, vl, vu, il, iu, abstol, (rocblas_int*)nullptr,
                                       (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_value);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(
                                       STRIDED, handle, evect, erange, uplo, n, (T*)nullptr, lda,
                                       stA, vl, vu, il, iu, abstol, (rocblas_int*)nullptr,
                                       (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
@@ -487,13 +487,13 @@ void testing_syevx_heevx_inplace(Arguments& argus)
     if(invalid_size)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(
                                       STRIDED, handle, evect, erange, uplo, n, (T* const*)nullptr,
                                       lda, stA, vl, vu, il, iu, abstol, (rocblas_int*)nullptr,
                                       (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(
                                       STRIDED, handle, evect, erange, uplo, n, (T*)nullptr, lda,
                                       stA, vl, vu, il, iu, abstol, (rocblas_int*)nullptr,
                                       (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
@@ -510,11 +510,11 @@ void testing_syevx_heevx_inplace(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_syevx_heevx_inplace(
+            CHECK_ALLOC_QUERY(rocsolver_syevdx_heevdx_inplace(
                 STRIDED, handle, evect, erange, uplo, n, (T* const*)nullptr, lda, stA, vl, vu, il,
                 iu, abstol, (rocblas_int*)nullptr, (S*)nullptr, stW, (rocblas_int*)nullptr, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_syevx_heevx_inplace(
+            CHECK_ALLOC_QUERY(rocsolver_syevdx_heevdx_inplace(
                 STRIDED, handle, evect, erange, uplo, n, (T*)nullptr, lda, stA, vl, vu, il, iu,
                 abstol, (rocblas_int*)nullptr, (S*)nullptr, stW, (rocblas_int*)nullptr, bc));
 
@@ -556,10 +556,10 @@ void testing_syevx_heevx_inplace(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange,
-                                                                uplo, n, dA.data(), lda, stA, vl,
-                                                                vu, il, iu, abstol, hNevRes.data(),
-                                                                dW.data(), stW, dinfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange,
+                                                                  uplo, n, dA.data(), lda, stA, vl,
+                                                                  vu, il, iu, abstol, hNevRes.data(),
+                                                                  dW.data(), stW, dinfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -570,7 +570,7 @@ void testing_syevx_heevx_inplace(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            syevx_heevx_inplace_getError<STRIDED, T>(
+            syevdx_heevdx_inplace_getError<STRIDED, T>(
                 handle, evect, erange, uplo, n, dA, lda, stA, vl, vu, il, iu, abstol, hNevRes, dW,
                 stW, dinfo, bc, hA, hARes, hNev, hW, hWres, hinfo, hinfoRes, &max_error);
         }
@@ -578,7 +578,7 @@ void testing_syevx_heevx_inplace(Arguments& argus)
         // collect performance data
         if(argus.timing)
         {
-            syevx_heevx_inplace_getPerfData<STRIDED, T>(
+            syevdx_heevdx_inplace_getPerfData<STRIDED, T>(
                 handle, evect, erange, uplo, n, dA, lda, stA, vl, vu, il, iu, abstol, hNevRes, dW,
                 stW, dinfo, bc, hA, hNev, hW, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                 argus.profile, argus.profile_kernels, argus.perf);
@@ -597,10 +597,10 @@ void testing_syevx_heevx_inplace(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx_inplace(STRIDED, handle, evect, erange,
-                                                                uplo, n, dA.data(), lda, stA, vl,
-                                                                vu, il, iu, abstol, hNevRes.data(),
-                                                                dW.data(), stW, dinfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, erange,
+                                                                  uplo, n, dA.data(), lda, stA, vl,
+                                                                  vu, il, iu, abstol, hNevRes.data(),
+                                                                  dW.data(), stW, dinfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -611,7 +611,7 @@ void testing_syevx_heevx_inplace(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            syevx_heevx_inplace_getError<STRIDED, T>(
+            syevdx_heevdx_inplace_getError<STRIDED, T>(
                 handle, evect, erange, uplo, n, dA, lda, stA, vl, vu, il, iu, abstol, hNevRes, dW,
                 stW, dinfo, bc, hA, hARes, hNev, hW, hWres, hinfo, hinfoRes, &max_error);
         }
@@ -619,7 +619,7 @@ void testing_syevx_heevx_inplace(Arguments& argus)
         // collect performance data
         if(argus.timing)
         {
-            syevx_heevx_inplace_getPerfData<STRIDED, T>(
+            syevdx_heevdx_inplace_getPerfData<STRIDED, T>(
                 handle, evect, erange, uplo, n, dA, lda, stA, vl, vu, il, iu, abstol, hNevRes, dW,
                 stW, dinfo, bc, hA, hNev, hW, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                 argus.profile, argus.profile_kernels, argus.perf);
