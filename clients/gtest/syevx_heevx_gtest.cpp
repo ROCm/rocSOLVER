@@ -46,7 +46,7 @@ const vector<vector<int>> large_size_range = {{192, 192, 192, 5, 15, 100, 170},
                                               {300, 300, 330, -15, -5, 200, 300}};
 
 template <typename T>
-Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup, bool inplace)
+Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup)
 {
     using S = decltype(std::real(T{}));
 
@@ -57,8 +57,7 @@ Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup, bool inplace)
 
     arg.set<rocblas_int>("n", size[0]);
     arg.set<rocblas_int>("lda", size[1]);
-    if(!inplace)
-        arg.set<rocblas_int>("ldz", size[2]);
+    arg.set<rocblas_int>("ldz", size[2]);
     arg.set<double>("vl", size[3]);
     arg.set<double>("vu", size[4]);
     arg.set<rocblas_int>("il", size[5]);
@@ -89,7 +88,7 @@ protected:
     {
         using S = decltype(std::real(T{}));
 
-        Arguments arg = syevx_heevx_setup_arguments<T>(GetParam(), false);
+        Arguments arg = syevx_heevx_setup_arguments<T>(GetParam());
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N'
            && arg.peek<char>("erange") == 'V' && arg.peek<char>("uplo") == 'L')
