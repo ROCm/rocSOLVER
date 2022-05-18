@@ -1106,7 +1106,9 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
     There should be only one group in x with hipBlockDim_x = m.
     Size of shared memory per group should be:
     lmemsize = hipBlockDim_y * sizeof(T); **/
-template <typename T, typename U>
+
+//lower forward
+/*template <typename T, typename U>
 ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
                                          const rocblas_int n,
                                          U AA,
@@ -1151,7 +1153,7 @@ ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
         // move results back to global
         B[i + j * ldb] = c;
     }
-}
+}*/
 
 /** Optimized kernel that solves a simple triangular system B <- xA=B
     with A non-unit upper triangular matrix. A and B are sub blocks of the same matrix MM with
@@ -1163,7 +1165,7 @@ ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
     There should be only one group in y with hipBlockDim_y = n.
     Size of shared memory per group should be:
     lmemsize = hipBlockDim_x * sizeof(T); **/
-template <typename T, typename U>
+/*template <typename T, typename U>
 ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
                                          const rocblas_int n,
                                          U AA,
@@ -1216,5 +1218,239 @@ ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
 
         // move results back to global
         B[i + j * ldb] = c;
+    }
+}*/
+
+// forward substitution kernel for unit case
+template <typename T, typename U>
+ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const bool isleft,
+                                                       const bool islower,
+                                                       const rocblas_int nx,
+                                                       const rocblas_int ny,
+                                                       U AA,
+                                                       const rocblas_int shiftA,
+                                                       const rocblas_int lda,
+                                                       const rocblas_stride strideA,
+                                                       U BB,
+                                                       const rocblas_int shiftB,
+                                                       const rocblas_int ldb,
+                                                       const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c;
+
+    if(y < ny)
+    {
+        // read data
+        c = isleft ? B[x + y * ldb] : B[y + x * ldb];
+
+        // solve for all y's
+        for(int k = 0; k < nx - 1; ++k)
+        {
+            __syncthreads();
+            if(x == k)
+                b[ty] = c;
+            __syncthreads();
+
+            if(x > k)
+                c -= islower ? A[x + k * lda] * b[ty] : A[k + x * lda] * b[ty];
+        }
+
+        // move results back to global
+        if(isleft)
+            B[x + y * ldb] = c;
+        else
+            B[y + x * ldb] = c;
+    }
+}
+
+// forward substitution kernel for non-unit case
+template <typename T, typename U>
+ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const bool isleft,
+                                                          const bool islower,
+                                                          const rocblas_int nx,
+                                                          const rocblas_int ny,
+                                                          U AA,
+                                                          const rocblas_int shiftA,
+                                                          const rocblas_int lda,
+                                                          const rocblas_stride strideA,
+                                                          U BB,
+                                                          const rocblas_int shiftB,
+                                                          const rocblas_int ldb,
+                                                          const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c, d;
+
+    if(y < ny)
+    {
+        // read data
+        c = isleft ? B[x + y * ldb] : B[y + x * ldb];
+
+        // solve for all y's
+        for(int k = 0; k < nx - 1; ++k)
+        {
+            __syncthreads();
+            if(x == k)
+            {
+                d = A[x + x * lda];
+                c = d != 0 ? c / d : c;
+                b[ty] = c;
+            }
+            __syncthreads();
+
+            if(x > k)
+                c -= islower ? A[x + k * lda] * b[ty] : A[k + x * lda] * b[ty];
+        }
+        if(x == nx - 1)
+        {
+            d = A[x + x * lda];
+            c = d != 0 ? c / d : c;
+        }
+
+        // move results back to global
+        if(isleft)
+            B[x + y * ldb] = c;
+        else
+            B[y + x * ldb] = c;
+    }
+}
+
+// backward substitution kernel for unit case
+template <typename T, typename U>
+ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const bool isleft,
+                                                        const bool islower,
+                                                        const rocblas_int nx,
+                                                        const rocblas_int ny,
+                                                        U AA,
+                                                        const rocblas_int shiftA,
+                                                        const rocblas_int lda,
+                                                        const rocblas_stride strideA,
+                                                        U BB,
+                                                        const rocblas_int shiftB,
+                                                        const rocblas_int ldb,
+                                                        const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c;
+
+    if(y < ny)
+    {
+        // read data
+        c = isleft ? B[x + y * ldb] : B[y + x * ldb];
+
+        // solve for all y's
+        for(int k = nx - 1; k > 0; --k)
+        {
+            __syncthreads();
+            if(x == k)
+                b[ty] = c;
+            __syncthreads();
+
+            if(x < k)
+                c -= islower ? A[k + x * lda] * b[ty] : A[x + k * lda] * b[ty];
+        }
+
+        // move results back to global
+        if(isleft)
+            B[x + y * ldb] = c;
+        else
+            B[y + x * ldb] = c;
+    }
+}
+
+// backward substitution kernel for non-unit case
+template <typename T, typename U>
+ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const bool isleft,
+                                                           const bool islower,
+                                                           const rocblas_int nx,
+                                                           const rocblas_int ny,
+                                                           U AA,
+                                                           const rocblas_int shiftA,
+                                                           const rocblas_int lda,
+                                                           const rocblas_stride strideA,
+                                                           U BB,
+                                                           const rocblas_int shiftB,
+                                                           const rocblas_int ldb,
+                                                           const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c, d;
+
+    if(y < ny)
+    {
+        // read data
+        c = isleft ? B[x + y * ldb] : B[y + x * ldb];
+
+        // solve for all y's
+        for(int k = nx - 1; k > 0; --k)
+        {
+            __syncthreads();
+            if(x == k)
+            {
+                d = A[x + x * lda];
+                c = d != 0 ? c / d : c;
+                b[ty] = c;
+            }
+            __syncthreads();
+
+            if(x < k)
+                c -= islower ? A[k + x * lda] * b[ty] : A[x + k * lda] * b[ty];
+        }
+        if(x == 0)
+        {
+            d = A[x + x * lda];
+            c = d != 0 ? c / d : c;
+        }
+
+        // move results back to global
+        if(isleft)
+            B[x + y * ldb] = c;
+        else
+            B[y + x * ldb] = c;
     }
 }

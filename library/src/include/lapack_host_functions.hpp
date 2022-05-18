@@ -179,8 +179,11 @@ void rocsolver_trsm_mem(const rocblas_side side,
     {
         static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
-        // determine block size
-        rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(m, n);
+        // determine type of system and block size
+        const bool isleft = (side == rocblas_side_left);
+        rocblas_int nx = isleft ? m : n; // # of variables or equations
+        rocblas_int ny = isleft ? n : m; // # of right/left hand sides
+        rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(nx, ny);
 
         if(blk > 0)
         {
@@ -200,7 +203,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
         // (Note: rocblas TRSM workspace size is less than expected when the number of rows is multiple of 128.
         //  For this reason, when trying to set up a workspace that fits all the TRSM calls for m <= blk,
         //  blk cannot be multiple of 128.)
-        //        rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
+        //    rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
         mm = (m % 128 != 0) ? m : m + 1;
     }
 
@@ -218,6 +221,9 @@ void rocsolver_trsm_mem(const rocblas_side side,
     to solve the diagonal blocks, and uses gemm to update the right-hand-sides **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 void rocsolver_trsm_lower(rocblas_handle handle,
+                          const rocblas_side side,
+                          const rocblas_operation trans,
+                          const rocblas_diagonal diag,
                           const rocblas_int m,
                           const rocblas_int n,
                           U A,
@@ -235,8 +241,9 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                           void* work3,
                           void* work4)
 {
-    ROCSOLVER_ENTER("trsm_lower", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda,
-                    "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
+    ROCSOLVER_ENTER("trsm_lower", "side:" side, "trans:", trans, "diag:", diag, "m:", m, "n:", n,
+                    "shiftA:", shiftA, "lda:", lda, "shiftB:", shiftB, "ldb:", ldb,
+                    "bc:", batch_count);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -245,18 +252,20 @@ void rocsolver_trsm_lower(rocblas_handle handle,
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
 
-    rocblas_int dimx, dimy, blocks, blocksy, jb;
+    rocblas_int dimx, dimy, blocks, jb;
     rocblas_int nextpiv;
     dim3 grid, threads;
     size_t lmemsize;
 
-    // determine block size
-    rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(m, n);
+    // determine type of system and block size
+    const bool isleft = (side == rocblas_side_left);
+    rocblas_int nx = isleft ? m : n; // # of variables or equations
+    rocblas_int ny = isleft ? n : m; // # of right/left hand sides
+    rocblas_int blk = rocsolver_trsm_blksize<ISBATCHED, T>(nx, ny);
 
     if(blk == 0)
     {
-        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                     rocblas_operation_none, rocblas_diagonal_unit, m, n, &one, A,
+        rocblasCall_trsm<BATCHED, T>(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A,
                                      shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                      optim_mem, work1, work2, work3, work4);
         return;
@@ -275,9 +284,12 @@ void rocsolver_trsm_lower(rocblas_handle handle,
         grid = dim3(1, blocks, batch_count);
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
-        ROCSOLVER_LAUNCH_KERNEL(trsm2_lower_kernel<T>, grid, threads, lmemsize, stream, jb, n, A,
-                                shiftA + idx2D(j, j, lda), lda, strideA, B,
-                                shiftB + idx2D(j, 0, ldb), ldb, strideB);
+        ROCSOLVER_LAUNCH_KERNEL(unit_forward_substitution_kernel<T>, grid, threads, lmemsize,
+                                stream, true, true, jb, n, A, shiftA + idx2D(j, j, lda), lda,
+                                strideA, B, shiftB + idx2D(j, 0, ldb), ldb, strideB);
+        //        ROCSOLVER_LAUNCH_KERNEL(trsm2_lower_kernel<T>, grid, threads, lmemsize, stream, jb, n, A,
+        //                                shiftA + idx2D(j, j, lda), lda, strideA, B,
+        //                                shiftB + idx2D(j, 0, ldb), ldb, strideB);
 
         // update right hand sides
         if(nextpiv < m)
@@ -352,7 +364,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         nextpiv = j + jb;
 
         // solve for current diagonal block
-        dimy = jb;
+        /*        dimy = jb;
         dimx = 1024 / dimy;
         blocks = (m - 1) / dimx + 1;
         grid = dim3(blocks, 1, batch_count);
@@ -360,7 +372,16 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         lmemsize = dimx * sizeof(T);
         ROCSOLVER_LAUNCH_KERNEL(trsm2_upper_kernel<T>, grid, threads, lmemsize, stream, m, jb, A,
                                 shiftA + idx2D(j, j, lda), lda, strideA, B,
-                                shiftB + idx2D(0, j, ldb), ldb, strideB);
+                                shiftB + idx2D(0, j, ldb), ldb, strideB);*/
+        dimx = jb;
+        dimy = 1024 / dimx;
+        blocks = (m - 1) / dimy + 1;
+        grid = dim3(blocks, 1, batch_count);
+        threads = dim3(dimx, dimy, 1);
+        lmemsize = dimy * sizeof(T);
+        ROCSOLVER_LAUNCH_KERNEL(nonunit_forward_substitution_kernel<T>, grid, threads, lmemsize,
+                                stream, false, false, jb, m, A, shiftA + idx2D(j, j, lda), lda,
+                                strideA, B, shiftB + idx2D(0, j, ldb), ldb, strideB);
 
         // update right hand sides
         if(nextpiv < n)
