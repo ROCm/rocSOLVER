@@ -588,14 +588,15 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_iipiv = pivot ? m * sizeof(rocblas_int) * batch_count : 0;
 
         // extra workspace for calling largest possible TRSM
-        rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, min(dim, 512), n, batch_count,
-                                                size_work1, size_work2, size_work3, size_work4,
-                                                optim_mem, true);
+        rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, rocblas_operation_none,
+                                                min(dim, 512), n, batch_count, size_work1,
+                                                size_work2, size_work3, size_work4, optim_mem, true);
         if(!pivot)
         {
             size_t w1, w2, w3, w4;
-            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, m, min(dim, 512),
-                                                    batch_count, &w1, &w2, &w3, &w4, optim_mem, true);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, rocblas_operation_none, m,
+                                                    min(dim, 512), batch_count, &w1, &w2, &w3, &w4,
+                                                    optim_mem, true);
             *size_work1 = std::max(*size_work1, w1);
             *size_work2 = std::max(*size_work2, w2);
             *size_work3 = std::max(*size_work3, w3);

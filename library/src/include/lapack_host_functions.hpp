@@ -160,6 +160,7 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 /** This function determine workspace size for the internal trsm **/
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_trsm_mem(const rocblas_side side,
+                        const rocblas_operation trans,
                         const rocblas_int m,
                         const rocblas_int n,
                         const rocblas_int batch_count,
@@ -206,8 +207,8 @@ void rocsolver_trsm_mem(const rocblas_side side,
         mm = (m % 128 != 0) ? m : m + 1;
     }
 
-    rocblasCall_trsm_mem<BATCHED, T>(side, rocblas_operation_none, mm, n, batch_count, size_work1,
-                                     size_work2, size_work3, size_work4);
+    rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, batch_count, size_work1, size_work2,
+                                     size_work3, size_work4);
 }
 
 /** Internal TRSM (lower case):
