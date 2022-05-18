@@ -1222,7 +1222,7 @@ ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
 }*/
 
 // forward substitution kernel for unit case
-template <typename T, typename U>
+/*template <typename T, typename U>
 ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const bool isleft,
                                                        const bool islower,
                                                        const rocblas_int nx,
@@ -1273,22 +1273,23 @@ ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const bool isleft,
         else
             B[y + x * ldb] = c;
     }
-}
+}*/
 
-// forward substitution kernel for non-unit case
+// forward substitution kernel
 template <typename T, typename U>
-ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const bool isleft,
-                                                          const bool islower,
-                                                          const rocblas_int nx,
-                                                          const rocblas_int ny,
-                                                          U AA,
-                                                          const rocblas_int shiftA,
-                                                          const rocblas_int lda,
-                                                          const rocblas_stride strideA,
-                                                          U BB,
-                                                          const rocblas_int shiftB,
-                                                          const rocblas_int ldb,
-                                                          const rocblas_stride strideB)
+ROCSOLVER_KERNEL void forward_substitution_kernel(const bool isleft,
+                                                  const bool islower,
+                                                  const bool isunit,
+                                                  const rocblas_int nx,
+                                                  const rocblas_int ny,
+                                                  U AA,
+                                                  const rocblas_int shiftA,
+                                                  const rocblas_int lda,
+                                                  const rocblas_stride strideA,
+                                                  U BB,
+                                                  const rocblas_int shiftB,
+                                                  const rocblas_int ldb,
+                                                  const rocblas_stride strideB)
 {
     int bid = hipBlockIdx_z;
     int x = hipThreadIdx_x;
@@ -1315,7 +1316,7 @@ ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const bool isleft,
             __syncthreads();
             if(x == k)
             {
-                d = A[x + x * lda];
+                d = isunit ? 0 : A[x + x * lda];
                 c = d != 0 ? c / d : c;
                 b[ty] = c;
             }
@@ -1326,7 +1327,7 @@ ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const bool isleft,
         }
         if(x == nx - 1)
         {
-            d = A[x + x * lda];
+            d = isunit ? 0 : A[x + x * lda];
             c = d != 0 ? c / d : c;
         }
 
@@ -1339,7 +1340,7 @@ ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const bool isleft,
 }
 
 // backward substitution kernel for unit case
-template <typename T, typename U>
+/*template <typename T, typename U>
 ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const bool isleft,
                                                         const bool islower,
                                                         const rocblas_int nx,
@@ -1390,22 +1391,23 @@ ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const bool isleft,
         else
             B[y + x * ldb] = c;
     }
-}
+}*/
 
-// backward substitution kernel for non-unit case
+// backward substitution kernel
 template <typename T, typename U>
-ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const bool isleft,
-                                                           const bool islower,
-                                                           const rocblas_int nx,
-                                                           const rocblas_int ny,
-                                                           U AA,
-                                                           const rocblas_int shiftA,
-                                                           const rocblas_int lda,
-                                                           const rocblas_stride strideA,
-                                                           U BB,
-                                                           const rocblas_int shiftB,
-                                                           const rocblas_int ldb,
-                                                           const rocblas_stride strideB)
+ROCSOLVER_KERNEL void backward_substitution_kernel(const bool isleft,
+                                                   const bool islower,
+                                                   const bool isunit,
+                                                   const rocblas_int nx,
+                                                   const rocblas_int ny,
+                                                   U AA,
+                                                   const rocblas_int shiftA,
+                                                   const rocblas_int lda,
+                                                   const rocblas_stride strideA,
+                                                   U BB,
+                                                   const rocblas_int shiftB,
+                                                   const rocblas_int ldb,
+                                                   const rocblas_stride strideB)
 {
     int bid = hipBlockIdx_z;
     int x = hipThreadIdx_x;
@@ -1432,7 +1434,7 @@ ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const bool isleft,
             __syncthreads();
             if(x == k)
             {
-                d = A[x + x * lda];
+                d = isunit ? 0 : A[x + x * lda];
                 c = d != 0 ? c / d : c;
                 b[ty] = c;
             }
@@ -1443,7 +1445,7 @@ ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const bool isleft,
         }
         if(x == 0)
         {
-            d = A[x + x * lda];
+            d = isunit ? 0 : A[x + x * lda];
             c = d != 0 ? c / d : c;
         }
 

@@ -127,9 +127,9 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         strideP, 1, batch_count);
 
         // solve L*X = B, overwriting B with X
-        rocsolver_trsm_lower<BATCHED, STRIDED, T>(handle, n, nrhs, A, shiftA, lda, strideA, B,
-                                                  shiftB, ldb, strideB, batch_count, optim_mem,
-                                                  work1, work2, work3, work4);
+        rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+            handle, rocblas_side_left, trans, rocblas_diagonal_unit, n, nrhs, A, shiftA, lda,
+            strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work1, work2, work3, work4);
         //        rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower, trans,
         //                                     rocblas_diagonal_unit, n, nrhs, &one, A, shiftA, lda, strideA,
         //                                     B, shiftB, ldb, strideB, batch_count, optim_mem, work1, work2,
