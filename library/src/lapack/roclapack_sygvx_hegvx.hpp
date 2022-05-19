@@ -13,7 +13,7 @@
 #include "roclapack_potrf.hpp"
 #include "roclapack_syevx_heevx.hpp"
 #include "roclapack_sygst_hegst.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T>
 ROCSOLVER_KERNEL void

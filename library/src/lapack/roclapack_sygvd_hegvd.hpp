@@ -14,7 +14,7 @@
 #include "roclapack_syevd_heevd.hpp"
 #include "roclapack_sygst_hegst.hpp"
 #include "roclapack_sygv_hegv.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T, typename S>
 void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,

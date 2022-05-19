@@ -7,7 +7,7 @@
 
 #include <fmt/core.h>
 #include <gtest/gtest.h>
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 
 #include "clientcommon.hpp"
 

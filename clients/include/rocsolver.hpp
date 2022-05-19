@@ -5,7 +5,7 @@
 #pragma once
 
 #include "clientcommon.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 // Most functions within this file exist to provide a consistent interface for our templated tests.
 // Function overloading is used to select between the float, double, rocblas_float_complex

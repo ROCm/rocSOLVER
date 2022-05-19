@@ -14,7 +14,7 @@
 #include "auxiliary/rocauxiliary_sterf.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** Set results for the scalar case (n=1) **/
 template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>

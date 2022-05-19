@@ -17,7 +17,7 @@
 
 #include "common_host_helpers.hpp"
 #include "lib_host_helpers.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include "rocsolver_datatype2string.hpp"
 #include "rocsolver_logvalue.hpp"
 

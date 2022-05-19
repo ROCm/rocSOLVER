@@ -13,7 +13,7 @@
 #include "auxiliary/rocauxiliary_larft.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gelq2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_gelqf_getMemorySize(const rocblas_int m,

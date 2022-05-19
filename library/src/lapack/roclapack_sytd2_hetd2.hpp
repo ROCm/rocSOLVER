@@ -11,7 +11,7 @@
 
 #include "auxiliary/rocauxiliary_larfg.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** set_tau kernel copies to tau the corresponding Householder scalars **/
 template <typename T>

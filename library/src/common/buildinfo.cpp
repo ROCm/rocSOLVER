@@ -3,7 +3,7 @@
  * ************************************************************************ */
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include <cstring>
 
 #define TO_STR2(x) #x

@@ -10,7 +10,7 @@
 #pragma once
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 #define LASWP_THDS 256 // size of thread-blocks for calling the laswp kernel
 

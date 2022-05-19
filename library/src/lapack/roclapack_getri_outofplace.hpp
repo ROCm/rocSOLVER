@@ -7,7 +7,7 @@
 #include "lib_device_helpers.hpp"
 #include "rocblas.hpp"
 #include "roclapack_getrs.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_getri_outofplace_getMemorySize(const rocblas_int n,

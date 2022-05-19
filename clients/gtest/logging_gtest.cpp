@@ -17,7 +17,7 @@ namespace fs = std::experimental::filesystem;
 #include <fmt/ostream.h>
 #include <gtest/gtest.h>
 #include <rocblas/rocblas.h>
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 
 #include "client_environment_helpers.hpp"
 #include "clientcommon.hpp"

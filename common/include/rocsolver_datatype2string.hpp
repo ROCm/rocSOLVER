@@ -5,7 +5,7 @@
 #pragma once
 
 #include "rocblas/rocblas.h"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include <string>
 
 typedef enum rocblas_initialization_ : int

@@ -11,7 +11,7 @@
 
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** thread-block size for calling the stein kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/

@@ -11,7 +11,7 @@
 
 #include "rocblas.hpp"
 #include "roclapack_potf2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename U>
 ROCSOLVER_KERNEL void

@@ -13,7 +13,7 @@
 #include "../auxiliary/rocauxiliary_lasyf.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytf2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** thread-block size for calling the sytrf kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/

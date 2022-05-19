@@ -6,13 +6,13 @@
 set(rocsolver_SOVERSION 0.1)
 
 # Create version header from templated .in file using CMake info
-configure_file(include/rocsolver-version.h.in "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h")
+configure_file(include/rocsolver/rocsolver-version.h.in "${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h")
 
 set(rocsolver_headers_public
-  include/rocsolver.h
-  include/rocsolver-extra-types.h
-  include/rocsolver-aliases.h
-  include/rocsolver-functions.h
+  include/rocsolver/rocsolver.h
+  include/rocsolver/rocsolver-extra-types.h
+  include/rocsolver/rocsolver-aliases.h
+  include/rocsolver/rocsolver-functions.h
   ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h
   ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h
 )

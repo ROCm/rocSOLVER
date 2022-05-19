@@ -10,7 +10,7 @@
 #pragma once
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T>
 rocblas_status rocsolver_potrs_argCheck(rocblas_handle handle,

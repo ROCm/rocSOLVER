@@ -12,7 +12,7 @@
 //#include "rocauxiliary_lacgv.hpp"
 #include "rocauxiliary_larf.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void org2l_init_ident(const rocblas_int m,

@@ -10,7 +10,7 @@
 #pragma once
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_larf_getMemorySize(const rocblas_side side,

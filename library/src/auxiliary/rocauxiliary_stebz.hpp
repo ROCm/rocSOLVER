@@ -11,7 +11,7 @@
 
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 #define SPLIT_THDS 256
 #define IBISEC_BLKS 64
