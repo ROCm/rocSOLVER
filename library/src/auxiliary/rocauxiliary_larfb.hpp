@@ -10,7 +10,7 @@
 #pragma once
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void copymatA1(const rocblas_int ldw,

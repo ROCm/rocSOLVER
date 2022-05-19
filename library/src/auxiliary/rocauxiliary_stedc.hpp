@@ -13,7 +13,7 @@
 #include "rocauxiliary_steqr.hpp"
 #include "rocauxiliary_sterf.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /****************************************************************************
   TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS

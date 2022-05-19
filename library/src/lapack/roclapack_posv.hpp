@@ -12,7 +12,7 @@
 #include "rocblas.hpp"
 #include "roclapack_potrf.hpp"
 #include "roclapack_potrs.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T>
 rocblas_status rocsolver_posv_argCheck(rocblas_handle handle,

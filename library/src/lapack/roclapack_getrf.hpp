@@ -12,7 +12,7 @@
 #include "lapack_host_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_getf2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** Constants for inner block size of getrf **/
 // clang-format off

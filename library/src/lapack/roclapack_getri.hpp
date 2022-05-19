@@ -12,7 +12,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_trtri.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T>

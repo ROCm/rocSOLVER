@@ -11,7 +11,7 @@
 
 #include "rocblas.hpp"
 #include "roclapack_sygs2_hegs2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_sygst_hegst_getMemorySize(const rocblas_fill uplo,

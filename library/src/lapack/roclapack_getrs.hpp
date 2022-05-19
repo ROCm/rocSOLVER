@@ -11,7 +11,7 @@
 
 #include "auxiliary/rocauxiliary_laswp.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T>
 rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
