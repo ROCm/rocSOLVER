@@ -733,9 +733,9 @@ void testing_syevx_heevx(Arguments& argus)
             if(BATCHED)
             {
                 rocsolver_bench_output("evect", "erange", "uplo", "n", "lda", "vl", "vu", "il",
-                                       "iu", "abstol", "strideW", "strideF", "ldz", "batch_c");
+                                       "iu", "abstol", "strideW", "ldz", "strideF", "batch_c");
                 rocsolver_bench_output(evectC, erangeC, uploC, n, lda, vl, vu, il, iu, abstol, stW,
-                                       stF, ldz, bc);
+                                       ldz, stF, bc);
             }
             else if(STRIDED)
             {

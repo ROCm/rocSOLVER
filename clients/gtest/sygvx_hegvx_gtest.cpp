@@ -28,7 +28,7 @@ const vector<vector<printable_char>> type_range
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1, 1, 1, 0, 10, 1, 1, 0},
+    {0, 1, 1, 1, 0, 10, 1, 0, 0},
     // invalid
     {-1, 1, 1, 1, 0, 10, 1, 1, 0},
     {20, 5, 5, 20, 0, 10, 1, 1, 0},
