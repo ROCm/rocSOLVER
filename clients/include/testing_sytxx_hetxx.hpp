@@ -119,7 +119,7 @@ void testing_sytxx_hetxx_bad_arg()
     }
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 void sytxx_hetxx_initData(const rocblas_handle handle,
                           const rocblas_int n,
                           Td& dA,
@@ -154,7 +154,7 @@ void sytxx_hetxx_initData(const rocblas_handle handle,
     }
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 void sytxx_hetxx_initData(const rocblas_handle handle,
                           const rocblas_int n,
                           Td& dA,
@@ -212,7 +212,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
                           Uh& hTau,
                           double* max_err)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     std::vector<T> hW(32 * n);
 

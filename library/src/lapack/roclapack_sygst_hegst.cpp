@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sygst_hegst.hpp"
@@ -14,7 +14,7 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
                                           U B,
                                           const rocblas_int ldb)
 {
-    const char* name = (!is_complex<T> ? "sygst" : "hegst");
+    const char* name = (!rocblas_is_complex<T> ? "sygst" : "hegst");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--ldb", ldb);
 
     using S = decltype(std::real(T{}));

@@ -263,7 +263,7 @@ void sygv_hegv_getError(const rocblas_handle handle,
                         double* max_err,
                         const bool singular)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
     rocblas_int lwork = (COMPLEX ? 2 * n - 1 : 3 * n - 1);
@@ -405,7 +405,7 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
                            const bool perf,
                            const bool singular)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
     rocblas_int lwork = (COMPLEX ? 2 * n - 1 : 3 * n - 1);

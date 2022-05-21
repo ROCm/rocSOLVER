@@ -191,7 +191,7 @@ void syevd_heevd_getError(const rocblas_handle handle,
                           Ih& hinfoRes,
                           double* max_err)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
     int sizeE, lwork;
@@ -304,7 +304,7 @@ void syevd_heevd_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
     int sizeE, lwork;
