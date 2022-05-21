@@ -15,7 +15,7 @@
 #include "rocblas.hpp"
 #include "roclapack_syevx_heevx.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** Argument checking **/
 template <typename T, typename S>
