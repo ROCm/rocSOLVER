@@ -109,14 +109,6 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    // everything must be executed with scalars on the host
-    rocblas_pointer_mode old_mode;
-    rocblas_get_pointer_mode(handle, &old_mode);
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
-
-    // constants to use when calling rocblas functions
-    T one = 1; // constant 1 in host
-
     if(trans == rocblas_operation_none)
     {
         // first apply row interchanges to the right hand sides
@@ -152,6 +144,5 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         strideP, -1, batch_count);
     }
 
-    rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
