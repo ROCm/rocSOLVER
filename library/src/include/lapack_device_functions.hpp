@@ -1244,8 +1244,7 @@ ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const rocblas_int nx,
             __syncthreads();
             if(x == k)
             {
-                d = A[x * (lda1 + lda2)];
-                c = d != 0 ? c / d : c;
+                c = c / A[x * (lda1 + lda2)];
                 b[ty] = c;
             }
             __syncthreads();
@@ -1253,10 +1252,7 @@ ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const rocblas_int nx,
             c -= (x > k) ? A[ida + k * lda2] * b[ty] : 0;
         }
         if(x == nx - 1)
-        {
-            d = A[x * (lda1 + lda2)];
-            c = d != 0 ? c / d : c;
-        }
+            c = c / A[x * (lda1 + lda2)];
 
         // move results back to global
         B[idb] = c;
@@ -1305,8 +1301,7 @@ ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int
             __syncthreads();
             if(x == k)
             {
-                d = conj(A[x * (lda1 + lda2)]);
-                c = d != 0 ? c / d : c;
+                c = c / conj(A[x * (lda1 + lda2)]);
                 b[ty] = c;
             }
             __syncthreads();
@@ -1314,10 +1309,7 @@ ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int
             c -= (x > k) ? conj(A[ida + k * lda2]) * b[ty] : 0;
         }
         if(x == nx - 1)
-        {
-            d = conj(A[x * (lda1 + lda2)]);
-            c = d != 0 ? c / d : c;
-        }
+            c = c / conj(A[x * (lda1 + lda2)]);
 
         // move results back to global
         B[idb] = c;
@@ -1472,8 +1464,7 @@ ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const rocblas_int nx,
             __syncthreads();
             if(x == k)
             {
-                d = A[x * (lda1 + lda2)];
-                c = d != 0 ? c / d : c;
+                c = c / A[x * (lda1 + lda2)];
                 b[ty] = c;
             }
             __syncthreads();
@@ -1481,10 +1472,7 @@ ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const rocblas_int nx,
             c -= (x < k) ? A[ida + k * lda2] * b[ty] : 0;
         }
         if(x == 0)
-        {
-            d = A[x * (lda1 + lda2)];
-            c = d != 0 ? c / d : c;
-        }
+            c = c / A[x * (lda1 + lda2)];
 
         // move results back to global
         B[idb] = c;
@@ -1533,8 +1521,7 @@ ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_in
             __syncthreads();
             if(x == k)
             {
-                d = conj(A[x * (lda1 + lda2)]);
-                c = d != 0 ? c / d : c;
+                c = c / conj(A[x * (lda1 + lda2)]);
                 b[ty] = c;
             }
             __syncthreads();
@@ -1542,10 +1529,7 @@ ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_in
             c -= (x < k) ? conj(A[ida + k * lda2]) * b[ty] : 0;
         }
         if(x == 0)
-        {
-            d = conj(A[x * (lda1 + lda2)]);
-            c = d != 0 ? c / d : c;
-        }
+            c = c / conj(A[x * (lda1 + lda2)]);
 
         // move results back to global
         B[idb] = c;
