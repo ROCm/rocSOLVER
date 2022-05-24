@@ -113,6 +113,11 @@ rocblas_status rocsolver_potrs_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    // everything must be executed with scalars on the host
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle, &old_mode);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+
     if(uplo == rocblas_fill_upper)
     {
         // solve U'*X = B, overwriting B with X
@@ -142,5 +147,6 @@ rocblas_status rocsolver_potrs_template(rocblas_handle handle,
             batch_count, optim_mem, work1, work2, work3, work4);
     }
 
+    rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
