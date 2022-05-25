@@ -1098,6 +1098,27 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
 
 // **************** forward substitution kernels ************************//
 ///////////////////////////////////////////////////////////////////////////
+/** The following kernels implement forward substitution for lower triangular L
+    or upper triangular U matrices in the form
+    LX = B
+    U'X = B
+    B = XU
+    B = XL'
+
+    nx is the number of variables and ny the number of right/left-hand-sides.
+    Whether B is accessed by rows (left-hand-sides) or columns (right-hand-sides) is
+    determined by the values of ldb1 and ldb2. Whether L/U is transposed or not is
+    determined by the values of lda1 and lda2.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in y to cover all the 'ny' right/left-hand-sides (columns/rows of B).
+    There should be only one group in x with hipBlockDim_x = nx.
+    Size of shared memory per group should be:
+    lmemsize = hipBlockDim_y * sizeof(T);
+
+    There are 4 different forward substitution kernels; each one deals with
+    a combination of unit and conjugate. In the non-unit case, the kernles DO NOT
+    verify whether the diagonal element of L/U is non-zero.**/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const rocblas_int nx,
                                                        const rocblas_int ny,
@@ -1318,6 +1339,27 @@ ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int
 
 // **************** backward substitution kernels ************************//
 ////////////////////////////////////////////////////////////////////////////
+/** The following kernels implement backward substitution for lower triangular L
+    or upper triangular U matrices in the form
+    L'X = B
+    UX = B
+    B = XU'
+    B = XL
+
+    nx is the number of variables and ny the number of right/left-hand-sides.
+    Whether B is accessed by rows (left-hand-sides) or columns (right-hand-sides) is
+    determined by the values of ldb1 and ldb2. Whether L/U is transposed or not is
+    determined by the values of lda1 and lda2.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in y to cover all the 'ny' right/left-hand-sides (columns/rows of B).
+    There should be only one group in x with hipBlockDim_x = nx.
+    Size of shared memory per group should be:
+    lmemsize = hipBlockDim_y * sizeof(T);
+
+    There are 4 different backward substitution kernels; each one deals with
+    a combination of unit and conjugate. In the non-unit case, the kernles DO NOT
+    verify whether the diagonal element of L/U is non-zero.**/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const rocblas_int nx,
                                                         const rocblas_int ny,

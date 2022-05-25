@@ -94,6 +94,55 @@
     {1,  1,  1,  1,  1,  1, 64, 64, 64, 64, 64, 64, 64, 48, 48, 48}
 // clang-format on
 
+/** Forward and Backward subtitution kernel launchers **/
+#define FORWARD_SUBSTITUTIONS                                                                     \
+    if(conj)                                                                                      \
+    {                                                                                             \
+        if(isunit)                                                                                \
+            ROCSOLVER_LAUNCH_KERNEL(conj_unit_forward_substitution_kernel<T>, grid, threads,      \
+                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,       \
+                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);              \
+        else                                                                                      \
+            ROCSOLVER_LAUNCH_KERNEL(conj_nonunit_forward_substitution_kernel<T>, grid, threads,   \
+                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,       \
+                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);              \
+    }                                                                                             \
+    else                                                                                          \
+    {                                                                                             \
+        if(isunit)                                                                                \
+            ROCSOLVER_LAUNCH_KERNEL(unit_forward_substitution_kernel<T>, grid, threads, lmemsize, \
+                                    stream, nx, ny, A, lda1, lda2, shiftA + offA, strideA, B,     \
+                                    ldb1, ldb2, shiftB + offB, strideB);                          \
+        else                                                                                      \
+            ROCSOLVER_LAUNCH_KERNEL(nonunit_forward_substitution_kernel<T>, grid, threads,        \
+                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,       \
+                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);              \
+    }
+
+#define BACKWARD_SUBSTITUTIONS                                                                     \
+    if(conj)                                                                                       \
+    {                                                                                              \
+        if(isunit)                                                                                 \
+            ROCSOLVER_LAUNCH_KERNEL(conj_unit_backward_substitution_kernel<T>, grid, threads,      \
+                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,        \
+                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
+        else                                                                                       \
+            ROCSOLVER_LAUNCH_KERNEL(conj_nonunit_backward_substitution_kernel<T>, grid, threads,   \
+                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,        \
+                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
+    }                                                                                              \
+    else                                                                                           \
+    {                                                                                              \
+        if(isunit)                                                                                 \
+            ROCSOLVER_LAUNCH_KERNEL(unit_backward_substitution_kernel<T>, grid, threads, lmemsize, \
+                                    stream, nx, ny, A, lda1, lda2, shiftA + offA, strideA, B,      \
+                                    ldb1, ldb2, shiftB + offB, strideB);                           \
+        else                                                                                       \
+            ROCSOLVER_LAUNCH_KERNEL(nonunit_backward_substitution_kernel<T>, grid, threads,        \
+                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,        \
+                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
+    }
+
 /** This function returns the block size for the internal
     (blocked) trsm implementation **/
 template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
@@ -212,62 +261,14 @@ void rocsolver_trsm_mem(const rocblas_side side,
 }
 
 /** Internal TRSM (lower case):
-    Optimized function that solves a simple triangular system B <- Ax=B
-    with A unit lower triangular matrix. A and B are sub blocks of the same matrix MM with
-    leading dimension ldim and stride. A and B are
-    located in MM by their respective shifts.
+    Optimized function that solves systems
+    B <- LX = B,
+    B <- L'X = B,
+    B <- B = XL, or
+    B <- B = XL'
 
-    This is blocked implementation that calls the  internal trsm2_kernel
-    to solve the diagonal blocks, and uses gemm to update the right-hand-sides **/
-
-#define FORWARD_SUBSTITUTIONS                                                                     \
-    if(conj)                                                                                      \
-    {                                                                                             \
-        if(isunit)                                                                                \
-            ROCSOLVER_LAUNCH_KERNEL(conj_unit_forward_substitution_kernel<T>, grid, threads,      \
-                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,       \
-                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);              \
-        else                                                                                      \
-            ROCSOLVER_LAUNCH_KERNEL(conj_nonunit_forward_substitution_kernel<T>, grid, threads,   \
-                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,       \
-                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);              \
-    }                                                                                             \
-    else                                                                                          \
-    {                                                                                             \
-        if(isunit)                                                                                \
-            ROCSOLVER_LAUNCH_KERNEL(unit_forward_substitution_kernel<T>, grid, threads, lmemsize, \
-                                    stream, nx, ny, A, lda1, lda2, shiftA + offA, strideA, B,     \
-                                    ldb1, ldb2, shiftB + offB, strideB);                          \
-        else                                                                                      \
-            ROCSOLVER_LAUNCH_KERNEL(nonunit_forward_substitution_kernel<T>, grid, threads,        \
-                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,       \
-                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);              \
-    }
-
-#define BACKWARD_SUBSTITUTIONS                                                                     \
-    if(conj)                                                                                       \
-    {                                                                                              \
-        if(isunit)                                                                                 \
-            ROCSOLVER_LAUNCH_KERNEL(conj_unit_backward_substitution_kernel<T>, grid, threads,      \
-                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,        \
-                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
-        else                                                                                       \
-            ROCSOLVER_LAUNCH_KERNEL(conj_nonunit_backward_substitution_kernel<T>, grid, threads,   \
-                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,        \
-                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
-    }                                                                                              \
-    else                                                                                           \
-    {                                                                                              \
-        if(isunit)                                                                                 \
-            ROCSOLVER_LAUNCH_KERNEL(unit_backward_substitution_kernel<T>, grid, threads, lmemsize, \
-                                    stream, nx, ny, A, lda1, lda2, shiftA + offA, strideA, B,      \
-                                    ldb1, ldb2, shiftB + offB, strideB);                           \
-        else                                                                                       \
-            ROCSOLVER_LAUNCH_KERNEL(nonunit_backward_substitution_kernel<T>, grid, threads,        \
-                                    lmemsize, stream, nx, ny, A, lda1, lda2, shiftA + offA,        \
-                                    strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
-    }
-
+    This is blocked implementation that calls the internal forward/backward subtitution kernels
+    to solve the diagonal blocks, and uses gemm to update the right/left -hand-sides **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 void rocsolver_trsm_lower(rocblas_handle handle,
                           const rocblas_side side,
@@ -512,6 +513,14 @@ void rocsolver_trsm_lower(rocblas_handle handle,
     }
 }
 
+/** Internal TRSM (upper case):
+    Optimized function that solves systems
+    B <- UX = B,
+    B <- U'X = B,
+    B <- B = XU, or
+    B <- B = XU'
+    This is blocked implementation that calls the internal forward/backward subtitution kernels
+    to solve the diagonal blocks, and uses gemm to update the right/left -hand-sides **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 void rocsolver_trsm_upper(rocblas_handle handle,
                           const rocblas_side side,
