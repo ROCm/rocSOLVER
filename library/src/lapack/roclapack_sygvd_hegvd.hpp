@@ -51,9 +51,9 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
     size_t unused, temp1, temp2, temp3, temp4, temp5;
 
     // requirements for calling POTRF
-    rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
-                                              size_work2, size_work3, size_work4,
-                                              size_pivots_workArr, size_iinfo, &opt1);
+    rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars,
+                                                       size_work1, size_work2, size_work3, size_work4,
+                                                       size_pivots_workArr, size_iinfo, &opt1);
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
@@ -154,9 +154,9 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
     T one = 1;
 
     // perform Cholesky factorization of B
-    rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
-                                            batch_count, scalars, work1, work2, work3, work4,
-                                            (T*)pivots_workArr, iinfo, optim_mem);
+    rocsolver_potrf_template<BATCHED, STRIDED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
+                                                     batch_count, scalars, work1, work2, work3,
+                                                     work4, (T*)pivots_workArr, iinfo, optim_mem);
 
     /** (TODO: Strictly speaking, computations should stop here is B is not positive definite.
         A should not be modified in this case as no eigenvalues or eigenvectors can be computed.

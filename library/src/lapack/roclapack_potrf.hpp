@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "lapack_host_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_potf2.hpp"
 #include "rocsolver/rocsolver.h"
@@ -23,7 +24,7 @@ ROCSOLVER_KERNEL void
         info[id] = iinfo[id] + j;
 }
 
-template <bool BATCHED, typename T>
+template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_potrf_getMemorySize(const rocblas_int n,
                                    const rocblas_fill uplo,
                                    const rocblas_int batch_count,
@@ -73,22 +74,19 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
 
         // extra requirements for calling TRSM
         if(uplo == rocblas_fill_upper)
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left,
-                                             rocblas_operation_conjugate_transpose, jb, n - jb,
-                                             batch_count, &s2, size_work2, size_work3, size_work4);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(
+                rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb, batch_count,
+                &s2, size_work2, size_work3, size_work4, optim_mem);
         else
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right,
-                                             rocblas_operation_conjugate_transpose, n - jb, jb,
-                                             batch_count, &s2, size_work2, size_work3, size_work4);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(
+                rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb, batch_count,
+                &s2, size_work2, size_work3, size_work4, optim_mem);
 
         *size_work1 = max(s1, s2);
-
-        // always allocate all required memory for TRSM optimal performance
-        *optim_mem = true;
     }
 }
 
-template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
 rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -169,11 +167,11 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if(j + jb < n)
             {
                 // update trailing submatrix
-                rocblasCall_trsm<BATCHED, T>(
-                    handle, rocblas_side_left, uplo, rocblas_operation_conjugate_transpose,
-                    rocblas_diagonal_non_unit, jb, (n - j - jb), &t_one, A,
-                    shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(j, j + jb, lda), lda,
-                    strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, jb, (n - j - jb), A, shiftA + idx2D(j, j, lda), lda,
+                    strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
+                    optim_mem, work1, work2, work3, work4);
 
                 rocblasCall_syrk_herk<BATCHED, T>(
                     handle, uplo, rocblas_operation_conjugate_transpose, n - j - jb, jb, &s_minone,
@@ -201,11 +199,11 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if(j + jb < n)
             {
                 // update trailing submatrix
-                rocblasCall_trsm<BATCHED, T>(
-                    handle, rocblas_side_right, uplo, rocblas_operation_conjugate_transpose,
-                    rocblas_diagonal_non_unit, (n - j - jb), jb, &t_one, A,
-                    shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(j + jb, j, lda), lda,
-                    strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_right, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, (n - j - jb), jb, A, shiftA + idx2D(j, j, lda), lda,
+                    strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count,
+                    optim_mem, work1, work2, work3, work4);
 
                 rocblasCall_syrk_herk<BATCHED, T>(
                     handle, uplo, rocblas_operation_none, n - j - jb, jb, &s_minone, A,

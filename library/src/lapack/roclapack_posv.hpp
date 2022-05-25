@@ -79,9 +79,9 @@ void rocsolver_posv_getMemorySize(const rocblas_int n,
     size_t w1, w2, w3, w4;
 
     // workspace required for potrf
-    rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
-                                              size_work2, size_work3, size_work4,
-                                              size_pivots_savedB, size_iinfo, &opt1);
+    rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars,
+                                                       size_work1, size_work2, size_work3, size_work4,
+                                                       size_pivots_savedB, size_iinfo, &opt1);
 
     // workspace required for potrs
     rocsolver_potrs_getMemorySize<BATCHED, STRIDED, T>(n, nrhs, batch_count, &w1, &w2, &w3, &w4,
@@ -147,9 +147,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute Cholesky factorization of A
-    rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                            batch_count, scalars, work1, work2, work3, work4,
-                                            pivots_savedB, iinfo, optim_mem);
+    rocsolver_potrf_template<BATCHED, STRIDED, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,
+                                                     batch_count, scalars, work1, work2, work3,
+                                                     work4, pivots_savedB, iinfo, optim_mem);
 
     // save elements of B that will be overwritten by POTRS for cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
