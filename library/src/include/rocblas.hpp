@@ -865,7 +865,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                   "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
                   "bc:", batch_count);
 
-    constexpr rocblas_int nb = (!is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
+    constexpr rocblas_int nb = (!rocblas_is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
 
     return rocblas_internal_trmm_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
@@ -900,7 +900,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                   "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
                   "bc:", batch_count);
 
-    constexpr rocblas_int nb = (!is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
+    constexpr rocblas_int nb = (!rocblas_is_complex<T> ? ROCBLAS_TRMM_REAL_NB : ROCBLAS_TRMM_COMPLEX_NB);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -916,7 +916,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
 }
 
 // syr2
-template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -947,7 +947,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
 }
 
 // syr2 overload
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -985,7 +985,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
 }
 
 // her2
-template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -1016,7 +1016,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
 }
 
 // her2 overload
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -1054,7 +1054,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
 }
 
 // syrk
-template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1084,7 +1084,7 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 }
 
 // herk
-template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1114,7 +1114,7 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 }
 
 // syr2k
-template <bool BATCHED, typename T, typename Ua, typename Ub, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename Ua, typename Ub, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_fill uplo,
                                        rocblas_operation trans,
@@ -1149,7 +1149,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 }
 
 // syr2k overload
-template <bool BATCHED, typename T, typename Ua, typename Ub, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename Ua, typename Ub, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_fill uplo,
                                        rocblas_operation trans,
@@ -1191,7 +1191,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 }
 
 // her2k
-template <bool BATCHED, typename T, typename Ua, typename Ub, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename Ua, typename Ub, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_fill uplo,
                                        rocblas_operation trans,
@@ -1228,7 +1228,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 }
 
 // her2k overload
-template <bool BATCHED, typename T, typename Ua, typename Ub, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename Ua, typename Ub, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                                        rocblas_fill uplo,
                                        rocblas_operation trans,
@@ -1279,7 +1279,7 @@ void rocblasCall_symv_hemv_mem(rocblas_int n, rocblas_int batch_count, size_t* w
 }
 
 // symv
-template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -1314,7 +1314,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
 }
 
 // symv overload
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -1356,7 +1356,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
 }
 
 // hemv
-template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -1391,7 +1391,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
 }
 
 // hemv overload
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_int n,
@@ -1433,7 +1433,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
 }
 
 // symm
-template <typename T, typename U, typename V, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_fill uplo,
@@ -1467,7 +1467,7 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
 }
 
 // hemm
-template <typename T, typename U, typename V, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_fill uplo,

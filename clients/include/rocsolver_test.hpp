@@ -78,13 +78,13 @@ inline void rocsolver_bench_endl()
     std::fflush(stdout);
 }
 
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 inline T sconj(T scalar)
 {
     return scalar;
 }
 
-template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 inline T sconj(T scalar)
 {
     return std::conj(scalar);

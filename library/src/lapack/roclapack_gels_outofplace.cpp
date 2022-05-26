@@ -12,7 +12,7 @@
  * ===========================================================================
  */
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_gels_outofplace_impl(rocblas_handle handle,
                                               rocblas_operation trans,
                                               const rocblas_int m,

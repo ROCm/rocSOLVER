@@ -14,7 +14,7 @@ rocblas_status rocsolver_sygs2_hegs2_impl(rocblas_handle handle,
                                           U B,
                                           const rocblas_int ldb)
 {
-    const char* name = (!is_complex<T> ? "sygs2" : "hegs2");
+    const char* name = (!rocblas_is_complex<T> ? "sygs2" : "hegs2");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--ldb", ldb);
 
     if(!handle)

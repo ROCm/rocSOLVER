@@ -14,7 +14,7 @@ rocblas_status rocsolver_sytd2_hetd2_impl(rocblas_handle handle,
                                           S* E,
                                           T* tau)
 {
-    const char* name = (!is_complex<T> ? "sytd2" : "hetd2");
+    const char* name = (!rocblas_is_complex<T> ? "sytd2" : "hetd2");
     ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda);
 
     if(!handle)

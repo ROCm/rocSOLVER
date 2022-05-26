@@ -4,7 +4,7 @@
 
 #include "rocauxiliary_ormtr_unmtr.hpp"
 
-template <typename T, bool COMPLEX = is_complex<T>>
+template <typename T, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_ormtr_unmtr_impl(rocblas_handle handle,
                                           const rocblas_side side,
                                           const rocblas_fill uplo,
@@ -17,7 +17,7 @@ rocblas_status rocsolver_ormtr_unmtr_impl(rocblas_handle handle,
                                           T* C,
                                           const rocblas_int ldc)
 {
-    const char* name = (!is_complex<T> ? "ormtr" : "unmtr");
+    const char* name = (!rocblas_is_complex<T> ? "ormtr" : "unmtr");
     ROCSOLVER_ENTER_TOP(name, "--side", side, "--uplo", uplo, "--trans", trans, "-m", m, "-n", n,
                         "--lda", lda, "--ldc", ldc);
 

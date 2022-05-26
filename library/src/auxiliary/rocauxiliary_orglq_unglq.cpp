@@ -13,7 +13,7 @@ rocblas_status rocsolver_orglq_unglq_impl(rocblas_handle handle,
                                           const rocblas_int lda,
                                           T* ipiv)
 {
-    const char* name = (!is_complex<T> ? "orglq" : "unglq");
+    const char* name = (!rocblas_is_complex<T> ? "orglq" : "unglq");
     ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "-k", k, "--lda", lda);
 
     if(!handle)

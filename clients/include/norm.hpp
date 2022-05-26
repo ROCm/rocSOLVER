@@ -64,7 +64,7 @@ inline void xaxpy(int* n,
 
 /* Norm of error functions */
 
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 double norm_error(char norm_type,
                   rocblas_int M,
                   rocblas_int N,
@@ -106,7 +106,7 @@ double norm_error(char norm_type,
     return error;
 }
 
-template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 double norm_error(char norm_type,
                   rocblas_int M,
                   rocblas_int N,

@@ -15,7 +15,7 @@ rocblas_status rocsolver_sygs2_hegs2_batched_impl(rocblas_handle handle,
                                                   const rocblas_int ldb,
                                                   const rocblas_int batch_count)
 {
-    const char* name = (!is_complex<T> ? "sygs2_batched" : "hegs2_batched");
+    const char* name = (!rocblas_is_complex<T> ? "sygs2_batched" : "hegs2_batched");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--ldb", ldb,
                         "--batch_count", batch_count);
 

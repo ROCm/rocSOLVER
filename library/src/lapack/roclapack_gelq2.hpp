@@ -76,7 +76,7 @@ rocblas_status rocsolver_gelq2_gelqf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,

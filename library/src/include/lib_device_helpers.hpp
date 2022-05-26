@@ -25,13 +25,13 @@
 // device functions that are used by many kernels
 // **********************************************************
 
-template <typename S, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename S, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ S aabs(T val)
 {
     return std::abs(val);
 }
 
-template <typename S, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename S, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 __device__ S aabs(T val)
 {
     return asum(val);
@@ -223,7 +223,7 @@ ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
     If uplo = rocblas_fill_lower, only the lower triangular part is copied
     Only valid when A is complex and buffer real. If REAL, only works with real part of A;
     if !REAL only works with imaginary part of A**/
-template <typename T, typename S, bool REAL, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename S, bool REAL, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
                                const rocblas_int m,
                                const rocblas_int n,
@@ -356,7 +356,7 @@ ROCSOLVER_KERNEL void restau(const rocblas_int k, T* ipiv, const rocblas_stride 
         tau[i] = -tau[i];
 }
 
-template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T> || is_complex<S>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<!rocblas_is_complex<T> || rocblas_is_complex<S>, int> = 0>
 ROCSOLVER_KERNEL void set_diag(S* D,
                                const rocblas_int shiftd,
                                const rocblas_stride strided,
@@ -381,7 +381,7 @@ ROCSOLVER_KERNEL void set_diag(S* D,
     }
 }
 
-template <typename T, typename S, typename U, std::enable_if_t<is_complex<T> && !is_complex<S>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<rocblas_is_complex<T> && !rocblas_is_complex<S>, int> = 0>
 ROCSOLVER_KERNEL void set_diag(S* D,
                                const rocblas_int shiftd,
                                const rocblas_stride strided,
@@ -591,7 +591,7 @@ ROCSOLVER_KERNEL void copyshift_down(const bool copy,
 /** set_offdiag kernel copies the off-diagonal element of A, which is the non-zero element
     resulting by applying the Householder reflector to the working column, to E. Then set it
     to 1 to prepare for the application of the Householder reflector to the rest of the matrix **/
-template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_offdiag(const rocblas_int batch_count,
                                   U A,
                                   const rocblas_int shiftA,
@@ -611,7 +611,7 @@ ROCSOLVER_KERNEL void set_offdiag(const rocblas_int batch_count,
     }
 }
 
-template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_offdiag(const rocblas_int batch_count,
                                   U A,
                                   const rocblas_int shiftA,

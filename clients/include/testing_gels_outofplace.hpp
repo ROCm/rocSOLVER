@@ -113,7 +113,7 @@ void testing_gels_outofplace_bad_arg()
     rocblas_stride stX = 1;
     rocblas_int bc = 1;
     rocblas_operation trans
-        = (!is_complex<T> ? rocblas_operation_transpose : rocblas_operation_conjugate_transpose);
+        = (!rocblas_is_complex<T> ? rocblas_operation_transpose : rocblas_operation_conjugate_transpose);
     if(BATCHED)
     {
         // memory allocations
@@ -400,7 +400,7 @@ void gels_outofplace_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <bool BATCHED, bool STRIDED, typename T, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, bool COMPLEX = rocblas_is_complex<T>>
 void testing_gels_outofplace(Arguments& argus)
 {
     // get arguments

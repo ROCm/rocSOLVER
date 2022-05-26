@@ -4,7 +4,7 @@
 
 #include "rocauxiliary_ormlq_unmlq.hpp"
 
-template <typename T, bool COMPLEX = is_complex<T>>
+template <typename T, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
                                           const rocblas_side side,
                                           const rocblas_operation trans,
@@ -17,7 +17,7 @@ rocblas_status rocsolver_ormlq_unmlq_impl(rocblas_handle handle,
                                           T* C,
                                           const rocblas_int ldc)
 {
-    const char* name = (!is_complex<T> ? "ormlq" : "unmlq");
+    const char* name = (!rocblas_is_complex<T> ? "ormlq" : "unmlq");
     ROCSOLVER_ENTER_TOP(name, "--side", side, "--trans", trans, "-m", m, "-n", n, "-k", k, "--lda",
                         lda, "--ldc", ldc);
 

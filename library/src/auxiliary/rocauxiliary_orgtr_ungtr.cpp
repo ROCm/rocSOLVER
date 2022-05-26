@@ -12,7 +12,7 @@ rocblas_status rocsolver_orgtr_ungtr_impl(rocblas_handle handle,
                                           const rocblas_int lda,
                                           T* ipiv)
 {
-    const char* name = (!is_complex<T> ? "orgtr" : "ungtr");
+    const char* name = (!rocblas_is_complex<T> ? "orgtr" : "ungtr");
     ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda);
 
     if(!handle)

@@ -15,7 +15,7 @@ rocblas_status rocsolver_syevd_heevd_impl(rocblas_handle handle,
                                           S* E,
                                           rocblas_int* info)
 {
-    const char* name = (!is_complex<T> ? "syevd" : "heevd");
+    const char* name = (!rocblas_is_complex<T> ? "syevd" : "heevd");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda);
 
     if(!handle)
