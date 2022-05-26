@@ -1083,7 +1083,9 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    constexpr rocblas_int NB = BATCHED ? ROCBLAS_SYRK_BATCHED_NB : std::is_same<T, float>::value ? ROCBLAS_SYRK_S_NB : ROCBLAS_SYRK_NB;
+    constexpr rocblas_int NB = BATCHED  ? ROCBLAS_SYRK_BATCHED_NB
+        : std::is_same<T, float>::value ? ROCBLAS_SYRK_S_NB
+                                        : ROCBLAS_SYRK_NB;
     return rocblas_internal_syrk_template<NB, BATCHED, T>(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
@@ -1115,7 +1117,7 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
     using S = decltype(std::real(T{}));
 
     constexpr rocblas_int NB = BATCHED ? ROCBLAS_HERK_BATCHED_NB : ROCBLAS_HERK_NB;
-    return rocblas_internal_herk_template<NB, BATCHED, T >(
+    return rocblas_internal_herk_template<NB, BATCHED, T>(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
