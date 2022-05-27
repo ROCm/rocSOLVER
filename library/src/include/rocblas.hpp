@@ -27,6 +27,11 @@
 #define ROCBLAS_TRSV_Z_BLOCK 32
 #define ROCBLAS_TRSM_BLOCK 128
 #define ROCBLAS_TRTRI_NB 16
+#define ROCBLAS_SYRK_NB 32
+#define ROCBLAS_SYRK_S_NB 16
+#define ROCBLAS_SYRK_BATCHED_NB 16
+#define ROCBLAS_HERK_NB 32
+#define ROCBLAS_HERK_BATCHED_NB 8
 
 template <typename T>
 struct rocblas_index_value_t;
@@ -1056,7 +1061,7 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
 }
 
 // syrk
-template <typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1080,13 +1085,16 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    return rocblas_internal_syrk_template(
+    constexpr rocblas_int NB = BATCHED  ? ROCBLAS_SYRK_BATCHED_NB
+        : std::is_same<T, float>::value ? ROCBLAS_SYRK_S_NB
+                                        : ROCBLAS_SYRK_NB;
+    return rocblas_internal_syrk_template<NB, BATCHED, T>(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
 
 // herk
-template <typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
@@ -1110,7 +1118,8 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    return rocblas_internal_herk_template(
+    constexpr rocblas_int NB = BATCHED ? ROCBLAS_HERK_BATCHED_NB : ROCBLAS_HERK_NB;
+    return rocblas_internal_herk_template<NB, BATCHED, T>(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
