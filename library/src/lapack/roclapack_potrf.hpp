@@ -175,7 +175,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                     shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(j, j + jb, lda), lda,
                     strideA, batch_count, optim_mem, work1, work2, work3, work4);
 
-                rocblasCall_syrk_herk<T>(
+                rocblasCall_syrk_herk<BATCHED, T>(
                     handle, uplo, rocblas_operation_conjugate_transpose, n - j - jb, jb, &s_minone,
                     A, shiftA + idx2D(j, j + jb, lda), lda, strideA, &s_one, A,
                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count);
@@ -207,10 +207,10 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                     shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(j + jb, j, lda), lda,
                     strideA, batch_count, optim_mem, work1, work2, work3, work4);
 
-                rocblasCall_syrk_herk<T>(handle, uplo, rocblas_operation_none, n - j - jb, jb,
-                                         &s_minone, A, shiftA + idx2D(j + jb, j, lda), lda, strideA,
-                                         &s_one, A, shiftA + idx2D(j + jb, j + jb, lda), lda,
-                                         strideA, batch_count);
+                rocblasCall_syrk_herk<BATCHED, T>(
+                    handle, uplo, rocblas_operation_none, n - j - jb, jb, &s_minone, A,
+                    shiftA + idx2D(j + jb, j, lda), lda, strideA, &s_one, A,
+                    shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count);
             }
             j += nb;
         }
