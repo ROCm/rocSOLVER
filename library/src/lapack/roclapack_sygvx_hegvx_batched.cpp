@@ -30,7 +30,7 @@ rocblas_status rocsolver_sygvx_hegvx_batched_impl(rocblas_handle handle,
                                                   rocblas_int* info,
                                                   const rocblas_int batch_count)
 {
-    const char* name = (!is_complex<T> ? "sygvx_batched" : "hegvx_batched");
+    const char* name = (!rocblas_is_complex<T> ? "sygvx_batched" : "hegvx_batched");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--evect", evect, "--erange", erange, "--uplo",
                         uplo, "-n", n, "--lda", lda, "--ldb", ldb, "--vl", vl, "--vu", vu, "--il",
                         il, "--iu", iu, "--abstol", abstol, "--strideW", strideW, "--ldz", ldz,
