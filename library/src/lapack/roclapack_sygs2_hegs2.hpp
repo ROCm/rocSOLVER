@@ -177,7 +177,7 @@ rocblas_status rocsolver_sygs2_hegs2_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                               const rocblas_eform itype,
                                               const rocblas_fill uplo,

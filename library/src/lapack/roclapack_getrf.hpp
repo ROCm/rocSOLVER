@@ -211,7 +211,7 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
 
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
 {
     rocblas_int blk;
@@ -258,7 +258,7 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
 }
 
 /** Complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
 {
     rocblas_int blk;
@@ -307,7 +307,7 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
 /** This function returns the inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
     (not tunable by the user for now) **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivot)
 {
     rocblas_int blk;
@@ -362,7 +362,7 @@ rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivo
 }
 
 /** complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivot)
 {
     rocblas_int blk;

@@ -299,7 +299,7 @@ __device__ void gemm_btrans(const rocblas_int tid,
     to create a givens rotation such that:
     [  c s ]' * [ f ] = [ r ]
     [ -s c ]    [ g ]   [ 0 ] **/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void lartg(T& f, T& g, T& c, T& s, T& r)
 {
     if(g == 0)
@@ -418,7 +418,7 @@ __device__ void lasr(const rocblas_side side,
 /** LAE2 computes the eigenvalues of a 2x2 symmetric matrix
     [ a b ]
     [ b c ] **/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void lae2(T& a, T& b, T& c, T& rt1, T& rt2)
 {
     T sm = a + c;
@@ -470,7 +470,7 @@ __device__ void lae2(T& a, T& b, T& c, T& rt1, T& rt2)
 /** LAEV2 computes the eigenvalues and eigenvectors of a 2x2 symmetric matrix
     [ a b ]
     [ b c ] **/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void laev2(T& a, T& b, T& c, T& rt1, T& rt2, T& cs1, T& sn1)
 {
     int sgn1, sgn2;

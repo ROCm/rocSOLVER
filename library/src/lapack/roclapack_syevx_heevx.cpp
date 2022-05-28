@@ -24,7 +24,7 @@ rocblas_status rocsolver_syevx_heevx_impl(rocblas_handle handle,
                                           rocblas_int* ifail,
                                           rocblas_int* info)
 {
-    const char* name = (!is_complex<T> ? "syevx" : "heevx");
+    const char* name = (!rocblas_is_complex<T> ? "syevx" : "heevx");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--erange", erange, "--uplo", uplo, "-n", n,
                         "--lda", lda, "--vl", vl, "--vu", vu, "--il", il, "--iu", iu, "--abstol",
                         abstol, "--ldz", ldz);

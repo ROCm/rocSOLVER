@@ -29,7 +29,7 @@ rocblas_status rocsolver_syevx_heevx_strided_batched_impl(rocblas_handle handle,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count)
 {
-    const char* name = (!is_complex<T> ? "syevx_strided_batched" : "heevx_strided_batched");
+    const char* name = (!rocblas_is_complex<T> ? "syevx_strided_batched" : "heevx_strided_batched");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--erange", erange, "--uplo", uplo, "-n", n,
                         "--lda", lda, "--strideA", strideA, "--vl", vl, "--vu", vu, "--il", il,
                         "--iu", iu, "--abstol", abstol, "--strideW", strideW, "--ldz", ldz,

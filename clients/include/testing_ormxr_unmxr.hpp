@@ -69,7 +69,7 @@ void ormxr_unmxr_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_success);
 }
 
-template <typename T, bool MQR, bool COMPLEX = is_complex<T>>
+template <typename T, bool MQR, bool COMPLEX = rocblas_is_complex<T>>
 void testing_ormxr_unmxr_bad_arg()
 {
     // safe arguments
@@ -268,7 +268,7 @@ void ormxr_unmxr_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <typename T, bool MQR, bool COMPLEX = is_complex<T>>
+template <typename T, bool MQR, bool COMPLEX = rocblas_is_complex<T>>
 void testing_ormxr_unmxr(Arguments& argus)
 {
     // get arguments

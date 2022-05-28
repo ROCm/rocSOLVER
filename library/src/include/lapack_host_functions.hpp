@@ -96,7 +96,7 @@
 
 /** This function returns the block size for the internal
     (blocked) trsm implementation **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 {
     rocblas_int blk;
@@ -127,7 +127,7 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 }
 
 /** complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 {
     rocblas_int blk;

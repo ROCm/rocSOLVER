@@ -33,7 +33,7 @@ rocblas_status rocsolver_sygvx_hegvx_strided_batched_impl(rocblas_handle handle,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count)
 {
-    const char* name = (!is_complex<T> ? "sygvx_strided_batched" : "hegvx_strided_batched");
+    const char* name = (!rocblas_is_complex<T> ? "sygvx_strided_batched" : "hegvx_strided_batched");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--evect", evect, "--erange", erange, "--uplo",
                         uplo, "-n", n, "--lda", lda, "--strideA", strideA, "--ldb", ldb,
                         "--strideB", strideB, "--vl", vl, "--vu", vu, "--il", il, "--iu", iu,

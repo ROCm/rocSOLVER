@@ -386,7 +386,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                           double* max_err,
                           const bool singular)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     int lwork = (COMPLEX ? 2 * n : 8 * n);
     int lrwork = (COMPLEX ? 7 * n : 0);
@@ -576,7 +576,7 @@ void sygvx_hegvx_getPerfData(const rocblas_handle handle,
                              const bool perf,
                              const bool singular)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     int lwork = (COMPLEX ? 2 * n : 8 * n);
     int lrwork = (COMPLEX ? 7 * n : 0);

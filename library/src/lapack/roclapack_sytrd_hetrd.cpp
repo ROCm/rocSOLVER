@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sytrd_hetrd.hpp"
@@ -14,7 +14,7 @@ rocblas_status rocsolver_sytrd_hetrd_impl(rocblas_handle handle,
                                           S* E,
                                           T* tau)
 {
-    const char* name = (!is_complex<T> ? "sytrd" : "hetrd");
+    const char* name = (!rocblas_is_complex<T> ? "sytrd" : "hetrd");
     ROCSOLVER_ENTER_TOP(name, "--uplo", uplo, "-n", n, "--lda", lda);
 
     if(!handle)

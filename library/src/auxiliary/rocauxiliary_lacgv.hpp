@@ -12,7 +12,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
                                     const rocblas_int n,
                                     U A,
@@ -23,7 +23,7 @@ ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
     // do nothing
 }
 
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
                                     const rocblas_int n,
                                     U A,
@@ -65,7 +65,7 @@ rocblas_status
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
                                         const rocblas_int n,
                                         U x,

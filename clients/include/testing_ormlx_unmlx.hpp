@@ -69,7 +69,7 @@ void ormlx_unmlx_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_success);
 }
 
-template <typename T, bool MLQ, bool COMPLEX = is_complex<T>>
+template <typename T, bool MLQ, bool COMPLEX = rocblas_is_complex<T>>
 void testing_ormlx_unmlx_bad_arg()
 {
     // safe arguments
@@ -268,7 +268,7 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <typename T, bool MLQ, bool COMPLEX = is_complex<T>>
+template <typename T, bool MLQ, bool COMPLEX = rocblas_is_complex<T>>
 void testing_ormlx_unmlx(Arguments& argus)
 {
     // get arguments

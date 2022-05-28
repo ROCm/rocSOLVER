@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -30,7 +30,7 @@ ROCSOLVER_KERNEL void
 
 /** set_tridiag kernel copies results to set tridiagonal form in A, diagonal elements in D
     and off-diagonal elements in E **/
-template <typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
                                   const rocblas_int n,
                                   U A,
@@ -66,7 +66,7 @@ ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
     }
 }
 
-template <typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename S, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
                                   const rocblas_int n,
                                   U A,
@@ -176,7 +176,7 @@ rocblas_status rocsolver_sytd2_hetd2_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,

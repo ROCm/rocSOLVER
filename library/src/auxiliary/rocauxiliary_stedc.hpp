@@ -117,7 +117,12 @@ ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
 
 /** This local gemm adapts rocblas_gemm to multiply complex*real, and
     overwrite result: A = A*B **/
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool BATCHED,
+          bool STRIDED,
+          typename T,
+          typename S,
+          typename U,
+          std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 void local_gemm(rocblas_handle handle,
                 const rocblas_int n,
                 U A,
@@ -157,7 +162,12 @@ void local_gemm(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool BATCHED,
+          bool STRIDED,
+          typename T,
+          typename S,
+          typename U,
+          std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 void local_gemm(rocblas_handle handle,
                 const rocblas_int n,
                 U A,
@@ -227,7 +237,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
                                    size_t* size_tempgemm,
                                    size_t* size_workArr)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     // if quick return no workspace needed
     if(n <= 1 || !batch_count)

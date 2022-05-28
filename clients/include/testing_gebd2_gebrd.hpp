@@ -206,7 +206,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
                           Uh& hTaup,
                           double* max_err)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     constexpr bool VERIFY_IMPLICIT_TEST = false;
 
     std::vector<T> hW(max(m, n));

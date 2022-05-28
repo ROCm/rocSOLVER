@@ -95,7 +95,7 @@ rocblas_status rocsolver_ormtr_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
                                               const rocblas_side side,
                                               const rocblas_fill uplo,

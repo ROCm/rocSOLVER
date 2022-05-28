@@ -76,7 +76,7 @@ void testing_latrd_bad_arg()
     latrd_checkBadArgs(handle, uplo, n, k, dA.data(), lda, dE.data(), dTau.data(), dW.data(), ldw);
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 void latrd_initData(const rocblas_handle handle,
                     const rocblas_int n,
                     Td& dA,
@@ -107,7 +107,7 @@ void latrd_initData(const rocblas_handle handle,
     }
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 void latrd_initData(const rocblas_handle handle,
                     const rocblas_int n,
                     Td& dA,

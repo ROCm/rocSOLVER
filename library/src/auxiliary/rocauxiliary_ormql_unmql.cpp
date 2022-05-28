@@ -1,10 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_ormql_unmql.hpp"
 
-template <typename T, bool COMPLEX = is_complex<T>>
+template <typename T, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_ormql_unmql_impl(rocblas_handle handle,
                                           const rocblas_side side,
                                           const rocblas_operation trans,
@@ -17,7 +17,7 @@ rocblas_status rocsolver_ormql_unmql_impl(rocblas_handle handle,
                                           T* C,
                                           const rocblas_int ldc)
 {
-    const char* name = (!is_complex<T> ? "ormql" : "unmql");
+    const char* name = (!rocblas_is_complex<T> ? "ormql" : "unmql");
     ROCSOLVER_ENTER_TOP(name, "--side", side, "--trans", trans, "-m", m, "-n", n, "-k", k, "--lda",
                         lda, "--ldc", ldc);
 
