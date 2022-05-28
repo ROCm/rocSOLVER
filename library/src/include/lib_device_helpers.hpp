@@ -356,7 +356,10 @@ ROCSOLVER_KERNEL void restau(const rocblas_int k, T* ipiv, const rocblas_stride 
         tau[i] = -tau[i];
 }
 
-template <typename T, typename S, typename U, std::enable_if_t<!rocblas_is_complex<T> || is_complex<S>, int> = 0>
+template <typename T,
+          typename S,
+          typename U,
+          std::enable_if_t<!rocblas_is_complex<T> || rocblas_is_complex<S>, int> = 0>
 ROCSOLVER_KERNEL void set_diag(S* D,
                                const rocblas_int shiftd,
                                const rocblas_stride strided,
@@ -381,7 +384,10 @@ ROCSOLVER_KERNEL void set_diag(S* D,
     }
 }
 
-template <typename T, typename S, typename U, std::enable_if_t<rocblas_is_complex<T> && !is_complex<S>, int> = 0>
+template <typename T,
+          typename S,
+          typename U,
+          std::enable_if_t<rocblas_is_complex<T> && !rocblas_is_complex<S>, int> = 0>
 ROCSOLVER_KERNEL void set_diag(S* D,
                                const rocblas_int shiftd,
                                const rocblas_stride strided,
