@@ -88,7 +88,7 @@ __device__ S syevj_update_norm(const rocblas_int tid,
     return local_res;
 }
 
-template <typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
                                    const rocblas_fill uplo,
                                    const rocblas_int n,

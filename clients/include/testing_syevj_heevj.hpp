@@ -210,7 +210,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
                           Ih& hInfoRes,
                           double* max_err)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     S atol = (abstol <= 0) ? 2 * get_safemin<S>() : abstol;
 
     int lwork = (COMPLEX ? 2 * n - 1 : 0);
@@ -323,7 +323,7 @@ void syevj_heevj_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     int lwork = (COMPLEX ? 2 * n - 1 : 0);
     int lrwork = 3 * n - 1;

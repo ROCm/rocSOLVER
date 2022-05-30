@@ -20,7 +20,7 @@ rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
                                                   rocblas_int* info,
                                                   const rocblas_int batch_count)
 {
-    const char* name = (!is_complex<T> ? "syevj_batched" : "heevj_batched");
+    const char* name = (!rocblas_is_complex<T> ? "syevj_batched" : "heevj_batched");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda, "--abstol",
                         abstol, "--max_sweeps", max_sweeps, "--strideW", strideW, "--batch_count",
                         batch_count);

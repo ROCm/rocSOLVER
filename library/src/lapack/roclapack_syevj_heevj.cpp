@@ -18,7 +18,7 @@ rocblas_status rocsolver_syevj_heevj_impl(rocblas_handle handle,
                                           S* W,
                                           rocblas_int* info)
 {
-    const char* name = (!is_complex<T> ? "syevj" : "heevj");
+    const char* name = (!rocblas_is_complex<T> ? "syevj" : "heevj");
     ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda, "--abstol",
                         abstol, "--max_sweeps", max_sweeps);
 
