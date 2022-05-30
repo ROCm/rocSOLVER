@@ -21,7 +21,7 @@
 
 #define STEIN_MAX_NRMCHK 2
 
-template <typename T, typename S, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename S, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void stein_reorthogonalize(rocblas_int i,
                                       const rocblas_int j,
                                       const rocblas_int n,
@@ -43,7 +43,7 @@ __device__ void stein_reorthogonalize(rocblas_int i,
     }
 }
 
-template <typename T, typename S, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename S, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 __device__ void stein_reorthogonalize(rocblas_int i,
                                       const rocblas_int j,
                                       const rocblas_int n,

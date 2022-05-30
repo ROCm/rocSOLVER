@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -76,7 +76,7 @@ rocblas_status rocsolver_geql2_geqlf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_geql2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,

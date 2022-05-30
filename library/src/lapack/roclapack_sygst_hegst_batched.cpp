@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sygst_hegst.hpp"
@@ -15,7 +15,7 @@ rocblas_status rocsolver_sygst_hegst_batched_impl(rocblas_handle handle,
                                                   const rocblas_int ldb,
                                                   const rocblas_int batch_count)
 {
-    const char* name = (!is_complex<T> ? "sygst_batched" : "hegst_batched");
+    const char* name = (!rocblas_is_complex<T> ? "sygst_batched" : "hegst_batched");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--ldb", ldb,
                         "--batch_count", batch_count);
 
