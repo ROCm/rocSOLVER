@@ -24,8 +24,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Deprecated
 ### Removed
 ### Fixed
-- Fix incorrect SYGS2/HEGS2, SYGST/HEGST, SYGV/HEGV, and SYGVD/HEGVD results for batch counts
+- Fixed incorrect SYGS2/HEGS2, SYGST/HEGST, SYGV/HEGV, and SYGVD/HEGVD results for batch counts
   larger than 32.
+- Fixed STEIN memory access fault when nev is 0.
 
 ### Known Issues
 ### Security

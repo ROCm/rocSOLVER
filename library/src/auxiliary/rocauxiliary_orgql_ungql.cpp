@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_orgql_ungql.hpp"
@@ -13,7 +13,7 @@ rocblas_status rocsolver_orgql_ungql_impl(rocblas_handle handle,
                                           const rocblas_int lda,
                                           T* ipiv)
 {
-    const char* name = (!is_complex<T> ? "orgql" : "ungql");
+    const char* name = (!rocblas_is_complex<T> ? "orgql" : "ungql");
     ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "-k", k, "--lda", lda);
 
     if(!handle)

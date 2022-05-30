@@ -221,7 +221,7 @@ class rocsolver_dispatcher
             return rocblas_status_invalid_value;
     }
 
-    template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+    template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
     static rocblas_status run_function_limited_precision(const char* name, Arguments& argus)
     {
         // Map for functions that support only single and double precisions
@@ -301,7 +301,7 @@ class rocsolver_dispatcher
             return rocblas_status_invalid_value;
     }
 
-    template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+    template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
     static rocblas_status run_function_limited_precision(const char* name, Arguments& argus)
     {
         // Map for functions that support only single-complex and double-complex precisions

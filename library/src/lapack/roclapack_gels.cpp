@@ -1,10 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_gels.hpp"
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_gels_impl(rocblas_handle handle,
                                    rocblas_operation trans,
                                    const rocblas_int m,

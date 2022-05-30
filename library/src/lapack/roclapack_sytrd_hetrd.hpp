@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -82,7 +82,7 @@ rocblas_status rocsolver_sytrd_hetrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,

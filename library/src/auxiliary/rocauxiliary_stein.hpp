@@ -21,7 +21,7 @@
 
 #define STEIN_MAX_NRMCHK 2
 
-template <typename T, typename S, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename S, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void stein_reorthogonalize(rocblas_int i,
                                       const rocblas_int j,
                                       const rocblas_int n,
@@ -43,7 +43,7 @@ __device__ void stein_reorthogonalize(rocblas_int i,
     }
 }
 
-template <typename T, typename S, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename S, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 __device__ void stein_reorthogonalize(rocblas_int i,
                                       const rocblas_int j,
                                       const rocblas_int n,
@@ -93,8 +93,9 @@ __device__ void run_stein(const int tid,
     // zero info and ifail
     if(tid == 0)
         _info = 0;
-    for(i = tid; i < nev; i += MAX_THDS)
-        ifail[i] = 0;
+    if(ifail)
+        for(i = tid; i < nev; i += MAX_THDS)
+            ifail[i] = 0;
 
     // iterate over submatrix blocks
     for(rocblas_int nblk = 0; nblk < iblock[nev - 1]; nblk++)
@@ -202,7 +203,7 @@ __device__ void run_stein(const int tid,
                     iters++;
                 }
 
-                if(tid == 0 && nrmchk < STEIN_MAX_NRMCHK)
+                if(ifail && tid == 0 && nrmchk < STEIN_MAX_NRMCHK)
                 {
                     ifail[_info] = j + 1;
                     _info++;
@@ -253,7 +254,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEIN_MAX_THDS)
                  const rocblas_int shiftZ,
                  const rocblas_int ldz,
                  const rocblas_stride strideZ,
-                 rocblas_int* ifail,
+                 rocblas_int* ifailA,
                  const rocblas_stride strideIfail,
                  rocblas_int* info,
                  S* work,
@@ -267,7 +268,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEIN_MAX_THDS)
     rocblas_stride stride_work = 5 * n;
     rocblas_stride stride_iwork = n;
 
+    if(nev[bid] <= 0)
+        return;
+
     T* Z = load_ptr_batch<T>(ZZ, bid, shiftZ, strideZ);
+    rocblas_int* ifail = nullptr;
+    if(ifailA)
+        ifail = ifailA + (bid * strideIfail);
 
     // shared mem for temporary values
     extern __shared__ double lmem[];
@@ -276,11 +283,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEIN_MAX_THDS)
     rocblas_int* sidx = reinterpret_cast<rocblas_int*>(sval2 + STEIN_MAX_THDS);
 
     // execute
-    run_stein<STEIN_MAX_THDS, T>(tid, n, D + (bid * strideD), E + (bid * strideE), nev[bid],
-                                 W + (bid * strideW), iblock + (bid * strideIblock),
-                                 isplit + (bid * strideIsplit), Z, ldz, ifail + (bid * strideIfail),
-                                 info + bid, work + (bid * stride_work),
-                                 iwork + (bid * stride_iwork), sval1, sval2, sidx, eps, ssfmin);
+    run_stein<STEIN_MAX_THDS, T>(
+        tid, n, D + (bid * strideD), E + (bid * strideE), nev[bid], W + (bid * strideW),
+        iblock + (bid * strideIblock), isplit + (bid * strideIsplit), Z, ldz, ifail, info + bid,
+        work + (bid * stride_work), iwork + (bid * stride_iwork), sval1, sval2, sidx, eps, ssfmin);
 }
 
 template <typename T, typename S>
