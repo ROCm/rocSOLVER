@@ -88,7 +88,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     }
 }
 
-template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <bool BATCHED, typename T, typename S, typename U>
 rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,

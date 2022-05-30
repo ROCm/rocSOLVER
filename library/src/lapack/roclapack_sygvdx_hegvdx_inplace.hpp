@@ -165,7 +165,7 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
     *optim_mem = opt1 && opt2 && opt3;
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
                                                         const rocblas_eform itype,
                                                         const rocblas_evect evect,
