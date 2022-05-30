@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -35,6 +35,30 @@ template <typename S, typename T, std::enable_if_t<is_complex<T>, int> = 0>
 __device__ S aabs(T val)
 {
     return asum(val);
+}
+
+template <typename S, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+__device__ S length(const T& z)
+{
+    return abs(z);
+}
+
+template <typename S, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+__device__ S length(const T& z)
+{
+    return std::sqrt(z.real() * z.real() + z.imag() * z.imag());
+}
+
+template <typename S, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+__device__ S lengthsq(const T& z)
+{
+    return z * z;
+}
+
+template <typename S, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+__device__ S lengthsq(const T& z)
+{
+    return z.real() * z.real() + z.imag() * z.imag();
 }
 
 template <typename T>

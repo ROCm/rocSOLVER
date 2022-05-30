@@ -3,6 +3,9 @@
  * Gotlub & Van Loan (1996). Matrix Computations (3rd ed.).
  *     John Hopkins University Press.
  *     Section 8.4.
+ * and
+ * Hari & Kovac (2019). On the Convergence of Complex Jacobi Methods.
+ *     Linear and Multilinear Algebra 69(3), p. 489-514.
  * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
@@ -19,7 +22,8 @@ __device__ void syevj_lasr_left(const rocblas_int n,
                                 const rocblas_int i,
                                 const rocblas_int ii,
                                 S c,
-                                T s,
+                                T s1,
+                                T s2,
                                 T* A,
                                 const rocblas_int lda)
 {
@@ -29,8 +33,8 @@ __device__ void syevj_lasr_left(const rocblas_int n,
     {
         temp1 = A[i + j * lda];
         temp2 = A[ii + j * lda];
-        A[i + j * lda] = c * temp1 + -s * temp2;
-        A[ii + j * lda] = s * temp1 + c * temp2;
+        A[i + j * lda] = c * temp1 + s1 * temp2;
+        A[ii + j * lda] = -s2 * temp1 + c * temp2;
     }
 }
 /** Apply rotation from the right (based on LASR). **/
@@ -39,7 +43,8 @@ __device__ void syevj_lasr_right(const rocblas_int n,
                                  const rocblas_int j,
                                  const rocblas_int jj,
                                  S c,
-                                 T s,
+                                 T s1,
+                                 T s2,
                                  T* A,
                                  const rocblas_int lda)
 {
@@ -49,8 +54,8 @@ __device__ void syevj_lasr_right(const rocblas_int n,
     {
         temp1 = A[i + j * lda];
         temp2 = A[i + jj * lda];
-        A[i + j * lda] = c * temp1 + -s * temp2;
-        A[i + jj * lda] = s * temp1 + c * temp2;
+        A[i + j * lda] = c * temp1 + s2 * temp2;
+        A[i + jj * lda] = -s1 * temp1 + c * temp2;
     }
 }
 
@@ -70,9 +75,9 @@ __device__ S syevj_update_norm(const rocblas_int tid,
     S local_res = 0;
     for(rocblas_int j = 0; j < n; ++j)
     {
-        temp1 = (i < n && i != j ? aabs<S>(A[i + j * lda]) : 0);
-        temp2 = (ii < n && ii != j ? aabs<S>(A[ii + j * lda]) : 0);
-        local_res += temp1 * temp1 + temp2 * temp2;
+        temp1 = (i < n && i != j ? lengthsq<S>(A[i + j * lda]) : 0);
+        temp2 = (ii < n && ii != j ? lengthsq<S>(A[ii + j * lda]) : 0);
+        local_res += temp1 + temp2;
     }
     resarr[tid] = local_res;
     __syncthreads();
@@ -111,7 +116,6 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
     rocblas_int sweeps = 0;
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
-    T temp;
 
     if(tid >= n)
         return;
@@ -133,10 +137,11 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
     S local_res = 0;
     if(uplo == rocblas_fill_upper)
     {
+        T temp;
         for(j = tid + 1; j < n; j++)
         {
             temp = A[tid + j * lda];
-            local_res += 2 * aabs<S>(temp) * aabs<S>(temp);
+            local_res += 2 * lengthsq<S>(temp);
             Acpy[tid + j * n] = temp;
             Acpy[j + tid * n] = conj(temp);
 
@@ -149,10 +154,11 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
     }
     else
     {
+        T temp;
         for(i = tid + 1; i < n; i++)
         {
             temp = A[i + tid * lda];
-            local_res += 2 * aabs<S>(temp) * aabs<S>(temp);
+            local_res += 2 * lengthsq<S>(temp);
             Acpy[i + tid * n] = temp;
             Acpy[tid + i * n] = conj(temp);
 
@@ -187,7 +193,8 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
     while(sweeps < max_sweeps && local_res > abstol * abstol)
     {
         // for each off-diagonal element (indexed using top/bottom pairs), calculate the Jacobi rotation and apply it to Acpy
-        T c, s, f, g, aij;
+        S c, t, mag;
+        T s1, s2, aij;
         for(k = 0; k < n - 1; k++)
         {
             i = top[tid];
@@ -196,40 +203,37 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
             if(i < n && j < n)
             {
                 aij = Acpy[i + j * n];
+                mag = length<S>(aij);
 
                 // calculate rotation J
-                if(aij == T(0))
+                if(mag == 0)
                 {
                     c = 1;
-                    s = 0;
+                    s1 = s2 = 0;
                 }
                 else
                 {
-                    s = Acpy[j + j * n] - Acpy[i + i * n];
-                    temp = sqrt(std::real(s * s + 4 * aij * aij));
+                    t = std::real(Acpy[i + i * n] - Acpy[j + j * n]);
+                    t = (t >= 0 ? 2 * mag : -2 * mag) / (abs(t) + sqrt(t * t + 4 * mag * mag));
 
-                    f = s + temp;
-                    g = s - temp;
-                    if(aabs<S>(f) < aabs<S>(g))
-                        f = g;
-                    g = -2 * aij;
-
-                    lartg(f, g, c, s, temp);
+                    c = 1.0 / sqrt(1 + t * t);
+                    s1 = t * c * aij / mag;
+                    s2 = conj(s1);
                 }
 
                 // apply J' from the left
-                syevj_lasr_left(n, i, j, c, s, Acpy, n);
+                syevj_lasr_left(n, i, j, c, s1, s2, Acpy, n);
 
                 // update eigenvectors
                 if(evect != rocblas_evect_none)
-                    syevj_lasr_right(n, i, j, c, s, A, lda);
+                    syevj_lasr_right(n, i, j, c, s1, s2, A, lda);
             }
             __syncthreads();
 
             if(i < n && j < n)
             {
                 // apply J from the right
-                syevj_lasr_right(n, i, j, c, s, Acpy, n);
+                syevj_lasr_right(n, i, j, c, s1, s2, Acpy, n);
 
                 // round aij and aji to zero
                 Acpy[j + i * n] = Acpy[i + j * n] = 0;
