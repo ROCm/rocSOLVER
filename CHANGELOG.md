@@ -24,6 +24,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Fixed incorrect SYGS2/HEGS2, SYGST/HEGST, SYGV/HEGV, and SYGVD/HEGVD results for batch counts
   larger than 32.
 - Fixed STEIN memory access fault when nev is 0.
+- Fixed incorrect STEBZ results for close eigenvalues when range = index.
 
 ### Known Issues
 ### Security
