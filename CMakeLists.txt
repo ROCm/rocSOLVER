@@ -127,9 +127,6 @@ message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
-# Force library install path to lib (CentOS 7 defaults to lib64)
-set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
-
 # Query for compiler support of GPU archs
 rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
   TARGETS
