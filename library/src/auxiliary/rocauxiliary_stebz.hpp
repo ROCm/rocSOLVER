@@ -93,21 +93,27 @@ __device__ rocblas_int sturm_count(const rocblas_int n, T* D, T* E, T pmin, T c)
 
     ev = 0;
     t = D[0] - c;
+//printf("en 0: %2.15f ",double(t));
     if(t <= pmin)
     {
+//printf("ssuma");
         ev++;
         t = std::min(t, -pmin);
     }
+//printf("\n");
 
     // main loop
     for(rocblas_int i = 1; i < n; ++i)
     {
         t = D[i] - c - E[i - 1] / t;
+//printf("en %d: %2.15f ",i,double(t));
         if(t <= pmin)
         {
+//printf("ssuma");
             ev++;
             t = std::min(t, -pmin);
         }
+//printf("\n");
     }
 
     return ev;
@@ -742,6 +748,8 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
                                              T* pivmin,
                                              T* EsqrA,
                                              T* boundsA,
+                                             T* interA,
+                                             rocblas_int* ninterA,
                                              T eps)
 {
     int bid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -759,11 +767,15 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
         T* bounds = boundsA + bid * 2;
         // tmpnev stores the number of eigenvalues found in each split block
         rocblas_int* tmpnev = tmpnevA + bid * n;
+        // if range = index, inter and ninter will store temporary ordered eigenvalues
+        // with its indices to discard those out of range
+        T* inter = interA + bid * 2 * n;
+        rocblas_int* ninter = ninterA + bid * 2 * n;
 
         rocblas_int bin;
         rocblas_int ntmp;
-        rocblas_int nn = 0;
-        T tmp;
+        rocblas_int nn = 0, nnt = 0;
+        T tmp, tmp2;
         T bnorm = std::max(std::abs(bounds[0]), std::abs(bounds[1]));
 
         bool index = (range == rocblas_erange_index);
@@ -772,16 +784,64 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
         // (if range = index, sometimes the searched interval (vl, vu] could
         // have eigenvalues outside of the desired indices. Thus, the following
         // code also discards those extra values)
-        for(int b = 0; b < nofb; ++b)
+        if(index)
         {
-            bin = (b == 0) ? 0 : IS[b - 1];
-            for(int bb = 0; bb < tmpnev[b]; ++bb)
+            for(int b = 0; b < nofb; ++b)
             {
-                tmp = W[bin + bb];
-                ntmp = index ? sturm_count(n, D, Esqr, pmin, tmp + pmin + bnorm * eps * n) : 0;
-                if(!index || (ntmp >= ilow && ntmp <= iup))
+//int b = 0;
+                bin = (b == 0) ? 0 : IS[b - 1];
+                for(int bb = 0; bb < tmpnev[b]; ++bb)
                 {
-                    W[nn] = tmp;
+                    tmp = W[bin + bb];
+                    ntmp = IB[bin + bb];
+//tmp2 = tmp;// + pmin + std::abs(tmp) * eps *n;// + bnorm * eps * n;
+//                ntmp = index ? sturm_count(n, D, Esqr, pmin, tmp2) : 0;
+
+//printf("in block %d: %d less than %2.15f\n",b+1,ntmp,double(tmp2));
+
+//                if(!index || (ntmp >= ilow && ntmp <= iup))
+//printf("--> yes\n");
+                    inter[nnt] = tmp;
+                    ninter[nnt] = ntmp;
+                    inter[nnt + n] = tmp;
+//                    ninter[nnt + n] = ntmp;
+                    nnt++;
+                }
+            }
+            
+            // discard extra values
+            increasing_order(nnt, inter + n, ninter + n);
+            for(int i = 0; i < nnt; ++i)
+            {
+                tmp = inter[i];
+                for(int j = 0; j < nnt; ++j)
+                {
+                    tmp2 = inter[n + j];
+                    if(tmp == tmp2)
+                    {
+                        tmp2 = (j == nnt - 1) ? (bounds[1] - tmp2) / 2 : (inter[n + j + 1] - tmp2) / 2;
+                        tmp2 += tmp;
+                        ntmp = sturm_count(n, D, Esqr, pmin, tmp2);
+                        if(ntmp >= ilow && ntmp <= iup)
+                        {
+                            W[nn] = tmp;
+                            IB[nn] = ninter[i];
+                            nn++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        else
+        {
+            for(int b = 0; b < nofb; ++b)
+            {
+                bin = (b == 0) ? 0 : IS[b - 1];
+                for(int bb = 0; bb < tmpnev[b]; ++bb)
+                {
+                    W[nn] = W[bin + bb];
                     IB[nn] = IB[bin + bb];
                     nn++;
                 }
@@ -927,6 +987,11 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
                                         T* inter,
                                         rocblas_int* ninter)
 {
+//print_device_matrix(std::cout,"D",1,n,D,1);
+//print_device_matrix(std::cout,"E",1,n,E,1);
+
+
+
     ROCSOLVER_ENTER("stebz", "erange:", range, "eorder:", order, "n:", n, "vl:", vlow, "vu:", vup,
                     "il:", ilow, "iu:", iup, "abstol:", abstol, "shiftD:", shiftD,
                     "shiftE:", shiftE, "bc:", batch_count);
@@ -987,15 +1052,39 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
         split-off blocks- into the host, to launch exactly that amount of thread-blocks,
         could give better performance) **/
 
+
+//print_device_matrix(std::cout,"Work before",1,n,work,1);
+//print_device_matrix(std::cout,"bounds before",1,2,bounds,1);
+
     ROCSOLVER_LAUNCH_KERNEL(stebz_bisection_kernel<T>, dim3(IBISEC_BLKS, batch_count),
                             dim3(IBISEC_THDS), 0, stream, range, n, atol, D, shiftD, strideD, E,
                             shiftE, strideE, nev, nsplit, W, strideW, IB, strideIB, IS, strideIS,
                             info, work, pivmin, Esqr, bounds, inter, ninter, eps, sfmin);
 
+//print_device_matrix(std::cout,"nev before",1,1,nev,1);
+//print_device_matrix(std::cout,"W before",1,n,W,1);
+//print_device_matrix(std::cout,"iblock before",1,n,IB,1);
+//print_device_matrix(std::cout,"Work before",1,n,work,1);
+//print_device_matrix(std::cout,"bounds before",1,2,bounds,1);
+
     // Finally, synthetize the results from all the split blocks
     ROCSOLVER_LAUNCH_KERNEL(stebz_synthesis_kernel<T>, gridReset, threads, 0, stream, range, order,
                             n, ilow, iup, D, shiftD, strideD, nev, nsplit, W, strideW, IB, strideIB,
-                            IS, strideIS, batch_count, work, pivmin, Esqr, bounds, eps);
+                            IS, strideIS, batch_count, work, pivmin, Esqr, bounds, inter, ninter, eps);
+
+
+//print_device_matrix(std::cout,"info",1,1,info,1);
+//print_device_matrix(std::cout,"nsplit",1,1,nsplit,1);
+//print_device_matrix(std::cout,"isplit",1,n,IS,1);
+//print_device_matrix(std::cout,"nev after",1,1,nev,1);
+//print_device_matrix(std::cout,"W after",1,n,W,1);
+//print_device_matrix(std::cout,"iblock after",1,n,IB,1);
+//print_device_matrix(std::cout,"Work after",1,n,work,1);
+//print_device_matrix(std::cout,"bounds after",1,2,bounds,1);
+
+
+
+
 
     return rocblas_status_success;
 }

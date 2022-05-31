@@ -22,8 +22,8 @@ typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 // if rng = 2, then find the il-th to the iu-th eigenvalue
 
 // Note: all tests are prepared with diagonally dominant matrices that have random diagonal
-// elements in [-20, -11] U [11, 20], and off-diagonal elements in [-4, 5].
-// Thus, all eigenvalues should be in [-30, 30]
+// elements in [-20, -11] U [11, 20], and off-diagonal elements in [-0.4, 0.5].
+// Thus, all eigenvalues should be in [-20, 20]
 
 // case when n == 0, ord == 0, and rng == 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
