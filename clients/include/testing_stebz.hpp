@@ -127,7 +127,7 @@ void stebz_initData(const rocblas_handle handle, const rocblas_int n, Td& dD, Td
         for(rocblas_int i = 0; i < n; i++)
         {
             hD[0][i] += 10;
-            hE[0][i] = (hE[0][i] - 5) / 1;
+            hE[0][i] = (hE[0][i] - 5) / 10;
             if(i == n / 4 || i == n / 2 || i == n - 1)
                 hE[0][i] = 0;
             if(i == n / 7 || i == n / 5 || i == n / 3)
@@ -229,7 +229,7 @@ void stebz_getError(const rocblas_handle handle,
         for(int k = 0; k < nn; ++k)
         {
             int difb = std::abs(hIblock[0][k] - hIblockRes[0][k]);
-            T difv = std::abs(hW[0][k] - hWRes[0][k]) / hW[0][k]; 
+            T difv = std::abs(hW[0][k] - hWRes[0][k]) / hW[0][k];
             if(difb > 0 && difv > n * get_epsilon<T>())
                 *max_err += difb;
         }

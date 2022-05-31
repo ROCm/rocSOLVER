@@ -23,7 +23,7 @@ typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 
 // Note: all tests are prepared with diagonally dominant matrices that have random diagonal
 // elements in [-20, -11] U [11, 20], and off-diagonal elements in [-0.4, 0.5].
-// Thus, all eigenvalues should be in [-20, 20]
+// Thus, all the eigenvalues are guaranteed to be in [-20, 20]
 
 // case when n == 0, ord == 0, and rng == 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
