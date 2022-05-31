@@ -170,7 +170,7 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
     }
 
     if(blk == 1)
-        blk = m;
+        blk = std::min(m, 512);
 
     return blk;
 }
@@ -201,7 +201,7 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
     }
 
     if(blk == 1)
-        blk = m;
+        blk = std::min(m, 512);
 
     return blk;
 }
@@ -338,7 +338,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
 
-        if(notrans) // >>>>>> case: LX = B
+        if(notrans) // forward case: LX = B
         {
             lda1 = 1;
             lda2 = lda;
@@ -378,7 +378,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
             FORWARD_SUBSTITUTIONS;
         }
 
-        else // >>>>>> case: L'X = B
+        else // backward case: L'X = B
         {
             lda1 = lda;
             lda2 = 1;
@@ -431,7 +431,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
 
-        if(notrans) // >>>>>> case: B = XL
+        if(notrans) // backward case: B = XL
         {
             lda1 = lda;
             lda2 = 1;
@@ -471,7 +471,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
             BACKWARD_SUBSTITUTIONS;
         }
 
-        else // >>>>>> case: B = XL'
+        else // forward case: B = XL'
         {
             lda1 = 1;
             lda2 = lda;
@@ -590,7 +590,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
 
-        if(!notrans) // >>>>>> case: U'X = B
+        if(!notrans) // forward case: U'X = B
         {
             lda1 = lda;
             lda2 = 1;
@@ -630,7 +630,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
             FORWARD_SUBSTITUTIONS;
         }
 
-        else // >>>>>> case: UX = B
+        else // backward case: UX = B
         {
             lda1 = 1;
             lda2 = lda;
@@ -683,7 +683,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         threads = dim3(dimx, dimy, 1);
         lmemsize = dimy * sizeof(T);
 
-        if(!notrans) // >>>>>> case: B = XU'
+        if(!notrans) // backward case: B = XU'
         {
             lda1 = 1;
             lda2 = lda;
@@ -723,7 +723,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
             BACKWARD_SUBSTITUTIONS;
         }
 
-        else // >>>>>> case: B = XU
+        else // forward case: B = XU
         {
             lda1 = lda;
             lda2 = 1;
