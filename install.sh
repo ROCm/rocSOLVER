@@ -179,25 +179,70 @@ install_zypper_packages( )
 
 install_fmt_from_source( )
 {
-  if [[ ! -d "${build_dir}/deps/fmt" ]]; then
-    pushd .
-    mkdir -p "${build_dir}/deps"
-    cd "${build_dir}/deps"
-    git clone -b 7.1.3 https://github.com/fmtlib/fmt.git
-    cd fmt
+  fmt_version=7.1.3
+  fmt_srcdir=fmt-$fmt_version-src
+  fmt_blddir=fmt-$fmt_version-bld
+  wget -nc -nv -O fmt-$fmt_version.tar.gz \
+      https://github.com/fmtlib/fmt/archive/refs/tags/$fmt_version.tar.gz
+  if [[ ! -d "$fmt_srcdir" ]]; then
+    tar xzf fmt-$fmt_version.tar.gz --one-top-level="$fmt_srcdir" --strip-components 1
+  fi
+  if [[ ! -d "$fmt_blddir" ]]; then
     ${cmake_executable} \
+      -S "$fmt_srcdir" -B "$fmt_blddir" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_CXX_EXTENSIONS=OFF \
       -DCMAKE_CXX_STANDARD_REQUIRED=ON \
       -DFMT_DOC=OFF \
-      -DFMT_TEST=OFF \
-      .
-    make -j$(nproc)
-    elevate_if_not_root make install
-    popd
+      -DFMT_TEST=OFF
   fi
+  make -j$(nproc) -C "$fmt_blddir"
+  elevate_if_not_root make -C "$fmt_blddir" install
+}
+
+install_lapack_from_source( )
+{
+  lapack_version=3.9.1
+  lapack_srcdir=lapack-$lapack_version-src
+  lapack_blddir=lapack-$lapack_version-bld
+  wget -nc -nv -O lapack-$lapack_version.tar.gz \
+      https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v$lapack_version.tar.gz
+  if [[ ! -d "$lapack_srcdir" ]]; then
+    tar xzf lapack-$lapack_version.tar.gz --one-top-level="$lapack_srcdir" --strip-components 1
+  fi
+  if [[ ! -d "$lapack_blddir" ]]; then
+    ${cmake_executable} \
+      -S "$lapack_srcdir" -B "$lapack_blddir" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_Fortran_FLAGS=-fno-optimize-sibling-calls \
+      -DBUILD_TESTING=OFF \
+      -DCBLAS=ON \
+      -DLAPACKE=OFF
+  fi
+  make -j$(nproc) -C "$lapack_blddir"
+  elevate_if_not_root make -C "$lapack_blddir" install
+}
+
+install_gtest_from_source( )
+{
+  gtest_version=1.11.0
+  gtest_srcdir=gtest-$gtest_version-src
+  gtest_blddir=gtest-$gtest_version-bld
+  wget -nc -nv -O gtest-$gtest_version.tar.gz \
+      https://github.com/google/googletest/archive/refs/tags/release-$gtest_version.tar.gz
+  if [[ ! -d "$gtest_srcdir" ]]; then
+    tar xzf gtest-$gtest_version.tar.gz --one-top-level="$gtest_srcdir" --strip-components 1
+  fi
+  if [[ ! -d "$gtest_blddir" ]]; then
+    ${cmake_executable} \
+      -S "$gtest_srcdir" -B "$gtest_blddir" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF
+  fi
+  make -j$(nproc) -C "$gtest_blddir"
+  elevate_if_not_root make -C "$gtest_blddir" install
 }
 
 # Take an array of packages as input, and delegate the work to the appropriate distro installer
@@ -216,11 +261,11 @@ install_packages( )
   fi
 
   # dependencies needed to build the rocsolver library
-  local library_dependencies_ubuntu=( "make" "cmake")
-  local library_dependencies_centos_7=( "epel-release" "make" "cmake3" "rpm-build")
-  local library_dependencies_centos_8=( "epel-release" "make" "cmake3" "rpm-build")
-  local library_dependencies_fedora=( "make" "cmake" "rpm-build")
-  local library_dependencies_sles=( "make" "cmake" "rpm-build")
+  local library_dependencies_ubuntu=( "make" "cmake" "wget" )
+  local library_dependencies_centos_7=( "epel-release" "make" "cmake3" "rpm-build" "wget" )
+  local library_dependencies_centos_8=( "epel-release" "make" "cmake3" "rpm-build" "wget" )
+  local library_dependencies_fedora=( "make" "cmake" "rpm-build" "wget" )
+  local library_dependencies_sles=( "make" "cmake" "rpm-build" "wget" )
 
   # dependencies to build the client
   local client_dependencies_ubuntu=( "gfortran" )
@@ -240,13 +285,13 @@ install_packages( )
       ;;
 
     centos|rhel)
-      if [[ ( "${VERSION_ID}" -ge 8 ) ]]; then
+      if (( "${VERSION_ID%%.*}" >= "8" )); then
         install_yum_packages "${library_dependencies_centos_8[@]}"
 
         if [[ "${build_clients}" == true ]]; then
           install_yum_packages "${client_dependencies_centos_8[@]}"
         fi
-      elif [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
+      elif (( "${VERSION_ID%%.*}" >= "7" )); then
         install_yum_packages "${library_dependencies_centos_7[@]}"
 
         if [[ "${build_clients}" == true ]]; then
@@ -473,7 +518,9 @@ cmake_executable=cmake
 
 case "${ID}" in
   centos|rhel)
-  cmake_executable=cmake3
+    if (( "${VERSION_ID%%.*}" < "8" )); then
+      cmake_executable=cmake3
+    fi
   ;;
 esac
 
@@ -487,18 +534,19 @@ export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
 # #################################################
 if [[ "${install_dependencies}" == true ]]; then
   install_packages
+
+  pushd .
+  mkdir -p "${build_dir}/deps"
+  cd "${build_dir}/deps"
+  printf "\033[32mBuilding \033[33mfmt\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
   install_fmt_from_source
 
   if [[ "${build_clients}" == true ]]; then
-    # The following builds googletest & lapack from source, installs into cmake default /usr/local
-    pushd .
-    printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
-    mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    ${cmake_executable} "${main}/deps"
-    make -j$(nproc)
-    elevate_if_not_root make install
-    popd
+    printf "\033[32mBuilding \033[33mgoogletest and lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
+    install_lapack_from_source
+    install_gtest_from_source
   fi
+  popd
 fi
 
 # #################################################
