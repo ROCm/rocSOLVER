@@ -1117,7 +1117,7 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
     lmemsize = hipBlockDim_y * sizeof(T);
 
     There are 4 different forward substitution kernels; each one deals with
-    a combination of unit and conjugate. In the non-unit case, the kernles DO NOT
+    a combination of unit and conjugate. In the non-unit case, the kernels DO NOT
     verify whether the diagonal element of L/U is non-zero.**/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const rocblas_int nx,
@@ -1358,7 +1358,7 @@ ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int
     lmemsize = hipBlockDim_y * sizeof(T);
 
     There are 4 different backward substitution kernels; each one deals with
-    a combination of unit and conjugate. In the non-unit case, the kernles DO NOT
+    a combination of unit and conjugate. In the non-unit case, the kernels DO NOT
     verify whether the diagonal element of L/U is non-zero.**/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const rocblas_int nx,
