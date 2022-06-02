@@ -494,8 +494,10 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         if(k + jb < nn)
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
-                handle, jb, nn - k - jb, A, shiftA + idx2D(k, k, lda), shiftA + idx2D(k, k + jb, lda),
-                lda, strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_unit, jb,
+                nn - k - jb, A, shiftA + idx2D(k, k, lda), lda, strideA, A,
+                shiftA + idx2D(k, k + jb, lda), lda, strideA, batch_count, optim_mem, work1, work2,
+                work3, work4);
 
             if(k + jb < mm)
                 rocblasCall_gemm<BATCHED, STRIDED, T>(
@@ -586,14 +588,15 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         *size_iipiv = pivot ? m * sizeof(rocblas_int) * batch_count : 0;
 
         // extra workspace for calling largest possible TRSM
-        rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, min(dim, 512), n, batch_count,
-                                                size_work1, size_work2, size_work3, size_work4,
-                                                optim_mem, true);
+        rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, rocblas_operation_none,
+                                                min(dim, 512), n, batch_count, size_work1,
+                                                size_work2, size_work3, size_work4, optim_mem, true);
         if(!pivot)
         {
             size_t w1, w2, w3, w4;
-            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, m, min(dim, 512),
-                                                    batch_count, &w1, &w2, &w3, &w4, optim_mem, true);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, rocblas_operation_none, m,
+                                                    min(dim, 512), batch_count, &w1, &w2, &w3, &w4,
+                                                    optim_mem, true);
             *size_work1 = std::max(*size_work1, w1);
             *size_work2 = std::max(*size_work2, w2);
             *size_work3 = std::max(*size_work3, w3);
@@ -703,8 +706,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
             // update remaining rows in outer panel
             rocsolver_trsm_upper<BATCHED, STRIDED, T>(
-                handle, m - j - jb, jb, A, shiftA + idx2D(j, j, lda), shiftA + idx2D(jb + j, j, lda),
-                lda, strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                handle, rocblas_side_right, rocblas_operation_none, rocblas_diagonal_non_unit,
+                m - j - jb, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, A,
+                shiftA + idx2D(jb + j, j, lda), lda, strideA, batch_count, optim_mem, work1, work2,
+                work3, work4);
         }
 
         // update trailing matrix
@@ -714,7 +719,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         if(nextpiv < n)
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
-                handle, jb, nn, A, shiftA + idx2D(j, j, lda), shiftA + idx2D(j, nextpiv, lda), lda,
+                handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_unit, jb, nn, A,
+                shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(j, nextpiv, lda), lda,
                 strideA, batch_count, optim_mem, work1, work2, work3, work4);
 
             if(nextpiv < m)

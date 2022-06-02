@@ -53,9 +53,9 @@ rocblas_status rocsolver_sygv_hegv_batched_impl(rocblas_handle handle,
     size_t size_pivots_workArr;
     // size of temporary info array
     size_t size_iinfo;
-    rocsolver_sygv_hegv_getMemorySize<true, T, S>(itype, evect, uplo, n, batch_count, &size_scalars,
-                                                  &size_work1, &size_work2, &size_work3, &size_work4,
-                                                  &size_pivots_workArr, &size_iinfo, &optim_mem);
+    rocsolver_sygv_hegv_getMemorySize<true, false, T, S>(
+        itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
+        &size_work4, &size_pivots_workArr, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
