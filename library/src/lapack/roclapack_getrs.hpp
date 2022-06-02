@@ -10,9 +10,9 @@
 #pragma once
 
 #include "auxiliary/rocauxiliary_laswp.hpp"
-#include "lapack_host_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T>
 rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
