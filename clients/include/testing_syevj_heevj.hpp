@@ -55,6 +55,13 @@ void syevj_heevj_checkBadArgs(const rocblas_handle handle,
                                                 stA, abstol, dResidual, max_sweeps, dSweeps, dW,
                                                 stW, dInfo, bc),
                           rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA, abstol,
+                                                (S) nullptr, max_sweeps, dSweeps, dW, stW, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA,
+                                                abstol, dResidual, max_sweeps, (U) nullptr, dW, stW,
+                                                dInfo, bc),
+                          rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA,
                                                 abstol, dResidual, max_sweeps, dSweeps, (S) nullptr,
                                                 stW, dInfo, bc),
