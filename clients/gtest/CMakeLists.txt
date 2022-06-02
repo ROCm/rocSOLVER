@@ -38,6 +38,7 @@ set(roclapack_test_source
   syevdx_heevdx_gtest.cpp
   sygv_hegv_gtest.cpp
   sygvd_hegvd_gtest.cpp
+  sygvj_hegvj_gtest.cpp
   sygvx_hegvx_gtest.cpp
   sygvdx_hegvdx_gtest.cpp
 )
