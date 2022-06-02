@@ -92,7 +92,7 @@ rocblas_status rocsolver_sygvx_hegvx_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename S>
+template <bool BATCHED, bool STRIDED, typename T, typename S>
 void rocsolver_sygvx_hegvx_getMemorySize(const rocblas_eform itype,
                                          const rocblas_evect evect,
                                          const rocblas_fill uplo,
@@ -139,14 +139,14 @@ void rocsolver_sygvx_hegvx_getMemorySize(const rocblas_eform itype,
     size_t unused, temp1, temp2, temp3, temp4, temp5;
 
     // requirements for calling POTRF
-    rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
-                                              size_work2, size_work3, size_work4,
-                                              size_work7_workArr, size_iinfo, &opt1);
+    rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars,
+                                                       size_work1, size_work2, size_work3, size_work4,
+                                                       size_work7_workArr, size_iinfo, &opt1);
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
-    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(uplo, itype, n, batch_count, &unused, &temp1,
-                                                    &temp2, &temp3, &temp4, &opt2);
+    rocsolver_sygst_hegst_getMemorySize<BATCHED, STRIDED, T>(uplo, itype, n, batch_count, &unused,
+                                                             &temp1, &temp2, &temp3, &temp4, &opt2);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -170,15 +170,12 @@ void rocsolver_sygvx_hegvx_getMemorySize(const rocblas_eform itype,
                 = (uplo == rocblas_fill_upper ? rocblas_operation_none
                                               : rocblas_operation_conjugate_transpose);
             // requirements for calling TRSM
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, n, n, batch_count, &temp1,
-                                             &temp2, &temp3, &temp4);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, trans, n, n, batch_count,
+                                                    &temp1, &temp2, &temp3, &temp4, &opt3);
             *size_work1 = max(*size_work1, temp1);
             *size_work2 = max(*size_work2, temp2);
             *size_work3 = max(*size_work3, temp3);
             *size_work4 = max(*size_work4, temp4);
-
-            // always allocate all required memory for TRSM optimal performance
-            opt3 = true;
         }
     }
 
@@ -267,9 +264,9 @@ rocblas_status rocsolver_sygvx_hegvx_template(rocblas_handle handle,
     T one = 1;
 
     // perform Cholesky factorization of B
-    rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
-                                            batch_count, scalars, work1, work2, work3, work4,
-                                            (T*)work7_workArr, iinfo, optim_mem);
+    rocsolver_potrf_template<BATCHED, STRIDED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
+                                                     batch_count, scalars, work1, work2, work3,
+                                                     work4, (T*)work7_workArr, iinfo, optim_mem);
 
     /** (TODO: Strictly speaking, computations should stop here if B is not positive definite.
         A should not be modified in this case as no eigenvalues or eigenvectors can be computed.
@@ -300,13 +297,16 @@ rocblas_status rocsolver_sygvx_hegvx_template(rocblas_handle handle,
         rocblas_int h_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
-            rocblas_operation trans
-                = (uplo == rocblas_fill_upper ? rocblas_operation_none
-                                              : rocblas_operation_conjugate_transpose);
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, trans,
-                                         rocblas_diagonal_non_unit, n, h_nev, &one, B, shiftB, ldb,
-                                         strideB, Z, shiftZ, ldz, strideZ, batch_count, optim_mem,
-                                         work1, work2, work3, work4);
+            if(uplo == rocblas_fill_upper)
+                rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_non_unit, n,
+                    h_nev, B, shiftB, ldb, strideB, Z, shiftZ, ldz, strideZ, batch_count, optim_mem,
+                    work1, work2, work3, work4);
+            else
+                rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, n, h_nev, B, shiftB, ldb, strideB, Z, shiftZ, ldz,
+                    strideZ, batch_count, optim_mem, work1, work2, work3, work4);
         }
         else
         {

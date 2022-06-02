@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_posv.hpp"
@@ -44,9 +44,9 @@ rocblas_status rocsolver_posv_impl(rocblas_handle handle,
     size_t size_work1, size_work2, size_work3, size_work4;
     // extra requirements for calling POTRF and to copy B
     size_t size_pivots_savedB, size_iinfo;
-    rocsolver_posv_getMemorySize<false, T>(n, nrhs, uplo, batch_count, &size_scalars, &size_work1,
-                                           &size_work2, &size_work3, &size_work4,
-                                           &size_pivots_savedB, &size_iinfo, &optim_mem);
+    rocsolver_posv_getMemorySize<false, false, T>(n, nrhs, uplo, batch_count, &size_scalars,
+                                                  &size_work1, &size_work2, &size_work3, &size_work4,
+                                                  &size_pivots_savedB, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
@@ -72,7 +72,7 @@ rocblas_status rocsolver_posv_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_posv_template<false, T, S>(
+    return rocsolver_posv_template<false, false, T, S>(
         handle, uplo, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, info, batch_count,
         (T*)scalars, work1, work2, work3, work4, (T*)pivots_savedB, (rocblas_int*)iinfo, optim_mem);
 }
