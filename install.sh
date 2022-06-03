@@ -109,24 +109,12 @@ supported_distro( )
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
-check_exit_code( )
-{
-  if (( $1 != 0 )); then
-    exit $1
-  fi
-}
-
-# This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
 elevate_if_not_root( )
 {
-  local uid=$(id -u)
-
-  if (( ${uid} )); then
-    sudo $@
-    check_exit_code "$?"
+  if (( $EUID )); then
+    sudo "$@" || exit
   else
-    $@
-    check_exit_code "$?"
+    "$@" || exit
   fi
 }
 
@@ -617,16 +605,16 @@ if [[ "${build_codecoverage}" == true ]]; then
     cmake_common_options+=('-DBUILD_CODE_COVERAGE=ON')
 fi
 
+# check exit codes for everything from here onwards
+set -eu
 
 ${cmake_executable} "${cmake_common_options[@]}" "${cmake_client_options[@]}" -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
-check_exit_code "$?"
 
 if [[ "${build_library}" == true ]]; then
   ${cmake_executable} --build . -j$(nproc) --target install
 else
   ${cmake_executable} --build . -j$(nproc)
 fi
-check_exit_code "$?"
 
 # #################################################
 # package build & install
@@ -634,7 +622,6 @@ check_exit_code "$?"
 # installing through package manager, which makes uninstalling easy
 if [[ "${build_package}" == true ]]; then
   make package
-  check_exit_code "$?"
 
   if [[ "${install_package}" == true ]]; then
     case "${ID}" in
@@ -653,7 +640,6 @@ if [[ "${build_package}" == true ]]; then
     esac
   fi
 fi
-check_exit_code "$?"
 
 if [[ "${cleanup}" == true ]]; then
   rm -rf  _CPack_Packages/
