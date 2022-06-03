@@ -13,6 +13,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Eigensolver routines for symmetric/hermitian matrices using Jacobi algorithm:
     - SYEVJ (with batched and strided\_batched versions)
     - HEEVJ (with batched and strided\_batched versions)
+- Generalized symmetric- and hermitian-definite eigensolvers using Jacobi algorithm:
+    - SYGVJ (with batched and strided\_batched versions)
+    - HEGVJ (with batched and strided\_batched versions)
 - Added --profile_kernels option to rocsolver-bench, which will include kernel calls in the
   profile log (if profile logging is enabled with --profile).
 

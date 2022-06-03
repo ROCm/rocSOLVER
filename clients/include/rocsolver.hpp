@@ -6822,9 +6822,12 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_ssygvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+        return rocsolver_ssygvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, abstol, residual, max_sweeps, n_sweeps, W, stW,
+                                                info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_ssygvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, info);
+        return rocsolver_ssygvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                max_sweeps, n_sweeps, W, info);
 }
 
 inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
@@ -6849,9 +6852,12 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_dsygvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+        return rocsolver_dsygvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, abstol, residual, max_sweeps, n_sweeps, W, stW,
+                                                info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_dsygvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, info);
+        return rocsolver_dsygvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                max_sweeps, n_sweeps, W, info);
 }
 
 inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
@@ -6876,9 +6882,12 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_chegvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+        return rocsolver_chegvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, abstol, residual, max_sweeps, n_sweeps, W, stW,
+                                                info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_chegvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, info);
+        return rocsolver_chegvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                max_sweeps, n_sweeps, W, info);
 }
 
 inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
@@ -6903,9 +6912,12 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int bc)
 {
     if(STRIDED)
-        return rocblas_status_not_implemented; // rocsolver_zhegvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb, stB, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+        return rocsolver_zhegvj_strided_batched(handle, itype, evect, uplo, n, A, lda, stA, B, ldb,
+                                                stB, abstol, residual, max_sweeps, n_sweeps, W, stW,
+                                                info, bc);
     else
-        return rocblas_status_not_implemented; // rocsolver_zhegvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, info);
+        return rocsolver_zhegvj(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                max_sweeps, n_sweeps, W, info);
 }
 
 // batched
@@ -6930,7 +6942,8 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_ssygvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+    return rocsolver_ssygvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                    max_sweeps, n_sweeps, W, stW, info, bc);
 }
 
 inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
@@ -6954,7 +6967,8 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_dsygvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+    return rocsolver_dsygvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                    max_sweeps, n_sweeps, W, stW, info, bc);
 }
 
 inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
@@ -6978,7 +6992,8 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_chegvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+    return rocsolver_chegvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                    max_sweeps, n_sweeps, W, stW, info, bc);
 }
 
 inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
@@ -7002,7 +7017,8 @@ inline rocblas_status rocsolver_sygvj_hegvj(bool STRIDED,
                                             rocblas_int* info,
                                             rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_zhegvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual, max_sweeps, n_sweeps, W, stW, info, bc);
+    return rocsolver_zhegvj_batched(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol, residual,
+                                    max_sweeps, n_sweeps, W, stW, info, bc);
 }
 /********************************************************/
 
