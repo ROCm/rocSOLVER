@@ -609,14 +609,6 @@ if [[ "${build_relocatable}" == true ]]; then
     cmake_common_options+=('-DROCM_DISABLE_LDCONFIG=ON')
 fi
 
-case "${ID}" in
-  centos|rhel)
-    if [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
-      cmake_common_options+=('-DCMAKE_FIND_ROOT_PATH=/usr/lib64/llvm7.0/lib/cmake/')
-    fi
-    ;;
-esac
-
 if [[ "${build_codecoverage}" == true ]]; then
     if [[ "${build_type}" == Release ]]; then
         echo "Code coverage is chosen to be disabled in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
