@@ -133,48 +133,32 @@ elevate_if_not_root( )
 # Take an array of packages as input, and install those packages with 'apt' if they are not already installed
 install_apt_packages( )
 {
-  package_dependencies=("$@")
-  for package in "${package_dependencies[@]}"; do
-    if [[ $(dpkg-query --show --showformat='${db:Status-Abbrev}\n' ${package} 2> /dev/null | grep -q "ii"; echo $?) -ne 0 ]]; then
-      printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-      elevate_if_not_root apt install -y --no-install-recommends ${package}
-    fi
-  done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root apt install -y --no-install-recommends "${packages[@]}"
 }
 
 # Take an array of packages as input, and install those packages with 'yum' if they are not already installed
 install_yum_packages( )
 {
-  package_dependencies=("$@")
-  for package in "${package_dependencies[@]}"; do
-    if [[ $package == *-PyYAML ]] || [[ $(yum list installed ${package} &> /dev/null; echo $? ) -ne 0 ]]; then
-      printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-      elevate_if_not_root yum -y --nogpgcheck install ${package}
-    fi
-  done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root yum -y --nogpgcheck install "${packages[@]}"
 }
 
 # Take an array of packages as input, and install those packages with 'dnf' if they are not already installed
 install_dnf_packages( )
 {
-  package_dependencies=("$@")
-  for package in "${package_dependencies[@]}"; do
-    if [[ $package == *-PyYAML ]] || [[ $(dnf list installed ${package} &> /dev/null; echo $? ) -ne 0 ]]; then
-      printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-      elevate_if_not_root dnf install -y ${package}
-    fi
-  done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root dnf install -y "${packages[@]}"
 }
 
 install_zypper_packages( )
 {
-    package_dependencies=("$@")
-    for package in "${package_dependencies[@]}"; do
-        if [[ $(rpm -q ${package} &> /dev/null; echo $? ) -ne 0 ]]; then
-            printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-            elevate_if_not_root zypper install -y ${package}
-        fi
-    done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root zypper install -y "${packages[@]}"
 }
 
 install_fmt_from_source( )
@@ -263,57 +247,39 @@ install_packages( )
   # dependencies needed to build the rocsolver library
   local library_dependencies_ubuntu=( "make" "cmake" "wget" )
   local library_dependencies_centos_7=( "epel-release" "make" "cmake3" "rpm-build" "wget" )
-  local library_dependencies_centos_8=( "epel-release" "make" "cmake3" "rpm-build" "wget" )
+  local library_dependencies_centos=( "epel-release" "make" "cmake3" "rpm-build" "wget" )
   local library_dependencies_fedora=( "make" "cmake" "rpm-build" "wget" )
   local library_dependencies_sles=( "make" "cmake" "rpm-build" "wget" )
 
-  # dependencies to build the client
-  local client_dependencies_ubuntu=( "gfortran" )
-  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" )
-  local client_dependencies_centos_8=( "gcc-gfortran" )
-  local client_dependencies_fedora=( "gcc-gfortran" )
-  local client_dependencies_sles=( "gcc-fortran" )
+  if [[ "${build_clients}" == true ]]; then
+    # dependencies to build the clients
+    library_dependencies_ubuntu+=( "gfortran" )
+    library_dependencies_centos_7+=( "devtoolset-7-gcc-gfortran" )
+    library_dependencies_centos+=( "gcc-gfortran" )
+    library_dependencies_fedora+=( "gcc-gfortran" )
+    library_dependencies_sles+=( "gcc-fortran" )
+  fi
 
   case "${ID}" in
     ubuntu)
       elevate_if_not_root apt update
       install_apt_packages "${library_dependencies_ubuntu[@]}"
-
-      if [[ "${build_clients}" == true ]]; then
-        install_apt_packages "${client_dependencies_ubuntu[@]}"
-      fi
       ;;
 
     centos|rhel)
-      if (( "${VERSION_ID%%.*}" >= "8" )); then
-        install_yum_packages "${library_dependencies_centos_8[@]}"
-
-        if [[ "${build_clients}" == true ]]; then
-          install_yum_packages "${client_dependencies_centos_8[@]}"
-        fi
-      elif (( "${VERSION_ID%%.*}" >= "7" )); then
+      if (( "${VERSION_ID%%.*}" < "8" )); then
         install_yum_packages "${library_dependencies_centos_7[@]}"
-
-        if [[ "${build_clients}" == true ]]; then
-          install_yum_packages "${client_dependencies_centos_7[@]}"
-        fi
+      else
+        install_yum_packages "${library_dependencies_centos[@]}"
       fi
       ;;
 
     fedora)
       install_dnf_packages "${library_dependencies_fedora[@]}"
-
-      if [[ "${build_clients}" == true ]]; then
-        install_dnf_packages "${client_dependencies_fedora[@]}"
-      fi
       ;;
 
     sles|opensuse-leap)
-      install_zypper_packages "${client_dependencies_sles[@]}"
-
-      if [[ "${build_clients}" == true ]]; then
-        install_zypper_packages "${client_dependencies_sles[@]}"
-      fi
+      install_zypper_packages "${library_dependencies_sles[@]}"
       ;;
     *)
       echo "This script is currently supported on Ubuntu, CentOS, RHEL, SLES, OpenSUSE-Leap, and Fedora"
