@@ -15039,7 +15039,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
-                the algorithm converged; otherwise the contents of A are destroyed.
+                the algorithm converged; otherwise the contents of A are unchanged.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrix A.
@@ -15062,7 +15062,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
                 The eigenvalues of A in increasing order.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
-                If info = 0, successful exit. If info = n + 1, the algorithm did not converge.
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj(rocblas_handle handle,
@@ -15128,7 +15128,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n.\n
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
-                the algorithm converged; otherwise the contents of A are destroyed.
+                the algorithm converged; otherwise the contents of A are unchanged.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrix A.
@@ -15151,7 +15151,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
                 The eigenvalues of A in increasing order.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
-                If info = 0, successful exit. If info = n + 1, the algorithm did not converge.
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj(rocblas_handle handle,
@@ -15217,7 +15217,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
                 On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
-                the algorithm converged; otherwise the contents of A_j are destroyed.
+                the algorithm converged; otherwise the contents of A_j are unchanged.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
@@ -15244,7 +15244,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-                If info[j] = 0, successful exit for matrix A_j. If info[j] = n + 1, the algorithm did not converge.
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15317,7 +15317,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
                 On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
-                the algorithm converged; otherwise the contents of A_j are destroyed.
+                the algorithm converged; otherwise the contents of A_j are unchanged.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
@@ -15344,7 +15344,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-                If info[j] = 0, successful exit for matrix A_j. If info[j] = n + 1, the algorithm did not converge.
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15417,7 +15417,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
                 On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
-                the algorithm converged; otherwise the contents of A_j are destroyed.
+                the algorithm converged; otherwise the contents of A_j are unchanged.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
@@ -15448,7 +15448,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-                If info[j] = 0, successful exit for matrix A_j. If info[j] = n + 1, the algorithm did not converge.
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -15523,7 +15523,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
                 On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
-                the algorithm converged; otherwise the contents of A_j are destroyed.
+                the algorithm converged; otherwise the contents of A_j are unchanged.
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
@@ -15554,7 +15554,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-                If info[j] = 0, successful exit for matrix A_j. If info[j] = n + 1, the algorithm did not converge.
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.

@@ -267,7 +267,7 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
         residual[bid] = sqrt(local_res);
         n_sweeps[bid] = sweeps;
         if(sweeps > max_sweeps)
-            info[bid] = n + 1;
+            info[bid] = 1;
         else
             info[bid] = 0;
     }
