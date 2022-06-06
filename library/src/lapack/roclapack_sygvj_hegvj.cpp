@@ -47,30 +47,44 @@ rocblas_status rocsolver_sygvj_hegvj_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
-    // size of arrays of pointers (for batched cases)
-    size_t size_workArr;
-    rocsolver_sygvj_hegvj_getMemorySize<false, false, T, S>(itype, evect, uplo, n, batch_count,
-                                                            &size_scalars, &size_workArr);
+    // size of reusable workspaces (and for calling TRSM, SYGST/HEGST, and SYEVJ/HEEVJ)
+    bool optim_mem;
+    size_t size_work1, size_work2, size_work3, size_work4;
+    // extra requirements for calling POTRF, TRMM, and SYEVJ/HEEVJ
+    size_t size_work5;
+    // size of temporary info array
+    size_t size_iinfo;
+    rocsolver_sygvj_hegvj_getMemorySize<false, false, T, S>(
+        itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
+        &size_work4, &size_work5, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
+                                                      size_work3, size_work4, size_work5, size_iinfo);
 
     // memory workspace allocation
-    void *scalars, *workArr;
-    rocblas_device_malloc mem(handle, size_scalars, size_workArr);
+    void *scalars, *work1, *work2, *work3, *work4, *work5, *iinfo;
+    rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
+                              size_work5, size_iinfo);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
-    workArr = mem[1];
+    work1 = mem[1];
+    work2 = mem[2];
+    work3 = mem[3];
+    work4 = mem[4];
+    work5 = mem[5];
+    iinfo = mem[6];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_sygvj_hegvj_template<false, false, T>(
         handle, itype, evect, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, abstol,
-        residual, max_sweeps, n_sweeps, W, strideW, info, batch_count, (T*)scalars, (T**)workArr);
+        residual, max_sweeps, n_sweeps, W, strideW, info, batch_count, (T*)scalars, work1, work2,
+        work3, work4, work5, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*
