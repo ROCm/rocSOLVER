@@ -37,30 +37,6 @@ __device__ S aabs(T val)
     return asum(val);
 }
 
-template <typename S, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-__device__ S length(const T& z)
-{
-    return abs(z);
-}
-
-template <typename S, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-__device__ S length(const T& z)
-{
-    return std::sqrt(z.real() * z.real() + z.imag() * z.imag());
-}
-
-template <typename S, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-__device__ S lengthsq(const T& z)
-{
-    return z * z;
-}
-
-template <typename S, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-__device__ S lengthsq(const T& z)
-{
-    return z.real() * z.real() + z.imag() * z.imag();
-}
-
 template <typename T>
 __device__ __forceinline__ void swap(T& a, T& b)
 {

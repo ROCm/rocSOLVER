@@ -75,8 +75,8 @@ __device__ S syevj_update_norm(const rocblas_int tid,
     S local_res = 0;
     for(rocblas_int j = 0; j < n; ++j)
     {
-        temp1 = (i < n && i != j ? lengthsq<S>(A[i + j * lda]) : 0);
-        temp2 = (ii < n && ii != j ? lengthsq<S>(A[ii + j * lda]) : 0);
+        temp1 = (i < n && i != j ? std::norm(A[i + j * lda]) : 0);
+        temp2 = (ii < n && ii != j ? std::norm(A[ii + j * lda]) : 0);
         local_res += temp1 + temp2;
     }
     resarr[tid] = local_res;
@@ -141,7 +141,7 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
         for(j = tid + 1; j < n; j++)
         {
             temp = A[tid + j * lda];
-            local_res += 2 * lengthsq<S>(temp);
+            local_res += 2 * std::norm(temp);
             Acpy[tid + j * n] = temp;
             Acpy[j + tid * n] = conj(temp);
 
@@ -158,7 +158,7 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
         for(i = tid + 1; i < n; i++)
         {
             temp = A[i + tid * lda];
-            local_res += 2 * lengthsq<S>(temp);
+            local_res += 2 * std::norm(temp);
             Acpy[i + tid * n] = temp;
             Acpy[tid + i * n] = conj(temp);
 
@@ -203,7 +203,7 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
             if(i < n && j < n)
             {
                 aij = Acpy[i + j * n];
-                mag = length<S>(aij);
+                mag = std::abs(aij);
 
                 // calculate rotation J
                 if(mag == 0)
