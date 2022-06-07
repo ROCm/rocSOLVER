@@ -20,10 +20,4 @@ set(rocsolver_headers_public
 # For IDE integration
 source_group("Header Files\\Public" FILES ${rocsolver_headers_public})
 
-include(GNUInstallDirs)
-
-set(BIN_INSTALL_DIR ${CMAKE_INSTALL_BINDIR})
-set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
-set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
-
 add_subdirectory(src)

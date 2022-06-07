@@ -169,8 +169,16 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_lasyf.cpp
 )
 
+set(rocsolver_specialized_source
+  # trsm
+  specialized/roclapack_trsm_specialized_kernels_s.cpp
+  specialized/roclapack_trsm_specialized_kernels_d.cpp
+  specialized/roclapack_trsm_specialized_kernels_c.cpp
+  specialized/roclapack_trsm_specialized_kernels_z.cpp
+)
+
 if(OPTIMAL)
-  set(rocsolver_specialized_source
+  list(APPEND rocsolver_specialized_source
     # getf2
     specialized/roclapack_getf2_specialized_kernels_s.cpp
     specialized/roclapack_getf2_specialized_kernels_d.cpp
@@ -241,7 +249,7 @@ target_include_directories(rocsolver
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/rocsolver>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -262,7 +270,7 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   rocm_wrap_header_file(
     rocsolver-version.h rocsolver-export.h
     GUARDS SYMLINK WRAPPER
-    WRAPPER_LOCATIONS include rocsolver/include
+    WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR} rocsolver/${CMAKE_INSTALL_INCLUDEDIR}
     ORIGINAL_FILES ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h
   )
 endif( )
@@ -306,7 +314,7 @@ rocm_install(
 	DIRECTORY
 		"${PROJECT_SOURCE_DIR}/library/include/rocsolver/"
 		"${PROJECT_BINARY_DIR}/include/rocsolver/"
-	DESTINATION include/rocsolver
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocsolver
 	FILES_MATCHING
 	PATTERN "*.h"
 	PATTERN "*.hpp"

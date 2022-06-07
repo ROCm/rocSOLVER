@@ -68,7 +68,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_impl(rocblas_handle handle,
     size_t size_work7_workArr;
     // size of temporary info array
     size_t size_iinfo;
-    rocsolver_sygvdx_hegvdx_inplace_getMemorySize<false, T, S>(
+    rocsolver_sygvdx_hegvdx_inplace_getMemorySize<false, false, T, S>(
         itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
         &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
         &size_tau, &size_nev, &size_work7_workArr, &size_iinfo, &optim_mem);

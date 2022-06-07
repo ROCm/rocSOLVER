@@ -70,7 +70,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename S>
+template <bool BATCHED, bool STRIDED, typename T, typename S>
 void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
                                                    const rocblas_evect evect,
                                                    const rocblas_fill uplo,
@@ -119,13 +119,13 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
     size_t unused, temp1, temp2, temp3, temp4, temp5;
 
     // requirements for calling POTRF
-    rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
+    rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars, size_work1,
                                               size_work2, size_work3, size_work4,
                                               size_work7_workArr, size_iinfo, &opt1);
     *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
-    rocsolver_sygst_hegst_getMemorySize<BATCHED, T>(uplo, itype, n, batch_count, &unused, &temp1,
+    rocsolver_sygst_hegst_getMemorySize<BATCHED, STRIDED, T>(uplo, itype, n, batch_count, &unused, &temp1,
                                                     &temp2, &temp3, &temp4, &opt2);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
@@ -242,7 +242,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
     T one = 1;
 
     // perform Cholesky factorization of B
-    rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
+    rocsolver_potrf_template<BATCHED, STRIDED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
                                             batch_count, scalars, work1, work2, work3, work4,
                                             (T*)work7_workArr, iinfo, optim_mem);
 
