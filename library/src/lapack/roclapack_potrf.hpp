@@ -9,10 +9,10 @@
 
 #pragma once
 
-#include "lapack_host_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_potf2.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename U>
 ROCSOLVER_KERNEL void

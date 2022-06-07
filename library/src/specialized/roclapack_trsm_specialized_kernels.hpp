@@ -4,16 +4,7 @@
 
 #pragma once
 
-#include "lapack_device_functions.hpp"
-#include "rocblas.hpp"
-#include "rocsolver/rocsolver.h"
-
-/*
- * ===========================================================================
- *    common location for internal functions that reproduce LAPACK
- *    and BLAS functionality.
- * ===========================================================================
- */
+#include "rocsolver_run_specialized_kernels.hpp"
 
 /** Constants for block size of trsm **/
 // clang-format off
@@ -143,6 +134,498 @@
                                     strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
     }
 
+/*************************************************************
+    Templated kernels are instantiated in separate cpp
+    files in order to improve compilation times and reduce
+    the library size.
+*************************************************************/
+
+// **************** forward substitution kernels ************************//
+///////////////////////////////////////////////////////////////////////////
+/** The following kernels implement forward substitution for lower triangular L
+    or upper triangular U matrices in the form
+    LX = B
+    U'X = B
+    B = XU
+    B = XL'
+
+    nx is the number of variables and ny the number of right/left-hand-sides.
+    Whether B is accessed by rows (left-hand-sides) or columns (right-hand-sides) is
+    determined by the values of ldb1 and ldb2. Whether L/U is transposed or not is
+    determined by the values of lda1 and lda2.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in y to cover all the 'ny' right/left-hand-sides (columns/rows of B).
+    There should be only one group in x with hipBlockDim_x = nx.
+    Size of shared memory per group should be:
+    lmemsize = hipBlockDim_y * sizeof(T);
+
+    There are 4 different forward substitution kernels; each one deals with
+    a combination of unit and conjugate. In the non-unit case, the kernels DO NOT
+    verify whether the diagonal element of L/U is non-zero.**/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const rocblas_int nx,
+                                                       const rocblas_int ny,
+                                                       U AA,
+                                                       const rocblas_int lda1,
+                                                       const rocblas_int lda2,
+                                                       const rocblas_int shiftA,
+                                                       const rocblas_stride strideA,
+                                                       U BB,
+                                                       const rocblas_int ldb1,
+                                                       const rocblas_int ldb2,
+                                                       const rocblas_int shiftB,
+                                                       const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = 0; k < nx - 1; ++k)
+        {
+            __syncthreads();
+            if(x == k)
+                b[ty] = c;
+            __syncthreads();
+
+            c -= (x > k) ? A[ida + k * lda2] * b[ty] : 0;
+        }
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void conj_unit_forward_substitution_kernel(const rocblas_int nx,
+                                                            const rocblas_int ny,
+                                                            U AA,
+                                                            const rocblas_int lda1,
+                                                            const rocblas_int lda2,
+                                                            const rocblas_int shiftA,
+                                                            const rocblas_stride strideA,
+                                                            U BB,
+                                                            const rocblas_int ldb1,
+                                                            const rocblas_int ldb2,
+                                                            const rocblas_int shiftB,
+                                                            const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = 0; k < nx - 1; ++k)
+        {
+            __syncthreads();
+            if(x == k)
+                b[ty] = c;
+            __syncthreads();
+
+            c -= (x > k) ? conj(A[ida + k * lda2]) * b[ty] : 0;
+        }
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const rocblas_int nx,
+                                                          const rocblas_int ny,
+                                                          U AA,
+                                                          const rocblas_int lda1,
+                                                          const rocblas_int lda2,
+                                                          const rocblas_int shiftA,
+                                                          const rocblas_stride strideA,
+                                                          U BB,
+                                                          const rocblas_int ldb1,
+                                                          const rocblas_int ldb2,
+                                                          const rocblas_int shiftB,
+                                                          const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c, d;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = 0; k < nx - 1; ++k)
+        {
+            __syncthreads();
+            if(x == k)
+            {
+                c = c / A[x * (lda1 + lda2)];
+                b[ty] = c;
+            }
+            __syncthreads();
+
+            c -= (x > k) ? A[ida + k * lda2] * b[ty] : 0;
+        }
+        if(x == nx - 1)
+            c = c / A[x * (lda1 + lda2)];
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int nx,
+                                                               const rocblas_int ny,
+                                                               U AA,
+                                                               const rocblas_int lda1,
+                                                               const rocblas_int lda2,
+                                                               const rocblas_int shiftA,
+                                                               const rocblas_stride strideA,
+                                                               U BB,
+                                                               const rocblas_int ldb1,
+                                                               const rocblas_int ldb2,
+                                                               const rocblas_int shiftB,
+                                                               const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c, d;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = 0; k < nx - 1; ++k)
+        {
+            __syncthreads();
+            if(x == k)
+            {
+                c = c / conj(A[x * (lda1 + lda2)]);
+                b[ty] = c;
+            }
+            __syncthreads();
+
+            c -= (x > k) ? conj(A[ida + k * lda2]) * b[ty] : 0;
+        }
+        if(x == nx - 1)
+            c = c / conj(A[x * (lda1 + lda2)]);
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+// **************** backward substitution kernels ************************//
+////////////////////////////////////////////////////////////////////////////
+/** The following kernels implement backward substitution for lower triangular L
+    or upper triangular U matrices in the form
+    L'X = B
+    UX = B
+    B = XU'
+    B = XL
+
+    nx is the number of variables and ny the number of right/left-hand-sides.
+    Whether B is accessed by rows (left-hand-sides) or columns (right-hand-sides) is
+    determined by the values of ldb1 and ldb2. Whether L/U is transposed or not is
+    determined by the values of lda1 and lda2.
+
+    Call this kernel with 'batch_count' groups in z, and enough
+    groups in y to cover all the 'ny' right/left-hand-sides (columns/rows of B).
+    There should be only one group in x with hipBlockDim_x = nx.
+    Size of shared memory per group should be:
+    lmemsize = hipBlockDim_y * sizeof(T);
+
+    There are 4 different backward substitution kernels; each one deals with
+    a combination of unit and conjugate. In the non-unit case, the kernels DO NOT
+    verify whether the diagonal element of L/U is non-zero.**/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const rocblas_int nx,
+                                                        const rocblas_int ny,
+                                                        U AA,
+                                                        const rocblas_int lda1,
+                                                        const rocblas_int lda2,
+                                                        const rocblas_int shiftA,
+                                                        const rocblas_stride strideA,
+                                                        U BB,
+                                                        const rocblas_int ldb1,
+                                                        const rocblas_int ldb2,
+                                                        const rocblas_int shiftB,
+                                                        const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = nx - 1; k > 0; --k)
+        {
+            __syncthreads();
+            if(x == k)
+                b[ty] = c;
+            __syncthreads();
+
+            c -= (x < k) ? A[ida + k * lda2] * b[ty] : 0;
+        }
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void conj_unit_backward_substitution_kernel(const rocblas_int nx,
+                                                             const rocblas_int ny,
+                                                             U AA,
+                                                             const rocblas_int lda1,
+                                                             const rocblas_int lda2,
+                                                             const rocblas_int shiftA,
+                                                             const rocblas_stride strideA,
+                                                             U BB,
+                                                             const rocblas_int ldb1,
+                                                             const rocblas_int ldb2,
+                                                             const rocblas_int shiftB,
+                                                             const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = nx - 1; k > 0; --k)
+        {
+            __syncthreads();
+            if(x == k)
+                b[ty] = c;
+            __syncthreads();
+
+            c -= (x < k) ? conj(A[ida + k * lda2]) * b[ty] : 0;
+        }
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const rocblas_int nx,
+                                                           const rocblas_int ny,
+                                                           U AA,
+                                                           const rocblas_int lda1,
+                                                           const rocblas_int lda2,
+                                                           const rocblas_int shiftA,
+                                                           const rocblas_stride strideA,
+                                                           U BB,
+                                                           const rocblas_int ldb1,
+                                                           const rocblas_int ldb2,
+                                                           const rocblas_int shiftB,
+                                                           const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c, d;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = nx - 1; k > 0; --k)
+        {
+            __syncthreads();
+            if(x == k)
+            {
+                c = c / A[x * (lda1 + lda2)];
+                b[ty] = c;
+            }
+            __syncthreads();
+
+            c -= (x < k) ? A[ida + k * lda2] * b[ty] : 0;
+        }
+        if(x == 0)
+            c = c / A[x * (lda1 + lda2)];
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_int nx,
+                                                                const rocblas_int ny,
+                                                                U AA,
+                                                                const rocblas_int lda1,
+                                                                const rocblas_int lda2,
+                                                                const rocblas_int shiftA,
+                                                                const rocblas_stride strideA,
+                                                                U BB,
+                                                                const rocblas_int ldb1,
+                                                                const rocblas_int ldb2,
+                                                                const rocblas_int shiftB,
+                                                                const rocblas_stride strideB)
+{
+    int bid = hipBlockIdx_z;
+    int x = hipThreadIdx_x;
+    int ty = hipThreadIdx_y;
+    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+
+    // batch instance
+    T* A = load_ptr_batch(AA, bid, shiftA, strideA);
+    T* B = load_ptr_batch(BB, bid, shiftB, strideB);
+
+    // shared mem setup
+    extern __shared__ double lmem[];
+    T* b = reinterpret_cast<T*>(lmem);
+    T c, d;
+
+    if(y < ny)
+    {
+        int ida = x * lda1;
+        int idb = x * ldb1 + y * ldb2;
+
+        // read data
+        c = B[idb];
+
+        // solve for all y's
+        for(int k = nx - 1; k > 0; --k)
+        {
+            __syncthreads();
+            if(x == k)
+            {
+                c = c / conj(A[x * (lda1 + lda2)]);
+                b[ty] = c;
+            }
+            __syncthreads();
+
+            c -= (x < k) ? conj(A[ida + k * lda2]) * b[ty] : 0;
+        }
+        if(x == 0)
+            c = c / conj(A[x * (lda1 + lda2)]);
+
+        // move results back to global
+        B[idb] = c;
+    }
+}
+
+/*************************************************************
+    Launchers of specilized  kernels
+*************************************************************/
+
 /** This function returns the block size for the internal
     (blocked) trsm implementation **/
 template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
@@ -218,7 +701,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
                         size_t* size_work3,
                         size_t* size_work4,
                         bool* optim_mem,
-                        bool inblocked = false)
+                        bool inblocked)
 {
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
@@ -764,3 +1247,29 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         }
     }
 }
+
+/*************************************************************
+    Instantiation macros
+*************************************************************/
+
+#define INSTANTIATE_TRSM_MEM(BATCHED, STRIDED, T)                                                   \
+    template void rocsolver_trsm_mem<BATCHED, STRIDED, T>(                                          \
+        const rocblas_side side, const rocblas_operation trans, const rocblas_int m,                \
+        const rocblas_int n, const rocblas_int batch_count, size_t* size_work1, size_t* size_work2, \
+        size_t* size_work3, size_t* size_work4, bool* optim_mem, bool inblocked)
+#define INSTANTIATE_TRSM_LOWER(BATCHED, STRIDED, T, U)                                      \
+    template void rocsolver_trsm_lower<BATCHED, STRIDED, T, U>(                             \
+        rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,      \
+        const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, U A,         \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, U B, \
+        const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB,      \
+        const rocblas_int batch_count, const bool optim_mem, void* work1, void* work2,      \
+        void* work3, void* work4)
+#define INSTANTIATE_TRSM_UPPER(BATCHED, STRIDED, T, U)                                      \
+    template void rocsolver_trsm_upper<BATCHED, STRIDED, T, U>(                             \
+        rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,      \
+        const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, U A,         \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, U B, \
+        const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB,      \
+        const rocblas_int batch_count, const bool optim_mem, void* work1, void* work2,      \
+        void* work3, void* work4)

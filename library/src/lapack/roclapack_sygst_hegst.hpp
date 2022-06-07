@@ -9,10 +9,10 @@
 
 #pragma once
 
-#include "lapack_host_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sygs2_hegs2.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_sygst_hegst_getMemorySize(const rocblas_fill uplo,
