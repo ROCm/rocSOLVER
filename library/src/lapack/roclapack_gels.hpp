@@ -11,11 +11,11 @@
 
 #include "auxiliary/rocauxiliary_ormlq_unmlq.hpp"
 #include "auxiliary/rocauxiliary_ormqr_unmqr.hpp"
-#include "lapack_host_functions.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -9,11 +9,68 @@
 
 /*
  * ===========================================================================
- *    common location for declarations of small-size kernel launchers. Small-
- *    size kernels and their launchers are defined in cpp files to help with
- *    compile times.
+ *    common location for declarations of specialized kernel launchers.
+ *    Specialized kernels and their launchers are defined in cpp files to
+ *    help with compile times.
  * ===========================================================================
  */
+
+template <bool BATCHED, bool STRIDED, typename T>
+void rocsolver_trsm_mem(const rocblas_side side,
+                        const rocblas_operation trans,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        const rocblas_int batch_count,
+                        size_t* size_work1,
+                        size_t* size_work2,
+                        size_t* size_work3,
+                        size_t* size_work4,
+                        bool* optim_mem,
+                        bool inblocked = false);
+
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+void rocsolver_trsm_lower(rocblas_handle handle,
+                          const rocblas_side side,
+                          const rocblas_operation trans,
+                          const rocblas_diagonal diag,
+                          const rocblas_int m,
+                          const rocblas_int n,
+                          U A,
+                          const rocblas_int shiftA,
+                          const rocblas_int lda,
+                          const rocblas_stride strideA,
+                          U B,
+                          const rocblas_int shiftB,
+                          const rocblas_int ldb,
+                          const rocblas_stride strideB,
+                          const rocblas_int batch_count,
+                          const bool optim_mem,
+                          void* work1,
+                          void* work2,
+                          void* work3,
+                          void* work4);
+
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+void rocsolver_trsm_upper(rocblas_handle handle,
+                          const rocblas_side side,
+                          const rocblas_operation trans,
+                          const rocblas_diagonal diag,
+                          const rocblas_int m,
+                          const rocblas_int n,
+                          U A,
+                          const rocblas_int shiftA,
+                          const rocblas_int lda,
+                          const rocblas_stride strideA,
+                          U B,
+                          const rocblas_int shiftB,
+                          const rocblas_int ldb,
+                          const rocblas_stride strideB,
+                          const rocblas_int batch_count,
+                          const bool optim_mem,
+                          void* work1,
+                          void* work2,
+                          void* work3,
+                          void* work4);
 
 #ifdef OPTIMAL
 
