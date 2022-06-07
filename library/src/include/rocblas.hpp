@@ -1454,7 +1454,7 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
 }
 
 // symm
-template <typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_fill uplo,
@@ -1481,14 +1481,14 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    return rocblas_internal_symm_template<false>(
+    return rocblas_internal_symm_template<BATCHED, false>(
         handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
         ldc, strideC, batch_count);
 }
 
 // hemm
-template <typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+template <bool BATCHED, typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_fill uplo,
@@ -1515,7 +1515,7 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    return rocblas_internal_symm_template<true>(
+    return rocblas_internal_symm_template<BATCHED, true>(
         handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
         ldc, strideC, batch_count);
