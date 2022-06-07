@@ -97,6 +97,7 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
                                    const rocblas_int lda,
                                    const rocblas_stride strideA,
                                    const S abstol,
+                                   const S eps,
                                    S* residual,
                                    const rocblas_int max_sweeps,
                                    rocblas_int* n_sweeps,
@@ -206,7 +207,7 @@ ROCSOLVER_KERNEL void syevj_kernel(const rocblas_evect evect,
                 mag = std::abs(aij);
 
                 // calculate rotation J
-                if(mag == 0)
+                if(mag < eps)
                 {
                     c = 1;
                     s1 = s2 = 0;
@@ -435,15 +436,16 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
     }
 
     // absolute tolerance for evaluating when the algorithm has converged
-    S atol = (abstol <= 0) ? 2 * get_safemin<T>() : abstol;
+    S eps = get_epsilon<S>();
+    S atol = (abstol <= 0) ? eps : abstol;
 
     rocblas_int blocks = (n - 1) / BS1 + 1;
     dim3 grid(blocks, batch_count, 1);
     dim3 threads(BS1, 1, 1);
 
     ROCSOLVER_LAUNCH_KERNEL(syevj_kernel<T>, grid, threads, 0, stream, evect, uplo, n, A, shiftA,
-                            lda, strideA, atol, residual, max_sweeps, n_sweeps, W, strideW, info,
-                            batch_count, Acpy, resarr, tbarr);
+                            lda, strideA, atol, eps, residual, max_sweeps, n_sweeps, W, strideW,
+                            info, batch_count, Acpy, resarr, tbarr);
 
     return rocblas_status_success;
 }

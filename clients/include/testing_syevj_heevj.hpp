@@ -218,7 +218,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
                           double* max_err)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
-    S atol = (abstol <= 0) ? 2 * get_safemin<S>() : abstol;
+    S atol = (abstol <= 0) ? get_epsilon<S>() : abstol;
 
     int lwork = (COMPLEX ? 2 * n - 1 : 0);
     int lrwork = 3 * n - 1;
