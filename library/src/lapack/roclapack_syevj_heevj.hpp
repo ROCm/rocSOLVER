@@ -123,7 +123,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
     T* Acpy = AcpyA + bid * n * n;
     S* W = WW + bid * strideW;
-    S* resarr = resarrA + bid * even_n;
+    S* resarr = resarrA + bid * half_n;
     rocblas_int* top = tbarrA + bid * even_n;
     rocblas_int* bottom = top + half_n;
 
@@ -610,7 +610,7 @@ void rocsolver_syevj_heevj_getMemorySize(const rocblas_evect evect,
     *size_Acpy = sizeof(T) * n * n * batch_count;
 
     // size of array for per-thread residuals
-    *size_resarr = sizeof(S) * min(n, SYEVJ_MAX_THDS) * batch_count;
+    *size_resarr = sizeof(S) * min(half_n, SYEVJ_MAX_THDS) * batch_count;
 
     // size of arrays for temporary cosines/sine pairs
     if(half_n <= SYEVJ_MAX_THDS)
