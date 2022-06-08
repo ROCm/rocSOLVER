@@ -492,12 +492,13 @@ if [[ "${install_dependencies}" == true ]]; then
   pushd .
   mkdir -p "${build_dir}/deps"
   cd "${build_dir}/deps"
-  printf "\033[32mBuilding \033[33mfmt\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
+  printf "\033[32mBuilding \033[33mfmt\033[32m and installing into \033[33m/usr/local\033[0m\n"
   install_fmt_from_source
 
   if [[ "${build_clients}" == true ]]; then
-    printf "\033[32mBuilding \033[33mgoogletest and lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
+    printf "\033[32mBuilding \033[33mlapack\033[32m and installing into \033[33m/usr/local\033[0m\n"
     install_lapack_from_source
+    printf "\033[32mBuilding \033[33mgoogletest\033[32m and installing into \033[33m/usr/local\033[0m\n"
     install_gtest_from_source
   fi
   popd
