@@ -1481,7 +1481,7 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    return rocblas_internal_symm_template<BATCHED, false>(
+    return rocblas_internal_symm_template<BATCHED, false, T>(
         handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
         ldc, strideC, batch_count);
@@ -1515,7 +1515,7 @@ rocblas_status rocblasCall_symm_hemm(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    return rocblas_internal_symm_template<BATCHED, true>(
+    return rocblas_internal_symm_template<BATCHED, true, T>(
         handle, side, uplo, m, n, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
         ldc, strideC, batch_count);
