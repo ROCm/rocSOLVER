@@ -238,6 +238,7 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
                                                   lda, stA, dB.data(), ldb, stB, bc));
         CHECK_HIP_ERROR(hARes.transfer_from(dA));
     }
+    else
     {
         // CPU lapack
         for(rocblas_int b = 0; b < bc; ++b)
