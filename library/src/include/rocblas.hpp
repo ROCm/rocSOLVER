@@ -12,7 +12,7 @@
 #include "lib_host_helpers.hpp"
 #include "rocblas/internal/rocblas-exported-proto.hpp"
 #include "rocblas/internal/rocblas_device_malloc.hpp"
-#include "rocblas/internal/rocblas_block_sizes.hpp"
+#include "rocblas/internal/rocblas_block_sizes.h"
 #include "rocsolver_logger.hpp"
 
 template <typename T>
