@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -15,6 +15,7 @@
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
@@ -92,8 +93,9 @@ void rocsolver_gels_getMemorySize(const rocblas_operation trans,
         ROCSOLVER_ASSUME_X(gexxf_scalars == ormxx_scalars, "GELQF and ORMLQ use the same scalars");
     }
 
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, std::min(m, n), nrhs, batch_count,
-                                     &trsm_x_temp, &trsm_x_temp_arr, &trsm_invA, &trsm_invA_arr);
+    rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, trans, std::min(m, n), nrhs,
+                                            batch_count, &trsm_x_temp, &trsm_x_temp_arr, &trsm_invA,
+                                            &trsm_invA_arr, optim_mem);
 
     // TODO: rearrange to minimize total size
     *size_scalars = gexxf_scalars;
@@ -107,9 +109,6 @@ void rocsolver_gels_getMemorySize(const rocblas_operation trans,
         *size_ipiv_savedB = sizeof(T) * std::min(m, n) * nrhs * batch_count;
     else
         *size_ipiv_savedB = sizeof(T) * std::max(m, n) * nrhs * batch_count;
-
-    // always allocate all required memory for TRSM optimal performance
-    *optim_mem = true;
 }
 
 template <bool COMPLEX, typename T>
@@ -218,7 +217,6 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     const rocblas_int copyblocksmin = (std::min(m, n) - 1) / 32 + 1;
     const rocblas_int copyblocksmax = (std::max(m, n) - 1) / 32 + 1;
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
-    const T one = 1;
 
     // TODO: apply scaling to improve accuracy over a larger range of values
 
@@ -248,11 +246,10 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve RX = Q'B, overwriting B with X
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
-                                         rocblas_operation_none, rocblas_diagonal_non_unit, n, nrhs,
-                                         &one, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                         batch_count, optim_mem, work_x_temp, workArr_temp_arr,
-                                         diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_non_unit, n,
+                nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem,
+                work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // restore elements of B that were overwritten in cases where info is nonzero
             ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),
@@ -272,11 +269,11 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve R'Y = B overwriting B with Y (here Y = Q'X)
-            rocblasCall_trsm<BATCHED, T>(
-                handle, rocblas_side_left, rocblas_fill_upper,
-                rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, nrhs, &one, A,
-                shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work_x_temp,
-                workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                rocblas_diagonal_non_unit, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb,
+                strideB, batch_count, optim_mem, work_x_temp, workArr_temp_arr, diag_trfac_invA,
+                trfact_workTrmm_invA_arr);
 
             // zero row n to m-1 of B in cases where info is zero
             const rocblas_int zeroblocksx = (m - n - 1) / 32 + 1;
@@ -316,11 +313,10 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve LY = B overwriting B with Y (here Y = QX)
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                         rocblas_operation_none, rocblas_diagonal_non_unit, m, nrhs,
-                                         &one, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                         batch_count, optim_mem, work_x_temp, workArr_temp_arr,
-                                         diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_non_unit, m,
+                nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem,
+                work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // zero row m to n-1 of B in cases where info is zero
             const rocblas_int zeroblocksx = (n - m - 1) / 32 + 1;
@@ -358,11 +354,11 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
                                     ldb, strideB, ipiv_savedB, info_mask(info));
 
             // solve L'X = QB, overwriting B with X
-            rocblasCall_trsm<BATCHED, T>(
-                handle, rocblas_side_left, rocblas_fill_lower,
-                rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, m, nrhs, &one, A,
-                shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work_x_temp,
-                workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                rocblas_diagonal_non_unit, m, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb,
+                strideB, batch_count, optim_mem, work_x_temp, workArr_temp_arr, diag_trfac_invA,
+                trfact_workTrmm_invA_arr);
 
             // restore elements of B that were overwritten in cases where info is nonzero
             ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),

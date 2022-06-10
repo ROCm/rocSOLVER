@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_potrf.hpp"
@@ -41,9 +41,9 @@ rocblas_status rocsolver_potrf_impl(rocblas_handle handle,
     size_t size_pivots;
     // size to store info about positiveness of each subblock
     size_t size_iinfo;
-    rocsolver_potrf_getMemorySize<false, T>(n, uplo, batch_count, &size_scalars, &size_work1,
-                                            &size_work2, &size_work3, &size_work4, &size_pivots,
-                                            &size_iinfo, &optim_mem);
+    rocsolver_potrf_getMemorySize<false, false, T>(n, uplo, batch_count, &size_scalars, &size_work1,
+                                                   &size_work2, &size_work3, &size_work4,
+                                                   &size_pivots, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
@@ -69,9 +69,9 @@ rocblas_status rocsolver_potrf_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_potrf_template<false, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                                 batch_count, (T*)scalars, work1, work2, work3,
-                                                 work4, (T*)pivots, (rocblas_int*)iinfo, optim_mem);
+    return rocsolver_potrf_template<false, false, T, S>(
+        handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, (T*)scalars, work1, work2,
+        work3, work4, (T*)pivots, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*
