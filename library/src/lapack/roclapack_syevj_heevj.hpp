@@ -182,13 +182,21 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     __syncthreads();
 
     local_res = 0;
-    for(i = 0; i < n; i++)
+    for(i = 0; i < half_n; i++)
         local_res += resarr[i];
     __syncthreads();
 
     // quick return if norm is already small
     if(local_res <= abstol * abstol)
+    {
+        if(tid == 0)
+        {
+            residual[bid] = sqrt(local_res);
+            n_sweeps[bid] = 0;
+            info[bid] = 0;
+        }
         return;
+    }
 
     // initialize top/bottom
     top[tid] = 2 * tid;
@@ -426,7 +434,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
 
     // quick return if norm is already small
     if(local_res <= abstol * abstol)
+    {
+        if(tid == 0)
+        {
+            residual[bid] = sqrt(local_res);
+            n_sweeps[bid] = 0;
+            info[bid] = 0;
+        }
         return;
+    }
 
     // initialize top/bottom
     top_temp[0] = 0;
