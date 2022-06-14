@@ -1100,7 +1100,7 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    constexpr rocblas_int NB = BATCHED ? ROCBLAS_XHERK_BATCHED_NB : ROCBLAS_XHERK_NB;
+    constexpr rocblas_int NB = BATCHED ? ROCBLAS_HERK_BATCHED_NB : ROCBLAS_HERK_NB;
     return rocblas_internal_herk_template<NB, BATCHED, T>(
         handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
         strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
@@ -1583,7 +1583,7 @@ void rocblasCall_trsm_mem(rocblas_side side,
         no_opt_size could be used in the future if we generalize the use of
         rocblas_workmode parameter **/
 
-    rocblas_internal_trsm_workspace_size<ROCBLAS_XTRSM_NB, BATCHED, T>(
+    rocblas_internal_trsm_workspace_size<ROCBLAS_TRSM_NB, BATCHED, T>(
         side, transA, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
 }
 
@@ -1622,7 +1622,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_XTRSM_NB, ROCBLAS_SDCTRSV_NB, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_NB, ROCBLAS_SDCTRSV_NB, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A), offset_A, lda, stride_A,
         B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
         cast2constType(supplied_invA), 0);
@@ -1662,7 +1662,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_XTRSM_NB, ROCBLAS_ZTRSV_NB, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_NB, ROCBLAS_ZTRSV_NB, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType(A), offset_A, lda, stride_A,
         B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
         cast2constType(supplied_invA), 0);
@@ -1709,7 +1709,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                             batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_XTRSM_NB, ROCBLAS_SDCTRSV_NB, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_NB, ROCBLAS_SDCTRSV_NB, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A, lda,
         stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA,
         invA_arr, cast2constType(supplied_invA), 0);
@@ -1755,7 +1755,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                             batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_template<ROCBLAS_XTRSM_NB, ROCBLAS_ZTRSV_NB, BATCHED, T>(
+    return rocblas_internal_trsm_template<ROCBLAS_TRSM_NB, ROCBLAS_ZTRSV_NB, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A, lda,
         stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA,
         invA_arr, cast2constType(supplied_invA), 0);
@@ -1765,7 +1765,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
 template <bool BATCHED, typename T>
 void rocblasCall_trtri_mem(rocblas_int n, rocblas_int batch_count, size_t* c_temp, size_t* c_temp_arr)
 {
-    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_XTRTRI_NB>(n, batch_count);
+    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, batch_count);
     *c_temp = c_temp_els * sizeof(T);
 
     *c_temp_arr = BATCHED ? sizeof(T*) * batch_count : 0;
@@ -1793,7 +1793,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
                   "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
 
-    return rocblas_internal_trtri_template<ROCBLAS_XTRTRI_NB, BATCHED, STRIDED, T>(
+    return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0, invA, offset_invA,
         ldinvA, stride_invA, 0, batch_count, 1, c_temp);
 }
@@ -1820,7 +1820,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
                   "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
 
-    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_XTRTRI_NB>(n, 1);
+    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -1829,7 +1829,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
                             c_temp_els, batch_count);
 
-    return rocblas_internal_trtri_template<ROCBLAS_XTRTRI_NB, BATCHED, STRIDED, T>(
+    return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0, invA, offset_invA,
         ldinvA, stride_invA, 0, batch_count, 1, cast2constPointer(c_temp_arr));
 }
@@ -1856,7 +1856,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCBLAS_ENTER("trtri", "uplo:", uplo, "diag:", diag, "n:", n, "shiftA:", offset_A, "lda:", lda,
                   "shiftC:", offset_invA, "ldc:", ldinvA, "bc:", batch_count);
 
-    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_XTRTRI_NB>(n, 1);
+    size_t c_temp_els = rocblas_internal_trtri_temp_size<ROCBLAS_TRTRI_NB>(n, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -1867,7 +1867,7 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, c_temp_arr, c_temp,
                             c_temp_els, batch_count);
 
-    return rocblas_internal_trtri_template<ROCBLAS_XTRTRI_NB, BATCHED, STRIDED, T>(
+    return rocblas_internal_trtri_template<ROCBLAS_TRTRI_NB, BATCHED, STRIDED, T>(
         handle, uplo, diag, n, cast2constType(A), offset_A, lda, stride_A, 0,
         cast2constPointer(workArr), offset_invA, ldinvA, stride_invA, 0, batch_count, 1,
         cast2constPointer(c_temp_arr));
