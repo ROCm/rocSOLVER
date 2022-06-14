@@ -75,19 +75,16 @@ void rocsolver_sygvj_hegvj_getMemorySize(const rocblas_eform itype,
     {
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
+            // requirements for calling TRSM
             rocblas_operation trans
                 = (uplo == rocblas_fill_upper ? rocblas_operation_none
                                               : rocblas_operation_conjugate_transpose);
-            // requirements for calling TRSM
-            rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left, trans, n, n, batch_count, &temp1,
-                                             &temp2, &temp3, &temp4);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, trans, n, n, batch_count,
+                                                    &temp1, &temp2, &temp3, &temp4, &opt3);
             *size_work1 = max(*size_work1, temp1);
             *size_work2 = max(*size_work2, temp2);
             *size_work3 = max(*size_work3, temp3);
             *size_work4 = max(*size_work4, temp4);
-
-            // always allocate all required memory for TRSM optimal performance
-            opt3 = true;
         }
         else
         {
@@ -246,13 +243,16 @@ rocblas_status rocsolver_sygvj_hegvj_template(rocblas_handle handle,
     {
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
-            rocblas_operation trans
-                = (uplo == rocblas_fill_upper ? rocblas_operation_none
-                                              : rocblas_operation_conjugate_transpose);
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, uplo, trans,
-                                         rocblas_diagonal_non_unit, n, neig, &one, B, shiftB, ldb,
-                                         strideB, A, shiftA, lda, strideA, batch_count, optim_mem,
-                                         work1, work2, work3, work4);
+            if(uplo == rocblas_fill_upper)
+                rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_non_unit, n,
+                    n, B, shiftB, ldb, strideB, A, shiftA, lda, strideA, batch_count, optim_mem,
+                    work1, work2, work3, work4);
+            else
+                rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, n, n, B, shiftB, ldb, strideB, A, shiftA, lda,
+                    strideA, batch_count, optim_mem, work1, work2, work3, work4);
         }
         else
         {
