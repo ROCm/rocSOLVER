@@ -11,8 +11,8 @@
 #include "lib_device_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocblas/internal/rocblas-exported-proto.hpp"
-#include "rocblas/internal/rocblas_device_malloc.hpp"
 #include "rocblas/internal/rocblas_block_sizes.h"
+#include "rocblas/internal/rocblas_device_malloc.hpp"
 #include "rocsolver_logger.hpp"
 
 template <typename T>
@@ -852,8 +852,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                   "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
                   "bc:", batch_count);
 
-    constexpr rocblas_int nb
-        = (!rocblas_is_complex<T> ? ROCBLAS_SDTRMM_NB : ROCBLAS_CZTRMM_NB);
+    constexpr rocblas_int nb = (!rocblas_is_complex<T> ? ROCBLAS_SDTRMM_NB : ROCBLAS_CZTRMM_NB);
 
     return rocblas_internal_trmm_template<nb, BATCHED, T>(
         handle, side, uplo, transA, diag, m, n, cast2constType<T>(alpha), stride_alpha,
@@ -888,8 +887,7 @@ rocblas_status rocblasCall_trmm(rocblas_handle handle,
                   "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftB:", offsetB, "ldb:", ldb,
                   "bc:", batch_count);
 
-    constexpr rocblas_int nb
-        = (!rocblas_is_complex<T> ? ROCBLAS_SDTRMM_NB : ROCBLAS_CZTRMM_NB);
+    constexpr rocblas_int nb = (!rocblas_is_complex<T> ? ROCBLAS_SDTRMM_NB : ROCBLAS_CZTRMM_NB);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
