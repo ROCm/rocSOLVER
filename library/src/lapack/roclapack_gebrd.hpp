@@ -67,7 +67,7 @@ void rocsolver_gebrd_getMemorySize(const rocblas_int m,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
