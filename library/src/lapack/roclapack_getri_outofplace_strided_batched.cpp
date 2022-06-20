@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getri_outofplace.hpp"
@@ -43,8 +43,8 @@ rocblas_status rocsolver_getri_outofplace_strided_batched_impl(rocblas_handle ha
     bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
 
-    rocsolver_getri_outofplace_getMemorySize<false, T>(n, batch_count, &size_work1, &size_work2,
-                                                       &size_work3, &size_work4, &optim_mem);
+    rocsolver_getri_outofplace_getMemorySize<false, true, T>(
+        n, batch_count, &size_work1, &size_work2, &size_work3, &size_work4, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
@@ -62,7 +62,7 @@ rocblas_status rocsolver_getri_outofplace_strided_batched_impl(rocblas_handle ha
     work4 = mem[3];
 
     // Execution
-    return rocsolver_getri_outofplace_template<false, T>(
+    return rocsolver_getri_outofplace_template<false, true, T>(
         handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, C, shiftC, ldc, strideC, info,
         batch_count, work1, work2, work3, work4, optim_mem, pivot);
 }

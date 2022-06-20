@@ -115,6 +115,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_syevx_heevx.cpp
   lapack/roclapack_syevx_heevx_batched.cpp
   lapack/roclapack_syevx_heevx_strided_batched.cpp
+  lapack/roclapack_syevdx_heevdx_inplace.cpp
   lapack/roclapack_sygv_hegv.cpp
   lapack/roclapack_sygv_hegv_batched.cpp
   lapack/roclapack_sygv_hegv_strided_batched.cpp
@@ -124,6 +125,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_sygvx_hegvx.cpp
   lapack/roclapack_sygvx_hegvx_batched.cpp
   lapack/roclapack_sygvx_hegvx_strided_batched.cpp
+  lapack/roclapack_sygvdx_hegvdx_inplace.cpp
 )
 
 set(rocsolver_auxiliary_source
@@ -167,8 +169,16 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_lasyf.cpp
 )
 
+set(rocsolver_specialized_source
+  # trsm
+  specialized/roclapack_trsm_specialized_kernels_s.cpp
+  specialized/roclapack_trsm_specialized_kernels_d.cpp
+  specialized/roclapack_trsm_specialized_kernels_c.cpp
+  specialized/roclapack_trsm_specialized_kernels_z.cpp
+)
+
 if(OPTIMAL)
-  set(rocsolver_specialized_source
+  list(APPEND rocsolver_specialized_source
     # getf2
     specialized/roclapack_getf2_specialized_kernels_s.cpp
     specialized/roclapack_getf2_specialized_kernels_d.cpp
@@ -239,7 +249,7 @@ target_include_directories(rocsolver
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/rocsolver>
     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -260,7 +270,8 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
   rocm_wrap_header_file(
     rocsolver-version.h rocsolver-export.h
     GUARDS SYMLINK WRAPPER
-    WRAPPER_LOCATIONS include rocsolver/include
+    WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR} rocsolver/${CMAKE_INSTALL_INCLUDEDIR}
+    ORIGINAL_FILES ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h
   )
 endif( )
 
@@ -298,7 +309,17 @@ endif()
 
 ############################################################
 # Installation
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocsolver)
+
+rocm_install(
+	DIRECTORY
+		"${PROJECT_SOURCE_DIR}/library/include/rocsolver/"
+		"${PROJECT_BINARY_DIR}/include/rocsolver/"
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocsolver
+	FILES_MATCHING
+	PATTERN "*.h"
+	PATTERN "*.hpp"
+	PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)
 
 rocm_install_targets(
   TARGETS ${package_targets}

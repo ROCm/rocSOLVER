@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_lacgv.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void sygs2_set_diag1(const rocblas_int k,
@@ -177,7 +177,7 @@ rocblas_status rocsolver_sygs2_hegs2_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                               const rocblas_eform itype,
                                               const rocblas_fill uplo,

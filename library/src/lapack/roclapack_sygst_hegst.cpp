@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sygst_hegst.hpp"
@@ -14,7 +14,7 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
                                           U B,
                                           const rocblas_int ldb)
 {
-    const char* name = (!is_complex<T> ? "sygst" : "hegst");
+    const char* name = (!rocblas_is_complex<T> ? "sygst" : "hegst");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--uplo", uplo, "-n", n, "--lda", lda, "--ldb", ldb);
 
     using S = decltype(std::real(T{}));
@@ -42,9 +42,9 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
     // size of reusable workspace (and for calling SYGS2/HEGS2 and TRSM)
     bool optim_mem;
     size_t size_work_x_temp, size_workArr_temp_arr, size_store_wcs_invA, size_invA_arr;
-    rocsolver_sygst_hegst_getMemorySize<false, T>(uplo, itype, n, batch_count, &size_scalars,
-                                                  &size_work_x_temp, &size_workArr_temp_arr,
-                                                  &size_store_wcs_invA, &size_invA_arr, &optim_mem);
+    rocsolver_sygst_hegst_getMemorySize<false, false, T>(
+        uplo, itype, n, batch_count, &size_scalars, &size_work_x_temp, &size_workArr_temp_arr,
+        &size_store_wcs_invA, &size_invA_arr, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work_x_temp,

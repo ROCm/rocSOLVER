@@ -1,5 +1,5 @@
 /* ************************************************************************
  * Copyright (c) 2021 Advanced Micro Devices, Inc.
  * ************************************************************************ */
-#include <rocsolver.h>
+#include <rocsolver/rocsolver.h>
 int main() {}

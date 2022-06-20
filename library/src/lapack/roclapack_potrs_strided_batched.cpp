@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_potrs.hpp"
@@ -37,8 +37,8 @@ rocblas_status rocsolver_potrs_strided_batched_impl(rocblas_handle handle,
     // size of workspace (for calling TRSM)
     bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
-    rocsolver_potrs_getMemorySize<false, T>(n, nrhs, batch_count, &size_work1, &size_work2,
-                                            &size_work3, &size_work4, &optim_mem);
+    rocsolver_potrs_getMemorySize<false, true, T>(n, nrhs, batch_count, &size_work1, &size_work2,
+                                                  &size_work3, &size_work4, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
@@ -57,9 +57,9 @@ rocblas_status rocsolver_potrs_strided_batched_impl(rocblas_handle handle,
     work4 = mem[3];
 
     // execution
-    return rocsolver_potrs_template<false, T>(handle, uplo, n, nrhs, A, shiftA, lda, strideA, B,
-                                              shiftB, ldb, strideB, batch_count, work1, work2,
-                                              work3, work4, optim_mem);
+    return rocsolver_potrs_template<false, true, T>(handle, uplo, n, nrhs, A, shiftA, lda, strideA,
+                                                    B, shiftB, ldb, strideB, batch_count, work1,
+                                                    work2, work3, work4, optim_mem);
 }
 
 /*

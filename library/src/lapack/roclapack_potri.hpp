@@ -11,7 +11,7 @@
 
 #include "rocblas.hpp"
 #include "roclapack_trtri.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_potri_getMemorySize(const rocblas_int n,

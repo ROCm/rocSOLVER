@@ -1,10 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_ormbr_unmbr.hpp"
 
-template <typename T, bool COMPLEX = is_complex<T>>
+template <typename T, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
                                           const rocblas_storev storev,
                                           const rocblas_side side,
@@ -18,7 +18,7 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
                                           T* C,
                                           const rocblas_int ldc)
 {
-    const char* name = (!is_complex<T> ? "ormbr" : "unmbr");
+    const char* name = (!rocblas_is_complex<T> ? "ormbr" : "unmbr");
     ROCSOLVER_ENTER_TOP(name, "--storev", storev, "--side", side, "--trans", trans, "-m", m, "-n",
                         n, "-k", k, "--lda", lda, "--ldc", ldc);
 

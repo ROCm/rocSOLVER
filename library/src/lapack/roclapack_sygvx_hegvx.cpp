@@ -27,7 +27,7 @@ rocblas_status rocsolver_sygvx_hegvx_impl(rocblas_handle handle,
                                           rocblas_int* ifail,
                                           rocblas_int* info)
 {
-    const char* name = (!is_complex<T> ? "sygvx" : "hegvx");
+    const char* name = (!rocblas_is_complex<T> ? "sygvx" : "hegvx");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--evect", evect, "--erange", erange, "--uplo",
                         uplo, "-n", n, "--lda", lda, "--ldb", ldb, "--vl", vl, "--vu", vu, "--il",
                         il, "--iu", iu, "--abstol", abstol, "--ldz", ldz);
@@ -67,7 +67,7 @@ rocblas_status rocsolver_sygvx_hegvx_impl(rocblas_handle handle,
     size_t size_work7_workArr;
     // size of temporary info array
     size_t size_iinfo;
-    rocsolver_sygvx_hegvx_getMemorySize<false, T, S>(
+    rocsolver_sygvx_hegvx_getMemorySize<false, false, T, S>(
         itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
         &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
         &size_tau, &size_work7_workArr, &size_iinfo, &optim_mem);

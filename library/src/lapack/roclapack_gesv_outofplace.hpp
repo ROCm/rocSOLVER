@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -12,7 +12,7 @@
 #include "rocblas.hpp"
 #include "roclapack_getrf.hpp"
 #include "roclapack_getrs.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T>
 rocblas_status rocsolver_gesv_outofplace_argCheck(rocblas_handle handle,
@@ -88,8 +88,8 @@ void rocsolver_gesv_outofplace_getMemorySize(const rocblas_int n,
         size_pivotval, size_pivotidx, size_iipiv, size_iinfo, &opt1);
 
     // workspace required for calling GETRS
-    rocsolver_getrs_getMemorySize<BATCHED, T>(rocblas_operation_none, n, nrhs, batch_count, &w1,
-                                              &w2, &w3, &w4, &opt2);
+    rocsolver_getrs_getMemorySize<BATCHED, STRIDED, T>(rocblas_operation_none, n, nrhs, batch_count,
+                                                       &w1, &w2, &w3, &w4, &opt2);
 
     *size_work1 = std::max(*size_work1, w1);
     *size_work2 = std::max(*size_work2, w2);
@@ -164,9 +164,9 @@ rocblas_status rocsolver_gesv_outofplace_template(rocblas_handle handle,
                             0, stream, n, nrhs, B, shiftB, ldb, strideB, X, shiftX, ldx, strideX);
 
     // solve AX = B
-    rocsolver_getrs_template<BATCHED, T>(handle, rocblas_operation_none, n, nrhs, A, shiftA, lda,
-                                         strideA, ipiv, strideP, X, shiftX, ldx, strideX,
-                                         batch_count, work1, work2, work3, work4, optim_mem, true);
+    rocsolver_getrs_template<BATCHED, STRIDED, T>(
+        handle, rocblas_operation_none, n, nrhs, A, shiftA, lda, strideA, ipiv, strideP, X, shiftX,
+        ldx, strideX, batch_count, work1, work2, work3, work4, optim_mem, true);
 
     return rocblas_status_success;
 }

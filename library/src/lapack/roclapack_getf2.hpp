@@ -13,7 +13,7 @@
 #include "auxiliary/rocauxiliary_laswp.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
 // number of threads for the iamax reduction kernel
@@ -178,7 +178,7 @@ inline rocblas_int getf2_get_checksingularity_blksize(const rocblas_int n)
     Returns 1 when the use of the small kernel will give better performance,
     Returns 2 when the use of the panel kernel will give better performance,
     Returns 0 when it would be better to use the normal code. **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
 {
     int ker = 0;
@@ -276,7 +276,7 @@ int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
 }
 
 /** Complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
 {
     int ker = 0;

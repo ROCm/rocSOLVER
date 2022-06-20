@@ -11,9 +11,9 @@
 
 #include "rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                      const rocblas_int k,
                                      U V,
@@ -68,7 +68,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
     }
 }
 
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                      const rocblas_int k,
                                      U V,
@@ -204,7 +204,7 @@ rocblas_status rocsolver_larft_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larft_template(rocblas_handle handle,
                                         const rocblas_direct direct,
                                         const rocblas_storev storev,

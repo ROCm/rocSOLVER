@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -15,7 +15,7 @@
 #include "roclapack_gelqf.hpp"
 #include "roclapack_gels.hpp"
 #include "roclapack_geqrf.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_gels_outofplace_getMemorySize(const rocblas_operation trans,
@@ -180,7 +180,6 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
     const rocblas_int copyblocksmin = (std::min(m, n) - 1) / 32 + 1;
     const rocblas_int copyblocksmax = (std::max(m, n) - 1) / 32 + 1;
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
-    const T one = 1;
 
     // TODO: apply scaling to improve accuracy over a larger range of values
 
@@ -211,11 +210,10 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
                                     strideA, info);
 
             // solve RX = Q'B
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_upper,
-                                         rocblas_operation_none, rocblas_diagonal_non_unit, n, nrhs,
-                                         &one, A, shiftA, lda, strideA, B, shiftB, ldb, strideB,
-                                         batch_count, optim_mem, work_x_temp, workArr_temp_arr,
-                                         diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_non_unit, n,
+                nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem,
+                work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // copy result to X
             ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),
@@ -239,11 +237,11 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
                                     shiftX, ldx, strideX);
 
             // solve R'Y = B (here Y = Q'X)
-            rocblasCall_trsm<BATCHED, T>(
-                handle, rocblas_side_left, rocblas_fill_upper,
-                rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, nrhs, &one, A,
-                shiftA, lda, strideA, X, shiftX, ldx, strideX, batch_count, optim_mem, work_x_temp,
-                workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                rocblas_diagonal_non_unit, n, nrhs, A, shiftA, lda, strideA, X, shiftX, ldx,
+                strideX, batch_count, optim_mem, work_x_temp, workArr_temp_arr, diag_trfac_invA,
+                trfact_workTrmm_invA_arr);
 
             // zero row n to m-1 of X in cases where info is zero
             const rocblas_int zeroblocksx = (m - n - 1) / 32 + 1;
@@ -276,11 +274,10 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
                                     shiftX, ldx, strideX);
 
             // solve LY = B (here Y = QX)
-            rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_left, rocblas_fill_lower,
-                                         rocblas_operation_none, rocblas_diagonal_non_unit, m, nrhs,
-                                         &one, A, shiftA, lda, strideA, X, shiftX, ldx, strideX,
-                                         batch_count, optim_mem, work_x_temp, workArr_temp_arr,
-                                         diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_non_unit, m,
+                nrhs, A, shiftA, lda, strideA, X, shiftX, ldx, strideX, batch_count, optim_mem,
+                work_x_temp, workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
 
             // zero row m to n-1 of X in cases where info is zero
             const rocblas_int zeroblocksx = (n - m - 1) / 32 + 1;
@@ -310,11 +307,11 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
                                     strideA, info);
 
             // solve L'X = QB
-            rocblasCall_trsm<BATCHED, T>(
-                handle, rocblas_side_left, rocblas_fill_lower,
-                rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, m, nrhs, &one, A,
-                shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work_x_temp,
-                workArr_temp_arr, diag_trfac_invA, trfact_workTrmm_invA_arr);
+            rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                rocblas_diagonal_non_unit, m, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb,
+                strideB, batch_count, optim_mem, work_x_temp, workArr_temp_arr, diag_trfac_invA,
+                trfact_workTrmm_invA_arr);
 
             // copy result to X
             ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksmin, copyblocksy, batch_count),

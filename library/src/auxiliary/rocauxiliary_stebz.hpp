@@ -11,7 +11,7 @@
 
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 #define SPLIT_THDS 256
 #define IBISEC_BLKS 64
@@ -742,6 +742,8 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
                                              T* pivmin,
                                              T* EsqrA,
                                              T* boundsA,
+                                             T* interA,
+                                             rocblas_int* ninterA,
                                              T eps)
 {
     int bid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -759,11 +761,15 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
         T* bounds = boundsA + bid * 2;
         // tmpnev stores the number of eigenvalues found in each split block
         rocblas_int* tmpnev = tmpnevA + bid * n;
+        // if range = index, inter and ninter will store temporary ordered eigenvalues
+        // with its indices to discard those out of range
+        T* inter = interA + bid * 2 * n;
+        rocblas_int* ninter = ninterA + bid * 2 * n;
 
         rocblas_int bin;
         rocblas_int ntmp;
-        rocblas_int nn = 0;
-        T tmp;
+        rocblas_int nn = 0, nnt = 0;
+        T tmp, tmp2;
         T bnorm = std::max(std::abs(bounds[0]), std::abs(bounds[1]));
 
         bool index = (range == rocblas_erange_index);
@@ -772,16 +778,56 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
         // (if range = index, sometimes the searched interval (vl, vu] could
         // have eigenvalues outside of the desired indices. Thus, the following
         // code also discards those extra values)
-        for(int b = 0; b < nofb; ++b)
+        if(index)
         {
-            bin = (b == 0) ? 0 : IS[b - 1];
-            for(int bb = 0; bb < tmpnev[b]; ++bb)
+            for(int b = 0; b < nofb; ++b)
             {
-                tmp = W[bin + bb];
-                ntmp = index ? sturm_count(n, D, Esqr, pmin, tmp + pmin + bnorm * eps * n) : 0;
-                if(!index || (ntmp >= ilow && ntmp <= iup))
+                bin = (b == 0) ? 0 : IS[b - 1];
+                for(int bb = 0; bb < tmpnev[b]; ++bb)
                 {
-                    W[nn] = tmp;
+                    tmp = W[bin + bb];
+                    ntmp = IB[bin + bb];
+                    inter[nnt] = tmp;
+                    ninter[nnt] = ntmp;
+                    inter[nnt + n] = tmp;
+                    nnt++;
+                }
+            }
+
+            // discard extra values
+            increasing_order(nnt, inter + n, ninter + n);
+            for(int i = 0; i < nnt; ++i)
+            {
+                tmp = inter[i];
+                for(int j = 0; j < nnt; ++j)
+                {
+                    tmp2 = inter[n + j];
+                    if(tmp == tmp2)
+                    {
+                        tmp2 = (j == nnt - 1) ? (bounds[1] - tmp2) / 2
+                                              : (inter[n + j + 1] - tmp2) / 2;
+                        tmp2 += tmp;
+                        ntmp = sturm_count(n, D, Esqr, pmin, tmp2);
+                        if(ntmp >= ilow && ntmp <= iup)
+                        {
+                            W[nn] = tmp;
+                            IB[nn] = ninter[i];
+                            nn++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        else
+        {
+            for(int b = 0; b < nofb; ++b)
+            {
+                bin = (b == 0) ? 0 : IS[b - 1];
+                for(int bb = 0; bb < tmpnev[b]; ++bb)
+                {
+                    W[nn] = W[bin + bb];
                     IB[nn] = IB[bin + bb];
                     nn++;
                 }
@@ -927,7 +973,7 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
                                         T* inter,
                                         rocblas_int* ninter)
 {
-    ROCSOLVER_ENTER("stebz", "range:", range, "order:", order, "n:", n, "vl:", vlow, "vu:", vup,
+    ROCSOLVER_ENTER("stebz", "erange:", range, "eorder:", order, "n:", n, "vl:", vlow, "vu:", vup,
                     "il:", ilow, "iu:", iup, "abstol:", abstol, "shiftD:", shiftD,
                     "shiftE:", shiftE, "bc:", batch_count);
 
@@ -993,9 +1039,9 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
                             info, work, pivmin, Esqr, bounds, inter, ninter, eps, sfmin);
 
     // Finally, synthetize the results from all the split blocks
-    ROCSOLVER_LAUNCH_KERNEL(stebz_synthesis_kernel<T>, gridReset, threads, 0, stream, range, order,
-                            n, ilow, iup, D, shiftD, strideD, nev, nsplit, W, strideW, IB, strideIB,
-                            IS, strideIS, batch_count, work, pivmin, Esqr, bounds, eps);
+    ROCSOLVER_LAUNCH_KERNEL(stebz_synthesis_kernel<T>, gridReset, threads, 0, stream, range, order, n,
+                            ilow, iup, D, shiftD, strideD, nev, nsplit, W, strideW, IB, strideIB, IS,
+                            strideIS, batch_count, work, pivmin, Esqr, bounds, inter, ninter, eps);
 
     return rocblas_status_success;
 }

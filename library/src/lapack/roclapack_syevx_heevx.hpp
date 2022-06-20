@@ -14,7 +14,7 @@
 #include "auxiliary/rocauxiliary_stein.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n,
@@ -40,7 +40,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
 
     S* W = WW + (bid * strideW);
     T* Z = load_ptr_batch<T>(ZZ, bid, shiftZ, strideZ);
-    rocblas_int* ifail = ifailA + (bid * strideIfail);
+    rocblas_int* ifail = nullptr;
+    if(ifailA)
+        ifail = ifailA + (bid * strideIfail);
 
     for(j = 0; j < nev - 1; j++)
     {
@@ -67,12 +69,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
             for(int k = tid; k < n; k += hipBlockDim_x)
                 swap(Z[k + i * ldz], Z[k + j * ldz]);
 
-            for(int k = tid; k < info; k += hipBlockDim_x)
+            if(ifail)
             {
-                if(ifail[k] == i + 1)
-                    ifail[k] = j + 1;
-                else if(ifail[k] == j + 1)
-                    ifail[k] = i + 1;
+                for(int k = tid; k < info; k += hipBlockDim_x)
+                {
+                    if(ifail[k] == i + 1)
+                        ifail[k] = j + 1;
+                    else if(ifail[k] == j + 1)
+                        ifail[k] = i + 1;
+                }
             }
         }
         __syncthreads();

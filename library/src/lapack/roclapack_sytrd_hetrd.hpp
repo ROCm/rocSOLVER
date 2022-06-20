@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_latrd.hpp"
 #include "rocblas.hpp"
 #include "roclapack_sytd2_hetd2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
@@ -82,7 +82,7 @@ rocblas_status rocsolver_sytrd_hetrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, typename T, typename S, typename U>
 rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,

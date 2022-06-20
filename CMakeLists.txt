@@ -115,10 +115,10 @@ option(WERROR "Treat warnings as errors" OFF)
 option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY AND NOT WIN32)
   rocm_wrap_header_dir(
-    ${CMAKE_SOURCE_DIR}/library/include
+    ${CMAKE_SOURCE_DIR}/library/include/rocsolver
     PATTERNS "*.h"
     GUARDS SYMLINK WRAPPER
-    WRAPPER_LOCATIONS include
+    WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR}
   )
 endif()
 
@@ -126,9 +126,6 @@ endif()
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
-
-# Force library install path to lib (CentOS 7 defaults to lib64)
-set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
 
 # Query for compiler support of GPU archs
 rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
@@ -163,8 +160,10 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
   endif()
   set(GFORTRAN_RPM "libgfortran4")
   set(GFORTRAN_DEB "libgfortran4")
-  if(CLIENTS_OS STREQUAL "centos" AND CLIENTS_OS_VERSION VERSION_GREATER_EQUAL "8")
-    set(GFORTRAN_RPM "libgfortran")
+  if(CLIENTS_OS STREQUAL "centos" OR CLIENTS_OS STREQUAL "rhel")
+    if(CLIENTS_OS_VERSION VERSION_GREATER_EQUAL "8")
+      set(GFORTRAN_RPM "libgfortran")
+    endif()
   elseif(CLIENTS_OS STREQUAL "ubuntu" AND CLIENTS_OS_VERSION VERSION_GREATER_EQUAL "20.04")
     set(GFORTRAN_DEB "libgfortran5")
   endif()
@@ -205,8 +204,8 @@ endif()
 
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
   "\${CPACK_PACKAGING_INSTALL_PREFIX}"
-  "\${CPACK_PACKAGING_INSTALL_PREFIX}/include"
-  "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
 )
 
 set(ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"

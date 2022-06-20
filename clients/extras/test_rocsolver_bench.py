@@ -173,22 +173,22 @@ class TestRocsolverBench(unittest.TestCase):
     def test_validate_erange(self):
         for erange in 'AVI':
             with self.subTest(erange=erange):
-                out, err, exitcode = call_rocsolver_bench(f'-f stebz --range {erange} -n 10')
+                out, err, exitcode = call_rocsolver_bench(f'-f stebz --erange {erange} -n 10')
                 self.assertEqual(err, '')
                 self.assertEqual(exitcode, 0)
 
-        out, err, exitcode = call_rocsolver_bench('-f stebz --range 0 -n 10')
+        out, err, exitcode = call_rocsolver_bench('-f stebz --erange 0 -n 10')
         self.assertNotEqual(err, '')
         self.assertNotEqual(exitcode, 0)
 
     def test_validate_eorder(self):
         for eorder in 'BE':
             with self.subTest(eorder=eorder):
-                out, err, exitcode = call_rocsolver_bench(f'-f stebz --order {eorder} -n 10')
+                out, err, exitcode = call_rocsolver_bench(f'-f stebz --eorder {eorder} -n 10')
                 self.assertEqual(err, '')
                 self.assertEqual(exitcode, 0)
 
-        out, err, exitcode = call_rocsolver_bench('-f stebz --order 0 -n 10')
+        out, err, exitcode = call_rocsolver_bench('-f stebz --eorder 0 -n 10')
         self.assertNotEqual(err, '')
         self.assertNotEqual(exitcode, 0)
 

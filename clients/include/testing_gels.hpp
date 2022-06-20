@@ -348,7 +348,7 @@ void gels_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <bool BATCHED, bool STRIDED, typename T, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, bool COMPLEX = rocblas_is_complex<T>>
 void testing_gels(Arguments& argus)
 {
     // get arguments
