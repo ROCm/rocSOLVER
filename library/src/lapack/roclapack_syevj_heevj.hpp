@@ -228,7 +228,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                 {
                     g = 2 * mag;
                     f = std::real(Acpy[j + j * n] - Acpy[i + i * n]);
-                    f += (f < 0) ? -sqrt(f*f + g*g) : sqrt(f*f + g*g);
+                    f += (f < 0) ? -sqrt(f * f + g * g) : sqrt(f * f + g * g);
                     lartg(f, g, c, s, r);
                     s1 = s * aij / mag;
                     s2 = conj(s1);
@@ -480,7 +480,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                     {
                         g = 2 * mag;
                         f = std::real(Acpy[j + j * n] - Acpy[i + i * n]);
-                        f += (f < 0) ? -sqrt(f*f + g*g) : sqrt(f*f + g*g);
+                        f += (f < 0) ? -sqrt(f * f + g * g) : sqrt(f * f + g * g);
                         lartg(f, g, c, s, r);
                         s1 = s * aij / mag;
                         s2 = conj(s1);
