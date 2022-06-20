@@ -206,7 +206,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     while(sweeps < max_sweeps && local_res > abstol * abstol)
     {
         // for each off-diagonal element (indexed using top/bottom pairs), calculate the Jacobi rotation and apply it to Acpy
-        S c, t, mag;
+        S c, mag, f, g, r, s;
         T s1, s2, aij;
         for(k = 0; k < n - 1; k++)
         {
@@ -226,11 +226,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                 }
                 else
                 {
-                    t = std::real(Acpy[i + i * n] - Acpy[j + j * n]);
-                    t = (t >= 0 ? 2 * mag : -2 * mag) / (abs(t) + sqrt(t * t + 4 * mag * mag));
-
-                    c = 1.0 / sqrt(1 + t * t);
-                    s1 = t * c * aij / mag;
+                    g = 2 * mag;
+                    f = std::real(Acpy[j + j * n] - Acpy[i + i * n]);
+                    f += (f < 0) ? -sqrt(f*f + g*g) : sqrt(f*f + g*g);
+                    lartg(f, g, c, s, r);
+                    s1 = s * aij / mag;
                     s2 = conj(s1);
                 }
 
@@ -456,7 +456,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     while(sweeps < max_sweeps && local_res > abstol * abstol)
     {
         // for each off-diagonal element (indexed using top/bottom pairs), calculate the Jacobi rotation and apply it to Acpy
-        S c, t, mag;
+        S c, mag, f, g, r, s;
         T s1, s2, aij;
         for(k = 0; k < n - 1; k++)
         {
@@ -478,11 +478,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                     }
                     else
                     {
-                        t = std::real(Acpy[i + i * n] - Acpy[j + j * n]);
-                        t = (t >= 0 ? 2 * mag : -2 * mag) / (abs(t) + sqrt(t * t + 4 * mag * mag));
-
-                        c = 1.0 / sqrt(1 + t * t);
-                        s1 = t * c * aij / mag;
+                        g = 2 * mag;
+                        f = std::real(Acpy[j + j * n] - Acpy[i + i * n]);
+                        f += (f < 0) ? -sqrt(f*f + g*g) : sqrt(f*f + g*g);
+                        lartg(f, g, c, s, r);
+                        s1 = s * aij / mag;
                         s2 = conj(s1);
                     }
 
