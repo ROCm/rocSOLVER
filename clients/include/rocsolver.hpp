@@ -5766,6 +5766,190 @@ inline rocblas_status rocsolver_syevd_heevd(bool STRIDED,
 }
 /********************************************************/
 
+/******************** SYEVJ/HEEVJ ********************/
+// normal and strided_batched
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float abstol,
+                                            float* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocsolver_ssyevj_strided_batched(handle, evect, uplo, n, A, lda, stA, abstol, residual,
+                                           max_sweeps, n_sweeps, W, stW, info, bc)
+        : rocsolver_ssyevj(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps,
+                           W, info);
+}
+
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double abstol,
+                                            double* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocsolver_dsyevj_strided_batched(handle, evect, uplo, n, A, lda, stA, abstol, residual,
+                                           max_sweeps, n_sweeps, W, stW, info, bc)
+        : rocsolver_dsyevj(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps,
+                           W, info);
+}
+
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float abstol,
+                                            float* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocsolver_cheevj_strided_batched(handle, evect, uplo, n, A, lda, stA, abstol, residual,
+                                           max_sweeps, n_sweeps, W, stW, info, bc)
+        : rocsolver_cheevj(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps,
+                           W, info);
+}
+
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* A,
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double abstol,
+                                            double* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return STRIDED
+        ? rocsolver_zheevj_strided_batched(handle, evect, uplo, n, A, lda, stA, abstol, residual,
+                                           max_sweeps, n_sweeps, W, stW, info, bc)
+        : rocsolver_zheevj(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps,
+                           W, info);
+}
+
+// batched
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            float* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float abstol,
+                                            float* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_ssyevj_batched(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps,
+                                    n_sweeps, W, stW, info, bc);
+}
+
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            double* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double abstol,
+                                            double* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_dsyevj_batched(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps,
+                                    n_sweeps, W, stW, info, bc);
+}
+
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_float_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            float abstol,
+                                            float* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            float* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_cheevj_batched(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps,
+                                    n_sweeps, W, stW, info, bc);
+}
+
+inline rocblas_status rocsolver_syevj_heevj(bool STRIDED,
+                                            rocblas_handle handle,
+                                            rocblas_evect evect,
+                                            rocblas_fill uplo,
+                                            rocblas_int n,
+                                            rocblas_double_complex* const A[],
+                                            rocblas_int lda,
+                                            rocblas_stride stA,
+                                            double abstol,
+                                            double* residual,
+                                            rocblas_int max_sweeps,
+                                            rocblas_int* n_sweeps,
+                                            double* W,
+                                            rocblas_stride stW,
+                                            rocblas_int* info,
+                                            rocblas_int bc)
+{
+    return rocsolver_zheevj_batched(handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps,
+                                    n_sweeps, W, stW, info, bc);
+}
+/********************************************************/
+
 /******************** SYEVX/HEEVX ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_syevx_heevx(bool STRIDED,
