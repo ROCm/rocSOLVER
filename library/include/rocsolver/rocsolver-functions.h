@@ -15004,6 +15004,590 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
+    \brief SYEVJ computes the eigenvalues and optionally the eigenvectors of a real symmetric
+    matrix A.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
+
+    At the \f$k\f$-th iteration (or "sweep"), \f$A\f$ is transformed by a product of Jacobi rotations \f$V\f$ as
+
+    \f[
+        A^{(k)} = V' A^{(k-1)} V
+    \f]
+
+    such that \f$off(A^{(k)}) < off(A^{(k-1)})\f$, where \f$A^{(0)} = A\f$ and \f$off(A^{(k)})\f$ is the
+    Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
+    diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
+                the algorithm converged; otherwise the contents of A are unchanged.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[in]
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to a rocblas_int on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm.
+    @param[out]
+    W           pointer to type. Array on the GPU of dimension n.\n
+                The eigenvalues of A in increasing order.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 const float abstol,
+                                                 float* residual,
+                                                 const rocblas_int max_sweeps,
+                                                 rocblas_int* n_sweeps,
+                                                 float* W,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 const double abstol,
+                                                 double* residual,
+                                                 const rocblas_int max_sweeps,
+                                                 rocblas_int* n_sweeps,
+                                                 double* W,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief HEEVJ computes the eigenvalues and optionally the eigenvectors of a complex Hermitian
+    matrix A.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
+
+    At the \f$k\f$-th iteration (or "sweep"), \f$A\f$ is transformed by a product of Jacobi rotations \f$V\f$ as
+
+    \f[
+        A^{(k)} = V' A^{(k-1)} V
+    \f]
+
+    such that \f$off(A^{(k)}) < off(A^{(k-1)})\f$, where \f$A^{(0)} = A\f$ and \f$off(A^{(k)})\f$ is the
+    Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
+    diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the Hermitian matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
+                the algorithm converged; otherwise the contents of A are unchanged.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to real type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to a rocblas_int on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm.
+    @param[out]
+    W           pointer to real type. Array on the GPU of dimension n.\n
+                The eigenvalues of A in increasing order.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 const float abstol,
+                                                 float* residual,
+                                                 const rocblas_int max_sweeps,
+                                                 rocblas_int* n_sweeps,
+                                                 float* W,
+                                                 rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
+                                                 const rocblas_evect evect,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 const double abstol,
+                                                 double* residual,
+                                                 const rocblas_int max_sweeps,
+                                                 rocblas_int* n_sweeps,
+                                                 double* W,
+                                                 rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief SYEVJ_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
+    real symmetric matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
+
+    At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
+
+    \f[
+        A_j^{(k)} = V_j' A_j^{(k-1)} V_j
+    \f]
+
+    such that \f$off(A_j^{(k)}) < off(A_j^{(k-1)})\f$, where \f$A_j^{(0)} = A_j\f$ and \f$off(A_j^{(k)})\f$ is the
+    Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
+    diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are unchanged.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to type. Array of batch_count scalars on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         float* const A[],
+                                                         const rocblas_int lda,
+                                                         const float abstol,
+                                                         float* residual,
+                                                         const rocblas_int max_sweeps,
+                                                         rocblas_int* n_sweeps,
+                                                         float* W,
+                                                         const rocblas_stride strideW,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         double* const A[],
+                                                         const rocblas_int lda,
+                                                         const double abstol,
+                                                         double* residual,
+                                                         const rocblas_int max_sweeps,
+                                                         rocblas_int* n_sweeps,
+                                                         double* W,
+                                                         const rocblas_stride strideW,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEEVJ_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
+    complex Hermitian matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
+
+    At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
+
+    \f[
+        A_j^{(k)} = V_j' A_j^{(k-1)} V_j
+    \f]
+
+    such that \f$off(A_j^{(k)}) < off(A_j^{(k-1)})\f$, where \f$A_j^{(0)} = A_j\f$ and \f$off(A_j^{(k)})\f$ is the
+    Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
+    diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the Hermitian matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are unchanged.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_float_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         const float abstol,
+                                                         float* residual,
+                                                         const rocblas_int max_sweeps,
+                                                         rocblas_int* n_sweeps,
+                                                         float* W,
+                                                         const rocblas_stride strideW,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
+                                                         const rocblas_evect evect,
+                                                         const rocblas_fill uplo,
+                                                         const rocblas_int n,
+                                                         rocblas_double_complex* const A[],
+                                                         const rocblas_int lda,
+                                                         const double abstol,
+                                                         double* residual,
+                                                         const rocblas_int max_sweeps,
+                                                         rocblas_int* n_sweeps,
+                                                         double* W,
+                                                         const rocblas_stride strideW,
+                                                         rocblas_int* info,
+                                                         const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYEVJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
+    real symmetric matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
+
+    At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
+
+    \f[
+        A_j^{(k)} = V_j' A_j^{(k-1)} V_j
+    \f]
+
+    such that \f$off(A_j^{(k)}) < off(A_j^{(k-1)})\f$, where \f$A_j^{(0)} = A_j\f$ and \f$off(A_j^{(k)})\f$ is the
+    Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
+    diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are unchanged.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[in]
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to type. Array of batch_count scalars on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 float* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const float abstol,
+                                                                 float* residual,
+                                                                 const rocblas_int max_sweeps,
+                                                                 rocblas_int* n_sweeps,
+                                                                 float* W,
+                                                                 const rocblas_stride strideW,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 double* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const double abstol,
+                                                                 double* residual,
+                                                                 const rocblas_int max_sweeps,
+                                                                 rocblas_int* n_sweeps,
+                                                                 double* W,
+                                                                 const rocblas_stride strideW,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief CHEVJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
+    complex Hermitian matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
+
+    At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
+
+    \f[
+        A_j^{(k)} = V_j' A_j^{(k-1)} V_j
+    \f]
+
+    such that \f$off(A_j^{(k)}) < off(A_j^{(k-1)})\f$, where \f$A_j^{(0)} = A_j\f$ and \f$off(A_j^{(k)})\f$ is the
+    Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
+    diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the Hermitian matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are unchanged.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+    @param[in]
+    strideW     rocblas_stride.\n
+                Stride from the start of one vector W_j to the next one W_(j+1).
+                There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for matrix A_j. If info[j] = 1, the algorithm did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_float_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const float abstol,
+                                                                 float* residual,
+                                                                 const rocblas_int max_sweeps,
+                                                                 rocblas_int* n_sweeps,
+                                                                 float* W,
+                                                                 const rocblas_stride strideW,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_evect evect,
+                                                                 const rocblas_fill uplo,
+                                                                 const rocblas_int n,
+                                                                 rocblas_double_complex* A,
+                                                                 const rocblas_int lda,
+                                                                 const rocblas_stride strideA,
+                                                                 const double abstol,
+                                                                 double* residual,
+                                                                 const rocblas_int max_sweeps,
+                                                                 rocblas_int* n_sweeps,
+                                                                 double* W,
+                                                                 const rocblas_stride strideW,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
+//! @}
+
+/*! @{
     \brief SYEVX computes a set of the eigenvalues and optionally the corresponding eigenvectors of a
     real symmetric matrix A.
 

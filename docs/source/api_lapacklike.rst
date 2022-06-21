@@ -7,6 +7,7 @@ Other Lapack-like routines provided by rocSOLVER. These are divided into the fol
 
 * :ref:`liketriangular`. Based on Gaussian elimination.
 * :ref:`likelinears`. Based on triangular factorizations.
+* :ref:`likeeigens`. Eigenproblems for symmetric matrices.
 
 .. note::
     Throughout the APIs' descriptions, we use the following notations:
@@ -201,4 +202,55 @@ rocsolver_<type>getri_npvt_outofplace_strided_batched()
 .. doxygenfunction:: rocsolver_dgetri_npvt_outofplace_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_npvt_outofplace_strided_batched
+
+
+
+.. _likeeigens:
+
+Symmetric eigensolvers
+================================
+
+.. contents:: List of Lapack-like symmetric eigensolvers
+   :local:
+   :backlinks: top
+
+.. _syevj:
+
+rocsolver_<type>syevj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevj
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevj
+
+rocsolver_<type>syevj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevj_batched
+
+rocsolver_<type>syevj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevj_strided_batched
+
+.. _heevj:
+
+rocsolver_<type>heevj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevj
+   :outline:
+.. doxygenfunction:: rocsolver_cheevj
+
+rocsolver_<type>heevj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevj_batched
+
+rocsolver_<type>heevj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevj_strided_batched
 

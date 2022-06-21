@@ -14,7 +14,7 @@
 #include "roclapack_syevdx_heevdx_inplace.hpp"
 #include "roclapack_sygst_hegst.hpp"
 #include "roclapack_sygvx_hegvx.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename S>
 rocblas_status rocsolver_sygvdx_hegvdx_inplace_argCheck(rocblas_handle handle,

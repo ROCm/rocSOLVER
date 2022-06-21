@@ -369,12 +369,6 @@ try
             "                           ")
 
         // partial eigenvalue decomposition options
-        ("abstol",
-         value<double>()->default_value(0),
-            "Absolute tolerance at which an eigenvalue is accepted as converged.\n"
-            "                           Used in partial eigenvalue decomposition functions.\n"
-            "                           ")
-
         ("il",
          value<rocblas_int>(),
             "Lower index in ordered subset of eigenvalues.\n"
@@ -408,7 +402,20 @@ try
             "                           Note: the used random input matrices have all eigenvalues in [-20, 20].\n"
             "                           ")
 
+        // iterative Jacobi options
+        ("max_sweeps",
+         value<rocblas_int>()->default_value(100),
+            "Maximum number of sweeps/iterations.\n"
+            "                           Used in iterative Jacobi functions.\n"
+            "                           ")
+
         // other options
+        ("abstol",
+         value<double>()->default_value(0),
+            "Absolute tolerance at which convergence is accepted.\n"
+            "                           Used in iterative Jacobi and partial eigenvalue decomposition functions.\n"
+            "                           ")
+
         ("direct",
          value<char>()->default_value('F'),
             "F = forward, B = backward.\n"
