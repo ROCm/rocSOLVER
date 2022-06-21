@@ -111,8 +111,8 @@ option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
 
-# FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
-option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
+cmake_dependent_option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY
+  "Build with file/folder reorg backward compatibility enabled" ON "NOT WIN32" OFF)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   rocm_wrap_header_dir(
     ${CMAKE_SOURCE_DIR}/library/include/rocsolver
