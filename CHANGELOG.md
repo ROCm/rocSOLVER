@@ -25,6 +25,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
   larger than 32.
 - Fixed STEIN memory access fault when nev is 0.
 - Fixed incorrect STEBZ results for close eigenvalues when range = index.
+- Fixed git unsafe repository error when building with `./install.sh -cd` as a non-root user.
 
 ### Known Issues
 ### Security
