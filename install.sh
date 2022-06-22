@@ -547,6 +547,9 @@ cmake_common_options+=(
   "-DCMAKE_BUILD_TYPE=${build_type}"
 )
 
+#Setting default GNU LIBDIR in build scripts as per architecture board decision
+cmake_common_options+=("-DCMAKE_INSTALL_LIBDIR=lib")
+
 if [[ -n "${rocblas_dir+x}" ]]; then
   cmake_common_options+=("-Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas")
 fi
