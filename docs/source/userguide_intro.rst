@@ -204,6 +204,8 @@ LAPACK-like functions
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_syevj <syevj>`, x, x, ,
+    :ref:`rocsolver_sygvj <sygvj>`, x, x, ,
     :ref:`rocsolver_heevj <heevj>`, , , x, x
+    :ref:`rocsolver_hegvj <hegvj>`, , , x, x
 
 

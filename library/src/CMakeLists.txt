@@ -125,6 +125,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_sygvd_hegvd.cpp
   lapack/roclapack_sygvd_hegvd_batched.cpp
   lapack/roclapack_sygvd_hegvd_strided_batched.cpp
+  lapack/roclapack_sygvj_hegvj.cpp
+  lapack/roclapack_sygvj_hegvj_batched.cpp
+  lapack/roclapack_sygvj_hegvj_strided_batched.cpp
   lapack/roclapack_sygvx_hegvx.cpp
   lapack/roclapack_sygvx_hegvx_batched.cpp
   lapack/roclapack_sygvx_hegvx_strided_batched.cpp
