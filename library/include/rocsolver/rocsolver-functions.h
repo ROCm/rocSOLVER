@@ -17931,7 +17931,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
     \f]
 
     depending on the value of itype. The eigenvalues are found using the iterative
-    Jacobi algorithm, and are returned in ascending order.The eigenvectors are computed
+    Jacobi algorithm, and are returned in ascending order. The eigenvectors are computed
     depending on the value of evect.
 
     When computed, the matrix Z of eigenvectors is normalized as follows:
@@ -18050,7 +18050,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
     \f]
 
     depending on the value of itype. The eigenvalues are found using the iterative
-    Jacobi algorithm, and are returned in ascending order.The eigenvectors are computed
+    Jacobi algorithm, and are returned in ascending order. The eigenvectors are computed
     depending on the value of evect.
 
     When computed, the matrix Z of eigenvectors is normalized as follows:
@@ -18169,7 +18169,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
     \f]
 
     depending on the value of itype. The eigenvalues are found using the iterative
-    Jacobi algorithm, and are returned in ascending order.The eigenvectors are computed
+    Jacobi algorithm, and are returned in ascending order. The eigenvectors are computed
     depending on the value of evect.
 
     When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
@@ -18299,7 +18299,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
     \f]
 
     depending on the value of itype. The eigenvalues are found using the iterative
-    Jacobi algorithm, and are returned in ascending order.The eigenvectors are computed
+    Jacobi algorithm, and are returned in ascending order. The eigenvectors are computed
     depending on the value of evect.
 
     When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
@@ -18429,7 +18429,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
     \f]
 
     depending on the value of itype. The eigenvalues are found using the iterative
-    Jacobi algorithm, and are returned in ascending order.The eigenvectors are computed
+    Jacobi algorithm, and are returned in ascending order. The eigenvectors are computed
     depending on the value of evect.
 
     When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
@@ -18571,7 +18571,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
     \f]
 
     depending on the value of itype. The eigenvalues are found using the iterative
-    Jacobi algorithm, and are returned in ascending order.The eigenvectors are computed
+    Jacobi algorithm, and are returned in ascending order. The eigenvectors are computed
     depending on the value of evect.
 
     When computed, the matrix \f$Z_j\f$ of eigenvectors is normalized as follows:
