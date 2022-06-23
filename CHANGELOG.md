@@ -20,6 +20,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Deprecated
 ### Removed
+- Removed dependency on cblas from the rocsolver test and benchmark clients.
+
 ### Fixed
 - Fixed incorrect SYGS2/HEGS2, SYGST/HEGST, SYGV/HEGV, and SYGVD/HEGVD results for batch counts
   larger than 32.
