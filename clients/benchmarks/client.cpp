@@ -409,6 +409,13 @@ try
             "                           Used in iterative Jacobi functions.\n"
             "                           ")
 
+        ("esort",
+         value<char>()->default_value('A'),
+            "N = no sorting, B = ascending order.\n"
+            "                           Indicates whether the computed eigenvalues are sorted in ascending order.\n"
+            "                           Used in iterative Jacobi functions.\n"
+            "                           ")
+
         // other options
         ("abstol",
          value<double>()->default_value(0),
@@ -511,6 +518,7 @@ try
     argus.validate_evect("evect");
     argus.validate_erange("erange");
     argus.validate_eorder("eorder");
+    argus.validate_esort("esort");
     argus.validate_itype("itype");
 
     // prepare logging infrastructure and ignore environment variables

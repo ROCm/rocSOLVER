@@ -163,7 +163,7 @@ constexpr auto rocblas2char_esort(rocblas_esort value)
 {
     switch(value)
     {
-    case rocblas_esort_non: return 'N';
+    case rocblas_esort_none: return 'N';
     case rocblas_esort_ascending: return 'A';
     }
     return '\0';
@@ -348,7 +348,7 @@ constexpr rocblas_esort char2rocblas_esort(char value)
 {
     switch(value)
     {
-    case 'N': return rocblas_esort_non;
+    case 'N': return rocblas_esort_none;
     case 'A': return rocblas_esort_ascending;
     default: return static_cast<rocblas_esort>(-1);
     }

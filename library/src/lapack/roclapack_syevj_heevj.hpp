@@ -291,7 +291,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
         W[i] = std::real(Acpy[i + i * n]);
     __syncthreads();
 
-    if((evect == rocblas_evect_none && tid > 0) || esort == rocblas_esort_non)
+    if((evect == rocblas_evect_none && tid > 0) || esort == rocblas_esort_none)
         return;
 
     rocblas_int m;
@@ -562,7 +562,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
         W[i] = std::real(Acpy[i + i * n]);
     __syncthreads();
 
-    if((evect == rocblas_evect_none && tid > 0) || esort == rocblas_esort_non)
+    if((evect == rocblas_evect_none && tid > 0) || esort == rocblas_esort_none)
         return;
 
     rocblas_int m;
@@ -649,6 +649,7 @@ void rocsolver_syevj_heevj_getMemorySize(const rocblas_evect evect,
 /** Argument checking **/
 template <typename T, typename S>
 rocblas_status rocsolver_syevj_heevj_argCheck(rocblas_handle handle,
+                                              const rocblas_esort esort,
                                               const rocblas_evect evect,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -664,6 +665,8 @@ rocblas_status rocsolver_syevj_heevj_argCheck(rocblas_handle handle,
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
+    if(esort != rocblas_esort_none && esort != rocblas_esort_ascending)
+        return rocblas_status_invalid_value;
     if((evect != rocblas_evect_original && evect != rocblas_evect_none)
        || (uplo != rocblas_fill_lower && uplo != rocblas_fill_upper))
         return rocblas_status_invalid_value;

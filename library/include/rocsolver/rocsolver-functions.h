@@ -15027,7 +15027,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     @param[in]
     esort       #rocblas_esort.\n
                 Specifies whether the eigenvalues are sorted in ascending order. If esort is
-                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_non,
+                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_none,
                 then the eigenvalues are returned in the order they were computed by the iterative algorithm.
     @param[in]
     evect       #rocblas_evect.\n
@@ -15123,7 +15123,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     @param[in]
     esort       #rocblas_esort.\n
                 Specifies whether the eigenvalues are sorted in ascending order. If esort is
-                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_non,
+                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_none,
                 then the eigenvalues are returned in the order they were computed by the iterative algorithm.
     @param[in]
     evect       #rocblas_evect.\n
@@ -15219,7 +15219,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     @param[in]
     esort       #rocblas_esort.\n
                 Specifies whether the eigenvalues are sorted in ascending order. If esort is
-                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_non,
+                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_none,
                 then the eigenvalues are returned in the order they were computed by the iterative algorithm.
     @param[in]
     evect       #rocblas_evect.\n
@@ -15326,7 +15326,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     @param[in]
     esort       #rocblas_esort.\n
                 Specifies whether the eigenvalues are sorted in ascending order. If esort is
-                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_non,
+                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_none,
                 then the eigenvalues are returned in the order they were computed by the iterative algorithm.
     @param[in]
     evect       #rocblas_evect.\n
@@ -15433,7 +15433,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     @param[in]
     esort       #rocblas_esort.\n
                 Specifies whether the eigenvalues are sorted in ascending order. If esort is
-                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_non,
+                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_none,
                 then the eigenvalues are returned in the order they were computed by the iterative algorithm.
     @param[in]
     evect       #rocblas_evect.\n
@@ -15546,7 +15546,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     @param[in]
     esort       #rocblas_esort.\n
                 Specifies whether the eigenvalues are sorted in ascending order. If esort is
-                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_non,
+                rocblas_esort_ascending, then the eigenvalues are sorted. If esort is rocblas_esort_none,
                 then the eigenvalues are returned in the order they were computed by the iterative algorithm.
     @param[in]
     evect       #rocblas_evect.\n

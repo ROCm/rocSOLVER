@@ -106,7 +106,7 @@ typedef enum rocblas_eorder_
  ********************************************************************************/
 typedef enum rocblas_esort_
 {
-    rocblas_esort_non = 251, /**< The computed eigenvalues will not be sorted. */
+    rocblas_esort_none = 251, /**< The computed eigenvalues will not be sorted. */
     rocblas_esort_ascending = 252, /**< The computed eigenvalues will be sorted in ascending order. */
 } rocblas_esort;
 
