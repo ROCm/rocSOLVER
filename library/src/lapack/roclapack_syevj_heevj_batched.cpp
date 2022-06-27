@@ -6,6 +6,7 @@
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
+                                                  const rocblas_esort esort,
                                                   const rocblas_evect evect,
                                                   const rocblas_fill uplo,
                                                   const rocblas_int n,
@@ -21,9 +22,9 @@ rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
                                                   const rocblas_int batch_count)
 {
     const char* name = (!rocblas_is_complex<T> ? "syevj_batched" : "heevj_batched");
-    ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda, "--abstol",
-                        abstol, "--max_sweeps", max_sweeps, "--strideW", strideW, "--batch_count",
-                        batch_count);
+    ROCSOLVER_ENTER_TOP(name, "--esort", esort, "--evect", evect, "--uplo", uplo, "-n", n, "--lda",
+                        lda, "--abstol", abstol, "--max_sweeps", max_sweeps, "--strideW", strideW,
+                        "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -67,8 +68,8 @@ rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_syevj_heevj_template<true, false, T>(
-        handle, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W,
-        strideW, info, batch_count, (T*)Acpy, (S*)resarr, (S*)cosines, (T*)sines,
+        handle, esort, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual, max_sweeps,
+        n_sweeps, W, strideW, info, batch_count, (T*)Acpy, (S*)resarr, (S*)cosines, (T*)sines,
         (rocblas_int*)tbarr);
 }
 
@@ -81,6 +82,7 @@ rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_ssyevj_batched(rocblas_handle handle,
+                                        const rocblas_esort esort,
                                         const rocblas_evect evect,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -95,12 +97,13 @@ rocblas_status rocsolver_ssyevj_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_syevj_heevj_batched_impl<float>(handle, evect, uplo, n, A, lda, abstol,
+    return rocsolver_syevj_heevj_batched_impl<float>(handle, esort, evect, uplo, n, A, lda, abstol,
                                                      residual, max_sweeps, n_sweeps, W, strideW,
                                                      info, batch_count);
 }
 
 rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
+                                        const rocblas_esort esort,
                                         const rocblas_evect evect,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -115,12 +118,13 @@ rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_syevj_heevj_batched_impl<double>(handle, evect, uplo, n, A, lda, abstol,
+    return rocsolver_syevj_heevj_batched_impl<double>(handle, esort, evect, uplo, n, A, lda, abstol,
                                                       residual, max_sweeps, n_sweeps, W, strideW,
                                                       info, batch_count);
 }
 
 rocblas_status rocsolver_cheevj_batched(rocblas_handle handle,
+                                        const rocblas_esort esort,
                                         const rocblas_evect evect,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -136,11 +140,12 @@ rocblas_status rocsolver_cheevj_batched(rocblas_handle handle,
                                         const rocblas_int batch_count)
 {
     return rocsolver_syevj_heevj_batched_impl<rocblas_float_complex>(
-        handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, strideW, info,
-        batch_count);
+        handle, esort, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, strideW,
+        info, batch_count);
 }
 
 rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
+                                        const rocblas_esort esort,
                                         const rocblas_evect evect,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -156,8 +161,8 @@ rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
                                         const rocblas_int batch_count)
 {
     return rocsolver_syevj_heevj_batched_impl<rocblas_double_complex>(
-        handle, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, strideW, info,
-        batch_count);
+        handle, esort, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, strideW,
+        info, batch_count);
 }
 
 } // extern C
