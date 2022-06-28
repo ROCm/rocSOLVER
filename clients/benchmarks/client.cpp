@@ -411,7 +411,7 @@ try
 
         ("esort",
          value<char>()->default_value('A'),
-            "N = no sorting, B = ascending order.\n"
+            "N = no sorting, A = ascending order.\n"
             "                           Indicates whether the computed eigenvalues are sorted in ascending order.\n"
             "                           Used in iterative Jacobi functions.\n"
             "                           ")
