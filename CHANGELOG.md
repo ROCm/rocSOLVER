@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSOLVER
+## (Unreleased) rocSOLVER 3.19.0
 ### Added
 - Partial eigensolver routines for symmetric/hermitian matrices:
     - SYEVX (with batched and strided\_batched versions)
@@ -19,12 +19,10 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Added --profile_kernels option to rocsolver-bench, which will include kernel calls in the
   profile log (if profile logging is enabled with --profile).
 
-### Optimized
 ### Changed
 - Changed rocsolver-bench result labels `cpu_time` and `gpu_time` to
   `cpu_time_us` and `gpu_time_us`, respectively.
 
-### Deprecated
 ### Removed
 - Removed dependency on cblas from the rocsolver test and benchmark clients.
 
@@ -34,9 +32,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Fixed STEIN memory access fault when nev is 0.
 - Fixed incorrect STEBZ results for close eigenvalues when range = index.
 - Fixed git unsafe repository error when building with `./install.sh -cd` as a non-root user.
-
-### Known Issues
-### Security
 
 
 ## rocSOLVER 3.18.0 for ROCm 5.2.0
