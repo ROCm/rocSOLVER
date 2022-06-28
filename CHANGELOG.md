@@ -39,7 +39,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Security
 
 
-## (Unreleased) rocSOLVER 3.18.0
+## rocSOLVER 3.18.0 for ROCm 5.2.0
 ### Added
 - Partial eigenvalue decomposition routines:
     - STEBZ
