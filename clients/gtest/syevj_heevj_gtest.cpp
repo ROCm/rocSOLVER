@@ -52,6 +52,9 @@ Arguments syevj_heevj_setup_arguments(syevj_heevj_tuple tup)
     arg.set<char>("evect", op[0]);
     arg.set<char>("uplo", op[1]);
 
+    // only need to test the sorted case
+    arg.set<char>("esort", 'A');
+
     arg.set<double>("abstol", 0);
     arg.set<rocblas_int>("max_sweeps", 100);
 
