@@ -183,6 +183,16 @@ struct formatter<rocsolver_logvalue<rocblas_eorder>> : formatter<char>
 };
 
 template <>
+struct formatter<rocsolver_logvalue<rocblas_esort>> : formatter<char>
+{
+    template <typename FormatCtx>
+    auto format(rocsolver_logvalue<rocblas_esort> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    {
+        return formatter<char>::format(rocblas2char_esort(wrapper.value), ctx);
+    }
+};
+
+template <>
 struct formatter<rocsolver_logvalue<rocblas_datatype>> : formatter<string_view>
 {
     template <typename FormatCtx>

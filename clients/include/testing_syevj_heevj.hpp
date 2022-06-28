@@ -13,6 +13,7 @@
 
 template <bool STRIDED, typename T, typename S, typename SS, typename U>
 void syevj_heevj_checkBadArgs(const rocblas_handle handle,
+                              const rocblas_esort esort,
                               const rocblas_evect evect,
                               const rocblas_fill uplo,
                               const rocblas_int n,
@@ -29,59 +30,65 @@ void syevj_heevj_checkBadArgs(const rocblas_handle handle,
                               const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, nullptr, evect, uplo, n, dA, lda, stA, abstol,
-                                                dResidual, max_sweeps, dSweeps, dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, nullptr, esort, evect, uplo, n, dA, lda,
+                                                stA, abstol, dResidual, max_sweeps, dSweeps, dW,
+                                                stW, dInfo, bc),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, rocblas_evect(-1), uplo, n, dA,
-                                                lda, stA, abstol, dResidual, max_sweeps, dSweeps,
-                                                dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, rocblas_esort(-1), evect, uplo, n,
+                                                dA, lda, stA, abstol, dResidual, max_sweeps,
+                                                dSweeps, dW, stW, dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, rocblas_fill_full, n, dA,
-                                                lda, stA, abstol, dResidual, max_sweeps, dSweeps,
-                                                dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, rocblas_evect(-1), uplo, n,
+                                                dA, lda, stA, abstol, dResidual, max_sweeps,
+                                                dSweeps, dW, stW, dInfo, bc),
+                          rocblas_status_invalid_value);
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, rocblas_fill_full, n,
+                                                dA, lda, stA, abstol, dResidual, max_sweeps,
+                                                dSweeps, dW, stW, dInfo, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA,
-                                                    abstol, dResidual, max_sweeps, dSweeps, dW, stW,
-                                                    dInfo, -1),
+        EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA, lda,
+                                                    stA, abstol, dResidual, max_sweeps, dSweeps, dW,
+                                                    stW, dInfo, -1),
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, (T) nullptr, lda,
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, (T) nullptr,
+                                                lda, stA, abstol, dResidual, max_sweeps, dSweeps,
+                                                dW, stW, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA, lda,
+                                                stA, abstol, (S) nullptr, max_sweeps, dSweeps, dW,
+                                                stW, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA, lda,
+                                                stA, abstol, dResidual, max_sweeps, (U) nullptr, dW,
+                                                stW, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA, lda,
+                                                stA, abstol, dResidual, max_sweeps, dSweeps,
+                                                (S) nullptr, stW, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA, lda,
                                                 stA, abstol, dResidual, max_sweeps, dSweeps, dW,
-                                                stW, dInfo, bc),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA, abstol,
-                                                (S) nullptr, max_sweeps, dSweeps, dW, stW, dInfo, bc),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA,
-                                                abstol, dResidual, max_sweeps, (U) nullptr, dW, stW,
-                                                dInfo, bc),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA,
-                                                abstol, dResidual, max_sweeps, dSweeps, (S) nullptr,
-                                                stW, dInfo, bc),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA,
-                                                abstol, dResidual, max_sweeps, dSweeps, dW, stW,
-                                                (U) nullptr, bc),
+                                                stW, (U) nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, 0, (T) nullptr, lda,
-                                                stA, abstol, dResidual, max_sweeps, dSweeps,
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, 0, (T) nullptr,
+                                                lda, stA, abstol, dResidual, max_sweeps, dSweeps,
                                                 (S) nullptr, stW, dInfo, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA, lda, stA,
-                                                    abstol, (S) nullptr, max_sweeps, (U) nullptr,
-                                                    dW, stW, (U) nullptr, 0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA, lda,
+                                                    stA, abstol, (S) nullptr, max_sweeps,
+                                                    (U) nullptr, dW, stW, (U) nullptr, 0),
                               rocblas_status_success);
 }
 
@@ -93,6 +100,7 @@ void testing_syevj_heevj_bad_arg()
     // safe arguments
     rocblas_local_handle handle;
     rocblas_evect evect = rocblas_evect_none;
+    rocblas_esort esort = rocblas_esort_ascending;
     rocblas_fill uplo = rocblas_fill_lower;
     rocblas_int n = 1;
     rocblas_int lda = 1;
@@ -118,9 +126,9 @@ void testing_syevj_heevj_bad_arg()
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
-        syevj_heevj_checkBadArgs<STRIDED>(handle, evect, uplo, n, dA.data(), lda, stA, abstol,
-                                          dResidual.data(), max_sweeps, dSweeps.data(), dW.data(),
-                                          stW, dInfo.data(), bc);
+        syevj_heevj_checkBadArgs<STRIDED>(handle, esort, evect, uplo, n, dA.data(), lda, stA,
+                                          abstol, dResidual.data(), max_sweeps, dSweeps.data(),
+                                          dW.data(), stW, dInfo.data(), bc);
     }
     else
     {
@@ -137,9 +145,9 @@ void testing_syevj_heevj_bad_arg()
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
-        syevj_heevj_checkBadArgs<STRIDED>(handle, evect, uplo, n, dA.data(), lda, stA, abstol,
-                                          dResidual.data(), max_sweeps, dSweeps.data(), dW.data(),
-                                          stW, dInfo.data(), bc);
+        syevj_heevj_checkBadArgs<STRIDED>(handle, esort, evect, uplo, n, dA.data(), lda, stA,
+                                          abstol, dResidual.data(), max_sweeps, dSweeps.data(),
+                                          dW.data(), stW, dInfo.data(), bc);
     }
 }
 
@@ -193,6 +201,7 @@ void syevj_heevj_initData(const rocblas_handle handle,
 
 template <bool STRIDED, typename T, typename S, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
 void syevj_heevj_getError(const rocblas_handle handle,
+                          const rocblas_esort esort,
                           const rocblas_evect evect,
                           const rocblas_fill uplo,
                           const rocblas_int n,
@@ -231,9 +240,9 @@ void syevj_heevj_getError(const rocblas_handle handle,
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA,
-                                              abstol, dResidual.data(), max_sweeps, dSweeps.data(),
-                                              dW.data(), stW, dInfo.data(), bc));
+    CHECK_ROCBLAS_ERROR(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA.data(),
+                                              lda, stA, abstol, dResidual.data(), max_sweeps,
+                                              dSweeps.data(), dW.data(), stW, dInfo.data(), bc));
 
     CHECK_HIP_ERROR(hResidualRes.transfer_from(dResidual));
     CHECK_HIP_ERROR(hSweepsRes.transfer_from(dSweeps));
@@ -271,10 +280,11 @@ void syevj_heevj_getError(const rocblas_handle handle,
         if(evect != rocblas_evect_original)
         {
             // only eigenvalues needed; can compare with LAPACK
+            // (no need to test the non-sorted case --lapack return sorted eigenvalues--)
 
             // error is ||hW - hWRes|| / ||hW||
             // using frobenius norm
-            if(hInfo[b][0] == 0)
+            if(hInfo[b][0] == 0 && esort == rocblas_esort_ascending)
                 err = norm_error('F', 1, n, 1, hW[b], hWRes[b]);
             *max_err = err > *max_err ? err : *max_err;
         }
@@ -306,6 +316,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
 
 template <bool STRIDED, typename T, typename S, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
 void syevj_heevj_getPerfData(const rocblas_handle handle,
+                             const rocblas_esort esort,
                              const rocblas_evect evect,
                              const rocblas_fill uplo,
                              const rocblas_int n,
@@ -357,8 +368,8 @@ void syevj_heevj_getPerfData(const rocblas_handle handle,
     {
         syevj_heevj_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA.data(), lda,
-                                                  stA, abstol, dResidual.data(), max_sweeps,
+        CHECK_ROCBLAS_ERROR(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA.data(),
+                                                  lda, stA, abstol, dResidual.data(), max_sweeps,
                                                   dSweeps.data(), dW.data(), stW, dInfo.data(), bc));
     }
 
@@ -382,7 +393,7 @@ void syevj_heevj_getPerfData(const rocblas_handle handle,
         syevj_heevj_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
         start = get_time_us_sync(stream);
-        rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA.data(), lda, stA, abstol,
+        rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, dA.data(), lda, stA, abstol,
                               dResidual.data(), max_sweeps, dSweeps.data(), dW.data(), stW,
                               dInfo.data(), bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
@@ -398,6 +409,7 @@ void testing_syevj_heevj(Arguments& argus)
     // get arguments
     rocblas_local_handle handle;
     char evectC = argus.get<char>("evect");
+    char esortC = argus.get<char>("esort");
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
@@ -408,6 +420,7 @@ void testing_syevj_heevj(Arguments& argus)
     rocblas_int max_sweeps = argus.get<rocblas_int>("max_sweeps", 100);
 
     rocblas_evect evect = char2rocblas_evect(evectC);
+    rocblas_esort esort = char2rocblas_esort(esortC);
     rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
@@ -417,12 +430,12 @@ void testing_syevj_heevj(Arguments& argus)
     {
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(
-                rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, (T* const*)nullptr, lda, stA,
-                                      abstol, (S*)nullptr, max_sweeps, (rocblas_int*)nullptr,
+                rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, (T* const*)nullptr, lda,
+                                      stA, abstol, (S*)nullptr, max_sweeps, (rocblas_int*)nullptr,
                                       (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
                 rocblas_status_invalid_value);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n,
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n,
                                                         (T*)nullptr, lda, stA, abstol, (S*)nullptr,
                                                         max_sweeps, (rocblas_int*)nullptr,
                                                         (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
@@ -448,12 +461,12 @@ void testing_syevj_heevj(Arguments& argus)
     {
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(
-                rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, (T* const*)nullptr, lda, stA,
-                                      abstol, (S*)nullptr, max_sweeps, (rocblas_int*)nullptr,
+                rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n, (T* const*)nullptr, lda,
+                                      stA, abstol, (S*)nullptr, max_sweeps, (rocblas_int*)nullptr,
                                       (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
                 rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n,
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n,
                                                         (T*)nullptr, lda, stA, abstol, (S*)nullptr,
                                                         max_sweeps, (rocblas_int*)nullptr,
                                                         (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
@@ -470,12 +483,13 @@ void testing_syevj_heevj(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_syevj_heevj(
-                STRIDED, handle, evect, uplo, n, (T* const*)nullptr, lda, stA, abstol, (S*)nullptr,
-                max_sweeps, (rocblas_int*)nullptr, (S*)nullptr, stW, (rocblas_int*)nullptr, bc));
+            CHECK_ALLOC_QUERY(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n,
+                                                    (T* const*)nullptr, lda, stA, abstol,
+                                                    (S*)nullptr, max_sweeps, (rocblas_int*)nullptr,
+                                                    (S*)nullptr, stW, (rocblas_int*)nullptr, bc));
         else
             CHECK_ALLOC_QUERY(rocsolver_syevj_heevj(
-                STRIDED, handle, evect, uplo, n, (T*)nullptr, lda, stA, abstol, (S*)nullptr,
+                STRIDED, handle, esort, evect, uplo, n, (T*)nullptr, lda, stA, abstol, (S*)nullptr,
                 max_sweeps, (rocblas_int*)nullptr, (S*)nullptr, stW, (rocblas_int*)nullptr, bc));
 
         size_t size;
@@ -520,10 +534,10 @@ void testing_syevj_heevj(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA.data(),
-                                                        lda, stA, abstol, dResidual.data(),
-                                                        max_sweeps, dSweeps.data(), dW.data(), stW,
-                                                        dInfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n,
+                                                        dA.data(), lda, stA, abstol,
+                                                        dResidual.data(), max_sweeps, dSweeps.data(),
+                                                        dW.data(), stW, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -534,7 +548,7 @@ void testing_syevj_heevj(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            syevj_heevj_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, abstol,
+            syevj_heevj_getError<STRIDED, T>(handle, esort, evect, uplo, n, dA, lda, stA, abstol,
                                              dResidual, max_sweeps, dSweeps, dW, stW, dInfo, bc, hA,
                                              hARes, hResidualRes, hSweepsRes, hW, hWRes, hInfo,
                                              hInfoRes, &max_error);
@@ -544,8 +558,8 @@ void testing_syevj_heevj(Arguments& argus)
         if(argus.timing)
         {
             syevj_heevj_getPerfData<STRIDED, T>(
-                handle, evect, uplo, n, dA, lda, stA, abstol, dResidual, max_sweeps, dSweeps, dW,
-                stW, dInfo, bc, hA, hW, hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
+                handle, esort, evect, uplo, n, dA, lda, stA, abstol, dResidual, max_sweeps, dSweeps,
+                dW, stW, dInfo, bc, hA, hW, hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
                 argus.profile, argus.profile_kernels, argus.perf);
         }
     }
@@ -562,10 +576,10 @@ void testing_syevj_heevj(Arguments& argus)
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, evect, uplo, n, dA.data(),
-                                                        lda, stA, abstol, dResidual.data(),
-                                                        max_sweeps, dSweeps.data(), dW.data(), stW,
-                                                        dInfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_syevj_heevj(STRIDED, handle, esort, evect, uplo, n,
+                                                        dA.data(), lda, stA, abstol,
+                                                        dResidual.data(), max_sweeps, dSweeps.data(),
+                                                        dW.data(), stW, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -576,7 +590,7 @@ void testing_syevj_heevj(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            syevj_heevj_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, abstol,
+            syevj_heevj_getError<STRIDED, T>(handle, esort, evect, uplo, n, dA, lda, stA, abstol,
                                              dResidual, max_sweeps, dSweeps, dW, stW, dInfo, bc, hA,
                                              hARes, hResidualRes, hSweepsRes, hW, hWRes, hInfo,
                                              hInfoRes, &max_error);
@@ -586,8 +600,8 @@ void testing_syevj_heevj(Arguments& argus)
         if(argus.timing)
         {
             syevj_heevj_getPerfData<STRIDED, T>(
-                handle, evect, uplo, n, dA, lda, stA, abstol, dResidual, max_sweeps, dSweeps, dW,
-                stW, dInfo, bc, hA, hW, hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
+                handle, esort, evect, uplo, n, dA, lda, stA, abstol, dResidual, max_sweeps, dSweeps,
+                dW, stW, dInfo, bc, hA, hW, hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
                 argus.profile, argus.profile_kernels, argus.perf);
         }
     }
@@ -605,20 +619,21 @@ void testing_syevj_heevj(Arguments& argus)
             rocsolver_bench_header("Arguments:");
             if(BATCHED)
             {
-                rocsolver_bench_output("evect", "uplo", "n", "lda", "abstol", "max_sweeps",
+                rocsolver_bench_output("esort", "evect", "uplo", "n", "lda", "abstol", "max_sweeps",
                                        "strideW", "batch_c");
-                rocsolver_bench_output(evectC, uploC, n, lda, abstol, max_sweeps, stW, bc);
+                rocsolver_bench_output(esortC, evectC, uploC, n, lda, abstol, max_sweeps, stW, bc);
             }
             else if(STRIDED)
             {
-                rocsolver_bench_output("evect", "uplo", "n", "lda", "strideA", "abstol",
+                rocsolver_bench_output("esort", "evect", "uplo", "n", "lda", "strideA", "abstol",
                                        "max_sweeps", "strideW", "batch_c");
-                rocsolver_bench_output(evectC, uploC, n, lda, stA, abstol, max_sweeps, stW, bc);
+                rocsolver_bench_output(esortC, evectC, uploC, n, lda, stA, abstol, max_sweeps, stW,
+                                       bc);
             }
             else
             {
-                rocsolver_bench_output("evect", "uplo", "n", "lda", "abstol", "max_sweeps");
-                rocsolver_bench_output(evectC, uploC, n, lda, abstol, max_sweeps);
+                rocsolver_bench_output("esort", "evect", "uplo", "n", "lda", "abstol", "max_sweeps");
+                rocsolver_bench_output(esortC, evectC, uploC, n, lda, abstol, max_sweeps);
             }
             rocsolver_bench_header("Results:");
             if(argus.norm_check)

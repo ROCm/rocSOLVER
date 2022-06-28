@@ -90,7 +90,8 @@ __device__ S syevj_update_norm(const rocblas_int tid,
  *  Call this kernel with batch_count groups in y, and ceil(n / 2) threads in x. **/
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
-    syevj_small_kernel(const rocblas_evect evect,
+    syevj_small_kernel(const rocblas_esort esort,
+                       const rocblas_evect evect,
                        const rocblas_fill uplo,
                        const rocblas_int n,
                        U AA,
@@ -290,7 +291,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
         W[i] = std::real(Acpy[i + i * n]);
     __syncthreads();
 
-    if(evect == rocblas_evect_none && tid > 0)
+    if((evect == rocblas_evect_none && tid > 0) || esort == rocblas_esort_none)
         return;
 
     rocblas_int m;
@@ -330,7 +331,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
  *  Call this kernel with batch_count groups in y, and SYEVJ_MAX_THDS threads in x. **/
 template <int MAX_THDS, typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
-    syevj_large_kernel(const rocblas_evect evect,
+    syevj_large_kernel(const rocblas_esort esort,
+                       const rocblas_evect evect,
                        const rocblas_fill uplo,
                        const rocblas_int n,
                        U AA,
@@ -560,7 +562,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
         W[i] = std::real(Acpy[i + i * n]);
     __syncthreads();
 
-    if(evect == rocblas_evect_none && tid > 0)
+    if((evect == rocblas_evect_none && tid > 0) || esort == rocblas_esort_none)
         return;
 
     rocblas_int m;
@@ -647,6 +649,7 @@ void rocsolver_syevj_heevj_getMemorySize(const rocblas_evect evect,
 /** Argument checking **/
 template <typename T, typename S>
 rocblas_status rocsolver_syevj_heevj_argCheck(rocblas_handle handle,
+                                              const rocblas_esort esort,
                                               const rocblas_evect evect,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -662,6 +665,8 @@ rocblas_status rocsolver_syevj_heevj_argCheck(rocblas_handle handle,
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
+    if(esort != rocblas_esort_none && esort != rocblas_esort_ascending)
+        return rocblas_status_invalid_value;
     if((evect != rocblas_evect_original && evect != rocblas_evect_none)
        || (uplo != rocblas_fill_lower && uplo != rocblas_fill_upper))
         return rocblas_status_invalid_value;
@@ -684,6 +689,7 @@ rocblas_status rocsolver_syevj_heevj_argCheck(rocblas_handle handle,
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
+                                              const rocblas_esort esort,
                                               const rocblas_evect evect,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -705,8 +711,9 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
                                               T* sines,
                                               rocblas_int* tbarr)
 {
-    ROCSOLVER_ENTER("syevj_heevj", "evect:", evect, "uplo:", uplo, "n:", n, "shiftA:", shiftA,
-                    "lda:", lda, "abstol:", abstol, "max_sweeps:", max_sweeps, "bc:", batch_count);
+    ROCSOLVER_ENTER("syevj_heevj", "esort:", esort, "evect:", evect, "uplo:", uplo, "n:", n,
+                    "shiftA:", shiftA, "lda:", lda, "abstol:", abstol, "max_sweeps:", max_sweeps,
+                    "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)
@@ -748,9 +755,9 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         dim3 grid(1, batch_count, 1);
         dim3 threads(half_n, 1, 1);
 
-        ROCSOLVER_LAUNCH_KERNEL(syevj_small_kernel<T>, grid, threads, 0, stream, evect, uplo, n, A,
-                                shiftA, lda, strideA, atol, eps, residual, max_sweeps, n_sweeps, W,
-                                strideW, info, batch_count, Acpy, resarr, tbarr);
+        ROCSOLVER_LAUNCH_KERNEL(syevj_small_kernel<T>, grid, threads, 0, stream, esort, evect, uplo,
+                                n, A, shiftA, lda, strideA, atol, eps, residual, max_sweeps,
+                                n_sweeps, W, strideW, info, batch_count, Acpy, resarr, tbarr);
     }
     else
     {
@@ -758,7 +765,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         dim3 threads(SYEVJ_MAX_THDS, 1, 1);
 
         ROCSOLVER_LAUNCH_KERNEL((syevj_large_kernel<SYEVJ_MAX_THDS, T>), grid, threads, 0, stream,
-                                evect, uplo, n, A, shiftA, lda, strideA, atol, eps, residual,
+                                esort, evect, uplo, n, A, shiftA, lda, strideA, atol, eps, residual,
                                 max_sweeps, n_sweeps, W, strideW, info, batch_count, Acpy, resarr,
                                 cosines, sines, tbarr);
     }

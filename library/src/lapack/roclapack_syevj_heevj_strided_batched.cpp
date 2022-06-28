@@ -6,6 +6,7 @@
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_syevj_heevj_strided_batched_impl(rocblas_handle handle,
+                                                          const rocblas_esort esort,
                                                           const rocblas_evect evect,
                                                           const rocblas_fill uplo,
                                                           const rocblas_int n,
@@ -22,16 +23,16 @@ rocblas_status rocsolver_syevj_heevj_strided_batched_impl(rocblas_handle handle,
                                                           const rocblas_int batch_count)
 {
     const char* name = (!rocblas_is_complex<T> ? "syevj_strided_batched" : "heevj_strided_batched");
-    ROCSOLVER_ENTER_TOP(name, "--evect", evect, "--uplo", uplo, "-n", n, "--lda", lda, "--strideA",
-                        strideA, "--abstol", abstol, "--max_sweeps", max_sweeps, "--strideW",
-                        strideW, "--batch_count", batch_count);
+    ROCSOLVER_ENTER_TOP(name, "--esort", esort, "--evect", evect, "--uplo", uplo, "-n", n, "--lda",
+                        lda, "--strideA", strideA, "--abstol", abstol, "--max_sweeps", max_sweeps,
+                        "--strideW", strideW, "--batch_count", batch_count);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_syevj_heevj_argCheck(handle, evect, uplo, n, A, lda, residual,
-                                                       max_sweeps, n_sweeps, W, info, batch_count);
+    rocblas_status st = rocsolver_syevj_heevj_argCheck(
+        handle, esort, evect, uplo, n, A, lda, residual, max_sweeps, n_sweeps, W, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
@@ -65,8 +66,8 @@ rocblas_status rocsolver_syevj_heevj_strided_batched_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_syevj_heevj_template<false, true, T>(
-        handle, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W,
-        strideW, info, batch_count, (T*)Acpy, (S*)resarr, (S*)cosines, (T*)sines,
+        handle, esort, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual, max_sweeps,
+        n_sweeps, W, strideW, info, batch_count, (T*)Acpy, (S*)resarr, (S*)cosines, (T*)sines,
         (rocblas_int*)tbarr);
 }
 
@@ -79,6 +80,7 @@ rocblas_status rocsolver_syevj_heevj_strided_batched_impl(rocblas_handle handle,
 extern "C" {
 
 rocblas_status rocsolver_ssyevj_strided_batched(rocblas_handle handle,
+                                                const rocblas_esort esort,
                                                 const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
@@ -94,12 +96,13 @@ rocblas_status rocsolver_ssyevj_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_syevj_heevj_strided_batched_impl<float>(handle, evect, uplo, n, A, lda, strideA,
-                                                             abstol, residual, max_sweeps, n_sweeps,
-                                                             W, strideW, info, batch_count);
+    return rocsolver_syevj_heevj_strided_batched_impl<float>(handle, esort, evect, uplo, n, A, lda,
+                                                             strideA, abstol, residual, max_sweeps,
+                                                             n_sweeps, W, strideW, info, batch_count);
 }
 
 rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle handle,
+                                                const rocblas_esort esort,
                                                 const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
@@ -116,11 +119,12 @@ rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     return rocsolver_syevj_heevj_strided_batched_impl<double>(
-        handle, evect, uplo, n, A, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W, strideW,
-        info, batch_count);
+        handle, esort, evect, uplo, n, A, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W,
+        strideW, info, batch_count);
 }
 
 rocblas_status rocsolver_cheevj_strided_batched(rocblas_handle handle,
+                                                const rocblas_esort esort,
                                                 const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
@@ -137,11 +141,12 @@ rocblas_status rocsolver_cheevj_strided_batched(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     return rocsolver_syevj_heevj_strided_batched_impl<rocblas_float_complex>(
-        handle, evect, uplo, n, A, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W, strideW,
-        info, batch_count);
+        handle, esort, evect, uplo, n, A, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W,
+        strideW, info, batch_count);
 }
 
 rocblas_status rocsolver_zheevj_strided_batched(rocblas_handle handle,
+                                                const rocblas_esort esort,
                                                 const rocblas_evect evect,
                                                 const rocblas_fill uplo,
                                                 const rocblas_int n,
@@ -158,8 +163,8 @@ rocblas_status rocsolver_zheevj_strided_batched(rocblas_handle handle,
                                                 const rocblas_int batch_count)
 {
     return rocsolver_syevj_heevj_strided_batched_impl<rocblas_double_complex>(
-        handle, evect, uplo, n, A, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W, strideW,
-        info, batch_count);
+        handle, esort, evect, uplo, n, A, lda, strideA, abstol, residual, max_sweeps, n_sweeps, W,
+        strideW, info, batch_count);
 }
 
 } // extern C

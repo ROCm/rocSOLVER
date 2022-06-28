@@ -47,6 +47,10 @@ rocblas_eorder
 ---------------
 .. doxygenenum:: rocblas_eorder
 
+rocblas_esort
+---------------
+.. doxygenenum:: rocblas_esort
+
 rocblas_layer_mode_flags
 ------------------------
 .. doxygentypedef:: rocblas_layer_mode_flags
