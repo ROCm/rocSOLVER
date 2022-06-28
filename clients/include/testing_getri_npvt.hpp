@@ -469,3 +469,11 @@ void testing_getri_npvt(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_getri_npvt<false, false, double>(Arguments& argus);
+extern template void testing_getri_npvt<false, false, float>(Arguments& argus);
+extern template void testing_getri_npvt<true, true, double>(Arguments& argus);
+extern template void testing_getri_npvt<true, true, float>(Arguments& argus);
+extern template void testing_getri_npvt<false, true, double>(Arguments& argus);
+extern template void testing_getri_npvt<false, true, float>(Arguments& argus);

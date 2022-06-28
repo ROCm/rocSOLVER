@@ -472,3 +472,11 @@ void testing_potri(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_potri<false, false, double>(Arguments& argus);
+extern template void testing_potri<false, false, float>(Arguments& argus);
+extern template void testing_potri<true, true, double>(Arguments& argus);
+extern template void testing_potri<true, true, float>(Arguments& argus);
+extern template void testing_potri<false, true, double>(Arguments& argus);
+extern template void testing_potri<false, true, float>(Arguments& argus);

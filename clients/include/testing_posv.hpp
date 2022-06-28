@@ -526,3 +526,11 @@ void testing_posv(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_posv<false, false, double>(Arguments& argus);
+extern template void testing_posv<false, false, float>(Arguments& argus);
+extern template void testing_posv<true, true, double>(Arguments& argus);
+extern template void testing_posv<true, true, float>(Arguments& argus);
+extern template void testing_posv<false, true, double>(Arguments& argus);
+extern template void testing_posv<false, true, float>(Arguments& argus);

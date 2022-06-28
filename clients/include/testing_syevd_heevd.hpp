@@ -617,3 +617,17 @@ void testing_syevd_heevd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_syevd_heevd<false, false, double>(Arguments& argus);
+extern template void testing_syevd_heevd<false, false, float>(Arguments& argus);
+extern template void testing_syevd_heevd<true, true, double>(Arguments& argus);
+extern template void testing_syevd_heevd<true, true, float>(Arguments& argus);
+extern template void testing_syevd_heevd<false, true, double>(Arguments& argus);
+extern template void testing_syevd_heevd<false, true, float>(Arguments& argus);
+extern template void testing_syevd_heevd<false, false, rocblas_double_complex>(Arguments& argus);
+extern template void testing_syevd_heevd<false, false, rocblas_float_complex>(Arguments& argus);
+extern template void testing_syevd_heevd<true, true, rocblas_double_complex>(Arguments& argus);
+extern template void testing_syevd_heevd<true, true, rocblas_float_complex>(Arguments& argus);
+extern template void testing_syevd_heevd<false, true, rocblas_double_complex>(Arguments& argus);
+extern template void testing_syevd_heevd<false, true, rocblas_float_complex>(Arguments& argus);

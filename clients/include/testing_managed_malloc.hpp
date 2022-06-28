@@ -338,3 +338,5 @@ void testing_managed_malloc(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations

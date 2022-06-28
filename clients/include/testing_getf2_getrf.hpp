@@ -542,3 +542,17 @@ void testing_getf2_getrf(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_getf2_getrf<false, false, 0, double>(Arguments& argus);
+extern template void testing_getf2_getrf<false, false, 0, float>(Arguments& argus);
+extern template void testing_getf2_getrf<true, true, 0, double>(Arguments& argus);
+extern template void testing_getf2_getrf<true, true, 0, float>(Arguments& argus);
+extern template void testing_getf2_getrf<false, true, 0, double>(Arguments& argus);
+extern template void testing_getf2_getrf<false, true, 0, float>(Arguments& argus);
+extern template void testing_getf2_getrf<false, false, 1, double>(Arguments& argus);
+extern template void testing_getf2_getrf<false, false, 1, float>(Arguments& argus);
+extern template void testing_getf2_getrf<true, true, 1, double>(Arguments& argus);
+extern template void testing_getf2_getrf<true, true, 1, float>(Arguments& argus);
+extern template void testing_getf2_getrf<false, true, 1, double>(Arguments& argus);
+extern template void testing_getf2_getrf<false, true, 1, float>(Arguments& argus);

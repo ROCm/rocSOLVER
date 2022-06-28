@@ -470,3 +470,11 @@ void testing_potrs(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_potrs<false, false, double>(Arguments& argus);
+extern template void testing_potrs<false, false, float>(Arguments& argus);
+extern template void testing_potrs<true, true, double>(Arguments& argus);
+extern template void testing_potrs<true, true, float>(Arguments& argus);
+extern template void testing_potrs<false, true, double>(Arguments& argus);
+extern template void testing_potrs<false, true, float>(Arguments& argus);

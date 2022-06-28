@@ -465,3 +465,9 @@ void testing_ormbr_unmbr(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_ormbr_unmbr<double>(Arguments& argus);
+extern template void testing_ormbr_unmbr<float>(Arguments& argus);
+extern template void testing_ormbr_unmbr<rocblas_double_complex>(Arguments& argus);
+extern template void testing_ormbr_unmbr<rocblas_float_complex>(Arguments& argus);

@@ -305,3 +305,7 @@ void testing_sterf(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_sterf<double>(Arguments& argus);
+extern template void testing_sterf<float>(Arguments& argus);

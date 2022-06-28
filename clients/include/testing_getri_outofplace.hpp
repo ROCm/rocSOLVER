@@ -554,3 +554,11 @@ void testing_getri_outofplace(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_getri_outofplace<false, false, double>(Arguments& argus);
+extern template void testing_getri_outofplace<false, false, float>(Arguments& argus);
+extern template void testing_getri_outofplace<true, true, double>(Arguments& argus);
+extern template void testing_getri_outofplace<true, true, float>(Arguments& argus);
+extern template void testing_getri_outofplace<false, true, double>(Arguments& argus);
+extern template void testing_getri_outofplace<false, true, float>(Arguments& argus);

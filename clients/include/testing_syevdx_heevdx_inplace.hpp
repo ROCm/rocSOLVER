@@ -682,3 +682,5 @@ void testing_syevdx_heevdx_inplace(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations

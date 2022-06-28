@@ -458,3 +458,7 @@ void testing_stedc(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_stedc<double>(Arguments& argus);
+extern template void testing_stedc<float>(Arguments& argus);

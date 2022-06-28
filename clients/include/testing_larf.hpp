@@ -367,3 +367,7 @@ void testing_larf(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_larf<double>(Arguments& argus);
+extern template void testing_larf<float>(Arguments& argus);

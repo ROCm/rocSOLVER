@@ -776,3 +776,17 @@ void testing_syevx_heevx(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_syevx_heevx<false, false, double>(Arguments& argus);
+extern template void testing_syevx_heevx<false, false, float>(Arguments& argus);
+extern template void testing_syevx_heevx<true, true, double>(Arguments& argus);
+extern template void testing_syevx_heevx<true, true, float>(Arguments& argus);
+extern template void testing_syevx_heevx<false, true, double>(Arguments& argus);
+extern template void testing_syevx_heevx<false, true, float>(Arguments& argus);
+extern template void testing_syevx_heevx<false, false, rocblas_double_complex>(Arguments& argus);
+extern template void testing_syevx_heevx<false, false, rocblas_float_complex>(Arguments& argus);
+extern template void testing_syevx_heevx<true, true, rocblas_double_complex>(Arguments& argus);
+extern template void testing_syevx_heevx<true, true, rocblas_float_complex>(Arguments& argus);
+extern template void testing_syevx_heevx<false, true, rocblas_double_complex>(Arguments& argus);
+extern template void testing_syevx_heevx<false, true, rocblas_float_complex>(Arguments& argus);

@@ -758,3 +758,17 @@ void testing_sygvd_hegvd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_sygvd_hegvd<false, false, double>(Arguments& argus);
+extern template void testing_sygvd_hegvd<false, false, float>(Arguments& argus);
+extern template void testing_sygvd_hegvd<true, true, double>(Arguments& argus);
+extern template void testing_sygvd_hegvd<true, true, float>(Arguments& argus);
+extern template void testing_sygvd_hegvd<false, true, double>(Arguments& argus);
+extern template void testing_sygvd_hegvd<false, true, float>(Arguments& argus);
+extern template void testing_sygvd_hegvd<false, false, rocblas_double_complex>(Arguments& argus);
+extern template void testing_sygvd_hegvd<false, false, rocblas_float_complex>(Arguments& argus);
+extern template void testing_sygvd_hegvd<true, true, rocblas_double_complex>(Arguments& argus);
+extern template void testing_sygvd_hegvd<true, true, rocblas_float_complex>(Arguments& argus);
+extern template void testing_sygvd_hegvd<false, true, rocblas_double_complex>(Arguments& argus);
+extern template void testing_sygvd_hegvd<false, true, rocblas_float_complex>(Arguments& argus);

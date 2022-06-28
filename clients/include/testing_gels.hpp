@@ -577,3 +577,11 @@ void testing_gels(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_gels<false, false, double>(Arguments& argus);
+extern template void testing_gels<false, false, float>(Arguments& argus);
+extern template void testing_gels<true, true, double>(Arguments& argus);
+extern template void testing_gels<true, true, float>(Arguments& argus);
+extern template void testing_gels<false, true, double>(Arguments& argus);
+extern template void testing_gels<false, true, float>(Arguments& argus);

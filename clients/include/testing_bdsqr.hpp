@@ -633,3 +633,7 @@ void testing_bdsqr(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_bdsqr<double>(Arguments& argus);
+extern template void testing_bdsqr<float>(Arguments& argus);

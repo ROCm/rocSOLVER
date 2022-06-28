@@ -858,3 +858,11 @@ void testing_gesvd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_gesvd<false, false, double>(Arguments& argus);
+extern template void testing_gesvd<false, false, float>(Arguments& argus);
+extern template void testing_gesvd<true, true, double>(Arguments& argus);
+extern template void testing_gesvd<true, true, float>(Arguments& argus);
+extern template void testing_gesvd<false, true, double>(Arguments& argus);
+extern template void testing_gesvd<false, true, float>(Arguments& argus);

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 project(rocsolver-clients LANGUAGES C CXX)
@@ -31,6 +31,8 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   target_link_libraries(clients-common INTERFACE fmt::fmt)
   set(common_source_files
     common/lapack_host_reference.cpp
+    common/complex_template_inst.cpp
+    common/real_template_inst.cpp
     rocblascommon/utility.cpp
   )
   prepend_path("${CMAKE_CURRENT_SOURCE_DIR}/" common_source_files common_source_paths)

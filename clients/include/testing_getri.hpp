@@ -510,3 +510,11 @@ void testing_getri(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_getri<false, false, double>(Arguments& argus);
+extern template void testing_getri<false, false, float>(Arguments& argus);
+extern template void testing_getri<true, true, double>(Arguments& argus);
+extern template void testing_getri<true, true, float>(Arguments& argus);
+extern template void testing_getri<false, true, double>(Arguments& argus);
+extern template void testing_getri<false, true, float>(Arguments& argus);

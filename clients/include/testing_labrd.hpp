@@ -455,3 +455,7 @@ void testing_labrd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_labrd<double>(Arguments& argus);
+extern template void testing_labrd<float>(Arguments& argus);

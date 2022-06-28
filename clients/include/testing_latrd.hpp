@@ -406,3 +406,7 @@ void testing_latrd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+//forward declared explicit instantiations
+extern template void testing_latrd<double>(Arguments& argus);
+extern template void testing_latrd<float>(Arguments& argus);

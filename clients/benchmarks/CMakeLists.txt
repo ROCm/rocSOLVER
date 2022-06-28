@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 add_executable(rocsolver-bench client.cpp)
@@ -23,5 +23,7 @@ target_compile_definitions(rocsolver-bench PRIVATE
   ROCM_USE_FLOAT16
   ROCSOLVER_CLIENTS_BENCH
 )
+
+set_target_properties(rocsolver-bench PROPERTIES RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 
 rocm_install(TARGETS rocsolver-bench COMPONENT benchmarks)
