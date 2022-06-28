@@ -33,8 +33,14 @@ set(roclapack_test_source
   # symmetric eigensolvers
   syev_heev_gtest.cpp
   syevd_heevd_gtest.cpp
+  syevj_heevj_gtest.cpp
+  syevx_heevx_gtest.cpp
+  syevdx_heevdx_gtest.cpp
   sygv_hegv_gtest.cpp
   sygvd_hegvd_gtest.cpp
+  sygvj_hegvj_gtest.cpp
+  sygvx_hegvx_gtest.cpp
+  sygvdx_hegvdx_gtest.cpp
 )
 
 set(rocauxiliary_test_source
@@ -99,7 +105,7 @@ if(WIN32)
   file(GLOB third_party_dlls
     LIST_DIRECTORIES OFF
     CONFIGURE_DEPENDS
-    ${cblas_DIR}/bin/*.dll
+    ${ROCSOLVER_LAPACK_PATH}/bin/*.dll
     ${GTest_DIR}/bin/*.dll
     $ENV{rocblas_DIR}/bin/*.dll
     $ENV{HIP_DIR}/bin/*.dll
@@ -121,9 +127,6 @@ if(WIN32)
 endif()
 
 target_link_libraries(rocsolver-test PRIVATE
-  cblas
-  lapack
-  blas
   GTest::GTest
   hip::device
   rocsolver-common

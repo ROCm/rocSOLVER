@@ -168,12 +168,16 @@ LAPACK main functions
 
     :ref:`rocsolver_syev <syev>`, x, x, ,
     :ref:`rocsolver_syevd <syevd>`, x, x, ,
+    :ref:`rocsolver_syevx <syevx>`, x, x, ,
     :ref:`rocsolver_sygv <sygv>`, x, x, ,
     :ref:`rocsolver_sygvd <sygvd>`, x, x, ,
+    :ref:`rocsolver_sygvx <sygvx>`, x, x, ,
     :ref:`rocsolver_heev <heev>`, , , x, x
     :ref:`rocsolver_heevd <heevd>`, , , x, x
+    :ref:`rocsolver_heevx <heevx>`, , , x, x
     :ref:`rocsolver_hegv <hegv>`, , , x, x
     :ref:`rocsolver_hegvd <hegvd>`, , , x, x
+    :ref:`rocsolver_hegvx <hegvx>`, , , x, x
 
 .. csv-table:: Singular value decomposition
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -195,5 +199,13 @@ LAPACK-like functions
     :ref:`rocsolver_getri_npvt <getri_npvt>`, x, x, x, x
     :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
     :ref:`rocsolver_getri_npvt_outofplace <getri_npvt_outofplace>`, x, x, x, x
+
+.. csv-table:: Symmetric eigensolvers
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_syevj <syevj>`, x, x, ,
+    :ref:`rocsolver_sygvj <sygvj>`, x, x, ,
+    :ref:`rocsolver_heevj <heevj>`, , , x, x
+    :ref:`rocsolver_hegvj <hegvj>`, , , x, x
 
 

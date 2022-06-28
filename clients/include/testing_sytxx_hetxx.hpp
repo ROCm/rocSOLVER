@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -119,7 +119,7 @@ void testing_sytxx_hetxx_bad_arg()
     }
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<!is_complex<T>, int> = 0>
+template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 void sytxx_hetxx_initData(const rocblas_handle handle,
                           const rocblas_int n,
                           Td& dA,
@@ -154,7 +154,7 @@ void sytxx_hetxx_initData(const rocblas_handle handle,
     }
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<is_complex<T>, int> = 0>
+template <bool CPU, bool GPU, typename T, typename Td, typename Th, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 void sytxx_hetxx_initData(const rocblas_handle handle,
                           const rocblas_int n,
                           Td& dA,
@@ -212,7 +212,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
                           Uh& hTau,
                           double* max_err)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     std::vector<T> hW(32 * n);
 
@@ -330,6 +330,7 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
                              double* cpu_time_used,
                              const rocblas_int hot_calls,
                              const int profile,
+                             const bool profile_kernels,
                              const bool perf)
 {
     std::vector<T> hW(32 * n);
@@ -368,7 +369,11 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -527,7 +532,8 @@ void testing_sytxx_hetxx(Arguments& argus)
         if(argus.timing)
             sytxx_hetxx_getPerfData<STRIDED, SYTRD, T>(
                 handle, uplo, n, dA, lda, stA, dD, stD, dE, stE, dTau, stP, bc, hA, hD, hE, hTau,
-                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels,
+                argus.perf);
     }
 
     else
@@ -562,7 +568,8 @@ void testing_sytxx_hetxx(Arguments& argus)
         if(argus.timing)
             sytxx_hetxx_getPerfData<STRIDED, SYTRD, T>(
                 handle, uplo, n, dA, lda, stA, dD, stD, dE, stE, dTau, stP, bc, hA, hD, hE, hTau,
-                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.perf);
+                &gpu_time_used, &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels,
+                argus.perf);
     }
 
     // validate results for rocsolver-test
@@ -596,12 +603,12 @@ void testing_sytxx_hetxx(Arguments& argus)
             rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
-                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us", "error");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
             }
             else
             {
-                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();

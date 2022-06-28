@@ -2,9 +2,9 @@
  * Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
+#include <rocblas/rocblas.h>
+
 #include "lapack_host_reference.hpp"
-#include "cblas.h"
-#include "rocblas/rocblas.h"
 
 /*!\file
  * \brief provide template functions interfaces to BLAS and LAPACK interfaces, it is
@@ -12,7 +12,8 @@
  */
 
 /*************************************************************************/
-// These are C wrapper calls to CBLAS and fortran LAPACK
+// Function declarations for LAPACK-provided functions with gfortran-style
+// name mangling (lowercase name with trailing underscore).
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,6 +108,115 @@ void zhemm_(char* side,
             rocblas_double_complex* beta,
             rocblas_double_complex* C,
             int* ldc);
+
+void strmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            float* alpha,
+            float* A,
+            int* lda,
+            float* B,
+            int* ldb);
+void dtrmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            double* alpha,
+            double* A,
+            int* lda,
+            double* B,
+            int* ldb);
+void ctrmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            rocblas_float_complex* alpha,
+            rocblas_float_complex* A,
+            int* lda,
+            rocblas_float_complex* B,
+            int* ldb);
+void ztrmm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            rocblas_double_complex* alpha,
+            rocblas_double_complex* A,
+            int* lda,
+            rocblas_double_complex* B,
+            int* ldb);
+
+void strsm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            float* alpha,
+            float* A,
+            int* lda,
+            float* B,
+            int* ldb);
+void dtrsm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            double* alpha,
+            double* A,
+            int* lda,
+            double* B,
+            int* ldb);
+void ctrsm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            rocblas_float_complex* alpha,
+            rocblas_float_complex* A,
+            int* lda,
+            rocblas_float_complex* B,
+            int* ldb);
+void ztrsm_(char* side,
+            char* uplo,
+            char* transA,
+            char* diag,
+            int* m,
+            int* n,
+            rocblas_double_complex* alpha,
+            rocblas_double_complex* A,
+            int* lda,
+            rocblas_double_complex* B,
+            int* ldb);
+
+void strsv_(char* uplo, char* transA, char* diag, int* n, float* A, int* lda, float* x, int* incx);
+void dtrsv_(char* uplo, char* transA, char* diag, int* n, double* A, int* lda, double* x, int* incx);
+void ctrsv_(char* uplo,
+            char* transA,
+            char* diag,
+            int* n,
+            rocblas_float_complex* A,
+            int* lda,
+            rocblas_float_complex* x,
+            int* incx);
+void ztrsv_(char* uplo,
+            char* transA,
+            char* diag,
+            int* n,
+            rocblas_double_complex* A,
+            int* lda,
+            rocblas_double_complex* x,
+            int* incx);
 
 void strtri_(char* uplo, char* diag, int* n, float* A, int* lda, int* info);
 void dtrtri_(char* uplo, char* diag, int* n, double* A, int* lda, int* info);
@@ -1707,7 +1817,7 @@ void ssyev_(char* evect,
             int* n,
             float* A,
             int* lda,
-            float* D,
+            float* W,
             float* work,
             int* lwork,
             int* info);
@@ -1716,7 +1826,7 @@ void dsyev_(char* evect,
             int* n,
             double* A,
             int* lda,
-            double* D,
+            double* W,
             double* work,
             int* lwork,
             int* info);
@@ -1725,7 +1835,7 @@ void cheev_(char* evect,
             int* n,
             rocblas_float_complex* A,
             int* lda,
-            float* D,
+            float* W,
             rocblas_float_complex* work,
             int* lwork,
             float* rwork,
@@ -1735,7 +1845,7 @@ void zheev_(char* evect,
             int* n,
             rocblas_double_complex* A,
             int* lda,
-            double* D,
+            double* W,
             rocblas_double_complex* work,
             int* lwork,
             double* rwork,
@@ -1746,7 +1856,7 @@ void ssyevd_(char* evect,
              int* n,
              float* A,
              int* lda,
-             float* D,
+             float* W,
              float* work,
              int* lwork,
              int* iwork,
@@ -1757,7 +1867,7 @@ void dsyevd_(char* evect,
              int* n,
              double* A,
              int* lda,
-             double* D,
+             double* W,
              double* work,
              int* lwork,
              int* iwork,
@@ -1768,7 +1878,7 @@ void cheevd_(char* evect,
              int* n,
              rocblas_float_complex* A,
              int* lda,
-             float* D,
+             float* W,
              rocblas_float_complex* work,
              int* lwork,
              float* rwork,
@@ -1781,13 +1891,96 @@ void zheevd_(char* evect,
              int* n,
              rocblas_double_complex* A,
              int* lda,
-             double* D,
+             double* W,
              rocblas_double_complex* work,
              int* lwork,
              double* rwork,
              int* lrwork,
              int* iwork,
              int* liwork,
+             int* info);
+
+void ssyevx_(char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             float* A,
+             int* lda,
+             float* vl,
+             float* vu,
+             int* il,
+             int* iu,
+             float* abstol,
+             int* nev,
+             float* W,
+             float* Z,
+             int* ldz,
+             float* work,
+             int* lwork,
+             int* iwork,
+             int* ifail,
+             int* info);
+void dsyevx_(char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             double* A,
+             int* lda,
+             double* vl,
+             double* vu,
+             int* il,
+             int* iu,
+             double* abstol,
+             int* nev,
+             double* W,
+             double* Z,
+             int* ldz,
+             double* work,
+             int* lwork,
+             int* iwork,
+             int* ifail,
+             int* info);
+void cheevx_(char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             float* vl,
+             float* vu,
+             int* il,
+             int* iu,
+             float* abstol,
+             int* nev,
+             float* W,
+             rocblas_float_complex* Z,
+             int* ldz,
+             rocblas_float_complex* work,
+             int* lwork,
+             float* rwork,
+             int* iwork,
+             int* ifail,
+             int* info);
+void zheevx_(char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             double* vl,
+             double* vu,
+             int* il,
+             int* iu,
+             double* abstol,
+             int* nev,
+             double* W,
+             rocblas_double_complex* Z,
+             int* ldz,
+             rocblas_double_complex* work,
+             int* lwork,
+             double* rwork,
+             int* iwork,
+             int* ifail,
              int* info);
 
 void ssygv_(int* itype,
@@ -1900,6 +2093,101 @@ void zhegvd_(int* itype,
              int* lrwork,
              int* iwork,
              int* liwork,
+             int* info);
+
+void ssygvx_(int* itype,
+             char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             float* A,
+             int* lda,
+             float* B,
+             int* ldb,
+             float* vl,
+             float* vu,
+             int* il,
+             int* iu,
+             float* abstol,
+             int* m,
+             float* W,
+             float* Z,
+             int* ldz,
+             float* work,
+             int* lwork,
+             int* iwork,
+             int* ifail,
+             int* info);
+void dsygvx_(int* itype,
+             char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             double* A,
+             int* lda,
+             double* B,
+             int* ldb,
+             double* vl,
+             double* vu,
+             int* il,
+             int* iu,
+             double* abstol,
+             int* m,
+             double* W,
+             double* Z,
+             int* ldz,
+             double* work,
+             int* lwork,
+             int* iwork,
+             int* ifail,
+             int* info);
+void chegvx_(int* itype,
+             char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             rocblas_float_complex* B,
+             int* ldb,
+             float* vl,
+             float* vu,
+             int* il,
+             int* iu,
+             float* abstol,
+             int* m,
+             float* W,
+             rocblas_float_complex* Z,
+             int* ldz,
+             rocblas_float_complex* work,
+             int* lwork,
+             float* rwork,
+             int* iwork,
+             int* ifail,
+             int* info);
+void zhegvx_(int* itype,
+             char* evect,
+             char* erange,
+             char* uplo,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             rocblas_double_complex* B,
+             int* ldb,
+             double* vl,
+             double* vu,
+             int* il,
+             int* iu,
+             double* abstol,
+             int* m,
+             double* W,
+             rocblas_double_complex* Z,
+             int* ldz,
+             rocblas_double_complex* work,
+             int* lwork,
+             double* rwork,
+             int* iwork,
+             int* ifail,
              int* info);
 
 void slasyf_(char* uplo,
@@ -4211,182 +4499,234 @@ void cblas_syr<double>(rocblas_fill uplo, rocblas_int n, double alpha,
                        rocblas_int lda) {
   cblas_dsyr(CblasColMajor, (CBLAS_UPLO)uplo, n, alpha, x, incx, A, lda);
 }
-
-// gemm
-template <>
-void cblas_gemm<rocblas_half>(rocblas_operation transA,
-                              rocblas_operation transB, rocblas_int m,
-                              rocblas_int n, rocblas_int k, rocblas_half alpha,
-                              rocblas_half *A, rocblas_int lda, rocblas_half *B,
-                              rocblas_int ldb, rocblas_half beta,
-                              rocblas_half *C, rocblas_int ldc) {
-  // cblas does not support rocblas_half, so convert to higher precision float
-  // This will give more precise result which is acceptable for testing
-  float alpha_float = half_to_float(alpha);
-  float beta_float = half_to_float(beta);
-
-  int sizeA = transA == rocblas_operation_none ? k * lda : m * lda;
-  int sizeB = transB == rocblas_operation_none ? n * ldb : k * ldb;
-  int sizeC = n * ldc;
-
-  std::unique_ptr<float[]> A_float(new float[sizeA]());
-  std::unique_ptr<float[]> B_float(new float[sizeB]());
-  std::unique_ptr<float[]> C_float(new float[sizeC]());
-
-  for (int i = 0; i < sizeA; i++) {
-    A_float[i] = half_to_float(A[i]);
-  }
-  for (int i = 0; i < sizeB; i++) {
-    B_float[i] = half_to_float(B[i]);
-  }
-  for (int i = 0; i < sizeC; i++) {
-    C_float[i] = half_to_float(C[i]);
-  }
-
-  // just directly cast, since transA, transB are integers in the enum
-  // printf("transA: rocblas =%d, cblas=%d\n", transA, (CBLAS_TRANSPOSE)transA
-  // );
-  cblas_sgemm(CblasColMajor, (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB,
-              m, n, k, alpha_float, const_cast<const float *>(A_float.get()),
-              lda, const_cast<const float *>(B_float.get()), ldb, beta_float,
-              static_cast<float *>(C_float.get()), ldc);
-
-  for (int i = 0; i < sizeC; i++) {
-    C[i] = float_to_half(C_float[i]);
-  }
-}
 */
 
+// trsm
 template <>
-void cblas_gemm<float>(rocblas_operation transA,
-                       rocblas_operation transB,
+void cblas_trsm<float>(rocblas_side side,
+                       rocblas_fill uplo,
+                       rocblas_operation transA,
+                       rocblas_diagonal diag,
                        rocblas_int m,
                        rocblas_int n,
-                       rocblas_int k,
                        float alpha,
                        float* A,
                        rocblas_int lda,
                        float* B,
-                       rocblas_int ldb,
-                       float beta,
-                       float* C,
-                       rocblas_int ldc)
+                       rocblas_int ldb)
 {
-    // just directly cast, since transA, transB are integers in the enum
-    // printf("transA: rocblas =%d, cblas=%d\n", transA, (CBLAS_TRANSPOSE)transA
-    // );
-    cblas_sgemm(CblasColMajor, (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB, m, n, k, alpha, A,
-                lda, B, ldb, beta, C, ldc);
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    strsm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
 }
 
 template <>
-void cblas_gemm<double>(rocblas_operation transA,
-                        rocblas_operation transB,
+void cblas_trsm<double>(rocblas_side side,
+                        rocblas_fill uplo,
+                        rocblas_operation transA,
+                        rocblas_diagonal diag,
                         rocblas_int m,
                         rocblas_int n,
-                        rocblas_int k,
                         double alpha,
                         double* A,
                         rocblas_int lda,
                         double* B,
-                        rocblas_int ldb,
-                        double beta,
-                        double* C,
-                        rocblas_int ldc)
+                        rocblas_int ldb)
 {
-    cblas_dgemm(CblasColMajor, (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB, m, n, k, alpha, A,
-                lda, B, ldb, beta, C, ldc);
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    dtrsm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
 }
 
 template <>
-void cblas_gemm<rocblas_float_complex>(rocblas_operation transA,
-                                       rocblas_operation transB,
+void cblas_trsm<rocblas_float_complex>(rocblas_side side,
+                                       rocblas_fill uplo,
+                                       rocblas_operation transA,
+                                       rocblas_diagonal diag,
                                        rocblas_int m,
                                        rocblas_int n,
-                                       rocblas_int k,
                                        rocblas_float_complex alpha,
                                        rocblas_float_complex* A,
                                        rocblas_int lda,
                                        rocblas_float_complex* B,
-                                       rocblas_int ldb,
-                                       rocblas_float_complex beta,
-                                       rocblas_float_complex* C,
-                                       rocblas_int ldc)
+                                       rocblas_int ldb)
 {
-    // just directly cast, since transA, transB are integers in the enum
-    cblas_cgemm(CblasColMajor, (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB, m, n, k, &alpha, A,
-                lda, B, ldb, &beta, C, ldc);
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ctrsm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
 }
 
 template <>
-void cblas_gemm<rocblas_double_complex>(rocblas_operation transA,
-                                        rocblas_operation transB,
+void cblas_trsm<rocblas_double_complex>(rocblas_side side,
+                                        rocblas_fill uplo,
+                                        rocblas_operation transA,
+                                        rocblas_diagonal diag,
                                         rocblas_int m,
                                         rocblas_int n,
-                                        rocblas_int k,
                                         rocblas_double_complex alpha,
                                         rocblas_double_complex* A,
                                         rocblas_int lda,
                                         rocblas_double_complex* B,
-                                        rocblas_int ldb,
-                                        rocblas_double_complex beta,
-                                        rocblas_double_complex* C,
-                                        rocblas_int ldc)
+                                        rocblas_int ldb)
 {
-    cblas_zgemm(CblasColMajor, (CBLAS_TRANSPOSE)transA, (CBLAS_TRANSPOSE)transB, m, n, k, &alpha, A,
-                lda, B, ldb, &beta, C, ldc);
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ztrsm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
 }
-
 /*
-// trsm
+// trsv
 template <>
-void cblas_trsm<float>(rocblas_side side, rocblas_fill uplo,
-                       rocblas_operation transA, rocblas_diagonal diag,
-                       rocblas_int m, rocblas_int n, float alpha,
-                       const float *A, rocblas_int lda, float *B,
-                       rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_strsm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, alpha, A, lda, B,
-              ldb);
+void cblas_trsv<float>(rocblas_fill uplo,
+                       rocblas_operation transA,
+                       rocblas_diagonal diag,
+                       rocblas_int n,
+                       float* A,
+                       rocblas_int lda,
+                       float* x,
+                       rocblas_int incx)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    strsv_(&uploC, &transC, &diagC, &n, A, &lda, x, &incx);
 }
 
 template <>
-void cblas_trsm<double>(rocblas_side side, rocblas_fill uplo,
-                        rocblas_operation transA, rocblas_diagonal diag,
-                        rocblas_int m, rocblas_int n, double alpha,
-                        const double *A, rocblas_int lda, double *B,
-                        rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_dtrsm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, alpha, A, lda, B,
-              ldb);
+void cblas_trsv<double>(rocblas_fill uplo,
+                        rocblas_operation transA,
+                        rocblas_diagonal diag,
+                        rocblas_int n,
+                        double* A,
+                        rocblas_int lda,
+                        double* x,
+                        rocblas_int incx)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    dtrsv_(&uploC, &transC, &diagC, &n, A, &lda, x, &incx);
 }
 
 template <>
-void cblas_trsm<rocblas_float_complex>(
-    rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
-    rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-    rocblas_float_complex alpha, const rocblas_float_complex *A,
-    rocblas_int lda, rocblas_float_complex *B, rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_ctrsm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, &alpha, A, lda,
-              B, ldb);
+void cblas_trsv<rocblas_float_complex>(rocblas_fill uplo,
+                                       rocblas_operation transA,
+                                       rocblas_diagonal diag,
+                                       rocblas_int n,
+                                       rocblas_float_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_float_complex* x,
+                                       rocblas_int incx)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ctrsv_(&uploC, &transC, &diagC, &n, A, &lda, x, &incx);
 }
 
 template <>
-void cblas_trsm<rocblas_double_complex>(
-    rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
-    rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-    rocblas_double_complex alpha, const rocblas_double_complex *A,
-    rocblas_int lda, rocblas_double_complex *B, rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_ztrsm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, &alpha, A, lda,
-              B, ldb);
+void cblas_trsv<rocblas_double_complex>(rocblas_fill uplo,
+                                        rocblas_operation transA,
+                                        rocblas_diagonal diag,
+                                        rocblas_int n,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_double_complex* x,
+                                        rocblas_int incx)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ztrsv_(&uploC, &transC, &diagC, &n, A, &lda, x, &incx);
 }
 */
+// trmm
+template <>
+void cblas_trmm<float>(rocblas_side side,
+                       rocblas_fill uplo,
+                       rocblas_operation transA,
+                       rocblas_diagonal diag,
+                       rocblas_int m,
+                       rocblas_int n,
+                       float alpha,
+                       float* A,
+                       rocblas_int lda,
+                       float* B,
+                       rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    strmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
+
+template <>
+void cblas_trmm<double>(rocblas_side side,
+                        rocblas_fill uplo,
+                        rocblas_operation transA,
+                        rocblas_diagonal diag,
+                        rocblas_int m,
+                        rocblas_int n,
+                        double alpha,
+                        double* A,
+                        rocblas_int lda,
+                        double* B,
+                        rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    dtrmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
+
+template <>
+void cblas_trmm<rocblas_float_complex>(rocblas_side side,
+                                       rocblas_fill uplo,
+                                       rocblas_operation transA,
+                                       rocblas_diagonal diag,
+                                       rocblas_int m,
+                                       rocblas_int n,
+                                       rocblas_float_complex alpha,
+                                       rocblas_float_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_float_complex* B,
+                                       rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ctrmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
+
+template <>
+void cblas_trmm<rocblas_double_complex>(rocblas_side side,
+                                        rocblas_fill uplo,
+                                        rocblas_operation transA,
+                                        rocblas_diagonal diag,
+                                        rocblas_int m,
+                                        rocblas_int n,
+                                        rocblas_double_complex alpha,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_double_complex* B,
+                                        rocblas_int ldb)
+{
+    char sideC = rocblas2char_side(side);
+    char uploC = rocblas2char_fill(uplo);
+    char transC = rocblas2char_operation(transA);
+    char diagC = rocblas2char_diagonal(diag);
+    ztrmm_(&sideC, &uploC, &transC, &diagC, &m, &n, &alpha, A, &lda, B, &ldb);
+}
 
 // potf2
 template <>
@@ -4657,90 +4997,6 @@ void cblas_getf2(rocblas_int m,
 {
     zgetf2_(&m, &n, A, &lda, ipiv, info);
 }
-
-/*
-// trtri
-template <>
-rocblas_int cblas_trtri<float>(rocblas_fill uplo, rocblas_diagonal diag,
-rocblas_int n, float *A, rocblas_int lda) { rocblas_int info; char uploC =
-rocblas2char_fill(uplo); char diagC = rocblas2char_diagonal(diag);
-  strtri_(&uploC, &diagC, &n, A, &lda, &info);
-  return info;
-}
-
-template <>
-rocblas_int cblas_trtri<double>(rocblas_fill uplo, rocblas_diagonal diag,
-rocblas_int n, double *A, rocblas_int lda) { rocblas_int info; char uploC =
-rocblas2char_fill(uplo); char diagC = rocblas2char_diagonal(diag);
-  dtrtri_(&uploC, &diagC, &n, A, &lda, &info);
-  return info;
-}
-
-template <>
-rocblas_int cblas_trtri<rocblas_float_complex>(rocblas_fill uplo,
-rocblas_diagonal diag, rocblas_int n, rocblas_float_complex *A, rocblas_int lda)
-{ rocblas_int info; char uploC = rocblas2char_fill(uplo); char diagC =
-rocblas2char_diagonal(diag); ctrtri_(&uploC, &diagC, &n, A, &lda, &info); return
-info;
-}
-
-template <>
-rocblas_int cblas_trtri<rocblas_double_complex>(rocblas_fill uplo,
-rocblas_diagonal diag, rocblas_int n, rocblas_double_complex *A, rocblas_int
-lda) { rocblas_int info; char uploC = rocblas2char_fill(uplo); char diagC =
-rocblas2char_diagonal(diag); ztrtri_(&uploC, &diagC, &n, A, &lda, &info); return
-info;
-}
-
-// trmm
-template <>
-void cblas_trmm<float>(rocblas_side side, rocblas_fill uplo,
-                       rocblas_operation transA, rocblas_diagonal diag,
-                       rocblas_int m, rocblas_int n, float alpha,
-                       const float *A, rocblas_int lda, float *B,
-                       rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_strmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, alpha, A, lda, B,
-              ldb);
-}
-
-template <>
-void cblas_trmm<double>(rocblas_side side, rocblas_fill uplo,
-                        rocblas_operation transA, rocblas_diagonal diag,
-                        rocblas_int m, rocblas_int n, double alpha,
-                        const double *A, rocblas_int lda, double *B,
-                        rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_dtrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, alpha, A, lda, B,
-              ldb);
-}
-
-template <>
-void cblas_trmm<rocblas_float_complex>(
-    rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
-    rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-    rocblas_float_complex alpha, const rocblas_float_complex *A,
-    rocblas_int lda, rocblas_float_complex *B, rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_ctrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, &alpha, A, lda,
-              B, ldb);
-}
-
-template <>
-void cblas_trmm<rocblas_double_complex>(
-    rocblas_side side, rocblas_fill uplo, rocblas_operation transA,
-    rocblas_diagonal diag, rocblas_int m, rocblas_int n,
-    rocblas_double_complex alpha, const rocblas_double_complex *A,
-    rocblas_int lda, rocblas_double_complex *B, rocblas_int ldb) {
-  // just directly cast, since transA, transB are integers in the enum
-  cblas_ztrmm(CblasColMajor, (CBLAS_SIDE)side, (CBLAS_UPLO)uplo,
-              (CBLAS_TRANSPOSE)transA, (CBLAS_DIAG)diag, m, n, &alpha, A, lda,
-              B, ldb);
-}
-*/
 
 // getrf
 template <>
@@ -5857,8 +6113,8 @@ void cblas_stedc<rocblas_double_complex, double>(rocblas_evect evect,
 
 // stebz
 template <>
-void cblas_stebz<float>(rocblas_erange range,
-                        rocblas_eorder order,
+void cblas_stebz<float>(rocblas_erange erange,
+                        rocblas_eorder eorder,
                         rocblas_int n,
                         float vl,
                         float vu,
@@ -5876,15 +6132,15 @@ void cblas_stebz<float>(rocblas_erange range,
                         rocblas_int* iwork,
                         rocblas_int* info)
 {
-    char erangeC = rocblas2char_erange(range);
-    char eorderC = rocblas2char_eorder(order);
+    char erangeC = rocblas2char_erange(erange);
+    char eorderC = rocblas2char_eorder(eorder);
     sstebz_(&erangeC, &eorderC, &n, &vl, &vu, &il, &iu, &abstol, D, E, m, nsplit, W, iblock, isplit,
             work, iwork, info);
 }
 
 template <>
-void cblas_stebz<double>(rocblas_erange range,
-                         rocblas_eorder order,
+void cblas_stebz<double>(rocblas_erange erange,
+                         rocblas_eorder eorder,
                          rocblas_int n,
                          double vl,
                          double vu,
@@ -5902,8 +6158,8 @@ void cblas_stebz<double>(rocblas_erange range,
                          rocblas_int* iwork,
                          rocblas_int* info)
 {
-    char erangeC = rocblas2char_erange(range);
-    char eorderC = rocblas2char_eorder(order);
+    char erangeC = rocblas2char_erange(erange);
+    char eorderC = rocblas2char_eorder(eorder);
     dstebz_(&erangeC, &eorderC, &n, &vl, &vu, &il, &iu, &abstol, D, E, m, nsplit, W, iblock, isplit,
             work, iwork, info);
 }
@@ -6110,7 +6366,7 @@ void cblas_syev_heev<float, float>(rocblas_evect evect,
                                    rocblas_int n,
                                    float* A,
                                    rocblas_int lda,
-                                   float* D,
+                                   float* W,
                                    float* work,
                                    rocblas_int lwork,
                                    float* rwork,
@@ -6119,7 +6375,7 @@ void cblas_syev_heev<float, float>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    ssyev_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, info);
+    ssyev_(&evectC, &uploC, &n, A, &lda, W, rwork, &lrwork, info);
 }
 
 template <>
@@ -6128,7 +6384,7 @@ void cblas_syev_heev<double, double>(rocblas_evect evect,
                                      rocblas_int n,
                                      double* A,
                                      rocblas_int lda,
-                                     double* D,
+                                     double* W,
                                      double* work,
                                      rocblas_int lwork,
                                      double* rwork,
@@ -6137,7 +6393,7 @@ void cblas_syev_heev<double, double>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    dsyev_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, info);
+    dsyev_(&evectC, &uploC, &n, A, &lda, W, rwork, &lrwork, info);
 }
 
 template <>
@@ -6146,7 +6402,7 @@ void cblas_syev_heev<rocblas_float_complex, float>(rocblas_evect evect,
                                                    rocblas_int n,
                                                    rocblas_float_complex* A,
                                                    rocblas_int lda,
-                                                   float* D,
+                                                   float* W,
                                                    rocblas_float_complex* work,
                                                    rocblas_int lwork,
                                                    float* rwork,
@@ -6155,7 +6411,7 @@ void cblas_syev_heev<rocblas_float_complex, float>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    cheev_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, info);
+    cheev_(&evectC, &uploC, &n, A, &lda, W, work, &lwork, rwork, info);
 }
 
 template <>
@@ -6164,7 +6420,7 @@ void cblas_syev_heev<rocblas_double_complex, double>(rocblas_evect evect,
                                                      rocblas_int n,
                                                      rocblas_double_complex* A,
                                                      rocblas_int lda,
-                                                     double* D,
+                                                     double* W,
                                                      rocblas_double_complex* work,
                                                      rocblas_int lwork,
                                                      double* rwork,
@@ -6173,7 +6429,7 @@ void cblas_syev_heev<rocblas_double_complex, double>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    zheev_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, info);
+    zheev_(&evectC, &uploC, &n, A, &lda, W, work, &lwork, rwork, info);
 }
 
 // syevd & heevd
@@ -6183,7 +6439,7 @@ void cblas_syevd_heevd<float, float>(rocblas_evect evect,
                                      rocblas_int n,
                                      float* A,
                                      rocblas_int lda,
-                                     float* D,
+                                     float* W,
                                      float* work,
                                      rocblas_int lwork,
                                      float* rwork,
@@ -6194,7 +6450,7 @@ void cblas_syevd_heevd<float, float>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    ssyevd_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, iwork, &liwork, info);
+    ssyevd_(&evectC, &uploC, &n, A, &lda, W, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
@@ -6203,7 +6459,7 @@ void cblas_syevd_heevd<double, double>(rocblas_evect evect,
                                        rocblas_int n,
                                        double* A,
                                        rocblas_int lda,
-                                       double* D,
+                                       double* W,
                                        double* work,
                                        rocblas_int lwork,
                                        double* rwork,
@@ -6214,7 +6470,7 @@ void cblas_syevd_heevd<double, double>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    dsyevd_(&evectC, &uploC, &n, A, &lda, D, rwork, &lrwork, iwork, &liwork, info);
+    dsyevd_(&evectC, &uploC, &n, A, &lda, W, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
@@ -6223,7 +6479,7 @@ void cblas_syevd_heevd<rocblas_float_complex, float>(rocblas_evect evect,
                                                      rocblas_int n,
                                                      rocblas_float_complex* A,
                                                      rocblas_int lda,
-                                                     float* D,
+                                                     float* W,
                                                      rocblas_float_complex* work,
                                                      rocblas_int lwork,
                                                      float* rwork,
@@ -6234,7 +6490,7 @@ void cblas_syevd_heevd<rocblas_float_complex, float>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    cheevd_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
+    cheevd_(&evectC, &uploC, &n, A, &lda, W, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
 }
 
 template <>
@@ -6243,7 +6499,7 @@ void cblas_syevd_heevd<rocblas_double_complex, double>(rocblas_evect evect,
                                                        rocblas_int n,
                                                        rocblas_double_complex* A,
                                                        rocblas_int lda,
-                                                       double* D,
+                                                       double* W,
                                                        rocblas_double_complex* work,
                                                        rocblas_int lwork,
                                                        double* rwork,
@@ -6254,7 +6510,128 @@ void cblas_syevd_heevd<rocblas_double_complex, double>(rocblas_evect evect,
 {
     char evectC = rocblas2char_evect(evect);
     char uploC = rocblas2char_fill(uplo);
-    zheevd_(&evectC, &uploC, &n, A, &lda, D, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
+    zheevd_(&evectC, &uploC, &n, A, &lda, W, work, &lwork, rwork, &lrwork, iwork, &liwork, info);
+}
+
+// syevx & heevx
+template <>
+void cblas_syevx_heevx<float, float>(rocblas_evect evect,
+                                     rocblas_erange erange,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     float* A,
+                                     rocblas_int lda,
+                                     float vl,
+                                     float vu,
+                                     rocblas_int il,
+                                     rocblas_int iu,
+                                     float abstol,
+                                     rocblas_int* nev,
+                                     float* W,
+                                     float* Z,
+                                     rocblas_int ldz,
+                                     float* work,
+                                     rocblas_int lwork,
+                                     float* rwork,
+                                     rocblas_int* iwork,
+                                     rocblas_int* ifail,
+                                     rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    ssyevx_(&evectC, &erangeC, &uploC, &n, A, &lda, &vl, &vu, &il, &iu, &abstol, nev, W, Z, &ldz,
+            work, &lwork, iwork, ifail, info);
+}
+
+template <>
+void cblas_syevx_heevx<double, double>(rocblas_evect evect,
+                                       rocblas_erange erange,
+                                       rocblas_fill uplo,
+                                       rocblas_int n,
+                                       double* A,
+                                       rocblas_int lda,
+                                       double vl,
+                                       double vu,
+                                       rocblas_int il,
+                                       rocblas_int iu,
+                                       double abstol,
+                                       rocblas_int* nev,
+                                       double* W,
+                                       double* Z,
+                                       rocblas_int ldz,
+                                       double* work,
+                                       rocblas_int lwork,
+                                       double* rwork,
+                                       rocblas_int* iwork,
+                                       rocblas_int* ifail,
+                                       rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    dsyevx_(&evectC, &erangeC, &uploC, &n, A, &lda, &vl, &vu, &il, &iu, &abstol, nev, W, Z, &ldz,
+            work, &lwork, iwork, ifail, info);
+}
+
+template <>
+void cblas_syevx_heevx<rocblas_float_complex, float>(rocblas_evect evect,
+                                                     rocblas_erange erange,
+                                                     rocblas_fill uplo,
+                                                     rocblas_int n,
+                                                     rocblas_float_complex* A,
+                                                     rocblas_int lda,
+                                                     float vl,
+                                                     float vu,
+                                                     rocblas_int il,
+                                                     rocblas_int iu,
+                                                     float abstol,
+                                                     rocblas_int* nev,
+                                                     float* W,
+                                                     rocblas_float_complex* Z,
+                                                     rocblas_int ldz,
+                                                     rocblas_float_complex* work,
+                                                     rocblas_int lwork,
+                                                     float* rwork,
+                                                     rocblas_int* iwork,
+                                                     rocblas_int* ifail,
+                                                     rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    cheevx_(&evectC, &erangeC, &uploC, &n, A, &lda, &vl, &vu, &il, &iu, &abstol, nev, W, Z, &ldz,
+            work, &lwork, rwork, iwork, ifail, info);
+}
+
+template <>
+void cblas_syevx_heevx<rocblas_double_complex, double>(rocblas_evect evect,
+                                                       rocblas_erange erange,
+                                                       rocblas_fill uplo,
+                                                       rocblas_int n,
+                                                       rocblas_double_complex* A,
+                                                       rocblas_int lda,
+                                                       double vl,
+                                                       double vu,
+                                                       rocblas_int il,
+                                                       rocblas_int iu,
+                                                       double abstol,
+                                                       rocblas_int* nev,
+                                                       double* W,
+                                                       rocblas_double_complex* Z,
+                                                       rocblas_int ldz,
+                                                       rocblas_double_complex* work,
+                                                       rocblas_int lwork,
+                                                       double* rwork,
+                                                       rocblas_int* iwork,
+                                                       rocblas_int* ifail,
+                                                       rocblas_int* info)
+{
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    zheevx_(&evectC, &erangeC, &uploC, &n, A, &lda, &vl, &vu, &il, &iu, &abstol, nev, W, Z, &ldz,
+            work, &lwork, rwork, iwork, ifail, info);
 }
 
 // sygv & hegv
@@ -6439,6 +6816,143 @@ void cblas_sygvd_hegvd<rocblas_double_complex, double>(rocblas_eform itype,
     char uploC = rocblas2char_fill(uplo);
     zhegvd_(&itypeI, &evectC, &uploC, &n, A, &lda, B, &ldb, W, work, &lwork, rwork, &lrwork, iwork,
             &liwork, info);
+}
+
+// sygvx & hegvx
+template <>
+void cblas_sygvx_hegvx<float, float>(rocblas_eform itype,
+                                     rocblas_evect evect,
+                                     rocblas_erange erange,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     float* A,
+                                     rocblas_int lda,
+                                     float* B,
+                                     rocblas_int ldb,
+                                     float vl,
+                                     float vu,
+                                     rocblas_int il,
+                                     rocblas_int iu,
+                                     float abstol,
+                                     rocblas_int* m,
+                                     float* W,
+                                     float* Z,
+                                     rocblas_int ldz,
+                                     float* work,
+                                     rocblas_int lwork,
+                                     float* rwork,
+                                     rocblas_int* iwork,
+                                     rocblas_int* ifail,
+                                     rocblas_int* info)
+{
+    int itypeI = rocblas2char_eform(itype) - '0';
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    ssygvx_(&itypeI, &evectC, &erangeC, &uploC, &n, A, &lda, B, &ldb, &vl, &vu, &il, &iu, &abstol,
+            m, W, Z, &ldz, work, &lwork, iwork, ifail, info);
+}
+
+template <>
+void cblas_sygvx_hegvx<double, double>(rocblas_eform itype,
+                                       rocblas_evect evect,
+                                       rocblas_erange erange,
+                                       rocblas_fill uplo,
+                                       rocblas_int n,
+                                       double* A,
+                                       rocblas_int lda,
+                                       double* B,
+                                       rocblas_int ldb,
+                                       double vl,
+                                       double vu,
+                                       rocblas_int il,
+                                       rocblas_int iu,
+                                       double abstol,
+                                       rocblas_int* m,
+                                       double* W,
+                                       double* Z,
+                                       rocblas_int ldz,
+                                       double* work,
+                                       rocblas_int lwork,
+                                       double* rwork,
+                                       rocblas_int* iwork,
+                                       rocblas_int* ifail,
+                                       rocblas_int* info)
+{
+    int itypeI = rocblas2char_eform(itype) - '0';
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    dsygvx_(&itypeI, &evectC, &erangeC, &uploC, &n, A, &lda, B, &ldb, &vl, &vu, &il, &iu, &abstol,
+            m, W, Z, &ldz, work, &lwork, iwork, ifail, info);
+}
+
+template <>
+void cblas_sygvx_hegvx<rocblas_float_complex, float>(rocblas_eform itype,
+                                                     rocblas_evect evect,
+                                                     rocblas_erange erange,
+                                                     rocblas_fill uplo,
+                                                     rocblas_int n,
+                                                     rocblas_float_complex* A,
+                                                     rocblas_int lda,
+                                                     rocblas_float_complex* B,
+                                                     rocblas_int ldb,
+                                                     float vl,
+                                                     float vu,
+                                                     rocblas_int il,
+                                                     rocblas_int iu,
+                                                     float abstol,
+                                                     rocblas_int* m,
+                                                     float* W,
+                                                     rocblas_float_complex* Z,
+                                                     rocblas_int ldz,
+                                                     rocblas_float_complex* work,
+                                                     rocblas_int lwork,
+                                                     float* rwork,
+                                                     rocblas_int* iwork,
+                                                     rocblas_int* ifail,
+                                                     rocblas_int* info)
+{
+    int itypeI = rocblas2char_eform(itype) - '0';
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    chegvx_(&itypeI, &evectC, &erangeC, &uploC, &n, A, &lda, B, &ldb, &vl, &vu, &il, &iu, &abstol,
+            m, W, Z, &ldz, work, &lwork, rwork, iwork, ifail, info);
+}
+
+template <>
+void cblas_sygvx_hegvx<rocblas_double_complex, double>(rocblas_eform itype,
+                                                       rocblas_evect evect,
+                                                       rocblas_erange erange,
+                                                       rocblas_fill uplo,
+                                                       rocblas_int n,
+                                                       rocblas_double_complex* A,
+                                                       rocblas_int lda,
+                                                       rocblas_double_complex* B,
+                                                       rocblas_int ldb,
+                                                       double vl,
+                                                       double vu,
+                                                       rocblas_int il,
+                                                       rocblas_int iu,
+                                                       double abstol,
+                                                       rocblas_int* m,
+                                                       double* W,
+                                                       rocblas_double_complex* Z,
+                                                       rocblas_int ldz,
+                                                       rocblas_double_complex* work,
+                                                       rocblas_int lwork,
+                                                       double* rwork,
+                                                       rocblas_int* iwork,
+                                                       rocblas_int* ifail,
+                                                       rocblas_int* info)
+{
+    int itypeI = rocblas2char_eform(itype) - '0';
+    char evectC = rocblas2char_evect(evect);
+    char erangeC = rocblas2char_erange(erange);
+    char uploC = rocblas2char_fill(uplo);
+    zhegvx_(&itypeI, &evectC, &erangeC, &uploC, &n, A, &lda, B, &ldb, &vl, &vu, &il, &iu, &abstol,
+            m, W, Z, &ldz, work, &lwork, rwork, iwork, ifail, info);
 }
 
 // lasyf

@@ -33,6 +33,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ROCSOLVER_EMBED_FMT "Hide libfmt symbols" OFF)
 option(OPTIMAL "Build specialized kernels for small matrix sizes" ON)
+option(ROCSOLVER_FIND_PACKAGE_LAPACK_CONFIG "Skip module mode search for LAPACK" ON)
 
 # Add our CMake helper files to the lookup path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -63,7 +64,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.18.0")
+set(VERSION_STRING "3.19.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -111,14 +112,14 @@ option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
 
-# FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
-option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
+cmake_dependent_option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY
+  "Build with file/folder reorg backward compatibility enabled" ON "NOT WIN32" OFF)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   rocm_wrap_header_dir(
-    ${CMAKE_SOURCE_DIR}/library/include
+    ${CMAKE_SOURCE_DIR}/library/include/rocsolver
     PATTERNS "*.h"
     GUARDS SYMLINK WRAPPER
-    WRAPPER_LOCATIONS include
+    WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR}
   )
 endif()
 
@@ -126,9 +127,6 @@ endif()
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
-
-# Force library install path to lib (CentOS 7 defaults to lib64)
-set(CMAKE_INSTALL_LIBDIR "lib" CACHE INTERNAL "Installation directory for libraries" FORCE)
 
 # Query for compiler support of GPU archs
 rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
@@ -181,7 +179,7 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
 endif()
 
 # Package-specific CPACK vars
-rocm_package_add_dependencies("rocblas >= 2.44" "rocblas < 2.45")
+rocm_package_add_dependencies("rocblas >= 2.45" "rocblas < 2.46")
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")
@@ -207,8 +205,8 @@ endif()
 
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
   "\${CPACK_PACKAGING_INSTALL_PREFIX}"
-  "\${CPACK_PACKAGING_INSTALL_PREFIX}/include"
-  "\${CPACK_PACKAGING_INSTALL_PREFIX}/lib"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}"
+  "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
 )
 
 set(ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"

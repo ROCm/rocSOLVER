@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -11,14 +11,14 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, char> sytrd_tuple;
+typedef std::tuple<vector<int>, printable_char> sytrd_tuple;
 
 // each matrix_size_range is a {n, lda}
 
 // case when n = 0 and uplo = U will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
-const vector<char> uplo_range = {'L', 'U'};
+const vector<printable_char> uplo_range = {'L', 'U'};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {

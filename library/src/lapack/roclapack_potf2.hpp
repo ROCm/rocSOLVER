@@ -11,9 +11,9 @@
 
 #include "auxiliary/rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
                                      const rocblas_int shiftA,
                                      const rocblas_int strideA,
@@ -44,7 +44,7 @@ ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
     }
 }
 
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
                                      const rocblas_int shiftA,
                                      const rocblas_int strideA,
@@ -131,7 +131,7 @@ rocblas_status rocsolver_potf2_potrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,

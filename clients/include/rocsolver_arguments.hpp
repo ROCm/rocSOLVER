@@ -32,6 +32,7 @@ public:
     rocblas_int iters = 5;
     rocblas_int mem_query = 0;
     rocblas_int profile = 0;
+    rocblas_int profile_kernels = 0;
     rocblas_int batch_count = 1;
 
     // get and set function arguments
@@ -89,6 +90,7 @@ public:
         to_consume.erase("iters");
         to_consume.erase("mem_query");
         to_consume.erase("profile");
+        to_consume.erase("profile_kernels");
         to_consume.erase("perf");
         to_consume.erase("singular");
         to_consume.erase("device");
@@ -230,6 +232,17 @@ public:
 
         char order = val->second.as<char>();
         if(order != 'B' && order != 'E')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_esort(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char sort = val->second.as<char>();
+        if(sort != 'A' && sort != 'N')
             throw std::invalid_argument("Invalid value for " + name);
     }
 

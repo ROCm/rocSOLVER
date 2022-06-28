@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -38,13 +38,13 @@ inline bool rocblas_isnan(T)
     return false;
 }
 
-template <typename T, std::enable_if_t<!std::is_integral<T>{} && !is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!std::is_integral<T>{} && !rocblas_is_complex<T>, int> = 0>
 inline bool rocblas_isnan(T arg)
 {
     return std::isnan(arg);
 }
 
-template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 inline bool rocblas_isnan(const T& arg)
 {
     return rocblas_isnan(std::real(arg)) || rocblas_isnan(std::imag(arg));

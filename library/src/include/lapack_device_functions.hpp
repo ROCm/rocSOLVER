@@ -6,7 +6,7 @@
 
 #include "lib_device_helpers.hpp"
 #include "lib_macros.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /*
  * ===========================================================================
@@ -299,7 +299,7 @@ __device__ void gemm_btrans(const rocblas_int tid,
     to create a givens rotation such that:
     [  c s ]' * [ f ] = [ r ]
     [ -s c ]    [ g ]   [ 0 ] **/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void lartg(T& f, T& g, T& c, T& s, T& r)
 {
     if(g == 0)
@@ -418,7 +418,7 @@ __device__ void lasr(const rocblas_side side,
 /** LAE2 computes the eigenvalues of a 2x2 symmetric matrix
     [ a b ]
     [ b c ] **/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void lae2(T& a, T& b, T& c, T& rt1, T& rt2)
 {
     T sm = a + c;
@@ -470,7 +470,7 @@ __device__ void lae2(T& a, T& b, T& c, T& rt1, T& rt2)
 /** LAEV2 computes the eigenvalues and eigenvectors of a 2x2 symmetric matrix
     [ a b ]
     [ b c ] **/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void laev2(T& a, T& b, T& c, T& rt1, T& rt2, T& cs1, T& sn1)
 {
     int sgn1, sgn2;
@@ -1093,122 +1093,5 @@ ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
 
         // write back to global memory
         C[i + j * ldim] = c;
-    }
-}
-
-/** Optimized kernel that solves a simple triangular system B <- Ax=B
-    with A unit lower triangular matrix. A and B are sub blocks of the same matrix MM with
-    leading dimension ldim and stride. A and B are
-    located in MM by their respective shifts.
-
-    Call this kernel with 'batch_count' groups in z, and enough
-    groups in y to cover all the 'n' right-hand-sides (columns of B).
-    There should be only one group in x with hipBlockDim_x = m.
-    Size of shared memory per group should be:
-    lmemsize = hipBlockDim_y * sizeof(T); **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void trsm2_lower_kernel(const rocblas_int m,
-                                         const rocblas_int n,
-                                         U MM,
-                                         const rocblas_int shiftA,
-                                         const rocblas_int shiftB,
-                                         const rocblas_int ldim,
-                                         const rocblas_stride stride)
-{
-    int id = hipBlockIdx_z;
-    int i = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int bdy = hipBlockDim_y;
-    int j = hipBlockIdx_y * bdy + ty;
-
-    // batch instance
-    T* A = load_ptr_batch(MM, id, shiftA, stride);
-    T* B = load_ptr_batch(MM, id, shiftB, stride);
-
-    // shared mem setup
-    extern __shared__ double lmem[];
-    T* b = reinterpret_cast<T*>(lmem);
-    T c;
-
-    if(j < n)
-    {
-        // read data
-        c = B[i + j * ldim];
-
-        // solve for right-hand sides
-        for(int k = 0; k < m - 1; ++k)
-        {
-            __syncthreads();
-            if(i == k)
-                b[ty] = c;
-            __syncthreads();
-            c -= (i > k) ? A[i + k * ldim] * b[ty] : 0;
-        }
-
-        // move results back to global
-        B[i + j * ldim] = c;
-    }
-}
-
-/** Optimized kernel that solves a simple triangular system B <- xA=B
-    with A non-unit upper triangular matrix. A and B are sub blocks of the same matrix MM with
-    leading dimension ldim and stride. A and B are
-    located in MM by their respective shifts.
-
-    Call this kernel with 'batch_count' groups in z, and enough
-    groups in x to cover all the 'm' right-hand-sides (rows of B).
-    There should be only one group in y with hipBlockDim_y = n.
-    Size of shared memory per group should be:
-    lmemsize = hipBlockDim_x * sizeof(T); **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void trsm2_upper_kernel(const rocblas_int m,
-                                         const rocblas_int n,
-                                         U MM,
-                                         const rocblas_int shiftA,
-                                         const rocblas_int shiftB,
-                                         const rocblas_int ldim,
-                                         const rocblas_stride stride)
-{
-    int id = hipBlockIdx_z;
-    int j = hipThreadIdx_y;
-    int tx = hipThreadIdx_x;
-    int bdx = hipBlockDim_x;
-    int i = hipBlockIdx_x * bdx + tx;
-
-    // batch instance
-    T* A = load_ptr_batch(MM, id, shiftA, stride);
-    T* B = load_ptr_batch(MM, id, shiftB, stride);
-
-    // shared mem setup
-    extern __shared__ double lmem[];
-    T* b = reinterpret_cast<T*>(lmem);
-    T c, d;
-
-    if(i < m)
-    {
-        // read data
-        c = B[i + j * ldim];
-
-        // solve for right-hand sides
-        for(int k = 0; k < n - 1; ++k)
-        {
-            __syncthreads();
-            if(j == k)
-            {
-                d = A[j + j * ldim];
-                c = d != 0 ? c / d : c;
-                b[tx] = c;
-            }
-            __syncthreads();
-            c -= (j > k) ? A[k + j * ldim] * b[tx] : 0;
-        }
-        if(j == n - 1)
-        {
-            d = A[j + j * ldim];
-            c = d != 0 ? c / d : c;
-        }
-
-        // move results back to global
-        B[i + j * ldim] = c;
     }
 }

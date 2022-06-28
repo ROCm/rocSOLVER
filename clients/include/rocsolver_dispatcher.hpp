@@ -55,9 +55,13 @@
 #include "testing_sterf.hpp"
 #include "testing_syev_heev.hpp"
 #include "testing_syevd_heevd.hpp"
+#include "testing_syevj_heevj.hpp"
+#include "testing_syevx_heevx.hpp"
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sygv_hegv.hpp"
 #include "testing_sygvd_hegvd.hpp"
+#include "testing_sygvj_hegvj.hpp"
+#include "testing_sygvx_hegvx.hpp"
 #include "testing_sytf2_sytrf.hpp"
 #include "testing_sytxx_hetxx.hpp"
 #include "testing_trtri.hpp"
@@ -218,7 +222,7 @@ class rocsolver_dispatcher
             return rocblas_status_invalid_value;
     }
 
-    template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+    template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
     static rocblas_status run_function_limited_precision(const char* name, Arguments& argus)
     {
         // Map for functions that support only single and double precisions
@@ -265,6 +269,14 @@ class rocsolver_dispatcher
             {"syevd", testing_syevd_heevd<false, false, T>},
             {"syevd_batched", testing_syevd_heevd<true, true, T>},
             {"syevd_strided_batched", testing_syevd_heevd<false, true, T>},
+            // syevj
+            {"syevj", testing_syevj_heevj<false, false, T>},
+            {"syevj_batched", testing_syevj_heevj<true, true, T>},
+            {"syevj_strided_batched", testing_syevj_heevj<false, true, T>},
+            // syevx
+            {"syevx", testing_syevx_heevx<false, false, T>},
+            {"syevx_batched", testing_syevx_heevx<true, true, T>},
+            {"syevx_strided_batched", testing_syevx_heevx<false, true, T>},
             // sygv
             {"sygv", testing_sygv_hegv<false, false, T>},
             {"sygv_batched", testing_sygv_hegv<true, true, T>},
@@ -273,6 +285,14 @@ class rocsolver_dispatcher
             {"sygvd", testing_sygvd_hegvd<false, false, T>},
             {"sygvd_batched", testing_sygvd_hegvd<true, true, T>},
             {"sygvd_strided_batched", testing_sygvd_hegvd<false, true, T>},
+            // sygvj
+            {"sygvj", testing_sygvj_hegvj<false, false, T>},
+            {"sygvj_batched", testing_sygvj_hegvj<true, true, T>},
+            {"sygvj_strided_batched", testing_sygvj_hegvj<false, true, T>},
+            // sygvx
+            {"sygvx", testing_sygvx_hegvx<false, false, T>},
+            {"sygvx_batched", testing_sygvx_hegvx<true, true, T>},
+            {"sygvx_strided_batched", testing_sygvx_hegvx<false, true, T>},
         };
 
         // Grab function from the map and execute
@@ -286,7 +306,7 @@ class rocsolver_dispatcher
             return rocblas_status_invalid_value;
     }
 
-    template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+    template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
     static rocblas_status run_function_limited_precision(const char* name, Arguments& argus)
     {
         // Map for functions that support only single-complex and double-complex precisions
@@ -332,6 +352,14 @@ class rocsolver_dispatcher
             {"heevd", testing_syevd_heevd<false, false, T>},
             {"heevd_batched", testing_syevd_heevd<true, true, T>},
             {"heevd_strided_batched", testing_syevd_heevd<false, true, T>},
+            // heevj
+            {"heevj", testing_syevj_heevj<false, false, T>},
+            {"heevj_batched", testing_syevj_heevj<true, true, T>},
+            {"heevj_strided_batched", testing_syevj_heevj<false, true, T>},
+            // heevx
+            {"heevx", testing_syevx_heevx<false, false, T>},
+            {"heevx_batched", testing_syevx_heevx<true, true, T>},
+            {"heevx_strided_batched", testing_syevx_heevx<false, true, T>},
             // hegv
             {"hegv", testing_sygv_hegv<false, false, T>},
             {"hegv_batched", testing_sygv_hegv<true, true, T>},
@@ -340,6 +368,14 @@ class rocsolver_dispatcher
             {"hegvd", testing_sygvd_hegvd<false, false, T>},
             {"hegvd_batched", testing_sygvd_hegvd<true, true, T>},
             {"hegvd_strided_batched", testing_sygvd_hegvd<false, true, T>},
+            // hegvj
+            {"hegvj", testing_sygvj_hegvj<false, false, T>},
+            {"hegvj_batched", testing_sygvj_hegvj<true, true, T>},
+            {"hegvj_strided_batched", testing_sygvj_hegvj<false, true, T>},
+            // hegvx
+            {"hegvx", testing_sygvx_hegvx<false, false, T>},
+            {"hegvx_batched", testing_sygvx_hegvx<true, true, T>},
+            {"hegvx_strided_batched", testing_sygvx_hegvx<false, true, T>},
         };
 
         // Grab function from the map and execute

@@ -12,7 +12,7 @@
 #include "rocauxiliary_ormlq_unmlq.hpp"
 #include "rocauxiliary_ormqr_unmqr.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev,
@@ -102,7 +102,7 @@ rocblas_status rocsolver_ormbr_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_ormbr_unmbr_template(rocblas_handle handle,
                                               const rocblas_storev storev,
                                               const rocblas_side side,

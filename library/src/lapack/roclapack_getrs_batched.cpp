@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getrs.hpp"
@@ -41,8 +41,8 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle,
     // size of workspace (for calling TRSM)
     bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
-    rocsolver_getrs_getMemorySize<true, T>(trans, n, nrhs, batch_count, &size_work1, &size_work2,
-                                           &size_work3, &size_work4, &optim_mem);
+    rocsolver_getrs_getMemorySize<true, false, T>(trans, n, nrhs, batch_count, &size_work1,
+                                                  &size_work2, &size_work3, &size_work4, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
@@ -61,9 +61,9 @@ rocblas_status rocsolver_getrs_batched_impl(rocblas_handle handle,
     work4 = mem[3];
 
     // execution
-    return rocsolver_getrs_template<true, T>(handle, trans, n, nrhs, A, shiftA, lda, strideA, ipiv,
-                                             strideP, B, shiftB, ldb, strideB, batch_count, work1,
-                                             work2, work3, work4, optim_mem, true);
+    return rocsolver_getrs_template<true, false, T>(
+        handle, trans, n, nrhs, A, shiftA, lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB,
+        batch_count, work1, work2, work3, work4, optim_mem, true);
 }
 
 /*

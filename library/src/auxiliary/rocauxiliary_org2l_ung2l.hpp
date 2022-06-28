@@ -12,7 +12,7 @@
 //#include "rocauxiliary_lacgv.hpp"
 #include "rocauxiliary_larf.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void org2l_init_ident(const rocblas_int m,
@@ -94,7 +94,7 @@ rocblas_status rocsolver_org2l_orgql_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_org2l_ung2l_template(rocblas_handle handle,
                                               const rocblas_int m,
                                               const rocblas_int n,

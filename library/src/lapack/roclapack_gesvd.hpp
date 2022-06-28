@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -16,7 +16,7 @@
 #include "roclapack_gebrd.hpp"
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 /** wrapper to xxGQR/xxGLQ_TEMPLATE **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
@@ -340,7 +340,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                     "shiftA:", shiftA, "lda:", lda, "ldu:", ldu, "ldv:", ldv, "mode:", fast_alg,
                     "bc:", batch_count);
 
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     // quick return
     if(n == 0 || m == 0 || batch_count == 0)

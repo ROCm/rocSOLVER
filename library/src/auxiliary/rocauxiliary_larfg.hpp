@@ -10,9 +10,9 @@
 #pragma once
 
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
-template <typename T, typename U, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
                                   const rocblas_stride strideP,
                                   T* norms,
@@ -46,7 +46,7 @@ ROCSOLVER_KERNEL void set_taubeta(T* tau,
     }
 }
 
-template <typename T, typename U, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
                                   const rocblas_stride strideP,
                                   T* norms,
@@ -144,7 +144,7 @@ rocblas_status rocsolver_larfg_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larfg_template(rocblas_handle handle,
                                         const rocblas_int n,
                                         U alpha,

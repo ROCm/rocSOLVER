@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -12,7 +12,7 @@
 #include "rocblas.hpp"
 #include "roclapack_potrf.hpp"
 #include "roclapack_potrs.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <typename T>
 rocblas_status rocsolver_posv_argCheck(rocblas_handle handle,
@@ -47,7 +47,7 @@ rocblas_status rocsolver_posv_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T>
+template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_posv_getMemorySize(const rocblas_int n,
                                   const rocblas_int nrhs,
                                   const rocblas_fill uplo,
@@ -79,12 +79,13 @@ void rocsolver_posv_getMemorySize(const rocblas_int n,
     size_t w1, w2, w3, w4;
 
     // workspace required for potrf
-    rocsolver_potrf_getMemorySize<BATCHED, T>(n, uplo, batch_count, size_scalars, size_work1,
-                                              size_work2, size_work3, size_work4,
-                                              size_pivots_savedB, size_iinfo, &opt1);
+    rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars,
+                                                       size_work1, size_work2, size_work3, size_work4,
+                                                       size_pivots_savedB, size_iinfo, &opt1);
 
     // workspace required for potrs
-    rocsolver_potrs_getMemorySize<BATCHED, T>(n, nrhs, batch_count, &w1, &w2, &w3, &w4, &opt2);
+    rocsolver_potrs_getMemorySize<BATCHED, STRIDED, T>(n, nrhs, batch_count, &w1, &w2, &w3, &w4,
+                                                       &opt2);
 
     *size_work1 = std::max(*size_work1, w1);
     *size_work2 = std::max(*size_work2, w2);
@@ -96,7 +97,7 @@ void rocsolver_posv_getMemorySize(const rocblas_int n,
     *size_pivots_savedB = std::max(*size_pivots_savedB, sizeof(T) * n * nrhs * batch_count);
 }
 
-template <bool BATCHED, typename T, typename S, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_posv_template(rocblas_handle handle,
                                        const rocblas_fill uplo,
                                        const rocblas_int n,
@@ -146,9 +147,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute Cholesky factorization of A
-    rocsolver_potrf_template<BATCHED, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                            batch_count, scalars, work1, work2, work3, work4,
-                                            pivots_savedB, iinfo, optim_mem);
+    rocsolver_potrf_template<BATCHED, STRIDED, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,
+                                                     batch_count, scalars, work1, work2, work3,
+                                                     work4, pivots_savedB, iinfo, optim_mem);
 
     // save elements of B that will be overwritten by POTRS for cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
@@ -156,9 +157,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
                             strideB, pivots_savedB, info_mask(info));
 
     // solve AX = B, overwriting B with X
-    rocsolver_potrs_template<BATCHED, T>(handle, uplo, n, nrhs, A, shiftA, lda, strideA, B, shiftB,
-                                         ldb, strideB, batch_count, work1, work2, work3, work4,
-                                         optim_mem);
+    rocsolver_potrs_template<BATCHED, STRIDED, T>(handle, uplo, n, nrhs, A, shiftA, lda, strideA, B,
+                                                  shiftB, ldb, strideB, batch_count, work1, work2,
+                                                  work3, work4, optim_mem);
 
     // restore elements of B that were overwritten by POTRS in cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),

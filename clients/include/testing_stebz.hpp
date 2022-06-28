@@ -13,8 +13,8 @@
 
 template <typename T, typename U>
 void stebz_checkBadArgs(const rocblas_handle handle,
-                        const rocblas_erange range,
-                        const rocblas_eorder order,
+                        const rocblas_erange erange,
+                        const rocblas_eorder eorder,
                         const rocblas_int n,
                         const T vl,
                         const T vu,
@@ -31,46 +31,46 @@ void stebz_checkBadArgs(const rocblas_handle handle,
                         rocblas_int* dinfo)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(nullptr, range, order, n, vl, vu, il, iu, abstol, dD, dE,
-                                          dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(nullptr, erange, eorder, n, vl, vu, il, iu, abstol, dD,
+                                          dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, rocblas_erange(-1), order, n, vl, vu, il, iu,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, rocblas_erange(-1), eorder, n, vl, vu, il, iu,
                                           abstol, dD, dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, rocblas_eorder(-1), n, vl, vu, il, iu,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, rocblas_eorder(-1), n, vl, vu, il, iu,
                                           abstol, dD, dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, (U) nullptr,
-                                          dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol,
+                                          (U) nullptr, dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD,
                                           (U) nullptr, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE,
                                           (rocblas_int*)nullptr, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE,
                                           dnev, (rocblas_int*)nullptr, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE,
                                           dnev, dnsplit, (U) nullptr, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE,
                                           dnev, dnsplit, dW, (rocblas_int*)nullptr, dIsplit, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE,
                                           dnev, dnsplit, dW, dIblock, (rocblas_int*)nullptr, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE,
                                           dnev, dnsplit, dW, dIblock, dIsplit, (rocblas_int*)nullptr),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, 0, vl, vu, il, iu, abstol,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, 0, vl, vu, il, iu, abstol,
                                           (U) nullptr, (U) nullptr, dnev, dnsplit, (U) nullptr,
                                           (rocblas_int*)nullptr, (rocblas_int*)nullptr, dinfo),
                           rocblas_status_success);
@@ -82,8 +82,8 @@ void testing_stebz_bad_arg()
     // safe arguments
     rocblas_local_handle handle;
     rocblas_int n = 2;
-    rocblas_erange range = rocblas_erange_all;
-    rocblas_eorder order = rocblas_eorder_entire;
+    rocblas_erange erange = rocblas_erange_all;
+    rocblas_eorder eorder = rocblas_eorder_entire;
     T vl = 0;
     T vu = 0;
     rocblas_int il = 0;
@@ -109,7 +109,7 @@ void testing_stebz_bad_arg()
     CHECK_HIP_ERROR(dinfo.memcheck());
 
     // check bad arguments
-    stebz_checkBadArgs(handle, range, order, n, vl, vu, il, iu, abstol, dD.data(), dE.data(),
+    stebz_checkBadArgs(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD.data(), dE.data(),
                        dnev.data(), dnsplit.data(), dW.data(), dIblock.data(), dIsplit.data(),
                        dinfo.data());
 }
@@ -123,11 +123,11 @@ void stebz_initData(const rocblas_handle handle, const rocblas_int n, Td& dD, Td
         rocblas_init<T>(hE, true);
 
         // scale matrix and add fixed splits in the matrix to test split handling
-        // (scaling ensures that all eigenvalues are in [-30, 30])
+        // (scaling ensures that all eigenvalues are in [-20, 20])
         for(rocblas_int i = 0; i < n; i++)
         {
             hD[0][i] += 10;
-            hE[0][i] -= 5;
+            hE[0][i] = (hE[0][i] - 5) / 10;
             if(i == n / 4 || i == n / 2 || i == n - 1)
                 hE[0][i] = 0;
             if(i == n / 7 || i == n / 5 || i == n / 3)
@@ -145,8 +145,8 @@ void stebz_initData(const rocblas_handle handle, const rocblas_int n, Td& dD, Td
 
 template <typename T, typename Td, typename Ud, typename Th, typename Uh>
 void stebz_getError(const rocblas_handle handle,
-                    const rocblas_erange range,
-                    const rocblas_eorder order,
+                    const rocblas_erange erange,
+                    const rocblas_eorder eorder,
                     const rocblas_int n,
                     const T vl,
                     const T vu,
@@ -185,9 +185,9 @@ void stebz_getError(const rocblas_handle handle,
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD.data(),
-                                        dE.data(), dnev.data(), dnsplit.data(), dW.data(),
-                                        dIblock.data(), dIsplit.data(), dinfo.data()));
+    CHECK_ROCBLAS_ERROR(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol,
+                                        dD.data(), dE.data(), dnev.data(), dnsplit.data(),
+                                        dW.data(), dIblock.data(), dIsplit.data(), dinfo.data()));
     CHECK_HIP_ERROR(hnevRes.transfer_from(dnev));
     CHECK_HIP_ERROR(hnsplitRes.transfer_from(dnsplit));
     CHECK_HIP_ERROR(hWRes.transfer_from(dW));
@@ -198,8 +198,8 @@ void stebz_getError(const rocblas_handle handle,
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
     double atol = (abstol == 0) ? 2 * get_safemin<T>() : abstol;
-    cblas_stebz<T>(range, order, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0], hW[0],
-                   hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
+    cblas_stebz<T>(erange, eorder, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0],
+                   hW[0], hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
 
     // check info
     if(hinfo[0][0] != hinfoRes[0][0])
@@ -223,8 +223,16 @@ void stebz_getError(const rocblas_handle handle,
         *max_err += std::abs(nn - hnevRes[0][0]);
 
         // check block indices
+        // (note: as very close eigenvalues could be considered to belong to different
+        //  blocks by the CPU and GPU algorithms, only check the block index of distinguishable
+        //  eigenvalues)
         for(int k = 0; k < nn; ++k)
-            *max_err += std::abs(hIblock[0][k] - hIblockRes[0][k]);
+        {
+            int difb = std::abs(hIblock[0][k] - hIblockRes[0][k]);
+            T difv = std::abs(hW[0][k] - hWRes[0][k]) / hW[0][k];
+            if(difb > 0 && difv > n * get_epsilon<T>())
+                *max_err += difb;
+        }
 
         // error is ||hW - hWRes|| / ||hW||
         // using frobenius norm
@@ -235,8 +243,8 @@ void stebz_getError(const rocblas_handle handle,
 
 template <typename T, typename Td, typename Ud, typename Th, typename Uh>
 void stebz_getPerfData(const rocblas_handle handle,
-                       const rocblas_erange range,
-                       const rocblas_eorder order,
+                       const rocblas_erange erange,
+                       const rocblas_eorder eorder,
                        const rocblas_int n,
                        const T vl,
                        const T vu,
@@ -263,6 +271,7 @@ void stebz_getPerfData(const rocblas_handle handle,
                        double* cpu_time_used,
                        const rocblas_int hot_calls,
                        const int profile,
+                       const bool profile_kernels,
                        const bool perf)
 {
     if(!perf)
@@ -276,7 +285,7 @@ void stebz_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_stebz<T>(range, order, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0],
+        cblas_stebz<T>(erange, eorder, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0],
                        hW[0], hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
@@ -288,7 +297,7 @@ void stebz_getPerfData(const rocblas_handle handle,
     {
         stebz_initData<false, true, T>(handle, n, dD, dE, hD, hE);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol,
+        CHECK_ROCBLAS_ERROR(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol,
                                             dD.data(), dE.data(), dnev.data(), dnsplit.data(),
                                             dW.data(), dIblock.data(), dIsplit.data(), dinfo.data()));
     }
@@ -300,7 +309,11 @@ void stebz_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -309,7 +322,7 @@ void stebz_getPerfData(const rocblas_handle handle,
         stebz_initData<false, true, T>(handle, n, dD, dE, hD, hE);
 
         start = get_time_us_sync(stream);
-        rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, dD.data(), dE.data(),
+        rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD.data(), dE.data(),
                         dnev.data(), dnsplit.data(), dW.data(), dIblock.data(), dIsplit.data(),
                         dinfo.data());
         *gpu_time_used += get_time_us_sync(stream) - start;
@@ -322,17 +335,17 @@ void testing_stebz(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    char rangeC = argus.get<char>("range");
-    char orderC = argus.get<char>("order");
+    char erangeC = argus.get<char>("erange");
+    char eorderC = argus.get<char>("eorder");
     rocblas_int n = argus.get<rocblas_int>("n");
     T vl = T(argus.get<double>("vl", 0));
-    T vu = T(argus.get<double>("vu", rangeC == 'V' ? 1 : 0));
-    rocblas_int il = argus.get<rocblas_int>("il", rangeC == 'I' ? 1 : 0);
-    rocblas_int iu = argus.get<rocblas_int>("iu", rangeC == 'I' ? 1 : 0);
+    T vu = T(argus.get<double>("vu", erangeC == 'V' ? 1 : 0));
+    rocblas_int il = argus.get<rocblas_int>("il", erangeC == 'I' ? 1 : 0);
+    rocblas_int iu = argus.get<rocblas_int>("iu", erangeC == 'I' ? 1 : 0);
     T abstol = T(argus.get<double>("abstol"));
 
-    rocblas_erange range = char2rocblas_erange(rangeC);
-    rocblas_eorder order = char2rocblas_eorder(orderC);
+    rocblas_erange erange = char2rocblas_erange(erangeC);
+    rocblas_eorder eorder = char2rocblas_eorder(eorderC);
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -351,13 +364,13 @@ void testing_stebz(Arguments& argus)
     size_t size_isplitRes = (argus.unit_check || argus.norm_check) ? size_isplit : 0;
 
     // check invalid sizes
-    bool invalid_size = (n < 0) || (range == rocblas_erange_value && vl >= vu)
-        || (range == rocblas_erange_index && (iu > n || (n > 0 && il > iu)))
-        || (range == rocblas_erange_index && (il < 1 || iu < 0));
+    bool invalid_size = (n < 0) || (erange == rocblas_erange_value && vl >= vu)
+        || (erange == rocblas_erange_index && (iu > n || (n > 0 && il > iu)))
+        || (erange == rocblas_erange_index && (il < 1 || iu < 0));
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol, (T*)nullptr,
+            rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol, (T*)nullptr,
                             (T*)nullptr, (rocblas_int*)nullptr, (rocblas_int*)nullptr, (T*)nullptr,
                             (rocblas_int*)nullptr, (rocblas_int*)nullptr, (rocblas_int*)nullptr),
             rocblas_status_invalid_size);
@@ -372,7 +385,7 @@ void testing_stebz(Arguments& argus)
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol,
+        CHECK_ALLOC_QUERY(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol,
                                           (T*)nullptr, (T*)nullptr, (rocblas_int*)nullptr,
                                           (rocblas_int*)nullptr, (T*)nullptr, (rocblas_int*)nullptr,
                                           (rocblas_int*)nullptr, (rocblas_int*)nullptr));
@@ -429,7 +442,7 @@ void testing_stebz(Arguments& argus)
     // check quick return
     if(n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, range, order, n, vl, vu, il, iu, abstol,
+        EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, eorder, n, vl, vu, il, iu, abstol,
                                               dD.data(), dE.data(), dnev.data(), dnsplit.data(),
                                               dW.data(), dIblock.data(), dIsplit.data(), dinfo.data()),
                               rocblas_status_success);
@@ -441,17 +454,17 @@ void testing_stebz(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        stebz_getError<T>(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE, dnev, dnsplit,
+        stebz_getError<T>(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE, dnev, dnsplit,
                           dW, dIblock, dIsplit, dinfo, hD, hE, hnev, hnevRes, hnsplit, hnsplitRes,
                           hW, hWRes, hIblock, hIblockRes, hIsplit, hIsplitRes, hinfo, hinfoRes,
                           &max_error);
 
     // collect performance data
     if(argus.timing)
-        stebz_getPerfData<T>(handle, range, order, n, vl, vu, il, iu, abstol, dD, dE, dnev, dnsplit,
-                             dW, dIblock, dIsplit, dinfo, hD, hE, hnev, hnsplit, hW, hIblock,
-                             hIsplit, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                             argus.profile, argus.perf);
+        stebz_getPerfData<T>(handle, erange, eorder, n, vl, vu, il, iu, abstol, dD, dE, dnev,
+                             dnsplit, dW, dIblock, dIsplit, dinfo, hD, hE, hnev, hnsplit, hW,
+                             hIblock, hIsplit, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
+                             argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
@@ -464,18 +477,18 @@ void testing_stebz(Arguments& argus)
         if(!argus.perf)
         {
             rocsolver_bench_header("Arguments:");
-            rocsolver_bench_output("range", "order", "n", "vl", "vu", "il", "iu", "abstol");
-            rocsolver_bench_output(rangeC, orderC, n, vl, vu, il, iu, abstol);
+            rocsolver_bench_output("erange", "eorder", "n", "vl", "vu", "il", "iu", "abstol");
+            rocsolver_bench_output(erangeC, eorderC, n, vl, vu, il, iu, abstol);
 
             rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
-                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us", "error");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
             }
             else
             {
-                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();

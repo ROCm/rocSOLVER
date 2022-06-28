@@ -263,7 +263,7 @@ void sygv_hegv_getError(const rocblas_handle handle,
                         double* max_err,
                         const bool singular)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
     rocblas_int lwork = (COMPLEX ? 2 * n - 1 : 3 * n - 1);
@@ -401,10 +401,11 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
                            double* cpu_time_used,
                            const rocblas_int hot_calls,
                            const int profile,
+                           const bool profile_kernels,
                            const bool perf,
                            const bool singular)
 {
-    constexpr bool COMPLEX = is_complex<T>;
+    constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
     rocblas_int lwork = (COMPLEX ? 2 * n - 1 : 3 * n - 1);
@@ -450,7 +451,11 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
 
     if(profile > 0)
     {
-        rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
+        if(profile_kernels)
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
+                                         | rocblas_layer_mode_ex_log_kernel);
+        else
+            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
         rocsolver_log_set_max_levels(profile);
     }
 
@@ -625,10 +630,10 @@ void testing_sygv_hegv(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            sygv_hegv_getPerfData<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb,
-                                              stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD, hInfo,
-                                              &gpu_time_used, &cpu_time_used, hot_calls,
-                                              argus.profile, argus.perf, argus.singular);
+            sygv_hegv_getPerfData<STRIDED, T>(
+                handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb, stB, dD, stD, dE, stE, dInfo,
+                bc, hA, hB, hD, hInfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                argus.profile_kernels, argus.perf, argus.singular);
     }
 
     else
@@ -666,10 +671,10 @@ void testing_sygv_hegv(Arguments& argus)
 
         // collect performance data
         if(argus.timing)
-            sygv_hegv_getPerfData<STRIDED, T>(handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb,
-                                              stB, dD, stD, dE, stE, dInfo, bc, hA, hB, hD, hInfo,
-                                              &gpu_time_used, &cpu_time_used, hot_calls,
-                                              argus.profile, argus.perf, argus.singular);
+            sygv_hegv_getPerfData<STRIDED, T>(
+                handle, itype, evect, uplo, n, dA, lda, stA, dB, ldb, stB, dD, stD, dE, stE, dInfo,
+                bc, hA, hB, hD, hInfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                argus.profile_kernels, argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test
@@ -703,12 +708,12 @@ void testing_sygv_hegv(Arguments& argus)
             rocsolver_bench_header("Results:");
             if(argus.norm_check)
             {
-                rocsolver_bench_output("cpu_time", "gpu_time", "error");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us", "error");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
             }
             else
             {
-                rocsolver_bench_output("cpu_time", "gpu_time");
+                rocsolver_bench_output("cpu_time_us", "gpu_time_us");
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();

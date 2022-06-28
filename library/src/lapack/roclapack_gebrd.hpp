@@ -12,7 +12,7 @@
 #include "auxiliary/rocauxiliary_labrd.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gebd2.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_gebrd_getMemorySize(const rocblas_int m,
@@ -67,7 +67,7 @@ void rocsolver_gebrd_getMemorySize(const rocblas_int m,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U, bool COMPLEX = is_complex<T>>
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,

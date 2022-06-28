@@ -5,7 +5,7 @@
 #pragma once
 
 #include "rocblas/rocblas.h"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 #include <string>
 
 typedef enum rocblas_initialization_ : int
@@ -155,6 +155,16 @@ constexpr auto rocblas2char_eorder(rocblas_eorder value)
     {
     case rocblas_eorder_blocks: return 'B';
     case rocblas_eorder_entire: return 'E';
+    }
+    return '\0';
+}
+
+constexpr auto rocblas2char_esort(rocblas_esort value)
+{
+    switch(value)
+    {
+    case rocblas_esort_none: return 'N';
+    case rocblas_esort_ascending: return 'A';
     }
     return '\0';
 }
@@ -331,6 +341,16 @@ constexpr rocblas_eorder char2rocblas_eorder(char value)
     case 'B': return rocblas_eorder_blocks;
     case 'E': return rocblas_eorder_entire;
     default: return static_cast<rocblas_eorder>(-1);
+    }
+}
+
+constexpr rocblas_esort char2rocblas_esort(char value)
+{
+    switch(value)
+    {
+    case 'N': return rocblas_esort_none;
+    case 'A': return rocblas_esort_ascending;
+    default: return static_cast<rocblas_esort>(-1);
     }
 }
 

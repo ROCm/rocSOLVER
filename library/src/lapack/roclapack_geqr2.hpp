@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -13,7 +13,7 @@
 #include "auxiliary/rocauxiliary_larf.hpp"
 #include "auxiliary/rocauxiliary_larfg.hpp"
 #include "rocblas.hpp"
-#include "rocsolver.h"
+#include "rocsolver/rocsolver.h"
 
 template <bool BATCHED, typename T>
 void rocsolver_geqr2_getMemorySize(const rocblas_int m,
@@ -76,7 +76,7 @@ rocblas_status rocsolver_geqr2_geqrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,

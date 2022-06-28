@@ -22,8 +22,8 @@ typedef std::tuple<vector<int>, vector<int>> stebz_tuple;
 // if rng = 2, then find the il-th to the iu-th eigenvalue
 
 // Note: all tests are prepared with diagonally dominant matrices that have random diagonal
-// elements in [-20, -11] U [11, 20], and off-diagonal elements in [-4, 5].
-// Thus, all eigenvalues should be in [-30, 30]
+// elements in [-20, -11] U [11, 20], and off-diagonal elements in [-0.4, 0.5].
+// Thus, all the eigenvalues are guaranteed to be in [-20, 20]
 
 // case when n == 0, ord == 0, and rng == 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -72,9 +72,9 @@ Arguments stebz_setup_arguments(stebz_tuple tup)
     vector<int> op = std::get<1>(tup);
 
     arg.set<rocblas_int>("n", size[0]);
-    arg.set<char>("order", (size[1] == 0 ? 'E' : 'B'));
+    arg.set<char>("eorder", (size[1] == 0 ? 'E' : 'B'));
 
-    arg.set<char>("range", (op[0] == 0 ? 'A' : (op[0] == 1 ? 'V' : 'I')));
+    arg.set<char>("erange", (op[0] == 0 ? 'A' : (op[0] == 1 ? 'V' : 'I')));
     arg.set<double>("vl", op[1]);
     arg.set<double>("vu", op[2]);
     arg.set<rocblas_int>("il", op[3]);
@@ -98,8 +98,8 @@ protected:
     {
         Arguments arg = stebz_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("order") == 'E'
-           && arg.peek<char>("range") == 'A')
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("eorder") == 'E'
+           && arg.peek<char>("erange") == 'A')
             testing_stebz_bad_arg<T>();
 
         testing_stebz<T>(arg);

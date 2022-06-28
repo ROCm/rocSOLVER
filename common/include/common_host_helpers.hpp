@@ -82,7 +82,7 @@ void pairs_to_string(std::string& str, const char* sep, T1 arg1, T2 arg2, Ts... 
 /***********************************************************************/
 
 /*! \brief Print provided data into specified stream (real case)*/
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 void print_to_stream(std::ostream& os,
                      const std::string name,
                      const rocblas_int m,
@@ -149,7 +149,7 @@ void print_to_stream(std::ostream& os,
 }
 
 /*! \brief Print provided data into specified stream (complex cases)*/
-template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 void print_to_stream(std::ostream& os,
                      const std::string name,
                      const rocblas_int m,
@@ -172,7 +172,7 @@ void print_to_stream(std::ostream& os,
                 s += "    ";
             for(int j = 0; j < n; j++)
             {
-                s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                s += fmt::format("{}+{}*i", A[j * lda + i].real(), A[j * lda + i].imag());
                 if(j < n - 1)
                     s += ", ";
             }
@@ -191,16 +191,16 @@ void print_to_stream(std::ostream& os,
                 if(uplo == rocblas_fill_upper)
                 {
                     if(i < j)
-                        s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                        s += fmt::format("{}+{}*i", A[j * lda + i].real(), A[j * lda + i].imag());
                     else
-                        s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+                        s += fmt::format("{}+{}*i", A[i * lda + j].real(), A[i * lda + j].imag());
                 }
                 else
                 {
                     if(i > j)
-                        s += fmt::format("[{}+{}i]", A[j * lda + i].real(), A[j * lda + i].imag());
+                        s += fmt::format("{}+{}*i", A[j * lda + i].real(), A[j * lda + i].imag());
                     else
-                        s += fmt::format("[{}+{}i]", A[i * lda + j].real(), A[i * lda + j].imag());
+                        s += fmt::format("{}+{}*i", A[i * lda + j].real(), A[i * lda + j].imag());
                 }
 
                 if(j < n - 1)
@@ -380,7 +380,7 @@ void print_host_matrix(std::ostream& os,
     os.flush();
 }
 
-template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 void print_host_matrix(std::ostream& os,
                        const std::string name,
                        const rocblas_int m,
@@ -410,7 +410,7 @@ void print_host_matrix(std::ostream& os,
     os.flush();
 }
 
-template <typename T, std::enable_if_t<is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 void print_host_matrix(std::ostream& os,
                        const std::string name,
                        const rocblas_int m,

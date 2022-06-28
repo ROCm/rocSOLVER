@@ -128,6 +128,12 @@ try
             "                           If the argument is unset or <= 0, profile logging is disabled.\n"
             "                           ")
 
+        ("profile_kernels",
+         value<rocblas_int>(&argus.profile_kernels)->default_value(0),
+            "Include kernels in profile logging results? 0 = No, 1 = Yes.\n"
+            "                           Used in conjunction with --profile to include kernels in the profile log.\n"
+            "                           ")
+
         ("singular",
          value<rocblas_int>(&argus.singular)->default_value(0),
             "Test with degenerate matrices? 0 = No, 1 = Yes\n"
@@ -247,6 +253,13 @@ try
             "                           Stride for matrices/vectors E.\n"
             "                           ")
 
+        ("strideF",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for vectors ifail.\n"
+            "                           ")
+
+
         ("strideQ",
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
@@ -275,6 +288,12 @@ try
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
             "                           Stride for matrices/vectors V.\n"
+            "                           ")
+
+        ("strideW",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors W.\n"
             "                           ")
 
         // bdsqr options
@@ -342,7 +361,7 @@ try
             "                           ")
 
         // stebz options
-        ("order",
+        ("eorder",
          value<char>()->default_value('E'),
             "E = entire matrix, B = by blocks.\n"
             "                           Indicates whether the computed eigenvalues are ordered by blocks or for the entire matrix.\n"
@@ -350,12 +369,6 @@ try
             "                           ")
 
         // partial eigenvalue decomposition options
-        ("abstol",
-         value<double>()->default_value(0),
-            "Absolute tolerance at which an eigenvalue is accepted as converged.\n"
-            "                           Used in partial eigenvalue decomposition functions.\n"
-            "                           ")
-
         ("il",
          value<rocblas_int>(),
             "Lower index in ordered subset of eigenvalues.\n"
@@ -368,7 +381,7 @@ try
             "                           Used in partial eigenvalue decomposition functions.\n"
             "                           ")
 
-        ("range",
+        ("erange",
          value<char>()->default_value('A'),
             "A = all eigenvalues, V = in (vl, vu], I = from the il-th to the iu-th.\n"
             "                           For partial eigenvalue decompositions, it indicates the type of interval in which\n"
@@ -379,15 +392,37 @@ try
          value<double>(),
             "Lower bound of half-open interval (vl, vu].\n"
             "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           Note: the used random input matrices have all eigenvalues in [-20, 20].\n"
             "                           ")
 
         ("vu",
          value<double>(),
             "Upper bound of half-open interval (vl, vu].\n"
             "                           Used in partial eigenvalue decomposition functions.\n"
+            "                           Note: the used random input matrices have all eigenvalues in [-20, 20].\n"
+            "                           ")
+
+        // iterative Jacobi options
+        ("max_sweeps",
+         value<rocblas_int>()->default_value(100),
+            "Maximum number of sweeps/iterations.\n"
+            "                           Used in iterative Jacobi functions.\n"
+            "                           ")
+
+        ("esort",
+         value<char>()->default_value('A'),
+            "N = no sorting, A = ascending order.\n"
+            "                           Indicates whether the computed eigenvalues are sorted in ascending order.\n"
+            "                           Used in iterative Jacobi functions.\n"
             "                           ")
 
         // other options
+        ("abstol",
+         value<double>()->default_value(0),
+            "Absolute tolerance at which convergence is accepted.\n"
+            "                           Used in iterative Jacobi and partial eigenvalue decomposition functions.\n"
+            "                           ")
+
         ("direct",
          value<char>()->default_value('F'),
             "F = forward, B = backward.\n"
@@ -481,8 +516,9 @@ try
     argus.validate_svect("right_svect");
     argus.validate_workmode("fast_alg");
     argus.validate_evect("evect");
-    argus.validate_erange("range");
-    argus.validate_eorder("order");
+    argus.validate_erange("erange");
+    argus.validate_eorder("eorder");
+    argus.validate_esort("esort");
     argus.validate_itype("itype");
 
     // prepare logging infrastructure and ignore environment variables

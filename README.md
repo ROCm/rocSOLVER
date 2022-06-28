@@ -31,14 +31,15 @@ for the user application.
 
 If you are a developer contributing to rocSOLVER, you may wish to run
 `./scripts/install-hooks` to install the git hooks for autoformatting.
+You may also want to take a look at the [contributing guidelines][7]
 
 ## Using rocSOLVER
 
 The following code snippet shows how to compute the QR factorization of a
 general m-by-n real matrix in double precision using rocSOLVER. A longer
-version of this example is provided in the [rocSOLVER samples][5].
-For a description of the function `rocsolver_dgeqrf`, see the
-[API documentation][6].
+version of this example is provided by `example_basic.cpp` in the
+[samples directory][5]. For a description of the `rocsolver_dgeqrf`
+function, see the [rocSOLVER API documentation][6].
 
 ```cpp
 /////////////////////////////
@@ -98,9 +99,10 @@ system environment, but here is a typical example:
     /opt/rocm/bin/hipcc -o example -L/opt/rocm/lib -lrocsolver -lrocblas example.o
 
 
-[1]: https://www.netlib.org/lapack/explore-html/index.html
-[2]: https://rocm.github.io
-[3]: https://rocsolver.readthedocs.io/en/latest
-[4]: https://rocblas.readthedocs.io/en/latest
-[5]: rocsolver/clients/samples/example_basic.cpp
-[6]: https://rocsolver.readthedocs.io/en/latest/userguide_api.html#rocsolver-type-geqrf
+[1]: https://www.netlib.org/lapack/
+[2]: https://docs.amd.com
+[3]: https://rocsolver.readthedocs.io
+[4]: https://rocblas.readthedocs.io
+[5]: clients/samples/
+[6]: https://rocsolver.readthedocs.io/en/latest/api_lapackfunc.html#rocsolver-type-geqrf
+[7]: CONTRIBUTING.md

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sygv_hegv.hpp"
@@ -18,7 +18,7 @@ rocblas_status rocsolver_sygv_hegv_impl(rocblas_handle handle,
                                         S* E,
                                         rocblas_int* info)
 {
-    const char* name = (!is_complex<T> ? "sygv" : "hegv");
+    const char* name = (!rocblas_is_complex<T> ? "sygv" : "hegv");
     ROCSOLVER_ENTER_TOP(name, "--itype", itype, "--evect", evect, "--uplo", uplo, "-n", n, "--lda",
                         lda, "--ldb", ldb);
 
@@ -52,7 +52,7 @@ rocblas_status rocsolver_sygv_hegv_impl(rocblas_handle handle,
     size_t size_pivots_workArr;
     // size of temporary info array
     size_t size_iinfo;
-    rocsolver_sygv_hegv_getMemorySize<false, T, S>(
+    rocsolver_sygv_hegv_getMemorySize<false, false, T, S>(
         itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
         &size_work4, &size_pivots_workArr, &size_iinfo, &optim_mem);
 
