@@ -9,7 +9,7 @@
 #include <rocblas/rocblas.h>
 
 /*!\file
- * \brief provide template functions interfaces to CBLAS and LAPACK interfaces,
+ * \brief provide template functions interfaces to BLAS and LAPACK interfaces,
  * it is only used for testing not part of the GPU library
  */
 
@@ -82,21 +82,6 @@ void cblas_symm_hemm(rocblas_side side,
                      T beta,
                      T* C,
                      rocblas_int ldc);
-
-template <typename T>
-void cblas_gemm(rocblas_operation transA,
-                rocblas_operation transB,
-                rocblas_int m,
-                rocblas_int n,
-                rocblas_int k,
-                T alpha,
-                T* A,
-                rocblas_int lda,
-                T* B,
-                rocblas_int ldb,
-                T beta,
-                T* C,
-                rocblas_int ldc);
 
 template <typename T>
 void cblas_trsm(rocblas_side side,

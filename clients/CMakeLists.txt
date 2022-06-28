@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 project(rocsolver-clients LANGUAGES C CXX)
@@ -19,16 +19,24 @@ if(NOT TARGET rocsolver)
 endif()
 
 if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
-  # Linking lapack library requires fortran flags
-  find_package(cblas REQUIRED CONFIG)
-  target_include_directories(cblas SYSTEM INTERFACE ${CBLAS_INCLUDE_DIRS})
+  if(ROCSOLVER_FIND_PACKAGE_LAPACK_CONFIG)
+    find_package(LAPACK REQUIRED CONFIG)
+  else()
+    find_package(LAPACK REQUIRED)
+  endif()
 
   add_library(clients-common INTERFACE)
   target_include_directories(clients-common INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
   )
-  target_link_libraries(clients-common INTERFACE fmt::fmt)
+  target_link_libraries(clients-common INTERFACE
+    ${LAPACK_LIBRARIES}
+    fmt::fmt
+  )
+  target_link_options(clients-common INTERFACE
+    ${LAPACK_LINKER_FLAGS}
+  )
   set(common_source_files
     common/lapack_host_reference.cpp
     rocblascommon/utility.cpp

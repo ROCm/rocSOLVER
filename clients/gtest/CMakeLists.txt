@@ -105,7 +105,7 @@ if(WIN32)
   file(GLOB third_party_dlls
     LIST_DIRECTORIES OFF
     CONFIGURE_DEPENDS
-    ${cblas_DIR}/bin/*.dll
+    ${ROCSOLVER_LAPACK_PATH}/bin/*.dll
     ${GTest_DIR}/bin/*.dll
     $ENV{rocblas_DIR}/bin/*.dll
     $ENV{HIP_DIR}/bin/*.dll
@@ -127,9 +127,6 @@ if(WIN32)
 endif()
 
 target_link_libraries(rocsolver-test PRIVATE
-  cblas
-  lapack
-  blas
   GTest::GTest
   hip::device
   rocsolver-common
