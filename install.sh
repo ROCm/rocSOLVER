@@ -109,95 +109,112 @@ supported_distro( )
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
-check_exit_code( )
-{
-  if (( $1 != 0 )); then
-    exit $1
-  fi
-}
-
-# This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
 elevate_if_not_root( )
 {
-  local uid=$(id -u)
-
-  if (( ${uid} )); then
-    sudo $@
-    check_exit_code "$?"
+  if (( $EUID )); then
+    sudo "$@" || exit
   else
-    $@
-    check_exit_code "$?"
+    "$@" || exit
   fi
 }
 
 # Take an array of packages as input, and install those packages with 'apt' if they are not already installed
 install_apt_packages( )
 {
-  package_dependencies=("$@")
-  for package in "${package_dependencies[@]}"; do
-    if [[ $(dpkg-query --show --showformat='${db:Status-Abbrev}\n' ${package} 2> /dev/null | grep -q "ii"; echo $?) -ne 0 ]]; then
-      printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-      elevate_if_not_root apt install -y --no-install-recommends ${package}
-    fi
-  done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root apt install -y --no-install-recommends "${packages[@]}"
 }
 
 # Take an array of packages as input, and install those packages with 'yum' if they are not already installed
 install_yum_packages( )
 {
-  package_dependencies=("$@")
-  for package in "${package_dependencies[@]}"; do
-    if [[ $package == *-PyYAML ]] || [[ $(yum list installed ${package} &> /dev/null; echo $? ) -ne 0 ]]; then
-      printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-      elevate_if_not_root yum -y --nogpgcheck install ${package}
-    fi
-  done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root yum -y --nogpgcheck install "${packages[@]}"
 }
 
 # Take an array of packages as input, and install those packages with 'dnf' if they are not already installed
 install_dnf_packages( )
 {
-  package_dependencies=("$@")
-  for package in "${package_dependencies[@]}"; do
-    if [[ $package == *-PyYAML ]] || [[ $(dnf list installed ${package} &> /dev/null; echo $? ) -ne 0 ]]; then
-      printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-      elevate_if_not_root dnf install -y ${package}
-    fi
-  done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root dnf install -y "${packages[@]}"
 }
 
 install_zypper_packages( )
 {
-    package_dependencies=("$@")
-    for package in "${package_dependencies[@]}"; do
-        if [[ $(rpm -q ${package} &> /dev/null; echo $? ) -ne 0 ]]; then
-            printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-            elevate_if_not_root zypper install -y ${package}
-        fi
-    done
+  packages=("$@")
+  printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
+  elevate_if_not_root zypper install -y "${packages[@]}"
 }
 
 install_fmt_from_source( )
 {
-  if [[ ! -d "${build_dir}/deps/fmt" ]]; then
-    pushd .
-    mkdir -p "${build_dir}/deps"
-    cd "${build_dir}/deps"
-    git clone -b 7.1.3 https://github.com/fmtlib/fmt.git
-    cd fmt
+  fmt_version=7.1.3
+  fmt_srcdir=fmt-$fmt_version-src
+  fmt_blddir=fmt-$fmt_version-bld
+  wget -nc -nv -O fmt-$fmt_version.tar.gz \
+      https://github.com/fmtlib/fmt/archive/refs/tags/$fmt_version.tar.gz
+  if [[ ! -d "$fmt_srcdir" ]]; then
+    tar xzf fmt-$fmt_version.tar.gz --one-top-level="$fmt_srcdir" --strip-components 1
+  fi
+  if [[ ! -d "$fmt_blddir" ]]; then
     ${cmake_executable} \
+      -S "$fmt_srcdir" -B "$fmt_blddir" \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_CXX_EXTENSIONS=OFF \
       -DCMAKE_CXX_STANDARD_REQUIRED=ON \
       -DFMT_DOC=OFF \
-      -DFMT_TEST=OFF \
-      .
-    make -j$(nproc)
-    elevate_if_not_root make install
-    popd
+      -DFMT_TEST=OFF
   fi
+  make -j$(nproc) -C "$fmt_blddir"
+  elevate_if_not_root make -C "$fmt_blddir" install
+}
+
+install_lapack_from_source( )
+{
+  lapack_version=3.9.1
+  lapack_srcdir=lapack-$lapack_version-src
+  lapack_blddir=lapack-$lapack_version-bld
+  wget -nc -nv -O lapack-$lapack_version.tar.gz \
+      https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v$lapack_version.tar.gz
+  if [[ ! -d "$lapack_srcdir" ]]; then
+    tar xzf lapack-$lapack_version.tar.gz --one-top-level="$lapack_srcdir" --strip-components 1
+  fi
+  if [[ ! -d "$lapack_blddir" ]]; then
+    ${cmake_executable} \
+      -S "$lapack_srcdir" -B "$lapack_blddir" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_Fortran_FLAGS=-fno-optimize-sibling-calls \
+      -DBUILD_TESTING=OFF \
+      -DCBLAS=ON \
+      -DLAPACKE=OFF
+  fi
+  make -j$(nproc) -C "$lapack_blddir"
+  elevate_if_not_root make -C "$lapack_blddir" install
+}
+
+install_gtest_from_source( )
+{
+  gtest_version=1.11.0
+  gtest_srcdir=gtest-$gtest_version-src
+  gtest_blddir=gtest-$gtest_version-bld
+  wget -nc -nv -O gtest-$gtest_version.tar.gz \
+      https://github.com/google/googletest/archive/refs/tags/release-$gtest_version.tar.gz
+  if [[ ! -d "$gtest_srcdir" ]]; then
+    tar xzf gtest-$gtest_version.tar.gz --one-top-level="$gtest_srcdir" --strip-components 1
+  fi
+  if [[ ! -d "$gtest_blddir" ]]; then
+    ${cmake_executable} \
+      -S "$gtest_srcdir" -B "$gtest_blddir" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF
+  fi
+  make -j$(nproc) -C "$gtest_blddir"
+  elevate_if_not_root make -C "$gtest_blddir" install
 }
 
 # Take an array of packages as input, and delegate the work to the appropriate distro installer
@@ -216,59 +233,41 @@ install_packages( )
   fi
 
   # dependencies needed to build the rocsolver library
-  local library_dependencies_ubuntu=( "make" "cmake")
-  local library_dependencies_centos_7=( "epel-release" "make" "cmake3" "rpm-build")
-  local library_dependencies_centos_8=( "epel-release" "make" "cmake3" "rpm-build")
-  local library_dependencies_fedora=( "make" "cmake" "rpm-build")
-  local library_dependencies_sles=( "make" "cmake" "rpm-build")
+  local library_dependencies_ubuntu=( "make" "cmake" "wget" )
+  local library_dependencies_centos_7=( "epel-release" "make" "cmake3" "rpm-build" "wget" )
+  local library_dependencies_centos=( "epel-release" "make" "cmake3" "rpm-build" "wget" )
+  local library_dependencies_fedora=( "make" "cmake" "rpm-build" "wget" )
+  local library_dependencies_sles=( "make" "cmake" "rpm-build" "wget" )
 
-  # dependencies to build the client
-  local client_dependencies_ubuntu=( "gfortran" )
-  local client_dependencies_centos_7=( "devtoolset-7-gcc-gfortran" )
-  local client_dependencies_centos_8=( "gcc-gfortran" )
-  local client_dependencies_fedora=( "gcc-gfortran" )
-  local client_dependencies_sles=( "gcc-fortran" )
+  if [[ "${build_clients}" == true ]]; then
+    # dependencies to build the clients
+    library_dependencies_ubuntu+=( "gfortran" )
+    library_dependencies_centos_7+=( "devtoolset-7-gcc-gfortran" )
+    library_dependencies_centos+=( "gcc-gfortran" )
+    library_dependencies_fedora+=( "gcc-gfortran" )
+    library_dependencies_sles+=( "gcc-fortran" )
+  fi
 
   case "${ID}" in
     ubuntu)
       elevate_if_not_root apt update
       install_apt_packages "${library_dependencies_ubuntu[@]}"
-
-      if [[ "${build_clients}" == true ]]; then
-        install_apt_packages "${client_dependencies_ubuntu[@]}"
-      fi
       ;;
 
     centos|rhel)
-      if [[ ( "${VERSION_ID}" -ge 8 ) ]]; then
-        install_yum_packages "${library_dependencies_centos_8[@]}"
-
-        if [[ "${build_clients}" == true ]]; then
-          install_yum_packages "${client_dependencies_centos_8[@]}"
-        fi
-      elif [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
+      if (( "${VERSION_ID%%.*}" < "8" )); then
         install_yum_packages "${library_dependencies_centos_7[@]}"
-
-        if [[ "${build_clients}" == true ]]; then
-          install_yum_packages "${client_dependencies_centos_7[@]}"
-        fi
+      else
+        install_yum_packages "${library_dependencies_centos[@]}"
       fi
       ;;
 
     fedora)
       install_dnf_packages "${library_dependencies_fedora[@]}"
-
-      if [[ "${build_clients}" == true ]]; then
-        install_dnf_packages "${client_dependencies_fedora[@]}"
-      fi
       ;;
 
     sles|opensuse-leap)
-      install_zypper_packages "${client_dependencies_sles[@]}"
-
-      if [[ "${build_clients}" == true ]]; then
-        install_zypper_packages "${client_dependencies_sles[@]}"
-      fi
+      install_zypper_packages "${library_dependencies_sles[@]}"
       ;;
     *)
       echo "This script is currently supported on Ubuntu, CentOS, RHEL, SLES, OpenSUSE-Leap, and Fedora"
@@ -473,7 +472,9 @@ cmake_executable=cmake
 
 case "${ID}" in
   centos|rhel)
-  cmake_executable=cmake3
+    if (( "${VERSION_ID%%.*}" < "8" )); then
+      cmake_executable=cmake3
+    fi
   ;;
 esac
 
@@ -487,18 +488,20 @@ export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
 # #################################################
 if [[ "${install_dependencies}" == true ]]; then
   install_packages
+
+  pushd .
+  mkdir -p "${build_dir}/deps"
+  cd "${build_dir}/deps"
+  printf "\033[32mBuilding \033[33mfmt\033[32m and installing into \033[33m/usr/local\033[0m\n"
   install_fmt_from_source
 
   if [[ "${build_clients}" == true ]]; then
-    # The following builds googletest & lapack from source, installs into cmake default /usr/local
-    pushd .
-    printf "\033[32mBuilding \033[33mgoogletest & lapack\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
-    mkdir -p "${build_dir}/deps" && cd "${build_dir}/deps"
-    ${cmake_executable} "${main}/deps"
-    make -j$(nproc)
-    elevate_if_not_root make install
-    popd
+    printf "\033[32mBuilding \033[33mlapack\033[32m and installing into \033[33m/usr/local\033[0m\n"
+    install_lapack_from_source
+    printf "\033[32mBuilding \033[33mgoogletest\033[32m and installing into \033[33m/usr/local\033[0m\n"
+    install_gtest_from_source
   fi
+  popd
 fi
 
 # #################################################
@@ -598,14 +601,6 @@ if [[ "${build_relocatable}" == true ]]; then
     cmake_common_options+=('-DROCM_DISABLE_LDCONFIG=ON')
 fi
 
-case "${ID}" in
-  centos|rhel)
-    if [[ ( "${VERSION_ID}" -ge 7 ) ]]; then
-      cmake_common_options+=('-DCMAKE_FIND_ROOT_PATH=/usr/lib64/llvm7.0/lib/cmake/')
-    fi
-    ;;
-esac
-
 if [[ "${build_codecoverage}" == true ]]; then
     if [[ "${build_type}" == Release ]]; then
         echo "Code coverage is chosen to be disabled in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
@@ -614,16 +609,16 @@ if [[ "${build_codecoverage}" == true ]]; then
     cmake_common_options+=('-DBUILD_CODE_COVERAGE=ON')
 fi
 
+# check exit codes for everything from here onwards
+set -eu
 
 ${cmake_executable} "${cmake_common_options[@]}" "${cmake_client_options[@]}" -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
-check_exit_code "$?"
 
 if [[ "${build_library}" == true ]]; then
   ${cmake_executable} --build . -j$(nproc) --target install
 else
   ${cmake_executable} --build . -j$(nproc)
 fi
-check_exit_code "$?"
 
 # #################################################
 # package build & install
@@ -631,7 +626,6 @@ check_exit_code "$?"
 # installing through package manager, which makes uninstalling easy
 if [[ "${build_package}" == true ]]; then
   make package
-  check_exit_code "$?"
 
   if [[ "${install_package}" == true ]]; then
     case "${ID}" in
@@ -650,7 +644,6 @@ if [[ "${build_package}" == true ]]; then
     esac
   fi
 fi
-check_exit_code "$?"
 
 if [[ "${cleanup}" == true ]]; then
   rm -rf  _CPack_Packages/

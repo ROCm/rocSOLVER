@@ -101,4 +101,13 @@ typedef enum rocblas_eorder_
                                       ordered from smallest to largest. */
 } rocblas_eorder;
 
+/*! \brief Used in the Jacobi methods to specify whether the eigenvalues are sorted
+ *in increasing order
+ ********************************************************************************/
+typedef enum rocblas_esort_
+{
+    rocblas_esort_none = 251, /**< The computed eigenvalues will not be sorted. */
+    rocblas_esort_ascending = 252, /**< The computed eigenvalues will be sorted in ascending order. */
+} rocblas_esort;
+
 #endif /* ROCSOLVER_EXTRAS_H_ */
