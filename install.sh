@@ -550,8 +550,6 @@ cmake_common_options+=(
   "-DCMAKE_BUILD_TYPE=${build_type}"
 )
 
-#Setting default GNU LIBDIR in build scripts as per arch board recommendation
-cmake_common_options+=("-DCMAKE_INSTALL_LIBDIR=lib")
 
 if [[ -n "${rocblas_dir+x}" ]]; then
   cmake_common_options+=("-Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas")
@@ -575,6 +573,10 @@ fi
 
 if [[ "${build_sanitizer}" == true ]]; then
   cmake_common_options+=('-DBUILD_ADDRESS_SANITIZER=ON')
+  #Setting default GNU LIBDIR in build scripts as per arch board recommendation
+  cmake_common_options+=("-DCMAKE_INSTALL_LIBDIR=libasan")
+else
+  cmake_common_options+=("-DCMAKE_INSTALL_LIBDIR=lib")
 fi
 
 if [[ "${build_clients}" == true ]]; then
