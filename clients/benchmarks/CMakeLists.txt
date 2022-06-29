@@ -24,6 +24,4 @@ target_compile_definitions(rocsolver-bench PRIVATE
   ROCSOLVER_CLIENTS_BENCH
 )
 
-set_target_properties(rocsolver-bench PROPERTIES RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
-
 rocm_install(TARGETS rocsolver-bench COMPONENT benchmarks)
