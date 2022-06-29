@@ -574,8 +574,10 @@ fi
 if [[ "${build_sanitizer}" == true ]]; then
   cmake_common_options+=('-DBUILD_ADDRESS_SANITIZER=ON')
   #Setting default GNU LIBDIR in build scripts as per arch board recommendation
+  #Default LIBDIR set to libasan when address sanitizer is enabled
   cmake_common_options+=("-DCMAKE_INSTALL_LIBDIR=libasan")
 else
+  #Default LIBDIR set to lib when address sanitizer is not enabled
   cmake_common_options+=("-DCMAKE_INSTALL_LIBDIR=lib")
 fi
 
