@@ -95,6 +95,7 @@ def config_cmd():
     cmake_options = ['-DROCSOLVER_EMBED_FMT=ON']
     src_path = cmake_path(cwd_path)
     cmake_platform_opts = []
+    cmake_prefix_path = []
     if os.name == "nt":
         # not really rocm path as none exist, HIP_DIR set in toolchain is more important
         rocm_path = os.getenv( 'ROCM_CMAKE_PATH', "C:/github/rocm-cmake-master/share/rocm")
@@ -103,9 +104,17 @@ def config_cmd():
         cmake_platform_opts.append( "-DCPACK_PACKAGING_INSTALL_PREFIX=" )
         cmake_platform_opts.append( "-DCMAKE_INSTALL_PREFIX=C:/hipSDK" )
         lapack_dir = os.getenv("LAPACK_DIR")
+        if lapack_dir is not None:
+            cmake_prefix_path.append(lapack_dir)
         cblas_dir = os.getenv("cblas_DIR")
-        if cblas_dir is None and lapack_dir is not None:
-            cmake_platform_opts.append( f"-Dcblas_DIR={lapack_dir}")
+        if cblas_dir is not None:
+            cmake_prefix_path.append(cblas_dir)
+
+        if lapack_dir is not None:
+            cmake_options.append(f"-DROCSOLVER_LAPACK_PATH={lapack_dir}")
+        elif cblas_dir is not None:
+            cmake_options.append(f"-DROCSOLVER_LAPACK_PATH={cblas_dir}")
+
         cmake_platform_opts.append('-DCMAKE_CXX_COMPILER=clang++.exe')
         cmake_platform_opts.append('-DCMAKE_C_COMPILER=clang.exe')
         if os.getenv("NO_VCPKG") is None:
@@ -130,7 +139,8 @@ def config_cmd():
 
     cmake_options.extend( cmake_platform_opts )
 
-    cmake_base_options = f"-DROCM_PATH={rocm_path} -DCMAKE_PREFIX_PATH:PATH={rocm_path}"
+    cmake_prefix_path.append(rocm_path)
+    cmake_base_options = "-DROCM_PATH={0} -DCMAKE_PREFIX_PATH={1}".format(rocm_path, ';'.join(cmake_prefix_path))
     cmake_options.append( cmake_base_options )
 
     # packaging options
