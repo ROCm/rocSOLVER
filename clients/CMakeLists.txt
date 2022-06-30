@@ -20,9 +20,16 @@ endif()
 
 if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   if(ROCSOLVER_FIND_PACKAGE_LAPACK_CONFIG)
-    find_package(LAPACK 3.9.1 REQUIRED CONFIG)
+    find_package(LAPACK REQUIRED CONFIG)
   else()
-    find_package(LAPACK 3.9.1 REQUIRED)
+    find_package(LAPACK REQUIRED)
+  endif()
+
+  if(NOT LAPACK_LIBRARIES)
+    set(LAPACK_LIBRARIES
+      ${LAPACK_blas_LIBRARIES}
+      ${LAPACK_lapack_LIBRARIES}
+    )
   endif()
 
   add_library(clients-common INTERFACE)
