@@ -9,9 +9,14 @@ else()
 endif()
 
 if(BUILD_FORTRAN_SAMPLES)
+  set( ROCBLAS_MODULE_NM_PREFIX "" )
+  if( EXISTS ${ROCBLAS_INCLUDE_DIR}/rocblas/rocblas_module.f90 )
+    set( ROCBLAS_MODULE_NM_PREFIX "rocblas/" )
+  endif()
+
   # the interface to rocblas for Fortran programs
   add_library(rocblas_module OBJECT
-    "${ROCBLAS_INCLUDE_DIR}/rocblas/rocblas_module.f90"
+    "${ROCBLAS_INCLUDE_DIR}/${ROCBLAS_MODULE_NM_PREFIX}rocblas_module.f90"
   )
 endif()
 
