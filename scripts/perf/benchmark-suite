@@ -1,9 +1,10 @@
-#!/bin/sh
-# ########################################################################
+#!/usr/bin/env bash
 # Copyright (c) 2022 Advanced Micro Devices, Inc.
-# ########################################################################
 
 set -eux
+
+# ensure this script is in the cwd
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 temp_dir=raw
 output_dir=rocsolver-benchmarks
