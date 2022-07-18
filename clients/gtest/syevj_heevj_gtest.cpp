@@ -34,7 +34,8 @@ const vector<vector<int>> size_range = {
     {12, 12},
     {20, 30},
     {35, 35},
-    {50, 60}};
+    {50, 60},
+};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {{192, 192}, {300, 310}, {515, 515}};

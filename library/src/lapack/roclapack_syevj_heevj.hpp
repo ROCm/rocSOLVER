@@ -75,8 +75,8 @@ __device__ S syevj_update_norm(const rocblas_int tid,
 
     S local_res = 0;
     for(rocblas_int i = tid; i < n; i += threads)
-        for(rocblas_int j = 0; j < n; j++)
-            local_res += (i != j ? std::norm(A[i + j * lda]) : 0);
+        for(rocblas_int j = i + 1; j < n; j++)
+            local_res += 2 * std::norm(A[i + j * lda]);
     resarr[tid] = local_res;
     __syncthreads();
 
@@ -107,15 +107,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                        const rocblas_stride strideW,
                        rocblas_int* info,
                        const rocblas_int batch_count,
-                       T* AcpyA,
-                       S* resarrA,
-                       rocblas_int* tbarrA)
+                       T* AcpyA)
 {
     rocblas_int tid = hipThreadIdx_x;
     rocblas_int bid = hipBlockIdx_y;
 
     // local variables
-    rocblas_int i, j, k;
+    rocblas_int i, j, k, i_new = 0, j_new = 0;
     rocblas_int sweeps = 0;
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
@@ -124,8 +122,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
     T* Acpy = AcpyA + bid * n * n;
     S* W = WW + bid * strideW;
-    S* resarr = resarrA + bid * half_n;
-    rocblas_int* top = tbarrA + bid * even_n;
+
+    // shared memory
+    extern __shared__ double lmem[];
+    S* resarr = reinterpret_cast<S*>(lmem);
+    rocblas_int* top = reinterpret_cast<rocblas_int*>(resarr + half_n);
     rocblas_int* bottom = top + half_n;
 
     // copy A to Acpy, set A to identity (if calculating eigenvectors), and calculate off-diagonal
@@ -134,23 +135,23 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     if(uplo == rocblas_fill_upper)
     {
         T temp;
-        for(rocblas_int id = tid; id < n; id += half_n)
+        for(i = tid; i < n; i += half_n)
         {
-            Acpy[id + id * n] = A[id + id * lda];
+            Acpy[i + i * n] = A[i + i * lda];
             if(evect != rocblas_evect_none)
-                A[id + id * lda] = 1;
+                A[i + i * lda] = 1;
 
-            for(j = id + 1; j < n; j++)
+            for(j = i + 1; j < n; j++)
             {
-                temp = A[id + j * lda];
+                temp = A[i + j * lda];
                 local_res += 2 * std::norm(temp);
-                Acpy[id + j * n] = temp;
-                Acpy[j + id * n] = conj(temp);
+                Acpy[i + j * n] = temp;
+                Acpy[j + i * n] = conj(temp);
 
                 if(evect != rocblas_evect_none)
                 {
-                    A[id + j * lda] = 0;
-                    A[j + id * lda] = 0;
+                    A[i + j * lda] = 0;
+                    A[j + i * lda] = 0;
                 }
             }
         }
@@ -158,23 +159,23 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     else
     {
         T temp;
-        for(rocblas_int id = tid; id < n; id += half_n)
+        for(j = tid; j < n; j += half_n)
         {
-            Acpy[id + id * n] = A[id + id * lda];
+            Acpy[j + j * n] = A[j + j * lda];
             if(evect != rocblas_evect_none)
-                A[id + id * lda] = 1;
+                A[j + j * lda] = 1;
 
-            for(i = id + 1; i < n; i++)
+            for(i = j + 1; i < n; i++)
             {
-                temp = A[i + id * lda];
+                temp = A[i + j * lda];
                 local_res += 2 * std::norm(temp);
-                Acpy[i + id * n] = temp;
-                Acpy[id + i * n] = conj(temp);
+                Acpy[i + j * n] = temp;
+                Acpy[j + i * n] = conj(temp);
 
                 if(evect != rocblas_evect_none)
                 {
-                    A[i + id * lda] = 0;
-                    A[id + i * lda] = 0;
+                    A[i + j * lda] = 0;
+                    A[j + i * lda] = 0;
                 }
             }
         }
@@ -185,7 +186,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     local_res = 0;
     for(i = 0; i < half_n; i++)
         local_res += resarr[i];
-    __syncthreads();
 
     // quick return if norm is already small
     if(local_res <= abstol * abstol)
@@ -202,6 +202,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     // initialize top/bottom
     top[tid] = 2 * tid;
     bottom[tid] = 2 * tid + 1;
+    __syncthreads();
 
     // execute sweeps
     while(sweeps < max_sweeps && local_res > abstol * abstol)
@@ -211,8 +212,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
         T s1, s2, aij;
         for(k = 0; k < n - 1; k++)
         {
+            // get current top/bottom pair
             i = top[tid];
             j = bottom[tid];
+
+            // cycle top/bottom pairs
+            if(tid == 1)
+                i_new = bottom[0];
+            else if(tid > 1)
+                i_new = top[tid - 1];
+            if(tid == half_n - 1)
+                j_new = top[half_n - 1];
+            else
+                j_new = bottom[tid + 1];
 
             if(i < n && j < n)
             {
@@ -235,8 +247,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                     s2 = conj(s1);
                 }
 
-                // apply J' from the left
-                syevj_lasr_left(n, i, j, c, s1, s2, Acpy, n);
+                // apply J from the right
+                syevj_lasr_right(n, i, j, c, s1, s2, Acpy, n);
 
                 // update eigenvectors
                 if(evect != rocblas_evect_none)
@@ -246,31 +258,35 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
 
             if(i < n && j < n)
             {
-                // apply J from the right
-                syevj_lasr_right(n, i, j, c, s1, s2, Acpy, n);
+                // apply J' from the left
+                syevj_lasr_left(n, i, j, c, s1, s2, Acpy, n);
 
                 // round aij and aji to zero
                 Acpy[j + i * n] = Acpy[i + j * n] = 0;
             }
 
-            // cycle top/bottom pairs
-            if(tid == 1)
-                i = bottom[0];
-            else if(tid > 1)
-                i = top[tid - 1];
-            if(tid == half_n - 1)
-                j = top[half_n - 1];
-            else
-                j = bottom[tid + 1];
-            __syncthreads();
+            top[tid] = i_new;
+            bottom[tid] = j_new;
 
-            top[tid] = i;
-            bottom[tid] = j;
+            // update row norms
+            if(k == n - 2)
+            {
+                local_res = 0;
+                if(i < n)
+                    for(j_new = i + 1; j_new < n; j_new++)
+                        local_res += 2 * std::norm(Acpy[i + j_new * n]);
+                if(j < n)
+                    for(j_new = j + 1; j_new < n; j_new++)
+                        local_res += 2 * std::norm(Acpy[j + j_new * n]);
+                resarr[tid] = local_res;
+            }
             __syncthreads();
         }
 
         // update norm
-        local_res = syevj_update_norm(tid, n, half_n, Acpy, n, resarr);
+        local_res = 0;
+        for(i = 0; i < half_n; i++)
+            local_res += resarr[i];
 
         sweeps++;
     }
@@ -627,23 +643,24 @@ void rocsolver_syevj_heevj_getMemorySize(const rocblas_evect evect,
     // size of temporary workspace for copying A
     *size_Acpy = sizeof(T) * n * n * batch_count;
 
-    // size of array for per-thread residuals
-    *size_resarr = sizeof(S) * min(half_n, SYEVJ_MAX_THDS) * batch_count;
-
-    // size of arrays for temporary cosines/sine pairs
     if(half_n <= SYEVJ_MAX_THDS)
-        *size_cosines = *size_sines = 0;
-    else
     {
-        *size_cosines = sizeof(S) * half_n * batch_count;
-        *size_sines = sizeof(T) * half_n * batch_count;
+        *size_resarr = 0;
+        *size_cosines = 0;
+        *size_sines = 0;
+        *size_tbarr = 0;
+        return;
     }
 
+    // size of array for per-thread residuals
+    *size_resarr = sizeof(S) * SYEVJ_MAX_THDS * batch_count;
+
+    // size of arrays for temporary cosines/sine pairs
+    *size_cosines = sizeof(S) * half_n * batch_count;
+    *size_sines = sizeof(T) * half_n * batch_count;
+
     // size of array for temporary top/bottom pairs
-    if(half_n <= SYEVJ_MAX_THDS)
-        *size_tbarr = sizeof(rocblas_int) * even_n * batch_count;
-    else
-        *size_tbarr = sizeof(rocblas_int) * (2 * even_n) * batch_count;
+    *size_tbarr = sizeof(rocblas_int) * (2 * even_n) * batch_count;
 }
 
 /** Argument checking **/
@@ -755,9 +772,11 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         dim3 grid(1, batch_count, 1);
         dim3 threads(half_n, 1, 1);
 
-        ROCSOLVER_LAUNCH_KERNEL(syevj_small_kernel<T>, grid, threads, 0, stream, esort, evect, uplo,
-                                n, A, shiftA, lda, strideA, atol, eps, residual, max_sweeps,
-                                n_sweeps, W, strideW, info, batch_count, Acpy, resarr, tbarr);
+        size_t lmemsize = (sizeof(S) + 2 * sizeof(rocblas_int)) * half_n;
+
+        ROCSOLVER_LAUNCH_KERNEL(syevj_small_kernel<T>, grid, threads, lmemsize, stream, esort,
+                                evect, uplo, n, A, shiftA, lda, strideA, atol, eps, residual,
+                                max_sweeps, n_sweeps, W, strideW, info, batch_count, Acpy);
     }
     else
     {
