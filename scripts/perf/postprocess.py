@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # append derived columns
     df['mean_gpu_time_us_per_matrix'] = df['gpu_time_us'].astype(float) / df.get('batch_c', 1)
     df['op_count'] = operation_count(df['n'], function).round().astype(int) * df.get('batch_c', 1)
-    df[f'performance_gflops'] = df['op_count'] / df['gpu_time_us'] / 1000
+    df['performance_gflops'] = df['op_count'] / df['gpu_time_us'] / 1000
 
     # save results
     df.to_csv(args.output_path, encoding='utf-8', index=False)
