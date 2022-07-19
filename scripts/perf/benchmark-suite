@@ -14,18 +14,6 @@ mkdir -p "$temp_dir"
 
 # run benchmarks
 for p in s d c z; do
-  for f in geqrf geqrf_strided_batched; do
-    python3 rocsolver-bench-suite.py -v $p $f -o "$temp_dir/$p${f}_benchmarks.csv"
-  done
-done
-
-for p in s d c z; do
-  for f in getri getri_strided_batched; do
-    python3 rocsolver-bench-suite.py -v $p $f -o "$temp_dir/$p${f}_benchmarks.csv"
-  done
-done
-
-for p in s d c z; do
   for f in geqrf geqrf_strided_batched getrf getrf_strided_batched getri getri_strided_batched; do
     python3 rocsolver-bench-suite.py -v $p $f -o "$temp_dir/$p${f}_benchmarks.csv"
   done
