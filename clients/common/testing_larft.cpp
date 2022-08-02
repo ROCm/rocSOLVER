@@ -1,4 +1,7 @@
+
 #include <testing_larft.hpp>
 
-template void testing_larft<double>(Arguments& argus);
-template void testing_larft<float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_LARFT(...) template void testing_larft<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_LARFT, FOREACH_REAL_TYPE, APPLY_STAMP)

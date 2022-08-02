@@ -1,4 +1,7 @@
+
 #include <testing_larfb.hpp>
 
-template void testing_larfb<double>(Arguments& argus);
-template void testing_larfb<float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_LARFB(...) template void testing_larfb<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_LARFB, FOREACH_REAL_TYPE, APPLY_STAMP)

@@ -1,10 +1,7 @@
+
 #include <testing_orglx_unglx.hpp>
 
-template void testing_orglx_unglx<double, 1>(Arguments& argus);
-template void testing_orglx_unglx<float, 1>(Arguments& argus);
-template void testing_orglx_unglx<double, 0>(Arguments& argus);
-template void testing_orglx_unglx<float, 0>(Arguments& argus);
-template void testing_orglx_unglx<rocblas_double_complex, 1>(Arguments& argus);
-template void testing_orglx_unglx<rocblas_float_complex, 1>(Arguments& argus);
-template void testing_orglx_unglx<rocblas_double_complex, 0>(Arguments& argus);
-template void testing_orglx_unglx<rocblas_float_complex, 0>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_ORGLX_UNGLX(...) template void testing_orglx_unglx<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_ORGLX_UNGLX, FOREACH_SCALAR_TYPE, FOREACH_BOOLEAN_INT, APPLY_STAMP)

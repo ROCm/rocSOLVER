@@ -1,16 +1,12 @@
+
 #include <testing_geqr2_geqrf.hpp>
 
-template void testing_geqr2_geqrf<false, false, 0, double>(Arguments& argus);
-template void testing_geqr2_geqrf<false, false, 0, float>(Arguments& argus);
-template void testing_geqr2_geqrf<true, false, 1, double>(Arguments& argus);
-template void testing_geqr2_geqrf<true, false, 1, float>(Arguments& argus);
-template void testing_geqr2_geqrf<true, true, 1, double>(Arguments& argus);
-template void testing_geqr2_geqrf<true, true, 1, float>(Arguments& argus);
-template void testing_geqr2_geqrf<false, true, 1, double>(Arguments& argus);
-template void testing_geqr2_geqrf<false, true, 1, float>(Arguments& argus);
-template void testing_geqr2_geqrf<true, true, 0, double>(Arguments& argus);
-template void testing_geqr2_geqrf<true, true, 0, float>(Arguments& argus);
-template void testing_geqr2_geqrf<false, true, 0, double>(Arguments& argus);
-template void testing_geqr2_geqrf<false, true, 0, float>(Arguments& argus);
-template void testing_geqr2_geqrf<false, false, 1, double>(Arguments& argus);
-template void testing_geqr2_geqrf<false, false, 1, float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_GEQR2_GEQRF(...) template void testing_geqr2_geqrf<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_GEQR2_GEQRF,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_REAL_TYPE,
+            APPLY_STAMP)

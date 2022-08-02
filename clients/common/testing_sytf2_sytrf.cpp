@@ -1,14 +1,12 @@
+
 #include <testing_sytf2_sytrf.hpp>
 
-template void testing_sytf2_sytrf<false, true, 0, double>(Arguments& argus);
-template void testing_sytf2_sytrf<false, true, 0, float>(Arguments& argus);
-template void testing_sytf2_sytrf<false, true, 1, double>(Arguments& argus);
-template void testing_sytf2_sytrf<false, true, 1, float>(Arguments& argus);
-template void testing_sytf2_sytrf<true, true, 1, double>(Arguments& argus);
-template void testing_sytf2_sytrf<true, true, 1, float>(Arguments& argus);
-template void testing_sytf2_sytrf<true, true, 0, double>(Arguments& argus);
-template void testing_sytf2_sytrf<true, true, 0, float>(Arguments& argus);
-template void testing_sytf2_sytrf<false, false, 1, double>(Arguments& argus);
-template void testing_sytf2_sytrf<false, false, 1, float>(Arguments& argus);
-template void testing_sytf2_sytrf<false, false, 0, double>(Arguments& argus);
-template void testing_sytf2_sytrf<false, false, 0, float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_SYTF2_SYTRF(...) template void testing_sytf2_sytrf<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_SYTF2_SYTRF,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_REAL_TYPE,
+            APPLY_STAMP)

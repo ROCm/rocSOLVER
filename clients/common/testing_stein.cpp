@@ -1,4 +1,7 @@
+
 #include <testing_stein.hpp>
 
-template void testing_stein<double>(Arguments& argus);
-template void testing_stein<float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_STEIN(...) template void testing_stein<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_STEIN, FOREACH_REAL_TYPE, APPLY_STAMP)

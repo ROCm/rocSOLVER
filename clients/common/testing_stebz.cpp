@@ -1,4 +1,7 @@
+
 #include <testing_stebz.hpp>
 
-template void testing_stebz<double>(Arguments& argus);
-template void testing_stebz<float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_STEBZ(...) template void testing_stebz<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_STEBZ, FOREACH_REAL_TYPE, APPLY_STAMP)

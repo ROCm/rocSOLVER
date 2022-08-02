@@ -1,6 +1,7 @@
+
 #include <testing_orgtr_ungtr.hpp>
 
-template void testing_orgtr_ungtr<double>(Arguments& argus);
-template void testing_orgtr_ungtr<float>(Arguments& argus);
-template void testing_orgtr_ungtr<rocblas_double_complex>(Arguments& argus);
-template void testing_orgtr_ungtr<rocblas_float_complex>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_ORGTR_UNGTR(...) template void testing_orgtr_ungtr<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_ORGTR_UNGTR, FOREACH_SCALAR_TYPE, APPLY_STAMP)

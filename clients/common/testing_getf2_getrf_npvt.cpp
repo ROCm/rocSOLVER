@@ -1,14 +1,13 @@
+
 #include <testing_getf2_getrf_npvt.hpp>
 
-template void testing_getf2_getrf_npvt<false, true, 0, double>(Arguments& argus);
-template void testing_getf2_getrf_npvt<false, true, 0, float>(Arguments& argus);
-template void testing_getf2_getrf_npvt<true, true, 1, double>(Arguments& argus);
-template void testing_getf2_getrf_npvt<true, true, 1, float>(Arguments& argus);
-template void testing_getf2_getrf_npvt<false, false, 0, double>(Arguments& argus);
-template void testing_getf2_getrf_npvt<false, false, 0, float>(Arguments& argus);
-template void testing_getf2_getrf_npvt<false, true, 1, double>(Arguments& argus);
-template void testing_getf2_getrf_npvt<false, true, 1, float>(Arguments& argus);
-template void testing_getf2_getrf_npvt<false, false, 1, double>(Arguments& argus);
-template void testing_getf2_getrf_npvt<false, false, 1, float>(Arguments& argus);
-template void testing_getf2_getrf_npvt<true, true, 0, double>(Arguments& argus);
-template void testing_getf2_getrf_npvt<true, true, 0, float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_GETF2_GETRF_NPVT(...) \
+    template void testing_getf2_getrf_npvt<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_GETF2_GETRF_NPVT,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_REAL_TYPE,
+            APPLY_STAMP)

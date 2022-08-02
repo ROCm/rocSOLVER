@@ -1,14 +1,12 @@
+
 #include <testing_potf2_potrf.hpp>
 
-template void testing_potf2_potrf<false, false, 0, double>(Arguments& argus);
-template void testing_potf2_potrf<false, false, 0, float>(Arguments& argus);
-template void testing_potf2_potrf<false, true, 0, double>(Arguments& argus);
-template void testing_potf2_potrf<false, true, 0, float>(Arguments& argus);
-template void testing_potf2_potrf<false, true, 1, double>(Arguments& argus);
-template void testing_potf2_potrf<false, true, 1, float>(Arguments& argus);
-template void testing_potf2_potrf<false, false, 1, double>(Arguments& argus);
-template void testing_potf2_potrf<false, false, 1, float>(Arguments& argus);
-template void testing_potf2_potrf<true, true, 1, double>(Arguments& argus);
-template void testing_potf2_potrf<true, true, 1, float>(Arguments& argus);
-template void testing_potf2_potrf<true, true, 0, double>(Arguments& argus);
-template void testing_potf2_potrf<true, true, 0, float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_POTF2_POTRF(...) template void testing_potf2_potrf<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_POTF2_POTRF,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_REAL_TYPE,
+            APPLY_STAMP)

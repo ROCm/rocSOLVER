@@ -1,14 +1,7 @@
+
 #include <testing_syevx_heevx.hpp>
 
-template void testing_syevx_heevx<false, false, double>(Arguments& argus);
-template void testing_syevx_heevx<false, false, float>(Arguments& argus);
-template void testing_syevx_heevx<true, true, rocblas_double_complex>(Arguments& argus);
-template void testing_syevx_heevx<true, true, rocblas_float_complex>(Arguments& argus);
-template void testing_syevx_heevx<false, true, double>(Arguments& argus);
-template void testing_syevx_heevx<false, true, float>(Arguments& argus);
-template void testing_syevx_heevx<false, true, rocblas_double_complex>(Arguments& argus);
-template void testing_syevx_heevx<false, true, rocblas_float_complex>(Arguments& argus);
-template void testing_syevx_heevx<true, true, double>(Arguments& argus);
-template void testing_syevx_heevx<true, true, float>(Arguments& argus);
-template void testing_syevx_heevx<false, false, rocblas_double_complex>(Arguments& argus);
-template void testing_syevx_heevx<false, false, rocblas_float_complex>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_SYEVX_HEEVX(...) template void testing_syevx_heevx<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_SYEVX_HEEVX, FOREACH_BOOLEAN_0, FOREACH_BOOLEAN_1, FOREACH_SCALAR_TYPE, APPLY_STAMP)

@@ -1,26 +1,12 @@
+
 #include <testing_sygsx_hegsx.hpp>
 
-template void testing_sygsx_hegsx<false, false, 0, rocblas_double_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<false, false, 0, rocblas_float_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 1, rocblas_double_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 1, rocblas_float_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 0, double>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 0, float>(Arguments& argus);
-template void testing_sygsx_hegsx<false, false, 1, rocblas_double_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<false, false, 1, rocblas_float_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 0, rocblas_double_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 0, rocblas_float_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 1, double>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 1, float>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 1, rocblas_double_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 1, rocblas_float_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<false, false, 1, double>(Arguments& argus);
-template void testing_sygsx_hegsx<false, false, 1, float>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 1, double>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 1, float>(Arguments& argus);
-template void testing_sygsx_hegsx<false, false, 0, double>(Arguments& argus);
-template void testing_sygsx_hegsx<false, false, 0, float>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 0, double>(Arguments& argus);
-template void testing_sygsx_hegsx<true, true, 0, float>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 0, rocblas_double_complex>(Arguments& argus);
-template void testing_sygsx_hegsx<false, true, 0, rocblas_float_complex>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_SYGSX_HEGSX(...) template void testing_sygsx_hegsx<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_SYGSX_HEGSX,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

@@ -1,8 +1,7 @@
+
 #include <testing_getri.hpp>
 
-template void testing_getri<false, true, double>(Arguments& argus);
-template void testing_getri<false, true, float>(Arguments& argus);
-template void testing_getri<false, false, double>(Arguments& argus);
-template void testing_getri<false, false, float>(Arguments& argus);
-template void testing_getri<true, true, double>(Arguments& argus);
-template void testing_getri<true, true, float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_GETRI(...) template void testing_getri<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_GETRI, FOREACH_BOOLEAN_0, FOREACH_BOOLEAN_1, FOREACH_REAL_TYPE, APPLY_STAMP)

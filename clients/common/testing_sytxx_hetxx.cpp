@@ -1,26 +1,12 @@
+
 #include <testing_sytxx_hetxx.hpp>
 
-template void testing_sytxx_hetxx<false, false, 0, rocblas_double_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, false, 0, rocblas_float_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 0, double>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 0, float>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 0, rocblas_double_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 0, rocblas_float_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 1, double>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 1, float>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 1, rocblas_double_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 1, rocblas_float_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 1, double>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 1, float>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 1, rocblas_double_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<true, true, 1, rocblas_float_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 0, double>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 0, float>(Arguments& argus);
-template void testing_sytxx_hetxx<false, false, 1, rocblas_double_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, false, 1, rocblas_float_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 0, rocblas_double_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, true, 0, rocblas_float_complex>(Arguments& argus);
-template void testing_sytxx_hetxx<false, false, 0, double>(Arguments& argus);
-template void testing_sytxx_hetxx<false, false, 0, float>(Arguments& argus);
-template void testing_sytxx_hetxx<false, false, 1, double>(Arguments& argus);
-template void testing_sytxx_hetxx<false, false, 1, float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_SYTXX_HETXX(...) template void testing_sytxx_hetxx<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_SYTXX_HETXX,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

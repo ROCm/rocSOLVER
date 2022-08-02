@@ -1,4 +1,7 @@
+
 #include <testing_labrd.hpp>
 
-template void testing_labrd<double>(Arguments& argus);
-template void testing_labrd<float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_LABRD(...) template void testing_labrd<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_LABRD, FOREACH_REAL_TYPE, APPLY_STAMP)

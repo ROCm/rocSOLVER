@@ -1,14 +1,7 @@
+
 #include <testing_syev_heev.hpp>
 
-template void testing_syev_heev<false, true, double>(Arguments& argus);
-template void testing_syev_heev<false, true, float>(Arguments& argus);
-template void testing_syev_heev<true, true, rocblas_double_complex>(Arguments& argus);
-template void testing_syev_heev<true, true, rocblas_float_complex>(Arguments& argus);
-template void testing_syev_heev<false, false, rocblas_double_complex>(Arguments& argus);
-template void testing_syev_heev<false, false, rocblas_float_complex>(Arguments& argus);
-template void testing_syev_heev<true, true, double>(Arguments& argus);
-template void testing_syev_heev<true, true, float>(Arguments& argus);
-template void testing_syev_heev<false, false, double>(Arguments& argus);
-template void testing_syev_heev<false, false, float>(Arguments& argus);
-template void testing_syev_heev<false, true, rocblas_double_complex>(Arguments& argus);
-template void testing_syev_heev<false, true, rocblas_float_complex>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_SYEV_HEEV(...) template void testing_syev_heev<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_SYEV_HEEV, FOREACH_BOOLEAN_0, FOREACH_BOOLEAN_1, FOREACH_SCALAR_TYPE, APPLY_STAMP)

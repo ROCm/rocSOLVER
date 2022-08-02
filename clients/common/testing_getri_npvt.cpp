@@ -1,8 +1,7 @@
+
 #include <testing_getri_npvt.hpp>
 
-template void testing_getri_npvt<false, true, double>(Arguments& argus);
-template void testing_getri_npvt<false, true, float>(Arguments& argus);
-template void testing_getri_npvt<true, true, double>(Arguments& argus);
-template void testing_getri_npvt<true, true, float>(Arguments& argus);
-template void testing_getri_npvt<false, false, double>(Arguments& argus);
-template void testing_getri_npvt<false, false, float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_GETRI_NPVT(...) template void testing_getri_npvt<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_GETRI_NPVT, FOREACH_BOOLEAN_0, FOREACH_BOOLEAN_1, FOREACH_REAL_TYPE, APPLY_STAMP)

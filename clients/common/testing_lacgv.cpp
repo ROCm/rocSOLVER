@@ -1,4 +1,7 @@
+
 #include <testing_lacgv.hpp>
 
-template void testing_lacgv<rocblas_double_complex>(Arguments& argus);
-template void testing_lacgv<rocblas_float_complex>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_LACGV(...) template void testing_lacgv<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_LACGV, FOREACH_COMPLEX_TYPE, APPLY_STAMP)

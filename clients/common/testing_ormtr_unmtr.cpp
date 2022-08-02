@@ -1,6 +1,7 @@
+
 #include <testing_ormtr_unmtr.hpp>
 
-template void testing_ormtr_unmtr<rocblas_double_complex>(Arguments& argus);
-template void testing_ormtr_unmtr<rocblas_float_complex>(Arguments& argus);
-template void testing_ormtr_unmtr<double>(Arguments& argus);
-template void testing_ormtr_unmtr<float>(Arguments& argus);
+#include <client_util.hpp>
+
+#define TESTING_ORMTR_UNMTR(...) template void testing_ormtr_unmtr<__VA_ARGS__>(Arguments&);
+INSTANTIATE(TESTING_ORMTR_UNMTR, FOREACH_SCALAR_TYPE, APPLY_STAMP)
