@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -435,8 +436,7 @@ void testing_ormtr_unmtr(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_ormtr_unmtr<double>(Arguments& argus);
-extern template void testing_ormtr_unmtr<float>(Arguments& argus);
-extern template void testing_ormtr_unmtr<rocblas_double_complex>(Arguments& argus);
-extern template void testing_ormtr_unmtr<rocblas_float_complex>(Arguments& argus);
+#define EXTERN_TESTING_ORMTR_UNMTR(...) \
+    extern template void testing_ormtr_unmtr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_ORMTR_UNMTR, FOREACH_SCALAR_TYPE, APPLY_STAMP)

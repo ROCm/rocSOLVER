@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -322,6 +323,6 @@ void testing_laswp(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_laswp<double>(Arguments& argus);
-extern template void testing_laswp<float>(Arguments& argus);
+#define EXTERN_TESTING_LASWP(...) extern template void testing_laswp<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_LASWP, FOREACH_SCALAR_TYPE, APPLY_STAMP)

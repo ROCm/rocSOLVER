@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -777,16 +778,11 @@ void testing_syevx_heevx(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_syevx_heevx<false, false, double>(Arguments& argus);
-extern template void testing_syevx_heevx<false, false, float>(Arguments& argus);
-extern template void testing_syevx_heevx<true, true, double>(Arguments& argus);
-extern template void testing_syevx_heevx<true, true, float>(Arguments& argus);
-extern template void testing_syevx_heevx<false, true, double>(Arguments& argus);
-extern template void testing_syevx_heevx<false, true, float>(Arguments& argus);
-extern template void testing_syevx_heevx<false, false, rocblas_double_complex>(Arguments& argus);
-extern template void testing_syevx_heevx<false, false, rocblas_float_complex>(Arguments& argus);
-extern template void testing_syevx_heevx<true, true, rocblas_double_complex>(Arguments& argus);
-extern template void testing_syevx_heevx<true, true, rocblas_float_complex>(Arguments& argus);
-extern template void testing_syevx_heevx<false, true, rocblas_double_complex>(Arguments& argus);
-extern template void testing_syevx_heevx<false, true, rocblas_float_complex>(Arguments& argus);
+#define EXTERN_TESTING_SYEVX_HEEVX(...) \
+    extern template void testing_syevx_heevx<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYEVX_HEEVX,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

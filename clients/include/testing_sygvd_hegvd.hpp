@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -759,16 +760,11 @@ void testing_sygvd_hegvd(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_sygvd_hegvd<false, false, double>(Arguments& argus);
-extern template void testing_sygvd_hegvd<false, false, float>(Arguments& argus);
-extern template void testing_sygvd_hegvd<true, true, double>(Arguments& argus);
-extern template void testing_sygvd_hegvd<true, true, float>(Arguments& argus);
-extern template void testing_sygvd_hegvd<false, true, double>(Arguments& argus);
-extern template void testing_sygvd_hegvd<false, true, float>(Arguments& argus);
-extern template void testing_sygvd_hegvd<false, false, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygvd_hegvd<false, false, rocblas_float_complex>(Arguments& argus);
-extern template void testing_sygvd_hegvd<true, true, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygvd_hegvd<true, true, rocblas_float_complex>(Arguments& argus);
-extern template void testing_sygvd_hegvd<false, true, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygvd_hegvd<false, true, rocblas_float_complex>(Arguments& argus);
+#define EXTERN_TESTING_SYGVD_HEGVD(...) \
+    extern template void testing_sygvd_hegvd<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYGVD_HEGVD,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

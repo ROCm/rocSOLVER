@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -331,12 +332,7 @@ void testing_orgxr_ungxr(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_orgxr_ungxr<double, 0>(Arguments& argus);
-extern template void testing_orgxr_ungxr<float, 0>(Arguments& argus);
-extern template void testing_orgxr_ungxr<double, 1>(Arguments& argus);
-extern template void testing_orgxr_ungxr<float, 1>(Arguments& argus);
-extern template void testing_orgxr_ungxr<rocblas_double_complex, 0>(Arguments& argus);
-extern template void testing_orgxr_ungxr<rocblas_float_complex, 0>(Arguments& argus);
-extern template void testing_orgxr_ungxr<rocblas_double_complex, 1>(Arguments& argus);
-extern template void testing_orgxr_ungxr<rocblas_float_complex, 1>(Arguments& argus);
+#define EXTERN_TESTING_ORGXR_UNGXR(...) \
+    extern template void testing_orgxr_ungxr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_ORGXR_UNGXR, FOREACH_SCALAR_TYPE, FOREACH_BOOLEAN_INT, APPLY_STAMP)

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -445,6 +446,6 @@ void testing_steqr(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_steqr<double>(Arguments& argus);
-extern template void testing_steqr<float>(Arguments& argus);
+#define EXTERN_TESTING_STEQR(...) extern template void testing_steqr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_STEQR, FOREACH_SCALAR_TYPE, APPLY_STAMP)

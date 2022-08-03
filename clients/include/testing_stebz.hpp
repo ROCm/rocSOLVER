@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -506,6 +507,6 @@ void testing_stebz(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_stebz<double>(Arguments& argus);
-extern template void testing_stebz<float>(Arguments& argus);
+#define EXTERN_TESTING_STEBZ(...) extern template void testing_stebz<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_STEBZ, FOREACH_REAL_TYPE, APPLY_STAMP)

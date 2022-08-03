@@ -29,4 +29,4 @@
     F(STAMP, ##__VA_ARGS__, false, false)         \
     F(STAMP, ##__VA_ARGS__, true, false)          \
     F(STAMP, ##__VA_ARGS__, false, true)
-#define INSTANTIATE(STAMP, F, ...) F(STAMP, ##__VA_ARGS__)
+#define INSTANTIATE(STAMP, F, ...) F(STAMP, __VA_ARGS__)

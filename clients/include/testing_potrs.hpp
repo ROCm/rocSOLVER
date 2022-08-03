@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -471,10 +472,6 @@ void testing_potrs(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_potrs<false, false, double>(Arguments& argus);
-extern template void testing_potrs<false, false, float>(Arguments& argus);
-extern template void testing_potrs<true, true, double>(Arguments& argus);
-extern template void testing_potrs<true, true, float>(Arguments& argus);
-extern template void testing_potrs<false, true, double>(Arguments& argus);
-extern template void testing_potrs<false, true, float>(Arguments& argus);
+#define EXTERN_TESTING_POTRS(...) extern template void testing_potrs<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_POTRS, FOREACH_BOOLEAN_0, FOREACH_BOOLEAN_1, FOREACH_SCALAR_TYPE, APPLY_STAMP)

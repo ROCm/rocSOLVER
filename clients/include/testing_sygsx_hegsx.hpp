@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -561,28 +562,12 @@ void testing_sygsx_hegsx(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_sygsx_hegsx<false, false, 0, double>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, false, 0, float>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 0, double>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 0, float>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 0, double>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 0, float>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, false, 1, double>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, false, 1, float>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 1, double>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 1, float>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 1, double>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 1, float>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, false, 0, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, false, 0, rocblas_float_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 0, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 0, rocblas_float_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 0, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 0, rocblas_float_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, false, 1, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, false, 1, rocblas_float_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 1, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<true, true, 1, rocblas_float_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 1, rocblas_double_complex>(Arguments& argus);
-extern template void testing_sygsx_hegsx<false, true, 1, rocblas_float_complex>(Arguments& argus);
+#define EXTERN_TESTING_SYGSX_HEGSX(...) \
+    extern template void testing_sygsx_hegsx<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYGSX_HEGSX,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

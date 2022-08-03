@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -649,16 +650,12 @@ void testing_gebd2_gebrd(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_gebd2_gebrd<false, false, 0, double>(Arguments& argus);
-extern template void testing_gebd2_gebrd<false, false, 0, float>(Arguments& argus);
-extern template void testing_gebd2_gebrd<true, true, 0, double>(Arguments& argus);
-extern template void testing_gebd2_gebrd<true, true, 0, float>(Arguments& argus);
-extern template void testing_gebd2_gebrd<false, true, 0, double>(Arguments& argus);
-extern template void testing_gebd2_gebrd<false, true, 0, float>(Arguments& argus);
-extern template void testing_gebd2_gebrd<false, false, 1, double>(Arguments& argus);
-extern template void testing_gebd2_gebrd<false, false, 1, float>(Arguments& argus);
-extern template void testing_gebd2_gebrd<true, true, 1, double>(Arguments& argus);
-extern template void testing_gebd2_gebrd<true, true, 1, float>(Arguments& argus);
-extern template void testing_gebd2_gebrd<false, true, 1, double>(Arguments& argus);
-extern template void testing_gebd2_gebrd<false, true, 1, float>(Arguments& argus);
+#define EXTERN_TESTING_GEBD2_GEBRD(...) \
+    extern template void testing_gebd2_gebrd<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_GEBD2_GEBRD,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_BOOLEAN_INT,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

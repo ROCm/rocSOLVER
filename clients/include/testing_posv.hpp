@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -527,10 +528,6 @@ void testing_posv(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_posv<false, false, double>(Arguments& argus);
-extern template void testing_posv<false, false, float>(Arguments& argus);
-extern template void testing_posv<true, true, double>(Arguments& argus);
-extern template void testing_posv<true, true, float>(Arguments& argus);
-extern template void testing_posv<false, true, double>(Arguments& argus);
-extern template void testing_posv<false, true, float>(Arguments& argus);
+#define EXTERN_TESTING_POSV(...) extern template void testing_posv<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_POSV, FOREACH_BOOLEAN_0, FOREACH_BOOLEAN_1, FOREACH_SCALAR_TYPE, APPLY_STAMP)

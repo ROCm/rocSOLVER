@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -407,6 +408,6 @@ void testing_latrd(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_latrd<double>(Arguments& argus);
-extern template void testing_latrd<float>(Arguments& argus);
+#define EXTERN_TESTING_LATRD(...) extern template void testing_latrd<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_LATRD, FOREACH_SCALAR_TYPE, APPLY_STAMP)

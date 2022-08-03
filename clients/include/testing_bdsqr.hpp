@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -634,6 +635,6 @@ void testing_bdsqr(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_bdsqr<double>(Arguments& argus);
-extern template void testing_bdsqr<float>(Arguments& argus);
+#define EXTERN_TESTING_BDSQR(...) extern template void testing_bdsqr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_BDSQR, FOREACH_SCALAR_TYPE, APPLY_STAMP)

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -517,10 +518,11 @@ void testing_getri_npvt_outofplace(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_getri_npvt_outofplace<false, false, double>(Arguments& argus);
-extern template void testing_getri_npvt_outofplace<false, false, float>(Arguments& argus);
-extern template void testing_getri_npvt_outofplace<true, true, double>(Arguments& argus);
-extern template void testing_getri_npvt_outofplace<true, true, float>(Arguments& argus);
-extern template void testing_getri_npvt_outofplace<false, true, double>(Arguments& argus);
-extern template void testing_getri_npvt_outofplace<false, true, float>(Arguments& argus);
+#define EXTERN_TESTING_GETRI_NPVT_OUTOFPLACE(...) \
+    extern template void testing_getri_npvt_outofplace<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_GETRI_NPVT_OUTOFPLACE,
+            FOREACH_BOOLEAN_0,
+            FOREACH_BOOLEAN_1,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

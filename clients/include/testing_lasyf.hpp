@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -445,6 +446,6 @@ void testing_lasyf(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_lasyf<double>(Arguments& argus);
-extern template void testing_lasyf<float>(Arguments& argus);
+#define EXTERN_TESTING_LASYF(...) extern template void testing_lasyf<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_LASYF, FOREACH_SCALAR_TYPE, APPLY_STAMP)

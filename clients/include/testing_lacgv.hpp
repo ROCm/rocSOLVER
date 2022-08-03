@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -268,6 +269,6 @@ void testing_lacgv(Arguments& argus)
     argus.validate_consumed();
 }
 
-//forward declared explicit instantiations
-extern template void testing_lacgv<rocblas_double_complex>(Arguments& argus);
-extern template void testing_lacgv<rocblas_float_complex>(Arguments& argus);
+#define EXTERN_TESTING_LACGV(...) extern template void testing_lacgv<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_LACGV, FOREACH_COMPLEX_TYPE, APPLY_STAMP)
