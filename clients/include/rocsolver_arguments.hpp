@@ -235,6 +235,17 @@ public:
             throw std::invalid_argument("Invalid value for " + name);
     }
 
+    void validate_esort(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char sort = val->second.as<char>();
+        if(sort != 'A' && sort != 'N')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_itype(const std::string name) const
     {
         auto val = find(name);

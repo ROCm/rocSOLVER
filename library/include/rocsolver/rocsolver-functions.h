@@ -15008,7 +15008,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     matrix A.
 
     \details
-    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in an order
+    depending on the value of esort.
     The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
 
     At the \f$k\f$-th iteration (or "sweep"), \f$A\f$ is transformed by a product of Jacobi rotations \f$V\f$ as
@@ -15023,6 +15024,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
 
     @param[in]
     handle      rocblas_handle.
+    @param[in]
+    esort       #rocblas_esort.\n
+                Specifies the order of the returned eigenvalues. If esort is
+                rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
+                If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
@@ -15065,6 +15071,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj(rocblas_handle handle,
+                                                 const rocblas_esort esort,
                                                  const rocblas_evect evect,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
@@ -15078,6 +15085,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj(rocblas_handle handle,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
+                                                 const rocblas_esort esort,
                                                  const rocblas_evect evect,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
@@ -15096,7 +15104,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     matrix A.
 
     \details
-    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in an order
+    depending on the value of esort.
     The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
 
     At the \f$k\f$-th iteration (or "sweep"), \f$A\f$ is transformed by a product of Jacobi rotations \f$V\f$ as
@@ -15111,6 +15120,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
 
     @param[in]
     handle      rocblas_handle.
+    @param[in]
+    esort       #rocblas_esort.\n
+                Specifies the order of the returned eigenvalues. If esort is
+                rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
+                If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
@@ -15153,6 +15167,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj(rocblas_handle handle,
+                                                 const rocblas_esort esort,
                                                  const rocblas_evect evect,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
@@ -15166,6 +15181,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj(rocblas_handle handle,
                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
+                                                 const rocblas_esort esort,
                                                  const rocblas_evect evect,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
@@ -15184,7 +15200,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     real symmetric matrices A_j.
 
     \details
-    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in an order
+    depending on the value of esort.
     The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
 
     At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
@@ -15199,6 +15216,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
 
     @param[in]
     handle      rocblas_handle.
+    @param[in]
+    esort       #rocblas_esort.\n
+                Specifies the order of the returned eigenvalues. If esort is
+                rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
+                If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
@@ -15248,6 +15270,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj_batched(rocblas_handle handle,
+                                                         const rocblas_esort esort,
                                                          const rocblas_evect evect,
                                                          const rocblas_fill uplo,
                                                          const rocblas_int n,
@@ -15263,6 +15286,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj_batched(rocblas_handle handle,
                                                          const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
+                                                         const rocblas_esort esort,
                                                          const rocblas_evect evect,
                                                          const rocblas_fill uplo,
                                                          const rocblas_int n,
@@ -15283,7 +15307,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     complex Hermitian matrices A_j.
 
     \details
-    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in an order
+    depending on the value of esort.
     The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
 
     At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
@@ -15298,6 +15323,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
 
     @param[in]
     handle      rocblas_handle.
+    @param[in]
+    esort       #rocblas_esort.\n
+                Specifies the order of the returned eigenvalues. If esort is
+                rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
+                If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
@@ -15347,6 +15377,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj_batched(rocblas_handle handle,
+                                                         const rocblas_esort esort,
                                                          const rocblas_evect evect,
                                                          const rocblas_fill uplo,
                                                          const rocblas_int n,
@@ -15362,6 +15393,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj_batched(rocblas_handle handle,
                                                          const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
+                                                         const rocblas_esort esort,
                                                          const rocblas_evect evect,
                                                          const rocblas_fill uplo,
                                                          const rocblas_int n,
@@ -15382,7 +15414,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     real symmetric matrices A_j.
 
     \details
-    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in an order
+    depending on the value of esort.
     The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
 
     At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
@@ -15397,6 +15430,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
 
     @param[in]
     handle      rocblas_handle.
+    @param[in]
+    esort       #rocblas_esort.\n
+                Specifies the order of the returned eigenvalues. If esort is
+                rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
+                If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
@@ -15450,6 +15488,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_esort esort,
                                                                  const rocblas_evect evect,
                                                                  const rocblas_fill uplo,
                                                                  const rocblas_int n,
@@ -15466,6 +15505,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevj_strided_batched(rocblas_handle 
                                                                  const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_esort esort,
                                                                  const rocblas_evect evect,
                                                                  const rocblas_fill uplo,
                                                                  const rocblas_int n,
@@ -15487,7 +15527,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     complex Hermitian matrices A_j.
 
     \details
-    The eigenvalues are found using the iterative Jacobi algorithm, and are returned in ascending order.
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in an order
+    depending on the value of esort.
     The eigenvectors are computed depending on the value of evect. The computed eigenvectors are orthonormal.
 
     At the \f$k\f$-th iteration (or "sweep"), \f$A_j\f$ is transformed by a product of Jacobi rotations \f$V_j\f$ as
@@ -15502,6 +15543,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
 
     @param[in]
     handle      rocblas_handle.
+    @param[in]
+    esort       #rocblas_esort.\n
+                Specifies the order of the returned eigenvalues. If esort is
+                rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
+                If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
     evect       #rocblas_evect.\n
                 Specifies whether the eigenvectors are to be computed.
@@ -15555,6 +15601,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     **************************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_esort esort,
                                                                  const rocblas_evect evect,
                                                                  const rocblas_fill uplo,
                                                                  const rocblas_int n,
@@ -15571,6 +15618,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevj_strided_batched(rocblas_handle 
                                                                  const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_strided_batched(rocblas_handle handle,
+                                                                 const rocblas_esort esort,
                                                                  const rocblas_evect evect,
                                                                  const rocblas_fill uplo,
                                                                  const rocblas_int n,
