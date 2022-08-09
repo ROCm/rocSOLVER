@@ -17,7 +17,7 @@
 #include "rocsolver/rocsolver.h"
 
 /** Thread-block size for calling the syevj kernel. **/
-#define SYEVJ_MAX_THDS warpSize
+#define SYEVJ_MAX_THDS BS2
 
 /** Apply rotation from the left (based on LASR). **/
 template <typename T, typename S>
@@ -62,34 +62,37 @@ __device__ void syevj_lasr_right(const rocblas_int n,
     }
 }
 
-/** SYEVJ_SMALL_KERNEL applies the Jacobi eigenvalue algorithm to matrices of size <= 2 * SYEVJ_MAX_THDS.
- *  Call this kernel with batch_count groups in y, and ceil(n / 2) threads in x. **/
+/** SYEVJ_SMALL_KERNEL applies the Jacobi eigenvalue algorithm to matrices of size n <= 2 * SYEVJ_MAX_THDS.
+    Call this kernel with batch_count groups in z, and ceil(n / 2) threads in x and y. **/
 template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
-    syevj_small_kernel(const rocblas_esort esort,
-                       const rocblas_evect evect,
-                       const rocblas_fill uplo,
-                       const rocblas_int n,
-                       U AA,
-                       const rocblas_int shiftA,
-                       const rocblas_int lda,
-                       const rocblas_stride strideA,
-                       const S abstol,
-                       const S eps,
-                       S* residual,
-                       const rocblas_int max_sweeps,
-                       rocblas_int* n_sweeps,
-                       S* WW,
-                       const rocblas_stride strideW,
-                       rocblas_int* info,
-                       const rocblas_int batch_count,
-                       T* AcpyA)
+ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
+                                         const rocblas_evect evect,
+                                         const rocblas_fill uplo,
+                                         const rocblas_int n,
+                                         U AA,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         const S abstol,
+                                         const S eps,
+                                         S* residual,
+                                         const rocblas_int max_sweeps,
+                                         rocblas_int* n_sweeps,
+                                         S* WW,
+                                         const rocblas_stride strideW,
+                                         rocblas_int* info,
+                                         const rocblas_int batch_count,
+                                         T* AcpyA)
 {
-    rocblas_int tid = hipThreadIdx_x;
-    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int tix = hipThreadIdx_x;
+    rocblas_int tiy = hipThreadIdx_y;
+    rocblas_int bid = hipBlockIdx_z;
 
     // local variables
-    rocblas_int i, j, k, i_new = 0, j_new = 0;
+    T aij, temp1, temp2;
+    rocblas_int i, j, k;
+    rocblas_int x1 = 2 * tix, x2 = 2 * tix + 1;
+    rocblas_int y1 = 2 * tiy, y2 = 2 * tiy + 1;
     rocblas_int sweeps = 0;
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
@@ -102,16 +105,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     // shared memory
     extern __shared__ double lmem[];
     S* resarr = reinterpret_cast<S*>(lmem);
-    rocblas_int* top = reinterpret_cast<rocblas_int*>(resarr + half_n);
+    S* cosines = resarr + half_n;
+    T* sines = reinterpret_cast<T*>(cosines + half_n);
+    rocblas_int* top = reinterpret_cast<rocblas_int*>(sines + half_n);
     rocblas_int* bottom = top + half_n;
 
     // copy A to Acpy, set A to identity (if calculating eigenvectors), and calculate off-diagonal
     // squared Frobenius norm (first by column/row then sum)
     S local_res = 0;
-    if(uplo == rocblas_fill_upper)
+    if(tiy == 0 && uplo == rocblas_fill_upper)
     {
-        T temp;
-        for(i = tid; i < n; i += half_n)
+        for(i = tix; i < n; i += half_n)
         {
             Acpy[i + i * n] = A[i + i * lda];
             if(evect != rocblas_evect_none)
@@ -119,10 +123,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
 
             for(j = i + 1; j < n; j++)
             {
-                temp = A[i + j * lda];
-                local_res += 2 * std::norm(temp);
-                Acpy[i + j * n] = temp;
-                Acpy[j + i * n] = conj(temp);
+                aij = A[i + j * lda];
+                local_res += 2 * std::norm(aij);
+                Acpy[i + j * n] = aij;
+                Acpy[j + i * n] = conj(aij);
 
                 if(evect != rocblas_evect_none)
                 {
@@ -131,11 +135,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                 }
             }
         }
+        resarr[tix] = local_res;
     }
-    else
+    if(tiy == 0 && uplo == rocblas_fill_lower)
     {
-        T temp;
-        for(j = tid; j < n; j += half_n)
+        for(j = tix; j < n; j += half_n)
         {
             Acpy[j + j * n] = A[j + j * lda];
             if(evect != rocblas_evect_none)
@@ -143,10 +147,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
 
             for(i = j + 1; i < n; i++)
             {
-                temp = A[i + j * lda];
-                local_res += 2 * std::norm(temp);
-                Acpy[i + j * n] = temp;
-                Acpy[j + i * n] = conj(temp);
+                aij = A[i + j * lda];
+                local_res += 2 * std::norm(aij);
+                Acpy[i + j * n] = aij;
+                Acpy[j + i * n] = conj(aij);
 
                 if(evect != rocblas_evect_none)
                 {
@@ -155,8 +159,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                 }
             }
         }
+        resarr[tix] = local_res;
     }
-    resarr[tid] = local_res;
     __syncthreads();
 
     local_res = 0;
@@ -166,7 +170,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     // quick return if norm is already small
     if(local_res <= abstol * abstol)
     {
-        if(tid == 0)
+        if(tix == 0 && tiy == 0)
         {
             residual[bid] = sqrt(local_res);
             n_sweeps[bid] = 0;
@@ -176,8 +180,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     }
 
     // initialize top/bottom
-    top[tid] = 2 * tid;
-    bottom[tid] = 2 * tid + 1;
+    if(tiy == 0)
+    {
+        top[tix] = 2 * tix;
+        bottom[tix] = 2 * tix + 1;
+    }
     __syncthreads();
 
     // execute sweeps
@@ -185,24 +192,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     {
         // for each off-diagonal element (indexed using top/bottom pairs), calculate the Jacobi rotation and apply it to Acpy
         S c, mag, f, g, r, s;
-        T s1, s2, aij;
+        T s1, s2;
         for(k = 0; k < n - 1; k++)
         {
             // get current top/bottom pair
-            i = top[tid];
-            j = bottom[tid];
+            i = top[tix];
+            j = bottom[tix];
 
-            // cycle top/bottom pairs
-            if(tid == 1)
-                i_new = bottom[0];
-            else if(tid > 1)
-                i_new = top[tid - 1];
-            if(tid == half_n - 1)
-                j_new = top[half_n - 1];
-            else
-                j_new = bottom[tid + 1];
-
-            if(i < n && j < n)
+            if(tiy == 0 && i < n && j < n)
             {
                 aij = Acpy[i + j * n];
                 mag = std::abs(aij);
@@ -211,7 +208,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                 if(mag < eps)
                 {
                     c = 1;
-                    s1 = s2 = 0;
+                    s1 = 0;
                 }
                 else
                 {
@@ -220,44 +217,104 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                     f += (f < 0) ? -sqrt(f * f + g * g) : sqrt(f * f + g * g);
                     lartg(f, g, c, s, r);
                     s1 = s * aij / mag;
-                    s2 = conj(s1);
                 }
 
+                cosines[tix] = c;
+                sines[tix] = s1;
+            }
+            __syncthreads();
+
+            if(i < n && j < n)
+            {
+                c = cosines[tix];
+                s1 = sines[tix];
+                s2 = conj(s1);
+
                 // apply J from the right
-                syevj_lasr_right(n, i, j, c, s1, s2, Acpy, n);
+                temp1 = Acpy[y1 + i * n];
+                temp2 = Acpy[y1 + j * n];
+                Acpy[y1 + i * n] = c * temp1 + s2 * temp2;
+                Acpy[y1 + j * n] = -s1 * temp1 + c * temp2;
+
+                if(y2 < n)
+                {
+                    temp1 = Acpy[y2 + i * n];
+                    temp2 = Acpy[y2 + j * n];
+                    Acpy[y2 + i * n] = c * temp1 + s2 * temp2;
+                    Acpy[y2 + j * n] = -s1 * temp1 + c * temp2;
+                }
 
                 // update eigenvectors
                 if(evect != rocblas_evect_none)
-                    syevj_lasr_right(n, i, j, c, s1, s2, A, lda);
+                {
+                    temp1 = A[y1 + i * lda];
+                    temp2 = A[y1 + j * lda];
+                    A[y1 + i * lda] = c * temp1 + s2 * temp2;
+                    A[y1 + j * lda] = -s1 * temp1 + c * temp2;
+
+                    if(y2 < n)
+                    {
+                        temp1 = A[y2 + i * lda];
+                        temp2 = A[y2 + j * lda];
+                        A[y2 + i * lda] = c * temp1 + s2 * temp2;
+                        A[y2 + j * lda] = -s1 * temp1 + c * temp2;
+                    }
+                }
             }
             __syncthreads();
 
             if(i < n && j < n)
             {
                 // apply J' from the left
-                syevj_lasr_left(n, i, j, c, s1, s2, Acpy, n);
+                temp1 = Acpy[i + y1 * n];
+                temp2 = Acpy[j + y1 * n];
+                Acpy[i + y1 * n] = c * temp1 + s1 * temp2;
+                Acpy[j + y1 * n] = -s2 * temp1 + c * temp2;
 
-                // round aij and aji to zero
-                Acpy[j + i * n] = Acpy[i + j * n] = 0;
+                if(y2 < n)
+                {
+                    temp1 = Acpy[i + y2 * n];
+                    temp2 = Acpy[j + y2 * n];
+                    Acpy[i + y2 * n] = c * temp1 + s1 * temp2;
+                    Acpy[j + y2 * n] = -s2 * temp1 + c * temp2;
+                }
             }
+            __syncthreads();
 
-            top[tid] = i_new;
-            bottom[tid] = j_new;
-
-            // update row norms
-            if(k == n - 2)
+            if(tiy == 0)
             {
-                local_res = 0;
-                if(i < n)
-                    for(j_new = i + 1; j_new < n; j_new++)
-                        local_res += 2 * std::norm(Acpy[i + j_new * n]);
-                if(j < n)
-                    for(j_new = j + 1; j_new < n; j_new++)
-                        local_res += 2 * std::norm(Acpy[j + j_new * n]);
-                resarr[tid] = local_res;
+                // round aij and aji to zero
+                if(i < n && j < n)
+                    Acpy[j + i * n] = Acpy[i + j * n] = 0;
+
+                // cycle top/bottom pairs
+                if(tix == 1)
+                    i = bottom[0];
+                else if(tix > 1)
+                    i = top[tix - 1];
+                if(tix == half_n - 1)
+                    j = top[half_n - 1];
+                else
+                    j = bottom[tix + 1];
+
+                top[tix] = i;
+                bottom[tix] = j;
             }
             __syncthreads();
         }
+
+        // update norm
+        if(tiy == 0)
+        {
+            local_res = 0;
+            for(i = x1 + 1; i < n; i++)
+                local_res += 2 * std::norm(Acpy[i + x1 * n]);
+            if(x2 < n)
+                for(i = x2 + 1; i < n; i++)
+                    local_res += 2 * std::norm(Acpy[i + x2 * n]);
+            resarr[tix] = local_res;
+        }
+        __syncthreads();
 
         // update norm
         local_res = 0;
@@ -267,8 +324,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
         sweeps++;
     }
 
+    if(tiy > 0)
+        return;
+
     // update residual, n_sweeps, and info
-    if(tid == 0)
+    if(tix == 0)
     {
         residual[bid] = sqrt(local_res);
         n_sweeps[bid] = sweeps;
@@ -279,11 +339,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
     }
 
     // update W and then sort eigenvalues and eigenvectors by selection sort
-    for(i = tid; i < n; i += half_n)
-        W[i] = std::real(Acpy[i + i * n]);
+    W[x1] = std::real(Acpy[x1 + x1 * n]);
+    if(x2 < n)
+        W[x2] = std::real(Acpy[x2 + x2 * n]);
     __syncthreads();
 
-    if((evect == rocblas_evect_none && tid > 0) || esort == rocblas_esort_none)
+    if((evect == rocblas_evect_none && tix > 0) || esort == rocblas_esort_none)
         return;
 
     rocblas_int m;
@@ -300,10 +361,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
                 p = W[i];
             }
         }
+        __syncthreads();
 
         if(m != j)
         {
-            if(tid == 0)
+            if(tix == 0)
             {
                 W[m] = W[j];
                 W[j] = p;
@@ -311,9 +373,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_MAX_THDS)
 
             if(evect != rocblas_evect_none)
             {
-                for(i = tid; i < n; i += half_n)
-                    swap(A[i + m * lda], A[i + j * lda]);
-                __syncthreads();
+                swap(A[x1 + m * lda], A[x1 + j * lda]);
+                if(x2 < n)
+                    swap(A[x2 + m * lda], A[x2 + j * lda]);
             }
         }
     }
@@ -857,10 +919,10 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
 
     if(half_n <= SYEVJ_MAX_THDS)
     {
-        dim3 grid(1, batch_count, 1);
-        dim3 threads(half_n, 1, 1);
+        dim3 grid(1, 1, batch_count);
+        dim3 threads(half_n, half_n, 1);
 
-        size_t lmemsize = (sizeof(S) + 2 * sizeof(rocblas_int)) * half_n;
+        size_t lmemsize = (2 * sizeof(S) + sizeof(T) + 2 * sizeof(rocblas_int)) * half_n;
 
         ROCSOLVER_LAUNCH_KERNEL(syevj_small_kernel<T>, grid, threads, lmemsize, stream, esort,
                                 evect, uplo, n, A, shiftA, lda, strideA, atol, eps, residual,
