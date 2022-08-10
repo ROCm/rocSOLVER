@@ -28,7 +28,8 @@ continuously added, with new functionality documented at each `release of the RO
 
 The following tables summarize the LAPACK functionality implemented for the different supported precisions in rocSOLVER's latest release.
 All LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
-routines, please see the :ref:`rocSOLVER API <library_api>` document.
+routines, please see the :ref:`rocSOLVER API <library_api>` document. For more details about the batch functionality
+see the :ref:`rocSOLVER Library Design Guide <batch_label>`.
 
 LAPACK auxiliary functions
 ----------------------------
