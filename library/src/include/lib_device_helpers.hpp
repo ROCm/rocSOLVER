@@ -92,12 +92,11 @@ __device__ void scale_tridiag(const rocblas_int start, const rocblas_int end, T*
 
     phase_id and task_id are pointers to shared variables, which should be initialized
     to zero.
-    counters is an array of 5 ints in global memory, and should be initialized to zero.
-    - counters[0] is the phase counter, tracking how many times the blocks have been synced
-    - counters[1] is the task counter for even-numbered phases
-    - counters[2] is the active block counter for even-numbered phases
-    - counters[3] is the task counter for odd-numbered phases
-    - counters[4] is the active block counter for odd-numbered phases
+    counters is an array of 4 ints in global memory, and should be initialized to zero.
+    - counters[0] is the mutex
+    - counters[1] is the phase counter, tracking how many times the blocks have been synced
+    - counters[2] is the task counter
+    - counters[3] is the active block counter
     task_count is the number tasks to be completed in the current phase (generally equal
     to the number of thread blocks).
 
@@ -108,44 +107,57 @@ __device__ bool get_task_id(rocblas_int* phase_id,
                             rocblas_int* counters,
                             const rocblas_int task_count)
 {
-    int current_phase = atomicAdd(counters, 0);
+    // obtain lock
+    while(atomicCAS(counters, 0, 1) != 0)
+    {
+        // do nothing
+    }
+
+    int current_phase = atomicAdd(counters + 1, 0);
     if(*phase_id == current_phase)
     {
-        rocblas_int* task_counter = counters + 1 + 2 * (current_phase % 2);
-        rocblas_int* tasks_active = task_counter + 1;
-
         // check if block is working on a task
-        int is_active = (*task_id != 0);
+        rocblas_int old_id = *task_id;
 
         // get new task id and increment counter
-        *task_id = atomicAdd(task_counter, 1) + 1;
+        *task_id = atomicAdd(counters + 2, 1) + 1;
 
         // if task is valid, return new task id
         if(*task_id <= task_count)
         {
-            atomicAdd(tasks_active, !is_active);
+            // update active block counter
+            if(old_id == 0)
+                atomicAdd(counters + 3, 1);
+
+            // release lock
+            atomicExch(counters, 0);
             return false;
         }
 
-        // wait until all tasks complete
-        atomicSub(tasks_active, is_active);
-        while(atomicAdd(tasks_active, 0) > 0)
+        // update active block counter
+        if(old_id > 0)
+            atomicSub(counters + 3, 1);
+
+        // trigger next phase
+        if(atomicAdd(counters + 3, 0) == 0)
+        {
+            atomicAdd(counters + 1, 1);
+            atomicExch(counters + 2, 0);
+        }
+
+        // release lock
+        atomicExch(counters, 0);
+
+        // wait for all tasks to complete
+        while(atomicAdd(counters + 3, 0) > 0)
         {
             // do nothing
         }
-
-        // prep next phase
-        if(*task_id == task_count + 1)
-        {
-            atomicAdd(counters, 1);
-            atomicExch(task_counter, 0);
-        }
-
-        // wait until phase has been incremented
-        while(atomicAdd(counters, 0) == current_phase)
-        {
-            // do nothing
-        }
+    }
+    else
+    {
+        // release lock
+        atomicExch(counters, 0);
     }
 
     *phase_id = *phase_id + 1;
