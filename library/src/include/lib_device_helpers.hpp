@@ -100,8 +100,8 @@ __device__ void scale_tridiag(const rocblas_int start, const rocblas_int end, T*
     task_count is the number tasks to be completed in the current phase (generally equal
     to the number of thread blocks).
 
-    GET_TASK_ID returns TRUE with task_id == 0 if all tasks in the current phase
-    have completed, or FALSE with task_id > 0 otherwise. **/
+    GET_TASK_ID returns FALSE with task_id == 0 if all tasks in the current phase
+    are completed, or TRUE with task_id > 0 otherwise. **/
 __device__ bool get_task_id(rocblas_int* phase_id,
                             rocblas_int* task_id,
                             rocblas_int* counters,
@@ -131,7 +131,7 @@ __device__ bool get_task_id(rocblas_int* phase_id,
 
             // release lock
             atomicExch(counters, 0);
-            return false;
+            return true;
         }
 
         // update active block counter
@@ -162,7 +162,7 @@ __device__ bool get_task_id(rocblas_int* phase_id,
 
     *phase_id = *phase_id + 1;
     *task_id = 0;
-    return true;
+    return false;
 }
 
 // **********************************************************
