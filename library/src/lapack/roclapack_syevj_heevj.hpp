@@ -500,7 +500,7 @@ ROCSOLVER_KERNEL void syevj_large_iterate(const rocblas_evect evect,
     rocblas_int* bottom = top + half_n;
     rocblas_int* top_temp = bottom + half_n;
     rocblas_int* bottom_temp = top_temp + half_n;
-    rocblas_int* counters = countersA + bid * 5;
+    rocblas_int* counters = countersA + bid * 4;
 
     // compute off-diagonal squared Frobenius norm
     S local_res = 0;
@@ -858,7 +858,7 @@ void rocsolver_syevj_heevj_getMemorySize(const rocblas_evect evect,
     *size_tbarr = sizeof(rocblas_int) * (2 * even_n) * batch_count;
 
     // size of array for task counters
-    *size_counters = sizeof(rocblas_int) * 5 * batch_count;
+    *size_counters = sizeof(rocblas_int) * 4 * batch_count;
 }
 
 /** Argument checking **/
@@ -990,7 +990,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         dim3 threads2(SYEVJ_MAX_THDS, SYEVJ_MAX_THDS, 1);
 
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, counters,
-                                5 * batch_count, 0);
+                                4 * batch_count, 0);
 
         ROCSOLVER_LAUNCH_KERNEL((syevj_large_init<SYEVJ_MAX_THDS, T>), grid1, threads1, 0, stream,
                                 evect, uplo, n, A, shiftA, lda, strideA, atol, residual, n_sweeps,

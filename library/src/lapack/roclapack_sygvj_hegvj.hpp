@@ -41,6 +41,7 @@ void rocsolver_sygvj_hegvj_getMemorySize(const rocblas_eform itype,
         *size_work3 = 0;
         *size_work4 = 0;
         *size_work5 = 0;
+        *size_work6 = 0;
         *size_iinfo = 0;
         *optim_mem = true;
         return;
