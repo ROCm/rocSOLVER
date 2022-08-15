@@ -107,49 +107,54 @@ __device__ bool get_task_id(rocblas_int* phase_id,
                             rocblas_int* counters,
                             const rocblas_int task_count)
 {
+    rocblas_int* const mutex = counters;
+    rocblas_int* const phase_counter = counters + 1;
+    rocblas_int* const task_counter = counters + 2;
+    rocblas_int* const active_block_counter = counters + 3;
+
     // obtain lock
-    while(atomicCAS(counters, 0, 1) != 0)
+    while(atomicCAS(mutex, 0, 1) != 0)
     {
         // do nothing
     }
 
-    int current_phase = atomicAdd(counters + 1, 0);
+    int current_phase = atomicAdd(phase_counter, 0);
     if(*phase_id == current_phase)
     {
         // check if block is working on a task
         rocblas_int old_id = *task_id;
 
         // get new task id and increment counter
-        *task_id = atomicAdd(counters + 2, 1) + 1;
+        *task_id = atomicAdd(task_counter, 1) + 1;
 
         // if task is valid, return new task id
         if(*task_id <= task_count)
         {
             // update active block counter
             if(old_id == 0)
-                atomicAdd(counters + 3, 1);
+                atomicAdd(active_block_counter, 1);
 
             // release lock
-            atomicExch(counters, 0);
+            atomicExch(mutex, 0);
             return true;
         }
 
         // update active block counter
         if(old_id > 0)
-            atomicSub(counters + 3, 1);
+            atomicSub(active_block_counter, 1);
 
         // trigger next phase
-        if(atomicAdd(counters + 3, 0) == 0)
+        if(atomicAdd(active_block_counter, 0) == 0)
         {
-            atomicAdd(counters + 1, 1);
-            atomicExch(counters + 2, 0);
+            atomicAdd(phase_counter, 1);
+            atomicExch(task_counter, 0);
         }
 
         // release lock
-        atomicExch(counters, 0);
+        atomicExch(mutex, 0);
 
         // wait for all tasks to complete
-        while(atomicAdd(counters + 3, 0) > 0)
+        while(atomicAdd(active_block_counter, 0) > 0)
         {
             // do nothing
         }
@@ -157,7 +162,7 @@ __device__ bool get_task_id(rocblas_int* phase_id,
     else
     {
         // release lock
-        atomicExch(counters, 0);
+        atomicExch(mutex, 0);
     }
 
     *phase_id = *phase_id + 1;
