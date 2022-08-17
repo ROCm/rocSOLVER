@@ -689,8 +689,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        H(i) = I - \text{tauq}[i]\cdot v_iv_i', & \text{and} \\
-        G(i) = I - \text{taup}[i]\cdot u_iu_i'.
+        H(i) = I - \text{tauq}[i]\cdot v_i^{}v_i', & \text{and} \\
+        G(i) = I - \text{taup}[i]\cdot u_i^{}u_i'.
         \end{array}
     \f]
 
@@ -845,7 +845,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H_i = I - \text{tau}[i]\cdot v_iv_i'
+        H(i) = I - \text{tau}[i]\cdot v_i^{}v_i'
     \f]
 
     where tau[\f$i\f$] is the corresponding Householder scalar. When uplo indicates lower, the first \f$i\f$
@@ -4246,14 +4246,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     @param[in]
     n           rocblas_int. n >= 0.\n
                 The number of columns of all matrices A_l in the batch.
-    @param[inout]
+    @param[in,out]
     A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorizations.
                 The unit diagonal elements of L_l are not stored.
-    @param[in]
+    @param[in]  
     lda         rocblas_int. lda >= m.\n
-                Specifies the leading dimension of matrices A_l.
+                Specifies the leading dimension of matrices A_l. 
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[l] = 0, successful exit for factorization of A_l.
@@ -5222,7 +5222,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i v_i'
+        H(i) = I - \text{ipiv}[i] \cdot v_i^{} v_i'
     \f]
 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -5304,7 +5304,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -5402,7 +5402,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -5506,7 +5506,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i v_i'
+        H(i) = I - \text{ipiv}[i] \cdot v_i^{} v_i'
     \f]
 
     where the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -5588,7 +5588,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last n-i elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -5686,7 +5686,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2_batched(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last n-i elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -5792,7 +5792,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i v_i'
+        H(i) = I - \text{ipiv}[i] \cdot v_i^{} v_i'
     \f]
 
     where the last m-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -5875,7 +5875,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last m-i elements of the Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -5974,7 +5974,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last m-i elements of the Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -6079,7 +6079,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i' v_i
+        H(i) = I - \text{ipiv}[i] \cdot v_i' v_i^{}
     \f]
 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -6160,7 +6160,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i}' v_{l_i}
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}' v_{l_i}^{}
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -6257,7 +6257,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i}' v_{l_i}
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}' v_{l_i}^{}
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -6362,7 +6362,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i v_i'
+        H(i) = I - \text{ipiv}[i] \cdot v_i^{} v_i'
     \f]
 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -6444,7 +6444,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -6542,7 +6542,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -6646,7 +6646,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i v_i'
+        H(i) = I - \text{ipiv}[i] \cdot v_i^{} v_i'
     \f]
 
     where the last n-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -6728,7 +6728,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last n-i elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -6826,7 +6826,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf_batched(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last n-i elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -6932,7 +6932,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i v_i'
+        H(i) = I - \text{ipiv}[i] \cdot v_i^{} v_i'
     \f]
 
     where the last m-i elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -7015,7 +7015,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last m-i elements of the Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -7114,7 +7114,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i} v_{l_i}'
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}'
     \f]
 
     where the last m-i elements of the Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -7219,7 +7219,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{ipiv}[i] \cdot v_i' v_i
+        H(i) = I - \text{ipiv}[i] \cdot v_i' v_i^{}
     \f]
 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
@@ -7300,7 +7300,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i}' v_{l_i}
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}' v_{l_i}^{}
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -7397,7 +7397,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
     Each Householder matrices \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{ipiv}_l[i] \cdot v_{l_i}' v_{l_i}
+        H_l^{}(i) = I - \text{ipiv}_l^{}[i] \cdot v_{l_i}' v_{l_i}^{}
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
@@ -7503,8 +7503,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        H(i) = I - \text{tauq}[i] \cdot v_i v_i', & \: \text{and}\\
-        G(i) = I - \text{taup}[i] \cdot u_i' u_i.
+        H(i) = I - \text{tauq}[i] \cdot v_i^{} v_i', & \: \text{and}\\
+        G(i) = I - \text{taup}[i] \cdot u_i' u_i^{}.
         \end{array}
     \f]
 
@@ -7600,7 +7600,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
     For each instance in the batch, the bidiagonal form is given by:
 
     \f[
-        B_l = Q_l'  A_l  P_l
+        B_l^{} = Q_l'  A_l^{}  P_l^{}
     \f]
 
     where \f$B_l\f$ is upper bidiagonal if m >= n and lower bidiagonal if m < n, and \f$Q_l\f$ and
@@ -7617,8 +7617,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        H_l(i) = I - \text{tauq}_l[i] \cdot v_{l_i} v_{l_i}', & \: \text{and}\\
-        G_l(i) = I - \text{taup}_l[i] \cdot u_{l_i}' u_{l_i}.
+        H_l^{}(i) = I - \text{tauq}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}', & \: \text{and}\\
+        G_l^{}(i) = I - \text{taup}_l^{}[i] \cdot u_{l_i}' u_{l_i}^{}.
         \end{array}
     \f]
 
@@ -7755,7 +7755,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
     For each instance in the batch, the bidiagonal form is given by:
 
     \f[
-        B_l = Q_l'  A_l  P_l
+        B_l^{} = Q_l'  A_l^{}  P_l^{}
     \f]
 
     where \f$B_l\f$ is upper bidiagonal if m >= n and lower bidiagonal if m < n, and \f$Q_l\f$ and
@@ -7772,8 +7772,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        H_l(i) = I - \text{tauq}_l[i] \cdot v_{l_i} v_{l_i}', & \: \text{and}\\
-        G_l(i) = I - \text{taup}_l[i] \cdot u_{l_i}' u_{l_i}.
+        H_l^{}(i) = I - \text{tauq}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}', & \: \text{and}\\
+        G_l^{}(i) = I - \text{taup}_l^{}[i] \cdot u_{l_i}' u_{l_i}^{}.
         \end{array}
     \f]
 
@@ -7934,8 +7934,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        H(i) = I - \text{tauq}[i] \cdot v_i v_i', & \: \text{and}\\
-        G(i) = I - \text{taup}[i] \cdot u_i' u_i.
+        H(i) = I - \text{tauq}[i] \cdot v_i^{} v_i', & \: \text{and}\\
+        G(i) = I - \text{taup}[i] \cdot u_i' u_i^{}.
         \end{array}
     \f]
 
@@ -8031,7 +8031,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
     For each instance in the batch, the bidiagonal form is given by:
 
     \f[
-        B_l = Q_l'  A_l  P_l
+        B_l^{} = Q_l'  A_l^{}  P_l^{}
     \f]
 
     where \f$B_l\f$ is upper bidiagonal if m >= n and lower bidiagonal if m < n, and \f$Q_l\f$ and
@@ -8048,8 +8048,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        H_l(i) = I - \text{tauq}_l[i] \cdot v_{l_i} v_{l_i}', & \: \text{and}\\
-        G_l(i) = I - \text{taup}_l[i] \cdot u_{l_i}' u_{l_i}.
+        H_l^{}(i) = I - \text{tauq}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}', & \: \text{and}\\
+        G_l^{}(i) = I - \text{taup}_l^{}[i] \cdot u_{l_i}' u_{l_i}^{}.
         \end{array}
     \f]
 
@@ -8186,7 +8186,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
     For each instance in the batch, the bidiagonal form is given by:
 
     \f[
-        B_l = Q_l'  A_l  P_l
+        B_l^{} = Q_l'  A_l^{}  P_l^{}
     \f]
 
     where \f$B_l\f$ is upper bidiagonal if m >= n and lower bidiagonal if m < n, and \f$Q_l\f$ and
@@ -8203,8 +8203,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        H_l(i) = I - \text{tauq}_l[i] \cdot v_{l_i} v_{l_i}', & \: \text{and}\\
-        G_l(i) = I - \text{taup}_l[i] \cdot u_{l_i}' u_{l_i}.
+        H_l^{}(i) = I - \text{tauq}_l^{}[i] \cdot v_{l_i}^{} v_{l_i}', & \: \text{and}\\
+        G_l^{}(i) = I - \text{taup}_l^{}[i] \cdot u_{l_i}' u_{l_i}^{}.
         \end{array}
     \f]
 
@@ -8436,8 +8436,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
     \f[
         \begin{array}{cl}
         A_l X_l = B_l & \: \text{not transposed,}\\
-        A_l^T X_l = B_l & \: \text{transposed, or}\\
-        A_l^H X_l = B_l & \: \text{conjugate transposed.}
+        A_l^T X_l^{} = B_l^{} & \: \text{transposed, or}\\
+        A_l^H X_l^{} = B_l^{} & \: \text{conjugate transposed.}
         \end{array}
     \f]
 
@@ -8539,8 +8539,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
     \f[
         \begin{array}{cl}
         A_l X_l = B_l & \: \text{not transposed,}\\
-        A_l^T X_l = B_l & \: \text{transposed, or}\\
-        A_l^H X_l = B_l & \: \text{conjugate transposed.}
+        A_l^T X_l^{} = B_l^{} & \: \text{transposed, or}\\
+        A_l^H X_l^{} = B_l^{} & \: \text{conjugate transposed.}
         \end{array}
     \f]
 
@@ -9033,7 +9033,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
     The inverse of matrix \f$A_l\f$ in the batch is computed by solving the linear system
 
     \f[
-        A_l^{-1} L_l = U_l^{-1}
+        A_l^{-1} L_l^{} = U_l^{-1}
     \f]
 
     where \f$L_l\f$ is the lower triangular factor of \f$A_l\f$ with unit diagonal elements, and \f$U_l\f$ is the
@@ -9113,7 +9113,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
     The inverse of matrix \f$A_l\f$ in the batch is computed by solving the linear system
 
     \f[
-        A_l^{-1} L_l = U_l^{-1}
+        A_l^{-1} L_l^{} = U_l^{-1}
     \f]
 
     where \f$L_l\f$ is the lower triangular factor of \f$A_l\f$ with unit diagonal elements, and \f$U_l\f$ is the
@@ -9258,7 +9258,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt(rocblas_handle handle,
     The inverse of matrix \f$A_l\f$ in the batch is computed by solving the linear system
 
     \f[
-        A_l^{-1} L_l = U_l^{-1}
+        A_l^{-1} L_l^{} = U_l^{-1}
     \f]
 
     where \f$L_l\f$ is the lower triangular factor of \f$A_l\f$ with unit diagonal elements, and \f$U_l\f$ is the
@@ -9323,7 +9323,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_batched(rocblas_handle han
     The inverse of matrix \f$A_l\f$ in the batch is computed by solving the linear system
 
     \f[
-        A_l^{-1} L_l = U_l^{-1}
+        A_l^{-1} L_l^{} = U_l^{-1}
     \f]
 
     where \f$L_l\f$ is the lower triangular factor of \f$A_l\f$ with unit diagonal elements, and \f$U_l\f$ is the
@@ -9506,7 +9506,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
     \f[
         \begin{array}{cl}
         A_l X_l = B_l & \: \text{not transposed, or}\\
-        A_l' X_l = B_l & \: \text{transposed if real, or conjugate transposed if complex}
+        A_l' X_l^{} = B_l^{} & \: \text{transposed if real, or conjugate transposed if complex}
         \end{array}
     \f]
 
@@ -9514,7 +9514,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
     and a least-squares solution approximating X_l is found by minimizing
 
     \f[
-        || B_l - A_l  X_l || \quad \text{(or} \: || B_l - A_l' X_l ||\text{)}
+        || B_l - A_l  X_l || \quad \text{(or} \: || B_l^{} - A_l' X_l^{} ||\text{)}
     \f]
 
     If m < n (or m >= n in the case of transpose/conjugate transpose), the system is underdetermined
@@ -9622,7 +9622,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
     \f[
         \begin{array}{cl}
         A_l X_l = B_l & \: \text{not transposed, or}\\
-        A_l' X_l = B_l & \: \text{transposed if real, or conjugate transposed if complex}
+        A_l' X_l^{} = B_l^{} & \: \text{transposed if real, or conjugate transposed if complex}
         \end{array}
     \f]
 
@@ -9630,7 +9630,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
     and a least-squares solution approximating X_l is found by minimizing
 
     \f[
-        || B_l - A_l  X_l || \quad \text{(or} \: || B_l - A_l' X_l ||\text{)}
+        || B_l - A_l  X_l || \quad \text{(or} \: || B_l^{} - A_l' X_l^{} ||\text{)}
     \f]
 
     If m < n (or m >= n in the case of transpose/conjugate transpose), the system is underdetermined
@@ -9822,8 +9822,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l'U_l & \: \text{if uplo is upper, or}\\
-        A_l = L_lL_l' & \: \text{if uplo is lower.}
+        A_l^{} = U_l'U_l^{} & \: \text{if uplo is upper, or}\\
+        A_l^{} = L_l^{}L_l' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -9898,8 +9898,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l'U_l & \: \text{if uplo is upper, or}\\
-        A_l = L_lL_l' & \: \text{if uplo is lower.}
+        A_l^{} = U_l'U_l^{} & \: \text{if uplo is upper, or}\\
+        A_l^{} = L_l^{}L_l' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -10051,8 +10051,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l'U_l & \: \text{if uplo is upper, or}\\
-        A_l = L_lL_l' & \: \text{if uplo is lower.}
+        A_l^{} = U_l'U_l^{} & \: \text{if uplo is upper, or}\\
+        A_l^{} = L_l^{}L_l' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -10127,8 +10127,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l'U_l & \: \text{if uplo is upper, or}\\
-        A_l = L_lL_l' & \: \text{if uplo is lower.}
+        A_l^{} = U_l'U_l^{} & \: \text{if uplo is upper, or}\\
+        A_l^{} = L_l^{}L_l' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -10302,8 +10302,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l'U_l & \: \text{if uplo is upper, or}\\
-        A_l = L_lL_l' & \: \text{if uplo is lower.}
+        A_l^{} = U_l'U_l^{} & \: \text{if uplo is upper, or}\\
+        A_l^{} = L_l^{}L_l' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -10397,8 +10397,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l'U_l & \: \text{if uplo is upper, or}\\
-        A_l = L_lL_l' & \: \text{if uplo is lower.}
+        A_l^{} = U_l'U_l^{} & \: \text{if uplo is upper, or}\\
+        A_l^{} = L_l^{}L_l' & \: \text{if uplo is lower.}
         \end{array}
     \f]
 
@@ -10594,7 +10594,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv(rocblas_handle handle,
     \f]
 
     where \f$A_l\f$ is a real symmetric (complex hermitian) positive definite matrix. Matrix \f$A_l\f$ is first
-    factorized as \f$A_l=L_lL_l'\f$ or \f$A_l=U_l'U_l\f$, depending on the value of uplo, using \ref rocsolver_spotrf_batched "POTRF_BATCHED";
+    factorized as \f$A_l^{}=L_l^{}L_l'\f$ or \f$A_l^{}=U_l'U_l^{}\f$, depending on the value of uplo, using \ref rocsolver_spotrf_batched "POTRF_BATCHED";
     then, the solution is computed with \ref rocsolver_spotrs_batched "POTRS_BATCHED".
 
     @param[in]
@@ -10692,7 +10692,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_batched(rocblas_handle handle,
     \f]
 
     where \f$A_l\f$ is a real symmetric (complex hermitian) positive definite matrix. Matrix \f$A_l\f$ is first
-    factorized as \f$A_l=L_lL_l'\f$ or \f$A_l=U_l'U_l\f$, depending on the value of uplo, using \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED";
+    factorized as \f$A_l^{}=L_l^{}L_l'\f$ or \f$A_l^{}=U_l'U_l^{}\f$, depending on the value of uplo, using \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED";
     then, the solution is computed with \ref rocsolver_spotrs_strided_batched "POTRS_STRIDED_BATCHED".
 
     @param[in]
@@ -11200,7 +11200,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     The SVD of matrix A_l in the batch is given by:
 
     \f[
-        A_l = U_l  S_l  V_l'
+        A_l^{} = U_l^{}  S_l^{}  V_l'
     \f]
 
     where the m-by-n matrix \f$S_l\f$ is zero except, possibly, for its min(m,n)
@@ -11414,7 +11414,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
     The SVD of matrix A_l in the batch is given by:
 
     \f[
-        A_l = U_l  S_l  V_l'
+        A_l^{} = U_l^{}  S_l^{}  V_l'
     \f]
 
     where the m-by-n matrix \f$S_l\f$ is zero except, possibly, for its min(m,n)
@@ -11652,7 +11652,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{tau}[i] \cdot v_i  v_i'
+        H(i) = I - \text{tau}[i] \cdot v_i^{}  v_i'
     \f]
 
     where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -11736,7 +11736,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{tau}[i] \cdot v_i  v_i'
+        H(i) = I - \text{tau}[i] \cdot v_i^{}  v_i'
     \f]
 
     where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -11805,7 +11805,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is symmetric tridiagonal and \f$Q_l\f$ is an orthogonal matrix represented as the product
@@ -11821,7 +11821,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l^{}[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -11913,7 +11913,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is Hermitian tridiagonal and \f$Q_l\f$ is a unitary matrix represented as the product
@@ -11929,7 +11929,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12022,7 +12022,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is symmetric tridiagonal and \f$Q_l\f$ is an orthogonal matrix represented as the product
@@ -12038,7 +12038,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12136,7 +12136,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is Hermitian tridiagonal and \f$Q_l\f$ is a unitary matrix represented as the product
@@ -12152,7 +12152,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12266,7 +12266,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{tau}[i] \cdot v_i  v_i'
+        H(i) = I - \text{tau}[i] \cdot v_i^{}  v_i'
     \f]
 
     where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12350,7 +12350,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
     Each Householder matrix \f$H(i)\f$ is given by
 
     \f[
-        H(i) = I - \text{tau}[i] \cdot v_i  v_i'
+        H(i) = I - \text{tau}[i] \cdot v_i^{}  v_i'
     \f]
 
     where tau[i] is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12419,7 +12419,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is symmetric tridiagonal and \f$Q_j\f$ is an orthogonal matrix represented as the product
@@ -12435,7 +12435,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12527,7 +12527,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is Hermitian tridiagonal and \f$Q_l\f$ is a unitary matrix represented as the product
@@ -12543,7 +12543,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12635,7 +12635,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is symmetric tridiagonal and \f$Q_l\f$ is an orthogonal matrix represented as the product
@@ -12651,7 +12651,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -12749,7 +12749,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
     The tridiagonal form of \f$A_l\f$ is given by:
 
     \f[
-        T_l = Q_l'  A_l  Q_l
+        T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
     where \f$T_l\f$ is Hermitian tridiagonal and \f$Q_l\f$ is a unitary matrix represented as the product
@@ -12765,7 +12765,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
     Each Householder matrix \f$H_l(i)\f$ is given by
 
     \f[
-        H_l(i) = I - \text{tau}_l[i] \cdot v_{l_i}  v_{l_i}'
+        H_l^{}(i) = I - \text{tau}_l[i] \cdot v_{l_i}^{}  v_{l_i}'
     \f]
 
     where \f$\text{tau}_l[i]\f$ is the corresponding Householder scalar. When uplo indicates lower, the first i
@@ -13056,20 +13056,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        U_l^{-T} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-T},
+        U_l^{-T} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l\f$ or
-    \f$L_l L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l^{}\f$ or
+    \f$L_l^{} L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^T, & \: \text{or}\\
-        L_l^T A_l L_l,
+        U_l^{} A_l^{} U_l^T, & \: \text{or}\\
+        L_l^T A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -13151,20 +13151,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        U_l^{-H} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-H},
+        U_l^{-H} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l\f$ or
-    \f$L_l L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l^{}\f$ or
+    \f$L_l^{} L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^H, & \: \text{or}\\
-        L_l^H A_l L_l,
+        U_l^{} A_l^{} U_l^H, & \: \text{or}\\
+        L_l^H A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -13246,20 +13246,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        U_l^{-T} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-T},
+        U_l^{-T} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l\f$ or
-    \f$L_l L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l^{}\f$ or
+    \f$L_l^{} L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^T, & \: \text{or}\\
-        L_l^T A_l L_l,
+        U_l^{} A_l^{} U_l^T, & \: \text{or}\\
+        L_l^T A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -13353,20 +13353,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        U_l^{-H} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-H},
+        U_l^{-H} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l\f$ or
-    \f$L_l L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l^{}\f$ or
+    \f$L_l^{} L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^H, & \: \text{or}\\
-        L_l^H A_l L_l,
+        U_l^{} A_l^{} U_l^H, & \: \text{or}\\
+        L_l^H A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -13639,20 +13639,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        U_l^{-T} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-T},
+        U_l^{-T} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l\f$ or
-    \f$L_l L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l^{}\f$ or
+    \f$L_l^{} L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^T, & \: \text{or}\\
-        L_l^T A_l L_l,
+        U_l^{} A_l^{} U_l^T, & \: \text{or}\\
+        L_l^T A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -13734,20 +13734,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        U_l^{-H} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-H},
+        U_l^{-H} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l\f$ or
-    \f$L_l L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l^{}\f$ or
+    \f$L_l^{} L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^H, & \: \text{or}\\
-        L_l^H A_l L_l,
+        U_l^{} A_l^{} U_l^H, & \: \text{or}\\
+        L_l^H A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -13829,20 +13829,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        U_l^{-T} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-T},
+        U_l^{-T} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-T},
         \end{array}
     \f]
 
-    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l\f$ or
-    \f$L_l L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the symmetric-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^T U_l^{}\f$ or
+    \f$L_l^{} L_l^T\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^T, & \: \text{or}\\
-        L_l^T A_l L_l,
+        U_l^{} A_l^{} U_l^T, & \: \text{or}\\
+        L_l^T A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -13936,20 +13936,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        U_l^{-H} A_l U_l^{-1}, & \: \text{or}\\
-        L_l^{-1} A_l L_l^{-H},
+        U_l^{-H} A_l^{} U_l^{-1}, & \: \text{or}\\
+        L_l^{-1} A_l^{} L_l^{-H},
         \end{array}
     \f]
 
-    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l\f$ or
-    \f$L_l L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
+    where the hermitian-definite matrix \f$B_l\f$ has been factorized as either \f$U_l^H U_l^{}\f$ or
+    \f$L_l^{} L_l^H\f$ as returned by \ref rocsolver_spotrf "POTRF", depending on the value of uplo.
 
     If the problem is of the 2nd or 3rd form, then A is overwritten with
 
     \f[
         \begin{array}{cl}
-        U_l A_l U_l^H, & \: \text{or}\\
-        L_l^H A_l L_l,
+        U_l^{} A_l^{} U_l^H, & \: \text{or}\\
+        L_l^H A_l^{} L_l^{},
         \end{array}
     \f]
 
@@ -15210,7 +15210,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     At the \f$k\f$-th iteration (or "sweep"), \f$A_l\f$ is transformed by a product of Jacobi rotations \f$V_l\f$ as
 
     \f[
-        A_l^{(k)} = V_l' A_l^{(k-1)} V_l
+        A_l^{(k)} = V_l' A_l^{(k-1)} V_l^{}
     \f]
 
     such that \f$off(A_l^{(k)}) < off(A_l^{(k-1)})\f$, where \f$A_l^{(0)} = A_l\f$ and \f$off(A_l^{(k)})\f$ is the
@@ -15317,7 +15317,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     At the \f$k\f$-th iteration (or "sweep"), \f$A_l\f$ is transformed by a product of Jacobi rotations \f$V_l\f$ as
 
     \f[
-        A_l^{(k)} = V_l' A_l^{(k-1)} V_l
+        A_l^{(k)} = V_l' A_l^{(k-1)} V_l^{}
     \f]
 
     such that \f$off(A_l^{(k)}) < off(A_l^{(k-1)})\f$, where \f$A_l^{(0)} = A_l\f$ and \f$off(A_l^{(k)})\f$ is the
@@ -15424,7 +15424,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     At the \f$k\f$-th iteration (or "sweep"), \f$A_l\f$ is transformed by a product of Jacobi rotations \f$V_l\f$ as
 
     \f[
-        A_l^{(k)} = V_l' A_l^{(k-1)} V_l
+        A_l^{(k)} = V_l' A_l^{(k-1)} V_l^{}
     \f]
 
     such that \f$off(A_l^{(k)}) < off(A_l^{(k-1)})\f$, where \f$A_l^{(0)} = A_l\f$ and \f$off(A_l^{(k)})\f$ is the
@@ -15537,7 +15537,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     At the \f$k\f$-th iteration (or "sweep"), \f$A_l\f$ is transformed by a product of Jacobi rotations \f$V_l\f$ as
 
     \f[
-        A_l^{(k)} = V_l' A_l^{(k-1)} V_l
+        A_l^{(k)} = V_l' A_l^{(k-1)} V_l^{}
     \f]
 
     such that \f$off(A_l^{(k)}) < off(A_l^{(k-1)})\f$, where \f$A_l^{(0)} = A_l\f$ and \f$off(A_l^{(k)})\f$ is the
@@ -16712,8 +16712,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -16837,8 +16837,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -16962,8 +16962,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -17099,8 +17099,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -17456,8 +17456,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -17583,8 +17583,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -17710,8 +17710,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -17849,8 +17849,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -18227,8 +18227,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -18357,8 +18357,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -18487,8 +18487,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -18629,8 +18629,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -19100,8 +19100,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -19282,8 +19282,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -19464,8 +19464,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        Z_l^T B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^T B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^T B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -19664,8 +19664,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_strided_batched(rocblas_handle 
 
     \f[
         \begin{array}{cl}
-        Z_l^H B_l Z_l=I & \: \text{if 1st or 2nd form, or}\\
-        Z_l^H B_l^{-1} Z_l=I & \: \text{if 3rd form.}
+        Z_l^H B_l^{} Z_l^{}=I & \: \text{if 1st or 2nd form, or}\\
+        Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
 
@@ -20187,7 +20187,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_outofplace(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief GETRI_NPVT_OUTOFPLACE_BATCHED computes the inverse \f$C_l = A_l^{-1}\f$ of a batch of general n-by-n matrices \f$A_l\f$
+    \brief GETRI_NPVT_OUTOFPLACE_BATCHED computes the inverse \f$C_l^{} = A_l^{-1}\f$ of a batch of general n-by-n matrices \f$A_l\f$
     without partial pivoting.
 
     \details
@@ -20265,7 +20265,7 @@ ROCSOLVER_EXPORT rocblas_status
 //! @}
 
 /*! @{
-    \brief GETRI_NPVT_OUTOFPLACE_STRIDED_BATCHED computes the inverse \f$C_l = A_l^{-1}\f$ of a batch of general n-by-n matrices \f$A_l\f$
+    \brief GETRI_NPVT_OUTOFPLACE_STRIDED_BATCHED computes the inverse \f$C_l^{} = A_l^{-1}\f$ of a batch of general n-by-n matrices \f$A_l\f$
     without partial pivoting.
 
     \details
@@ -20721,8 +20721,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l D_l U_l^T & \: \text{or}\\
-        A_l = L_l D_l L_l^T &
+        A_l^{} = U_l^{} D_l^{} U_l^T & \: \text{or}\\
+        A_l^{} = L_l^{} D_l^{} L_l^T &
         \end{array}
     \f]
 
@@ -20862,8 +20862,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l D_l U_l^T & \: \text{or}\\
-        A_l = L_l D_l L_l^T &
+        A_l^{} = U_l^{} D_l^{} U_l^T & \: \text{or}\\
+        A_l^{} = L_l^{} D_l^{} L_l^T &
         \end{array}
     \f]
 
@@ -21137,8 +21137,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l D_l U_l^T & \: \text{or}\\
-        A_l = L_l D_l L_l^T &
+        A_l^{} = U_l^{} D_l^{} U_l^T & \: \text{or}\\
+        A_l^{} = L_l^{} D_l^{} L_l^T &
         \end{array}
     \f]
 
@@ -21278,8 +21278,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_batched(rocblas_handle handle,
 
     \f[
         \begin{array}{cl}
-        A_l = U_l D_l U_l^T & \: \text{or}\\
-        A_l = L_l D_l L_l^T &
+        A_l^{} = U_l^{} D_l^{} U_l^T & \: \text{or}\\
+        A_l^{} = L_l^{} D_l^{} L_l^T &
         \end{array}
     \f]
 
