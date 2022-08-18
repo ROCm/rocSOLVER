@@ -110,4 +110,15 @@ typedef enum rocblas_esort_
     rocblas_esort_ascending = 252, /**< The computed eigenvalues will be sorted in ascending order. */
 } rocblas_esort;
 
+/*! \brief Used to specify the type of range in which singular values will be found
+ *in partial singular value decompositions
+ ********************************************************************************/
+typedef enum rocblas_srange_
+{
+    rocblas_srange_all = 261, /**< All singular values will be found. */
+    rocblas_srange_value = 262, /**< All singular values in the half-open interval
+                                     \f$(vl, vu]\f$ will be found. */
+    rocblas_srange_index = 263, /**< The \f$il\f$-th through \f$iu\f$-th singular values will be found.*/
+} rocblas_srange;
+
 #endif /* ROCSOLVER_EXTRAS_H_ */

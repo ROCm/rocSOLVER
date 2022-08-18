@@ -191,6 +191,17 @@ public:
             throw std::invalid_argument("Invalid value for " + name);
     }
 
+    void validate_srange(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char range = val->second.as<char>();
+        if(range != 'A' && range != 'V' && range != 'I')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_workmode(const std::string name) const
     {
         auto val = find(name);
