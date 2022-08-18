@@ -38,7 +38,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_get_version_string(char* buf, size_t l
 
     \details
     @param[out]
-    len         pointer to size_t.\n
+    len         pointer to size_t.
                 The minimum length of buffer to pass to
                 \ref rocsolver_get_version_string.
  ******************************************************************************/
@@ -79,7 +79,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_end(void);
 
     \details
     @param[in]
-    layer_mode  rocblas_layer_mode_flags.\n
+    layer_mode  rocblas_layer_mode_flags.
                 Specifies the logging mode.
  ******************************************************************************/
 
@@ -90,7 +90,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_set_layer_mode(const rocblas_layer
 
     \details
     @param[in]
-    max_levels  rocblas_int. max_levels >= 1.\n
+    max_levels  rocblas_int. max_levels >= 1.
                 Specifies the maximum depth at which nested function calls
                 will appear in the trace and profile logs.
  ******************************************************************************/
@@ -133,14 +133,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_flush_profile(void);
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The dimension of vector x.
     @param[inout]
-    x           pointer to type. Array on the GPU of size at least n (size depends on the value of incx).\n
+    x           pointer to type. Array on the GPU of size at least n (size depends on the value of incx).
                 On entry, the vector x.
                 On exit, each entry is overwritten with its conjugate value.
     @param[in]
-    incx        rocblas_int. incx != 0.\n
+    incx        rocblas_int. incx != 0.
                 The distance between two consecutive elements of x.
                 If incx is negative, the elements of x are indexed in
                 reverse order.
@@ -167,30 +167,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n. \n
+    A           pointer to type. Array on the GPU of dimension lda*n. 
                 On entry, the matrix to which the row
                 interchanges will be applied. On exit, the resulting permuted matrix.
     @param[in]
-    lda         rocblas_int. lda > 0.\n
+    lda         rocblas_int. lda > 0.
                 The leading dimension of the array A.
     @param[in]
-    k1          rocblas_int. k1 > 0.\n
+    k1          rocblas_int. k1 > 0.
                 The k_1 index. It is the first element of ipiv for which a row interchange will
                 be done. This is a 1-based index.
     @param[in]
-    k2          rocblas_int. k2 > k1 > 0.\n
+    k2          rocblas_int. k2 > k1 > 0.
                 The k_2 index. k_2 - k_1 + 1 is the number of elements of ipiv for which a row
                 interchange will be done. This is a 1-based index.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension at least k_1 + (k_2 - k_1)*abs(incx).\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension at least \f$k_1 + (k_2 - k_1)\cdot \text{abs}(\text{incx})\f$.
                 The vector of pivot indices. Only the elements in positions
-                k_1 through k_1 + (k_2 - k_1)*abs(incx) of this vector are accessed.
+                \f$k_1\f$ through \f$k_1 + (k_2 - k_1)\cdot \text{abs}(\text{incx})\f$ of this vector are accessed.
                 Elements of ipiv are considered 1-based.
     @param[in]
-    incx        rocblas_int. incx != 0.\n
+    incx        rocblas_int. incx != 0.
                 The distance between successive values of ipiv.  If incx
                 is negative, the pivots are applied in reverse order.
     **************************************************************************/
@@ -278,21 +278,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order (size) of reflector H.
     @param[inout]
-    alpha       pointer to type. A scalar on the GPU.\n
+    alpha       pointer to type. A scalar on the GPU.
                 On entry, the scalar alpha.
                 On exit, it is overwritten with beta.
     @param[inout]
-    x           pointer to type. Array on the GPU of size at least n-1 (size depends on the value of incx).\n
+    x           pointer to type. Array on the GPU of size at least n-1 (size depends on the value of incx).
                 On entry, the vector x,
                 On exit, it is overwritten with vector v.
     @param[in]
-    incx        rocblas_int. incx > 0.\n
+    incx        rocblas_int. incx > 0.
                 The distance between two consecutive elements of x.
     @param[out]
-    tau         pointer to type. A scalar on the GPU.\n
+    tau         pointer to type. A scalar on the GPU.
                 The Householder scalar tau.
     *************************************************************************/
 
@@ -357,32 +357,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    direct      #rocblas_direct.\n
+    direct      #rocblas_direct.
                 Specifies the direction in which the Householder matrices are applied.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev.
                 Specifies how the Householder vectors are stored in matrix V.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order (size) of the block reflector.
     @param[in]
-    k           rocblas_int. k >= 1.\n
+    k           rocblas_int. k >= 1.
                 The number of Householder matrices forming H.
     @param[in]
-    V           pointer to type. Array on the GPU of size ldv*k if column-wise, or ldv*n if row-wise.\n
+    V           pointer to type. Array on the GPU of size ldv*k if column-wise, or ldv*n if row-wise.
                 The matrix of Householder vectors.
     @param[in]
-    ldv         rocblas_int. ldv >= n if column-wise, or ldv >= k if row-wise.\n
+    ldv         rocblas_int. ldv >= n if column-wise, or ldv >= k if row-wise.
                 Leading dimension of V.
     @param[in]
-    tau         pointer to type. Array of k scalars on the GPU.\n
+    tau         pointer to type. Array of k scalars on the GPU.
                 The vector of all the Householder scalars.
     @param[out]
-    T           pointer to type. Array on the GPU of dimension ldt*k.\n
+    T           pointer to type. Array on the GPU of dimension ldt*k.
                 The triangular factor. T is upper triangular if direct indicates forward direction, otherwise it is
                 lower triangular. The rest of the array is not used.
     @param[in]
-    ldt         rocblas_int. ldt >= k.\n
+    ldt         rocblas_int. ldt >= k.
                 The leading dimension of T.
     **************************************************************************/
 
@@ -447,31 +447,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarft(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Determines whether H is applied from the left or the right.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of A.
     @param[in]
     x           pointer to type. Array on the GPU of size at least 1 + (m-1)*abs(incx) if left side, or
-                at least 1 + (n-1)*abs(incx) if right side.\n
+                at least 1 + (n-1)*abs(incx) if right side.
                 The Householder vector x.
     @param[in]
-    incx        rocblas_int. incx != 0.\n
+    incx        rocblas_int. incx != 0.
                 Distance between two consecutive elements of x.
                 If incx < 0, the elements of x are indexed in reverse order.
     @param[in]
-    alpha       pointer to type. A scalar on the GPU.\n
+    alpha       pointer to type. A scalar on the GPU.
                 The Householder scalar. If alpha = 0, then H = I (A will remain the same; x is never used)
     @param[inout]
-    A           pointer to type. Array on the GPU of size lda*n.\n
+    A           pointer to type. Array on the GPU of size lda*n.
                 On entry, the matrix A. On exit, it is overwritten with
                 H*A (or A*H).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Leading dimension of A.
     *************************************************************************/
 
@@ -559,46 +559,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply H.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the block reflector or its transpose/conjugate transpose is to be applied.
     @param[in]
-    direct      #rocblas_direct.\n
+    direct      #rocblas_direct.
                 Specifies the direction in which the Householder matrices are to be applied to generate H.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev.
                 Specifies how the Householder vectors are stored in matrix V.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix A.
     @param[in]
-    k           rocblas_int. k >= 1.\n
+    k           rocblas_int. k >= 1.
                 The number of Householder matrices.
     @param[in]
     V           pointer to type. Array on the GPU of size ldv*k if column-wise, ldv*n if row-wise and applying from the right,
-                or ldv*m if row-wise and applying from the left.\n
+                or ldv*m if row-wise and applying from the left.
                 The matrix of Householder vectors.
     @param[in]
     ldv         rocblas_int. ldv >= k if row-wise, ldv >= m if column-wise and applying from the left, or ldv >= n if
-                column-wise and applying from the right.\n
+                column-wise and applying from the right.
                 Leading dimension of V.
     @param[in]
-    T           pointer to type. Array on the GPU of dimension ldt*k.\n
+    T           pointer to type. Array on the GPU of dimension ldt*k.
                 The triangular factor of the block reflector.
     @param[in]
-    ldt         rocblas_int. ldt >= k.\n
+    ldt         rocblas_int. ldt >= k.
                 The leading dimension of T.
     @param[inout]
-    A           pointer to type. Array on the GPU of size lda*n.\n
+    A           pointer to type. Array on the GPU of size lda*n.
                 On entry, the matrix A. On exit, it is overwritten with
                 H*A, A*H, H'*A, or A*H'.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Leading dimension of A.
     ****************************************************************************/
 
@@ -710,16 +710,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[in]
-    k           rocblas_int. min(m,n) >= k >= 0.\n
+    k           rocblas_int. min(m,n) >= k >= 0.
                 The number of leading rows and columns of matrix A that will be reduced.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be reduced.
                 On exit, the first k elements on the diagonal and superdiagonal (if m >= n), or
                 subdiagonal (if m < n), contain the bidiagonal form B.
@@ -730,31 +730,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
                 elements of the Householder vectors related to Q, while the elements above the
                 diagonal of the first k rows are the n - i possibly non-zero elements of the vectors associated with P.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension k.\n
+    D           pointer to real type. Array on the GPU of dimension k.
                 The diagonal elements of B.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension k.\n
+    E           pointer to real type. Array on the GPU of dimension k.
                 The off-diagonal elements of B.
     @param[out]
-    tauq        pointer to type. Array on the GPU of dimension k.\n
+    tauq        pointer to type. Array on the GPU of dimension k.
                 The Householder scalars associated with matrix Q.
     @param[out]
-    taup        pointer to type. Array on the GPU of dimension k.\n
+    taup        pointer to type. Array on the GPU of dimension k.
                 The Householder scalars associated with matrix P.
     @param[out]
-    X           pointer to type. Array on the GPU of dimension ldx*k.\n
+    X           pointer to type. Array on the GPU of dimension ldx*k.
                 The m-by-k matrix needed to update the unreduced part of A.
     @param[in]
-    ldx         rocblas_int. ldx >= m.\n
+    ldx         rocblas_int. ldx >= m.
                 The leading dimension of X.
     @param[out]
-    Y           pointer to type. Array on the GPU of dimension ldy*k.\n
+    Y           pointer to type. Array on the GPU of dimension ldy*k.
                 The n-by-k matrix needed to update the unreduced part of A.
     @param[in]
-    ldy         rocblas_int. ldy >= n.\n
+    ldy         rocblas_int. ldy >= n.
                 The leading dimension of Y.
     ********************************************************************/
 
@@ -863,18 +863,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of rows and columns of the matrix A to be reduced.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the n-by-n matrix to be reduced.
                 On exit, if uplo is lower, the first k columns have been reduced to tridiagonal form
                 (given in the diagonal elements of A and the array E), the elements below the diagonal
@@ -883,20 +883,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlabrd(rocblas_handle handle,
                 (given in the diagonal elements of A and the array E), the elements above the diagonal
                 contain the possibly non-zero entries of the Householder vectors associated with Q, stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 If upper (lower), the last (first) k elements of E are the off-diagonal elements of the
                 computed tridiagonal block.
     @param[out]
-    tau         pointer to type. Array on the GPU of dimension n-1.\n
+    tau         pointer to type. Array on the GPU of dimension n-1.
                 If upper (lower), the last (first) k elements of tau are the Householder scalars related to Q.
     @param[out]
-    W           pointer to type. Array on the GPU of dimension ldw*k.\n
+    W           pointer to type. Array on the GPU of dimension ldw*k.
                 The n-by-k matrix needed to update the unreduced part of A.
     @param[in]
-    ldw         rocblas_int. ldw >= n.\n
+    ldw         rocblas_int. ldw >= n.
                 The leading dimension of W.
     ********************************************************************/
 
@@ -986,29 +986,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[in]
-    nb          rocblas_int. 2 <= nb <= n.\n
+    nb          rocblas_int. 2 <= nb <= n.
                 The number of columns of A to be factored.
     @param[out]
-    kb          pointer to a rocblas_int on the GPU.\n
+    kb          pointer to a rocblas_int on the GPU.
                 The number of columns of A that were actually factored (either nb or
                 nb-1).
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the symmetric matrix A to be factored.
                 On exit, the partially factored matrix.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 If uplo is upper, then only the last kb elements of ipiv will be
                 set. For n - kb < k <= n, if ipiv[k] > 0 then rows and columns k
@@ -1023,7 +1023,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlatrd(rocblas_handle handle,
                 and -ipiv[k] were interchanged and D[k,k] to D[k+1,k+1] is a 2-by-2
                 diagonal block.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, D is singular. D[i,i] is the first diagonal zero.
     ********************************************************************/
@@ -1088,23 +1088,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQRF", with the Householder vectors in the first k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
@@ -1144,23 +1144,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2r(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQRF", with the Householder vectors in the first k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
@@ -1200,23 +1200,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2r(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQRF", with the Householder vectors in the first k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
@@ -1256,23 +1256,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgqr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQRF", with the Householder vectors in the first k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     ****************************************************************************/
 
@@ -1312,23 +1312,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungqr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. 0 <= m <= n.\n
+    m           rocblas_int. 0 <= m <= n.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= m.\n
+    k           rocblas_int. 0 <= k <= m.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GELQF", with the Householder vectors in the first k rows.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
@@ -1368,23 +1368,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgl2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. 0 <= m <= n.\n
+    m           rocblas_int. 0 <= m <= n.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= m.\n
+    k           rocblas_int. 0 <= k <= m.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GELQF", with the Householder vectors in the first k rows.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
@@ -1424,23 +1424,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungl2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. 0 <= m <= n.\n
+    m           rocblas_int. 0 <= m <= n.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= m.\n
+    k           rocblas_int. 0 <= k <= m.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GELQF", with the Householder vectors in the first k rows.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
@@ -1480,23 +1480,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorglq(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. 0 <= m <= n.\n
+    m           rocblas_int. 0 <= m <= n.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= m.\n
+    k           rocblas_int. 0 <= k <= m.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GELQF", with the Householder vectors in the first k rows.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     ****************************************************************************/
 
@@ -1536,23 +1536,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunglq(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQLF", with the Householder vectors in the last k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
@@ -1592,23 +1592,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorg2l(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQLF", with the Householder vectors in the last k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
@@ -1648,23 +1648,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zung2l(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQLF", with the Householder vectors in the last k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
@@ -1704,23 +1704,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgql(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
     @param[in]
-    n           rocblas_int. 0 <= n <= m.\n
+    n           rocblas_int. 0 <= n <= m.
                 The number of columns of the matrix Q.
     @param[in]
-    k           rocblas_int. 0 <= k <= n.\n
+    k           rocblas_int. 0 <= k <= n.
                 The number of Householder reflectors.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A as returned by \ref rocsolver_sgeqrf "GEQLF", with the Householder vectors in the last k columns.
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqlf "GEQLF".
     ****************************************************************************/
 
@@ -1777,29 +1777,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungql(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev.
                 Specifies whether to work column-wise or row-wise.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
                 If row-wise, then min(n,k) <= m <= n.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix Q.
                 If column-wise, then min(m,k) <= n <= m.
     @param[in]
-    k           rocblas_int. k >= 0.\n
+    k           rocblas_int. k >= 0.
                 The number of columns (if storev is column-wise) or rows (if row-wise) of the
                 original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.
                 The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     ****************************************************************************/
 
@@ -1859,29 +1859,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev.
                 Specifies whether to work column-wise or row-wise.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix Q.
                 If row-wise, then min(n,k) <= m <= n.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix Q.
                 If column-wise, then min(m,k) <= n <= m.
     @param[in]
-    k           rocblas_int. k >= 0.\n
+    k           rocblas_int. k >= 0.
                 The number of columns (if storev is column-wise) or rows (if row-wise) of the
                 original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
                 On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,k) if column-wise, or min(n,k) if row-wise.
                 The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     ****************************************************************************/
 
@@ -1928,22 +1928,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungbr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the \ref rocsolver_ssytrd "SYTRD" factorization was upper or lower
                 triangular. If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix Q.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the Householder vectors as returned
                 by \ref rocsolver_ssytrd "SYTRD". On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension n-1.\n
+    ipiv        pointer to type. Array on the GPU of dimension n-1.
                 The Householder scalars as returned by \ref rocsolver_ssytrd "SYTRD".
     ****************************************************************************/
 
@@ -1986,22 +1986,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgtr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the \ref rocsolver_chetrd "HETRD" factorization was upper or lower
                 triangular. If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix Q.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the Householder vectors as returned
                 by \ref rocsolver_chetrd "HETRD". On exit, the computed matrix Q.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension n-1.\n
+    ipiv        pointer to type. Array on the GPU of dimension n-1.
                 The Householder scalars as returned by \ref rocsolver_chetrd "HETRD".
     ****************************************************************************/
 
@@ -2051,36 +2051,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2140,36 +2140,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
 
     ****************************************************************************/
@@ -2230,36 +2230,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2319,36 +2319,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. \n
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgeqrf "GEQRF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2408,36 +2408,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
+    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. \n
+    lda         rocblas_int. lda >= k. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
 
     ****************************************************************************/
@@ -2498,36 +2498,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
+    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. \n
+    lda         rocblas_int. lda >= k. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2587,36 +2587,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
+    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. \n
+    lda         rocblas_int. lda >= k. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2676,36 +2676,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.\n
+    A           pointer to type. Array on the GPU of size lda*m if side is left, or lda*n if side is right.
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. \n
+    lda         rocblas_int. lda >= k. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by \ref rocsolver_sgelqf "GELQF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2766,38 +2766,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmlq(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be
                 applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                 argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
+    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by
                 \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2858,38 +2858,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2l(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate
                 transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                 argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
+    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by
                 \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -2950,38 +2950,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2l(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be
                 applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                 argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
+    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by
                 \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -3042,38 +3042,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormql(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate
                 transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.\n
+    k           rocblas_int. k >= 0; k <= m if side is left, k <= n if side is right.
                 The number of Householder reflectors that form Q.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*k.\n
+    A           pointer to type. Array on the GPU of size lda*k.
                 The Householder vectors as returned by \ref rocsolver_sgeqlf "GEQLF" in the last k columns of its
                 argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.\n
+    lda         rocblas_int. lda >= m if side is left, lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least k.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least k.
                 The Householder scalars as returned by
                 \ref rocsolver_sgeqlf "GEQLF".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -3153,39 +3153,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev.
                 Specifies whether to work column-wise or row-wise.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0.\n
+    k           rocblas_int. k >= 0.
                 The number of columns (if storev is column-wise) or rows (if row-wise) of the
                 original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.\n
+    A           pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.
                 The Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. \n
+    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least min(q,k).\n
+    ipiv        pointer to type. Array on the GPU of dimension at least min(q,k).
                 The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -3267,39 +3267,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev.
                 Specifies whether to work column-wise or row-wise.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    k           rocblas_int. k >= 0.\n
+    k           rocblas_int. k >= 0.
                 The number of columns (if storev is column-wise) or rows (if row-wise) of the
                 original matrix reduced by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.\n
+    A           pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.
                 The Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. \n
+    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. 
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least min(q,k).\n
+    ipiv        pointer to type. Array on the GPU of dimension at least min(q,k).
                 The Householder scalars as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -3369,40 +3369,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmbr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the \ref rocsolver_ssytrd "SYTRD" factorization was upper or
                 lower triangular. If uplo indicates lower (or upper), then the upper (or
                 lower) part of A is not used.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its transpose is to be
                 applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*q.\n
+    A           pointer to type. Array on the GPU of size lda*q.
                 On entry, the Householder vectors as
                 returned by \ref rocsolver_ssytrd "SYTRD".
     @param[in]
-    lda         rocblas_int. lda >= q.\n
+    lda         rocblas_int. lda >= q.
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least q-1.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least q-1.
                 The Householder scalars as returned by
                 \ref rocsolver_ssytrd "SYTRD".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -3470,40 +3470,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormtr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    side        rocblas_side.\n
+    side        rocblas_side.
                 Specifies from which side to apply Q.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the \ref rocsolver_chetrd "HETRD" factorization was upper or
                 lower triangular. If uplo indicates lower (or upper), then the upper (or
                 lower) part of A is not used.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies whether the matrix Q or its conjugate
                 transpose is to be applied.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 Number of rows of matrix C.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of columns of matrix C.
     @param[in]
-    A           pointer to type. Array on the GPU of size lda*q.\n
+    A           pointer to type. Array on the GPU of size lda*q.
                 On entry, the Householder vectors as
                 returned by \ref rocsolver_chetrd "HETRD".
     @param[in]
-    lda         rocblas_int. lda >= q.\n
+    lda         rocblas_int. lda >= q.
                 Leading dimension of A.
     @param[in]
-    ipiv        pointer to type. Array on the GPU of dimension at least q-1.\n
+    ipiv        pointer to type. Array on the GPU of dimension at least q-1.
                 The Householder scalars as returned by
                 \ref rocsolver_chetrd "HETRD".
     @param[inout]
-    C           pointer to type. Array on the GPU of size ldc*n.\n
+    C           pointer to type. Array on the GPU of size ldc*n.
                 On entry, the matrix C. On exit, it is overwritten with
                 Q*C, C*Q, Q'*C, or C*Q'.
     @param[in]
-    ldc         rocblas_int. ldc >= m.\n
+    ldc         rocblas_int. ldc >= m.
                 Leading dimension of C.
     ****************************************************************************/
 
@@ -3555,54 +3555,54 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmtr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether B is upper or lower bidiagonal.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix B.
     @param[in]
-    nv          rocblas_int. nv >= 0.\n
+    nv          rocblas_int. nv >= 0.
                 The number of columns of matrix V.
     @param[in]
-    nu          rocblas_int. nu >= 0.\n
+    nu          rocblas_int. nu >= 0.
                 The number of rows of matrix U.
     @param[in]
-    nc          rocblas_int. nu >= 0.\n
+    nc          rocblas_int. nu >= 0.
                 The number of columns of matrix C.
     @param[inout]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 On entry, the diagonal elements of B. On exit, if info = 0,
                 the singular values of B in decreasing order; if info > 0,
                 the diagonal elements of a bidiagonal matrix
                 orthogonally equivalent to B.
     @param[inout]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 On entry, the off-diagonal elements of B. On exit, if info > 0,
                 the off-diagonal elements of a bidiagonal matrix
                 orthogonally equivalent to B (if info = 0 this matrix converges to zero).
     @param[inout]
-    V           pointer to type. Array on the GPU of dimension ldv*nv.\n
+    V           pointer to type. Array on the GPU of dimension ldv*nv.
                 On entry, the matrix V. On exit, it is overwritten with P'*V.
                 (Not referenced if nv = 0).
     @param[in]
-    ldv         rocblas_int. ldv >= n if nv > 0, or ldv >=1 if nv = 0.\n
+    ldv         rocblas_int. ldv >= n if nv > 0, or ldv >=1 if nv = 0.
                 The leading dimension of V.
     @param[inout]
-    U           pointer to type. Array on the GPU of dimension ldu*n.\n
+    U           pointer to type. Array on the GPU of dimension ldu*n.
                 On entry, the matrix U. On exit, it is overwritten with U*Q.
                 (Not referenced if nu = 0).
     @param[in]
-    ldu         rocblas_int. ldu >= nu.\n
+    ldu         rocblas_int. ldu >= nu.
                 The leading dimension of U.
     @param[inout]
-    C           pointer to type. Array on the GPU of dimension ldc*nc.\n
+    C           pointer to type. Array on the GPU of dimension ldc*nc.
                 On entry, the matrix C. On exit, it is overwritten with Q'*C.
                 (Not referenced if nc = 0).
     @param[in]
-    ldc         rocblas_int. ldc >= n if nc > 0, or ldc >=1 if nc = 0.\n
+    ldc         rocblas_int. ldc >= n if nc > 0, or ldc >=1 if nc = 0.
                 The leading dimension of C.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, i elements of E have not converged to zero.
     ****************************************************************************/
@@ -3686,24 +3686,24 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the tridiagonal matrix.
     @param[inout]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 On entry, the diagonal elements of the tridiagonal matrix.
                 On exit, if info = 0, the eigenvalues in increasing order.
                 If info > 0, the diagonal elements of a tridiagonal matrix
                 that is similar to the original matrix (i.e. has the same
                 eigenvalues).
     @param[inout]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 On entry, the off-diagonal elements of the tridiagonal matrix.
                 On exit, if info = 0, this array converges to zero.
                 If info > 0, the off-diagonal elements of a tridiagonal matrix
                 that is similar to the original matrix (i.e. has the same
                 eigenvalues).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, STERF did not converge. i elements of E did not
                 converge to zero.
@@ -3739,27 +3739,27 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies how the eigenvectors are computed.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the tridiagonal matrix.
     @param[inout]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 On entry, the diagonal elements of the tridiagonal matrix.
                 On exit, if info = 0, the eigenvalues in increasing order.
                 If info > 0, the diagonal elements of a tridiagonal matrix
                 that is similar to the original matrix (i.e. has the same
                 eigenvalues).
     @param[inout]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 On entry, the off-diagonal elements of the tridiagonal matrix.
                 On exit, if info = 0, this array converges to zero.
                 If info > 0, the off-diagonal elements of a tridiagonal matrix
                 that is similar to the original matrix (i.e. has the same
                 eigenvalues).
     @param[inout]
-    C           pointer to type. Array on the GPU of dimension ldc*n.\n
+    C           pointer to type. Array on the GPU of dimension ldc*n.
                 On entry, if evect is original, the orthogonal/unitary matrix
                 used for the reduction to tridiagonal form as returned by, e.g.,
                 \ref rocsolver_sorgtr "ORGTR" or \ref rocsolver_cungtr "UNGTR".
@@ -3768,11 +3768,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
                 eigenvectors of the tridiagonal matrix (if evect is tridiagonal).
                 (Not referenced if evect is none).
     @param[in]
-    ldc         rocblas_int. ldc >= n if evect is original or tridiagonal.\n
+    ldc         rocblas_int. ldc >= n if evect is original or tridiagonal.
                 Specifies the leading dimension of C.
                 (Not referenced if evect is none).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, STEQR did not converge. i elements of E did not
                 converge to zero.
@@ -3832,21 +3832,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies how the eigenvectors are computed.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the tridiagonal matrix.
     @param[inout]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 On entry, the diagonal elements of the tridiagonal matrix.
                 On exit, if info = 0, the eigenvalues in increasing order.
     @param[inout]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 On entry, the off-diagonal elements of the tridiagonal matrix.
                 On exit, if info = 0, the values of this array are destroyed.
     @param[inout]
-    C           pointer to type. Array on the GPU of dimension ldc*n.\n
+    C           pointer to type. Array on the GPU of dimension ldc*n.
                 On entry, if evect is original, the orthogonal/unitary matrix
                 used for the reduction to tridiagonal form as returned by, e.g.,
                 \ref rocsolver_sorgtr "ORGTR" or \ref rocsolver_cungtr "UNGTR".
@@ -3855,10 +3855,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
                 eigenvectors of the tridiagonal matrix (if evect is tridiagonal).
                 (Not referenced if evect is none).
     @param[in]
-    ldc         rocblas_int. ldc >= n if evect is original or tridiagonal.\n
+    ldc         rocblas_int. ldc >= n if evect is original or tridiagonal.
                 Specifies the leading dimension of C. (Not referenced if evect is none).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, STEDC failed to compute an eigenvalue on the sub-matrix formed by
                 the rows and columns info/(n+1) through mod(info,n+1).
@@ -3914,66 +3914,66 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    eorder      #rocblas_eorder.\n
+    eorder      #rocblas_eorder.
                 Specifies whether the computed eigenvalues will be ordered by their position in the
                 entire spectrum, or grouped by independent diagonal (split off) blocks.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the tridiagonal matrix T.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.
                 The index of the largest eigenvalue to be computed. Ignored if erange indicates to look
                 for all the eigenvalues of T or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[in]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 The diagonal elements of the tridiagonal matrix.
     @param[in]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of the tridiagonal matrix.
     @param[out]
-    nev         pointer to a rocblas_int on the GPU. \n
+    nev         pointer to a rocblas_int on the GPU. 
                 The total number of eigenvalues found.
     @param[out]
-    nsplit      pointer to a rocblas_int on the GPU.\n
+    nsplit      pointer to a rocblas_int on the GPU.
                 The number of split off blocks in the matrix.
     @param[out]
-    W           pointer to real type. Array on the GPU of dimension n.\n
+    W           pointer to real type. Array on the GPU of dimension n.
                 The first nev elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[out]
-    iblock      pointer to rocblas_int. Array on the GPU of dimension n.\n
+    iblock      pointer to rocblas_int. Array on the GPU of dimension n.
                 The block indices corresponding to each eigenvalue. When matrix T has
                 split off blocks (nsplit > 1), then if iblock[i] = k, the
                 eigenvalue W[i] belongs to the k-th diagonal block from the top.
     @param[out]
-    isplit      pointer to rocblas_int. Array on the GPU of dimension n.\n
+    isplit      pointer to rocblas_int. Array on the GPU of dimension n.
                 The splitting indices that divide the tridiagonal matrix into
                 diagonal blocks. The k-th block stretches from the end of the (k-1)-th
                 block (or the top left corner of the tridiagonal matrix,
                 in the case of the 1st block) to the isplit[k]-th row/column.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = 1, the bisection did not converge for some eigenvalues, i.e. the returned
                 values are not as accurate as the given tolerance. The non-converged eigenvalues
@@ -4033,48 +4033,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the tridiagonal matrix.
     @param[in]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 The diagonal elements of the tridiagonal matrix.
     @param[in]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of the tridiagonal matrix.
     @param[in]
-    nev         pointer to a rocblas_int on the GPU. 0 <= nev <= n.\n
+    nev         pointer to a rocblas_int on the GPU. 0 <= nev <= n.
                 The number of provided eigenvalues, and the number of eigenvectors
                 to be computed.
     @param[in]
-    W           pointer to real type. Array on the GPU of dimension >= nev.\n
+    W           pointer to real type. Array on the GPU of dimension >= nev.
                 A subset of nev eigenvalues of the tridiagonal matrix, as returned
                 by \ref rocsolver_sstebz "STEBZ".
     @param[in]
-    iblock      pointer to rocblas_int. Array on the GPU of dimension n.\n
+    iblock      pointer to rocblas_int. Array on the GPU of dimension n.
                 The block indices corresponding to each eigenvalue, as
                 returned by \ref rocsolver_sstebz "STEBZ". If iblock[i] = k,
                 then eigenvalue W[i] belongs to the k-th block from the top.
     @param[in]
-    isplit      pointer to rocblas_int. Array on the GPU of dimension n.\n
+    isplit      pointer to rocblas_int. Array on the GPU of dimension n.
                 The splitting indices that divide the tridiagonal matrix into
                 diagonal blocks, as returned by \ref rocsolver_sstebz "STEBZ".
                 The k-th block stretches from the end of the (k-1)-th
                 block (or the top left corner of the tridiagonal matrix,
                 in the case of the 1st block) to the isplit[k]-th row/column.
     @param[out]
-    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.
                 On exit, contains the eigenvectors of the tridiagonal matrix
                 corresponding to the provided eigenvalues, stored by columns.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
                 If info = 0, the first nev elements of ifail are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, i eigenvectors did not converge; their indices are stored in
                 IFAIL.
@@ -4166,21 +4166,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix A to be factored.
                 On exit, the factors L and U from the factorization.
                 The unit diagonal elements of L are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero element in the diagonal. The factorization from
                 this point might be incomplete.
@@ -4241,26 +4241,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[in,out]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorizations.
                 The unit diagonal elements of L_l are not stored.
     @param[in]  
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l. 
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero element in the diagonal. The factorization from
                 this point might be incomplete.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -4323,30 +4323,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_batched(rocblas_handle han
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorization.
                 The unit diagonal elements of L_l are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero element in the diagonal. The factorization from
                 this point might be incomplete.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -4412,21 +4412,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_ha
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix A to be factored.
                 On exit, the factors L and U from the factorization.
                 The unit diagonal elements of L are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero element in the diagonal. The factorization from
                 this point might be incomplete.
@@ -4486,26 +4486,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorizations.
                 The unit diagonal elements of L_l are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_j.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero element in the diagonal. The factorization from
                 this point might be incomplete.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
 
     ********************************************************************/
@@ -4568,30 +4568,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_batched(rocblas_handle han
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorization.
                 The unit diagonal elements of L_l are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero element in the diagonal. The factorization from
                 this point might be incomplete.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
 
     ********************************************************************/
@@ -4655,27 +4655,27 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_strided_batched(rocblas_ha
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix A to be factored.
                 On exit, the factors L and U from the factorization.
                 The unit diagonal elements of L are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension min(m,n).
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= i <= min(m,n), the row i of the
                 matrix was interchanged with row ipiv[i].
                 Matrix P of the factorization can be derived from ipiv.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
@@ -4735,21 +4735,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorizations.
                 The unit diagonal elements of L_l are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors of pivot indices ipiv_l (corresponding to A_l).
                 Dimension of ipiv_l is min(m,n).
                 Elements of ipiv_l are 1-based indices.
@@ -4757,15 +4757,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2(rocblas_handle handle,
                 matrix A_l was interchanged with row ipiv_l[i].
                 Matrix P_l of the factorization can be derived from ipiv_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -4832,25 +4832,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorization.
                 The unit diagonal elements of L_l are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors of pivots indices ipiv_l (corresponding to A_l).
                 Dimension of ipiv_l is min(m,n).
                 Elements of ipiv_l are 1-based indices.
@@ -4858,15 +4858,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_batched(rocblas_handle handle,
                 matrix A_l was interchanged with row ipiv_l[i].
                 Matrix P_l of the factorization can be derived from ipiv_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -4937,27 +4937,27 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix A to be factored.
                 On exit, the factors L and U from the factorization.
                 The unit diagonal elements of L are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension min(m,n).
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= i <= min(m,n), the row i of the
                 matrix was interchanged with row ipiv[i].
                 Matrix P of the factorization can be derived from ipiv.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
@@ -5017,21 +5017,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorizations.
                 The unit diagonal elements of L_l are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors of pivot indices ipiv_l (corresponding to A_l).
                 Dimension of ipiv_l is min(m,n).
                 Elements of ipiv_l are 1-based indices.
@@ -5039,15 +5039,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf(rocblas_handle handle,
                 matrix A_l was interchanged with row ipiv_l[i].
                 Matrix P_l of the factorization can be derived from ipiv_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -5114,25 +5114,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorization.
                 The unit diagonal elements of L_l are not stored.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors of pivots indices ipiv_l (corresponding to A_l).
                 Dimension of ipiv_l is min(m,n).
                 Elements of ipiv_l are 1-based indices.
@@ -5140,15 +5140,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
                 matrix A_l was interchanged with row ipiv_l[i].
                 Matrix P_l of the factorization can be derived from ipiv_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= min(m,n).
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -5230,22 +5230,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and above the diagonal contain the
                 factor R; the elements below the diagonal are the last m - i elements
                 of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -5312,30 +5312,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the diagonal contain the
                 factor R_l. The elements below the diagonal are the last m - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -5410,34 +5410,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the diagonal contain the
                 factor R_l. The elements below the diagonal are the last m - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -5514,23 +5514,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and above the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor R; the elements below the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -5596,31 +5596,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor R_l; the elements below the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -5694,35 +5694,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor R_l; the elements below the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -5800,23 +5800,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerq2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and below the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor L; the elements above the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -5883,31 +5883,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor L_l; the elements above the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -5982,35 +5982,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor L_l; the elements above the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -6087,22 +6087,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeql2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and below the diagonal contain the
                 factor L; the elements above the diagonal are the last n - i elements
                 of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -6168,30 +6168,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the diagonal contain the
                 factor L_l. The elements above the diagonal are the last n - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -6265,34 +6265,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_batched(rocblas_handle handle,
     @param[in]
     handle    rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the diagonal contain the
                 factor L_l. The elements above the diagonal are the last n - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -6370,22 +6370,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and above the diagonal contain the
                 factor R; the elements below the diagonal are the last m - i elements
                 of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -6452,30 +6452,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the diagonal contain the
                 factor R_l. The elements below the diagonal are the last m - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -6550,34 +6550,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the diagonal contain the
                 factor R_l. The elements below the diagonal are the last m - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -6654,23 +6654,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and above the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor R; the elements below the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -6736,31 +6736,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor R_l; the elements below the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -6834,35 +6834,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and above the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor R_l; the elements below the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -6940,23 +6940,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgerqf_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and below the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor L; the elements above the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -7023,31 +7023,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor L_l; the elements above the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -7122,35 +7122,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the (m-n)-th subdiagonal (when
                 m >= n) or the (n-m)-th superdiagonal (when n > m) contain the
                 factor L_l; the elements above the sub/superdiagonal are the first i - 1
                 elements of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -7227,22 +7227,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqlf_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on and below the diagonal contain the
                 factor L; the elements above the diagonal are the last n - i elements
                 of Householder vector v_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to type. Array on the GPU of dimension min(m,n).\n
+    ipiv        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars.
     ********************************************************************/
 
@@ -7308,30 +7308,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the diagonal contain the
                 factor L_l. The elements above the diagonal are the last n - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -7405,34 +7405,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on and below the diagonal contain the
                 factor L_l. The elements above the diagonal are the last n - i elements
                 of Householder vector v_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_j of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -7516,13 +7516,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on the diagonal and superdiagonal (if m >= n), or
                 subdiagonal (if m < n) contain the bidiagonal form B.
@@ -7533,19 +7533,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_strided_batched(rocblas_handle 
                 elements of Householder vector v_i, and the elements above the
                 diagonal are the last n - i elements of Householder vector u_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 specifies the leading dimension of A.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension min(m,n).\n
+    D           pointer to real type. Array on the GPU of dimension min(m,n).
                 The diagonal elements of B.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
+    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.
                 The off-diagonal elements of B.
     @param[out]
-    tauq        pointer to type. Array on the GPU of dimension min(m,n).\n
+    tauq        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars associated with matrix Q.
     @param[out]
-    taup        pointer to type. Array on the GPU of dimension min(m,n).\n
+    taup        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars associated with matrix P.
     ********************************************************************/
 
@@ -7630,13 +7630,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on the diagonal and superdiagonal (if m >= n), or
                 subdiagonal (if m < n) contain the bidiagonal form B_l.
@@ -7647,40 +7647,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2(rocblas_handle handle,
                 elements of Householder vector v_(l_i), and the elements above the
                 diagonal are the last n - i elements of Householder vector u_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of B_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of B_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).
                 Contains the vectors tauq_l of Householder scalars associated with matrices Q_l.
     @param[in]
-    strideQ     rocblas_stride.\n
+    strideQ     rocblas_stride.
                 Stride from the start of one vector tauq_l to the next one tauq_(l+1).
                 There is no restriction for the value
                 of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors taup_l of Householder scalars associated with matrices P_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector taup_l to the next one taup_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -7785,13 +7785,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on the diagonal and superdiagonal (if m >= n), or
                 subdiagonal (if m < n) contain the bidiagonal form B_l.
@@ -7802,44 +7802,44 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_batched(rocblas_handle handle,
                 elements of Householder vector v_(l_i), and the elements above the
                 diagonal are the last n - i elements of Householder vector u_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of B_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of B_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).
                 Contains the vectors tauq_l of Householder scalars associated with matrices Q_l.
     @param[in]
-    strideQ     rocblas_stride.\n
+    strideQ     rocblas_stride.
                 Stride from the start of one vector tauq_l to the next one tauq_(l+1).
                 There is no restriction for the value
                 of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors taup_l of Householder scalars associated with matrices P_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector taup_l to the next one taup_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -7947,13 +7947,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of the matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrix to be factored.
                 On exit, the elements on the diagonal and superdiagonal (if m >= n), or
                 subdiagonal (if m < n) contain the bidiagonal form B.
@@ -7964,19 +7964,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle 
                 elements of Householder vector v_i, and the elements above the
                 diagonal are the last n - i elements of Householder vector u_i.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 specifies the leading dimension of A.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension min(m,n).\n
+    D           pointer to real type. Array on the GPU of dimension min(m,n).
                 The diagonal elements of B.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
+    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.
                 The off-diagonal elements of B.
     @param[out]
-    tauq        pointer to type. Array on the GPU of dimension min(m,n).\n
+    tauq        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars associated with matrix Q.
     @param[out]
-    taup        pointer to type. Array on the GPU of dimension min(m,n).\n
+    taup        pointer to type. Array on the GPU of dimension min(m,n).
                 The Householder scalars associated with matrix P.
     ********************************************************************/
 
@@ -8061,13 +8061,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on the diagonal and superdiagonal (if m >= n), or
                 subdiagonal (if m < n) contain the bidiagonal form B_l.
@@ -8078,40 +8078,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd(rocblas_handle handle,
                 elements of Householder vector v_(l_i), and the elements above the
                 diagonal are the last n - i elements of Householder vector u_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of B_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of B_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).
                 Contains the vectors tauq_l of Householder scalars associated with matrices Q_l.
     @param[in]
-    strideQ     rocblas_stride.\n
+    strideQ     rocblas_stride.
                 Stride from the start of one vector tauq_l to the next one tauq_(l+1).
                 There is no restriction for the value
                 of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors taup_l of Householder scalars associated with matrices P_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector taup_l to the next one taup_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -8216,13 +8216,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all the matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all the matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the elements on the diagonal and superdiagonal (if m >= n), or
                 subdiagonal (if m < n) contain the bidiagonal form B_l.
@@ -8233,44 +8233,44 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_batched(rocblas_handle handle,
                 elements of Householder vector v_(l_i), and the elements above the
                 diagonal are the last n - i elements of Householder vector u_(l_i).
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of B_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= min(m,n).
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of B_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[out]
-    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).\n
+    tauq        pointer to type. Array on the GPU (the size depends on the value of strideQ).
                 Contains the vectors tauq_l of Householder scalars associated with matrices Q_l.
     @param[in]
-    strideQ     rocblas_stride.\n
+    strideQ     rocblas_stride.
                 Stride from the start of one vector tauq_l to the next one tauq_(l+1).
                 There is no restriction for the value
                 of strideQ. Normal use is strideQ >= min(m,n).
     @param[out]
-    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    taup        pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors taup_l of Householder scalars associated with matrices P_l.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector taup_l to the next one taup_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= min(m,n).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -8358,30 +8358,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgebrd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies the form of the system of equations.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of A.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of the matrix B.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 The factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[inout]
-    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrix B.
                 On exit, the solution matrix X.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of B.
    ********************************************************************/
 
@@ -8446,37 +8446,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies the form of the system of equations of each instance in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_l.
     @param[in]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 The factors L_l and U_l of the factorization A_l = P_l*L_l*U_l returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[inout]
-    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -8549,45 +8549,45 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies the form of the system of equations of each instance in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_l.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 The factors L_l and U_l of the factorization A_l = P_l*L_l*U_l returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors ipiv_l of pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[inout]
-    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -8664,32 +8664,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrs_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of A.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of the matrix B.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A.
                 On exit, if info = 0, the factors L and U of the LU decomposition of A returned by
                 \ref rocsolver_sgetrf "GETRF".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[inout]
-    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrix B.
                 On exit, the solution matrix X.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of B.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular, and the solution could not be computed.
                 U[i,i] is the first zero element in the diagonal.
@@ -8753,41 +8753,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l.
                 On exit, if info[l] = 0, the factors L_l and U_l of the LU decomposition of A_l returned by
                 \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 The vectors ipiv_l of pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[inout]
-    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for A_l.
                 If info[l] = i > 0, U_l is singular, and the solution could not be computed.
                 U_l[i,i] is the first zero element in the diagonal.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -8858,49 +8858,49 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_l.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l.
                 On exit, if info[l] = 0, the factors L_l and U_l of the LU decomposition of A_l returned by
                 \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[inout]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 The vectors ipiv_l of pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[inout]
-    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for A_l.
                 If info[l] = i > 0, U_l is singular, and the solution could not be computed.
                 U_l[i,i] is the first zero element in the diagonal.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -8978,20 +8978,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesv_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
                 On exit, the inverse of A if info = 0; otherwise undefined.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
@@ -9042,29 +9042,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the factors L_l and U_l of the factorization A_l = P_l*L_l*U_l returned by
                 \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
                 On exit, the inverses of A_l if info[l] = 0; otherwise undefined.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+j).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9122,33 +9122,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the factors L_l and U_l of the factorization A_l = P_l*L_l*U_l returned by
                 \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
                 On exit, the inverses of A_l if info[l] = 0; otherwise undefined.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9210,17 +9210,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the factors L and U of the factorization A = L*U returned by \ref rocsolver_sgetrf_npvt "GETRF_NPVT".
                 On exit, the inverse of A if info = 0; otherwise undefined.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
@@ -9267,22 +9267,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the factors L_l and U_l of the factorization A_l = L_l*U_l returned by
                 \ref rocsolver_sgetrf_npvt_batched "GETRF_NPVT_BATCHED".
                 On exit, the inverses of A_l if info[l] = 0; otherwise undefined.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9332,26 +9332,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_batched(rocblas_handle han
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the factors L_l and U_l of the factorization A_l = L_l*U_l returned by
                 \ref rocsolver_sgetrf_npvt_strided_batched "GETRF_NPVT_STRIDED_BATCHED".
                 On exit, the inverses of A_l if info[l] = 0; otherwise undefined.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9416,35 +9416,35 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_strided_batched(rocblas_ha
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies the form of the system of equations.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of matrix A.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of columns of matrices B and X;
                 i.e., the columns on the right hand side.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A.
                 On exit, the QR (or LQ) factorization of A as returned by \ref rocsolver_sgeqrf "GEQRF" (or \ref rocsolver_sgelqf "GELQF").
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrix A.
     @param[inout]
-    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.
                 On entry, the matrix B.
                 On exit, when info = 0, B is overwritten by the solution vectors (and the residuals in
                 the overdetermined cases) stored as columns.
     @param[in]
-    ldb         rocblas_int. ldb >= max(m,n).\n
+    ldb         rocblas_int. ldb >= max(m,n).
                 Specifies the leading dimension of matrix B.
     @param[out]
-    info        pointer to rocblas_int on the GPU.\n
+    info        pointer to rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, the solution could not be computed because input matrix A is
                 rank deficient; the i-th diagonal element of its triangular factor is zero.
@@ -9523,41 +9523,41 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies the form of the system of equations.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of columns of all matrices B_l and X_l in the batch;
                 i.e., the columns on the right hand side.
     @param[inout]
-    A           array of pointer to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointer to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l.
                 On exit, the QR (or LQ) factorizations of A_l as returned by \ref rocsolver_sgeqrf_batched "GEQRF_BATCHED"
                 (or \ref rocsolver_sgelqf_batched "GELQF_BATCHED").
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[inout]
-    B           array of pointer to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+    B           array of pointer to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.
                 On entry, the matrices B_l.
                 On exit, when info[l] = 0, B_l is overwritten by the solution vectors (and the residuals in
                 the overdetermined cases) stored as columns.
     @param[in]
-    ldb         rocblas_int. ldb >= max(m,n).\n
+    ldb         rocblas_int. ldb >= max(m,n).
                 Specifies the leading dimension of matrices B_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for solution of A_l.
                 If info[l] = i > 0, the solution of A_l could not be computed because input
                 matrix A_l is rank deficient; the i-th diagonal element of its triangular factor is zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9639,49 +9639,49 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    trans       rocblas_operation.\n
+    trans       rocblas_operation.
                 Specifies the form of the system of equations.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of columns of all matrices B_l and X_l in the batch;
                 i.e., the columns on the right hand side.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l.
                 On exit, the QR (or LQ) factorizations of A_l as returned by \ref rocsolver_sgeqrf_strided_batched "GEQRF_STRIDED_BATCHED"
                 (or \ref rocsolver_sgelqf_strided_batched "GELQF_STRIDED_BATCHED").
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[inout]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the matrices B_l.
                 On exit, when info[l] = 0, each B_l is overwritten by the solution vectors (and the residuals in
                 the overdetermined cases) stored as columns.
     @param[in]
-    ldb         rocblas_int. ldb >= max(m,n).\n
+    ldb         rocblas_int. ldb >= max(m,n).
                 Specifies the leading dimension of matrices B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for solution of A_l.
                 If info[l] = i > 0, the solution of A_l could not be computed because input
                 matrix A_l is rank deficient; the i-th diagonal element of its triangular factor is zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9763,20 +9763,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful factorization of matrix A.
                 If info = i > 0, the leading minor of order i of A is not positive definite.
                 The factorization stopped at this point.
@@ -9832,25 +9832,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A_l.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful factorization of matrix A_l.
                 If info[l] = i > 0, the leading minor of order i of A_l is not positive definite.
                 The l-th factorization stopped at this point.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9908,29 +9908,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA    rocblas_stride.\n
+    strideA    rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful factorization of matrix A_l.
                 If info[l] = i > 0, the leading minor of order i of A_l is not positive definite.
                 The l-th factorization stopped at this point.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -9992,20 +9992,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotf2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A to be factored. On exit, the lower or upper triangular factor.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful factorization of matrix A.
                 If info = i > 0, the leading minor of order i of A is not positive definite.
                 The factorization stopped at this point.
@@ -10061,25 +10061,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A_l.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful factorization of matrix A_l.
                 If info[l] = i > 0, the leading minor of order i of A_l is not positive definite.
                 The l-th factorization stopped at this point.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -10137,29 +10137,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l to be factored. On exit, the upper or lower triangular factors.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful factorization of matrix A_l.
                 If info[l] = i > 0, the leading minor of order i of A_l is not positive definite.
                 The l-th factorization stopped at this point.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -10224,28 +10224,28 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of A.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of the matrix B.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 The factor L or U of the Cholesky factorization of A returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[inout]
-    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrix B.
                 On exit, the solution matrix X.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of B.
    ********************************************************************/
 
@@ -10312,31 +10312,31 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_l.
     @param[in]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 The factor L_l or U_l of the Cholesky factorization of A_l returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[inout]
-    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -10407,39 +10407,39 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_l.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 The factor L_l or U_l of the Cholesky factorization of A_l returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[inout]
-    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -10509,33 +10509,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrs_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of A.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of the matrix B.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the symmetric/hermitian matrix A.
                 On exit, if info = 0, the factor L or U of the Cholesky factorization of A returned by
                 \ref rocsolver_spotrf "POTRF".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[inout]
-    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrix B.
                 On exit, the solution matrix X.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of B.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, the leading minor of order i of A is not positive definite.
                 The solution could not be computed.
@@ -10600,38 +10600,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the symmetric/hermitian matrices A_l.
                 On exit, if info[l] = 0, the factor L_l or U_l of the Cholesky factorization of A_l returned by
                 \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[inout]
-    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.\n
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*nrhs.
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit.
                 If info[l] = i > 0, the leading minor of order i of A_l is not positive definite.
                 The l-th solution could not be computed.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -10698,46 +10698,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the system, i.e. the number of columns and rows of all A_l matrices.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
                 of all the matrices B_j.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the symmetric/hermitian matrices A_l.
                 On exit, if info[l] = 0, the factor L_l or U_l of the Cholesky factorization of A_l returned by
                 \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[inout]
-    B           pointer to type. Array on the GPU (size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (size depends on the value of strideB).
                 On entry, the right hand side matrices B_l.
                 On exit, the solution matrix X_l of each system in the batch.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of matrices B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*nrhs.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit.
                 If info[l] = i > 0, the leading minor of order i of A_l is not positive definite.
                 The l-th solution could not be computed.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of instances (systems) in the batch.
    ********************************************************************/
 
@@ -10813,22 +10813,22 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the factor L or U of the Cholesky factorization of A returned by
                 \ref rocsolver_spotrf "POTRF".
                 On exit, the inverse of A if info = 0.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit for inversion of A.
                 If info = i > 0, A is singular. L[i,i] or U[i,i] is zero.
     ********************************************************************/
@@ -10881,26 +10881,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A_l.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the factor L_l or U_l of the Cholesky factorization of A_l returned by
                 \ref rocsolver_spotrf_batched "POTRF_BATCHED".
                 On exit, the inverses of A_l if info[l] = 0.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, A_l is singular. L_l[i,i] or U_l[i,i] is zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -10956,30 +10956,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the factorization is upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of matrix A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the factor L_l or U_l of the Cholesky factorization of A_l returned by
                 \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
                 On exit, the inverses of A_l if info[l] = 0.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, A_l is singular. L_l[i,i] or U_l[i,i] is zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -11069,47 +11069,47 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies how the right singular vectors are computed.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A.
                 On exit, if left_svect (or right_svect) is equal to overwrite,
                 the first columns (or rows) contain the left (or right) singular vectors;
                 otherwise, the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A.
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension min(m,n). \n
+    S           pointer to real type. Array on the GPU of dimension min(m,n). 
                 The singular values of A in decreasing order.
     @param[out]
     U           pointer to type. Array on the GPU of dimension ldu*min(m,n) if
-                left_svect is set to singular, or ldu*m when left_svect is equal to all.\n
+                left_svect is set to singular, or ldu*m when left_svect is equal to all.
                 The matrix of left singular vectors stored as columns. Not
                 referenced if left_svect is set to overwrite or none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is all or singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is all or singular; ldu >= 1 otherwise.
                 The leading dimension of U.
     @param[out]
-    V           pointer to type. Array on the GPU of dimension ldv*n. \n
+    V           pointer to type. Array on the GPU of dimension ldv*n. 
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is all; ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.\n
+    E           pointer to real type. Array on the GPU of dimension min(m,n)-1.
                 This array is used to work internally with the bidiagonal matrix
                 B associated with A (using \ref rocsolver_sbdsqr "BDSQR"). On exit, if info > 0, it contains the
                 unconverged off-diagonal elements of B (or properly speaking, a bidiagonal
@@ -11117,11 +11117,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
                 are in S; those that converged correspond to a subset of the singular values
                 of A (not necessarily ordered).
     @param[in]
-    fast_alg    #rocblas_workmode. \n
+    fast_alg    #rocblas_workmode. 
                 If set to rocblas_outofplace, the function will execute the
                 fast thin-SVD version of the algorithm when possible.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, \ref rocsolver_sbdsqr "BDSQR" did not converge. i elements of E did not converge to zero.
     ********************************************************************/
@@ -11242,81 +11242,81 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies how the right singular vectors are computed.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on
-                the GPU of dimension lda*n.\n
+                the GPU of dimension lda*n.
                 On entry, the matrices A_l.
                 On exit, if left_svect (or right_svect) is equal to overwrite,
                 the first columns (or rows) of A_l contain the left (or right)
                 corresponding singular vectors; otherwise, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A_l.
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).\n
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The singular values of A_l in decreasing order.
     @param[in]
-    strideS     rocblas_stride.\n
+    strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S_(l+1).
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). \n
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to overwrite or none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is all or singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is all or singular; ldu >= 1 otherwise.
                 The leading dimension of U_l.
     @param[in]
-    strideU     rocblas_stride.\n
+    strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U_(l+1).
                 There is no restriction for the value of strideU.
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is all; ldv >= min(m,n) if
-                right_svect is set to singular; or ldv >= 1 otherwise.\n
+                right_svect is set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V_l.
     @param[in]
-    strideV     rocblas_stride.\n
+    strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V_(l+1).
                 There is no restriction for the value of strideV.
                 Normal use case is strideV >= ldv*n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the bidiagonal matrix B_l associated with A_l (using \ref rocsolver_sbdsqr "BDSQR").
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of B_l (or properly speaking,
                 a bidiagonal matrix orthogonally equivalent to B_l). The diagonal elements of this matrix are in S_l;
                 those that converged correspond to a subset of the singular values of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[in]
-    fast_alg    #rocblas_workmode. \n
+    fast_alg    #rocblas_workmode. 
                 If set to rocblas_outofplace, the function will execute the fast thin-SVD version
                 of the algorithm when possible.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info[l] = 0, successful exit.
                 If info[l] = i > 0, \ref rocsolver_sbdsqr "BDSQR" did not converge. i elements of E_l did not converge to zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -11456,85 +11456,85 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies how the right singular vectors are computed.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, if left_svect (or right_svect) is equal to
                 overwrite, the first columns (or rows) of A_l contain the left (or right)
                 corresponding singular vectors; otherwise, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA.
                 Normal use case is strideA >= lda*n.
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).\n
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The singular values of A_l in decreasing order.
     @param[in]
-    strideS     rocblas_stride.\n
+    strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S_(l+1).
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). \n
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to overwrite or none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is all or singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is all or singular; ldu >= 1 otherwise.
                 The leading dimension of U_l.
     @param[in]
-    strideU     rocblas_stride.\n
+    strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U_(l+1).
                 There is no restriction for the value of strideU.
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is all; ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V_l.
     @param[in]
-    strideV     rocblas_stride.\n
+    strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V_(l+1).
                 There is no restriction for the value of strideV.
                 Normal use case is strideV >= ldv*n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the bidiagonal matrix B_l associated with A_l (using \ref rocsolver_sbdsqr "BDSQR").
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of B_l (or properly speaking,
                 a bidiagonal matrix orthogonally equivalent to B_l). The diagonal elements of this matrix are in S_l;
                 those that converged correspond to a subset of the singular values of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE.
                 Normal use case is strideE >= min(m,n)-1.
     @param[in]
-    fast_alg    #rocblas_workmode. \n
+    fast_alg    #rocblas_workmode. 
                 If set to rocblas_outofplace, the function will execute the fast thin-SVD version
                 of the algorithm when possible.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info[l] = 0, successful exit.
                 If info[l] = i > 0, BDSQR did not converge. i elements of E_l did not converge to zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -11662,15 +11662,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T; the elements above the superdiagonal contain
@@ -11679,16 +11679,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                 contain the tridiagonal form T; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[out]
-    D           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.
                 The diagonal elements of T.
     @param[out]
-    E           pointer to type. Array on the GPU of dimension n-1.\n
+    E           pointer to type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of T.
     @param[out]
-    tau         pointer to type. Array on the GPU of dimension n-1.\n
+    tau         pointer to type. Array on the GPU of dimension n-1.
                 The Householder scalars.
     ********************************************************************/
 
@@ -11746,15 +11746,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the hermitian matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T; the elements above the superdiagonal contain
@@ -11763,16 +11763,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2(rocblas_handle handle,
                 contain the tridiagonal form T; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 The diagonal elements of T.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of T.
     @param[out]
-    tau         pointer to type. Array on the GPU of dimension n-1.\n
+    tau         pointer to type. Array on the GPU of dimension n-1.
                 The Householder scalars.
     ********************************************************************/
 
@@ -11831,15 +11831,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -11848,32 +11848,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2(rocblas_handle handle,
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -11939,15 +11939,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the hermitian matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -11956,32 +11956,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
 
     ********************************************************************/
@@ -12048,15 +12048,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -12065,36 +12065,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12162,15 +12162,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the hermitian matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -12179,36 +12179,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytd2_strided_batched(rocblas_handle 
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12276,15 +12276,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T; the elements above the superdiagonal contain
@@ -12293,16 +12293,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetd2_strided_batched(rocblas_handle 
                 contain the tridiagonal form T; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[out]
-    D           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.
                 The diagonal elements of T.
     @param[out]
-    E           pointer to type. Array on the GPU of dimension n-1.\n
+    E           pointer to type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of T.
     @param[out]
-    tau         pointer to type. Array on the GPU of dimension n-1.\n
+    tau         pointer to type. Array on the GPU of dimension n-1.
                 The Householder scalars.
     ********************************************************************/
 
@@ -12360,15 +12360,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the hermitian matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T; the elements above the superdiagonal contain
@@ -12377,16 +12377,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd(rocblas_handle handle,
                 contain the tridiagonal form T; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_i stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 The diagonal elements of T.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of T.
     @param[out]
-    tau         pointer to type. Array on the GPU of dimension n-1.\n
+    tau         pointer to type. Array on the GPU of dimension n-1.
                 The Householder scalars.
     ********************************************************************/
 
@@ -12445,15 +12445,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -12462,32 +12462,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12553,15 +12553,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the hermitian matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -12570,32 +12570,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E          pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E          pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12661,15 +12661,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -12678,36 +12678,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12775,15 +12775,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the hermitian matrix A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l to be factored.
                 On exit, if upper, then the elements on the diagonal and superdiagonal
                 contain the tridiagonal form T_l; the elements above the superdiagonal contain
@@ -12792,36 +12792,36 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_strided_batched(rocblas_handle 
                 contain the tridiagonal form T_l; the elements below the subdiagonal contain
                 the last n-i-1 elements of the Householder vectors v_(l_i) stored as columns.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The diagonal elements of T_l.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 The off-diagonal elements of T_l.
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n-1.
     @param[out]
-    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).\n
+    tau         pointer to type. Array on the GPU (the size depends on the value of strideP).
                 Contains the vectors tau_l of corresponding Householder scalars.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector tau_l to the next one tau_(l+1).
                 There is no restriction for the value
                 of strideP. Normal use is strideP >= n-1.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12899,29 +12899,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored, and
                 whether the factorization applied to B was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A and
                 B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the transformed matrix associated with
                 the equivalent standard eigenvalue problem.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     ********************************************************************/
 
@@ -12988,29 +12988,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored, and
                 whether the factorization applied to B was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A and
                 B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the transformed matrix associated with
                 the equivalent standard eigenvalue problem.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     ********************************************************************/
 
@@ -13078,32 +13078,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13173,32 +13173,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13268,40 +13268,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13375,40 +13375,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13482,29 +13482,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored, and
                 whether the factorization applied to B was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A and
                 B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the transformed matrix associated with
                 the equivalent standard eigenvalue problem.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     ********************************************************************/
 
@@ -13571,29 +13571,29 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored, and
                 whether the factorization applied to B was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A and
                 B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the transformed matrix associated with
                 the equivalent standard eigenvalue problem.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 The triangular factor of the matrix B, as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     ********************************************************************/
 
@@ -13661,32 +13661,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13756,32 +13756,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13851,40 +13851,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13958,40 +13958,40 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored, and
                 whether the factorization applied to B_l was upper or lower triangular.
                 If uplo indicates lower (or upper), then the upper (or lower) parts of A_l and
                 B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the transformed matrices associated with
                 the equivalent standard eigenvalue problems.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 The triangular factors of the matrices B_l, as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use case is strideB >= ldb*n.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -14031,37 +14031,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
                 the algorithm converged; otherwise the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[out]
-    D           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.
                 The eigenvalues of A in increasing order.
     @param[out]
-    E           pointer to type. Array on the GPU of dimension n.\n
+    E           pointer to type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with A.
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of T
                 (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues of A (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit. If info = i > 0, the algorithm did not converge.
                 i elements of E did not converge to zero.
     **************************************************************************************/
@@ -14097,37 +14097,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
                 the algorithm converged; otherwise the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 The eigenvalues of A in increasing order.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension n.\n
+    E           pointer to real type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with A.
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of T
                 (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues of A (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit. If info = i > 0, the algorithm did not converge.
                 i elements of E did not converge to zero.
     **************************************************************************************/
@@ -14164,49 +14164,49 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = i > 0, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -14248,49 +14248,49 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = i > 0, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -14332,53 +14332,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = i > 0, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -14422,53 +14422,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = i > 0, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -14513,37 +14513,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
                 the algorithm converged; otherwise the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[out]
-    D           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.
                 The eigenvalues of A in increasing order.
     @param[out]
-    E           pointer to type. Array on the GPU of dimension n.\n
+    E           pointer to type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with A.
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of T
                 (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues of A (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0 and evect is rocblas_evect_none, the algorithm did not converge.
                 i elements of E did not converge to zero.
@@ -14583,37 +14583,37 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
                 the algorithm converged; otherwise the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 The eigenvalues of A in increasing order.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension n.\n
+    E           pointer to real type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with A.
                 On exit, if info > 0, it contains the unconverged off-diagonal elements of T
                 (or properly speaking, a tridiagonal matrix equivalent to T). The diagonal elements
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues of A (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0 and evect is rocblas_evect_none, the algorithm did not converge.
                 i elements of E did not converge to zero.
@@ -14654,52 +14654,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0 and evect is rocblas_evect_none, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
                 If info[l] = i > 0 and evect is rocblas_evect_original, the algorithm failed to
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -14742,52 +14742,52 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0 and evect is rocblas_evect_none, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
                 If info[l] = i > 0 and evect is rocblas_evect_original, the algorithm failed to
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -14830,56 +14830,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0 and evect is rocblas_evect_none, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
                 If info[l] = i > 0 and evect is rocblas_evect_original, the algorithm failed to
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -14924,56 +14924,56 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the eigenvectors of A_j if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with A_l.
                 On exit, if info[l] > 0, E_l contains the unconverged off-diagonal elements of T_l
                 (or properly speaking, a tridiagonal matrix equivalent to T_l). The diagonal elements
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues of A_l (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0 and evect is rocblas_evect_none, the algorithm did not converge.
                 i elements of E_l did not converge to zero.
                 If info[l] = i > 0 and evect is rocblas_evect_original, the algorithm failed to
                 compute an eigenvalue in the submatrix from [i/(n+1), i/(n+1)] to [i%(n+1), i%(n+1)].
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -15028,48 +15028,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort.
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
                 the algorithm converged; otherwise the contents of A are unchanged.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A)
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type on the GPU.\n
+    residual    pointer to type on the GPU.
                 The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to a rocblas_int on the GPU.\n
+    n_sweeps    pointer to a rocblas_int on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm.
     @param[out]
-    W           pointer to type. Array on the GPU of dimension n.\n
+    W           pointer to type. Array on the GPU of dimension n.
                 The eigenvalues of A in increasing order.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit. If info = 1, the algorithm did not converge.
     **************************************************************************************/
 
@@ -15124,48 +15124,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort.
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
                 the algorithm converged; otherwise the contents of A are unchanged.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A)
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type on the GPU.\n
+    residual    pointer to real type on the GPU.
                 The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to a rocblas_int on the GPU.\n
+    n_sweeps    pointer to a rocblas_int on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm.
     @param[out]
-    W           pointer to real type. Array on the GPU of dimension n.\n
+    W           pointer to real type. Array on the GPU of dimension n.
                 The eigenvalues of A in increasing order.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit. If info = 1, the algorithm did not converge.
     **************************************************************************************/
 
@@ -15220,55 +15220,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort.
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are unchanged.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A_l)
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements of A_l (i.e. off(A_l)) at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = 1, the algorithm did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -15327,55 +15327,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort.
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are unchanged.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A_l)
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to real type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements of A_l (i.e. off(A_l)) at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = 1, the algorithm did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -15434,59 +15434,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort.
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are unchanged.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A_l)
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements of A_l (i.e. off(A_l)) at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = 1, the algorithm did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -15547,59 +15547,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort.
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the Hermitian matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are unchanged.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A_l)
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to real type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements of A_l (i.e. off(A_l)) at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 The eigenvalues of A_l in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l. If info[l] = 1, the algorithm did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -15650,59 +15650,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[in]
-    vl          type. vl < vu.\n
+    vl          type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    vu          type. vl < vu.\n
+    vu          type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to a rocblas_int on the GPU.\n
+    nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
                 If erange is rocblas_erange_index, nev = iu - il + 1. Otherwise, 0 <= nev <= n.
     @param[out]
-    W           pointer to type. Array on the GPU of dimension n.\n
+    W           pointer to type. Array on the GPU of dimension n.
                 The first nev elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[out]
-    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.
                 On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
                 the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -15710,15 +15710,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_strided_batched(rocblas_handle 
                 The user should ensure that Z is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
                 If info = 0, the first nev elements of ifail are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge. Not referenced if evect is rocblas_evect_none.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, the algorithm did not converge. i columns of Z did not converge.
     **************************************************************************************/
@@ -15774,59 +15774,59 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to a rocblas_int on the GPU.\n
+    nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
                 If erange is rocblas_erange_index, nev = iu - il + 1. Otherwise, 0 <= nev <= n.
     @param[out]
-    W           pointer to real type. Array on the GPU of dimension n.\n
+    W           pointer to real type. Array on the GPU of dimension n.
                 The first nev elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[out]
-    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.
                 On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
                 the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -15834,15 +15834,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
                 The user should ensure that Z is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
                 If info = 0, the first nev elements of ifail are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge. Not referenced if evect is rocblas_evect_none.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, the algorithm did not converge. i columns of Z did not converge.
     **************************************************************************************/
@@ -15898,63 +15898,63 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    vl          type. vl < vu.\n
+    vl          type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          type. vl < vu.\n
+    vu          type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].\n
+    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -15962,23 +15962,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge. Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -16039,63 +16039,63 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].\n
+    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -16103,23 +16103,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge. Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -16180,95 +16180,95 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
-    vl          type. vl < vu.\n
+    vl          type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          type. vl < vu.\n
+    vu          type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).\n
+    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[in]
-    strideZ     rocblas_stride.\n
+    strideZ     rocblas_stride.
                 Stride from the start of one matrix Z_l to the next one Z_(l+1).
                 There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev[l].
                 Note: If erange is rocblas_range_value, then the values of nev[l] are not known in advance.
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge. Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -16333,95 +16333,95 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the symmetric matrices A_l is stored.
                 If uplo indicates lower (or upper), then the upper (or lower) part of A_l
                 is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 Number of rows and columns of matrices A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).\n
+    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[in]
-    strideZ     rocblas_stride.\n
+    strideZ     rocblas_stride.
                 Stride from the start of one matrix Z_l to the next one Z_(l+1).
                 There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev[l].
                 Note: If erange is rocblas_range_value, then the values of nev[l] are not known in advance.
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge. Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     **************************************************************************************/
 
@@ -16504,42 +16504,42 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the symmetric matrix A. On exit, if evect is original,
                 the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrix A (including the diagonal) is destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[out]
-    D           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.
                 On exit, the eigenvalues in increasing order.
     @param[out]
-    E           pointer to type. Array on the GPU of dimension n.\n
+    E           pointer to type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with
                 the reduced eigenvalue problem.
                 On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
@@ -16547,7 +16547,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle 
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i <= n, i off-diagonal elements of an intermediate
                 tridiagonal form did not converge to zero.
@@ -16612,42 +16612,42 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the hermitian matrix A. On exit, if evect is original,
                 the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrix A (including the diagonal) is destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 On exit, the eigenvalues in increasing order.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension n.\n
+    E           pointer to real type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with
                 the reduced eigenvalue problem.
                 On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
@@ -16655,7 +16655,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i <= n, i off-diagonal elements of an intermediate
                 tridiagonal form did not converge to zero.
@@ -16720,46 +16720,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the symmetric matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, E_l contains the unconverged off-diagonal elements of T_l
@@ -16767,18 +16767,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch instance l.
                 If info[l] = i <= n, i off-diagonal elements of an intermediate
                 tridiagonal form did not converge to zero.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -16845,46 +16845,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the hermitian matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, it contains the unconverged off-diagonal elements of T_l
@@ -16892,18 +16892,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n, i off-diagonal elements of an intermediate
                 tridiagonal form did not converge to zero.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -16970,54 +16970,54 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the symmetric matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, it contains the unconverged off-diagonal elements of T_l
@@ -17025,18 +17025,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch j.
                 If info[l] = i <= n, i off-diagonal elements of an intermediate
                 tridiagonal form did not converge to zero.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -17107,54 +17107,54 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the hermitian matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, it contains the unconverged off-diagonal elements of T_l
@@ -17162,18 +17162,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n, i off-diagonal elements of an intermediate
                 tridiagonal form did not converge to zero.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -17244,42 +17244,42 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the symmetric matrix A. On exit, if evect is original,
                 the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrix A (including the diagonal) is destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[out]
-    D           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.
                 On exit, the eigenvalues in increasing order.
     @param[out]
-    E           pointer to type. Array on the GPU of dimension n.\n
+    E           pointer to type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with
                 the reduced eigenvalue problem.
                 On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
@@ -17287,7 +17287,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_strided_batched(rocblas_handle h
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
                 intermediate tridiagonal form did not converge to zero.
@@ -17354,42 +17354,42 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the hermitian matrix A. On exit, if evect is original,
                 the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrix A (including the diagonal) is destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[out]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 On exit, the eigenvalues in increasing order.
     @param[out]
-    E           pointer to real type. Array on the GPU of dimension n.\n
+    E           pointer to real type. Array on the GPU of dimension n.
                 This array is used to work internally with the tridiagonal matrix T associated with
                 the reduced eigenvalue problem.
                 On exit, if 0 < info <= n, it contains the unconverged off-diagonal elements of T
@@ -17397,7 +17397,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd(rocblas_handle handle,
                 of this matrix are in D; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
                 intermediate tridiagonal form did not converge to zero.
@@ -17464,46 +17464,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the symmetric matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, it contains the unconverged off-diagonal elements of T_l
@@ -17511,11 +17511,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
                 intermediate tridiagonal form did not converge to zero.
@@ -17524,7 +17524,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -17591,46 +17591,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the hermitian matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, it contains the unconverged off-diagonal elements of T_l
@@ -17638,11 +17638,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
                 intermediate tridiagonal form did not converge to zero.
@@ -17651,7 +17651,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -17718,54 +17718,54 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the symmetric matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, it contains the unconverged off-diagonal elements of T_l
@@ -17773,11 +17773,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
                 intermediate tridiagonal form did not converge to zero.
@@ -17786,7 +17786,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -17857,54 +17857,54 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the hermitian matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideD     rocblas_stride.\n
+    strideD     rocblas_stride.
                 Stride from the start of one vector D_l to the next one D_(l+1).
                 There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
-    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).\n
+    E           pointer to real type. Array on the GPU (the size depends on the value of strideE).
                 This array is used to work internally with the tridiagonal matrix T_l associated with
                 the l-th reduced eigenvalue problem.
                 On exit, if 0 < info[l] <= n, it contains the unconverged off-diagonal elements of T_l
@@ -17912,11 +17912,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
                 of this matrix are in D_l; those that converged correspond to a subset of the
                 eigenvalues (not necessarily ordered).
     @param[in]
-    strideE     rocblas_stride.\n
+    strideE     rocblas_stride.
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use is strideE >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n and evect is rocblas_evect_none, i off-diagonal elements of an
                 intermediate tridiagonal form did not converge to zero.
@@ -17925,7 +17925,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -17997,55 +17997,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the symmetric matrix A. On exit, if evect is original,
                 the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrix A (including the diagonal) is destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. The algorithm is considered to have converged once the residual
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type on the GPU.\n
+    residual    pointer to type on the GPU.
                 The Frobenius norm of the off-diagonal elements at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to a rocblas_int on the GPU.\n
+    n_sweeps    pointer to a rocblas_int on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm.
     @param[out]
-    W           pointer to type. Array on the GPU of dimension n.\n
+    W           pointer to type. Array on the GPU of dimension n.
                 On exit, the eigenvalues in increasing order.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = 1, the algorithm did not converge.
                 If info = n + i, the leading minor of order i of B is not
@@ -18116,55 +18116,55 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the hermitian matrix A. On exit, if evect is original,
                 the normalized matrix Z of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrix A (including the diagonal) is destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once the residual
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type on the GPU.\n
+    residual    pointer to real type on the GPU.
                 The Frobenius norm of the off-diagonal elements at the final iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to a rocblas_int on the GPU.\n
+    n_sweeps    pointer to a rocblas_int on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm.
     @param[out]
-    W           pointer to real type. Array on the GPU of dimension n.\n
+    W           pointer to real type. Array on the GPU of dimension n.
                 On exit, the eigenvalues in increasing order.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = 1, the algorithm did not converge.
                 If info = n + i, the leading minor of order i of B is not
@@ -18235,65 +18235,65 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the symmetric matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. The algorithm is considered to have converged once the residual
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch instance l.
                 If info[l] = 1, the algorithm did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -18365,65 +18365,65 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the hermitian matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[out]
-    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once the residual
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to real type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = 1, the algorithm did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -18495,73 +18495,73 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the symmetric matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. The algorithm is considered to have converged once the residual
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = 1, the algorithm did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -18637,73 +18637,73 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the hermitian matrices A_l. On exit, if evect is original,
                 the normalized matrix Z_l of eigenvectors. If evect is none, then the upper or lower triangular
                 part of the matrices A_l (including the diagonal) are destroyed,
                 depending on the value of uplo.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once the residual
                 is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
+    residual    pointer to real type. Array of batch_count scalars on the GPU.
                 The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 On exit, the eigenvalues in increasing order.
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use is strideW >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = 1, the algorithm did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -18782,69 +18782,69 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[in]
-    vl          type. vl < vu.\n
+    vl          type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    vu          type. vl < vu.\n
+    vu          type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to a rocblas_int on the GPU.\n
+    nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
                 If erange is rocblas_erange_index, nev = iu - il + 1. Otherwise, 0 <= nev <= n.
     @param[out]
-    W           pointer to type. Array on the GPU of dimension n.\n
+    W           pointer to type. Array on the GPU of dimension n.
                 The first nev elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[out]
-    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.
                 On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
                 the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -18852,16 +18852,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_strided_batched(rocblas_handle 
                 The user should ensure that Z is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
                 If info = 0, the first nev elements of ifail are zero.
                 If info = i <= n, ifail contains the indices of the i eigenvectors that failed
                 to converge.
                 Not referenced if evect is rocblas_evect_none.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i <= n, i columns of Z did not converge.
                 If info = n + i, the leading minor of order i of B is not
@@ -18947,69 +18947,69 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A and B are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A and B are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A. On exit, the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrix A.
     @param[out]
-    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+    B           pointer to type. Array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrix B. On exit, the
                 triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to a rocblas_int on the GPU.\n
+    nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
                 If erange is rocblas_erange_index, nev = iu - il + 1. Otherwise, 0 <= nev <= n.
     @param[out]
-    W           pointer to real type. Array on the GPU of dimension n.\n
+    W           pointer to real type. Array on the GPU of dimension n.
                 The first nev elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[out]
-    Z           pointer to type. Array on the GPU of dimension ldz*nev.\n
+    Z           pointer to type. Array on the GPU of dimension ldz*nev.
                 On exit, if evect is not rocblas_evect_none and info = 0, the first nev columns contain
                 the eigenvectors of A corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -19017,16 +19017,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx(rocblas_handle handle,
                 The user should ensure that Z is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
                 If info = 0, the first nev elements of ifail are zero.
                 If info = i <= n, ifail contains the indices of the i eigenvectors that failed
                 to converge.
                 Not referenced if evect is rocblas_evect_none.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i <= n, i columns of Z did not converge.
                 If info = n + i, the leading minor of order i of B is not
@@ -19112,73 +19112,73 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    vl          type. vl < vu.\n
+    vl          type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          type. vl < vu.\n
+    vu          type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].\n
+    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -19186,26 +19186,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx(rocblas_handle handle,
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
                 to converge.
                 Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch instance l.
                 If info[l] = i <= n, i columns of Z_l did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -19294,73 +19294,73 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+    B           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].\n
+    Z           Array of pointers to type. Each pointer points to an array on the GPU of dimension ldz*nev[l].
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
@@ -19368,26 +19368,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_batched(rocblas_handle handle,
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
                 to converge.
                 Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch instance l.
                 If info[l] = i <= n, i columns of Z_l did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -19476,112 +19476,112 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the symmetric positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
-    vl          type. vl < vu.\n
+    vl          type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          type. vl < vu.\n
+    vu          type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      type.\n
+    abstol      type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).\n
+    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[in]
-    strideZ     rocblas_stride.\n
+    strideZ     rocblas_stride.
                 Stride from the start of one matrix Z_l to the next one Z_(l+1).
                 There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev[l].
                 Note: If erange is rocblas_range_value, then the values of nev[l] are not known in advance.
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
                 to converge.
                 Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n, i columns of Z_l did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -19676,112 +19676,112 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform.
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect.
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange.
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower parts of the matrices
                 A_l and B_l are stored. If uplo indicates lower (or upper),
                 then the upper (or lower) parts of A_l and B_l are not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The matrix dimensions.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l. On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, the hermitian positive definite matrices B_l. On exit, the
                 triangular factor of B_l as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 Specifies the leading dimension of B_l.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one matrix B_l to the next one B_(l+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. vl < vu.
                 The lower bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. vl < vu.
                 The upper bound of the search interval (vl, vu]. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. An eigenvalue is considered to be located if it lies
                 in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
                 the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
-    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
                 If erange is rocblas_erange_index, nev[l] = iu - il + 1. Otherwise, 0 <= nev[l] <= n.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).
                 The first nev[l] elements contain the computed eigenvalues. (The remaining elements
                 can be used as workspace for internal computations).
     @param[in]
-    strideW     rocblas_stride.\n
+    strideW     rocblas_stride.
                 Stride from the start of one vector W_l to the next one W_(l+1).
                 There is no restriction for the value of strideW. Normal use case is strideW >= n.
     @param[out]
-    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).\n
+    Z           pointer to type. Array on the GPU (the size depends on the value of strideZ).
                 On exit, if evect is not rocblas_evect_none and info[l] = 0, the first nev[l] columns contain
                 the eigenvectors of A_l corresponding to the output eigenvalues. Not referenced if
                 evect is rocblas_evect_none.
     @param[in]
-    ldz         rocblas_int. ldz >= n.\n
+    ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[in]
-    strideZ     rocblas_stride.\n
+    strideZ     rocblas_stride.
                 Stride from the start of one matrix Z_l to the next one Z_(l+1).
                 There is no restriction for the value of strideZ. Normal use case is strideZ >= ldz*nev[l].
                 Note: If erange is rocblas_range_value, then the values of nev[l] are not known in advance.
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nev[l] elements of ifail_l are zero.
                 If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
                 to converge.
                 Not referenced if evect is rocblas_evect_none.
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n, i columns of Z_l did not converge.
                 If info[l] = n + i, the leading minor of order i of B_l is not
                 positive definite.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -19857,25 +19857,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 The factors L and U of the factorization A = P*L*U returned by \ref rocsolver_sgetrf "GETRF".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The pivot indices returned by \ref rocsolver_sgetrf "GETRF".
     @param[out]
-    C           pointer to type. Array on the GPU of dimension ldc*n.\n
+    C           pointer to type. Array on the GPU of dimension ldc*n.
                 If info = 0, the inverse of A. Otherwise, undefined.
     @param[in]
-    ldc         rocblas_int. ldc >= n.\n
+    ldc         rocblas_int. ldc >= n.
                 Specifies the leading dimension of C.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
@@ -19932,33 +19932,33 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace(rocblas_handle handl
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[in]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 The factors L_l and U_l of the factorization A_l = P_l*L_l*U_l returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 The pivot indices returned by \ref rocsolver_sgetrf_batched "GETRF_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    C           array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.\n
+    C           array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.
                 If info[l] = 0, the inverse of matrices A_l. Otherwise, undefined.
     @param[in]
-    ldc         rocblas_int. ldc >= n.\n
+    ldc         rocblas_int. ldc >= n.
                 Specifies the leading dimension of C_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -20022,42 +20022,42 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_hand
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 The factors L_j and U_j of the factorization A_l = P_l*L_l*U_l returned by
                 \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[in]
-    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).\n
+    ipiv        pointer to rocblas_int. Array on the GPU (the size depends on the value of strideP).
                 The pivot indices returned by \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).
                 If info[l] = 0, the inverse of matrices A_l. Otherwise, undefined.
     @param[in]
-    ldc         rocblas_int. ldc >= n.\n
+    ldc         rocblas_int. ldc >= n.
                 Specifies the leading dimension of C_l.
     @param[in]
-    strideC     rocblas_stride.\n
+    strideC     rocblas_stride.
                 Stride from the start of one matrix C_l to the next one C_(l+1).
                 There is no restriction for the value of strideC. Normal use case is strideC >= ldc*n
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -20133,22 +20133,22 @@ ROCSOLVER_EXPORT rocblas_status
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 The factors L and U of the factorization A = L*U returned by \ref rocsolver_sgetrf_npvt "GETRF_NPVT".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    C           pointer to type. Array on the GPU of dimension ldc*n.\n
+    C           pointer to type. Array on the GPU of dimension ldc*n.
                 If info = 0, the inverse of A. Otherwise, undefined.
     @param[in]
-    ldc         rocblas_int. ldc >= n.\n
+    ldc         rocblas_int. ldc >= n.
                 Specifies the leading dimension of C.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, U is singular. U[i,i] is the first zero pivot.
     ********************************************************************/
@@ -20202,26 +20202,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_npvt_outofplace(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[in]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 The factors L_l and U_l of the factorization A_l = L_l*U_l returned by \ref rocsolver_sgetrf_npvt_batched "GETRF_NPVT_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    C           array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.\n
+    C           array of pointers to type. Each pointer points to an array on the GPU of dimension ldc*n.
                 If info[l] = 0, the inverse of matrices A_l. Otherwise, undefined.
     @param[in]
-    ldc         rocblas_int. ldc >= n.\n
+    ldc         rocblas_int. ldc >= n.
                 Specifies the leading dimension of C_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -20280,35 +20280,35 @@ ROCSOLVER_EXPORT rocblas_status
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 The factors L_l and U_l of the factorization A_l = L_l*U_l returned by
                 \ref rocsolver_sgetrf_npvt_strided_batched "GETRF_NPVT_STRIDED_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).
                 If info[l] = 0, the inverse of matrices A_l. Otherwise, undefined.
     @param[in]
-    ldc         rocblas_int. ldc >= n.\n
+    ldc         rocblas_int. ldc >= n.
                 Specifies the leading dimension of C_l.
     @param[in]
-    strideC     rocblas_stride.\n
+    strideC     rocblas_stride.
                 Stride from the start of one matrix C_l to the next one C_(l+1).
                 There is no restriction for the value of strideC. Normal use case is strideC >= ldc*n
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, U_l is singular. U_l[i,i] is the first zero pivot.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -20371,26 +20371,26 @@ ROCSOLVER_EXPORT rocblas_status
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    diag        rocblas_diagonal.\n
+    diag        rocblas_diagonal.
                 If diag indicates unit, then the diagonal elements of A are not referenced and
                 assumed to be one.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the triangular matrix.
                 On exit, the inverse of A if info = 0.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, A is singular. A[i,i] is the first zero element in the diagonal.
     ********************************************************************/
@@ -20438,30 +20438,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    diag        rocblas_diagonal.\n
+    diag        rocblas_diagonal.
                 If diag indicates unit, then the diagonal elements of matrices A_l are not referenced and
                 assumed to be one.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the triangular matrices A_l.
                 On exit, the inverses of A_l if info[l] = 0.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, A_l is singular. A_l[i,i] is the first zero element in the diagonal.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -20512,34 +20512,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    diag        rocblas_diagonal.\n
+    diag        rocblas_diagonal.
                 If diag indicates unit, then the diagonal elements of matrices A_l are not referenced and
                 assumed to be one.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the triangular matrices A_l.
                 On exit, the inverses of A_l if info[l] = 0.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for inversion of A_l.
                 If info[l] = i > 0, A_l is singular. A_l[i,i] is the first zero element in the diagonal.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -20646,23 +20646,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the symmetric matrix A to be factored.
                 On exit, the block diagonal matrix D and the multipliers needed to
                 compute U or L.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
                 were interchanged and D[k,k] is a 1-by-1 diagonal block.
@@ -20672,7 +20672,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ztrtri_strided_batched(rocblas_handle 
                 and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
                 diagonal block.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, D is singular. D[i,i] is the first diagonal zero.
     ********************************************************************/
@@ -20772,23 +20772,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the symmetric matrices A_l to be factored.
                 On exit, the block diagonal matrices D_l and the multipliers needed to
                 compute U_l or L_l.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= k <= n, if ipiv_l[k] > 0 then rows and columns k and ipiv_l[k]
                 were interchanged and D_l[k,k] is a 1-by-1 diagonal block.
@@ -20798,15 +20798,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2(rocblas_handle handle,
                 and D_l[k-1,k-1] to D_l[k,k] (or D_l[k,k] to D_l[k+1,k+1]) is a 2-by-2
                 diagonal block.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, D_l is singular. D_l[i,i] is the first diagonal zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -20913,27 +20913,27 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the symmetric matrices A_l to be factored.
                 On exit, the block diagonal matrices D_l and the multipliers needed to
                 compute U_l or L_l.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= k <= n, if ipiv_l[k] > 0 then rows and columns k and ipiv_l[k]
                 were interchanged and D_l[k,k] is a 1-by-1 diagonal block.
@@ -20943,15 +20943,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
                 and D_l[k-1,k-1] to D_l[k,k] (or D_l[k,k] to D_l[k+1,k+1]) is a 2-by-2
                 diagonal block.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, D_l is singular. D_l[i,i] is the first diagonal zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -21062,23 +21062,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrix A is stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the symmetric matrix A to be factored.
                 On exit, the block diagonal matrix D and the multipliers needed to
                 compute U or L.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of A.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= k <= n, if ipiv[k] > 0 then rows and columns k and ipiv[k]
                 were interchanged and D[k,k] is a 1-by-1 diagonal block.
@@ -21088,7 +21088,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytf2_strided_batched(rocblas_handle 
                 and D[k-1,k-1] to D[k,k] (or D[k,k] to D[k+1,k+1]) is a 2-by-2
                 diagonal block.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, D is singular. D[i,i] is the first diagonal zero.
     ********************************************************************/
@@ -21188,23 +21188,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the symmetric matrices A_l to be factored.
                 On exit, the block diagonal matrices D_l and the multipliers needed to
                 compute U_l or L_l.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= k <= n, if ipiv_l[k] > 0 then rows and columns k and ipiv_l[k]
                 were interchanged and D_l[k,k] is a 1-by-1 diagonal block.
@@ -21214,15 +21214,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf(rocblas_handle handle,
                 and D_l[k-1,k-1] to D_l[k,k] (or D_l[k,k] to D_l[k+1,k+1]) is a 2-by-2
                 diagonal block.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, D_l is singular. D_l[i,i] is the first diagonal zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -21329,27 +21329,27 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower part of the matrices A_l are stored.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A_l is not used.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows and columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the symmetric matrices A_l to be factored.
                 On exit, the block diagonal matrices D_l and the multipliers needed to
                 compute U_l or L_l.
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 Specifies the leading dimension of matrices A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n
     @param[out]
-    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ipiv        pointer to rocblas_int. Array on the GPU of dimension n.
                 The vector of pivot indices. Elements of ipiv are 1-based indices.
                 For 1 <= k <= n, if ipiv_l[k] > 0 then rows and columns k and ipiv_l[k]
                 were interchanged and D_l[k,k] is a 1-by-1 diagonal block.
@@ -21359,15 +21359,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_batched(rocblas_handle handle,
                 and D_l[k-1,k-1] to D_l[k,k] (or D_l[k,k] to D_l[k+1,k+1]) is a 2-by-2
                 diagonal block.
     @param[in]
-    strideP     rocblas_stride.\n
+    strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
                 There is no restriction for the value of strideP. Normal use case is strideP >= n.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
                 If info[l] = i > 0, D_l is singular. D_l[i,i] is the first diagonal zero.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
