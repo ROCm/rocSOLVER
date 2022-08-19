@@ -187,7 +187,7 @@ public:
             return;
 
         char svect = val->second.as<char>();
-        if(svect != 'A' && svect != 'S' && svect != 'O' && svect != 'N')
+        if(svect != 'A' && svect != 'S' && svect != 'V' && svect != 'O' && svect != 'N')
             throw std::invalid_argument("Invalid value for " + name);
     }
 

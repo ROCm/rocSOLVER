@@ -104,12 +104,12 @@ constexpr auto rocblas2char_workmode(rocblas_workmode value)
     return '\0';
 }
 
-constexpr auto rocblas2char_svect(rocblas_svect value)
+constexpr auto rocblas2char_svect(rocblas_svect value, bool use_V = false)
 {
     switch(value)
     {
     case rocblas_svect_all: return 'A';
-    case rocblas_svect_singular: return 'S';
+    case rocblas_svect_singular: return (use_V ? 'V' : 'S');
     case rocblas_svect_overwrite: return 'O';
     case rocblas_svect_none: return 'N';
     }
@@ -305,7 +305,8 @@ constexpr rocblas_svect char2rocblas_svect(char value)
     switch(value)
     {
     case 'A': return rocblas_svect_all;
-    case 'S': return rocblas_svect_singular;
+    case 'S':
+    case 'V': return rocblas_svect_singular;
     case 'O': return rocblas_svect_overwrite;
     case 'N': return rocblas_svect_none;
     default: return static_cast<rocblas_svect>(-1);

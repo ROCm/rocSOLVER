@@ -1673,6 +1673,52 @@ inline rocblas_status rocsolver_lasyf(rocblas_handle handle,
 }
 /********************************************************/
 
+/******************** BDSVDX ********************/
+inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
+                                       rocblas_fill uplo,
+                                       rocblas_svect svect,
+                                       rocblas_srange srange,
+                                       rocblas_int n,
+                                       float* D,
+                                       float* E,
+                                       float vl,
+                                       float vu,
+                                       rocblas_int il,
+                                       rocblas_int iu,
+                                       float abstol,
+                                       rocblas_int* nsv,
+                                       float* S,
+                                       float* Z,
+                                       const rocblas_int ldz,
+                                       rocblas_int* ifail,
+                                       rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_sbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S, Z, ldz, ifail, info);
+}
+
+inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
+                                       rocblas_fill uplo,
+                                       rocblas_svect svect,
+                                       rocblas_srange srange,
+                                       rocblas_int n,
+                                       double* D,
+                                       double* E,
+                                       double vl,
+                                       double vu,
+                                       rocblas_int il,
+                                       rocblas_int iu,
+                                       double abstol,
+                                       rocblas_int* nsv,
+                                       double* S,
+                                       double* Z,
+                                       const rocblas_int ldz,
+                                       rocblas_int* ifail,
+                                       rocblas_int* info)
+{
+    return rocblas_status_not_implemented; // rocsolver_dbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S, Z, ldz, ifail, info);
+}
+/********************************************************/
+
 /******************** POTF2_POTRF ********************/
 // normal and strided_batched
 inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
