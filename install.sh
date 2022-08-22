@@ -159,7 +159,7 @@ install_fmt_from_source( )
   rm -rf "$fmt_srcdir" "$fmt_blddir"
   tar xzf fmt-$fmt_version.tar.gz --one-top-level="$fmt_srcdir" --strip-components 1
   ${cmake_executable} \
-    -S "$fmt_srcdir" -B "$fmt_blddir" \
+    -H$fmt_srcdir -B$fmt_blddir \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_CXX_STANDARD=17 \
@@ -181,7 +181,7 @@ install_lapack_from_source( )
   rm -rf "$lapack_srcdir" "$lapack_blddir"
   tar xzf lapack-$lapack_version.tar.gz --one-top-level="$lapack_srcdir" --strip-components 1
   ${cmake_executable} \
-    -S "$lapack_srcdir" -B "$lapack_blddir" \
+    -H$lapack_srcdir -B$lapack_blddir \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_Fortran_FLAGS=-fno-optimize-sibling-calls \
     -DBUILD_TESTING=OFF \
@@ -201,7 +201,7 @@ install_gtest_from_source( )
   rm -rf "$gtest_srcdir" "$gtest_blddir"
   tar xzf gtest-$gtest_version.tar.gz --one-top-level="$gtest_srcdir" --strip-components 1
   ${cmake_executable} \
-    -S "$gtest_srcdir" -B "$gtest_blddir" \
+    -H$gtest_srcdir -B$gtest_blddir \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF
   make -j$(nproc) -C "$gtest_blddir"
