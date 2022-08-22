@@ -480,6 +480,9 @@ export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
 if [[ "${install_dependencies}" == true ]]; then
   install_packages
 
+  cmake_version=$(${cmake_executable} --version | grep -oP '(?<=version )[^ ]*')
+  printf "\033[32mUsing \033[33m$(command -v ${cmake_executable})\033[32m (version ${cmake_version})\033[0m\n"
+
   pushd .
   mkdir -p "${build_dir}/deps"
   cd "${build_dir}/deps"
