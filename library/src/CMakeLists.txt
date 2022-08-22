@@ -290,6 +290,15 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif()
 
+if(HYBRID_CPU)
+  target_compile_definitions(rocsolver PRIVATE HYBRID_CPU)
+endif()
+
+if(EXPERIMENTAL)
+  target_compile_definitions(rocsolver PRIVATE EXPERIMENTAL)
+endif()
+
+
 target_compile_definitions(rocsolver PRIVATE
   ROCM_USE_FLOAT16
   ROCBLAS_INTERNAL_API

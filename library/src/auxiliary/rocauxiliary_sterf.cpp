@@ -27,6 +27,26 @@ rocblas_status
     rocblas_stride strideE = 0;
     rocblas_int batch_count = 1;
 
+#ifdef EXPERIMENTAL
+    // additional memory for internal kernels (parallel sterf)
+    size_t size_ranges;
+    rocsolver_sterf_parallel_getMemorySize<T>(n, &size_ranges);
+
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_set_optimal_device_memory_size(handle, size_ranges);
+
+    // memory workspace allocation
+    void* ranges;
+    rocblas_device_malloc mem_range(handle, size_ranges);
+    if(!mem_range)
+        return rocblas_status_memory_error;
+
+    ranges = mem_range[0];
+
+    // execution
+    return rocsolver_sterf_template<T>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
+                                       batch_count, (rocblas_int*)ranges);
+#else
     // memory workspace sizes:
     // size for lasrt stack
     size_t size_stack;
@@ -46,6 +66,7 @@ rocblas_status
     // execution
     return rocsolver_sterf_template<T>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
                                        batch_count, (rocblas_int*)stack);
+#endif
 }
 
 /*
