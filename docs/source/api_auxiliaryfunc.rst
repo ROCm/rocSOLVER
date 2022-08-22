@@ -151,6 +151,14 @@ rocsolver_<type>bdsqr()
    :outline:
 .. doxygenfunction:: rocsolver_sbdsqr
 
+.. _bdsvdx:
+
+rocsolver_<type>bdsvdx()
+---------------------------------------
+.. doxygenfunction:: rocsolver_dbdsvdx
+   :outline:
+.. doxygenfunction:: rocsolver_sbdsvdx
+
 
 
 .. _tridiag:

@@ -1693,7 +1693,8 @@ inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
                                        rocblas_int* ifail,
                                        rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_sbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S, Z, ldz, ifail, info);
+    return rocsolver_sbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S,
+                             Z, ldz, ifail, info);
 }
 
 inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
@@ -1715,7 +1716,8 @@ inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
                                        rocblas_int* ifail,
                                        rocblas_int* info)
 {
-    return rocblas_status_not_implemented; // rocsolver_dbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S, Z, ldz, ifail, info);
+    return rocsolver_dbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S,
+                             Z, ldz, ifail, info);
 }
 /********************************************************/
 
