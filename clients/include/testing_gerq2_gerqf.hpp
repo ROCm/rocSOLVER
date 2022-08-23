@@ -456,8 +456,7 @@ void testing_gerq2_gerqf(Arguments& argus)
     extern template void testing_gerq2_gerqf<__VA_ARGS__>(Arguments&);
 
 INSTANTIATE(EXTERN_TESTING_GERQ2_GERQF,
-            FOREACH_BOOLEAN_0,
-            FOREACH_BOOLEAN_1,
-            FOREACH_BOOLEAN_INT,
+            FOREACH_MATRIX_DATA_LAYOUT,
+            FOREACH_BLOCKED_VARIANT,
             FOREACH_SCALAR_TYPE,
             APPLY_STAMP)

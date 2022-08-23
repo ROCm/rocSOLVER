@@ -5,13 +5,7 @@
 // Utility macros for explicit template instantiation with rocBLAS types
 
 #define APPLY_STAMP(STAMP, ...) STAMP(__VA_ARGS__)
-#define FOREACH_BOOLEAN_INT(STAMP, F, ...) \
-    F(STAMP, ##__VA_ARGS__, 0)             \
-    F(STAMP, ##__VA_ARGS__, 1)
-#define FOREACH_BOOLEAN_0(STAMP, F, ...) \
-    F(STAMP, ##__VA_ARGS__, false)       \
-    F(STAMP, ##__VA_ARGS__, true)
-#define FOREACH_BOOLEAN_1(STAMP, F, ...) \
+#define FOREACH_BLOCKED_VARIANT(STAMP, F, ...) \
     F(STAMP, ##__VA_ARGS__, false)       \
     F(STAMP, ##__VA_ARGS__, true)
 #define FOREACH_REAL_TYPE(STAMP, F, ...) \
