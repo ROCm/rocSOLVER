@@ -19,8 +19,8 @@
     F(STAMP, ##__VA_ARGS__, double)                \
     F(STAMP, ##__VA_ARGS__, rocblas_float_complex) \
     F(STAMP, ##__VA_ARGS__, rocblas_double_complex)
-#define FOREACH_MATRIX_DATA_LAYOUT(STAMP, F, ...) \
-    F(STAMP, ##__VA_ARGS__, false, false)         \
-    F(STAMP, ##__VA_ARGS__, true, false)          \
-    F(STAMP, ##__VA_ARGS__, false, true)
+#define FOREACH_MATRIX_DATA_LAYOUT(STAMP, F, ...)   \
+    F(STAMP, ##__VA_ARGS__, false, false) # single  \
+    F(STAMP, ##__VA_ARGS__, true, true)   # batched \
+    F(STAMP, ##__VA_ARGS__, false, true)  # strided_batched
 #define INSTANTIATE(STAMP, F, ...) F(STAMP, __VA_ARGS__)
