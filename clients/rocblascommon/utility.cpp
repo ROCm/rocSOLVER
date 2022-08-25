@@ -7,6 +7,7 @@
 #include <string>
 
 #include <fmt/core.h>
+#include <rocblas/rocblas.h>
 
 #include "rocblas_random.hpp"
 #include "utility.hpp"

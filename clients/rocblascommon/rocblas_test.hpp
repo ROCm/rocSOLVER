@@ -9,7 +9,6 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
-#include <rocblas/rocblas.h>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -17,6 +16,7 @@
 #include <utility>
 
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <rocblas/rocblas.h>
 
 // Suppress warnings about hipMalloc(), hipFree() except in rocblas-test and

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 
 #include "rocsolver_datatype2string.hpp"
 

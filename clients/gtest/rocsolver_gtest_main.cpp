@@ -6,6 +6,7 @@
 #include <string>
 
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <gtest/gtest.h>
 #include <rocsolver/rocsolver.h>
 
