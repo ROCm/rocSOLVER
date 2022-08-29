@@ -8,14 +8,7 @@
 #include <fmt/ostream.h>
 
 #include "rocsolver_datatype2string.hpp"
-
-/* The format function for user-defined types cannot be const before fmt v8.0
-   but must be const in fmt v8.1 if the type is used in a tuple. */
-#if FMT_VERSION < 80000
-#define ROCSOLVER_FMT_CONST
-#else
-#define ROCSOLVER_FMT_CONST const
-#endif
+#include "fmt_rocblas_types.hpp"
 
 /***************************************************************************
  * Wrapper for types passed to logger, so we can more easily adjust the
