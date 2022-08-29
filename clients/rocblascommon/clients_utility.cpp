@@ -10,7 +10,7 @@
 #include <rocblas/rocblas.h>
 
 #include "rocblas_random.hpp"
-#include "utility.hpp"
+#include "clients_utility.hpp"
 
 // Random number generator
 // Note: We do not use random_device to initialize the RNG, because we want
