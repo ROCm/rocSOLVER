@@ -540,7 +540,6 @@ cmake_common_options+=(
   '-DCPACK_SET_DESTDIR=OFF'
   "-DCMAKE_INSTALL_PREFIX=${lib_dir}"
   "-DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir}"
-  '-DROCSOLVER_EMBED_FMT=ON'
   "-DCMAKE_BUILD_TYPE=${build_type}"
 )
 
