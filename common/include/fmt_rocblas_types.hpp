@@ -5,6 +5,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <rocblas/rocblas.h>
 
 /* The format function for user-defined types cannot be const before fmt v8.0
@@ -17,29 +18,15 @@
 
 namespace fmt
 {
-template <>
-struct formatter<rocblas_float_complex> : formatter<float>
+template <typename T>
+struct formatter<rocblas_complex_num<T>> : formatter<T>
 {
     template <typename FormatCtx>
-    auto format(const rocblas_float_complex& value, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    auto format(const rocblas_complex_num<T>& value, FormatCtx& ctx) ROCSOLVER_FMT_CONST
     {
-        formatter<float>::format(value.real(), ctx);
+        formatter<T>::format(value.real(), ctx);
         format_to(ctx.out(), "+");
-        formatter<float>::format(value.imag(), ctx);
-        format_to(ctx.out(), "*i");
-        return ctx.out();
-    }
-};
-
-template <>
-struct formatter<rocblas_double_complex> : formatter<double>
-{
-    template <typename FormatCtx>
-    auto format(const rocblas_double_complex& value, FormatCtx& ctx) ROCSOLVER_FMT_CONST
-    {
-        formatter<double>::format(value.real(), ctx);
-        format_to(ctx.out(), "+");
-        formatter<double>::format(value.imag(), ctx);
+        formatter<T>::format(value.imag(), ctx);
         format_to(ctx.out(), "*i");
         return ctx.out();
     }
