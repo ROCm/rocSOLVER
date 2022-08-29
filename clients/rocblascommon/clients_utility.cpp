@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <cstdlib>
@@ -9,8 +9,8 @@
 #include <fmt/core.h>
 #include <rocblas/rocblas.h>
 
-#include "rocblas_random.hpp"
 #include "clients_utility.hpp"
+#include "rocblas_random.hpp"
 
 // Random number generator
 // Note: We do not use random_device to initialize the RNG, because we want

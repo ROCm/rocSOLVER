@@ -7,8 +7,8 @@
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 
-#include "rocsolver_datatype2string.hpp"
 #include "fmt_rocblas_types.hpp"
+#include "rocsolver_datatype2string.hpp"
 
 /***************************************************************************
  * Wrapper for types passed to logger, so we can more easily adjust the

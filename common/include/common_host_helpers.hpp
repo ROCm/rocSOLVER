@@ -14,8 +14,8 @@
 #include <fmt/ostream.h>
 #include <hip/hip_runtime_api.h>
 
-#include "rocblas_utility.hpp"
 #include "fmt_rocblas_types.hpp"
+#include "rocblas_utility.hpp"
 
 /*
  * ===========================================================================
