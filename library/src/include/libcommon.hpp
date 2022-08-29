@@ -4,6 +4,7 @@
 
 #pragma once
 
-#include "rocblascommon/utility.hpp"
 #include <string>
 #include <vector>
+
+#include "rocblas_utility.hpp"
