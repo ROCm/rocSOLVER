@@ -48,6 +48,11 @@ Options:
                               Dependecies are to be installed in /usr/local. This should be done only once.
                               (this does not install rocBLAS nor ROCm software stack)
 
+  -b | --rocblas              Pass this flag to also build and install a development version of rocBLAS.
+                              The version of rocBLAS installed will be one of the oldest versions known to be
+                              compatible with this version of rocSOLVER.
+                              Implies --dependencies.
+
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
                               (Generated binaries will be located at builddir/clients/staging)
 
@@ -81,6 +86,7 @@ Options:
                               (Default build type is Release)
 
   --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
+
   --rm-legacy-include-dir     Remove legacy include dir Packaging added for file/folder reorg backward compatibility.
 EOF
 }
@@ -147,6 +153,24 @@ install_zypper_packages( )
   packages=("$@")
   printf "\033[32mInstalling \033[33m${packages[*]}\033[32m from distro package manager\033[0m\n"
   elevate_if_not_root zypper install -y "${packages[@]}"
+}
+
+install_rocblas_from_source( )
+{
+  rocblas_version=a70ac3d458f92ba90634c606b721fb8ca9e47a52
+  rocblas_srcdir=rocblas-src
+  rocblas_blddir=rocblas-bld
+  wget -nv -O rocblas-$rocblas_version.tar.gz \
+      https://github.com/ROCmSoftwarePlatform/rocBLAS/archive/$rocblas_version.tar.gz
+  rm -rf "$rocblas_srcdir" "$rocblas_blddir"
+  tar xzf rocblas-$rocblas_version.tar.gz --one-top-level="$rocblas_srcdir" --strip-components 1
+  pushd "$rocblas_srcdir"
+  rocblas_build_options=('-id' '--build_dir' "${DIRSTACK[1]}/$rocblas_blddir")
+  if [ -n "${architecture+x}" ]; then
+    rocblas_build_options+=('-a' "$architecture")
+  fi
+  ./install.sh "${rocblas_build_options[@]}"
+  popd
 }
 
 install_fmt_from_source( )
@@ -308,6 +332,7 @@ fi
 install_package=false
 build_package=false
 install_dependencies=false
+install_rocblas=false
 static_lib=false
 build_library=true
 build_clients=false
@@ -335,7 +360,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,rocblas,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdbgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -362,6 +387,10 @@ while true; do
         build_package=true
         shift ;;
     -d|--dependencies)
+        install_dependencies=true
+        shift ;;
+    -b|--rocblas)
+        install_rocblas=true
         install_dependencies=true
         shift ;;
     -c|--clients)
@@ -486,6 +515,12 @@ if [[ "${install_dependencies}" == true ]]; then
   pushd .
   mkdir -p "${build_dir}/deps"
   cd "${build_dir}/deps"
+
+  if [[ "${install_rocblas}" == true ]]; then
+    printf "\033[32mBuilding \033[33mrocblas\033[32m and installing into \033[33m/opt/rocm\033[0m\n"
+    install_rocblas_from_source
+  fi
+
   printf "\033[32mBuilding \033[33mfmt\033[32m and installing into \033[33m/usr/local\033[0m\n"
   install_fmt_from_source
 
