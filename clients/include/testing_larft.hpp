@@ -29,10 +29,10 @@ void larft_checkBadArgs(const rocblas_handle handle,
 
     // values
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_larft(handle, rocblas_direct(-1), storev, n, k, dV, ldv, dt, dT, ldt),
+        rocsolver_larft(handle, rocblas_direct(0), storev, n, k, dV, ldv, dt, dT, ldt),
         rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_larft(handle, direct, rocblas_storev(-1), n, k, dV, ldv, dt, dT, ldt),
+        rocsolver_larft(handle, direct, rocblas_storev(0), n, k, dV, ldv, dt, dT, ldt),
         rocblas_status_invalid_value);
 
     // pointers
