@@ -47,7 +47,7 @@ void sygvx_hegvx_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvx_hegvx(STRIDED, handle, rocblas_eform(-1), evect, erange,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvx_hegvx(STRIDED, handle, rocblas_eform(0), evect, erange,
                                                 uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
                                                 abstol, dNev, dW, stW, dZ, ldz, stZ, dIfail, stF,
                                                 dInfo, bc),
@@ -57,7 +57,7 @@ void sygvx_hegvx_checkBadArgs(const rocblas_handle handle,
                                                 il, iu, abstol, dNev, dW, stW, dZ, ldz, stZ, dIfail,
                                                 stF, dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvx_hegvx(STRIDED, handle, itype, evect, rocblas_erange(-1),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvx_hegvx(STRIDED, handle, itype, evect, rocblas_erange(0),
                                                 uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
                                                 abstol, dNev, dW, stW, dZ, ldz, stZ, dIfail, stF,
                                                 dInfo, bc),

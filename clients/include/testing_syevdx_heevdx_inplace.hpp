@@ -38,11 +38,11 @@ void syevdx_heevdx_inplace_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, rocblas_evect(-1),
-                                                          erange, uplo, n, dA, lda, stA, vl, vu, il,
-                                                          iu, abstol, hNev, dW, stW, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, rocblas_evect(0), erange,
+                                                          uplo, n, dA, lda, stA, vl, vu, il, iu,
+                                                          abstol, hNev, dW, stW, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, rocblas_erange(-1),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevdx_heevdx_inplace(STRIDED, handle, evect, rocblas_erange(0),
                                                           uplo, n, dA, lda, stA, vl, vu, il, iu,
                                                           abstol, hNev, dW, stW, dinfo, bc),
                           rocblas_status_invalid_value);

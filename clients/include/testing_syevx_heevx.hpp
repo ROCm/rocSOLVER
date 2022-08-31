@@ -43,11 +43,11 @@ void syevx_heevx_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx(STRIDED, handle, rocblas_evect(-1), erange, uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx(STRIDED, handle, rocblas_evect(0), erange, uplo, n,
                                                 dA, lda, stA, vl, vu, il, iu, abstol, dNev, dW, stW,
                                                 dZ, ldz, stZ, dIfail, stF, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx(STRIDED, handle, evect, rocblas_erange(-1), uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevx_heevx(STRIDED, handle, evect, rocblas_erange(0), uplo, n,
                                                 dA, lda, stA, vl, vu, il, iu, abstol, dNev, dW, stW,
                                                 dZ, ldz, stZ, dIfail, stF, dinfo, bc),
                           rocblas_status_invalid_value);

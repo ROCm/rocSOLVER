@@ -36,10 +36,10 @@ void stebz_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, rocblas_erange(-1), eorder, n, vl, vu, il, iu,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, rocblas_erange(0), eorder, n, vl, vu, il, iu,
                                           abstol, dD, dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, rocblas_eorder(-1), n, vl, vu, il, iu,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, rocblas_eorder(0), n, vl, vu, il, iu,
                                           abstol, dD, dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_value);
 

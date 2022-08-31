@@ -32,7 +32,7 @@ void syev_heev_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, rocblas_evect(-1), uplo, n, dA, lda,
+    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, rocblas_evect(0), uplo, n, dA, lda,
                                               stA, dD, stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, rocblas_fill_full, n, dA, lda,

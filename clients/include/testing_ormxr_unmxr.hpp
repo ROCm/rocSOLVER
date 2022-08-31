@@ -30,10 +30,10 @@ void ormxr_unmxr_checkBadArgs(const rocblas_handle handle,
         rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, rocblas_side(-1), trans, m, n, k, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, rocblas_side(0), trans, m, n, k, dA,
                                                 lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, side, rocblas_operation(-1), m, n, k,
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, side, rocblas_operation(0), m, n, k,
                                                 dA, lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
     if(COMPLEX)

@@ -39,11 +39,11 @@ void sygvj_hegvj_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, rocblas_eform(-1), evect, uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, rocblas_eform(0), evect, uplo, n,
                                                 dA, lda, stA, dB, ldb, stB, abstol, dResidual,
                                                 max_sweeps, dSweeps, dW, stW, dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, itype, rocblas_evect(-1), uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, itype, rocblas_evect(0), uplo, n,
                                                 dA, lda, stA, dB, ldb, stB, abstol, dResidual,
                                                 max_sweeps, dSweeps, dW, stW, dInfo, bc),
                           rocblas_status_invalid_value);

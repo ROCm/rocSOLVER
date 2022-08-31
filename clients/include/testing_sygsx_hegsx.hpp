@@ -30,7 +30,7 @@ void sygsx_hegsx_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, rocblas_eform(-1), uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, rocblas_eform(0), uplo, n,
                                                 dA, lda, stA, dB, ldb, stB, bc),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, rocblas_fill_full, n,
