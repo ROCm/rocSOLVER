@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -33,16 +34,16 @@ void larfb_checkBadArgs(const rocblas_handle handle,
         rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, rocblas_side(-1), trans, direct, storev, m, n, k,
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, rocblas_side(0), trans, direct, storev, m, n, k,
                                           dV, ldv, dT, ldt, dA, lda),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, side, rocblas_operation(-1), direct, storev, m, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, side, rocblas_operation(0), direct, storev, m, n,
                                           k, dV, ldv, dT, ldt, dA, lda),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, side, trans, rocblas_direct(-1), storev, m, n, k,
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, side, trans, rocblas_direct(0), storev, m, n, k,
                                           dV, ldv, dT, ldt, dA, lda),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, side, trans, direct, rocblas_storev(-1), m, n, k,
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfb(handle, side, trans, direct, rocblas_storev(0), m, n, k,
                                           dV, ldv, dT, ldt, dA, lda),
                           rocblas_status_invalid_value);
 
@@ -514,3 +515,7 @@ void testing_larfb(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_LARFB(...) extern template void testing_larfb<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_LARFB, FOREACH_SCALAR_TYPE, APPLY_STAMP)

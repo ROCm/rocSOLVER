@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -32,7 +33,7 @@ void syev_heev_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, rocblas_evect(-1), uplo, n, dA, lda,
+    EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, rocblas_evect(0), uplo, n, dA, lda,
                                               stA, dD, stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_syev_heev(STRIDED, handle, evect, rocblas_fill_full, n, dA, lda,
@@ -593,3 +594,8 @@ void testing_syev_heev(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_SYEV_HEEV(...) \
+    extern template void testing_syev_heev<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYEV_HEEV, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

@@ -201,6 +201,7 @@ constexpr auto rocblas2string_datatype(rocblas_datatype type)
     case rocblas_datatype_u32_c: return "u32_c";
     case rocblas_datatype_bf16_r: return "bf16_r";
     case rocblas_datatype_bf16_c: return "bf16_c";
+    case rocblas_datatype_invalid: return "invalid";
     }
     return "invalid";
 }
@@ -230,7 +231,7 @@ constexpr rocblas_operation char2rocblas_operation(char value)
     case 't': return rocblas_operation_transpose;
     case 'C':
     case 'c': return rocblas_operation_conjugate_transpose;
-    default: return static_cast<rocblas_operation>(-1);
+    default: return static_cast<rocblas_operation>(0);
     }
 }
 
@@ -242,7 +243,7 @@ constexpr rocblas_fill char2rocblas_fill(char value)
     case 'u': return rocblas_fill_upper;
     case 'L':
     case 'l': return rocblas_fill_lower;
-    default: return static_cast<rocblas_fill>(-1);
+    default: return static_cast<rocblas_fill>(0);
     }
 }
 
@@ -254,7 +255,7 @@ constexpr rocblas_diagonal char2rocblas_diagonal(char value)
     case 'u': return rocblas_diagonal_unit;
     case 'N':
     case 'n': return rocblas_diagonal_non_unit;
-    default: return static_cast<rocblas_diagonal>(-1);
+    default: return static_cast<rocblas_diagonal>(0);
     }
 }
 
@@ -266,7 +267,7 @@ constexpr rocblas_side char2rocblas_side(char value)
     case 'l': return rocblas_side_left;
     case 'R':
     case 'r': return rocblas_side_right;
-    default: return static_cast<rocblas_side>(-1);
+    default: return static_cast<rocblas_side>(0);
     }
 }
 
@@ -276,7 +277,7 @@ constexpr rocblas_direct char2rocblas_direct(char value)
     {
     case 'F': return rocblas_forward_direction;
     case 'B': return rocblas_backward_direction;
-    default: return static_cast<rocblas_direct>(-1);
+    default: return static_cast<rocblas_direct>(0);
     }
 }
 
@@ -286,7 +287,7 @@ constexpr rocblas_storev char2rocblas_storev(char value)
     {
     case 'C': return rocblas_column_wise;
     case 'R': return rocblas_row_wise;
-    default: return static_cast<rocblas_storev>(-1);
+    default: return static_cast<rocblas_storev>(0);
     }
 }
 
@@ -296,7 +297,7 @@ constexpr rocblas_workmode char2rocblas_workmode(char value)
     {
     case 'O': return rocblas_outofplace;
     case 'I': return rocblas_inplace;
-    default: return static_cast<rocblas_workmode>(-1);
+    default: return static_cast<rocblas_workmode>(0);
     }
 }
 
@@ -309,7 +310,7 @@ constexpr rocblas_svect char2rocblas_svect(char value)
     case 'V': return rocblas_svect_singular;
     case 'O': return rocblas_svect_overwrite;
     case 'N': return rocblas_svect_none;
-    default: return static_cast<rocblas_svect>(-1);
+    default: return static_cast<rocblas_svect>(0);
     }
 }
 
@@ -331,7 +332,7 @@ constexpr rocblas_evect char2rocblas_evect(char value)
     case 'V': return rocblas_evect_original;
     case 'I': return rocblas_evect_tridiagonal;
     case 'N': return rocblas_evect_none;
-    default: return static_cast<rocblas_evect>(-1);
+    default: return static_cast<rocblas_evect>(0);
     }
 }
 
@@ -342,7 +343,7 @@ constexpr rocblas_eform char2rocblas_eform(char value)
     case '1': return rocblas_eform_ax;
     case '2': return rocblas_eform_abx;
     case '3': return rocblas_eform_bax;
-    default: return static_cast<rocblas_eform>(-1);
+    default: return static_cast<rocblas_eform>(0);
     }
 }
 
@@ -353,7 +354,7 @@ constexpr rocblas_erange char2rocblas_erange(char value)
     case 'A': return rocblas_erange_all;
     case 'V': return rocblas_erange_value;
     case 'I': return rocblas_erange_index;
-    default: return static_cast<rocblas_erange>(-1);
+    default: return static_cast<rocblas_erange>(0);
     }
 }
 
@@ -363,7 +364,7 @@ constexpr rocblas_eorder char2rocblas_eorder(char value)
     {
     case 'B': return rocblas_eorder_blocks;
     case 'E': return rocblas_eorder_entire;
-    default: return static_cast<rocblas_eorder>(-1);
+    default: return static_cast<rocblas_eorder>(0);
     }
 }
 
@@ -373,7 +374,7 @@ constexpr rocblas_esort char2rocblas_esort(char value)
     {
     case 'N': return rocblas_esort_none;
     case 'A': return rocblas_esort_ascending;
-    default: return static_cast<rocblas_esort>(-1);
+    default: return static_cast<rocblas_esort>(0);
     }
 }
 
@@ -384,7 +385,7 @@ inline rocblas_initialization string2rocblas_initialization(const std::string& v
         value == "rand_int"   ? rocblas_initialization_random_int :
         value == "trig_float" ? rocblas_initialization_trig_float :
         value == "hpl"        ? rocblas_initialization_hpl        :
-        static_cast<rocblas_initialization>(-1);
+        static_cast<rocblas_initialization>(0);
 }
 
 inline rocblas_datatype string2rocblas_datatype(const std::string& value)
@@ -406,6 +407,6 @@ inline rocblas_datatype string2rocblas_datatype(const std::string& value)
         value == "u32_r"                 ? rocblas_datatype_u32_r :
         value == "u8_c"                  ? rocblas_datatype_u8_c  :
         value == "u32_c"                 ? rocblas_datatype_u32_c :
-        static_cast<rocblas_datatype>(-1);
+        rocblas_datatype_invalid;
 }
 // clang-format on
