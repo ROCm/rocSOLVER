@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -305,3 +306,7 @@ void testing_sterf(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_STERF(...) extern template void testing_sterf<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_STERF, FOREACH_REAL_TYPE, APPLY_STAMP)

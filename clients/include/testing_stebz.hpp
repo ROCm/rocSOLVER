@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -505,3 +506,7 @@ void testing_stebz(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_STEBZ(...) extern template void testing_stebz<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_STEBZ, FOREACH_REAL_TYPE, APPLY_STAMP)

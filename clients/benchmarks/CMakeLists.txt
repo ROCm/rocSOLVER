@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 add_executable(rocsolver-bench client.cpp)
