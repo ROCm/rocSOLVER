@@ -559,7 +559,4 @@ void testing_getri_outofplace(Arguments& argus)
 #define EXTERN_TESTING_GETRI_OUTOFPLACE(...) \
     extern template void testing_getri_outofplace<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_GETRI_OUTOFPLACE,
-            FOREACH_MATRIX_DATA_LAYOUT,
-            FOREACH_SCALAR_TYPE,
-            APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_GETRI_OUTOFPLACE, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

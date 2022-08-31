@@ -781,7 +781,4 @@ void testing_syevx_heevx(Arguments& argus)
 #define EXTERN_TESTING_SYEVX_HEEVX(...) \
     extern template void testing_syevx_heevx<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_SYEVX_HEEVX,
-            FOREACH_MATRIX_DATA_LAYOUT,
-            FOREACH_SCALAR_TYPE,
-            APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_SYEVX_HEEVX, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)
