@@ -623,7 +623,6 @@ void testing_syevd_heevd(Arguments& argus)
     extern template void testing_syevd_heevd<__VA_ARGS__>(Arguments&);
 
 INSTANTIATE(EXTERN_TESTING_SYEVD_HEEVD,
-            FOREACH_BOOLEAN_0,
-            FOREACH_BOOLEAN_1,
+            FOREACH_MATRIX_DATA_LAYOUT,
             FOREACH_SCALAR_TYPE,
             APPLY_STAMP)

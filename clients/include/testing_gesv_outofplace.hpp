@@ -590,5 +590,3 @@ void testing_gesv_outofplace(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
-
-//forward declared explicit instantiations
