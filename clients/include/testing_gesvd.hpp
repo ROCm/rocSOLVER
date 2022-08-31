@@ -41,11 +41,11 @@ void gesvd_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, rocblas_svect(-1), right_svect, m, n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, rocblas_svect(0), right_svect, m, n, dA,
                                           lda, stA, dS, stS, dU, ldu, stU, dV, ldv, stV, dE, stE,
                                           fa, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, left_svect, rocblas_svect(-1), m, n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, left_svect, rocblas_svect(0), m, n, dA,
                                           lda, stA, dS, stS, dU, ldu, stU, dV, ldv, stV, dE, stE,
                                           fa, dinfo, bc),
                           rocblas_status_invalid_value);
