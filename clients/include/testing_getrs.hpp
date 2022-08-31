@@ -33,7 +33,7 @@ void getrs_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, rocblas_operation(-1), n, nrhs, dA, lda,
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, rocblas_operation(0), n, nrhs, dA, lda,
                                           stA, dIpiv, stP, dB, ldb, stB, bc),
                           rocblas_status_invalid_value);
 

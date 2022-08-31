@@ -27,7 +27,7 @@ void stedc_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, rocblas_evect(-1), n, dD, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, rocblas_evect(0), n, dD, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_value);
 
     // pointers

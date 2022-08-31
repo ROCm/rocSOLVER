@@ -32,7 +32,7 @@ void trtri_checkBadArgs(const rocblas_handle handle,
         rocsolver_trtri(STRIDED, handle, rocblas_fill_full, diag, n, dA, lda, stA, dInfo, bc),
         rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_trtri(STRIDED, handle, uplo, rocblas_diagonal(-1), n, dA, lda, stA, dInfo, bc),
+        rocsolver_trtri(STRIDED, handle, uplo, rocblas_diagonal(0), n, dA, lda, stA, dInfo, bc),
         rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)

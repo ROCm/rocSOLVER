@@ -27,7 +27,7 @@ void orgbr_ungbr_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_orgbr_ungbr(handle, rocblas_storev(-1), m, n, k, dA, lda, dIpiv),
+    EXPECT_ROCBLAS_STATUS(rocsolver_orgbr_ungbr(handle, rocblas_storev(0), m, n, k, dA, lda, dIpiv),
                           rocblas_status_invalid_value);
 
     // pointers
