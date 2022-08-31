@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -648,3 +649,12 @@ void testing_gebd2_gebrd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_GEBD2_GEBRD(...) \
+    extern template void testing_gebd2_gebrd<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_GEBD2_GEBRD,
+            FOREACH_MATRIX_DATA_LAYOUT,
+            FOREACH_BLOCKED_VARIANT,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)
