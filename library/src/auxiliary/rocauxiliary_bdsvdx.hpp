@@ -265,7 +265,7 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    // info = 0
+    // set info = 0
     rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     ROCSOLVER_LAUNCH_KERNEL(reset_info, dim3(blocksReset, 1, 1), dim3(BS1, 1, 1), 0, stream, info,
                             batch_count, 0);
