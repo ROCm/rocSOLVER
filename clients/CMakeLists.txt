@@ -53,6 +53,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_latrd.cpp
     common/testing_labrd.cpp
     common/testing_bdsqr.cpp
+    common/testing_bdsvdx.cpp
     common/testing_steqr.cpp
     common/testing_stedc.cpp
     common/testing_stein.cpp
