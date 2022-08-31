@@ -190,8 +190,22 @@ void bdsvdx_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    cblas_bdsvdx<T>(uplo, svect, srange, n, hD[0], hE[0], vl, vu, il, iu, hNsv[0], hS[0], hZ[0],
-                    ldz, work.data(), iwork.data(), hInfo[0]);
+    // WORKAROUND: For some test cases, LAPACK's bdsvdx is returning incorrect singular values
+    // when srange is rocblas_srange_index. In this case, we use rocblas_srange_all to get
+    // all the singular values and offset and use il as an offset into the result array.
+    rocblas_int ioffset = 0;
+    if(srange == rocblas_srange_index)
+    {
+        cblas_bdsvdx<T>(uplo, rocblas_svect_none, rocblas_srange_all, n, hD[0], hE[0], vl, vu, il,
+                        iu, hNsv[0], hS[0], hZ[0], ldz, work.data(), iwork.data(), hInfo[0]);
+        ioffset = il - 1;
+        hNsv[0][0] = iu - il + 1;
+    }
+    else
+    {
+        cblas_bdsvdx<T>(uplo, rocblas_svect_none, srange, n, hD[0], hE[0], vl, vu, il, iu, hNsv[0],
+                        hS[0], hZ[0], ldz, work.data(), iwork.data(), hInfo[0]);
+    }
 
     // check info
     if(hInfo[0][0] != hInfoRes[0][0])
@@ -208,7 +222,7 @@ void bdsvdx_getError(const rocblas_handle handle,
 
         // error is ||hS - hSRes|| / ||hS||
         // using frobenius norm
-        double err = norm_error('F', 1, nn, 1, hS[0], hSRes[0]);
+        double err = norm_error('F', 1, nn, 1, hS[0] + ioffset, hSRes[0]);
         *max_err = err > *max_err ? err : *max_err;
 
         // Check the singular vectors if required
