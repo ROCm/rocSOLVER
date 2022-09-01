@@ -22,6 +22,12 @@
   BATCH).)
 ***************************************************************************/
 
+#ifdef LAPACK_FUNCTIONS
+/** direct call sterf from LAPACK **/
+template <typename T>
+void lapack_sterf(rocblas_int n, T* D, T* E, int &info);
+#endif
+
 /** STERF_SQ_E squares the elements of E **/
 template <typename T>
 __device__ void sterf_sq_e(const rocblas_int start, const rocblas_int end, T* E)
@@ -684,13 +690,13 @@ ROCSOLVER_KERNEL void sterf_parallelize(T* D,
 {
     rocblas_int m = 0;
     rocblas_int count = 0, l = -1, lend = -1;
-    rocblas_int l0, lend0;
+    rocblas_int l_orig, lend_orig;
     T p, anorm;
 
     const rocblas_int tid = hipThreadIdx_x;
 
-    l0 = l = split_ranges[2 * tid];
-    lend0 = lend = split_ranges[2 * tid + 1];
+    l_orig = l = split_ranges[2 * tid];
+    lend_orig = lend = split_ranges[2 * tid + 1];
 
     if(l == -1 || lend == -1)
         return;
@@ -709,7 +715,7 @@ ROCSOLVER_KERNEL void sterf_parallelize(T* D,
     if(abs(D[lend]) < abs(D[l]))
     {
         lend = l;
-        l = lend0;
+        l = lend_orig;
     }
 
     rocblas_int iters = 0;
@@ -875,11 +881,11 @@ ROCSOLVER_KERNEL void sterf_parallelize(T* D,
     }
 
     if(anorm > ssfmax)
-        scale_tridiag(l, lend, D, E, ssfmax / anorm);
+        scale_tridiag(l_orig, lend_orig, D, E, ssfmax / anorm);
     if(anorm < ssfmin)
-        scale_tridiag(l, lend, D, E, ssfmin / anorm);
+        scale_tridiag(l_orig, lend_orig, D, E, ssfmin / anorm);
 
-    for(int i = l; i <= lend; i++)
+    for(int i = l_orig; i <= lend_orig; i++)
         if(E[i] != 0)
             info[0]++;
 }
@@ -1010,7 +1016,7 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
         T* h_E = new T[n];
         rocblas_int h_info = 0;
 
-        hipDeviceSynchronize();
+        hipStreamSynchronize(stream);
 
         T* shD = D + i * strideD + shiftD;
         T* shE = E + i * strideE + shiftE;
@@ -1019,7 +1025,11 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
         hipMemcpy(h_D, shD, sizeof(T) * n, hipMemcpyDeviceToHost);
         hipMemcpy(h_E, shE, sizeof(T) * n, hipMemcpyDeviceToHost);
 
+#ifdef LAPACK_FUNCTIONS
+        lapack_sterf(n, h_D, h_E, h_info);
+#else
         sterf_cpu<T>(n, h_D, h_E, h_info, 30 * n, eps, ssfmin, ssfmax);
+#endif
 
         hipMemcpy(shD, h_D, sizeof(T) * n, hipMemcpyHostToDevice);
         hipMemcpy(shE, h_E, sizeof(T) * n, hipMemcpyHostToDevice);

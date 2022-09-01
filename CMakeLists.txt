@@ -34,6 +34,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(ROCSOLVER_EMBED_FMT "Hide libfmt symbols" OFF)
 option(OPTIMAL "Build specialized kernels for small matrix sizes" ON)
 option(HYBRID_CPU "Build hybrid schema with CPU using" ON)
+option(LAPACK_FUNCTIONS "Build hybrid with lapack routine functions" ON)
 option(EXPERIMENTAL "Experimental parallelization"  OFF)
 option(ROCSOLVER_FIND_PACKAGE_LAPACK_CONFIG "Skip module mode search for LAPACK" ON)
 
