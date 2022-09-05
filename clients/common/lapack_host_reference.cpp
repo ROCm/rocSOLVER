@@ -1711,6 +1711,93 @@ void zgesvd_(char* jobu,
              double* E,
              int* info);
 
+void sgesvdx_(char* jobu,
+             char* jobv,
+             char* srange,
+             int* m,
+             int* n,
+             float* A,
+             int* lda,
+             float* vl,
+             float* vu,
+             int* il,
+             int* iu,
+             int* nsv,
+             float* S,
+             float* U,
+             int* ldu,
+             float* V,
+             int* ldv,
+             float* work,
+             int* lwork,
+             int* iwork,
+             int* info);
+void dgesvdx_(char* jobu,
+             char* jobv,
+             char* srange,
+             int* m,
+             int* n,
+             double* A,
+             int* lda,
+             double* vl,
+             double* vu,
+             int* il,
+             int* iu,
+             int* nsv,
+             double* S,
+             double* U,
+             int* ldu,
+             double* V,
+             int* ldv,
+             double* work,
+             int* lwork,
+             int* iwork,
+             int* info);
+void cgesvdx_(char* jobu,
+             char* jobv,
+             char* srange,
+             int* m,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             float* vl,
+             float* vu,
+             int* il,
+             int* iu,
+             int* nsv,
+             float* S,
+             rocblas_float_complex* U,
+             int* ldu,
+             rocblas_float_complex* V,
+             int* ldv,
+             rocblas_float_complex* work,
+             int* lwork,
+             float* rwork,
+             int* iwork,
+             int* info);
+void zgesvdx_(char* jobu,
+             char* jobv,
+             char* srange,
+             int* m,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             double* vl,
+             double* vu,
+             int* il,
+             int* iu,
+             int* nsv,
+             double* S,
+             rocblas_double_complex* U,
+             int* ldu,
+             rocblas_double_complex* V,
+             int* ldv,
+             rocblas_double_complex* work,
+             int* lwork,
+             double* rwork,
+             int* iwork,
+             int* info);
+
 void ssterf_(int* n, float* D, float* E, int* info);
 void dsterf_(int* n, double* D, double* E, int* info);
 
@@ -2893,6 +2980,129 @@ void cblas_gesvd(rocblas_svect leftv,
     char jobv = rocblas2char_svect(rightv);
     zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info);
 }
+
+
+// gesvdx
+template <>
+void cblas_gesvdx(rocblas_svect leftv,
+                 rocblas_svect rightv,
+                 rocblas_srange srange,
+                 rocblas_int m,
+                 rocblas_int n,
+                 float* A,
+                 rocblas_int lda,
+                 float vl,
+                 float vu,
+                 rocblas_int il,
+                 rocblas_int iu,
+                 rocblas_int* nsv,
+                 float* S,
+                 float* U,
+                 rocblas_int ldu,
+                 float* V,
+                 rocblas_int ldv,
+                 float* work,
+                 rocblas_int lwork,
+                 float* rwork,
+                 rocblas_int* iwork,
+                 rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    char srangeC = rocblas2char_srange(srange);
+    sgesvdx_(&jobu, &jobv, &srangeC, &m, &n, A, &lda, &vl, &vu, &il, &iu, nsv, S, U, &ldu, V, &ldv, work, &lwork, iwork, info);
+}
+
+template <>
+void cblas_gesvdx(rocblas_svect leftv,
+                 rocblas_svect rightv,
+                 rocblas_srange srange,
+                 rocblas_int m,
+                 rocblas_int n,
+                 double* A,
+                 rocblas_int lda,
+                 double vl,
+                 double vu,
+                 rocblas_int il,
+                 rocblas_int iu,
+                 rocblas_int* nsv,
+                 double* S,
+                 double* U,
+                 rocblas_int ldu,
+                 double* V,
+                 rocblas_int ldv,
+                 double* work,
+                 rocblas_int lwork,
+                 double* rwork,
+                 rocblas_int* iwork,
+                 rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    char srangeC = rocblas2char_srange(srange);
+    dgesvdx_(&jobu, &jobv, &srangeC, &m, &n, A, &lda, &vl, &vu, &il, &iu, nsv, S, U, &ldu, V, &ldv, work, &lwork, iwork, info);
+}
+
+template <>
+void cblas_gesvdx(rocblas_svect leftv,
+                 rocblas_svect rightv,
+                 rocblas_srange srange,
+                 rocblas_int m,
+                 rocblas_int n,
+                 rocblas_float_complex* A,
+                 rocblas_int lda,
+                 float vl,
+                 float vu,
+                 rocblas_int il,
+                 rocblas_int iu,
+                 rocblas_int* nsv,
+                 float* S,
+                 rocblas_float_complex* U,
+                 rocblas_int ldu,
+                 rocblas_float_complex* V,
+                 rocblas_int ldv,
+                 rocblas_float_complex* work,
+                 rocblas_int lwork,
+                 float* rwork,
+                 rocblas_int* iwork,
+                 rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    char srangeC = rocblas2char_srange(srange);
+    cgesvdx_(&jobu, &jobv, &srangeC, &m, &n, A, &lda, &vl, &vu, &il, &iu, nsv, S, U, &ldu, V, &ldv, work, &lwork, rwork, iwork, info);
+}
+
+template <>
+void cblas_gesvdx(rocblas_svect leftv,
+                 rocblas_svect rightv,
+                 rocblas_srange srange,
+                 rocblas_int m,
+                 rocblas_int n,
+                 rocblas_double_complex* A,
+                 rocblas_int lda,
+                 double vl,
+                 double vu,
+                 rocblas_int il,
+                 rocblas_int iu,
+                 rocblas_int* nsv,
+                 double* S,
+                 rocblas_double_complex* U,
+                 rocblas_int ldu,
+                 rocblas_double_complex* V,
+                 rocblas_int ldv,
+                 rocblas_double_complex* work,
+                 rocblas_int lwork,
+                 double* rwork,
+                 rocblas_int* iwork,
+                 rocblas_int* info)
+{
+    char jobu = rocblas2char_svect(leftv);
+    char jobv = rocblas2char_svect(rightv);
+    char srangeC = rocblas2char_srange(srange);
+    zgesvdx_(&jobu, &jobv, &srangeC, &m, &n, A, &lda, &vl, &vu, &il, &iu, nsv, S, U, &ldu, V, &ldv, work, &lwork, rwork, iwork, info);
+}
+
 
 // latrd
 template <>
@@ -4496,6 +4706,24 @@ void cblas_gemv<rocblas_double_complex>(rocblas_operation transA,
 
 // gemm
 template <>
+void cblas_gemv<rocblas_double_complex>(rocblas_operation transA,
+                                        rocblas_int m,
+                                        rocblas_int n,
+                                        rocblas_double_complex alpha,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_double_complex* x,
+                                        rocblas_int incx,
+                                        rocblas_double_complex beta,
+                                        rocblas_double_complex* y,
+                                        rocblas_int incy)
+{
+    char transAC = rocblas2char_operation(transA);
+    zgemv_(&transAC, &m, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy);
+}
+
+// gemm
+template <>
 void cblas_gemm<float>(rocblas_operation transA,
                        rocblas_operation transB,
                        rocblas_int m,
@@ -4515,6 +4743,27 @@ void cblas_gemm<float>(rocblas_operation transA,
     sgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
 }
 
+=======
+void cblas_gemm<float>(rocblas_operation transA,
+                       rocblas_operation transB,
+                       rocblas_int m,
+                       rocblas_int n,
+                       rocblas_int k,
+                       float alpha,
+                       float* A,
+                       rocblas_int lda,
+                       float* B,
+                       rocblas_int ldb,
+                       float beta,
+                       float* C,
+                       rocblas_int ldc)
+{
+    char transAC = rocblas2char_operation(transA);
+    char transBC = rocblas2char_operation(transB);
+    sgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+}
+
+>>>>>>> add empty function and unit test
 template <>
 void cblas_gemm<double>(rocblas_operation transA,
                         rocblas_operation transB,
