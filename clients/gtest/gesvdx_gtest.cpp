@@ -70,15 +70,14 @@ const vector<vector<int>> opt_range = {
     {0, 0, 1, 0, 10, 0, 0},
     {0, 1, 1, 5, 15, 0, 0},
     {1, 0, 1, 0, 20, 0, 0},
-    {1, 1, 1, 10, 15, 0, 0}};
+    {1, 1, 1, 12, 18, 0, 0}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range
     = {{100, 100, 0, 0, 0}, {300, 120, 0, 1, 0}, {120, 300, 0, 0, 1}};
 
 const vector<vector<int>> large_opt_range
-    = {{0, 0, 1, 3, 13, 0, 0}, {1, 0, 1, 0, 10, 0, 0}, {0, 1, 2, 0, 0, 1, 10}, {1, 1, 0, 0, 0, 0, 0}};
-
+    = {{0, 0, 1, 3, 13, 0, 0}, {1, 0, 1, 13, 20, 0, 0}, {0, 1, 2, 0, 0, 3, 10}, {1, 1, 0, 0, 0, 0, 0}};
 
 Arguments gesvdx_setup_arguments(gesvdx_tuple tup)
 {
@@ -101,12 +100,12 @@ Arguments gesvdx_setup_arguments(gesvdx_tuple tup)
     // vector options
     if(opt[0] == 0)
         arg.set<char>("left_svect", 'N');
-    else 
+    else
         arg.set<char>("left_svect", 'S');
 
     if(opt[1] == 0)
         arg.set<char>("right_svect", 'N');
-    else 
+    else
         arg.set<char>("right_svect", 'S');
 
     // only testing standard use case/defaults for strides
@@ -136,7 +135,8 @@ protected:
         Arguments arg = gesvdx_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0
-           && arg.peek<char>("left_svect") == 'N' && arg.peek<char>("right_svect") == 'N' && arg.peek<char>("srange") == 'A')
+           && arg.peek<char>("left_svect") == 'N' && arg.peek<char>("right_svect") == 'N'
+           && arg.peek<char>("srange") == 'A')
             testing_gesvdx_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
