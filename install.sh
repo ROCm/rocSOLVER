@@ -157,7 +157,7 @@ install_zypper_packages( )
 
 install_rocblas_from_source( )
 {
-  rocblas_version=a70ac3d458f92ba90634c606b721fb8ca9e47a52
+  rocblas_version=2e659b6ce7b87ee30767ebbe34c6161b2922901c
   rocblas_srcdir=rocblas-src
   rocblas_blddir=rocblas-bld
   wget -nv -O rocblas-$rocblas_version.tar.gz \
