@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -8,6 +8,7 @@
 #include <cstdio>
 
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <rocblas/rocblas.h>
 
 #include "rocblas_init.hpp"

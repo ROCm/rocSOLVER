@@ -6,6 +6,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 ### Optimized
 ### Changed
+- Changed `ROCSOLVER_EMBED_FMT` default to `ON` for users building directly with CMake.
+  This matches the existing default when building with install.sh or rmake.py.
 ### Deprecated
 ### Removed
 ### Fixed

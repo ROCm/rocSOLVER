@@ -104,7 +104,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   )
   set(common_source_files
     common/lapack_host_reference.cpp
-    rocblascommon/utility.cpp
+    rocblascommon/clients_utility.cpp
     ${explicit_inst_files}
   )
 

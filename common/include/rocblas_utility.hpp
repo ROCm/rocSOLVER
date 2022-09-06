@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "definitions.hpp"
-#include "rocblas/rocblas.h"
-#include "rocsolver/rocsolver.h"
 #include <cmath>
 #include <complex>
 #include <exception>
-#include <hip/hip_runtime.h>
 #include <new>
 #include <type_traits>
+
+#include <hip/hip_runtime.h>
+#include <rocblas/rocblas.h>
+#include <rocsolver/rocsolver.h>
 
 #pragma STDC CX_LIMITED_RANGE ON
 

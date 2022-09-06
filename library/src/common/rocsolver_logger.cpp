@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-#include "rocblascommon/utility.hpp"
+#include "rocblas_utility.hpp"
 #include "rocsolver_logger.hpp"
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
