@@ -24,7 +24,6 @@ void bdsvdx_checkBadArgs(const rocblas_handle handle,
                          const T vu,
                          const rocblas_int il,
                          const rocblas_int iu,
-                         const T abstol,
                          rocblas_int* dNsv,
                          U dS,
                          U dZ,
@@ -34,47 +33,47 @@ void bdsvdx_checkBadArgs(const rocblas_handle handle,
 {
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(nullptr, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
-                                           abstol, dNsv, dS, dZ, ldz, dIfail, dInfo),
+                                           dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_handle);
 
     // values
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, rocblas_fill_full, svect, srange, n, dD, dE, vl,
-                                           vu, il, iu, abstol, dNsv, dS, dZ, ldz, dIfail, dInfo),
+                                           vu, il, iu, dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, rocblas_svect_all, srange, n, dD, dE, vl,
-                                           vu, il, iu, abstol, dNsv, dS, dZ, ldz, dIfail, dInfo),
+                                           vu, il, iu, dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, rocblas_srange(-1), n, dD, dE, vl,
-                                           vu, il, iu, abstol, dNsv, dS, dZ, ldz, dIfail, dInfo),
+                                           vu, il, iu, dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_value);
 
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, (U) nullptr, dE, vl, vu,
-                                           il, iu, abstol, dNsv, dS, dZ, ldz, dIfail, dInfo),
+                                           il, iu, dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, (U) nullptr, vl, vu,
-                                           il, iu, abstol, dNsv, dS, dZ, ldz, dIfail, dInfo),
+                                           il, iu, dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
-                                           abstol, (rocblas_int*)nullptr, dS, dZ, ldz, dIfail, dInfo),
+                                           (rocblas_int*)nullptr, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
-                                           abstol, dNsv, (U) nullptr, dZ, ldz, dIfail, dInfo),
+                                           dNsv, (U) nullptr, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
-                                           abstol, dNsv, dS, (U) nullptr, ldz, dIfail, dInfo),
+                                           dNsv, dS, (U) nullptr, ldz, dIfail, dInfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
-                                           abstol, dNsv, dS, dZ, ldz, (rocblas_int*)nullptr, dInfo),
+                                           dNsv, dS, dZ, ldz, (rocblas_int*)nullptr, dInfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
-                                           abstol, dNsv, dS, dZ, ldz, dIfail, (rocblas_int*)nullptr),
+                                           dNsv, dS, dZ, ldz, dIfail, (rocblas_int*)nullptr),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, 0, (U) nullptr, (U) nullptr,
-                                           vl, vu, il, iu, abstol, dNsv, (U) nullptr, (U) nullptr,
-                                           ldz, (rocblas_int*)nullptr, dInfo),
+                                           vl, vu, il, iu, dNsv, (U) nullptr, (U) nullptr, ldz,
+                                           (rocblas_int*)nullptr, dInfo),
                           rocblas_status_success);
 }
 
@@ -92,7 +91,6 @@ void testing_bdsvdx_bad_arg()
     T vu = 0;
     rocblas_int il = 0;
     rocblas_int iu = 0;
-    T abstol = 0;
 
     // memory allocations
     device_strided_batch_vector<T> dD(1, 1, 1, 1);
@@ -112,7 +110,7 @@ void testing_bdsvdx_bad_arg()
 
     // check bad arguments
     bdsvdx_checkBadArgs(handle, uplo, svect, srange, n, dD.data(), dE.data(), vl, vu, il, iu,
-                        abstol, dNsv.data(), dS.data(), dZ.data(), ldz, dIfail.data(), dInfo.data());
+                        dNsv.data(), dS.data(), dZ.data(), ldz, dIfail.data(), dInfo.data());
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
@@ -156,7 +154,6 @@ void bdsvdx_getError(const rocblas_handle handle,
                      const T vu,
                      const rocblas_int il,
                      const rocblas_int iu,
-                     const T abstol,
                      Ud& dNsv,
                      Td& dS,
                      Td& dZ,
@@ -185,7 +182,7 @@ void bdsvdx_getError(const rocblas_handle handle,
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD.data(), dE.data(), vl,
-                                         vu, il, iu, abstol, dNsv.data(), dS.data(), dZ.data(), ldz,
+                                         vu, il, iu, dNsv.data(), dS.data(), dZ.data(), ldz,
                                          dIfail.data(), dInfo.data()));
     CHECK_HIP_ERROR(hNsvRes.transfer_from(dNsv));
     CHECK_HIP_ERROR(hSRes.transfer_from(dS));
@@ -300,7 +297,6 @@ void bdsvdx_getPerfData(const rocblas_handle handle,
                         const T vu,
                         const rocblas_int il,
                         const rocblas_int iu,
-                        const T abstol,
                         Ud& dNsv,
                         Td& dS,
                         Td& dZ,
@@ -342,8 +338,8 @@ void bdsvdx_getPerfData(const rocblas_handle handle,
         bdsvdx_initData<false, true, T>(handle, n, dD, dE, hD, hE);
 
         CHECK_ROCBLAS_ERROR(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD.data(), dE.data(),
-                                             vl, vu, il, iu, abstol, dNsv.data(), dS.data(),
-                                             dZ.data(), ldz, dIfail.data(), dInfo.data()));
+                                             vl, vu, il, iu, dNsv.data(), dS.data(), dZ.data(), ldz,
+                                             dIfail.data(), dInfo.data()));
     }
 
     // gpu-lapack performance
@@ -367,7 +363,7 @@ void bdsvdx_getPerfData(const rocblas_handle handle,
 
         start = get_time_us_sync(stream);
         rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD.data(), dE.data(), vl, vu, il, iu,
-                         abstol, dNsv.data(), dS.data(), dZ.data(), ldz, dIfail.data(), dInfo.data());
+                         dNsv.data(), dS.data(), dZ.data(), ldz, dIfail.data(), dInfo.data());
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -386,7 +382,6 @@ void testing_bdsvdx(Arguments& argus)
     T vu = T(argus.get<double>("vu", srangeC == 'V' ? 1 : 0));
     rocblas_int il = argus.get<rocblas_int>("il", srangeC == 'I' ? 1 : 0);
     rocblas_int iu = argus.get<rocblas_int>("iu", srangeC == 'I' ? 1 : 0);
-    T abstol = T(argus.get<double>("abstol"));
     rocblas_int ldz = argus.get<rocblas_int>("ldz", 2 * n);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
@@ -399,9 +394,9 @@ void testing_bdsvdx(Arguments& argus)
        || (svect != rocblas_svect_none && svect != rocblas_svect_singular))
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, (T*)nullptr,
-                                               (T*)nullptr, vl, vu, il, iu, abstol,
-                                               (rocblas_int*)nullptr, (T*)nullptr, (T*)nullptr, ldz,
-                                               (rocblas_int*)nullptr, (rocblas_int*)nullptr),
+                                               (T*)nullptr, vl, vu, il, iu, (rocblas_int*)nullptr,
+                                               (T*)nullptr, (T*)nullptr, ldz, (rocblas_int*)nullptr,
+                                               (rocblas_int*)nullptr),
                               rocblas_status_invalid_value);
 
         if(argus.timing)
@@ -431,9 +426,9 @@ void testing_bdsvdx(Arguments& argus)
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, (T*)nullptr,
-                                               (T*)nullptr, vl, vu, il, iu, abstol,
-                                               (rocblas_int*)nullptr, (T*)nullptr, (T*)nullptr, ldz,
-                                               (rocblas_int*)nullptr, (rocblas_int*)nullptr),
+                                               (T*)nullptr, vl, vu, il, iu, (rocblas_int*)nullptr,
+                                               (T*)nullptr, (T*)nullptr, ldz, (rocblas_int*)nullptr,
+                                               (rocblas_int*)nullptr),
                               rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -447,8 +442,8 @@ void testing_bdsvdx(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_bdsvdx(handle, uplo, svect, srange, n, (T*)nullptr, (T*)nullptr,
-                                           vl, vu, il, iu, abstol, (rocblas_int*)nullptr,
-                                           (T*)nullptr, (T*)nullptr, ldz, (rocblas_int*)nullptr,
+                                           vl, vu, il, iu, (rocblas_int*)nullptr, (T*)nullptr,
+                                           (T*)nullptr, ldz, (rocblas_int*)nullptr,
                                            (rocblas_int*)nullptr));
 
         size_t size;
@@ -501,8 +496,8 @@ void testing_bdsvdx(Arguments& argus)
     if(n == 0)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD.data(), dE.data(),
-                                               vl, vu, il, iu, abstol, dNsv.data(), dS.data(),
-                                               dZ.data(), ldz, dIfail.data(), dInfo.data()),
+                                               vl, vu, il, iu, dNsv.data(), dS.data(), dZ.data(),
+                                               ldz, dIfail.data(), dInfo.data()),
                               rocblas_status_success);
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);
@@ -512,16 +507,16 @@ void testing_bdsvdx(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        bdsvdx_getError<T>(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu, abstol, dNsv, dS,
-                           dZ, ldz, dIfail, dInfo, hD, hE, hNsv, hNsvRes, hS, hSRes, hZ, hZRes,
+        bdsvdx_getError<T>(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu, dNsv, dS, dZ,
+                           ldz, dIfail, dInfo, hD, hE, hNsv, hNsvRes, hS, hSRes, hZ, hZRes,
                            hIfailRes, hInfo, hInfoRes, &max_error);
 
     // collect performance data
     if(argus.timing)
-        bdsvdx_getPerfData<T>(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu, abstol, dNsv,
-                              dS, dZ, ldz, dIfail, dInfo, hD, hE, hNsv, hS, hZ, hInfo,
-                              &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
-                              argus.profile_kernels, argus.perf);
+        bdsvdx_getPerfData<T>(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu, dNsv, dS, dZ,
+                              ldz, dIfail, dInfo, hD, hE, hNsv, hS, hZ, hInfo, &gpu_time_used,
+                              &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels,
+                              argus.perf);
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
@@ -534,9 +529,8 @@ void testing_bdsvdx(Arguments& argus)
         if(!argus.perf)
         {
             rocsolver_bench_header("Arguments:");
-            rocsolver_bench_output("uplo", "svect", "srange", "n", "vl", "vu", "il", "iu", "abstol",
-                                   "ldz");
-            rocsolver_bench_output(uploC, svectC, srangeC, n, vl, vu, il, iu, abstol, ldz);
+            rocsolver_bench_output("uplo", "svect", "srange", "n", "vl", "vu", "il", "iu", "ldz");
+            rocsolver_bench_output(uploC, svectC, srangeC, n, vl, vu, il, iu, ldz);
 
             rocsolver_bench_header("Results:");
             if(argus.norm_check)

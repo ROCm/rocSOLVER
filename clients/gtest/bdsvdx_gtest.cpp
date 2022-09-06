@@ -88,9 +88,6 @@ Arguments bdsvdx_setup_arguments(bdsvdx_tuple tup)
     arg.set<rocblas_int>("il", op[3]);
     arg.set<rocblas_int>("iu", op[4]);
 
-    // always use the best accuracy
-    arg.set<double>("abstol", 0);
-
     arg.timing = 0;
 
     return arg;

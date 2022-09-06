@@ -229,7 +229,6 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
                                          const T vu,
                                          const rocblas_int il,
                                          const rocblas_int iu,
-                                         const T abstol,
                                          rocblas_int* nsv,
                                          T* S,
                                          const rocblas_stride strideS,
@@ -255,8 +254,8 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
                                          T* Stmp)
 {
     ROCSOLVER_ENTER("bdsvdx", "uplo:", uplo, "svect:", svect, "srange:", srange, "n:", n, "vl:", vl,
-                    "vu:", vu, "il:", il, "iu:", iu, "abstol:", abstol, "ldz:", ldz,
-                    "shiftZ:", shiftZ, "bc:", batch_count);
+                    "vu:", vu, "il:", il, "iu:", iu, "ldz:", ldz, "shiftZ:", shiftZ,
+                    "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)
@@ -300,10 +299,10 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
     rocblas_int iutgk = (srange == rocblas_srange_index ? iu : n);
 
     // compute eigenvalues of tridiagonal matrix
-    rocsolver_stebz_template<T>(handle, range, order, ntgk, vltgk, vutgk, iltgk, iutgk, abstol,
-                                Dtgk, 0, ntgk, Etgk, 0, ntgk, nsv, nsplit, Stmp, ntgk, iblock, ntgk,
-                                isplit, ntgk, info, batch_count, work1_iwork, work2_pivmin, Esqr,
-                                bounds, inter, ninter);
+    rocsolver_stebz_template<T>(handle, range, order, ntgk, vltgk, vutgk, iltgk, iutgk, 0, Dtgk, 0,
+                                ntgk, Etgk, 0, ntgk, nsv, nsplit, Stmp, ntgk, iblock, ntgk, isplit,
+                                ntgk, info, batch_count, work1_iwork, work2_pivmin, Esqr, bounds,
+                                inter, ninter);
 
     if(svect == rocblas_svect_none)
     {

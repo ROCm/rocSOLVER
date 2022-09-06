@@ -4191,12 +4191,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
-    @param[in]
-    abstol      real type.\n
-                The absolute tolerance. An singular value is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of B will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nsv         pointer to a rocblas_int on the GPU. \n
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = n.
@@ -4237,7 +4231,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsvdx(rocblas_handle handle,
                                                   const float vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const float abstol,
                                                   rocblas_int* nsv,
                                                   float* S,
                                                   float* Z,
@@ -4256,7 +4249,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
                                                   const double vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const double abstol,
                                                   rocblas_int* nsv,
                                                   double* S,
                                                   double* Z,

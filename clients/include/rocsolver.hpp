@@ -1685,7 +1685,6 @@ inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
                                        float vu,
                                        rocblas_int il,
                                        rocblas_int iu,
-                                       float abstol,
                                        rocblas_int* nsv,
                                        float* S,
                                        float* Z,
@@ -1693,8 +1692,8 @@ inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
                                        rocblas_int* ifail,
                                        rocblas_int* info)
 {
-    return rocsolver_sbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S,
-                             Z, ldz, ifail, info);
+    return rocsolver_sbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv, S, Z, ldz,
+                             ifail, info);
 }
 
 inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
@@ -1708,7 +1707,6 @@ inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
                                        double vu,
                                        rocblas_int il,
                                        rocblas_int iu,
-                                       double abstol,
                                        rocblas_int* nsv,
                                        double* S,
                                        double* Z,
@@ -1716,8 +1714,8 @@ inline rocblas_status rocsolver_bdsvdx(rocblas_handle handle,
                                        rocblas_int* ifail,
                                        rocblas_int* info)
 {
-    return rocsolver_dbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, abstol, nsv, S,
-                             Z, ldz, ifail, info);
+    return rocsolver_dbdsvdx(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv, S, Z, ldz,
+                             ifail, info);
 }
 /********************************************************/
 
