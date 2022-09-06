@@ -4077,7 +4077,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
                 If info = i > 0, i eigenvectors did not converge; their indices are stored in
-                IFAIL.
+                ifail.
 
     ********************************************************************/
 
@@ -4185,11 +4185,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the smallest singular value to be computed. Ignored if srange indicates to look
+                The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the largest singular value to be computed. Ignored if srange indicates to look
+                The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[in]
     abstol      real type.\n
@@ -4199,13 +4199,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                 to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nsv         pointer to a rocblas_int on the GPU. \n
-                The total number of singular values found.
+                The total number of singular values found. If srange is rocblas_srange_all, nsv = n.
+                If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= n.
     @param[out]
     S           pointer to real type. Array on the GPU of dimension n.\n
-                The first nsv elements contain the computed singular values. (The remaining elements
-                may be used as workspace for internal computations).
+                The first nsv elements contain the computed singular values in descending order.
     @param[out]
-    Z           pointer to real type. Array on the GPU of dimension ldz*n.\n
+    Z           pointer to real type. Array on the GPU of dimension ldz*nsv.\n
                 If info = 0, the first nsv columns contain the computed singular vectors corresponding to the
                 singular values in S. The first n rows of Z contain the matrix U, and the next n rows contain
                 the matrix V. Not referenced if svect is rocblas_svect_none.
@@ -4222,7 +4222,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
                 If info = i > 0, i eigenvectors did not converge in \ref rocsolver_sstein "STEIN"; their
-                indices are stored in IFAIL.
+                indices are stored in ifail.
 
     *****************************************************************************/
 

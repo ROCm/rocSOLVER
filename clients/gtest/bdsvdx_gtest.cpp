@@ -22,7 +22,8 @@ typedef std::tuple<printable_char, vector<int>, vector<int>> bdsvdx_tuple;
 // if rng = 2, then find the il-th to the iu-th singular value
 
 // Note: all tests are prepared with diagonally dominant matrices that have random diagonal
-// elements in [-20, -11] U [11, 20], and off-diagonal elements in [-0.4, 0.5].
+// elements in [-20, -11] U [11, 20], and off-diagonal elements in [-0.4, 0.5]. This
+// guarantees that all singular values will be in [0, 20].
 
 // case when n == 0, vect = 0, and rng == 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -35,6 +36,7 @@ const vector<vector<int>> size_range = {
     {0, 1, 0},
     // invalid
     {-1, 1, 0},
+    {10, 10, 1},
     // normal (valid) samples
     {1, 2, 1},
     {15, 32, 0},
@@ -106,7 +108,7 @@ protected:
     {
         Arguments arg = bdsvdx_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("svect") == 'E'
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("svect") == 'N'
            && arg.peek<char>("srange") == 'A')
             testing_bdsvdx_bad_arg<T>();
 

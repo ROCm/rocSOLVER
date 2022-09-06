@@ -67,6 +67,9 @@ void bdsvdx_checkBadArgs(const rocblas_handle handle,
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
                                            abstol, dNsv, dS, dZ, ldz, (rocblas_int*)nullptr, dInfo),
                           rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, n, dD, dE, vl, vu, il, iu,
+                                           abstol, dNsv, dS, dZ, ldz, dIfail, (rocblas_int*)nullptr),
+                          rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, srange, 0, (U) nullptr, (U) nullptr,
@@ -82,9 +85,9 @@ void testing_bdsvdx_bad_arg()
     rocblas_local_handle handle;
     rocblas_int n = 2;
     rocblas_fill uplo = rocblas_fill_upper;
-    rocblas_svect svect = rocblas_svect_all;
+    rocblas_svect svect = rocblas_svect_singular;
     rocblas_srange srange = rocblas_srange_all;
-    rocblas_int ldz = 2;
+    rocblas_int ldz = 4;
     T vl = 0;
     T vu = 0;
     rocblas_int il = 0;
@@ -121,7 +124,7 @@ void bdsvdx_initData(const rocblas_handle handle, const rocblas_int n, Td& dD, T
         rocblas_init<T>(hE, true);
 
         // scale matrix and add fixed splits in the matrix to test split handling
-        // (scaling ensures that all eigenvalues are in [-20, 20])
+        // (scaling ensures that all singular values are in [0, 20])
         for(rocblas_int i = 0; i < n; i++)
         {
             hD[0][i] += 10;
@@ -215,6 +218,7 @@ void bdsvdx_getError(const rocblas_handle handle,
         *max_err = 0;
 
     // if finding singular values succeded, check values
+    double err;
     if(hInfoRes[0][0] == 0)
     {
         // check number of computed singular values
@@ -223,14 +227,14 @@ void bdsvdx_getError(const rocblas_handle handle,
 
         // error is ||hS - hSRes|| / ||hS||
         // using frobenius norm
-        double err = norm_error('F', 1, nn, 1, hS[0] + ioffset, hSRes[0]);
+        err = norm_error('F', 1, nn, 1, hS[0] + ioffset, hSRes[0]);
         *max_err = err > *max_err ? err : *max_err;
 
         // Check the singular vectors if required
         // U is stored in hZRes, and V is stored in hZRes+n
         if(svect != rocblas_svect_none)
         {
-            double err = 0;
+            err = 0;
 
             // form bidiagonal matrix B
             std::vector<T> B(n * n);
@@ -256,6 +260,29 @@ void bdsvdx_getError(const rocblas_handle handle,
                               hZRes[0] + n + k * ldz, 1, -hSRes[0][k], hZRes[0] + k * ldz, 1);
             }
             err = double(snorm('F', n, nn, hZRes[0], ldz)) / double(snorm('F', n, n, B.data(), n));
+            *max_err = err > *max_err ? err : *max_err;
+
+            // check ifail
+            err = 0;
+            for(int j = 0; j < nn; j++)
+            {
+                if(hIfailRes[0][j] != 0)
+                    err++;
+            }
+            *max_err = err > *max_err ? err : *max_err;
+        }
+    }
+    else
+    {
+        if(svect != rocblas_svect_none)
+        {
+            // check ifail
+            err = 0;
+            for(int j = 0; j < hInfoRes[0][0]; j++)
+            {
+                if(hIfailRes[0][j] == 0)
+                    err++;
+            }
             *max_err = err > *max_err ? err : *max_err;
         }
     }
@@ -396,7 +423,9 @@ void testing_bdsvdx(Arguments& argus)
     size_t size_IfailRes = (argus.unit_check || argus.norm_check) ? size_Ifail : 0;
 
     // check invalid sizes
-    bool invalid_size = (n < 0) || (ldz < 2 * n) || (srange == rocblas_srange_value && vl >= vu)
+    bool invalid_size = (n < 0) || (svect == rocblas_svect_none && ldz < 1)
+        || (svect != rocblas_svect_none && ldz < 2 * n)
+        || (srange == rocblas_srange_value && vl >= vu)
         || (srange == rocblas_srange_index && (iu > n || (n > 0 && il > iu)))
         || (srange == rocblas_srange_index && (il < 1 || iu < 0));
     if(invalid_size)
