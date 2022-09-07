@@ -9,98 +9,40 @@
 
 #pragma once
 
-#include "auxiliary/rocauxiliary_bdsqr.hpp"
-#include "auxiliary/rocauxiliary_orgbr_ungbr.hpp"
+#include "auxiliary/rocauxiliary_bdsvdx.hpp"
 #include "auxiliary/rocauxiliary_ormbr_unmbr.hpp"
+#include "auxiliary/rocauxiliary_ormlq_unmlq.hpp"
+#include "auxiliary/rocauxiliary_ormqr_unmqr.hpp"
 #include "rocblas.hpp"
 #include "roclapack_gebrd.hpp"
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
+#include "roclapack_gesvd.hpp"
 #include "rocsolver/rocsolver.h"
-
-/** wrapper to xxGQR/xxGLQ_TEMPLATE **/
-/*template <bool BATCHED, bool STRIDED, typename T, typename U>
-void local_orgqrlq_ungqrlq_template(rocblas_handle handle,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
-                                    const rocblas_int k,
-                                    U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int lda,
-                                    const rocblas_stride strideA,
-                                    T* ipiv,
-                                    const rocblas_stride strideP,
-                                    const rocblas_int batch_count,
-                                    T* scalars,
-                                    T* work,
-                                    T* Abyx_tmptr,
-                                    T* trfact,
-                                    T** workArr,
-                                    const bool row)
-{
-    if(row)
-        rocsolver_orgqr_ungqr_template<BATCHED, STRIDED>(handle, m, n, k, A, shiftA, lda, strideA,
-                                                         ipiv, strideP, batch_count, scalars, work,
-                                                         Abyx_tmptr, trfact, workArr);
-
-    else
-        rocsolver_orglq_unglq_template<BATCHED, STRIDED>(handle, m, n, k, A, shiftA, lda, strideA,
-                                                         ipiv, strideP, batch_count, scalars, work,
-                                                         Abyx_tmptr, trfact, workArr);
-}*/
-
-/** wrapper to GEQRF/GELQF_TEMPLATE **/
-/*template <bool BATCHED, bool STRIDED, typename T, typename U>
-void local_geqrlq_template(rocblas_handle handle,
-                           const rocblas_int m,
-                           const rocblas_int n,
-                           U A,
-                           const rocblas_int shiftA,
-                           const rocblas_int lda,
-                           const rocblas_stride strideA,
-                           T* ipiv,
-                           const rocblas_stride strideP,
-                           const rocblas_int batch_count,
-                           T* scalars,
-                           void* work_workArr,
-                           T* Abyx_norms_trfact,
-                           T* diag_tmptr,
-                           T** workArr,
-                           const bool row)
-{
-    if(row)
-        rocsolver_geqrf_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, ipiv,
-                                                   strideP, batch_count, scalars, work_workArr,
-                                                   Abyx_norms_trfact, diag_tmptr, workArr);
-    else
-        rocsolver_gelqf_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, ipiv,
-                                                   strideP, batch_count, scalars, work_workArr,
-                                                   Abyx_norms_trfact, diag_tmptr, workArr);
-}*/
 
 /** Argument checking **/
 template <typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
-                                        const rocblas_svect left_svect,
-                                        const rocblas_svect right_svect,
-                                        const rocblas_srange srange,
-                                        const rocblas_int m,
-                                        const rocblas_int n,
-                                        W A,
-                                        const rocblas_int lda,
-                                        const TT vl,
-                                        const TT vu,
-                                        const rocblas_int il,
-                                        const rocblas_int iu,
-                                        rocblas_int* nsv,
-                                        TT* S,
-                                        T* U,
-                                        const rocblas_int ldu,
-                                        T* V,
-                                        const rocblas_int ldv,
-                                        rocblas_int* ifail,
-                                        rocblas_int* info,
-                                        const rocblas_int batch_count = 1)
+                                         const rocblas_svect left_svect,
+                                         const rocblas_svect right_svect,
+                                         const rocblas_srange srange,
+                                         const rocblas_int m,
+                                         const rocblas_int n,
+                                         W A,
+                                         const rocblas_int lda,
+                                         const TT vl,
+                                         const TT vu,
+                                         const rocblas_int il,
+                                         const rocblas_int iu,
+                                         rocblas_int* nsv,
+                                         TT* S,
+                                         T* U,
+                                         const rocblas_int ldu,
+                                         T* V,
+                                         const rocblas_int ldv,
+                                         rocblas_int* ifail,
+                                         rocblas_int* info,
+                                         const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -108,7 +50,7 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
     if((left_svect != rocblas_svect_singular && left_svect != rocblas_svect_none)
        || (right_svect != rocblas_svect_singular && right_svect != rocblas_svect_none))
         return rocblas_status_invalid_value;
-     if(srange != rocblas_srange_all && srange != rocblas_srange_value
+    if(srange != rocblas_srange_all && srange != rocblas_srange_value
        && srange != rocblas_srange_index)
         return rocblas_status_invalid_value;
 
@@ -131,7 +73,8 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n * m && !A) || (min(m, n) && !S) || (min(m, n) && !ifail) || (batch_count && !info) || (batch_count && !nsv))
+    if((n * m && !A) || (min(m, n) && !S) || (min(m, n) && !ifail) || (batch_count && !info)
+       || (batch_count && !nsv))
         return rocblas_status_invalid_pointer;
     if(left_svect == rocblas_svect_singular && min(m, n) && !U)
         return rocblas_status_invalid_pointer;
@@ -142,22 +85,22 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
 }
 
 /** Helper to calculate workspace sizes **/
-/*template <bool BATCHED, typename T, typename S>
+template <bool BATCHED, typename T, typename S>
 void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
-                                   const rocblas_svect right_svect,
-                                   const rocblas_int m,
-                                   const rocblas_int n,
-                                   const rocblas_int batch_count,
-                                   const rocblas_workmode fast_alg,
-                                   size_t* size_scalars,
-                                   size_t* size_work_workArr,
-                                   size_t* size_Abyx_norms_tmptr,
-                                   size_t* size_Abyx_norms_trfact_X,
-                                   size_t* size_diag_tmptr_Y,
-                                   size_t* size_tau,
-                                   size_t* size_tempArrayT,
-                                   size_t* size_tempArrayC,
-                                   size_t* size_workArr)
+                                    const rocblas_svect right_svect,
+                                    const rocblas_int m,
+                                    const rocblas_int n,
+                                    const rocblas_int batch_count,
+                                    const rocblas_workmode fast_alg,
+                                    size_t* size_scalars,
+                                    size_t* size_work_workArr,
+                                    size_t* size_Abyx_norms_tmptr,
+                                    size_t* size_Abyx_norms_trfact_X,
+                                    size_t* size_diag_tmptr_Y,
+                                    size_t* size_tau,
+                                    size_t* size_tempArrayT,
+                                    size_t* size_tempArrayC,
+                                    size_t* size_workArr)
 {
     // if quick return, set workspace to zero
     if(n == 0 || m == 0 || batch_count == 0)
@@ -311,41 +254,40 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
     *size_Abyx_norms_tmptr = *std::max_element(std::begin(a), std::end(a));
     *size_Abyx_norms_trfact_X = *std::max_element(std::begin(x), std::end(x));
     *size_diag_tmptr_Y = *std::max_element(std::begin(y), std::end(y));
-}*/
+}
 
 template <bool BATCHED, bool STRIDED, typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
-                                        const rocblas_svect left_svect,
-                                        const rocblas_svect right_svect,
-                                        const rocblas_srange srange, 
-                                        const rocblas_int m,
-                                        const rocblas_int n,
-                                        W A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
-                                        const rocblas_stride strideA,
-                                        const TT vl,
-                                        const TT vu,
-                                        const rocblas_int il,
-                                        const rocblas_int iu,
-                                        rocblas_int* nsv,
-                                        TT* S,
-                                        const rocblas_stride strideS,
-                                        T* U,
-                                        const rocblas_int ldu,
-                                        const rocblas_stride strideU,
-                                        T* V,
-                                        const rocblas_int ldv,
-                                        const rocblas_stride strideV,
-                                        rocblas_int* ifail,
-                                        const rocblas_stride strideF,
-                                        rocblas_int* info,
-                                        const rocblas_int batch_count)
+                                         const rocblas_svect left_svect,
+                                         const rocblas_svect right_svect,
+                                         const rocblas_srange srange,
+                                         const rocblas_int m,
+                                         const rocblas_int n,
+                                         W A,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         const TT vl,
+                                         const TT vu,
+                                         const rocblas_int il,
+                                         const rocblas_int iu,
+                                         rocblas_int* nsv,
+                                         TT* S,
+                                         const rocblas_stride strideS,
+                                         T* U,
+                                         const rocblas_int ldu,
+                                         const rocblas_stride strideU,
+                                         T* V,
+                                         const rocblas_int ldv,
+                                         const rocblas_stride strideV,
+                                         rocblas_int* ifail,
+                                         const rocblas_stride strideF,
+                                         rocblas_int* info,
+                                         const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER("gesvd", "leftsv:", left_svect, "rightsv:", right_svect, "srange:", srange, "m:", m, "n:", n,
-                    "shiftA:", shiftA, "lda:", lda, "vl:", vl,
-                    "vu:", vu, "il:", il, "iu:", iu, "ldu:", ldu, "ldv:", ldv, 
-                    "bc:", batch_count);
+    ROCSOLVER_ENTER("gesvd", "leftsv:", left_svect, "rightsv:", right_svect, "srange:", srange,
+                    "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "vl:", vl, "vu:", vu,
+                    "il:", il, "iu:", iu, "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
 
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
@@ -355,6 +297,182 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    // everything must be executed with scalars on the host
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle, &old_mode);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+
+    // constants to use when calling rocablas functions
+    T one = 1;
+    T zero = 0;
+
+    // booleans used to determine the path that the execution will follow:
+    const bool row = (m >= n);
+    const bool leftvS = (left_svect == rocblas_svect_singular);
+    const bool rightvS = (right_svect == rocblas_svect_singular);
+    const bool thinSVD = (m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m);
+
+    // auxiliary sizes and variables
+    rocblas_fill uplo = row ? rocblas_fill_upper : rocblas_fill_lower;
+    const rocblas_svect svect = (leftvS || rightvS) ? rocblas_svect_singular : rocblas_svect_none;
+    const rocblas_int thread_count = BS2;
+    const rocblas_int k = min(m, n);
+    const rocblas_int ldt = k;
+    const rocblas_int ldx = thinSVD ? k : m;
+    const rocblas_int ldy = thinSVD ? k : n;
+    const rocblas_int ldz = 2 * k;
+    const rocblas_stride strideD = k;
+    const rocblas_stride strideE = k;
+    const rocblas_stride strideT = k * k;
+    const rocblas_stride strideX = ldx * GEBRD_GEBD2_SWITCHSIZE;
+    const rocblas_stride strideY = ldy * GEBRD_GEBD2_SWITCHSIZE;
+    const rocblas_stride strideZ = 2 * k * k;
+    T* UV;
+    rocblas_stride strideUV;
+    rocblas_int lduv;
+    rocblas_int offZ;
+    bool trans,
+
+        // common block sizes and number of threads for internal kernels
+        const rocblas_int blocks_m = (m - 1) / thread_count + 1;
+    const rocblas_int blocks_n = (n - 1) / thread_count + 1;
+    const rocblas_int blocks_k = (k - 1) / thread_count + 1;
+
+    /***** 1. bidiagonalization *****/
+    /********************************/
+    if(thinSVD)
+    {
+        // apply qr/lq factorization
+        local_geqrlq_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, tau, k,
+                                                batch_count, scalars, lqrfWS1, lqrfWS2, lqrfWS3,
+                                                workArr, row);
+
+        // copy triangular factor
+        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                dim3(thread_count, thread_count, 1), 0, stream, k, k, A, shiftA,
+                                lda, strideA, tmpT, 0, ldt, strideT, no_mask{}, uplo);
+
+        // clean triangular factor
+        ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
+                                dim3(thread_count, thread_count, 1), 0, stream, k, k, tmpT, 0, ldt,
+                                strideT, uplo);
+
+        // apply gebrd to triangular factor
+        rocsolver_gebrd_template<false, STRIDED>(handle, k, k, tmpT, 0, ldt, strideT, tmpD, strideD,
+                                                 tmpE, strideE, tauqp, k, (tauqp + k * batch_count),
+                                                 k, tmpX, 0, ldx, strideX, tmpY, 0, ldy, strideY,
+                                                 batch_count, scalars, brdWS1, brdWS2);
+    }
+    else
+    {
+        // apply gebrd to matrix A
+        rocsolver_gebrd_template<BATCHED, STRIDED>(
+            handle, m, n, A, shiftA, lda, strideA, tmpD, strideD, tmpE, strideE, tauqp, k,
+            (tauqp + k * batch_count), k, tmpX, 0, ldx, strideX, tmpY, 0, ldy, strideY, batch_count,
+            scalars, brdWS1, brdWS2);
+    }
+
+    /***** 2. solve bidiagonal problem *****/
+    /***************************************/
+    // compute SVD of bidiagonal matrix
+    uplo = thinSVD ? rocblas_fill_upper : uplo;
+    rocsolver_bdsvdx_template(handle, uplo, svect, srange, k, tmpD, strideD, tmpE, strideE, vl, vu,
+                              il, iu, nsv, S, strideS, tmpZ, 0, ldz, strideZ, ifail, strideF, info,
+                              batch_count, svdxWS1, svdxWS2, svdxWS3, svdxWS4, svdxWS5, svdxWS6,
+                              svdxWS7, svdxWS8, svdxWS9, svdxWS10, svdxWS11, svdxWS12);
+
+    /***** 3. compute/update left vectors *****/
+    /******************************************/
+    if(leftvS)
+    {
+        // For now we work with the k columns in tmpZ, i.e. k vectors
+        // (TODO: explore other options like transfering nsv to the host)
+
+        // initialize matrix U
+        ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_m, blocks_k, batch_count),
+                                dim3(thread_count, thread_count, 1), 0, stream, m, k, U, 0, ldu,
+                                strideU);
+
+        // copy left vectors to matrix U
+        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                dim3(thread_count, thread_count, 1), 0, stream, false, k, k, tmpZ,
+                                0, ldz, strideZ, U, 0, ldu, strideU);
+
+        if(thinSVD)
+        {
+            // apply ormbr (update with tranformation from bidiagonalization)
+            rocsolver_ormbr_unmbr_template<false, STRIDED>(
+                handle, rocblas_column_wise, rocblas_side_left, rocblas_operation_none, k, k, k,
+                tmpT, 0, ldt, strideT, tauqp, k, U, 0, ldu, strideU, batch_count, scalars, mbrWS1,
+                mbrWS2, mbrWS3, workArr);
+
+            if(row)
+            {
+                // apply ormqr (update with transformation from row compression)
+                rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
+                    handle, rocblas_side_left, rocblas_operation_none, m, k, k, A, shiftA, lda,
+                    strideA, tau, k, U, 0, ldu, strideU, batch_count, scalars, mlqrWS1, mlqrWS2,
+                    mlqrWS3, workArr);
+            }
+        }
+        else
+        {
+            // apply ormbr (update with tranformation from bidiagonalization)
+            rocblas_int mm = row ? m : k;
+            rocblas_int kk = row ? k : n;
+            rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
+                handle, rocblas_column_wise, rocblas_side_left, rocblas_operation_none, mm, k, kk,
+                A, shiftA, lda, strideA, tauqp, k, U, 0, ldu, strideU, batch_count, scalars, mbrWS1,
+                mbrWS2, mbrWS3, workArr);
+        }
+    }
+
+    /***** 4. compute/update right vectors *****/
+    /**********************************************/
+    if(rightvS)
+    {
+        // For now we work with the k columns in tmpZ, i.e. k vectors
+        // (TODO: explore other options like transfering nsv to the host)
+
+        // initialize matrix V
+        ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_n, batch_count),
+                                dim3(thread_count, thread_count, 1), 0, stream, k, n, V, 0, ldv,
+                                strideV);
+
+        // copy right vectors to matrix V
+        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+                                dim3(thread_count, thread_count, 1), 0, stream, true, k, k, tmpZ, k,
+                                ldz, strideZ, V, 0, ldv, strideV);
+
+        if(thinSVD)
+        {
+            // apply ormbr (update with tranformation from bidiagonalization)
+            rocsolver_ormbr_unmbr_template<false, STRIDED>(
+                handle, rocblas_row_wise, rocblas_side_right, rocblas_operation_transpose, k, k, k,
+                tmpT, 0, ldt, strideT, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
+                batch_count, scalars, mbrWS1, mbrWS2, mbrWS3, workArr);
+
+            if(!row)
+            {
+                // apply ormlq (update with transformation from column compression)
+                rocsolver_ormlq_unmlq_template<BATCHED, STRIDED>(
+                    handle, rocblas_side_right, rocblas_operation_none, k, n, k, A, shiftA, lda,
+                    strideA, tau, k, V, 0, ldv, strideV, batch_count, scalars, mlqrWS1, mlqrWS2,
+                    mlqrWS3, workArr);
+            }
+        }
+        else
+        {
+            // apply ormbr (update with tranformation from bidiagonalization)
+            rocblas_int nn = row ? k : n;
+            rocblas_int kk = row ? m : k;
+            rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
+                handle, rocblas_row_wise, rocblas_side_right, rocblas_operation_transpose, k, nn,
+                kk, A, shiftA, lda, strideA, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
+                batch_count, scalars, mbrWS1, mbrWS2, mbrWS3, workArr);
+        }
+    }
 
     return rocblas_status_success;
 }

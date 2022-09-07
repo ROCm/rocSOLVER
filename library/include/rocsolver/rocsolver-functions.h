@@ -11750,7 +11750,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                                                                  const rocblas_int batch_count);
 //! @}
 
-
 /*! @{
     \brief GESVDX computes a set of singular values and optionally the corresponding singular
     vectors of a general m-by-n matrix A (partial Singular Value Decomposition).
@@ -11817,19 +11816,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the smallest singular value to be computed. Ignored if srange indicates to look
+                The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the largest singular value to be computed. Ignored if srange indicates to look
+                The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[out]
     nsv         pointer to a rocblas_int on the GPU. \n
-                The total number of singular values found. If srange is rocblas_srange_all, nsv = min(m,n). 
+                The total number of singular values found. If srange is rocblas_srange_all, nsv = min(m,n).
                 If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= min(m,n).
     @param[out]
     S           pointer to real type. Array on the GPU of dimension min(m,n). \n
-                The first nsv elements contain the computed singular values in descending order. 
+                The first nsv elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[out]
     U           pointer to type. Array on the GPU of dimension ldu*min(m,n).\n
@@ -11859,88 +11858,88 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdx(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 float* A,
-                                                 const rocblas_int lda,
-                                                 const float vl,
-                                                 const float vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 float* S,
-                                                 float* U,
-                                                 const rocblas_int ldu,
-                                                 float* V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_int* ifail,
-                                                 rocblas_int* info);
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  float* A,
+                                                  const rocblas_int lda,
+                                                  const float vl,
+                                                  const float vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  float* S,
+                                                  float* U,
+                                                  const rocblas_int ldu,
+                                                  float* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* ifail,
+                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdx(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 double* A,
-                                                 const rocblas_int lda,
-                                                 const double vl,
-                                                 const double vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 double* S,
-                                                 double* U,
-                                                 const rocblas_int ldu,
-                                                 double* V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_int* ifail,
-                                                 rocblas_int* info);
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  double* A,
+                                                  const rocblas_int lda,
+                                                  const double vl,
+                                                  const double vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  double* S,
+                                                  double* U,
+                                                  const rocblas_int ldu,
+                                                  double* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* ifail,
+                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdx(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex* A,
-                                                 const rocblas_int lda,
-                                                 const float vl,
-                                                 const float vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 float* S,
-                                                 rocblas_float_complex* U,
-                                                 const rocblas_int ldu,
-                                                 rocblas_float_complex* V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_int* ifail,
-                                                 rocblas_int* info);
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  rocblas_float_complex* A,
+                                                  const rocblas_int lda,
+                                                  const float vl,
+                                                  const float vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  float* S,
+                                                  rocblas_float_complex* U,
+                                                  const rocblas_int ldu,
+                                                  rocblas_float_complex* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* ifail,
+                                                  rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex* A,
-                                                 const rocblas_int lda,
-                                                 const double vl,
-                                                 const double vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 double* S,
-                                                 rocblas_double_complex* U,
-                                                 const rocblas_int ldu,
-                                                 rocblas_double_complex* V,
-                                                 const rocblas_int ldv,
-                                                 rocblas_int* ifail,
-                                                 rocblas_int* info);
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  rocblas_double_complex* A,
+                                                  const rocblas_int lda,
+                                                  const double vl,
+                                                  const double vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  double* S,
+                                                  rocblas_double_complex* U,
+                                                  const rocblas_int ldu,
+                                                  rocblas_double_complex* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* ifail,
+                                                  rocblas_int* info);
 //! @}
 
 /*! @{
@@ -12009,11 +12008,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the smallest singular value to be computed. Ignored if srange indicates to look
+                The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the largest singular value to be computed. Ignored if srange indicates to look
+                The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[out]
     nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. \n
@@ -12021,11 +12020,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                 If srange is rocblas_srange_index, nsv[j] = iu - il + 1. Otherwise, 0 <= nsv[j] <= min(m,n).
     @param[out]
     S           pointer to real type. Array on the GPU (the size depends on the value of strideS). \n
-                The first nsv_j elements contain the computed singular values in descending order. 
+                The first nsv_j elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[in]
     strideS     rocblas_stride.\n
-                Stride from the start of one vector S_j to the next one S_(j+1). 
+                Stride from the start of one vector S_j to the next one S_(j+1).
                 There is no restriction for the value of strideS. Normal use case is strideS >= min(m,n).
     @param[out]
     U           pointer to type. Array on the GPU (the size depends on the value of strideU).\n
@@ -12067,110 +12066,109 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdx_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 float* const A[],
-                                                 const rocblas_int lda,
-                                                 const float vl,
-                                                 const float vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 float* S,
-                                                 const rocblas_stride strideS,
-                                                 float* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 float* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          float* const A[],
+                                                          const rocblas_int lda,
+                                                          const float vl,
+                                                          const float vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          float* S,
+                                                          const rocblas_stride strideS,
+                                                          float* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          float* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdx_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 double* const A[],
-                                                 const rocblas_int lda,
-                                                 const double vl,
-                                                 const double vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 double* S,
-                                                 const rocblas_stride strideS,
-                                                 double* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 double* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          double* const A[],
+                                                          const rocblas_int lda,
+                                                          const double vl,
+                                                          const double vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          double* S,
+                                                          const rocblas_stride strideS,
+                                                          double* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          double* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdx_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex* const A[],
-                                                 const rocblas_int lda,
-                                                 const float vl,
-                                                 const float vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 float* S,
-                                                 const rocblas_stride strideS,
-                                                 rocblas_float_complex* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 rocblas_float_complex* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          rocblas_float_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          const float vl,
+                                                          const float vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          float* S,
+                                                          const rocblas_stride strideS,
+                                                          rocblas_float_complex* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          rocblas_float_complex* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex* const A[],
-                                                 const rocblas_int lda,
-                                                 const double vl,
-                                                 const double vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 double* S,
-                                                 const rocblas_stride strideS,
-                                                 rocblas_double_complex* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 rocblas_double_complex* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          rocblas_double_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          const double vl,
+                                                          const double vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          double* S,
+                                                          const rocblas_stride strideS,
+                                                          rocblas_double_complex* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          rocblas_double_complex* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
 //! @}
-
 
 /*! @{
     \brief GESVDX_STRIDED_BATCHED computes a set of singular values and optionally the corresponding singular
@@ -12242,11 +12240,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the smallest singular value to be computed. Ignored if srange indicates to look
+                The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
-                The index of the largest singular value to be computed. Ignored if srange indicates to look
+                The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[out]
     nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. \n
@@ -12254,11 +12252,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 If srange is rocblas_srange_index, nsv[j] = iu - il + 1. Otherwise, 0 <= nsv[j] <= min(m,n).
     @param[out]
     S           pointer to real type. Array on the GPU (the size depends on the value of strideS). \n
-                The first nsv_j elements contain the computed singular values in descending order. 
+                The first nsv_j elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[in]
     strideS     rocblas_stride.\n
-                Stride from the start of one vector S_j to the next one S_(j+1). 
+                Stride from the start of one vector S_j to the next one S_(j+1).
                 There is no restriction for the value of strideS. Normal use case is strideS >= min(m,n).
     @param[out]
     U           pointer to type. Array on the GPU (the size depends on the value of strideU).\n
@@ -12300,115 +12298,113 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdx_strided_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 float* A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,
-                                                 const float vl,
-                                                 const float vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 float* S,
-                                                 const rocblas_stride strideS,
-                                                 float* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 float* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_srange srange,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  float* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const float vl,
+                                                                  const float vu,
+                                                                  const rocblas_int il,
+                                                                  const rocblas_int iu,
+                                                                  rocblas_int* nsv,
+                                                                  float* S,
+                                                                  const rocblas_stride strideS,
+                                                                  float* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  float* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* ifail,
+                                                                  const rocblas_stride strideF,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdx_strided_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 double* A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,
-                                                 const double vl,
-                                                 const double vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 double* S,
-                                                 const rocblas_stride strideS,
-                                                 double* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 double* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_srange srange,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  double* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const double vl,
+                                                                  const double vu,
+                                                                  const rocblas_int il,
+                                                                  const rocblas_int iu,
+                                                                  rocblas_int* nsv,
+                                                                  double* S,
+                                                                  const rocblas_stride strideS,
+                                                                  double* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  double* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* ifail,
+                                                                  const rocblas_stride strideF,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdx_strided_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_float_complex* A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,
-                                                 const float vl,
-                                                 const float vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 float* S,
-                                                 const rocblas_stride strideS,
-                                                 rocblas_float_complex* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 rocblas_float_complex* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_srange srange,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  rocblas_float_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const float vl,
+                                                                  const float vu,
+                                                                  const rocblas_int il,
+                                                                  const rocblas_int iu,
+                                                                  rocblas_int* nsv,
+                                                                  float* S,
+                                                                  const rocblas_stride strideS,
+                                                                  rocblas_float_complex* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  rocblas_float_complex* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* ifail,
+                                                                  const rocblas_stride strideF,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_strided_batched(rocblas_handle handle,
-                                                 const rocblas_svect left_svect,
-                                                 const rocblas_svect right_svect,
-                                                 const rocblas_srange srange,
-                                                 const rocblas_int m,
-                                                 const rocblas_int n,
-                                                 rocblas_double_complex* A,
-                                                 const rocblas_int lda,
-                                                 const rocblas_stride strideA,
-                                                 const double vl,
-                                                 const double vu,
-                                                 const rocblas_int il,
-                                                 const rocblas_int iu,
-                                                 rocblas_int* nsv,
-                                                 double* S,
-                                                 const rocblas_stride strideS,
-                                                 rocblas_double_complex* U,
-                                                 const rocblas_int ldu,
-                                                 const rocblas_stride strideU,
-                                                 rocblas_double_complex* V,
-                                                 const rocblas_int ldv,
-                                                 const rocblas_stride strideV,
-                                                 rocblas_int* ifail,
-                                                 const rocblas_stride strideF,
-                                                 rocblas_int* info,
-                                                 const rocblas_int batch_count);
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_srange srange,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  rocblas_double_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const double vl,
+                                                                  const double vu,
+                                                                  const rocblas_int il,
+                                                                  const rocblas_int iu,
+                                                                  rocblas_int* nsv,
+                                                                  double* S,
+                                                                  const rocblas_stride strideS,
+                                                                  rocblas_double_complex* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  rocblas_double_complex* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* ifail,
+                                                                  const rocblas_stride strideF,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
 //! @}
-
-
 
 /*! @{
     \brief SYTD2 computes the tridiagonal form of a real symmetric matrix A.

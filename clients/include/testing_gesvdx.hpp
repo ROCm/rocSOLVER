@@ -376,7 +376,7 @@ void gesvdx_getError(const rocblas_handle handle,
         offset[b] = -1;
         if(srange == rocblas_srange_index)
         {
-            offset[b] = minn - iu;
+            offset[b] = il - 1;
             hNsv[b][0] = iu - il + 1;
         }
         else if(srange == rocblas_srange_value)

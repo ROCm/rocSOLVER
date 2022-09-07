@@ -264,6 +264,52 @@ ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
     }
 }
 
+/** COPY_TRANS_MAT copies m-by-n array A into B and transpose it depending on the value of trans.
+    An optional mask can be provided to limit the copy to selected matricies in the batch
+    If uplo = rocblas_fill_upper, only the upper triangular part is copied
+    If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
+template <typename T, typename U1, typename U2, typename Mask = no_mask>
+ROCSOLVER_KERNEL void copy_mat(const bool trans,
+                               const rocblas_int m,
+                               const rocblas_int n,
+                               U1 A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               U2 B,
+                               const rocblas_int shiftB,
+                               const rocblas_int ldb,
+                               const rocblas_stride strideB,
+                               const Mask mask = no_mask{},
+                               const rocblas_fill uplo = rocblas_fill_full,
+                               const rocblas_diagonal diag = rocblas_diagonal_non_unit)
+{
+    const auto b = hipBlockIdx_z;
+    const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    const bool copy = mask[b];
+
+    const bool full = (uplo == rocblas_fill_full);
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool lower = (uplo == rocblas_fill_lower);
+    const bool cdiag = (diag == rocblas_diagonal_non_unit);
+
+    if(i < m && j < n && copy)
+    {
+        if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
+        {
+            T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
+            T* Bp = load_ptr_batch<T>(B, b, shiftB, strideB);
+
+            if(trans)
+                Bp[j + i * ldb] = Ap[i + j * lda];
+            else
+                Bp[i + j * ldb] = Ap[i + j * lda];
+        }
+    }
+}
+
 template <typename T, typename U>
 ROCSOLVER_KERNEL void init_ident(const rocblas_int m,
                                  const rocblas_int n,
