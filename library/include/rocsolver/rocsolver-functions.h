@@ -3960,7 +3960,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     @param[out]
     W           pointer to real type. Array on the GPU of dimension n.\n
                 The first nev elements contain the computed eigenvalues. (The remaining elements
-                can be used as workspace for internal computations).
+                may be used as workspace for internal computations).
     @param[out]
     iblock      pointer to rocblas_int. Array on the GPU of dimension n.\n
                 The block indices corresponding to each eigenvalue. When matrix T has
@@ -4077,7 +4077,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstebz(rocblas_handle handle,
     info        pointer to a rocblas_int on the GPU.\n
                 If info = 0, successful exit.
                 If info = i > 0, i eigenvectors did not converge; their indices are stored in
-                IFAIL.
+                ifail.
 
     ********************************************************************/
 
@@ -4132,6 +4132,132 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                                                  const rocblas_int ldz,
                                                  rocblas_int* ifail,
                                                  rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief BDSVDX computes a set of singular values of a bidiagonal matrix B.
+
+    \details
+    This function computes all the singular values of B, all the singular values in the half-open interval
+    \f$(vl, vu]\f$, or the il-th through iu-th singular values, depending on the value of srange.
+
+    Depending on the value of svect, the corresponding singular vectors will be computed and stored as blocks
+    in the output matrix Z. That is,
+
+    \f[
+        Z = \left[\begin{array}{c}
+        U\\
+        V
+        \end{array}\right]
+    \f]
+
+    where U contains the corresponding left singular vectors of B, and V contains the corresponding right
+    singular vectors.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether B is upper or lower bidiagonal.
+    @param[in]
+    svect       #rocblas_svect.\n
+                Specifies how the singular vectors are computed. Only rocblas_svect_none and
+                rocblas_svect_singular are accepted.
+    @param[in]
+    srange      #rocblas_srange.\n
+                Specifies the type of range or interval of the singular values to be computed.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The order of the bidiagonal matrix B.
+    @param[in]
+    D           pointer to real type. Array on the GPU of dimension n.\n
+                The diagonal elements of the bidiagonal matrix.
+    @param[in]
+    E           pointer to real type. Array on the GPU of dimension n-1.\n
+                The off-diagonal elements of the bidiagonal matrix.
+    @param[in]
+    vl          real type. 0 <= vl < vu.\n
+                The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                for all the singular values of B or the singular values within a set of indices.
+    @param[in]
+    vu          real type. 0 <= vl < vu.\n
+                The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                for all the singular values of B or the singular values within a set of indices.
+    @param[in]
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the largest singular value to be computed. Ignored if srange indicates to look
+                for all the singular values of B or the singular values in a half-open interval.
+    @param[in]
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
+                The index of the smallest singular value to be computed. Ignored if srange indicates to look
+                for all the singular values of B or the singular values in a half-open interval.
+    @param[out]
+    nsv         pointer to a rocblas_int on the GPU. \n
+                The total number of singular values found. If srange is rocblas_srange_all, nsv = n.
+                If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= n.
+    @param[out]
+    S           pointer to real type. Array on the GPU of dimension n.\n
+                The first nsv elements contain the computed singular values in descending order.
+    @param[out]
+    Z           pointer to real type. Array on the GPU of dimension ldz*nsv.\n
+                If info = 0, the first nsv columns contain the computed singular vectors corresponding to the
+                singular values in S. The first n rows of Z contain the matrix U, and the next n rows contain
+                the matrix V. Not referenced if svect is rocblas_svect_none.
+                Note: If srange is rocblas_srange_value, then the values of nsv are not known in advance.
+                The user should ensure that Z is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
+    @param[in]
+    ldz         rocblas_int. ldz >= 2*n if svect is rocblas_svect_singular; ldz >= 1 otherwise.\n
+                Specifies the leading dimension of Z.
+    @param[out]
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+                If info = 0, the first nsv elements of ifail are zero.
+                Otherwise, contains the indices of those eigenvectors that failed
+                to converge, as returned by \ref rocsolver_sstein "STEIN".
+                Not referenced if svect is rocblas_svect_none.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, i eigenvectors did not converge in \ref rocsolver_sstein "STEIN"; their
+                indices are stored in ifail.
+
+    *****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sbdsvdx(rocblas_handle handle,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_svect svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int n,
+                                                  float* D,
+                                                  float* E,
+                                                  const float vl,
+                                                  const float vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  float* S,
+                                                  float* Z,
+                                                  const rocblas_int ldz,
+                                                  rocblas_int* ifail,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_svect svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int n,
+                                                  double* D,
+                                                  double* E,
+                                                  const double vl,
+                                                  const double vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  double* S,
+                                                  double* Z,
+                                                  const rocblas_int ldz,
+                                                  rocblas_int* ifail,
+                                                  rocblas_int* info);
 //! @}
 
 /*

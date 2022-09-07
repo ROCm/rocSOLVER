@@ -163,6 +163,7 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_ormtr_unmtr.cpp
   # bidiagonal matrices
   auxiliary/rocauxiliary_bdsqr.cpp
+  auxiliary/rocauxiliary_bdsvdx.cpp
   auxiliary/rocauxiliary_labrd.cpp
   # tridiagonal matrices
   auxiliary/rocauxiliary_sterf.cpp

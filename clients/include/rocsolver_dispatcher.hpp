@@ -10,6 +10,7 @@
 #include <string>
 
 #include "testing_bdsqr.hpp"
+#include "testing_bdsvdx.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
@@ -229,6 +230,7 @@ class rocsolver_dispatcher
         static const func_map map_real = {
             {"sterf", testing_sterf<T>},
             {"stebz", testing_stebz<T>},
+            {"bdsvdx", testing_bdsvdx<T>},
             // orgxx
             {"org2r", testing_orgxr_ungxr<T, 0>},
             {"orgqr", testing_orgxr_ungxr<T, 1>},

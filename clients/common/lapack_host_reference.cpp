@@ -19,6 +19,104 @@
 extern "C" {
 #endif
 
+void sgemv_(char* transA,
+            int* m,
+            int* n,
+            float* alpha,
+            float* A,
+            int* lda,
+            float* x,
+            int* incx,
+            float* beta,
+            float* y,
+            int* incy);
+void dgemv_(char* transA,
+            int* m,
+            int* n,
+            double* alpha,
+            double* A,
+            int* lda,
+            double* x,
+            int* incx,
+            double* beta,
+            double* y,
+            int* incy);
+void cgemv_(char* transA,
+            int* m,
+            int* n,
+            rocblas_float_complex* alpha,
+            rocblas_float_complex* A,
+            int* lda,
+            rocblas_float_complex* x,
+            int* incx,
+            rocblas_float_complex* beta,
+            rocblas_float_complex* y,
+            int* incy);
+void zgemv_(char* transA,
+            int* m,
+            int* n,
+            rocblas_double_complex* alpha,
+            rocblas_double_complex* A,
+            int* lda,
+            rocblas_double_complex* x,
+            int* incx,
+            rocblas_double_complex* beta,
+            rocblas_double_complex* y,
+            int* incy);
+
+void sgemm_(char* transA,
+            char* transB,
+            int* m,
+            int* n,
+            int* k,
+            float* alpha,
+            float* A,
+            int* lda,
+            float* B,
+            int* ldb,
+            float* beta,
+            float* C,
+            int* ldc);
+void dgemm_(char* transA,
+            char* transB,
+            int* m,
+            int* n,
+            int* k,
+            double* alpha,
+            double* A,
+            int* lda,
+            double* B,
+            int* ldb,
+            double* beta,
+            double* C,
+            int* ldc);
+void cgemm_(char* transA,
+            char* transB,
+            int* m,
+            int* n,
+            int* k,
+            rocblas_float_complex* alpha,
+            rocblas_float_complex* A,
+            int* lda,
+            rocblas_float_complex* B,
+            int* ldb,
+            rocblas_float_complex* beta,
+            rocblas_float_complex* C,
+            int* ldc);
+void zgemm_(char* transA,
+            char* transB,
+            int* m,
+            int* n,
+            int* k,
+            rocblas_double_complex* alpha,
+            rocblas_double_complex* A,
+            int* lda,
+            rocblas_double_complex* B,
+            int* ldb,
+            rocblas_double_complex* beta,
+            rocblas_double_complex* C,
+            int* ldc);
+
 void ssymv_(char* uplo,
             int* n,
             float* alpha,
@@ -2255,6 +2353,41 @@ void zsytrf_(char* uplo,
              int* lwork,
              int* info);
 
+void sbdsvdx_(char* uplo,
+              char* svect,
+              char* srange,
+              int* n,
+              float* D,
+              float* E,
+              float* vl,
+              float* vu,
+              int* il,
+              int* iu,
+              int* nsv,
+              float* S,
+              float* Z,
+              int* ldz,
+              float* work,
+              int* iwork,
+              int* info);
+void dbdsvdx_(char* uplo,
+              char* svect,
+              char* srange,
+              int* n,
+              double* D,
+              double* E,
+              double* vl,
+              double* vu,
+              int* il,
+              int* iu,
+              int* nsv,
+              double* S,
+              double* Z,
+              int* ldz,
+              double* work,
+              int* iwork,
+              int* info);
+
 #ifdef __cplusplus
 }
 #endif
@@ -4291,46 +4424,158 @@ void cblas_iamax<rocblas_double_complex>(rocblas_int n,
                                          rocblas_int *result) {
   *result = (rocblas_int)cblas_izamax(n, x, incx);
 }
-
+*/
 // gemv
 template <>
-void cblas_gemv<float>(rocblas_operation transA, rocblas_int m, rocblas_int n,
-                       float alpha, float *A, rocblas_int lda, float *x,
-                       rocblas_int incx, float beta, float *y,
-                       rocblas_int incy) {
-  cblas_sgemv(CblasColMajor, (CBLAS_TRANSPOSE)transA, m, n, alpha, A, lda, x,
-              incx, beta, y, incy);
+void cblas_gemv<float>(rocblas_operation transA,
+                       rocblas_int m,
+                       rocblas_int n,
+                       float alpha,
+                       float* A,
+                       rocblas_int lda,
+                       float* x,
+                       rocblas_int incx,
+                       float beta,
+                       float* y,
+                       rocblas_int incy)
+{
+    char transAC = rocblas2char_operation(transA);
+    sgemv_(&transAC, &m, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy);
 }
 
 template <>
-void cblas_gemv<double>(rocblas_operation transA, rocblas_int m, rocblas_int n,
-                        double alpha, double *A, rocblas_int lda, double *x,
-                        rocblas_int incx, double beta, double *y,
-                        rocblas_int incy) {
-  cblas_dgemv(CblasColMajor, (CBLAS_TRANSPOSE)transA, m, n, alpha, A, lda, x,
-              incx, beta, y, incy);
+void cblas_gemv<double>(rocblas_operation transA,
+                        rocblas_int m,
+                        rocblas_int n,
+                        double alpha,
+                        double* A,
+                        rocblas_int lda,
+                        double* x,
+                        rocblas_int incx,
+                        double beta,
+                        double* y,
+                        rocblas_int incy)
+{
+    char transAC = rocblas2char_operation(transA);
+    dgemv_(&transAC, &m, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy);
 }
 
 template <>
-void cblas_gemv<rocblas_float_complex>(
-    rocblas_operation transA, rocblas_int m, rocblas_int n,
-    rocblas_float_complex alpha, rocblas_float_complex *A, rocblas_int lda,
-    rocblas_float_complex *x, rocblas_int incx, rocblas_float_complex beta,
-    rocblas_float_complex *y, rocblas_int incy) {
-  cblas_cgemv(CblasColMajor, (CBLAS_TRANSPOSE)transA, m, n, &alpha, A, lda, x,
-              incx, &beta, y, incy);
+void cblas_gemv<rocblas_float_complex>(rocblas_operation transA,
+                                       rocblas_int m,
+                                       rocblas_int n,
+                                       rocblas_float_complex alpha,
+                                       rocblas_float_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_float_complex* x,
+                                       rocblas_int incx,
+                                       rocblas_float_complex beta,
+                                       rocblas_float_complex* y,
+                                       rocblas_int incy)
+{
+    char transAC = rocblas2char_operation(transA);
+    cgemv_(&transAC, &m, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy);
 }
 
 template <>
-void cblas_gemv<rocblas_double_complex>(
-    rocblas_operation transA, rocblas_int m, rocblas_int n,
-    rocblas_double_complex alpha, rocblas_double_complex *A, rocblas_int lda,
-    rocblas_double_complex *x, rocblas_int incx, rocblas_double_complex beta,
-    rocblas_double_complex *y, rocblas_int incy) {
-  cblas_zgemv(CblasColMajor, (CBLAS_TRANSPOSE)transA, m, n, &alpha, A, lda, x,
-              incx, &beta, y, incy);
+void cblas_gemv<rocblas_double_complex>(rocblas_operation transA,
+                                        rocblas_int m,
+                                        rocblas_int n,
+                                        rocblas_double_complex alpha,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_double_complex* x,
+                                        rocblas_int incx,
+                                        rocblas_double_complex beta,
+                                        rocblas_double_complex* y,
+                                        rocblas_int incy)
+{
+    char transAC = rocblas2char_operation(transA);
+    zgemv_(&transAC, &m, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy);
 }
-*/
+
+// gemm
+template <>
+void cblas_gemm<float>(rocblas_operation transA,
+                       rocblas_operation transB,
+                       rocblas_int m,
+                       rocblas_int n,
+                       rocblas_int k,
+                       float alpha,
+                       float* A,
+                       rocblas_int lda,
+                       float* B,
+                       rocblas_int ldb,
+                       float beta,
+                       float* C,
+                       rocblas_int ldc)
+{
+    char transAC = rocblas2char_operation(transA);
+    char transBC = rocblas2char_operation(transB);
+    sgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+}
+
+template <>
+void cblas_gemm<double>(rocblas_operation transA,
+                        rocblas_operation transB,
+                        rocblas_int m,
+                        rocblas_int n,
+                        rocblas_int k,
+                        double alpha,
+                        double* A,
+                        rocblas_int lda,
+                        double* B,
+                        rocblas_int ldb,
+                        double beta,
+                        double* C,
+                        rocblas_int ldc)
+{
+    char transAC = rocblas2char_operation(transA);
+    char transBC = rocblas2char_operation(transB);
+    dgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+}
+
+template <>
+void cblas_gemm<rocblas_float_complex>(rocblas_operation transA,
+                                       rocblas_operation transB,
+                                       rocblas_int m,
+                                       rocblas_int n,
+                                       rocblas_int k,
+                                       rocblas_float_complex alpha,
+                                       rocblas_float_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_float_complex* B,
+                                       rocblas_int ldb,
+                                       rocblas_float_complex beta,
+                                       rocblas_float_complex* C,
+                                       rocblas_int ldc)
+{
+    char transAC = rocblas2char_operation(transA);
+    char transBC = rocblas2char_operation(transB);
+    cgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+}
+
+template <>
+void cblas_gemm<rocblas_double_complex>(rocblas_operation transA,
+                                        rocblas_operation transB,
+                                        rocblas_int m,
+                                        rocblas_int n,
+                                        rocblas_int k,
+                                        rocblas_double_complex alpha,
+                                        rocblas_double_complex* A,
+                                        rocblas_int lda,
+                                        rocblas_double_complex* B,
+                                        rocblas_int ldb,
+                                        rocblas_double_complex beta,
+                                        rocblas_double_complex* C,
+                                        rocblas_int ldc)
+{
+    char transAC = rocblas2char_operation(transA);
+    char transBC = rocblas2char_operation(transB);
+    zgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
+}
+
+// symv & hemv
 template <>
 void cblas_symv_hemv<float>(rocblas_fill uplo,
                             rocblas_int n,
@@ -7124,4 +7369,57 @@ void cblas_sytrf<rocblas_double_complex>(rocblas_fill uplo,
 {
     char uploC = rocblas2char_fill(uplo);
     zsytrf_(&uploC, &n, A, &lda, ipiv, work, &lwork, info);
+}
+
+// bdsvdx
+template <>
+void cblas_bdsvdx<float>(rocblas_fill uplo,
+                         rocblas_svect svect,
+                         rocblas_srange srange,
+                         rocblas_int n,
+                         float* D,
+                         float* E,
+                         float vl,
+                         float vu,
+                         rocblas_int il,
+                         rocblas_int iu,
+                         rocblas_int* nsv,
+                         float* S,
+                         float* Z,
+                         rocblas_int ldz,
+                         float* work,
+                         rocblas_int* iwork,
+                         rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char svectC = rocblas2char_svect(svect, true);
+    char srangeC = rocblas2char_srange(srange);
+    sbdsvdx_(&uploC, &svectC, &srangeC, &n, D, E, &vl, &vu, &il, &iu, nsv, S, Z, &ldz, work, iwork,
+             info);
+}
+
+template <>
+void cblas_bdsvdx<double>(rocblas_fill uplo,
+                          rocblas_svect svect,
+                          rocblas_srange srange,
+                          rocblas_int n,
+                          double* D,
+                          double* E,
+                          double vl,
+                          double vu,
+                          rocblas_int il,
+                          rocblas_int iu,
+                          rocblas_int* nsv,
+                          double* S,
+                          double* Z,
+                          rocblas_int ldz,
+                          double* work,
+                          rocblas_int* iwork,
+                          rocblas_int* info)
+{
+    char uploC = rocblas2char_fill(uplo);
+    char svectC = rocblas2char_svect(svect, true);
+    char srangeC = rocblas2char_srange(srange);
+    dbdsvdx_(&uploC, &svectC, &srangeC, &n, D, E, &vl, &vu, &il, &iu, nsv, S, Z, &ldz, work, iwork,
+             info);
 }
