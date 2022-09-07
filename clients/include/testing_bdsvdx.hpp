@@ -420,7 +420,7 @@ void testing_bdsvdx(Arguments& argus)
     // check invalid sizes
     bool invalid_size = (n < 0) || (svect == rocblas_svect_none && ldz < 1)
         || (svect != rocblas_svect_none && ldz < 2 * n)
-        || (srange == rocblas_srange_value && vl >= vu)
+        || (srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         || (srange == rocblas_srange_index && (iu > n || (n > 0 && il > iu)))
         || (srange == rocblas_srange_index && (il < 1 || iu < 0));
     if(invalid_size)

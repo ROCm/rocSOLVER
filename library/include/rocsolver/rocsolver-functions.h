@@ -4176,11 +4176,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
     E           pointer to real type. Array on the GPU of dimension n-1.\n
                 The off-diagonal elements of the bidiagonal matrix.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. 0 <= vl < vu.\n
                 The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. 0 <= vl < vu.\n
                 The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
@@ -4203,6 +4203,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                 If info = 0, the first nsv columns contain the computed singular vectors corresponding to the
                 singular values in S. The first n rows of Z contain the matrix U, and the next n rows contain
                 the matrix V. Not referenced if svect is rocblas_svect_none.
+                Note: If srange is rocblas_srange_value, then the values of nsv are not known in advance.
+                The user should ensure that Z is large enough to hold n columns, as all n columns
+                can be used as workspace for internal computations.
     @param[in]
     ldz         rocblas_int. ldz >= 2*n if svect is rocblas_svect_singular; ldz >= 1 otherwise.\n
                 Specifies the leading dimension of Z.

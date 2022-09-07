@@ -36,7 +36,7 @@ ROCSOLVER_KERNEL void bdsvdx_abs_eigs(const rocblas_int n,
         nsvA[bid] = nsv = n;
 
     if(tid < nsv)
-        S[tid] = abs(Stmp[tid]);
+        S[tid] = -Stmp[tid];
 }
 
 template <typename T, typename U>
@@ -70,7 +70,7 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
     }
 
     for(i = tid; i < nsv; i += hipBlockDim_x)
-        S[i] = abs(work[i]);
+        S[i] = -work[i];
 
     for(j = 0; j < nsv; j++)
     {
@@ -194,7 +194,7 @@ rocblas_status rocsolver_bdsvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_size;
     if((svect == rocblas_svect_none && ldz < 1) || (svect != rocblas_svect_none && ldz < 2 * n))
         return rocblas_status_invalid_size;
-    if(srange == rocblas_srange_value && vl >= vu)
+    if(srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         return rocblas_status_invalid_size;
     if(srange == rocblas_srange_index && (iu > n || (n > 0 && il > iu)))
         return rocblas_status_invalid_size;
