@@ -238,6 +238,10 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
+if(LAPACK_FUNCTIONS)
+  target_link_libraries(rocsolver PRIVATE lapack)
+endif()
+
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
 else()

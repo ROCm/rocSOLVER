@@ -9,8 +9,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    void dsterf(int* n, double* D, double* E, int* info);
-    void ssterf(int* n, float* D, float* E, int* info);
+    void dsterf_(int* n, double* D, double* E, int* info);
+    void ssterf_(int* n, float* D, float* E, int* info);
 #ifdef __cplusplus
 }
 #endif
@@ -18,13 +18,13 @@ extern "C" {
 template <>
 void lapack_sterf<double>(rocblas_int n, double* D, double* E, int &info)
 {
-    dsterf(&n, D, E, &info);
+    dsterf_(&n, D, E, &info);
 }
 
 template <>
 void lapack_sterf<float>(rocblas_int n, float* D, float* E, int &info)
 {
-   ssterf(&n, D, E, &info);
+   ssterf_(&n, D, E, &info);
 }
 
 #endif
