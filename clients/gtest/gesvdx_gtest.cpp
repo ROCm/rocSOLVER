@@ -41,7 +41,7 @@ const vector<vector<int>> size_range = {
     {10, 10, 0, -1, 0},
     {10, 10, 0, 0, -1},
     // normal (valid) samples
-    //{1, 1, 0, 0, 0},
+    {1, 1, 0, 0, 0},
     {20, 20, 0, 0, 0},
     {40, 30, 0, 0, 0},
     {30, 40, 0, 0, 0},
@@ -53,6 +53,7 @@ const vector<vector<int>> size_range = {
 const vector<vector<int>> opt_range = {
     // always invalid
     {0, 0, 1, 2, 1, 0, 0},
+    {0, 0, 1, -1, 1, 0, 0},
     {0, 0, 2, 0, 0, 2, 1},
     {0, 0, 2, 0, 0, 10, 80},
     // valid only when n=0

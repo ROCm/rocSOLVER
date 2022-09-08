@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "auxiliary/rocauxiliary_bdsvdx.hpp"
+//#include "auxiliary/rocauxiliary_bdsvdx.hpp"
 #include "auxiliary/rocauxiliary_ormbr_unmbr.hpp"
 #include "auxiliary/rocauxiliary_ormlq_unmlq.hpp"
 #include "auxiliary/rocauxiliary_ormqr_unmqr.hpp"
@@ -61,7 +61,7 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_size;
     if(right_svect == rocblas_svect_singular && ldv < min(m, n))
         return rocblas_status_invalid_size;
-    if(srange == rocblas_srange_value && vl >= vu)
+    if(srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         return rocblas_status_invalid_size;
     if(srange == rocblas_srange_index && (il < 1 || iu < 0))
         return rocblas_status_invalid_size;
@@ -88,172 +88,170 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
 template <bool BATCHED, typename T, typename S>
 void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
                                     const rocblas_svect right_svect,
+                                    const rocblas_srange srange,
                                     const rocblas_int m,
                                     const rocblas_int n,
-                                    const rocblas_int batch_count,
-                                    const rocblas_workmode fast_alg,
+                                    const rocblas_int bc,
                                     size_t* size_scalars,
-                                    size_t* size_work_workArr,
-                                    size_t* size_Abyx_norms_tmptr,
-                                    size_t* size_Abyx_norms_trfact_X,
-                                    size_t* size_diag_tmptr_Y,
+                                    size_t* size_WS_svdx1,
+                                    size_t* size_WS_svdx2_lqrf1_brd1,
+                                    size_t* size_WS_svdx3_lqrf2_brd2,
+                                    size_t* size_WS_svdx4_lqrf3_brd3,
+                                    size_t* size_WS_svdx5_brd4,
+                                    size_t* size_WS_svdx6,
+                                    size_t* size_WS_svdx7,
+                                    size_t* size_WS_svdx8,
+                                    size_t* size_WS_svdx9,
+                                    size_t* size_WS_svdx10_mlqr1_mbr1,
+                                    size_t* size_WS_svdx11_mlqr2_mbr2,
+                                    size_t* size_WS_svdx12_mlqr3_mbr3,
+                                    size_t* size_tmpDE,
+                                    size_t* size_tauqp,
+                                    size_t* size_tmpZ,
                                     size_t* size_tau,
-                                    size_t* size_tempArrayT,
-                                    size_t* size_tempArrayC,
-                                    size_t* size_workArr)
+                                    size_t* size_tmpT,
+                                    size_t* size_workArr,
+                                    size_t* size_workArr2)
 {
     // if quick return, set workspace to zero
-    if(n == 0 || m == 0 || batch_count == 0)
+    if(n == 0 || m == 0 || bc == 0)
     {
         *size_scalars = 0;
-        *size_work_workArr = 0;
-        *size_Abyx_norms_tmptr = 0;
-        *size_Abyx_norms_trfact_X = 0;
-        *size_diag_tmptr_Y = 0;
+        *size_WS_svdx1 = 0;
+        *size_WS_svdx2_lqrf1_brd1 = 0;
+        *size_WS_svdx3_lqrf2_brd2 = 0;
+        *size_WS_svdx4_lqrf3_brd3 = 0;
+        *size_WS_svdx5_brd4 = 0;
+        *size_WS_svdx6 = 0;
+        *size_WS_svdx7 = 0;
+        *size_WS_svdx8 = 0;
+        *size_WS_svdx9 = 0;
+        *size_WS_svdx10_mlqr1_mbr1 = 0;
+        *size_WS_svdx11_mlqr2_mbr2 = 0;
+        *size_WS_svdx12_mlqr3_mbr3 = 0;
+        *size_tmpDE = 0;
+        *size_tauqp = 0;
+        *size_tmpZ = 0;
         *size_tau = 0;
-        *size_tempArrayT = 0;
-        *size_tempArrayC = 0;
+        *size_tmpT = 0;
         *size_workArr = 0;
+        *size_workArr2 = 0;
         return;
     }
 
-    size_t w[6] = {};
-    size_t a[5] = {};
-    size_t x[6] = {};
-    size_t y[3] = {};
-    size_t unused;
-
-    // booleans used to determine the path that the execution will follow:
     const bool row = (m >= n);
     const bool leftvS = (left_svect == rocblas_svect_singular);
-    const bool leftvO = (left_svect == rocblas_svect_overwrite);
-    const bool leftvA = (left_svect == rocblas_svect_all);
-    const bool leftvN = (left_svect == rocblas_svect_none);
     const bool rightvS = (right_svect == rocblas_svect_singular);
-    const bool rightvO = (right_svect == rocblas_svect_overwrite);
-    const bool rightvA = (right_svect == rocblas_svect_all);
-    const bool rightvN = (right_svect == rocblas_svect_none);
-    //const bool leadvS = row ? leftvS : rightvS;
-    const bool leadvO = row ? leftvO : rightvO;
-    const bool leadvA = row ? leftvA : rightvA;
-    const bool leadvN = row ? leftvN : rightvN;
-    //const bool othervS = !row ? leftvS : rightvS;
-    const bool othervO = !row ? leftvO : rightvO;
-    //const bool othervA = !row ? leftvA : rightvA;
-    const bool othervN = !row ? leftvN : rightvN;
     const bool thinSVD = (m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m);
-    const bool fast_thinSVD = (thinSVD && fast_alg == rocblas_outofplace);
-
-    // auxiliary sizes and variables
     const rocblas_int k = min(m, n);
-    const rocblas_int kk = max(m, n);
-    const rocblas_int nu = leftvN ? 0 : ((fast_thinSVD || (thinSVD && leadvN)) ? k : m);
-    const rocblas_int nv = rightvN ? 0 : ((fast_thinSVD || (thinSVD && leadvN)) ? k : n);
-    const rocblas_storev storev_lead = row ? rocblas_column_wise : rocblas_row_wise;
-    const rocblas_storev storev_other = row ? rocblas_row_wise : rocblas_column_wise;
-    const rocblas_side side = row ? rocblas_side_right : rocblas_side_left;
-    rocblas_int mn;
 
-    // size of array of pointers to workspace
-    if(BATCHED)
-        *size_workArr = 2 * sizeof(T*) * batch_count;
-    else
-        *size_workArr = 0;
+    // init sizes
+    size_t a[3] = {};
+    size_t b[3] = {};
+    size_t c[3] = {};
+    size_t d[3] = {};
+    size_t e[5] = {};
+    size_t f[5] = {};
+    size_t g[5] = {};
+    size_t w[5] = {};
 
-    // size of array tau to store householder scalars on intermediate
-    // orthonormal/unitary matrices
-    *size_tau = 2 * sizeof(T) * min(m, n) * batch_count;
+    // general requirements for bdsvdx and gebrd
+    *size_tmpDE = 2 * k * sizeof(S) * bc;
+    *size_tauqp = 2 * k * sizeof(T) * bc;
+    *size_tmpZ = 2 * k * k * sizeof(S) * bc;
+    //    rocsolver_bdsvdx_getMemorySize<S>(k, bc, size_WS_svdx1, &a[0], &b[0], &c[0], &d[0], size_WS_svdx6,
+    //                              size_WS_svdx7, size_WS_svdx8, size_WS_svdx9, &e[0], &f[0], &g[0]);
 
-    // size of arrays to store temporary copies
-    *size_tempArrayT
-        = (fast_thinSVD || (thinSVD && leadvO && othervN)) ? sizeof(T) * k * k * batch_count : 0;
-    *size_tempArrayC
-        = (fast_thinSVD && (othervN || othervO || leadvO)) ? sizeof(T) * m * n * batch_count : 0;
-
-    // workspace required for the bidiagonalization
-    if(thinSVD)
-        rocsolver_gebrd_getMemorySize<BATCHED, T>(k, k, batch_count, size_scalars, &w[0], &a[0],
-                                                  &x[0], &y[0]);
-    else
-        rocsolver_gebrd_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &w[0], &a[0],
-                                                  &x[0], &y[0]);
-
-    // workspace required for the SVD of the bidiagonal form
-    rocsolver_bdsqr_getMemorySize<S>(k, nv, nu, 0, batch_count, &w[1]);
-
-    // extra requirements for QR/LQ factorization
     if(thinSVD)
     {
+        // requirements for column/row compression
+        *size_tau = k * sizeof(T) * bc;
+        *size_tmpT = k * k * sizeof(T) * bc;
         if(row)
-            rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, &unused, &w[2], &x[1],
-                                                      &y[1], &unused);
+            rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, bc, size_scalars, &a[1], &b[1], &c[1],
+                                                      &w[0]);
         else
-            rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, &unused, &w[2], &x[1],
-                                                      &y[1], &unused);
-    }
+            rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, bc, size_scalars, &a[1], &b[1], &c[1],
+                                                      &w[0]);
 
-    // extra requirements for orthonormal/unitary matrix generation
-    // ormbr
-    if(thinSVD && !fast_thinSVD && !leadvN)
-        rocsolver_ormbr_unmbr_getMemorySize<BATCHED, T>(storev_lead, side, m, n, k, batch_count,
-                                                        &unused, &a[1], &y[2], &x[2], &unused);
-    // orgbr
-    if(thinSVD)
-    {
-        if(!othervN)
-            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(storev_other, k, k, k, batch_count,
-                                                            &unused, &w[3], &a[2], &x[3], &unused);
-
-        if(fast_thinSVD && !leadvN)
-            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(storev_lead, k, k, k, batch_count,
-                                                            &unused, &w[4], &a[3], &x[4], &unused);
+        // extra requirements for gebrd
+        rocsolver_gebrd_getMemorySize<false, T>(k, k, bc, size_scalars, &a[2], &b[2], &c[2], &d[1]);
     }
     else
     {
-        mn = (row && leftvS) ? n : m;
-        if(leftvS || leftvA)
-            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(
-                rocblas_column_wise, m, mn, n, batch_count, &unused, &w[3], &a[2], &x[3], &unused);
-        else if(leftvO)
-            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(
-                rocblas_column_wise, m, k, n, batch_count, &unused, &w[3], &a[2], &x[3], &unused);
+        // requirements for column/row compression
+        *size_tau = 0;
+        *size_tmpT = 0;
 
-        mn = (!row && rightvS) ? m : n;
-        if(rightvS || rightvA)
-            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(rocblas_row_wise, mn, n, m, batch_count,
-                                                            &unused, &w[4], &a[3], &x[4], &unused);
-        else if(rightvO)
-            rocsolver_orgbr_ungbr_getMemorySize<BATCHED, T>(rocblas_row_wise, k, n, m, batch_count,
-                                                            &unused, &w[4], &a[3], &x[4], &unused);
+        // extra requirements for gebrd
+        rocsolver_gebrd_getMemorySize<BATCHED, T>(m, n, bc, size_scalars, &a[2], &b[2], &c[2], &d[1]);
     }
-    // orgqr/orglq
-    if(thinSVD && !leadvN)
+
+    if(leftvS)
     {
-        if(leadvA)
+        if(thinSVD)
         {
+            // requirements for ormqr
             if(row)
-                rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(kk, kk, k, batch_count, &unused,
-                                                                &w[5], &a[4], &x[5], &unused);
-            else
-                rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(kk, kk, k, batch_count, &unused,
-                                                                &w[5], &a[4], &x[5], &unused);
+                rocsolver_ormqr_unmqr_getMemorySize<BATCHED, T>(
+                    rocblas_side_left, m, k, k, bc, size_scalars, &e[1], &f[1], &g[1], &w[1]);
+
+            // requirements for ormbr
+            rocsolver_ormbr_unmbr_getMemorySize<false, T>(rocblas_column_wise, rocblas_side_left, k,
+                                                          k, k, bc, size_scalars, &e[2], &f[2],
+                                                          &g[2], &w[2]);
         }
         else
         {
+            // requirements for ormbr
+            rocblas_int mm = row ? m : k;
+            rocblas_int kk = row ? k : n;
+            rocsolver_ormbr_unmbr_getMemorySize<BATCHED, T>(rocblas_column_wise, rocblas_side_left,
+                                                            mm, k, kk, bc, size_scalars, &e[2],
+                                                            &f[2], &g[2], &w[2]);
+        }
+    }
+
+    if(rightvS)
+    {
+        if(thinSVD)
+        {
+            // requirements for ormlq
             if(row)
-                rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, n, k, batch_count, &unused,
-                                                                &w[5], &a[4], &x[5], &unused);
-            else
-                rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(m, n, k, batch_count, &unused,
-                                                                &w[5], &a[4], &x[5], &unused);
+                rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(
+                    rocblas_side_right, k, n, k, bc, size_scalars, &e[3], &f[3], &g[3], &w[3]);
+
+            // requirements for ormbr
+            rocsolver_ormbr_unmbr_getMemorySize<false, T>(rocblas_row_wise, rocblas_side_right, k,
+                                                          k, k, bc, size_scalars, &e[4], &f[4],
+                                                          &g[4], &w[4]);
+        }
+        else
+        {
+            // requirements for ormbr
+            rocblas_int nn = row ? k : n;
+            rocblas_int kk = row ? m : k;
+            rocsolver_ormbr_unmbr_getMemorySize<BATCHED, T>(rocblas_row_wise, rocblas_side_right, k,
+                                                            nn, kk, bc, size_scalars, &e[4], &f[4],
+                                                            &g[4], &w[4]);
         }
     }
 
     // get max sizes
-    *size_work_workArr = *std::max_element(std::begin(w), std::end(w));
-    *size_Abyx_norms_tmptr = *std::max_element(std::begin(a), std::end(a));
-    *size_Abyx_norms_trfact_X = *std::max_element(std::begin(x), std::end(x));
-    *size_diag_tmptr_Y = *std::max_element(std::begin(y), std::end(y));
+    *size_workArr = *std::max_element(std::begin(w), std::end(w));
+    *size_WS_svdx2_lqrf1_brd1 = *std::max_element(std::begin(a), std::end(a));
+    *size_WS_svdx3_lqrf2_brd2 = *std::max_element(std::begin(b), std::end(b));
+    *size_WS_svdx4_lqrf3_brd3 = *std::max_element(std::begin(c), std::end(c));
+    *size_WS_svdx5_brd4 = *std::max_element(std::begin(d), std::end(d));
+    *size_WS_svdx10_mlqr1_mbr1 = *std::max_element(std::begin(e), std::end(e));
+    *size_WS_svdx11_mlqr2_mbr2 = *std::max_element(std::begin(f), std::end(f));
+    *size_WS_svdx12_mlqr3_mbr3 = *std::max_element(std::begin(g), std::end(g));
+
+    // size of extra array of pointers to workspace
+    if(BATCHED && thinSVD && ((leftvS && row) || (rightvS || !row)))
+        *size_workArr2 = sizeof(T*) * bc;
+    else
+        *size_workArr2 = 0;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename TT, typename W>
@@ -283,13 +281,31 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                                          rocblas_int* ifail,
                                          const rocblas_stride strideF,
                                          rocblas_int* info,
-                                         const rocblas_int batch_count)
+                                         const rocblas_int batch_count,
+                                         T* scalars,
+                                         rocblas_int* WS_svdx1,
+                                         void* WS_svdx2_lqrf1_brd1,
+                                         void* WS_svdx3_lqrf2_brd2,
+                                         void* WS_svdx4_lqrf3_brd3,
+                                         void* WS_svdx5_brd4,
+                                         rocblas_int* WS_svdx6,
+                                         rocblas_int* WS_svdx7,
+                                         rocblas_int* WS_svdx8,
+                                         rocblas_int* WS_svdx9,
+                                         void* WS_svdx10_mlqr1_mbr1,
+                                         void* WS_svdx11_mlqr2_mbr2,
+                                         void* WS_svdx12_mlqr3_mbr3,
+                                         TT* tmpDE,
+                                         T* tauqp,
+                                         TT* tmpZ,
+                                         T* tau,
+                                         T* tmpT,
+                                         T** workArr,
+                                         T** workArr2)
 {
-    ROCSOLVER_ENTER("gesvd", "leftsv:", left_svect, "rightsv:", right_svect, "srange:", srange,
+    ROCSOLVER_ENTER("gesvdx", "leftsv:", left_svect, "rightsv:", right_svect, "srange:", srange,
                     "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "vl:", vl, "vu:", vu,
                     "il:", il, "iu:", iu, "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
-
-    constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     // quick return
     if(n == 0 || m == 0 || batch_count == 0)
@@ -297,15 +313,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-
-    // everything must be executed with scalars on the host
-    rocblas_pointer_mode old_mode;
-    rocblas_get_pointer_mode(handle, &old_mode);
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
-
-    // constants to use when calling rocablas functions
-    T one = 1;
-    T zero = 0;
 
     // booleans used to determine the path that the execution will follow:
     const bool row = (m >= n);
@@ -332,10 +339,10 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
     rocblas_stride strideUV;
     rocblas_int lduv;
     rocblas_int offZ;
-    bool trans,
+    bool trans;
 
-        // common block sizes and number of threads for internal kernels
-        const rocblas_int blocks_m = (m - 1) / thread_count + 1;
+    // common block sizes and number of threads for internal kernels
+    const rocblas_int blocks_m = (m - 1) / thread_count + 1;
     const rocblas_int blocks_n = (n - 1) / thread_count + 1;
     const rocblas_int blocks_k = (k - 1) / thread_count + 1;
 
@@ -344,9 +351,9 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
     if(thinSVD)
     {
         // apply qr/lq factorization
-        local_geqrlq_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, tau, k,
-                                                batch_count, scalars, lqrfWS1, lqrfWS2, lqrfWS3,
-                                                workArr, row);
+        local_geqrlq_template<BATCHED, STRIDED>(
+            handle, m, n, A, shiftA, lda, strideA, tau, k, batch_count, scalars,
+            WS_svdx2_lqrf1_brd1, (T*)WS_svdx3_lqrf2_brd2, (T*)WS_svdx4_lqrf3_brd3, workArr, row);
 
         // copy triangular factor
         ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
@@ -359,28 +366,31 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                                 strideT, uplo);
 
         // apply gebrd to triangular factor
-        rocsolver_gebrd_template<false, STRIDED>(handle, k, k, tmpT, 0, ldt, strideT, tmpD, strideD,
-                                                 tmpE, strideE, tauqp, k, (tauqp + k * batch_count),
-                                                 k, tmpX, 0, ldx, strideX, tmpY, 0, ldy, strideY,
-                                                 batch_count, scalars, brdWS1, brdWS2);
+        rocsolver_gebrd_template<false, STRIDED>(
+            handle, k, k, tmpT, 0, ldt, strideT, tmpDE, strideD, (tmpDE + k * batch_count), strideE,
+            tauqp, k, (tauqp + k * batch_count), k, (T*)WS_svdx4_lqrf3_brd3, 0, ldx, strideX,
+            (T*)WS_svdx5_brd4, 0, ldy, strideY, batch_count, scalars, WS_svdx2_lqrf1_brd1,
+            (T*)WS_svdx3_lqrf2_brd2);
     }
     else
     {
         // apply gebrd to matrix A
         rocsolver_gebrd_template<BATCHED, STRIDED>(
-            handle, m, n, A, shiftA, lda, strideA, tmpD, strideD, tmpE, strideE, tauqp, k,
-            (tauqp + k * batch_count), k, tmpX, 0, ldx, strideX, tmpY, 0, ldy, strideY, batch_count,
-            scalars, brdWS1, brdWS2);
+            handle, m, n, A, shiftA, lda, strideA, tmpDE, strideD, (tmpDE + k * batch_count),
+            strideE, tauqp, k, (tauqp + k * batch_count), k, (T*)WS_svdx4_lqrf3_brd3, 0, ldx,
+            strideX, (T*)WS_svdx5_brd4, 0, ldy, strideY, batch_count, scalars, WS_svdx2_lqrf1_brd1,
+            (T*)WS_svdx3_lqrf2_brd2);
     }
 
     /***** 2. solve bidiagonal problem *****/
     /***************************************/
     // compute SVD of bidiagonal matrix
-    uplo = thinSVD ? rocblas_fill_upper : uplo;
-    rocsolver_bdsvdx_template(handle, uplo, svect, srange, k, tmpD, strideD, tmpE, strideE, vl, vu,
-                              il, iu, nsv, S, strideS, tmpZ, 0, ldz, strideZ, ifail, strideF, info,
-                              batch_count, svdxWS1, svdxWS2, svdxWS3, svdxWS4, svdxWS5, svdxWS6,
-                              svdxWS7, svdxWS8, svdxWS9, svdxWS10, svdxWS11, svdxWS12);
+    //    uplo = thinSVD ? rocblas_fill_upper : uplo;
+    //    rocsolver_bdsvdx_template(handle, uplo, svect, srange, k, tmpDE, strideD, (tmpDE + k * batch_count), strideE, vl, vu,
+    //                              il, iu, nsv, S, strideS, tmpZ, 0, ldz, strideZ, ifail, strideF, info,
+    //                              batch_count, WS_svdx1, (TT*)WS_svdx2_lqrf1_brd1, (TT*)WS_svdx3_lqrf2_brd2, (TT*)WS_svdx4_lqrf3_brd3,
+    //                              (TT*)WS_svdx5_brd4, WS_svdx6, WS_svdx7, WS_svdx8, WS_svdx9, (TT*)WS_svdx10_mlqr1_mbr1,
+    //                              (TT*)WS_svdx11_mlqr2_mbr2, (TT*)WS_svdx12_mlqr3_mbr3)
 
     /***** 3. compute/update left vectors *****/
     /******************************************/
@@ -395,7 +405,7 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                                 strideU);
 
         // copy left vectors to matrix U
-        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_k, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream, false, k, k, tmpZ,
                                 0, ldz, strideZ, U, 0, ldu, strideU);
 
@@ -404,16 +414,18 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             // apply ormbr (update with tranformation from bidiagonalization)
             rocsolver_ormbr_unmbr_template<false, STRIDED>(
                 handle, rocblas_column_wise, rocblas_side_left, rocblas_operation_none, k, k, k,
-                tmpT, 0, ldt, strideT, tauqp, k, U, 0, ldu, strideU, batch_count, scalars, mbrWS1,
-                mbrWS2, mbrWS3, workArr);
+                tmpT, 0, ldt, strideT, tauqp, k, U, 0, ldu, strideU, batch_count, scalars,
+                (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2, (T*)WS_svdx12_mlqr3_mbr3,
+                workArr);
 
             if(row)
             {
                 // apply ormqr (update with transformation from row compression)
                 rocsolver_ormqr_unmqr_template<BATCHED, STRIDED>(
                     handle, rocblas_side_left, rocblas_operation_none, m, k, k, A, shiftA, lda,
-                    strideA, tau, k, U, 0, ldu, strideU, batch_count, scalars, mlqrWS1, mlqrWS2,
-                    mlqrWS3, workArr);
+                    strideA, tau, k, U, 0, ldu, strideU, batch_count, scalars,
+                    (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2, (T*)WS_svdx12_mlqr3_mbr3,
+                    workArr, workArr2);
             }
         }
         else
@@ -423,8 +435,9 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             rocblas_int kk = row ? k : n;
             rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
                 handle, rocblas_column_wise, rocblas_side_left, rocblas_operation_none, mm, k, kk,
-                A, shiftA, lda, strideA, tauqp, k, U, 0, ldu, strideU, batch_count, scalars, mbrWS1,
-                mbrWS2, mbrWS3, workArr);
+                A, shiftA, lda, strideA, tauqp, k, U, 0, ldu, strideU, batch_count, scalars,
+                (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2, (T*)WS_svdx12_mlqr3_mbr3,
+                workArr);
         }
     }
 
@@ -441,7 +454,7 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                                 strideV);
 
         // copy right vectors to matrix V
-        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat<T>, dim3(blocks_k, blocks_k, batch_count),
+        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_k, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream, true, k, k, tmpZ, k,
                                 ldz, strideZ, V, 0, ldv, strideV);
 
@@ -451,15 +464,17 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             rocsolver_ormbr_unmbr_template<false, STRIDED>(
                 handle, rocblas_row_wise, rocblas_side_right, rocblas_operation_transpose, k, k, k,
                 tmpT, 0, ldt, strideT, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
-                batch_count, scalars, mbrWS1, mbrWS2, mbrWS3, workArr);
+                batch_count, scalars, (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2,
+                (T*)WS_svdx12_mlqr3_mbr3, workArr);
 
             if(!row)
             {
                 // apply ormlq (update with transformation from column compression)
                 rocsolver_ormlq_unmlq_template<BATCHED, STRIDED>(
                     handle, rocblas_side_right, rocblas_operation_none, k, n, k, A, shiftA, lda,
-                    strideA, tau, k, V, 0, ldv, strideV, batch_count, scalars, mlqrWS1, mlqrWS2,
-                    mlqrWS3, workArr);
+                    strideA, tau, k, V, 0, ldv, strideV, batch_count, scalars,
+                    (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2, (T*)WS_svdx12_mlqr3_mbr3,
+                    workArr, workArr2);
             }
         }
         else
@@ -470,7 +485,8 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
                 handle, rocblas_row_wise, rocblas_side_right, rocblas_operation_transpose, k, nn,
                 kk, A, shiftA, lda, strideA, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
-                batch_count, scalars, mbrWS1, mbrWS2, mbrWS3, workArr);
+                batch_count, scalars, (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2,
+                (T*)WS_svdx12_mlqr3_mbr3, workArr);
         }
     }
 

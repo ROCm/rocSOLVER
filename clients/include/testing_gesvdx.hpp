@@ -734,7 +734,7 @@ void testing_gesvdx(Arguments& argus)
     bool invalid_size = (n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || bc < 0)
         || (leftv == rocblas_svect_singular && ldu < m)
         || (rightv == rocblas_svect_singular && ldv < nn)
-        || (srange == rocblas_srange_value && vl >= vu)
+        || (srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         || (srange == rocblas_srange_index && (il < 1 || iu < 0))
         || (srange == rocblas_srange_index && (iu > n || (n > 0 && il > iu)));
 

@@ -11807,11 +11807,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     lda         rocblas_int. lda >= m.\n
                 The leading dimension of A.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. 0 <= vl < vu.\n
                 The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. 0 <= vl < vu.\n
                 The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
@@ -11999,11 +11999,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     lda         rocblas_int. lda >= m.\n
                 The leading dimension of A_j.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. 0 <= vl < vu.\n
                 The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. 0 <= vl < vu.\n
                 The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
@@ -12231,11 +12231,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 Stride from the start of one matrix A_j to the next one A_(j+1).
                 There is no restriction for the value of strideS. Normal use case is strideA >= lda*n.
     @param[in]
-    vl          real type. vl < vu.\n
+    vl          real type. 0 <= vl < vu.\n
                 The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
-    vu          real type. vl < vu.\n
+    vu          real type. 0 <= vl < vu.\n
                 The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
