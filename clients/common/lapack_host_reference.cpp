@@ -4708,24 +4708,6 @@ void cblas_gemv<rocblas_double_complex>(rocblas_operation transA,
 
 // gemm
 template <>
-void cblas_gemv<rocblas_double_complex>(rocblas_operation transA,
-                                        rocblas_int m,
-                                        rocblas_int n,
-                                        rocblas_double_complex alpha,
-                                        rocblas_double_complex* A,
-                                        rocblas_int lda,
-                                        rocblas_double_complex* x,
-                                        rocblas_int incx,
-                                        rocblas_double_complex beta,
-                                        rocblas_double_complex* y,
-                                        rocblas_int incy)
-{
-    char transAC = rocblas2char_operation(transA);
-    zgemv_(&transAC, &m, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy);
-}
-
-// gemm
-template <>
 void cblas_gemm<float>(rocblas_operation transA,
                        rocblas_operation transB,
                        rocblas_int m,
@@ -4745,27 +4727,6 @@ void cblas_gemm<float>(rocblas_operation transA,
     sgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
 }
 
-=======
-void cblas_gemm<float>(rocblas_operation transA,
-                       rocblas_operation transB,
-                       rocblas_int m,
-                       rocblas_int n,
-                       rocblas_int k,
-                       float alpha,
-                       float* A,
-                       rocblas_int lda,
-                       float* B,
-                       rocblas_int ldb,
-                       float beta,
-                       float* C,
-                       rocblas_int ldc)
-{
-    char transAC = rocblas2char_operation(transA);
-    char transBC = rocblas2char_operation(transB);
-    sgemm_(&transAC, &transBC, &m, &n, &k, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
-}
-
->>>>>>> add empty function and unit test
 template <>
 void cblas_gemm<double>(rocblas_operation transA,
                         rocblas_operation transB,

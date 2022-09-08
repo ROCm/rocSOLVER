@@ -9,7 +9,7 @@
 
 #pragma once
 
-//#include "auxiliary/rocauxiliary_bdsvdx.hpp"
+#include "auxiliary/rocauxiliary_bdsvdx.hpp"
 #include "auxiliary/rocauxiliary_ormbr_unmbr.hpp"
 #include "auxiliary/rocauxiliary_ormlq_unmlq.hpp"
 #include "auxiliary/rocauxiliary_ormqr_unmqr.hpp"
@@ -159,8 +159,9 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
     *size_tmpDE = 2 * k * sizeof(S) * bc;
     *size_tauqp = 2 * k * sizeof(T) * bc;
     *size_tmpZ = 2 * k * k * sizeof(S) * bc;
-    //    rocsolver_bdsvdx_getMemorySize<S>(k, bc, size_WS_svdx1, &a[0], &b[0], &c[0], &d[0], size_WS_svdx6,
-    //                              size_WS_svdx7, size_WS_svdx8, size_WS_svdx9, &e[0], &f[0], &g[0]);
+    rocsolver_bdsvdx_getMemorySize<S>(k, bc, size_WS_svdx1, &a[0], &b[0], &c[0], &d[0],
+                                      size_WS_svdx6, size_WS_svdx7, size_WS_svdx8, size_WS_svdx9,
+                                      &e[0], &f[0], &g[0]);
 
     if(thinSVD)
     {
@@ -385,12 +386,13 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
     /***** 2. solve bidiagonal problem *****/
     /***************************************/
     // compute SVD of bidiagonal matrix
-    //    uplo = thinSVD ? rocblas_fill_upper : uplo;
-    //    rocsolver_bdsvdx_template(handle, uplo, svect, srange, k, tmpDE, strideD, (tmpDE + k * batch_count), strideE, vl, vu,
-    //                              il, iu, nsv, S, strideS, tmpZ, 0, ldz, strideZ, ifail, strideF, info,
-    //                              batch_count, WS_svdx1, (TT*)WS_svdx2_lqrf1_brd1, (TT*)WS_svdx3_lqrf2_brd2, (TT*)WS_svdx4_lqrf3_brd3,
-    //                              (TT*)WS_svdx5_brd4, WS_svdx6, WS_svdx7, WS_svdx8, WS_svdx9, (TT*)WS_svdx10_mlqr1_mbr1,
-    //                              (TT*)WS_svdx11_mlqr2_mbr2, (TT*)WS_svdx12_mlqr3_mbr3)
+    uplo = thinSVD ? rocblas_fill_upper : uplo;
+    rocsolver_bdsvdx_template(
+        handle, uplo, svect, srange, k, tmpDE, strideD, (tmpDE + k * batch_count), strideE, vl, vu,
+        il, iu, nsv, S, strideS, tmpZ, 0, ldz, strideZ, ifail, strideF, info, batch_count, WS_svdx1,
+        (TT*)WS_svdx2_lqrf1_brd1, (TT*)WS_svdx3_lqrf2_brd2, (TT*)WS_svdx4_lqrf3_brd3,
+        (TT*)WS_svdx5_brd4, WS_svdx6, WS_svdx7, WS_svdx8, WS_svdx9, (TT*)WS_svdx10_mlqr1_mbr1,
+        (TT*)WS_svdx11_mlqr2_mbr2, (TT*)WS_svdx12_mlqr3_mbr3);
 
     /***** 3. compute/update left vectors *****/
     /******************************************/
