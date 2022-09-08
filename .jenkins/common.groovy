@@ -39,10 +39,10 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
         deps = '-b'
     }
     def command = """#!/usr/bin/env bash
+                ${centos}
                 set -ex
                 cd ${project.paths.project_build_prefix}
                 ${getRocBLAS}
-                ${centos}
                 ${project.paths.build_command} ${deps} ${debug} ${noOptimizations}
                 """
     platform.runCommand(this, command)
