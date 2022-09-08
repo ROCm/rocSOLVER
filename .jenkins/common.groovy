@@ -6,31 +6,44 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
     project.paths.construct_build_prefix()
 
     String compiler = 'hipcc'
-    String hipClang = ''
     String debug = project.buildName.contains('Debug') ? '-g' : ''
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
     String noOptimizations = ''
+    boolean usePrebuiltDependencies = true
 
     if (env.BRANCH_NAME ==~ /PR-\d+/)
     {
+        usePrebuiltDependencies = false
+
         pullRequest.labels.each
         {
             if (it == "noOptimizations")
             {
                 noOptimizations = "-n"
             }
+            else if (it == "ci:prebuilt-deps")
+            {
+                usePrebuiltDependencies = true
+            }
         }
     }
 
-    def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel, null, sameOrg)
+    String getRocBLAS = ''
+    String deps = ''
+    if (usePrebuiltDependencies)
+    {
+        getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel, null, sameOrg)
+    }
+    else
+    {
+        deps = '-b'
+    }
     def command = """#!/usr/bin/env bash
-                set -x
+                set -ex
                 cd ${project.paths.project_build_prefix}
                 ${getRocBLAS}
-                ${auxiliary.exitIfNotSuccess()}
                 ${centos}
-                ${project.paths.build_command} ${hipClang} ${debug} ${noOptimizations}
-                ${auxiliary.exitIfNotSuccess()}
+                ${project.paths.build_command} ${deps} ${debug} ${noOptimizations}
                 """
     platform.runCommand(this, command)
 }
