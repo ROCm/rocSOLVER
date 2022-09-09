@@ -58,7 +58,7 @@ const vector<vector<int>> opt_range = {
     {0, 0, 2, 0, 0, 10, 80},
     // valid only when n=0
     {0, 0, 2, 0, 0, 1, 0},
-    // valid only when n>0
+    // valid only when n>1
     {0, 0, 2, 0, 0, 1, 5},
     {0, 1, 2, 0, 0, 1, 15},
     {1, 0, 2, 0, 0, 7, 12},

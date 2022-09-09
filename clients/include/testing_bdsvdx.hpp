@@ -43,7 +43,7 @@ void bdsvdx_checkBadArgs(const rocblas_handle handle,
     EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, rocblas_svect_all, srange, n, dD, dE, vl,
                                            vu, il, iu, dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, rocblas_srange(-1), n, dD, dE, vl,
+    EXPECT_ROCBLAS_STATUS(rocsolver_bdsvdx(handle, uplo, svect, rocblas_srange(0), n, dD, dE, vl,
                                            vu, il, iu, dNsv, dS, dZ, ldz, dIfail, dInfo),
                           rocblas_status_invalid_value);
 
@@ -421,7 +421,7 @@ void testing_bdsvdx(Arguments& argus)
     bool invalid_size = (n < 0) || (svect == rocblas_svect_none && ldz < 1)
         || (svect != rocblas_svect_none && ldz < 2 * n)
         || (srange == rocblas_srange_value && (vl < 0 || vl >= vu))
-        || (srange == rocblas_srange_index && (iu > n || (n > 0 && il > iu)))
+        || (srange == rocblas_srange_index && (iu > n) || (n > 0 && il > iu))
         || (srange == rocblas_srange_index && (il < 1 || iu < 0));
     if(invalid_size)
     {

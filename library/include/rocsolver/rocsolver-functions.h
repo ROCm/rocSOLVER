@@ -11809,19 +11809,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     @param[in]
     vl          real type. 0 <= vl < vu.\n
                 The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
-                for all the singular values of B or the singular values within a set of indices.
+                for all the singular values of A or the singular values within a set of indices.
     @param[in]
     vu          real type. 0 <= vl < vu.\n
                 The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
-                for all the singular values of B or the singular values within a set of indices.
+                for all the singular values of A or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the largest singular value to be computed. Ignored if srange indicates to look
-                for all the singular values of B or the singular values in a half-open interval.
+                for all the singular values of A or the singular values in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
-                for all the singular values of B or the singular values in a half-open interval.
+                for all the singular values of A or the singular values in a half-open interval.
     @param[out]
     nsv         pointer to a rocblas_int on the GPU. \n
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = min(m,n).
@@ -11964,7 +11964,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     The computation of the singular vectors is optional and it is controlled by
     the function arguments left_svect and right_svect as described below. When
     computed, this function returns the transpose (or transpose conjugate) of the
-    right singular vectors, i.e. the rows of \f$V_j'\f$ .
+    right singular vectors, i.e. the rows of \f$V_j'\f$.
 
     left_svect and right_svect are #rocblas_svect enums that, for this function, can take the
     following values:
@@ -11992,7 +11992,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     n           rocblas_int. n >= 0.\n
                 The number of columns of matrix A_j.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n..\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
                 On entry, the matrices A_j.
                 On exit, the contents of A_j are destroyed.
     @param[in]
@@ -12001,19 +12001,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     @param[in]
     vl          real type. 0 <= vl < vu.\n
                 The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
-                for all the singular values of B or the singular values within a set of indices.
+                for all the singular values of A_j or the singular values within a set of indices.
     @param[in]
     vu          real type. 0 <= vl < vu.\n
                 The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
-                for all the singular values of B or the singular values within a set of indices.
+                for all the singular values of A_j or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the largest singular value to be computed. Ignored if srange indicates to look
-                for all the singular values of B or the singular values in a half-open interval.
+                for all the singular values of A_j or the singular values in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
-                for all the singular values of B or the singular values in a half-open interval.
+                for all the singular values of A_j or the singular values in a half-open interval.
     @param[out]
     nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. \n
                 The total number of singular values found. If srange is rocblas_srange_all, nsv[j] = min(m,n).
@@ -12032,7 +12032,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                 referenced if left_svect is set to none.
     @param[in]
     ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.\n
-                The leading dimension of U.
+                The leading dimension of U_j.
     @param[in]
     strideU     rocblas_stride.\n
                 Stride from the start of one matrix U_j to the next one U_(j+1).
@@ -12044,7 +12044,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     @param[in]
     ldv         rocblas_int. ldv >= min(m,n) if right_svect is
                 set to singular; or ldv >= 1 otherwise.\n
-                The leading dimension of V.
+                The leading dimension of V_j.
     @param[in]
     strideV     rocblas_stride.\n
                 Stride from the start of one matrix V_j to the next one V_(j+1).
@@ -12192,7 +12192,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     The computation of the singular vectors is optional and it is controlled by
     the function arguments left_svect and right_svect as described below. When
     computed, this function returns the transpose (or transpose conjugate) of the
-    right singular vectors, i.e. the rows of \f$V_j'\f$ .
+    right singular vectors, i.e. the rows of \f$V_j'\f$.
 
     left_svect and right_svect are #rocblas_svect enums that, for this function, can take the
     following values:
@@ -12220,7 +12220,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     n           rocblas_int. n >= 0.\n
                 The number of columns of matrix A_j.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA)\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
                 On entry, the matrices A_j.
                 On exit, the contents of A_j are destroyed.
     @param[in]
@@ -12229,23 +12229,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one matrix A_j to the next one A_(j+1).
-                There is no restriction for the value of strideS. Normal use case is strideA >= lda*n.
+                There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
     vl          real type. 0 <= vl < vu.\n
                 The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
-                for all the singular values of B or the singular values within a set of indices.
+                for all the singular values of A_j or the singular values within a set of indices.
     @param[in]
     vu          real type. 0 <= vl < vu.\n
                 The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
-                for all the singular values of B or the singular values within a set of indices.
+                for all the singular values of A_j or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the largest singular value to be computed. Ignored if srange indicates to look
-                for all the singular values of B or the singular values in a half-open interval.
+                for all the singular values of A_j or the singular values in a half-open interval.
     @param[in]
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
-                for all the singular values of B or the singular values in a half-open interval.
+                for all the singular values of A_j or the singular values in a half-open interval.
     @param[out]
     nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. \n
                 The total number of singular values found. If srange is rocblas_srange_all, nsv[j] = min(m,n).
@@ -12264,7 +12264,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 referenced if left_svect is set to none.
     @param[in]
     ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.\n
-                The leading dimension of U.
+                The leading dimension of U_j.
     @param[in]
     strideU     rocblas_stride.\n
                 Stride from the start of one matrix U_j to the next one U_(j+1).
@@ -12276,7 +12276,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     @param[in]
     ldv         rocblas_int. ldv >= min(m,n) if right_svect is
                 set to singular; or ldv >= 1 otherwise.\n
-                The leading dimension of V.
+                The leading dimension of V_j.
     @param[in]
     strideV     rocblas_stride.\n
                 Stride from the start of one matrix V_j to the next one V_(j+1).

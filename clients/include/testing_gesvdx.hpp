@@ -55,10 +55,9 @@ void gesvdx_checkBadArgs(const rocblas_handle handle,
                                            m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU,
                                            ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect,
-                                           rocblas_srange(-1), m, n, dA, lda, stA, vl, vu, il, iu,
-                                           dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV, difail, stF,
-                                           dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, rocblas_srange(0),
+                                           m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU,
+                                           ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
@@ -302,19 +301,19 @@ void gesvdx_getError(const rocblas_handle handle,
                      const rocblas_stride stVT,
                      Wh& hA,
                      Ih& hNsv,
-                     Ih& NsvRes,
+                     Ih& hNsvRes,
                      Uh& hS,
-                     Uh& Sres,
+                     Uh& hSres,
                      Th& hU,
-                     Th& Ures,
+                     Th& hUres,
                      const rocblas_int ldures,
                      Th& hV,
-                     Th& Vres,
+                     Th& hVres,
                      const rocblas_int ldvres,
                      Ih& hifail,
-                     Ih& ifailRes,
+                     Ih& hifailRes,
                      Ih& hinfo,
-                     Ih& infoRes,
+                     Ih& hinfoRes,
                      double* max_err,
                      double* max_errv)
 {
@@ -325,7 +324,7 @@ void gesvdx_getError(const rocblas_handle handle,
         rocblas_int lrwork = 17 * minn * minn;
         std::vector<T> work(lwork);
         std::vector<S> rwork(lrwork);
-        HOWEVER, gesvdx_ GIVES ILEGAL VALUE FOR ARGUMENT lwork.
+        HOWEVER, gesvdx_ GIVES ILLEGAL VALUE FOR ARGUMENT lwork.
 
         Making the memory query to get the correct workspace dimension:
         std::vector<T> query(1);
@@ -367,9 +366,9 @@ void gesvdx_getError(const rocblas_handle handle,
                                              ldvT, stVT, difail.data(), stF, dinfo.data(), bc));
 
         if(left_svect == rocblas_svect_none && right_svect != rocblas_svect_none)
-            CHECK_HIP_ERROR(Ures.transfer_from(dUT));
+            CHECK_HIP_ERROR(hUres.transfer_from(dUT));
         if(right_svect == rocblas_svect_none && left_svect != rocblas_svect_none)
-            CHECK_HIP_ERROR(Vres.transfer_from(dVT));
+            CHECK_HIP_ERROR(hVres.transfer_from(dVT));
     }
 
     gesvdx_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
@@ -416,15 +415,15 @@ void gesvdx_getError(const rocblas_handle handle,
                                          dS.data(), stS, dU.data(), ldu, stU, dV.data(), ldv, stV,
                                          difail.data(), stF, dinfo.data(), bc));
 
-    CHECK_HIP_ERROR(Sres.transfer_from(dS));
-    CHECK_HIP_ERROR(NsvRes.transfer_from(dNsv));
-    CHECK_HIP_ERROR(ifailRes.transfer_from(difail));
-    CHECK_HIP_ERROR(infoRes.transfer_from(dinfo));
+    CHECK_HIP_ERROR(hSres.transfer_from(dS));
+    CHECK_HIP_ERROR(hNsvRes.transfer_from(dNsv));
+    CHECK_HIP_ERROR(hifailRes.transfer_from(difail));
+    CHECK_HIP_ERROR(hinfoRes.transfer_from(dinfo));
 
     if(left_svect == rocblas_svect_singular)
-        CHECK_HIP_ERROR(Ures.transfer_from(dU));
+        CHECK_HIP_ERROR(hUres.transfer_from(dU));
     if(right_svect == rocblas_svect_singular)
-        CHECK_HIP_ERROR(Vres.transfer_from(dV));
+        CHECK_HIP_ERROR(hVres.transfer_from(dV));
 
     *max_err = 0;
     *max_errv = 0;
@@ -434,11 +433,11 @@ void gesvdx_getError(const rocblas_handle handle,
     //  meaning in gesvd_, however, We expect the used input matrices to always converge)
     /*for(rocblas_int b = 0; b < bc; ++b)
     {
-        if(hinfo[b][0] != infoRes[b][0])
+        if(hinfo[b][0] != hinfoRes[b][0])
             *max_err += 1;
         for(int j = 0; j < hNsv[b][0]; ++j)
         {
-            if(hifail[b][j] != ifailRes[b][j])
+            if(hifail[b][j] != hifailRes[b][j])
                 *max_err += 1;
         }
     }*/
@@ -447,15 +446,15 @@ void gesvdx_getError(const rocblas_handle handle,
     double err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        if(hNsv[b][0] != NsvRes[b][0])
+        if(hNsv[b][0] != hNsvRes[b][0])
             err++;
     }
     *max_err = err > *max_err ? err : *max_err;
 
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        // error is ||hS - Sres||
-        err = norm_error('F', 1, hNsv[b][0], 1, hS[b] + offset[b], Sres[b]); //WORKAROUND
+        // error is ||hS - hSres||
+        err = norm_error('F', 1, hNsv[b][0], 1, hS[b] + offset[b], hSres[b]); //WORKAROUND
         *max_err = err > *max_err ? err : *max_err;
 
         // Check the singular vectors if required
@@ -475,8 +474,8 @@ void gesvdx_getError(const rocblas_handle handle,
                 {
                     tmp = 0;
                     for(rocblas_int j = 0; j < n; ++j)
-                        tmp += A[b * lda * n + i + j * lda] * sconj(Vres[b][k + j * ldvres]);
-                    tmp2 = std::abs(tmp) - std::abs(Sres[b][k] * Ures[b][i + k * ldures]);
+                        tmp += A[b * lda * n + i + j * lda] * sconj(hVres[b][k + j * ldvres]);
+                    tmp2 = std::abs(tmp) - std::abs(hSres[b][k] * hUres[b][i + k * ldures]);
                     err += tmp2 * tmp2;
                 }
             }
@@ -544,7 +543,7 @@ void gesvdx_getPerfData(const rocblas_handle handle,
         rocblas_int lrwork = 17 * minn * minn;
         std::vector<T> work(lwork);
         std::vector<S> rwork(lrwork);
-        HOWEVER, gesvdx_ GIVES ILEGAL VALUE FOR ARGUMENT lwork.
+        HOWEVER, gesvdx_ GIVES ILLEGAL VALUE FOR ARGUMENT lwork.
 
         Making the memory query to get the correct workspace dimension:
         std::vector<T> query(1);
@@ -565,11 +564,12 @@ void gesvdx_getPerfData(const rocblas_handle handle,
         //gesvdx_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us_no_sync();
+        //*cpu_time_used = get_time_us_no_sync();
         //for(rocblas_int b = 0; b < bc; ++b)
         //    cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
         //                   work.data(), lwork, rwork.data(), hifail[b], hinfo[b]);
-        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
+        //*cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
+        *cpu_time_used = nan("");
     }
 
     gesvdx_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
@@ -704,10 +704,10 @@ void testing_gesvdx(Arguments& argus)
     // determine sizes
     rocblas_int ldures = 1;
     rocblas_int ldvres = 1;
-    size_t size_Sres = 0;
-    size_t size_Ures = 0;
-    size_t size_Vres = 0;
-    size_t size_ifailRes = 0;
+    size_t size_hSres = 0;
+    size_t size_hUres = 0;
+    size_t size_hVres = 0;
+    size_t size_hifailRes = 0;
     size_t size_UT = 0;
     size_t size_VT = 0;
     size_t size_A = size_t(lda) * n;
@@ -717,39 +717,39 @@ void testing_gesvdx(Arguments& argus)
     size_t size_ifail = nn;
     if(argus.unit_check || argus.norm_check)
     {
-        size_ifailRes = nn;
+        size_hifailRes = nn;
         size_VT = size_t(ldvT) * n;
         size_UT = size_t(lduT) * nn;
-        size_Sres = nn;
+        size_hSres = nn;
         if(svects)
         {
             if(leftv == rocblas_svect_none)
             {
-                size_Ures = size_UT;
+                size_hUres = size_UT;
                 ldures = lduT;
             }
             else
             {
-                size_Ures = size_U;
+                size_hUres = size_U;
                 ldures = ldu;
             }
 
             if(rightv == rocblas_svect_none)
             {
-                size_Vres = size_VT;
+                size_hVres = size_VT;
                 ldvres = ldvT;
             }
             else
             {
-                size_Vres = size_V;
+                size_hVres = size_V;
                 ldvres = ldv;
             }
         }
     }
     rocblas_stride stUT = size_UT;
     rocblas_stride stVT = size_VT;
-    rocblas_stride stUres = size_Ures;
-    rocblas_stride stVres = size_Vres;
+    rocblas_stride stUres = size_hUres;
+    rocblas_stride stVres = size_hVres;
 
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0, max_errorv = 0;
 
@@ -759,7 +759,7 @@ void testing_gesvdx(Arguments& argus)
         || (rightv == rocblas_svect_singular && ldv < nn)
         || (srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         || (srange == rocblas_srange_index && (il < 1 || iu < 0))
-        || (srange == rocblas_srange_index && (iu > n || (n > 0 && il > iu)));
+        || (srange == rocblas_srange_index && (iu > nn || (nn > 0 && il > iu)));
 
     if(invalid_size)
     {
@@ -828,14 +828,14 @@ void testing_gesvdx(Arguments& argus)
     host_strided_batch_vector<T> hV(size_V, 1, stV, bc);
     host_strided_batch_vector<T> hU(size_U, 1, stU, bc);
     host_strided_batch_vector<rocblas_int> hNsv(1, 1, 1, bc);
-    host_strided_batch_vector<rocblas_int> NsvRes(1, 1, 1, bc);
+    host_strided_batch_vector<rocblas_int> hNsvRes(1, 1, 1, bc);
     host_strided_batch_vector<rocblas_int> hifail(12 * nn, 1, stF, bc);
-    host_strided_batch_vector<rocblas_int> ifailRes(size_ifailRes, 1, stF, bc);
+    host_strided_batch_vector<rocblas_int> hifailRes(size_hifailRes, 1, stF, bc);
     host_strided_batch_vector<rocblas_int> hinfo(1, 1, 1, bc);
-    host_strided_batch_vector<rocblas_int> infoRes(1, 1, 1, bc);
-    host_strided_batch_vector<S> Sres(size_Sres, 1, stS, bc);
-    host_strided_batch_vector<T> Vres(size_Vres, 1, stVres, bc);
-    host_strided_batch_vector<T> Ures(size_Ures, 1, stUres, bc);
+    host_strided_batch_vector<rocblas_int> hinfoRes(1, 1, 1, bc);
+    host_strided_batch_vector<S> hSres(size_hSres, 1, stS, bc);
+    host_strided_batch_vector<T> hVres(size_hVres, 1, stVres, bc);
+    host_strided_batch_vector<T> hUres(size_hUres, 1, stUres, bc);
     // device
     device_strided_batch_vector<S> dS(size_S, 1, stS, bc);
     device_strided_batch_vector<T> dV(size_V, 1, stV, bc);
@@ -888,8 +888,8 @@ void testing_gesvdx(Arguments& argus)
             gesvdx_getError<STRIDED, T>(
                 handle, leftv, rightv, srange, m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS,
                 dU, ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc, leftvT, rightvT, mT, nT, dUT,
-                lduT, stUT, dVT, ldvT, stVT, hA, hNsv, NsvRes, hS, Sres, hU, Ures, ldures, hV, Vres,
-                ldvres, hifail, ifailRes, hinfo, infoRes, &max_error, &max_errorv);
+                lduT, stUT, dVT, ldvT, stVT, hA, hNsv, hNsvRes, hS, hSres, hU, hUres, ldures, hV,
+                hVres, ldvres, hifail, hifailRes, hinfo, hinfoRes, &max_error, &max_errorv);
         }
 
         // collect performance data
@@ -931,8 +931,8 @@ void testing_gesvdx(Arguments& argus)
             gesvdx_getError<STRIDED, T>(
                 handle, leftv, rightv, srange, m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS,
                 dU, ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc, leftvT, rightvT, mT, nT, dUT,
-                lduT, stUT, dVT, ldvT, stVT, hA, hNsv, NsvRes, hS, Sres, hU, Ures, ldures, hV, Vres,
-                ldvres, hifail, ifailRes, hinfo, infoRes, &max_error, &max_errorv);
+                lduT, stUT, dVT, ldvT, stVT, hA, hNsv, hNsvRes, hS, hSres, hU, hUres, ldures, hV,
+                hVres, ldvres, hifail, hifailRes, hinfo, hinfoRes, &max_error, &max_errorv);
         }
 
         // collect performance data

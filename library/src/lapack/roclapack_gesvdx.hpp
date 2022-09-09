@@ -65,7 +65,7 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_size;
     if(srange == rocblas_srange_index && (il < 1 || iu < 0))
         return rocblas_status_invalid_size;
-    if(srange == rocblas_srange_index && (iu > n || (n > 0 && il > iu)))
+    if(srange == rocblas_srange_index && (iu > min(m, n) || (min(m, n) > 0 && il > iu)))
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -146,14 +146,14 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
     const rocblas_int k = min(m, n);
 
     // init sizes
-    size_t a[3] = {};
-    size_t b[3] = {};
-    size_t c[3] = {};
-    size_t d[3] = {};
-    size_t e[5] = {};
-    size_t f[5] = {};
-    size_t g[5] = {};
-    size_t w[5] = {};
+    size_t a[3] = {0, 0, 0};
+    size_t b[3] = {0, 0, 0};
+    size_t c[3] = {0, 0, 0};
+    size_t d[3] = {0, 0, 0};
+    size_t e[5] = {0, 0, 0, 0, 0};
+    size_t f[5] = {0, 0, 0, 0, 0};
+    size_t g[5] = {0, 0, 0, 0, 0};
+    size_t w[5] = {0, 0, 0, 0, 0};
 
     // general requirements for bdsvdx and gebrd
     *size_tmpDE = 2 * k * sizeof(S) * bc;
@@ -218,7 +218,7 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
         if(thinSVD)
         {
             // requirements for ormlq
-            if(row)
+            if(!row)
                 rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(
                     rocblas_side_right, k, n, k, bc, size_scalars, &e[3], &f[3], &g[3], &w[3]);
 
@@ -249,7 +249,7 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
     *size_WS_svdx12_mlqr3_mbr3 = *std::max_element(std::begin(g), std::end(g));
 
     // size of extra array of pointers to workspace
-    if(BATCHED && thinSVD && ((leftvS && row) || (rightvS || !row)))
+    if(BATCHED && thinSVD && ((leftvS && row) || (rightvS && !row)))
         *size_workArr2 = sizeof(T*) * bc;
     else
         *size_workArr2 = 0;
@@ -308,12 +308,23 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                     "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "vl:", vl, "vu:", vu,
                     "il:", il, "iu:", iu, "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
 
-    // quick return
-    if(n == 0 || m == 0 || batch_count == 0)
+    // quick return (no batch items)
+    if(batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    // set info = 0 and nsv = 0
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, dim3(blocksReset, 1, 1), dim3(BS1, 1, 1), 0, stream, info,
+                            batch_count, 0);
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, dim3(blocksReset, 1, 1), dim3(BS1, 1, 1), 0, stream, nsv,
+                            batch_count, 0);
+
+    // quick return (no dimensions)
+    if(n == 0 || m == 0)
+        return rocblas_status_success;
 
     // booleans used to determine the path that the execution will follow:
     const bool row = (m >= n);
