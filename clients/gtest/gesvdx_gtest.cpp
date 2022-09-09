@@ -75,10 +75,10 @@ const vector<vector<int>> opt_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range
-    = {{100, 100, 0, 0, 0}, {300, 120, 0, 1, 0}, {120, 300, 0, 0, 1}};
+    = {{100, 100, 1, 0, 0}, {300, 120, 0, 0, 1}, {200, 300, 0, 0, 0}};
 
 const vector<vector<int>> large_opt_range
-    = {{0, 0, 1, 3, 13, 0, 0}, {1, 0, 1, 13, 18, 0, 0}, {0, 1, 2, 0, 0, 3, 10}, {1, 1, 0, 0, 0, 0, 0}};
+    = {{0, 0, 1, 5, 10, 0, 0}, {1, 0, 1, 10, 20, 0, 0}, {0, 1, 2, 0, 0, 3, 10}, {1, 1, 0, 0, 0, 0, 0}};
 
 Arguments gesvdx_setup_arguments(gesvdx_tuple tup)
 {

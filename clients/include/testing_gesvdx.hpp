@@ -206,10 +206,14 @@ void gesvdx_initData(const rocblas_handle handle,
         {
             for(rocblas_int i = 0; i < m; i++)
             {
+                if(i == nn / 4 || i == nn / 2 || i == nn - 1 || i == nn / 7 || i == nn / 5
+                   || i == nn / 3)
+                    hA[b][i + i * lda] = 0;
+
                 for(rocblas_int j = 0; j < n; j++)
                 {
                     if(i == j)
-                        hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 10;
+                        hA[b][i + j * lda] = 2 * std::real(hA[b][i + j * lda]) - 21;
                     else
                     {
                         if(m >= n)
@@ -228,9 +232,6 @@ void gesvdx_initData(const rocblas_handle handle,
                         }
                     }
                 }
-                if(i == nn / 4 || i == nn / 2 || i == nn - 1 || i == nn / 7 || i == nn / 5
-                   || i == nn / 3)
-                    hA[b][i + i * lda] *= -1;
             }
 
             // make copy of original data to test vectors if required
@@ -347,7 +348,7 @@ void gesvdx_getError(const rocblas_handle handle,
     std::vector<T> A(lda * n * bc);
     gesvdx_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
 
-    //print_host_matrix(std::cout,"A",m,n,hA[1],lda);
+    //print_host_matrix(std::cout,"A",m,n,hA[0],lda);
 
     // execute computations:
     // complementary execution to compute all singular vectors if needed
@@ -408,7 +409,7 @@ void gesvdx_getError(const rocblas_handle handle,
 
     CHECK_HIP_ERROR(Sres.transfer_from(dS));
     CHECK_HIP_ERROR(NsvRes.transfer_from(dNsv));
-    //CHECK_HIP_ERROR(ifailRes.transfer_from(difail));
+    CHECK_HIP_ERROR(ifailRes.transfer_from(difail));
     CHECK_HIP_ERROR(infoRes.transfer_from(dinfo));
 
     if(left_svect == rocblas_svect_singular)
@@ -416,10 +417,10 @@ void gesvdx_getError(const rocblas_handle handle,
     if(right_svect == rocblas_svect_singular)
         CHECK_HIP_ERROR(Vres.transfer_from(dV));
 
-    //print_host_matrix<rocblas_int>(std::cout,"nsv in cpu:",1,1,hNsv[1],1);
-    //print_host_matrix<rocblas_int>(std::cout,"nsv in gpu:",1,1,NsvRes[1],1);
-    //print_host_matrix<S>(std::cout,"values in cpu:",1,hNsv[1][0],hS[1]+offset[1],1);
-    //print_host_matrix<S>(std::cout,"values in gpu:",1,hNsv[1][0],Sres[1],1);
+    //print_host_matrix<rocblas_int>(std::cout,"nsv in cpu:",1,1,hNsv[0],1);
+    //print_host_matrix<rocblas_int>(std::cout,"nsv in gpu:",1,1,NsvRes[0],1);
+    //print_host_matrix<S>(std::cout,"values in cpu:",1,hNsv[0][0],hS[0]+offset[0],1);
+    //print_host_matrix<S>(std::cout,"values in gpu:",1,hNsv[0][0],Sres[0],1);
 
     //print_host_matrix<T>(std::cout,"Ures:",m,hNsv[0][0],Ures[0],ldu);
     //print_host_matrix<T>(std::cout,"Vres:",hNsv[0][0],m,Vres[0],ldv);
@@ -444,14 +445,18 @@ void gesvdx_getError(const rocblas_handle handle,
     // Check number of returned singular values
     double err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
+    {
         if(hNsv[b][0] != NsvRes[b][0])
             err++;
+    }
+    //printf("number: %f\n",err);
     *max_err = err > *max_err ? err : *max_err;
 
     for(rocblas_int b = 0; b < bc; ++b)
     {
         // error is ||hS - Sres||
         err = norm_error('F', 1, hNsv[b][0], 1, hS[b] + offset[b], Sres[b]); //WORKAROUND
+        //printf("number: %f\n",err);
         *max_err = err > *max_err ? err : *max_err;
 
         // Check the singular vectors if required
