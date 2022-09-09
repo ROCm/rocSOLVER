@@ -201,7 +201,7 @@ void gesvdx_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_int nn = std::min(m, n);
 
-        // construct well conditioned matrix A such that all singular values are in (0, 20)
+        // construct non singular matrix A such that all singular values are in (0, 20]
         for(rocblas_int b = 0; b < bc; ++b)
         {
             for(rocblas_int i = 0; i < m; i++)
@@ -319,25 +319,34 @@ void gesvdx_getError(const rocblas_handle handle,
                      double* max_errv)
 {
     /** As per lapack's documentation, the following workspace size should work:
-    rocblas_int minn = std::min(m,n);
-    rocblas_int maxn = std::max(m,n);
-    rocblas_int lwork = minn * minn + 6 * minn + maxn;
-    rocblas_int lrwork = 17 * minn * minn;
-    std::vector<T> work(lwork);
-    std::vector<S> rwork(lrwork);
-    ** but gesvdx_ gives ilegal value for lwork.
+        rocblas_int minn = std::min(m,n);
+        rocblas_int maxn = std::max(m,n);
+        rocblas_int lwork = minn * minn + 6 * minn + maxn;
+        rocblas_int lrwork = 17 * minn * minn;
+        std::vector<T> work(lwork);
+        std::vector<S> rwork(lrwork);
+        HOWEVER, gesvdx_ GIVES ILEGAL VALUE FOR ARGUMENT lwork.
 
-    ** Making the memory query to get the correct workspace dimension:
-    std::vector<T> query(1);
-    cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
+        Making the memory query to get the correct workspace dimension:
+        std::vector<T> query(1);
+        cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
                        query.data(), -1, rwork.data(), hifail[0], hinfo[0]);
-    rocblas_int lwork = int(std::real(query[0]));
-    std::vector<T> work(lwork);
-    ** and now gesvdx_ fails with seg fault. **/
+        rocblas_int lwork = int(std::real(query[0]));
+        std::vector<T> work(lwork);
+        AND NOW gesvdx_ FAILS WITH seg fault ERROR. **/
 
     // (TODO: Need to confirm problem with gesvdx_ and report it)
-    // WORKAROUND: for now, we will call gesvd_ to get all the singular values and
-    // offset the result array according to srange, vl, vu, il, and iu.
+
+    /** WORKAROUND: for now, we will call gesvd_ to get all the singular values on the CPU side and
+        offset the result array according to srange, vl, vu, il, and iu. This approach has 2 disadvantages:
+        1. singular values are not computed to the same accuracy by gesvd_ (QR iteration) and
+            gesvdx_ (inverse iteration). So, comparison maybe more sensitive.
+        2. info and ifail cannot be tested as they have different meaning in gesvd_
+        3. we cannot provide timing for CPU execution using gesvd_ when testing gesvdx_ **/
+
+    // (TODO: We may revisit the entire approach in the future: change to another solution,
+    //  or wait for problems with gesvdx_ to be fixed)
+
     rocblas_int offset[bc];
     rocblas_int lwork = 5 * max(m, n);
     std::vector<T> work(lwork);
@@ -347,8 +356,6 @@ void gesvdx_getError(const rocblas_handle handle,
     // input data initialization
     std::vector<T> A(lda * n * bc);
     gesvdx_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
-
-    //print_host_matrix(std::cout,"A",m,n,hA[0],lda);
 
     // execute computations:
     // complementary execution to compute all singular vectors if needed
@@ -372,7 +379,8 @@ void gesvdx_getError(const rocblas_handle handle,
     {
         //cblas_gesvdx<T>(rocblas_svect_none, rocblas_svect_none, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
         //               work.data(), lwork, rwork.data(), hifail[b], hinfo[b]);
-        //*** WORKAROUND:
+
+        /*** WORKAROUND: ***/
         cblas_gesvd<T>(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
                        hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
         hNsv[b][0] = 0;
@@ -399,6 +407,7 @@ void gesvdx_getError(const rocblas_handle handle,
             offset[b] = 0;
             hNsv[b][0] = minn;
         }
+        /*******************/
     }
 
     // GPU lapack
@@ -416,14 +425,6 @@ void gesvdx_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(Ures.transfer_from(dU));
     if(right_svect == rocblas_svect_singular)
         CHECK_HIP_ERROR(Vres.transfer_from(dV));
-
-    //print_host_matrix<rocblas_int>(std::cout,"nsv in cpu:",1,1,hNsv[0],1);
-    //print_host_matrix<rocblas_int>(std::cout,"nsv in gpu:",1,1,NsvRes[0],1);
-    //print_host_matrix<S>(std::cout,"values in cpu:",1,hNsv[0][0],hS[0]+offset[0],1);
-    //print_host_matrix<S>(std::cout,"values in gpu:",1,hNsv[0][0],Sres[0],1);
-
-    //print_host_matrix<T>(std::cout,"Ures:",m,hNsv[0][0],Ures[0],ldu);
-    //print_host_matrix<T>(std::cout,"Vres:",hNsv[0][0],m,Vres[0],ldv);
 
     *max_err = 0;
     *max_errv = 0;
@@ -449,14 +450,12 @@ void gesvdx_getError(const rocblas_handle handle,
         if(hNsv[b][0] != NsvRes[b][0])
             err++;
     }
-    //printf("number: %f\n",err);
     *max_err = err > *max_err ? err : *max_err;
 
     for(rocblas_int b = 0; b < bc; ++b)
     {
         // error is ||hS - Sres||
         err = norm_error('F', 1, hNsv[b][0], 1, hS[b] + offset[b], Sres[b]); //WORKAROUND
-        //printf("number: %f\n",err);
         *max_err = err > *max_err ? err : *max_err;
 
         // Check the singular vectors if required
@@ -539,24 +538,25 @@ void gesvdx_getPerfData(const rocblas_handle handle,
                         const bool perf)
 {
     /** As per lapack's documentation, the following workspace size should work:
-    rocblas_int minn = std::min(m,n);
-    rocblas_int maxn = std::max(m,n);
-    rocblas_int lwork = minn * minn + 6 * minn + maxn;
-    rocblas_int lrwork = 17 * minn * minn;
-    std::vector<T> work(lwork);
-    std::vector<S> rwork(lrwork);
-    ** but gesvdx_ gives ilegal value for lwork.
+        rocblas_int minn = std::min(m,n);
+        rocblas_int maxn = std::max(m,n);
+        rocblas_int lwork = minn * minn + 6 * minn + maxn;
+        rocblas_int lrwork = 17 * minn * minn;
+        std::vector<T> work(lwork);
+        std::vector<S> rwork(lrwork);
+        HOWEVER, gesvdx_ GIVES ILEGAL VALUE FOR ARGUMENT lwork.
 
-    ** Making the memory query to get the correct workspace dimension:
-    std::vector<T> query(1);
-    cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
+        Making the memory query to get the correct workspace dimension:
+        std::vector<T> query(1);
+        cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
                        query.data(), -1, rwork.data(), hifail[0], hinfo[0]);
-    rocblas_int lwork = int(std::real(query[0]));
-    std::vector<T> work(lwork);
-    ** and now gesvdx_ fails with seg fault. **/
+        rocblas_int lwork = int(std::real(query[0]));
+        std::vector<T> work(lwork);
+        AND NOW gesvdx_ FAILS WITH seg fault ERROR. **/
 
-    // (TODO: Need to confirm problem with gesvdx_ and report it.
-    //  For now we cannot report cpu time)
+    // (TODO: Need to confirm problem with gesvdx_ and report it)
+
+    //  For now we cannot report cpu time
 
     std::vector<T> A(lda * n * bc);
 
@@ -893,14 +893,14 @@ void testing_gesvdx(Arguments& argus)
         }
 
         // collect performance data
-        /*        if(argus.timing)
+        if(argus.timing)
         {
             gesvdx_getPerfData<STRIDED, T>(handle, leftv, rightv, srange, m, n, dA, lda, stA, vl,
                                            vu, il, iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
                                            difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
                                            hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                            argus.profile, argus.profile_kernels, argus.perf);
-        }*/
+        }
     }
 
     else
@@ -936,14 +936,14 @@ void testing_gesvdx(Arguments& argus)
         }
 
         // collect performance data
-        /*        if(argus.timing)
+        if(argus.timing)
         {
             gesvdx_getPerfData<STRIDED, T>(handle, leftv, rightv, srange, m, n, dA, lda, stA, vl,
                                            vu, il, iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
                                            difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
                                            hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                            argus.profile, argus.profile_kernels, argus.perf);
-        }*/
+        }
     }
 
     // validate results for rocsolver-test

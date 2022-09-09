@@ -346,19 +346,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
     const rocblas_int blocks_m = (m - 1) / thread_count + 1;
     const rocblas_int blocks_n = (n - 1) / thread_count + 1;
     const rocblas_int blocks_k = (k - 1) / thread_count + 1;
-    //print_device_matrix<T>(std::cout,"A orig:",m,n,A,lda);
-
-    //printf("m: %d n: %d vl: %f vu: %f\n",m,n,vl,vu);
-    //if(srange == rocblas_srange_value)
-    //printf("look for values\n");
-    //if(left_svect == rocblas_svect_singular)
-    //printf("left vectors\n");
-    //else
-    //printf("no left vectors\n");
-    //if(right_svect == rocblas_svect_singular)
-    //printf("right vectors\n");
-    //else
-    //printf("no right vectors\n");
 
     /***** 1. bidiagonalization *****/
     /********************************/
@@ -368,7 +355,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
         local_geqrlq_template<BATCHED, STRIDED>(
             handle, m, n, A, shiftA, lda, strideA, tau, k, batch_count, scalars,
             WS_svdx2_lqrf1_brd1, (T*)WS_svdx3_lqrf2_brd2, (T*)WS_svdx4_lqrf3_brd3, workArr, row);
-        //print_device_matrix<T>(std::cout,"tau:",1,k,tau,1);
 
         // copy triangular factor
         ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_k, blocks_k, batch_count),
@@ -379,7 +365,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_k, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream, k, k, tmpT, 0, ldt,
                                 strideT, uplo);
-        //print_device_matrix<T>(std::cout,"triangular:",m,m,tmpT,lda);
 
         // apply gebrd to triangular factor
         rocsolver_gebrd_template<false, STRIDED>(
@@ -387,8 +372,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             tauqp, k, (tauqp + k * batch_count), k, (T*)WS_svdx4_lqrf3_brd3, 0, ldx, strideX,
             (T*)WS_svdx5_brd4, 0, ldy, strideY, batch_count, scalars, WS_svdx2_lqrf1_brd1,
             (T*)WS_svdx3_lqrf2_brd2);
-        //print_device_matrix<T>(std::cout,"bdiag:",m,m,tmpT,lda);
-        //print_device_matrix<T>(std::cout,"taup:",1,k,tauqp+k,1);
     }
     else
     {
@@ -399,8 +382,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             strideX, (T*)WS_svdx5_brd4, 0, ldy, strideY, batch_count, scalars, WS_svdx2_lqrf1_brd1,
             (T*)WS_svdx3_lqrf2_brd2);
     }
-    //print_device_matrix<TT>(std::cout,"D:",1,m,tmpDE,1);
-    //print_device_matrix<TT>(std::cout,"E:",1,m,tmpDE+k*batch_count,1);
 
     /***** 2. solve bidiagonal problem *****/
     /***************************************/
@@ -412,15 +393,14 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
         (TT*)WS_svdx2_lqrf1_brd1, (TT*)WS_svdx3_lqrf2_brd2, (TT*)WS_svdx4_lqrf3_brd3,
         (TT*)WS_svdx5_brd4, WS_svdx6, WS_svdx7, WS_svdx8, WS_svdx9, (TT*)WS_svdx10_mlqr1_mbr1,
         (TT*)WS_svdx11_mlqr2_mbr2, (TT*)WS_svdx12_mlqr3_mbr3);
-    //print_device_matrix<TT>(std::cout,"values:",1,m,S,1);
-    //print_device_matrix<TT>(std::cout,"vectors:",2*m,m,tmpZ,ldz);
 
     /***** 3. compute/update left vectors *****/
     /******************************************/
     if(leftvS)
     {
         // For now we work with the k columns in tmpZ, i.e. k vectors
-        // (TODO: explore other options like transfering nsv to the host)
+        // (TODO: explore other options like transfering nsv to the host, or having
+        //  template functions accepting dimensions as pointers)
 
         // initialize matrix U
         ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_m, blocks_k, batch_count),
@@ -431,7 +411,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_k, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream, false, k, k, tmpZ,
                                 0, ldz, strideZ, U, 0, ldu, strideU);
-        //print_device_matrix<T>(std::cout,"U:",m,m,U,lda);
 
         if(thinSVD)
         {
@@ -441,7 +420,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                 tmpT, 0, ldt, strideT, tauqp, k, U, 0, ldu, strideU, batch_count, scalars,
                 (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2, (T*)WS_svdx12_mlqr3_mbr3,
                 workArr);
-            //print_device_matrix<T>(std::cout,"U final:",m,m,U,lda);
 
             if(row)
             {
@@ -471,7 +449,8 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
     if(rightvS)
     {
         // For now we work with the k columns in tmpZ, i.e. k vectors
-        // (TODO: explore other options like transfering nsv to the host)
+        // (TODO: explore other options like transfering nsv to the host, or having
+        //  template functions accepting dimensions as pointers)
 
         // initialize matrix V
         ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_k, blocks_n, batch_count),
@@ -482,7 +461,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_k, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream, true, k, k, tmpZ, k,
                                 ldz, strideZ, V, 0, ldv, strideV);
-        //print_device_matrix<T>(std::cout,"V:",m,m,V,ldv);
 
         if(thinSVD)
         {
@@ -492,7 +470,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                 tmpT, 0, ldt, strideT, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
                 batch_count, scalars, (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2,
                 (T*)WS_svdx12_mlqr3_mbr3, workArr);
-            //print_device_matrix<T>(std::cout,"V after mbr:",m,m,V,ldv);
 
             if(!row)
             {
@@ -502,7 +479,6 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
                     strideA, tau, k, V, 0, ldv, strideV, batch_count, scalars,
                     (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2, (T*)WS_svdx12_mlqr3_mbr3,
                     workArr, workArr2);
-                //print_device_matrix<T>(std::cout,"V after mlq:",m,m,V,ldv);
             }
         }
         else
