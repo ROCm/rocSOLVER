@@ -4139,7 +4139,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
 
     \details
     This function computes all the singular values of B, all the singular values in the half-open interval
-    \f$(vl, vu]\f$, or the il-th through iu-th singular values, depending on the value of srange.
+    \f$[vl, vu)\f$, or the il-th through iu-th singular values, depending on the value of srange.
 
     Depending on the value of svect, the corresponding singular vectors will be computed and stored as blocks
     in the output matrix Z. That is,
@@ -4177,11 +4177,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                 The off-diagonal elements of the bidiagonal matrix.
     @param[in]
     vl          real type. 0 <= vl < vu.\n
-                The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     vu          real type. 0 <= vl < vu.\n
-                The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
@@ -11756,7 +11756,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
 
     \details
     This function computes all the singular values of A, all the singular values in the half-open interval
-    \f$(vl, vu]\f$, or the il-th through iu-th singular values, depending on the value of srange.
+    \f$[vl, vu)\f$, or the il-th through iu-th singular values, depending on the value of srange.
 
     The full SVD of matrix A is given by:
 
@@ -11808,11 +11808,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
                 The leading dimension of A.
     @param[in]
     vl          real type. 0 <= vl < vu.\n
-                The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     vu          real type. 0 <= vl < vu.\n
-                The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
@@ -11948,7 +11948,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
 
     \details
     This function computes all the singular values of \f$A_j\f$, all the singular values in the half-open interval
-    \f$(vl, vu]\f$, or the il-th through iu-th singular values, depending on the value of srange.
+    \f$[vl, vu)\f$, or the il-th through iu-th singular values, depending on the value of srange.
 
     The full SVD of matrix \f$A_j\f$  is given by:
 
@@ -12000,11 +12000,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                 The leading dimension of A_j.
     @param[in]
     vl          real type. 0 <= vl < vu.\n
-                The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     vu          real type. 0 <= vl < vu.\n
-                The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
@@ -12176,7 +12176,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
 
     \details
     This function computes all the singular values of \f$A_j\f$, all the singular values in the half-open interval
-    \f$(vl, vu]\f$, or the il-th through iu-th singular values, depending on the value of srange.
+    \f$[vl, vu)\f$, or the il-th through iu-th singular values, depending on the value of srange.
 
     The full SVD of matrix \f$A_j\f$  is given by:
 
@@ -12232,11 +12232,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 There is no restriction for the value of strideS. Normal use case is strideA >= lda*n.
     @param[in]
     vl          real type. 0 <= vl < vu.\n
-                The lower bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     vu          real type. 0 <= vl < vu.\n
-                The upper bound of the search interval (vl, vu]. Ignored if srange indicates to look
+                The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
     il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n

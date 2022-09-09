@@ -273,6 +273,13 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
     if(n == 0)
         return rocblas_status_success;
 
+    /*print_device_matrix(std::cout,"D0:",1,n,D,1,strideD,0);
+print_device_matrix(std::cout,"D1:",1,n,D,1,strideD,1);
+//print_device_matrix(std::cout,"D2:",1,n,D,1,strideD,2);
+print_device_matrix(std::cout,"E0:",1,n,E,1,strideE,0);
+print_device_matrix(std::cout,"E1:",1,n,E,1,strideE,1);
+//print_device_matrix(std::cout,"E2:",1,n,E,1,strideE,2);
+*/
     // zero out diagonal of tridiagonal matrix (Dtgk)
     rocblas_int blocksZero = (2 * n * batch_count - 1) / BS1 + 1;
     ROCSOLVER_LAUNCH_KERNEL(reset_info, dim3(blocksZero, 1, 1), dim3(BS1, 1, 1), 0, stream, Dtgk,
@@ -280,8 +287,8 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
 
     // populate off-diagonal of tridiagonal matrix (Etgk) by interleaving entries of D and E
     rocblas_int blocksCopy = (n - 1) / BS1 + 1;
-    dim3 gridCopy(1, blocksCopy, 1);
-    dim3 threadsCopy(1, BS1, batch_count);
+    dim3 gridCopy(1, blocksCopy, batch_count);
+    dim3 threadsCopy(1, BS1);
 
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, T*>), gridCopy, threadsCopy, 0, stream, 1, n, D, 0, 1,
                             strideD, Etgk, 0, 2, 2 * n);
@@ -298,17 +305,32 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
     rocblas_int iltgk = (srange == rocblas_srange_index ? il : 1);
     rocblas_int iutgk = (srange == rocblas_srange_index ? iu : n);
 
+    /*print_device_matrix(std::cout,"Dt0:",1,2*n,Dtgk,1,ntgk,0);
+print_device_matrix(std::cout,"Dt1:",1,2*n,Dtgk,1,ntgk,1);
+//print_device_matrix(std::cout,"Dt2:",1,2*n,Dtgk,1,ntgk,2);
+print_device_matrix(std::cout,"Et0:",1,2*n,Etgk,1,ntgk,0);
+print_device_matrix(std::cout,"Et1:",1,2*n,Etgk,1,ntgk,1);
+//print_device_matrix(std::cout,"Et2:",1,2*n,Etgk,1,ntgk,2);
+*/
+
     // compute eigenvalues of tridiagonal matrix
     rocsolver_stebz_template<T>(handle, range, order, ntgk, vltgk, vutgk, iltgk, iutgk, 0, Dtgk, 0,
                                 ntgk, Etgk, 0, ntgk, nsv, nsplit, Stmp, ntgk, iblock, ntgk, isplit,
                                 ntgk, info, batch_count, work1_iwork, work2_pivmin, Esqr, bounds,
                                 inter, ninter);
-
+    /*print_device_matrix(std::cout,"nsv:",1,batch_count,nsv,1);
+print_device_matrix(std::cout,"v0:",1,ntgk,Stmp,1,ntgk,0);
+print_device_matrix(std::cout,"v1:",1,ntgk,Stmp,1,ntgk,1);
+//print_device_matrix(std::cout,"v2:",1,ntgk,Stmp,1,ntgk,2);
+*/
     if(svect == rocblas_svect_none)
     {
         // take absolute value of eigenvalues
         ROCSOLVER_LAUNCH_KERNEL(bdsvdx_abs_eigs<T>, dim3(blocksCopy, batch_count, 1),
                                 dim3(BS1, 1, 1), 0, stream, n, nsv, S, strideS, Stmp);
+        //print_device_matrix(std::cout,"v0:",1,n,S,1,strideS,0);
+        //print_device_matrix(std::cout,"v1:",1,n,S,1,strideS,1);
+        //print_device_matrix(std::cout,"v2:",1,n,S,1,strideS,2);
     }
     else
     {

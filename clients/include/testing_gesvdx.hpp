@@ -336,7 +336,7 @@ void gesvdx_getError(const rocblas_handle handle,
 
     // (TODO: Need to confirm problem with gesvdx_ and report it)
     // WORKAROUND: for now, we will call gesvd_ to get all the singular values and
-    // offset the result array according to srange, vl, vu, il, and iu. ifail cannot be verified for now.
+    // offset the result array according to srange, vl, vu, il, and iu.
     rocblas_int offset[bc];
     rocblas_int lwork = 5 * max(m, n);
     std::vector<T> work(lwork);
@@ -346,6 +346,8 @@ void gesvdx_getError(const rocblas_handle handle,
     // input data initialization
     std::vector<T> A(lda * n * bc);
     gesvdx_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
+
+    //print_host_matrix(std::cout,"A",m,n,hA[1],lda);
 
     // execute computations:
     // complementary execution to compute all singular vectors if needed
@@ -369,7 +371,7 @@ void gesvdx_getError(const rocblas_handle handle,
     {
         //cblas_gesvdx<T>(rocblas_svect_none, rocblas_svect_none, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
         //               work.data(), lwork, rwork.data(), hifail[b], hinfo[b]);
-        // WORKAROUND:
+        //*** WORKAROUND:
         cblas_gesvd<T>(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
                        hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
         hNsv[b][0] = 0;
@@ -383,7 +385,7 @@ void gesvdx_getError(const rocblas_handle handle,
         {
             for(int j = 0; j < minn; ++j)
             {
-                if(hS[b][j] <= vu && hS[b][j] > vl)
+                if(hS[b][j] < vu && hS[b][j] >= vl)
                 {
                     if(offset[b] == -1)
                         offset[b] = j;
@@ -414,20 +416,30 @@ void gesvdx_getError(const rocblas_handle handle,
     if(right_svect == rocblas_svect_singular)
         CHECK_HIP_ERROR(Vres.transfer_from(dV));
 
-    // Check info and ifail for non-convergence
-    // (We expect the used input matrices to always converge)
+    //print_host_matrix<rocblas_int>(std::cout,"nsv in cpu:",1,1,hNsv[1],1);
+    //print_host_matrix<rocblas_int>(std::cout,"nsv in gpu:",1,1,NsvRes[1],1);
+    //print_host_matrix<S>(std::cout,"values in cpu:",1,hNsv[1][0],hS[1]+offset[1],1);
+    //print_host_matrix<S>(std::cout,"values in gpu:",1,hNsv[1][0],Sres[1],1);
+
+    //print_host_matrix<T>(std::cout,"Ures:",m,hNsv[0][0],Ures[0],ldu);
+    //print_host_matrix<T>(std::cout,"Vres:",hNsv[0][0],m,Vres[0],ldv);
+
     *max_err = 0;
     *max_errv = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+
+    // Check info and ifail for non-convergence
+    // (NOTE: With the workaround in place, info and ifail cannot be tested as they have different
+    //  meaning in gesvd_, however, We expect the used input matrices to always converge)
+    /*for(rocblas_int b = 0; b < bc; ++b)
     {
         if(hinfo[b][0] != infoRes[b][0])
             *max_err += 1;
-        //for(int j = 0; j < hNsv[b][0]; ++j)
-        //{
-        //    if(hifail[b][j] != ifailRes[b][j])
-        //        *max_err += 1;
-        //}
-    }
+        for(int j = 0; j < hNsv[b][0]; ++j)
+        {
+            if(hifail[b][j] != ifailRes[b][j])
+                *max_err += 1;
+        }
+    }*/
 
     // Check number of returned singular values
     double err = 0;
@@ -449,13 +461,19 @@ void gesvdx_getError(const rocblas_handle handle,
             // check singular vectors implicitly (A*v_k = s_k*u_k)
             for(rocblas_int k = 0; k < hNsv[b][0]; ++k)
             {
+                T tmp = 0;
+                double tmp2 = 0;
+
+                // (Comparing absolute values to deal with the fact that the pair of singular vectors (u,-v) or (-u,v) are
+                //  both ok and we could get either one with the complementary or main executions when only
+                //  one side set of vectors is required. May be revisited in the future.)
                 for(rocblas_int i = 0; i < m; ++i)
                 {
-                    T tmp = 0;
+                    tmp = 0;
                     for(rocblas_int j = 0; j < n; ++j)
                         tmp += A[b * lda * n + i + j * lda] * sconj(Vres[b][k + j * ldvres]);
-                    tmp -= Sres[b][k] * Ures[b][i + k * ldures];
-                    err += std::abs(tmp) * std::abs(tmp);
+                    tmp2 = std::abs(tmp) - std::abs(Sres[b][k] * Ures[b][i + k * ldures]);
+                    err += tmp2 * tmp2;
                 }
             }
             err = std::sqrt(err) / double(snorm('F', m, n, A.data() + b * lda * n, lda));
@@ -870,14 +888,14 @@ void testing_gesvdx(Arguments& argus)
         }
 
         // collect performance data
-        if(argus.timing)
+        /*        if(argus.timing)
         {
             gesvdx_getPerfData<STRIDED, T>(handle, leftv, rightv, srange, m, n, dA, lda, stA, vl,
                                            vu, il, iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
                                            difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
                                            hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                            argus.profile, argus.profile_kernels, argus.perf);
-        }
+        }*/
     }
 
     else
@@ -913,14 +931,14 @@ void testing_gesvdx(Arguments& argus)
         }
 
         // collect performance data
-        if(argus.timing)
+        /*        if(argus.timing)
         {
             gesvdx_getPerfData<STRIDED, T>(handle, leftv, rightv, srange, m, n, dA, lda, stA, vl,
                                            vu, il, iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
                                            difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
                                            hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                            argus.profile, argus.profile_kernels, argus.perf);
-        }
+        }*/
     }
 
     // validate results for rocsolver-test
