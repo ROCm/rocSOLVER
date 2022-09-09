@@ -347,7 +347,7 @@ void gesvdx_getError(const rocblas_handle handle,
     // (TODO: We may revisit the entire approach in the future: change to another solution,
     //  or wait for problems with gesvdx_ to be fixed)
 
-    rocblas_int offset[bc];
+    std::vector<rocblas_int> offset(bc);
     rocblas_int lwork = 5 * max(m, n);
     std::vector<T> work(lwork);
     std::vector<S> rwork(lwork);
