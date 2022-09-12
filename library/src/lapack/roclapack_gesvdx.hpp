@@ -73,8 +73,10 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n * m && !A) || (min(m, n) && !S) || (min(m, n) && !ifail) || (batch_count && !info)
-       || (batch_count && !nsv))
+    if((n * m && !A) || (min(m, n) && !S) || (batch_count && !info) || (batch_count && !nsv))
+        return rocblas_status_invalid_pointer;
+    if((left_svect == rocblas_svect_singular || right_svect == rocblas_svect_singular) && min(m, n)
+       && !ifail)
         return rocblas_status_invalid_pointer;
     if(left_svect == rocblas_svect_singular && min(m, n) && !U)
         return rocblas_status_invalid_pointer;
