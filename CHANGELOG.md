@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSOLVER 3.19.0
+## rocSOLVER 3.19.0 for ROCm 5.3.0
 ### Added
 - Partial eigensolver routines for symmetric/hermitian matrices:
     - SYEVX (with batched and strided\_batched versions)
