@@ -280,8 +280,8 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
 
     // populate off-diagonal of tridiagonal matrix (Etgk) by interleaving entries of D and E
     rocblas_int blocksCopy = (n - 1) / BS1 + 1;
-    dim3 gridCopy(1, blocksCopy, 1);
-    dim3 threadsCopy(1, BS1, batch_count);
+    dim3 gridCopy(1, blocksCopy, batch_count);
+    dim3 threadsCopy(1, BS1);
 
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, T*>), gridCopy, threadsCopy, 0, stream, 1, n, D, 0, 1,
                             strideD, Etgk, 0, 2, 2 * n);

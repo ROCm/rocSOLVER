@@ -164,10 +164,10 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
         return;
     }
 
-    size_t w[6] = {};
-    size_t a[5] = {};
-    size_t x[6] = {};
-    size_t y[3] = {};
+    size_t w[6] = {0, 0, 0, 0, 0, 0};
+    size_t a[5] = {0, 0, 0, 0, 0};
+    size_t x[6] = {0, 0, 0, 0, 0, 0};
+    size_t y[3] = {0, 0, 0};
     size_t unused;
 
     // booleans used to determine the path that the execution will follow:

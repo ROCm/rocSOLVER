@@ -71,6 +71,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_getrs.cpp
     common/testing_gesv.cpp
     common/testing_gesvd.cpp
+    common/testing_gesvdx.cpp
     common/testing_trtri.cpp
     common/testing_getri.cpp
     common/testing_getri_npvt.cpp

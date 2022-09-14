@@ -1309,3 +1309,34 @@ rocsolver_<type>gesvd_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgesvd_strided_batched
 
+.. _gesvdx:
+
+rocsolver_<type>gesvdx()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesvdx
+   :outline:
+.. doxygenfunction:: rocsolver_cgesvdx
+   :outline:
+.. doxygenfunction:: rocsolver_dgesvdx
+   :outline:
+.. doxygenfunction:: rocsolver_sgesvdx
+
+rocsolver_<type>gesvdx_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesvdx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgesvdx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgesvdx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgesvdx_batched
+
+rocsolver_<type>gesvdx_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesvdx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgesvdx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgesvdx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgesvdx_strided_batched

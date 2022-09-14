@@ -184,6 +184,7 @@ LAPACK main functions
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_gesvd <gesvd>`, x, x, x, x
+    :ref:`rocsolver_gesvdx <gesvdx>`, x, x, x, x
 
 LAPACK-like functions
 ----------------------------
