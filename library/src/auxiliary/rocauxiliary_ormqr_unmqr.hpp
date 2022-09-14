@@ -83,7 +83,8 @@ rocblas_status rocsolver_ormqr_unmqr_template(rocblas_handle handle,
                                               T* AbyxORwork,
                                               T* diagORtmptr,
                                               T* trfact,
-                                              T** workArr)
+                                              T** workArr,
+                                              T** workArr2 = nullptr)
 {
     ROCSOLVER_ENTER("ormqr_unmqr", "side:", side, "trans:", trans, "m:", m, "n:", n, "k:", k,
                     "shiftA:", shiftA, "lda:", lda, "shiftC:", shiftC, "ldc:", ldc,
@@ -171,4 +172,42 @@ rocblas_status rocsolver_ormqr_unmqr_template(rocblas_handle handle,
     }
 
     return rocblas_status_success;
+}
+
+/** Adapts A and C to be of the same type **/
+template <bool BATCHED, bool STRIDED, typename T>
+void rocsolver_ormqr_unmqr_template(rocblas_handle handle,
+                                    const rocblas_side side,
+                                    const rocblas_operation trans,
+                                    const rocblas_int m,
+                                    const rocblas_int n,
+                                    const rocblas_int k,
+                                    T* const A[],
+                                    const rocblas_int shiftA,
+                                    const rocblas_int lda,
+                                    const rocblas_stride strideA,
+                                    T* ipiv,
+                                    const rocblas_stride strideP,
+                                    T* C,
+                                    const rocblas_int shiftC,
+                                    const rocblas_int ldc,
+                                    const rocblas_stride strideC,
+                                    const rocblas_int batch_count,
+                                    T* scalars,
+                                    T* AbyxORwork,
+                                    T* diagORtmptr,
+                                    T* trfact,
+                                    T** workArr,
+                                    T** workArr2)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr2, C, strideC,
+                            batch_count);
+
+    rocsolver_ormqr_unmqr_template<BATCHED, STRIDED, T>(
+        handle, side, trans, m, n, k, A, shiftA, lda, strideA, ipiv, strideP, (T* const*)workArr2,
+        shiftC, ldc, strideC, batch_count, scalars, AbyxORwork, diagORtmptr, trfact, workArr);
 }

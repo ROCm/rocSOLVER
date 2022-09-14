@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -30,7 +31,7 @@ void sygsx_hegsx_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, rocblas_eform(-1), uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, rocblas_eform(0), uplo, n,
                                                 dA, lda, stA, dB, ldb, stB, bc),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_sygsx_hegsx(STRIDED, SYGST, handle, itype, rocblas_fill_full, n,
@@ -560,3 +561,12 @@ void testing_sygsx_hegsx(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_SYGSX_HEGSX(...) \
+    extern template void testing_sygsx_hegsx<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYGSX_HEGSX,
+            FOREACH_MATRIX_DATA_LAYOUT,
+            FOREACH_BLOCKED_VARIANT,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

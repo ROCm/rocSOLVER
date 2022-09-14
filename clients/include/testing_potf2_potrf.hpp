@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -492,3 +493,12 @@ void testing_potf2_potrf(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_POTF2_POTRF(...) \
+    extern template void testing_potf2_potrf<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_POTF2_POTRF,
+            FOREACH_MATRIX_DATA_LAYOUT,
+            FOREACH_BLOCKED_VARIANT,
+            FOREACH_SCALAR_TYPE,
+            APPLY_STAMP)

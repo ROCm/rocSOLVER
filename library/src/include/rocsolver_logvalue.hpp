@@ -5,16 +5,10 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 
+#include "fmt_rocblas_types.hpp"
 #include "rocsolver_datatype2string.hpp"
-
-/* The format function for user-defined types cannot be const before fmt v8.0
-   but must be const in fmt v8.1 if the type is used in a tuple. */
-#if FMT_VERSION < 80000
-#define ROCSOLVER_FMT_CONST
-#else
-#define ROCSOLVER_FMT_CONST const
-#endif
 
 /***************************************************************************
  * Wrapper for types passed to logger, so we can more easily adjust the
@@ -139,6 +133,16 @@ struct formatter<rocsolver_logvalue<rocblas_svect>> : formatter<char>
     auto format(rocsolver_logvalue<rocblas_svect> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
     {
         return formatter<char>::format(rocblas2char_svect(wrapper.value), ctx);
+    }
+};
+
+template <>
+struct formatter<rocsolver_logvalue<rocblas_srange>> : formatter<char>
+{
+    template <typename FormatCtx>
+    auto format(rocsolver_logvalue<rocblas_srange> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    {
+        return formatter<char>::format(rocblas2char_srange(wrapper.value), ctx);
     }
 };
 
