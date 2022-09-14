@@ -5,6 +5,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ## (Unreleased) rocSOLVER
 - Partial SVD for bidiagonal matrices:
     - BDSVDX
+- Partial SVD for general matrices:
+    - GESVDX (with batched and strided\_batched versions)
 
 ### Added
 ### Optimized

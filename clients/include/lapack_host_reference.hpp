@@ -52,6 +52,7 @@ template <typename T>
 void cblas_syr(rocblas_fill uplo, rocblas_int n, T alpha, T *x,
                rocblas_int incx, T *A, rocblas_int lda);
 */
+
 template <typename T>
 void cblas_gemv(rocblas_operation transA,
                 rocblas_int m,
@@ -817,5 +818,29 @@ void cblas_bdsvdx(rocblas_fill uplo,
                   T* Z,
                   rocblas_int ldz,
                   T* work,
+                  rocblas_int* iwork,
+                  rocblas_int* info);
+
+template <typename T, typename W>
+void cblas_gesvdx(rocblas_svect leftv,
+                  rocblas_svect rightv,
+                  rocblas_srange srange,
+                  rocblas_int m,
+                  rocblas_int n,
+                  T* A,
+                  rocblas_int lda,
+                  W vl,
+                  W vu,
+                  rocblas_int il,
+                  rocblas_int iu,
+                  rocblas_int* nsv,
+                  W* S,
+                  T* U,
+                  rocblas_int ldu,
+                  T* V,
+                  rocblas_int ldv,
+                  T* work,
+                  rocblas_int lwork,
+                  W* rwork,
                   rocblas_int* iwork,
                   rocblas_int* info);
