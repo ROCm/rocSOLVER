@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -32,8 +33,8 @@ void syevd_heevd_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, rocblas_evect(-1), uplo, n, dA,
-                                                lda, stA, dD, stD, dE, stE, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, rocblas_evect(0), uplo, n, dA, lda,
+                                                stA, dD, stD, dE, stE, dinfo, bc),
                           rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(rocsolver_syevd_heevd(STRIDED, handle, evect, rocblas_fill_full, n, dA,
                                                 lda, stA, dD, stD, dE, stE, dinfo, bc),
@@ -617,3 +618,8 @@ void testing_syevd_heevd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_SYEVD_HEEVD(...) \
+    extern template void testing_syevd_heevd<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYEVD_HEEVD, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

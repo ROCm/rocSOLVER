@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -31,12 +32,12 @@ void ormtr_unmtr_checkBadArgs(const rocblas_handle handle,
 
     // values
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_ormtr_unmtr(handle, rocblas_side(-1), uplo, trans, m, n, dA, lda, dIpiv, dC, ldc),
+        rocsolver_ormtr_unmtr(handle, rocblas_side(0), uplo, trans, m, n, dA, lda, dIpiv, dC, ldc),
         rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_ormtr_unmtr(handle, side, rocblas_fill(-1), trans, m, n, dA, lda, dIpiv, dC, ldc),
+        rocsolver_ormtr_unmtr(handle, side, rocblas_fill(0), trans, m, n, dA, lda, dIpiv, dC, ldc),
         rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormtr_unmtr(handle, side, uplo, rocblas_operation(-1), m, n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormtr_unmtr(handle, side, uplo, rocblas_operation(0), m, n, dA,
                                                 lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
     if(COMPLEX)
@@ -434,3 +435,8 @@ void testing_ormtr_unmtr(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_ORMTR_UNMTR(...) \
+    extern template void testing_ormtr_unmtr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_ORMTR_UNMTR, FOREACH_SCALAR_TYPE, APPLY_STAMP)

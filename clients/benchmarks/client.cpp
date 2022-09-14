@@ -228,6 +228,12 @@ try
             "                           Leading dimension of matrices Y.\n"
             "                           ")
 
+        ("ldz",
+         value<rocblas_int>(),
+            "Matrix size parameter.\n"
+            "                           Leading dimension of matrices Z.\n"
+            "                           ")
+
         // stride options
         ("strideA",
          value<rocblas_stride>(),
@@ -296,6 +302,12 @@ try
             "                           Stride for matrices/vectors W.\n"
             "                           ")
 
+        ("strideZ",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors Z.\n"
+            "                           ")
+
         // bdsqr options
         ("nc",
          value<rocblas_int>()->default_value(0),
@@ -315,6 +327,14 @@ try
             "                           Only applicable to bdsqr.\n"
             "                           ")
 
+        // bdsvdx options
+        ("svect",
+         value<char>()->default_value('N'),
+            "N = none, S or V = the singular vectors are computed.\n"
+            "                           Indicates how the left singular vectors are to be calculated and stored.\n"
+            "                           Only applicable to bdsvdx.\n"
+            "                           ")
+
         // laswp options
         ("k1",
          value<rocblas_int>(),
@@ -332,7 +352,7 @@ try
         ("left_svect",
          value<char>()->default_value('N'),
             "N = none, A = the entire orthogonal matrix is computed,\n"
-            "                           S = the singular vectors are computed,\n"
+            "                           S or V = the singular vectors are computed,\n"
             "                           O = the singular vectors overwrite the original matrix.\n"
             "                           Indicates how the left singular vectors are to be calculated and stored.\n"
             "                           ")
@@ -340,7 +360,7 @@ try
         ("right_svect",
          value<char>()->default_value('N'),
             "N = none, A = the entire orthogonal matrix is computed,\n"
-            "                           S = the singular vectors are computed,\n"
+            "                           S or V = the singular vectors are computed,\n"
             "                           O = the singular vectors overwrite the original matrix.\n"
             "                           Indicates how the right singular vectors are to be calculated and stored.\n"
             "                           ")
@@ -368,7 +388,7 @@ try
             "                           Only applicable to stebz.\n"
             "                           ")
 
-        // partial eigenvalue decomposition options
+        // partial eigenvalue/singular value decomposition options
         ("il",
          value<rocblas_int>(),
             "Lower index in ordered subset of eigenvalues.\n"
@@ -386,6 +406,13 @@ try
             "A = all eigenvalues, V = in (vl, vu], I = from the il-th to the iu-th.\n"
             "                           For partial eigenvalue decompositions, it indicates the type of interval in which\n"
             "                           the eigenvalues will be found.\n"
+            "                           ")
+
+        ("srange",
+         value<char>()->default_value('A'),
+            "A = all singular values, V = in (vl, vu], I = from the il-th to the iu-th.\n"
+            "                           For partial singular value decompositions, it indicates the type of interval in which\n"
+            "                           the singular values will be found.\n"
             "                           ")
 
         ("vl",
@@ -512,8 +539,10 @@ try
     argus.validate_diag("diag");
     argus.validate_direct("direct");
     argus.validate_storev("storev");
+    argus.validate_svect("svect");
     argus.validate_svect("left_svect");
     argus.validate_svect("right_svect");
+    argus.validate_erange("srange");
     argus.validate_workmode("fast_alg");
     argus.validate_evect("evect");
     argus.validate_erange("erange");

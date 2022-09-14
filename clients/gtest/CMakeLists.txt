@@ -30,6 +30,7 @@ set(roclapack_test_source
   sygsx_hegsx_gtest.cpp
   # singular value decomposition
   gesvd_gtest.cpp
+  gesvdx_gtest.cpp
   # symmetric eigensolvers
   syev_heev_gtest.cpp
   syevd_heevd_gtest.cpp
@@ -66,6 +67,7 @@ set(rocauxiliary_test_source
   # bidiagonal matrices
   labrd_gtest.cpp
   bdsqr_gtest.cpp
+  bdsvdx_gtest.cpp
   # tridiagonal matrices
   sterf_gtest.cpp
   steqr_gtest.cpp

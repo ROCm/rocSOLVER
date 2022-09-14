@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -367,3 +368,7 @@ void testing_larf(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_LARF(...) extern template void testing_larf<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_LARF, FOREACH_SCALAR_TYPE, APPLY_STAMP)

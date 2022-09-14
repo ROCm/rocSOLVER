@@ -1,11 +1,12 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <cstdio>
 #include <string>
 
 #include <fmt/core.h>
+#include <fmt/ostream.h>
 #include <gtest/gtest.h>
 #include <rocsolver/rocsolver.h>
 

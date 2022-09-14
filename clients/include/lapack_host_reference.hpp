@@ -45,11 +45,6 @@ template <typename T>
 void cblas_swap(rocblas_int n, T *x, rocblas_int incx, T *y, rocblas_int incy);
 
 template <typename T>
-void cblas_gemv(rocblas_operation transA, rocblas_int m, rocblas_int n, T alpha,
-                T *A, rocblas_int lda, T *x, rocblas_int incx, T beta, T *y,
-                rocblas_int incy);
-
-template <typename T>
 void cblas_ger(rocblas_int m, rocblas_int n, T alpha, T *x, rocblas_int incx,
                T *y, rocblas_int incy, T *A, rocblas_int lda);
 
@@ -57,6 +52,35 @@ template <typename T>
 void cblas_syr(rocblas_fill uplo, rocblas_int n, T alpha, T *x,
                rocblas_int incx, T *A, rocblas_int lda);
 */
+
+template <typename T>
+void cblas_gemv(rocblas_operation transA,
+                rocblas_int m,
+                rocblas_int n,
+                T alpha,
+                T* A,
+                rocblas_int lda,
+                T* x,
+                rocblas_int incx,
+                T beta,
+                T* y,
+                rocblas_int incy);
+
+template <typename T>
+void cblas_gemm(rocblas_operation transA,
+                rocblas_operation transB,
+                rocblas_int m,
+                rocblas_int n,
+                rocblas_int k,
+                T alpha,
+                T* A,
+                rocblas_int lda,
+                T* B,
+                rocblas_int ldb,
+                T beta,
+                T* C,
+                rocblas_int ldc);
+
 template <typename T>
 void cblas_symv_hemv(rocblas_fill uplo,
                      rocblas_int n,
@@ -777,3 +801,46 @@ void cblas_sytrf(rocblas_fill uplo,
                  T* work,
                  rocblas_int lwork,
                  rocblas_int* info);
+
+template <typename T>
+void cblas_bdsvdx(rocblas_fill uplo,
+                  rocblas_svect svect,
+                  rocblas_srange srange,
+                  rocblas_int n,
+                  T* D,
+                  T* E,
+                  T vl,
+                  T vu,
+                  rocblas_int il,
+                  rocblas_int iu,
+                  rocblas_int* nsv,
+                  T* S,
+                  T* Z,
+                  rocblas_int ldz,
+                  T* work,
+                  rocblas_int* iwork,
+                  rocblas_int* info);
+
+template <typename T, typename W>
+void cblas_gesvdx(rocblas_svect leftv,
+                  rocblas_svect rightv,
+                  rocblas_srange srange,
+                  rocblas_int m,
+                  rocblas_int n,
+                  T* A,
+                  rocblas_int lda,
+                  W vl,
+                  W vu,
+                  rocblas_int il,
+                  rocblas_int iu,
+                  rocblas_int* nsv,
+                  W* S,
+                  T* U,
+                  rocblas_int ldu,
+                  T* V,
+                  rocblas_int ldv,
+                  T* work,
+                  rocblas_int lwork,
+                  W* rwork,
+                  rocblas_int* iwork,
+                  rocblas_int* info);

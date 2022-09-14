@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -32,8 +33,8 @@ void gels_checkBadArgs(const rocblas_handle handle,
         rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, rocblas_operation(-1), m, n, nrhs, dA,
-                                         lda, stA, dB, ldb, stB, info, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gels(STRIDED, handle, rocblas_operation(0), m, n, nrhs, dA, lda,
+                                         stA, dB, ldb, stB, info, bc),
                           rocblas_status_invalid_value)
         << "Must report error when operation is invalid";
 
@@ -577,3 +578,7 @@ void testing_gels(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_GELS(...) extern template void testing_gels<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_GELS, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

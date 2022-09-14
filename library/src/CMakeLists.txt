@@ -105,6 +105,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_gesvd.cpp
   lapack/roclapack_gesvd_batched.cpp
   lapack/roclapack_gesvd_strided_batched.cpp
+  lapack/roclapack_gesvdx.cpp
+  lapack/roclapack_gesvdx_batched.cpp
+  lapack/roclapack_gesvdx_strided_batched.cpp
   # symmetric eigensolvers
   lapack/roclapack_syev_heev.cpp
   lapack/roclapack_syev_heev_batched.cpp
@@ -163,6 +166,7 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_ormtr_unmtr.cpp
   # bidiagonal matrices
   auxiliary/rocauxiliary_bdsqr.cpp
+  auxiliary/rocauxiliary_bdsvdx.cpp
   auxiliary/rocauxiliary_labrd.cpp
   # tridiagonal matrices
   auxiliary/rocauxiliary_sterf.cpp

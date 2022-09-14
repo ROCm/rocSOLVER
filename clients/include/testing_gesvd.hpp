@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -41,11 +42,11 @@ void gesvd_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, rocblas_svect(-1), right_svect, m, n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, rocblas_svect(0), right_svect, m, n, dA,
                                           lda, stA, dS, stS, dU, ldu, stU, dV, ldv, stV, dE, stE,
                                           fa, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, left_svect, rocblas_svect(-1), m, n, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvd(STRIDED, handle, left_svect, rocblas_svect(0), m, n, dA,
                                           lda, stA, dS, stS, dU, ldu, stU, dV, ldv, stV, dE, stE,
                                           fa, dinfo, bc),
                           rocblas_status_invalid_value);
@@ -858,3 +859,7 @@ void testing_gesvd(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_GESVD(...) extern template void testing_gesvd<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_GESVD, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

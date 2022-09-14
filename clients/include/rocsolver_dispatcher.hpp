@@ -10,6 +10,7 @@
 #include <string>
 
 #include "testing_bdsqr.hpp"
+#include "testing_bdsvdx.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
@@ -18,6 +19,7 @@
 #include "testing_gerq2_gerqf.hpp"
 #include "testing_gesv.hpp"
 #include "testing_gesvd.hpp"
+#include "testing_gesvdx.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
 #include "testing_getri.hpp"
@@ -171,6 +173,10 @@ class rocsolver_dispatcher
             {"gesvd", testing_gesvd<false, false, T>},
             {"gesvd_batched", testing_gesvd<true, true, T>},
             {"gesvd_strided_batched", testing_gesvd<false, true, T>},
+            // gesvdx
+            {"gesvdx", testing_gesvdx<false, false, T>},
+            {"gesvdx_batched", testing_gesvdx<true, true, T>},
+            {"gesvdx_strided_batched", testing_gesvdx<false, true, T>},
             // trtri
             {"trtri", testing_trtri<false, false, T>},
             {"trtri_batched", testing_trtri<true, true, T>},
@@ -229,6 +235,7 @@ class rocsolver_dispatcher
         static const func_map map_real = {
             {"sterf", testing_sterf<T>},
             {"stebz", testing_stebz<T>},
+            {"bdsvdx", testing_bdsvdx<T>},
             // orgxx
             {"org2r", testing_orgxr_ungxr<T, 0>},
             {"orgqr", testing_orgxr_ungxr<T, 1>},

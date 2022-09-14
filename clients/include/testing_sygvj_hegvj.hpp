@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -39,11 +40,11 @@ void sygvj_hegvj_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, rocblas_eform(-1), evect, uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, rocblas_eform(0), evect, uplo, n,
                                                 dA, lda, stA, dB, ldb, stB, abstol, dResidual,
                                                 max_sweeps, dSweeps, dW, stW, dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, itype, rocblas_evect(-1), uplo, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvj_hegvj(STRIDED, handle, itype, rocblas_evect(0), uplo, n,
                                                 dA, lda, stA, dB, ldb, stB, abstol, dResidual,
                                                 max_sweeps, dSweeps, dW, stW, dInfo, bc),
                           rocblas_status_invalid_value);
@@ -785,3 +786,8 @@ void testing_sygvj_hegvj(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_SYGVJ_HEGVJ(...) \
+    extern template void testing_sygvj_hegvj<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYGVJ_HEGVJ, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

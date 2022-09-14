@@ -154,22 +154,19 @@ install_fmt_from_source( )
   fmt_version=7.1.3
   fmt_srcdir=fmt-$fmt_version-src
   fmt_blddir=fmt-$fmt_version-bld
-  wget -nc -nv -O fmt-$fmt_version.tar.gz \
+  wget -nv -O fmt-$fmt_version.tar.gz \
       https://github.com/fmtlib/fmt/archive/refs/tags/$fmt_version.tar.gz
-  if [[ ! -d "$fmt_srcdir" ]]; then
-    tar xzf fmt-$fmt_version.tar.gz --one-top-level="$fmt_srcdir" --strip-components 1
-  fi
-  if [[ ! -d "$fmt_blddir" ]]; then
-    ${cmake_executable} \
-      -S "$fmt_srcdir" -B "$fmt_blddir" \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-      -DCMAKE_CXX_STANDARD=17 \
-      -DCMAKE_CXX_EXTENSIONS=OFF \
-      -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-      -DFMT_DOC=OFF \
-      -DFMT_TEST=OFF
-  fi
+  rm -rf "$fmt_srcdir" "$fmt_blddir"
+  tar xzf fmt-$fmt_version.tar.gz --one-top-level="$fmt_srcdir" --strip-components 1
+  ${cmake_executable} \
+    -H$fmt_srcdir -B$fmt_blddir \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DCMAKE_CXX_EXTENSIONS=OFF \
+    -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+    -DFMT_DOC=OFF \
+    -DFMT_TEST=OFF
   make -j$(nproc) -C "$fmt_blddir"
   elevate_if_not_root make -C "$fmt_blddir" install
 }
@@ -179,20 +176,17 @@ install_lapack_from_source( )
   lapack_version=3.9.1
   lapack_srcdir=lapack-$lapack_version-src
   lapack_blddir=lapack-$lapack_version-bld
-  wget -nc -nv -O lapack-$lapack_version.tar.gz \
+  wget -nv -O lapack-$lapack_version.tar.gz \
       https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v$lapack_version.tar.gz
-  if [[ ! -d "$lapack_srcdir" ]]; then
-    tar xzf lapack-$lapack_version.tar.gz --one-top-level="$lapack_srcdir" --strip-components 1
-  fi
-  if [[ ! -d "$lapack_blddir" ]]; then
-    ${cmake_executable} \
-      -S "$lapack_srcdir" -B "$lapack_blddir" \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_Fortran_FLAGS=-fno-optimize-sibling-calls \
-      -DBUILD_TESTING=OFF \
-      -DCBLAS=ON \
-      -DLAPACKE=OFF
-  fi
+  rm -rf "$lapack_srcdir" "$lapack_blddir"
+  tar xzf lapack-$lapack_version.tar.gz --one-top-level="$lapack_srcdir" --strip-components 1
+  ${cmake_executable} \
+    -H$lapack_srcdir -B$lapack_blddir \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_Fortran_FLAGS=-fno-optimize-sibling-calls \
+    -DBUILD_TESTING=OFF \
+    -DCBLAS=ON \
+    -DLAPACKE=OFF
   make -j$(nproc) -C "$lapack_blddir"
   elevate_if_not_root make -C "$lapack_blddir" install
 }
@@ -202,17 +196,14 @@ install_gtest_from_source( )
   gtest_version=1.11.0
   gtest_srcdir=gtest-$gtest_version-src
   gtest_blddir=gtest-$gtest_version-bld
-  wget -nc -nv -O gtest-$gtest_version.tar.gz \
+  wget -nv -O gtest-$gtest_version.tar.gz \
       https://github.com/google/googletest/archive/refs/tags/release-$gtest_version.tar.gz
-  if [[ ! -d "$gtest_srcdir" ]]; then
-    tar xzf gtest-$gtest_version.tar.gz --one-top-level="$gtest_srcdir" --strip-components 1
-  fi
-  if [[ ! -d "$gtest_blddir" ]]; then
-    ${cmake_executable} \
-      -S "$gtest_srcdir" -B "$gtest_blddir" \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_SHARED_LIBS=OFF
-  fi
+  rm -rf "$gtest_srcdir" "$gtest_blddir"
+  tar xzf gtest-$gtest_version.tar.gz --one-top-level="$gtest_srcdir" --strip-components 1
+  ${cmake_executable} \
+    -H$gtest_srcdir -B$gtest_blddir \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF
   make -j$(nproc) -C "$gtest_blddir"
   elevate_if_not_root make -C "$gtest_blddir" install
 }
@@ -489,6 +480,9 @@ export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
 if [[ "${install_dependencies}" == true ]]; then
   install_packages
 
+  cmake_version=$(${cmake_executable} --version | grep -oP '(?<=version )[^ ]*')
+  printf "\033[32mUsing \033[33m$(command -v ${cmake_executable})\033[32m (version ${cmake_version})\033[0m\n"
+
   pushd .
   mkdir -p "${build_dir}/deps"
   cd "${build_dir}/deps"
@@ -546,7 +540,6 @@ cmake_common_options+=(
   '-DCPACK_SET_DESTDIR=OFF'
   "-DCMAKE_INSTALL_PREFIX=${lib_dir}"
   "-DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir}"
-  '-DROCSOLVER_EMBED_FMT=ON'
   "-DCMAKE_BUILD_TYPE=${build_type}"
 )
 

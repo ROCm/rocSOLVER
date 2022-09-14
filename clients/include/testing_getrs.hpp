@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -32,7 +33,7 @@ void getrs_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, rocblas_operation(-1), n, nrhs, dA, lda,
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, rocblas_operation(0), n, nrhs, dA, lda,
                                           stA, dIpiv, stP, dB, ldb, stB, bc),
                           rocblas_status_invalid_value);
 
@@ -507,3 +508,7 @@ void testing_getrs(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_GETRS(...) extern template void testing_getrs<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_GETRS, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

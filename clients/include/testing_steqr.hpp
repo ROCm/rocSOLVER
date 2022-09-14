@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -26,7 +27,7 @@ void steqr_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, rocblas_evect(-1), n, dD, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_steqr(handle, rocblas_evect(0), n, dD, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_value);
 
     // pointers
@@ -444,3 +445,7 @@ void testing_steqr(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_STEQR(...) extern template void testing_steqr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_STEQR, FOREACH_SCALAR_TYPE, APPLY_STAMP)

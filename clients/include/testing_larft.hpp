@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -29,10 +30,10 @@ void larft_checkBadArgs(const rocblas_handle handle,
 
     // values
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_larft(handle, rocblas_direct(-1), storev, n, k, dV, ldv, dt, dT, ldt),
+        rocsolver_larft(handle, rocblas_direct(0), storev, n, k, dV, ldv, dt, dT, ldt),
         rocblas_status_invalid_value);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_larft(handle, direct, rocblas_storev(-1), n, k, dV, ldv, dt, dT, ldt),
+        rocsolver_larft(handle, direct, rocblas_storev(0), n, k, dV, ldv, dt, dT, ldt),
         rocblas_status_invalid_value);
 
     // pointers
@@ -396,3 +397,7 @@ void testing_larft(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_LARFT(...) extern template void testing_larft<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_LARFT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

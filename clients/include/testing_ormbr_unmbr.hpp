@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -31,14 +32,14 @@ void ormbr_unmbr_checkBadArgs(const rocblas_handle handle,
         rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, storev, rocblas_side(-1), trans, m, n, k,
-                                                dA, lda, dIpiv, dC, ldc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, storev, rocblas_side(0), trans, m, n, k, dA,
+                                                lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, rocblas_storev(-1), side, trans, m, n, k,
-                                                dA, lda, dIpiv, dC, ldc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, rocblas_storev(0), side, trans, m, n, k, dA,
+                                                lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, storev, side, rocblas_operation(-1), m, n,
-                                                k, dA, lda, dIpiv, dC, ldc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, storev, side, rocblas_operation(0), m, n, k,
+                                                dA, lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
     if(COMPLEX)
         EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, storev, side, rocblas_operation_transpose,
@@ -465,3 +466,8 @@ void testing_ormbr_unmbr(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_ORMBR_UNMBR(...) \
+    extern template void testing_ormbr_unmbr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_ORMBR_UNMBR, FOREACH_SCALAR_TYPE, APPLY_STAMP)
