@@ -12063,6 +12063,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                 If info[j] = 0, successful exit.
                 If info[j] = i > 0, i eigenvectors did not converge in \ref rocsolver_sbdsvdx "BDSVDX"; their
                 indices are stored in ifail_j.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdx_batched(rocblas_handle handle,
@@ -12295,6 +12298,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 If info[j] = 0, successful exit.
                 If info[j] = i > 0, i eigenvectors did not converge in \ref rocsolver_sbdsvdx "BDSVDX"; their
                 indices are stored in ifail_j.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdx_strided_batched(rocblas_handle handle,
