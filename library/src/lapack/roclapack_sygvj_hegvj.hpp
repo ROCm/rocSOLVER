@@ -229,8 +229,8 @@ rocblas_status rocsolver_sygvj_hegvj_template(rocblas_handle handle,
 
     rocsolver_syevj_heevj_template<BATCHED, STRIDED, T>(
         handle, rocblas_esort_ascending, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual,
-        max_sweeps, n_sweeps, W, strideW, iinfo, batch_count, (T*)work1, (S*)work2, (S*)work3,
-        (T*)work4, (rocblas_int*)work5, (rocblas_int*)work6);
+        max_sweeps, n_sweeps, W, strideW, iinfo, batch_count, (T*)work1, (S*)work2, (T*)work3,
+        (rocblas_int*)work4, (rocblas_int*)work5, (rocblas_int*)work6);
 
     // combine info from POTRF with info from SYEV/HEEV
     ROCSOLVER_LAUNCH_KERNEL(sygv_update_info, gridReset, threadsReset, 0, stream, info, iinfo, n,
