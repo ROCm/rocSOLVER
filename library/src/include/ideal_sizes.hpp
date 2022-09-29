@@ -166,6 +166,16 @@
     if any, will be factorized with the unblocked algorithm (POTF2).*/
 #define POTRF_POTF2_SWITCHSIZE 128
 
+/************************** syevj/heevj ***************************************
+*******************************************************************************/
+/*! \brief Determines the size at which rocSOLVER switches from
+    the small-size kernel to the blocked algorithm when executing SYEVJ. It also applies to the
+    corresponding batched and strided-batched routines. Must be <= 64.
+
+    \details If the size of the matrix is not greater than SYEVJ_SWITCHSIZE, the eigenvalues
+    and eigenvectors will be computed with a single kernel call. */
+#define SYEVJ_SWITCHSIZE 58
+
 /*************************** sytf2/sytrf **************************************
 *******************************************************************************/
 /*! \brief Determines the maximum size of the partial factorization executed at each step
