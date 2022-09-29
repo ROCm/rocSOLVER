@@ -265,7 +265,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
 
     // Also check validity of residual
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hResidualRes[b][0] < 0 || hResidualRes[b][0] > atol)
+        if(hResidualRes[b][0] < 0 || hResidualRes[b][0] > n * atol)
             *max_err += 1;
 
     // Also check validity of sweeps

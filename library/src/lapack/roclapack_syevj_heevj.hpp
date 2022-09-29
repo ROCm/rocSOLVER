@@ -961,7 +961,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
 
     // absolute tolerance for evaluating when the algorithm has converged
     S eps = get_epsilon<S>();
-    S atol = (abstol <= 0) ? eps : abstol;
+    S atol = n * (abstol <= 0 ? eps : abstol);
 
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
