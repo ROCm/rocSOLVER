@@ -83,7 +83,7 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
             if(evect != rocblas_evect_none)
                 A[i + i * lda] = 1;
 
-            for(j = i + 1; j < n; j++)
+            for(j = n - 1; j > i; j--)
             {
                 aij = A[i + j * lda];
                 local_res += 2 * std::norm(aij);
@@ -101,13 +101,13 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
     }
     if(tiy == 0 && uplo == rocblas_fill_lower)
     {
-        for(j = tix; j < n; j += half_n)
+        for(i = tix; i < n; i += half_n)
         {
-            Acpy[j + j * n] = A[j + j * lda];
+            Acpy[i + i * n] = A[i + i * lda];
             if(evect != rocblas_evect_none)
-                A[j + j * lda] = 1;
+                A[i + i * lda] = 1;
 
-            for(i = j + 1; i < n; i++)
+            for(j = 0; j < i; j++)
             {
                 aij = A[i + j * lda];
                 local_res += 2 * std::norm(aij);
@@ -268,7 +268,7 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
         {
             local_res = 0;
             for(i = tix; i < n; i += half_n)
-                for(j = i + 1; j < n; j++)
+                for(j = 0; j < i; j++)
                     local_res += 2 * std::norm(Acpy[i + j * n]);
             cosines_res[tix] = local_res;
         }
@@ -394,7 +394,7 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
             if(evect != rocblas_evect_none)
                 A[i + i * lda] = 1;
 
-            for(j = i + 1; j < n; j++)
+            for(j = n - 1; j > i; j--)
             {
                 temp = A[i + j * lda];
                 local_res += 2 * std::norm(temp);
@@ -412,13 +412,13 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
     else
     {
         T temp;
-        for(j = tid; j < n; j += hipBlockDim_x)
+        for(i = tid; i < n; i += hipBlockDim_x)
         {
-            Acpy[j + j * n] = A[j + j * lda];
+            Acpy[i + i * n] = A[i + i * lda];
             if(evect != rocblas_evect_none)
-                A[j + j * lda] = 1;
+                A[i + i * lda] = 1;
 
-            for(i = j + 1; i < n; i++)
+            for(j = 0; j < i; j++)
             {
                 temp = A[i + j * lda];
                 local_res += 2 * std::norm(temp);
@@ -1155,7 +1155,7 @@ ROCSOLVER_KERNEL void syevj_calc_norm(const rocblas_int n,
     S local_res = 0;
     for(i = tid; i < n; i += hipBlockDim_x)
     {
-        for(j = i + 1; j < n; j++)
+        for(j = 0; j < i; j++)
             local_res += 2 * std::norm(Acpy[i + j * n]);
     }
     sh_res[tid] = local_res;
