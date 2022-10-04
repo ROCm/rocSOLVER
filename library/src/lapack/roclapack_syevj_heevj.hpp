@@ -1084,10 +1084,13 @@ ROCSOLVER_KERNEL void
 
     if(half_blocks <= hipBlockDim_x && tix < half_blocks)
     {
-        if(tix == 1)
+        if(tix == 0)
+            i = 0;
+        else if(tix == 1)
             i = bottom[0];
         else if(tix > 1)
             i = top[tix - 1];
+
         if(tix == half_blocks - 1)
             j = top[half_blocks - 1];
         else
@@ -1117,6 +1120,7 @@ ROCSOLVER_KERNEL void
                 top[k] = sh_bottom[0];
             else if(k > 1)
                 top[k] = sh_top[k - 1];
+
             if(k == half_blocks - 1)
                 bottom[k] = sh_top[half_blocks - 1];
             else
