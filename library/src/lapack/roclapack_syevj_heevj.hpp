@@ -1498,7 +1498,9 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         while(h_sweeps < max_sweeps)
         {
             // if all instances in the batch have finished, exit the loop
-            hipMemcpy(&h_completed, completed, sizeof(rocblas_int), hipMemcpyDeviceToHost);
+            hipMemcpyAsync(&h_completed, completed, sizeof(rocblas_int), hipMemcpyDeviceToHost,
+                           stream);
+            hipStreamSynchronize(stream);
             if(h_completed == batch_count)
                 break;
 
