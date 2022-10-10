@@ -150,6 +150,10 @@
     the eigenvectors are computed with the normal QR algorithm. */
 #define STEDC_MIN_DC_SIZE 32
 
+/*! \brief Determines the number of split blocks (independent blocks) of a tridiagonal matrix that
+    are analyzed in parallel with the divide & conquer method. */
+#define STEDC_NUM_SPLIT_BLKS 16
+
 /************************** potf2/potrf ***************************************
 *******************************************************************************/
 /*! \brief Determines the size of the leading block that is factorized at each step

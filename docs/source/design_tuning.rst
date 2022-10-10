@@ -269,6 +269,12 @@ SYEVJ_BLOCKED_SWITCH
 
 (As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
 
+STEDC_NUM_SPLIT_BLKS
+---------------------
+.. doxygendefine:: STEDC_NUM_SPLIT_BLKS
+
+(As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
+
 
 
 potf2/potrf functions

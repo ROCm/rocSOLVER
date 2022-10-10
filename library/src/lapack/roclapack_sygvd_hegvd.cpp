@@ -51,21 +51,22 @@ rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
     // extra requirements for calling POTRF and SYEVD/HEEVD
     size_t size_tau;
     size_t size_pivots_workArr;
+    size_t size_splits;
     // size of temporary info array
     size_t size_iinfo;
     rocsolver_sygvd_hegvd_getMemorySize<false, false, T, S>(
         itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_tau, &size_pivots_workArr, &size_iinfo, &optim_mem);
+        &size_work4, &size_splits, &size_tau, &size_pivots_workArr, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_work4, size_tau,
+                                                      size_work3, size_work4, size_splits, size_tau,
                                                       size_pivots_workArr, size_iinfo);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *tau, *pivots_workArr, *iinfo;
+    void *scalars, *work1, *work2, *work3, *work4, *tau, *pivots_workArr, *iinfo, *splits;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_tau, size_pivots_workArr, size_iinfo);
+                              size_splits, size_tau, size_pivots_workArr, size_iinfo);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -75,16 +76,17 @@ rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
     work2 = mem[2];
     work3 = mem[3];
     work4 = mem[4];
-    tau = mem[5];
-    pivots_workArr = mem[6];
-    iinfo = mem[7];
+    splits = mem[5];
+    tau = mem[6];
+    pivots_workArr = mem[7];
+    iinfo = mem[8];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_sygvd_hegvd_template<false, false, T>(
         handle, itype, evect, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, D, strideD,
-        E, strideE, info, batch_count, (T*)scalars, work1, work2, work3, work4, (T*)tau,
+        E, strideE, info, batch_count, (T*)scalars, work1, work2, work3, work4, (rocblas_int*)splits, (T*)tau,
         pivots_workArr, (rocblas_int*)iinfo, optim_mem);
 }
 

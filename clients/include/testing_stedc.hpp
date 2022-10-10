@@ -95,13 +95,13 @@ void stedc_initData(const rocblas_handle handle,
         for(rocblas_int i = 0; i < n; i++)
         {
             hD[0][i] += 400;
-            hE[0][i] -= 5;
+//            hE[0][i] -= 5;
         }
 
         // add fixed splits in the matrix to test split handling
-        rocblas_int k = n / 2;
-        hE[0][k] = 0;
-        hE[0][k - 1] = 0;
+//        rocblas_int k = n / 2;
+//        hE[0][k] = 0;
+//        hE[0][k - 1] = 0;
 
         // initialize C to the identity matrix
         if(evect == rocblas_evect_original)
