@@ -15243,7 +15243,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
                 Specifies the leading dimension of matrices A_j.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
                 is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
@@ -15350,7 +15350,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
                 Specifies the leading dimension of matrices A_j.
     @param[in]
     abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
                 is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
@@ -15461,7 +15461,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
                 is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
@@ -15574,7 +15574,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
     abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
                 is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
