@@ -27,6 +27,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
                                          size_t* size_work1,
                                          size_t* size_work2,
                                          size_t* size_work3,
+                                         size_t* size_tmpz,
                                          size_t* size_splits,
                                          size_t* size_tmptau_W,
                                          size_t* size_tau,
@@ -43,6 +44,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
         *size_tau = 0;
         *size_workArr = 0;
         *size_splits = 0;
+        *size_tmpz = 0;
         return;
     }
 
@@ -59,7 +61,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     if(evect == rocblas_evect_original)
     {
         // extra requirements for computing eigenvalues and vectors (stedc)
-        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12, &w22, &w31, size_splits,
+        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12, &w22, &w31, size_tmpz, size_splits,
                                                      &unused);
 
         // extra requirements for ormtr/unmtr
@@ -114,6 +116,7 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
                                               void* work1,
                                               void* work2,
                                               void* work3,
+                                              S* tmpz,  
                                               rocblas_int* splits,
                                               T* tmptau_W,
                                               T* tau,
@@ -169,7 +172,7 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
 
         rocsolver_stedc_template<false, ISBATCHED, T>(
             handle, rocblas_evect_tridiagonal, n, D, 0, strideD, E, 0, strideE, tmptau_W, 0, ldw,
-            strideW, info, batch_count, work1, (S*)work2, (S*)work3, splits, (S**)workArr);
+            strideW, info, batch_count, work1, (S*)work2, (S*)work3, tmpz, splits, (S**)workArr);
 
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
             handle, rocblas_side_left, uplo, rocblas_operation_none, n, n, A, shiftA, lda, strideA,

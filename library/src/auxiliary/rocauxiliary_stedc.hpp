@@ -15,8 +15,11 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-/** STEDC_NUM_LEV returns the ideal number of times a matrix (or split block)
-    will be divided during the divide phase of divide & conquer algorithm **/
+#define BDIM 512
+
+/** STEDC_NUM_LEV returns the ideal number of times or levels a matrix (or split block)
+    will be divided during the divide phase of divide & conquer algorithm.
+    i.e. number of sub-blocks = 2^levels **/
 __host__ __device__ inline rocblas_int stedc_num_levs(const rocblas_int n)
 {
     return 2;
@@ -48,7 +51,7 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
     splits[0] = 0; //positions where each block begings
 
     // main loop
-    /*    while(k < n)
+    while(k < n)
     {
         bs = 1;
         for(rocblas_int j = k; j < n - 1; ++j)
@@ -65,7 +68,7 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
             bs++;
         }
         k += bs;
-    }*/
+    }
     splits[nb] = n;
     splits[n + 1] = nb; //also save the number of split blocks
 }
@@ -73,39 +76,49 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
 /** STEDC_KERNEL implements the main loop of the DC algorithm
     to compute the eigenvalues/eigenvectors of the symmetric tridiagonal
     submatrices **/
-template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(BDIM) 
+                        stedc_kernel(const rocblas_int n,
                                    S* DD,
                                    const rocblas_stride strideD,
                                    S* EE,
                                    const rocblas_stride strideE,
-                                   U CC,
+                                   S* CC,
                                    const rocblas_int shiftC,
                                    const rocblas_int ldc,
                                    const rocblas_stride strideC,
                                    rocblas_int* iinfo,
-                                   S* WW,
+                                   S* WA,
+                                   S* tmpzA,
+                                   S* dpolyA,
                                    rocblas_int* splitsA,
                                    const S eps,
                                    const S ssfmin,
-                                   const S ssfmax)
+                                   const S ssfmax,
+                                   const rocblas_int maxblks)
 {
     rocblas_int bid = hipBlockIdx_y; // batch instance id
     rocblas_int sid = hipBlockIdx_x; // split block id
-    rocblas_int tid = hipThreadIdx_x; // thread id
-    rocblas_int bdim = hipBlockDim_x; // number of threads
+    rocblas_int id = hipThreadIdx_x; 
+    rocblas_int tid, tidb;
 
     // select batch instance to work with
     // (avoiding arithmetics with possible nullptrs)
-    T* C;
+    S* C;
     if(CC)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
-    S* D = DD + (bid * strideD);
-    S* E = EE + (bid * strideE);
+        C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
     rocblas_int* info = iinfo + bid;
-    rocblas_int* splits = splitsA + bid * (2 * n + 2);
-    rocblas_int* idd = splits + n + 2;
-    S* W = WW + (bid * 2 * n);
+    
+    // temporary arrays in global memory
+    rocblas_int* splits = splitsA + bid * (2 * n + 2); // contains the beginning of split blocks 
+    S* W = WA + bid * (2 * n);  // worksapce
+    rocblas_int* idd = splits + n + 2;  // if idd[i] = 0, the value in position i has been deflated
+    S* z = tmpzA + bid * (2 * n);  // the rank-1 modification vectors in the merges          
+    S* ev = z + n; // roots of secular equations
+    S* dpoly = dpolyA + bid * (n * n); // coeficients of denominators of secular eqns
+    S* npoly = dpoly + n; // coeficients of numerators of secular eqns      
 
     // info of split blocks
     rocblas_int nb = splits[n + 1]; // total number of blocks
@@ -121,14 +134,15 @@ ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
     // shared temp arrays
     extern __shared__ rocblas_int lmem[];
     rocblas_int* ns = lmem; // shares the sub-blocks sizes
-    rocblas_int* ps = ns + bdim; // shares the sub-blocks initial positions
+    rocblas_int* ps = ns + maxblks; // shares the sub-blocks initial positions
+    S* inrms = reinterpret_cast<S*>(ps + maxblks); 
 
     // work with STEDC_NUM_SPLIT_BLKS split blocks in parallel
-    for(int k = sid; k < nb; k += STEDC_NUM_SPLIT_BLKS)
+    for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
     {
         // Select current split block
-        p1 = splits[k];
-        p2 = splits[k + 1];
+        p1 = splits[kb];
+        p2 = splits[kb + 1];
         bs = p2 - p1;
 
         // determine ideal number of sub-blocks
@@ -138,7 +152,7 @@ ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
         // if split block is too small, solve it with steqr
         if(blks == 1)
         {
-            if(tid == 0)
+            if(id == 0)
             {
                 run_steqr(bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc, info, W + p1 * 2, 30 * bs,
                           eps, ssfmin, ssfmax, false);
@@ -148,13 +162,20 @@ ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
         // otherwise, divide & conquer with blks threads (one thread per sub-block)
         else
         {
+            // arrange threads so that a group of bdim/blks threads works with each sub-block
+            rocblas_int tn = BDIM / blks;
+            tid = id / tn;
+            tidb = id % tn;
+             
             /************************* 1. divide phase *************************/
+            /*******************************************************************/
             // (artificially divide split block into blks sub-blocks
             // find initial positions of each sub-blocks)
-            ns[tid] = 0;
+            if(tidb == 0)
+                ns[tid] = 0;
 
             // find sub-block sizes
-            if(tid == 0)
+            if(id == 0)
             {
                 ns[0] = bs;
                 rocblas_int t, t2;
@@ -171,39 +192,79 @@ ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
             }
             __syncthreads();
 
-            // find begining of this thread sub-block and update D elements
+            // find begining of sub-block and update D elements
             p2 = 0;
             for(int i = 0; i < tid; ++i)
                 p2 += ns[i];
             p2 += p1;
-            ps[tid] = p2;
-            if(tid > 0 && tid < blks)
+            if(tidb == 0)
             {
-                // perform sub-block division
-                p = E[p2 - 1];
-                D[p2] -= p;
-                D[p2 - 1] -= p;
+                ps[tid] = p2;
+                if(tid > 0 && tid < blks)
+                {
+                    // perform sub-block division
+                    p = E[p2 - 1];
+                    D[p2] -= p;
+                    D[p2 - 1] -= p;
+                }
             }
             __syncthreads();
             /******************************************************************/
-            //if(tid==0)
-            //{
-            //for(int v=0;v<blks;++v)
-            //    printf("%d ",ps[v]);
-            //printf("\n");
-            //}
+
+
+/*if(id == 0)
+{
+printf("D: \n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",D[j]);
+}
+printf("\n");
+}
+__syncthreads();*/
+
 
             /************************* 2. solve phase *************************/
-            // (solve the blks sub-blocks in parallel)
-            //            run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info,
-            //                        W + p2 * 2, 30 * bs, eps, ssfmin, ssfmax, false);
-            //            __syncthreads();
+            /*******************************************************************/
+            if(tidb == 0)
+            {
+                // (solve the blks sub-blocks in parallel)
+                run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info,
+                          W + p2 * 2, 30 * bs, eps, ssfmin, ssfmax, false);
+            }
+            __syncthreads();
             /******************************************************************/
+/*if(tidb == 0)
+{
+for(int i=0;i<n;++i)
+{
+    for(int j=0;j<ns[tid];++j)
+    {
+        C[i + (j+p2) * ldc] = tid + i + j;
+    }
+}
+}
+__syncthreads();*/
+
+/*if(id == 0)
+{
+    printf("C: \n");
+    for(int i=0;i<n;++i)
+    {
+        for(int j=0;j<n;++j)
+        {
+            printf("%f ",C[i + j * ldc]);
+        }
+        printf("\n");
+    }
+}
+__syncthreads();*/
 
             /************************* 3. Merge phase *************************/
+            /*******************************************************************/
             // (merge results of the blks sub-blocks to generate
             //  the solution of the entire split block)
-            T* z;
+            S* ptz;
             for(int k = 0; k < levs; ++k)
             {
                 // +++++++++++++++++++++++++++++++++++
@@ -212,101 +273,188 @@ ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
                 //  threads with iam >= bd work below the merge point)
                 rocblas_int bd = 1 << k;
                 rocblas_int iam = tid % (bd << 1);
-                if(iam < bd && tid < blks)
+                if(tidb == 0)
                 {
-                    rocblas_int sz = ns[tid];
-                    for(int j = 1; j < bd - iam; ++j)
-                        sz += ns[tid + j];
-                    // with this, all threads involved in a merge (above merge point)
-                    // will point to the same row of C and the same off-diag element
-                    z = C + p2 - 1 + sz;
-                    p = E[p2 - 1 + sz];
-                }
-                else if(iam >= bd && tid < blks)
-                {
-                    rocblas_int sz = 0;
-                    for(int j = 0; j < iam - bd; ++j)
-                        sz += ns[tid - j - 1];
-                    // with this, all threads involved in a merge (below merge point)
-                    // will point to the same row of C and the same off-diag element
-                    z = C + p2 - sz;
-                    p = E[p2 - sz - 1];
+                    if(iam < bd && tid < blks)
+                    {
+                        rocblas_int sz = ns[tid];
+                        for(int j = 1; j < bd - iam; ++j)
+                            sz += ns[tid + j];
+                        // with this, all threads involved in a merge (above merge point)
+                        // will point to the same row of C and the same off-diag element
+                        ptz = C + p2 - 1 + sz;
+                        p = E[p2 - 1 + sz];
+                    }
+                    else if(iam >= bd && tid < blks)
+                    {
+                        rocblas_int sz = 0;
+                        for(int j = 0; j < iam - bd; ++j)
+                            sz += ns[tid - j - 1];
+                        // with this, all threads involved in a merge (below merge point)
+                        // will point to the same row of C and the same off-diag element
+                        ptz = C + p2 - sz;
+                        p = E[p2 - sz - 1];
+                    }
+                    // copy elements of z
+                    for(int j = 0; j < ns[tid]; ++j)
+                        z[p2 + j] = ptz[(p2 + j) * ldc];
                 }
                 __syncthreads();
+
+/*if(id == 0)
+{
+printf("\nfor k = %d\n",k);
+printf("z:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",z[j]);
+}
+printf("\n");
+printf("D:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",D[j]);
+}
+printf("\n");
+}
+__syncthreads();*/
+
                 // +++++++++++++++++++++++++++++++++++
 
                 // +++++++++++++++++++++++++++++++++++
                 // b. calculate deflation tolerance
                 // tol = 8 * eps * (max diagonal or off-diagonal element participating in merge)
-                S val;
+                S valf, valg, f, g, c, s, r;
                 S tol = 0.00000000001;
                 // +++++++++++++++++++++++++++++++++++
 
                 // +++++++++++++++++++++++++++++++++++
                 // c. deflate enigenvalues
                 // first deflate each thread sub-block
-                for(int i = 0; i < ns[tid]; ++i)
+                if(tidb == 0)
                 {
-                    //                    if(abs(p * z[(p2 + i) * ldc]) <= tol)
-                    //                    {
-                    //                        // deflated ev because component in z is zero
-                    //                        idd[p2 + i] = 0;
-                    //                    }
-                    //                    else
-                    //                    {
-                    rocblas_int jj = 1;
-                    val = D[p2 + i];
-                    for(int j = 0; j < i; ++j)
+                    for(int i = 0; i < ns[tid]; ++i)
                     {
-                        if(idd[p2 + j] == 1 && abs(D[p2 + j] - val) <= tol)
+                        g = z[p2 + i];
+                        if(abs(p * g) <= tol)
                         {
-                            // deflated ev because it is repeated
+                            // deflated ev because component in z is zero
                             idd[p2 + i] = 0;
-                            break;
                         }
-                        jj++;
+                        else
+                        {
+                            rocblas_int jj = 1;
+                            valg = D[p2 + i];
+                            for(int j = 0; j < i; ++j)
+                            {
+                                if(idd[p2 + j] == 1 && abs(D[p2 + j] - valg) <= tol)
+                                {
+                                    // deflated ev because it is repeated
+                                    idd[p2 + i] = 0;
+                                    // rotation to eliminate component in z
+                                    f = z[p2 + j];
+                                    lartg(f, g, c, s, r);
+                                    z[p2 + j] = r;
+                                    z[p2 + i] = 0;
+                                    // update C with the rotation
+                                    for(int ii = 0; ii < n; ++ii)
+                                    {
+                                        valf = C[ii + (p2 + j) * ldc];
+                                        valg = C[ii + (p2 + i) * ldc];
+                                        C[ii + (p2 + j) * ldc] = valf * c - valg * s;
+                                        C[ii + (p2 + i) * ldc] = valf * s + valg * c;
+                                    }
+                                    break;
+                                }
+                                jj++;
+                            }
+                            if(jj > i)
+                            {
+                                // non-deflated ev
+                                idd[p2 + i] = 1;
+                            }
+                        }
                     }
-                    if(jj > i)
-                    {
-                        // non-deflated ev
-                        idd[p2 + i] = 1;
-                    }
-                    //                    }
                 }
                 __syncthreads();
+
+/*if(id == 0)
+{
+    printf("after blocks\n");
+    printf("C:");
+    for(int i=0;i<n;++i)
+    {
+        for(int j=0;j<n;++j)
+        {
+            printf("%f ",C[i + j * ldc]);
+        }
+        printf("\n");
+    }
+printf("idd:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%d ",idd[j]);
+}
+printf("\n");
+printf("z:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",z[j]);
+}
+printf("\n");
+}
+__syncthreads();*/
+
 
                 // then compare with other sub-blocks participating in this merge
                 // (follows a simple, reduction-like process)
                 for(int ii = 0; ii <= k; ++ii)
                 {
-                    rocblas_int div = 1 << (ii + 1);
-                    if(iam % div == div - 1) //actual number of threads is halved each time
+                    if(tidb == 0)
                     {
-                        // find limits
-                        rocblas_int inb = (1 << ii) - 1;
-                        rocblas_int inc = div - 1;
-                        rocblas_int countb = ns[tid];
-                        rocblas_int countc = 0;
-                        for(int i = inc; i > inb; --i)
-                            countc += ns[tid - i];
-                        for(int i = inb; i > 0; --i)
-                            countb += ns[tid - i];
-                        inb = ps[tid - inb];
-                        inc = ps[tid - inc];
-
-                        // perform comparisons
-                        for(int i = 0; i < countb; ++i)
+                        rocblas_int div = 1 << (ii + 1);
+                        if(iam % div == div - 1) //actual number of threads is halved each time
                         {
-                            if(idd[inb + i] == 1)
+                            // find limits
+                            rocblas_int inb = (1 << ii) - 1;
+                            rocblas_int inc = div - 1;
+                            rocblas_int countb = ns[tid];
+                            rocblas_int countc = 0;
+                            for(int i = inc; i > inb; --i)
+                                countc += ns[tid - i];
+                            for(int i = inb; i > 0; --i)
+                                countb += ns[tid - i];
+                            inb = ps[tid - inb];
+                            inc = ps[tid - inc];
+
+                            // perform comparisons
+                            for(int i = 0; i < countb; ++i)
                             {
-                                val = D[inb + i];
-                                for(int j = 0; j < countc; ++j)
+                                if(idd[inb + i] == 1)
                                 {
-                                    if(idd[inc + j] == 1 && abs(D[inc + j] - val) <= tol)
+                                    valg = D[inb + i];
+                                    for(int j = 0; j < countc; ++j)
                                     {
-                                        // deflated ev because it is repeated
-                                        idd[inb + i] = 0;
-                                        break;
+                                        if(idd[inc + j] == 1 && abs(D[inc + j] - valg) <= tol)
+                                        {
+                                            // deflated ev because it is repeated
+                                            idd[inb + i] = 0;
+                                            // rotation to eliminate component in z
+                                            g = z[inb + i];
+                                            f = z[inc + j];
+                                            lartg(f, g, c, s, r);
+                                            z[inc + j] = r;
+                                            z[inb + i] = 0;
+                                            // update C with the rotation
+                                            for(int ii = 0; ii < n; ++ii)
+                                            {
+                                                valf = C[ii + (inc + j) * ldc];
+                                                valg = C[ii + (inb + i) * ldc];
+                                                C[ii + (inc + j) * ldc] = valf * c - valg * s;
+                                                C[ii + (inb + i) * ldc] = valf * s + valg * c;
+                                            }
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -314,11 +462,160 @@ ROCSOLVER_KERNEL void stedc_kernel(const rocblas_int n,
                     }
                     __syncthreads();
                 }
-                // (at this point, if idd[i] = 0, it means that D[i] has been deflated
+/*if(id == 0)
+{
+    printf("after inter-blocks\n");
+    printf("C:");
+    for(int i=0;i<n;++i)
+    {
+        for(int j=0;j<n;++j)
+        {
+            printf("%f ",C[i + j * ldc]);
+        }
+        printf("\n");
+    }
+printf("idd:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%d ",idd[j]);
+}
+printf("\n");
+printf("z:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",z[j]);
+}
+printf("\n");
+}
+__syncthreads();*/
+
+                // +++++++++++++++++++++++++++++++++++
+                
+                // +++++++++++++++++++++++++++++++++++
+                // d. Compute new intermediate (non-deflated) eigenvalues
+                // find secular equations
+
+                // Find roots of secular eqns
+if(id==0)
+{
+    for(int i=0;i<n;++i)
+    {
+        if(idd[i]==1)
+            ev[i] = k + D[i] * 10;
+    }
+/*printf("ev:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",ev[j]);
+}
+printf("\n");*/
+}
+__syncthreads();
+                // +++++++++++++++++++++++++++++++++++
+                                        
+                // +++++++++++++++++++++++++++++++++++
+                // e. Compute vectors corresponding to non-deflated values
+                S temp, nrm, evj;
+                rocblas_int nn = (n - 1) / blks + 1;
+                bool go;
+                for(int j = 0; j < nn; ++j)
+                {
+                    go = (j < ns[tid] && idd[p2 + j] == 1);
+
+                    // compute vectors and norms
+                    nrm = 0;
+                    if(go)
+                    {
+                        evj = ev[p2 + j];
+                        for(int i = tidb; i < n; i += tn)
+                        {
+                            valf =  z[i] / (D[i] - evj);
+                            nrm += valf * valf;
+                            npoly[i + (p2 + j) * n] = valf;
+                        }
+                    }
+                    inrms[tid * tn + tidb] = nrm;
+                    __syncthreads();
+
+                    // reduction (for the norm)
+                    for(int r = tn / 2; r > 0; r /= 2)
+                    {
+                        if(go && tidb < r)
+                        {
+                            nrm += inrms[tid * tn + tidb + r];
+                            inrms[tid * tn + tidb] = nrm;
+                        }
+                        __syncthreads();
+                    }
+                    
+                    // multiply by C (row by row) 
+                    for(int i = 0; i < n; ++i)
+                    {
+                        // inner products
+                        temp = 0;
+                        if(go)
+                        {
+                            for(int kk = tidb; kk < n; kk += tn)
+                                temp += C[i + kk * ldc] * npoly[kk + (p2 + j) * n]; 
+                        }
+                        inrms[tid * tn + tidb] = temp;
+                        __syncthreads();
+                        
+                        // reduction
+                        for(int r = tn / 2; r > 0; r /= 2)
+                        {
+                            if(go && tidb < r)
+                            {
+                                temp += inrms[tid * tn + tidb + r];
+                                inrms[tid * tn + tidb] = temp;
+                            }
+                            __syncthreads();
+                        }
+
+                        // result
+                        if(go && tidb == 0)
+                            dpoly[i + (p2 + j) * n] = temp / sqrt(nrm);
+                        __syncthreads();
+                    }
+                }
+                __syncthreads();
                 // +++++++++++++++++++++++++++++++++++
 
                 // +++++++++++++++++++++++++++++++++++
-                // d. Find secular equations using the non-deflated values
+                // f. update D and C with computed values
+                for(int j = 0; j < ns[tid]; ++j)
+                {
+                    if(idd[p2 + j] == 1)
+                    {
+                        D[p2 + j] = ev[p2 + j];
+                        for(int i = tidb; i < n; i += tn)
+                            C[i + (p2 + j) * ldc] = dpoly[i + (p2 + j) * n];
+                    }
+                }
+
+/*__syncthreads();
+if(id == 0)
+{
+    printf("after update\n");
+    printf("C:");
+    for(int i=0;i<n;++i)
+    {
+        for(int j=0;j<n;++j)
+        {
+            printf("%f ",C[i + j * ldc]);
+        }
+        printf("\n");
+    }
+printf("D:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",D[j]);
+}
+printf("\n");
+}
+__syncthreads();
+*/
+
             }
             /**********************************************/
         }
@@ -491,6 +788,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
                                    size_t* size_work_stack,
                                    size_t* size_tempvect,
                                    size_t* size_tempgemm,
+                                   size_t* size_tmpz,
                                    size_t* size_splits,
                                    size_t* size_workArr)
 {
@@ -504,6 +802,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempgemm = 0;
         *size_workArr = 0;
         *size_splits = 0;
+        *size_tmpz = 0;
         return;
     }
 
@@ -515,16 +814,18 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempgemm = 0;
         *size_workArr = 0;
         *size_splits = 0;
+        *size_tmpz = 0;
     }
 
     // if size is too small, use steqr
-    else if(n <= 0) //STEDC_MIN_DC_SIZE)
+    else if(n <= STEDC_MIN_DC_SIZE)
     {
         rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
         *size_splits = 0;
+        *size_tmpz = 0;
     }
 
     // otherwise use divide and conquer algorithm:
@@ -539,8 +840,8 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         // extra requirements for original eigenvectors of small independent blocks
         //        if(evect != rocblas_evect_tridiagonal)
         //        {
-        *size_tempvect = n * n * batch_count * sizeof(S);
-        *size_tempgemm = n * n * batch_count * sizeof(S);
+        *size_tempvect = (n * n) * batch_count * sizeof(S);
+        *size_tempgemm = (n * n) * batch_count * sizeof(S);
         if(COMPLEX)
             s2 = n * n * batch_count * sizeof(S);
         else
@@ -559,8 +860,11 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         //        }
         *size_work_stack = max(s1, s2);
 
-        // size for split blocks positions
+        // size for split blocks and sub-blocks positions
         *size_splits = sizeof(rocblas_int) * (2 * n + 2) * batch_count;
+
+        // size for temporary diagonal and rank-1 modif vector
+        *size_tmpz = sizeof(S) * (2 * n) * batch_count;
     }
 }
 
@@ -617,14 +921,15 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         void* work_stack,
                                         S* tempvect,
                                         S* tempgemm,
+                                        S* tmpz,
                                         rocblas_int* splits,
                                         S** workArr)
 {
     ROCSOLVER_ENTER("stedc", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
-    print_device_matrix(std::cout, "D", 1, n, D, 1);
-    print_device_matrix(std::cout, "E", 1, n, E, 1);
+//print_device_matrix(std::cout, "D", 1, n, D, 1);
+//print_device_matrix(std::cout, "E", 1, n, E, 1);
 
     // quick return
     if(batch_count == 0)
@@ -655,7 +960,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     }
 
     // if size is too small, use steqr
-    else if(n <= 0) //STEDC_MIN_DC_SIZE)
+    else if(n <= STEDC_MIN_DC_SIZE)
     {
         rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
                                     shiftC, ldc, strideC, info, batch_count, work_stack);
@@ -689,20 +994,20 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         // find max number of sub-blocks to consider during the divide phase
         rocblas_int maxblks = 1 << stedc_num_levs(n);
-        size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks;
+        size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks + sizeof(S) * BDIM;
 
         // execute divide and conquer kernel with tempvect
         ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),
-                                dim3(maxblks), lmemsize, stream, n, D + shiftD, strideD, E + shiftE,
-                                strideE, tempvect, 0, ldt, strideT, info, (S*)work_stack, splits,
-                                eps, ssfmin, ssfmax);
+                                dim3(BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE,
+                                strideE, tempvect, 0, ldt, strideT, info, (S*)work_stack, tmpz, tempgemm, splits,
+                                eps, ssfmin, ssfmax, maxblks);
 
         // update eigenvectors C <- C*tempvect
         local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
                                         (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
 
-        print_device_matrix(std::cout, "Dfin", 1, n, D, 1);
-        print_device_matrix(std::cout, "idd", 1, n, splits + n + 2, 1);
+//print_device_matrix(std::cout, "Dfin", 1, n, D, 1);
+//print_device_matrix(std::cout, "idd", 1, n, splits + n + 2, 1);
 
         // finally sort eigenvalues and eigenvectors
         ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n,
