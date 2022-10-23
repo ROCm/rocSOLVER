@@ -264,6 +264,7 @@ __syncthreads();*/
             /*******************************************************************/
             // (merge results of the blks sub-blocks to generate
             //  the solution of the entire split block)
+            rocblas_int iam, sz, bdm;
             S* ptz;
             for(int k = 0; k < levs; ++k)
             {
@@ -272,12 +273,13 @@ __syncthreads();*/
                 // (threads with iam < bd work with components above the merge point;
                 //  threads with iam >= bd work below the merge point)
                 rocblas_int bd = 1 << k;
-                rocblas_int iam = tid % (bd << 1);
+                bdm = bd << 1;
+                iam = tid % bdm;
                 if(tidb == 0)
                 {
                     if(iam < bd && tid < blks)
                     {
-                        rocblas_int sz = ns[tid];
+                        sz = ns[tid];
                         for(int j = 1; j < bd - iam; ++j)
                             sz += ns[tid + j];
                         // with this, all threads involved in a merge (above merge point)
@@ -287,7 +289,7 @@ __syncthreads();*/
                     }
                     else if(iam >= bd && tid < blks)
                     {
-                        rocblas_int sz = 0;
+                        sz = 0;
                         for(int j = 0; j < iam - bd; ++j)
                             sz += ns[tid - j - 1];
                         // with this, all threads involved in a merge (below merge point)
@@ -480,10 +482,10 @@ for(int j=0;j<n;++j)
     printf("%d ",idd[j]);
 }
 printf("\n");
-printf("z:\n");
+printf("D:\n");//z
 for(int j=0;j<n;++j)
 {
-    printf("%f ",z[j]);
+    printf("%f ",D[j]);//z[j]
 }
 printf("\n");
 }
@@ -493,24 +495,88 @@ __syncthreads();*/
                 
                 // +++++++++++++++++++++++++++++++++++
                 // d. Compute new intermediate (non-deflated) eigenvalues
-                // find secular equations
+                // determine boundaries in D
+                rocblas_int in = ps[tid - iam];
+                sz = ns[tid];
+                for(int i = iam; i > 0; --i)
+                    sz += ns[tid - i];
+                for(int i = bdm - 1 - iam; i > 0; --i)
+                    sz += ns[tid + i];
 
+                // find secular eqns
+                if(tidb == 0 && iam == 0)
+                {
+                    S* num = npoly + in;
+                    S* den = dpoly + in;
+                    S* diag = D + in;
+                    rocblas_int* mask = idd + in;
+                    S tmpf, tmpn;
+                    num[0] = 1;
+                    den[0] = -diag[0];
+                    rocblas_int dn = 0; // degree of numerator
+                    rocblas_int dd = 1; // degree of denominator
+                    for(int i = 1; i < sz; ++i)
+                    {
+                        if(mask[i] == 1)
+                        {
+                            // update numerator
+                            valf = diag[i];
+                            dn++;
+                            tmpf = num[0];
+                            num[0] = tmpf + 1;
+                            for(int j = 1; j < dn; ++j)
+                            {
+                                tmpn = tmpf;
+                                tmpf = num[j];
+                                num[j] = tmpf - tmpn * valf + den[j - 1];
+                            }
+                            num[dn] = -tmpf * valf + den[dn - 1];
+
+                            // update denominator
+                            dd++;
+                            tmpf = 1;
+                            for(int j = 1; j < dd; ++j)
+                            {
+                                tmpn = tmpf;
+                                tmpf = den[j - 1];
+                                den[j - 1] = tmpf - tmpn * valf;
+                            }
+                            den[dd - 1] = -tmpf * valf;
+                        }
+                    }
+                    for(int i = 0; i < dd; ++i)
+                        den[i] = den[i] - num[i];
+                }
+                __syncthreads();
+                
                 // Find roots of secular eqns
-if(id==0)
+                // (Using a basic implementation of a Newt-safe algorithm.
+                // TODO: We may want to investigate other root-finding methods, or
+                // optimize the Newt-safe, in the future if necessary)
+//                newtsafe(sz, dpoly + in, D + in, ev + in, idd + in, iam * tn + tidb);
+//                __syncthreads();
+
+/*if(id==0)
 {
     for(int i=0;i<n;++i)
     {
         if(idd[i]==1)
-            ev[i] = k + D[i] * 10;
+            ev[i] = k + D[i] / 10;
     }
-/*printf("ev:\n");
+printf("ev:\n");
 for(int j=0;j<n;++j)
 {
     printf("%f ",ev[j]);
 }
-printf("\n");*/
+printf("\n");
+printf("poly:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",dpoly[j]);
 }
-__syncthreads();
+printf("\n");
+}
+__syncthreads();*/
                 // +++++++++++++++++++++++++++++++++++
                                         
                 // +++++++++++++++++++++++++++++++++++
