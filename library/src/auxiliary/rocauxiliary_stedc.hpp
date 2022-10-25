@@ -1,5 +1,5 @@
 /************************************************************************
- * Derived from the BSD3-licensed
+  Derived from the BSD3-licensed
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
@@ -15,7 +15,163 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#define BDIM 512
+#define BDIM 8  // Number of threads per block used in main stedc kernel
+#define MAXITERS 30 // Max number of iterations for Newton's method
+
+
+/** This function uses Horner's method to evaluate a polynomial (poly) at x.
+    Returns -1 if poly(x) < 0, and 1 otherwise **/
+template <typename S>
+__device__ rocblas_int horner(const rocblas_int dd, 
+                                       const S* poly, 
+                                       const S x)
+{
+    S val = 1;
+
+    for(int i = 0; i < dd; ++i)
+        val = val * x + poly[i];
+
+    return (val < 0) ? -1 : 1;
+}
+
+/** This function uses Horner's method to evaluate a polynomial (poly) and its first 
+    derivative (poly') at x. It updates fx with poly(x) and fdx with poly'(x).
+    Returns -1 if poly(x) < 0, and 1 otherwise **/
+template <typename S>
+__device__ rocblas_int horner(const rocblas_int dd, 
+                                       const S* poly, 
+                                       const S x, 
+                                       S* fx, 
+                                       S* fdx)
+{
+    S val = 1;
+    S vald = 0;
+
+    for(int i = 0; i < dd; ++i)
+    {
+        vald = vald * x + val;
+        val = val * x + poly[i];
+    }
+
+    *fx = val;
+    *fdx = vald;
+    return (val < 0) ? -1 : 1;
+}
+
+/** Basic implementation of hybrid Newton-Raphson + bisection (Newt-safe) for polynomails.
+    NEWTSAFE computes a root 'r' of the polynomial 'poly' (i.e. poly(r) = 0) within the
+    initial interval [a,b]. It updates ev with r. Returns 1 if failed to converge, 0 otherwise **/
+template <typename S>
+__device__ rocblas_int newtsafe(const rocblas_int dd, 
+                                         const S* poly, 
+                                         S a, 
+                                         S b, 
+                                         S* ev, 
+                                         const S tol, 
+                                         const S ssfmin,
+                                         const S ssfmax)
+{
+    bool converged = false;
+    rocblas_int sx, sa, nsx;
+    S nx, x, fx, fdx, er;    
+
+    // initial value is middle of interval
+    x = (a + b) / 2;
+    sx = horner(dd, poly, x, &fx, &fdx); 
+
+    for(int i = 0; i < MAXITERS; ++i)
+    {
+        sa =  horner(dd, poly, a);
+        
+        // if fdx could lead to underflow/overflow, try bisection
+        if(abs(fdx) <= ssfmin || abs(fdx) >= ssfmax)
+        {
+            er = abs(a - b);
+    
+            // if current interval cannot be bisected, convergence!!!
+            if(er / max(abs(a),abs(b)) <= tol)
+            {
+                converged = true;
+                break;
+            }
+
+            // otherwise make bisection
+            else
+            {
+                // new interval
+                if(sa == sx)
+                    a = x;
+                else
+                    b = x;
+
+                // new value is middle of interval
+                x = (a + b) / 2;
+                sx = horner(dd, poly, x, &fx, &fdx);
+            }
+        }
+        
+        // otherwise try newton step
+        else
+        {
+            // compute candidate nx 
+            nx = x - fx / fdx;    
+            er = abs(x - nx);
+            nsx = horner(dd, poly, nx, &fx, &fdx);
+            
+            // if the candidate is indistinguishable, convergence!!!
+            if(er / max(abs(x),abs(nx)) <= tol)
+            {
+                converged = true;
+                break;
+            }
+
+            // if the candidate step would be out of bounds, or get 
+            // slower to convergence than bisection, try bisection
+            else if((abs(2 * fx) > abs(er * fdx)) || nx <= a || nx >= b)
+            {
+                er = abs(a - b);
+
+                // if current interval cannot be bisected, convergence!!!
+                if(er / max(abs(a),abs(b)) <= tol)
+                {
+                    converged = true;
+                    break;
+                }
+    
+                // otherwise make bisection
+                else
+                {
+                    // new interval
+                    if(sa == sx)
+                        a = x;
+                    else
+                        b = x;
+    
+                    // new value is middle of interval
+                    x = (a + b) / 2;
+                    sx = horner(dd, poly, x, &fx, &fdx);
+                }
+            }
+
+            // otherwise make newton step
+            else
+            {
+                x = nx;
+                sx = nsx;
+
+                // shrink interval
+                if(sa == sx)
+                    a = x;
+                else
+                    b = x;
+            }
+        }
+    }
+    
+    *ev = x;
+    return converged ? 0 : 1;    
+}
+
 
 /** STEDC_NUM_LEV returns the ideal number of times or levels a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
@@ -116,9 +272,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     S* W = WA + bid * (2 * n);  // worksapce
     rocblas_int* idd = splits + n + 2;  // if idd[i] = 0, the value in position i has been deflated
     S* z = tmpzA + bid * (2 * n);  // the rank-1 modification vectors in the merges          
-    S* ev = z + n; // roots of secular equations
-    S* dpoly = dpolyA + bid * (n * n); // coeficients of denominators of secular eqns
-    S* npoly = dpoly + n; // coeficients of numerators of secular eqns      
+    S* evs = z + n; // roots of secular equations
+    S* polys = dpolyA + bid * (n * n); // coeficients of secular eqns polynomials
+    S* temps = polys + n;       
 
     // info of split blocks
     rocblas_int nb = splits[n + 1]; // total number of blocks
@@ -275,35 +431,37 @@ __syncthreads();*/
                 rocblas_int bd = 1 << k;
                 bdm = bd << 1;
                 iam = tid % bdm;
+                if(iam < bd && tid < blks)
+                {
+                    sz = ns[tid];
+                    for(int j = 1; j < bd - iam; ++j)
+                        sz += ns[tid + j];
+                    // with this, all threads involved in a merge (above merge point)
+                    // will point to the same row of C and the same off-diag element
+                    ptz = C + p2 - 1 + sz;
+                    p = E[p2 - 1 + sz];
+//printf("++ mi P: %f\n",p);
+                }
+                else if(iam >= bd && tid < blks)
+                {
+                    sz = 0;
+                    for(int j = 0; j < iam - bd; ++j)
+                        sz += ns[tid - j - 1];
+                    // with this, all threads involved in a merge (below merge point)
+                    // will point to the same row of C and the same off-diag element
+                    ptz = C + p2 - sz;
+                    p = E[p2 - sz - 1];
+//printf("++ mi P: %f\n",p);
+                }
+                // copy elements of z
                 if(tidb == 0)
                 {
-                    if(iam < bd && tid < blks)
-                    {
-                        sz = ns[tid];
-                        for(int j = 1; j < bd - iam; ++j)
-                            sz += ns[tid + j];
-                        // with this, all threads involved in a merge (above merge point)
-                        // will point to the same row of C and the same off-diag element
-                        ptz = C + p2 - 1 + sz;
-                        p = E[p2 - 1 + sz];
-                    }
-                    else if(iam >= bd && tid < blks)
-                    {
-                        sz = 0;
-                        for(int j = 0; j < iam - bd; ++j)
-                            sz += ns[tid - j - 1];
-                        // with this, all threads involved in a merge (below merge point)
-                        // will point to the same row of C and the same off-diag element
-                        ptz = C + p2 - sz;
-                        p = E[p2 - sz - 1];
-                    }
-                    // copy elements of z
                     for(int j = 0; j < ns[tid]; ++j)
                         z[p2 + j] = ptz[(p2 + j) * ldc];
                 }
                 __syncthreads();
 
-/*if(id == 0)
+if(id == 0)
 {
 printf("\nfor k = %d\n",k);
 printf("z:\n");
@@ -319,7 +477,7 @@ for(int j=0;j<n;++j)
 }
 printf("\n");
 }
-__syncthreads();*/
+__syncthreads();
 
                 // +++++++++++++++++++++++++++++++++++
 
@@ -464,7 +622,7 @@ __syncthreads();*/
                     }
                     __syncthreads();
                 }
-/*if(id == 0)
+if(id == 0)
 {
     printf("after inter-blocks\n");
     printf("C:");
@@ -489,12 +647,12 @@ for(int j=0;j<n;++j)
 }
 printf("\n");
 }
-__syncthreads();*/
+__syncthreads();
 
                 // +++++++++++++++++++++++++++++++++++
                 
                 // +++++++++++++++++++++++++++++++++++
-                // d. Compute new intermediate (non-deflated) eigenvalues
+                // d. Generate secular equations for the non-deflated values
                 // determine boundaries in D
                 rocblas_int in = ps[tid - iam];
                 sz = ns[tid];
@@ -503,66 +661,169 @@ __syncthreads();*/
                 for(int i = bdm - 1 - iam; i > 0; --i)
                     sz += ns[tid + i];
 
-                // find secular eqns
+                // find numerator and denominator of secular eqns
+                S* tmp = temps + in;
+                S* ev = evs + in;
+                S* poly = polys + in;
+                S* diag = D + in;
+                rocblas_int* mask = idd + in;
+                S tmpf, tmpn;
+                rocblas_int dn = 0; // degree of numerator
+                rocblas_int dd = 1; // degree of denominator
                 if(tidb == 0 && iam == 0)
                 {
-                    S* num = npoly + in;
-                    S* den = dpoly + in;
-                    S* diag = D + in;
-                    rocblas_int* mask = idd + in;
-                    S tmpf, tmpn;
-                    num[0] = 1;
-                    den[0] = -diag[0];
-                    rocblas_int dn = 0; // degree of numerator
-                    rocblas_int dd = 1; // degree of denominator
-                    for(int i = 1; i < sz; ++i)
+                    valf = diag[0];
+                    ev[0] = 1;
+                    poly[0] = -valf;
+                    tmp[0] = valf;
+                }
+                for(int i = 1; i < sz; ++i)
+                {
+                    if(mask[i] == 1)
                     {
-                        if(mask[i] == 1)
+                        dn++;
+                        dd++;
+
+                        if(tidb == 0 && iam == 0)
                         {
                             // update numerator
                             valf = diag[i];
-                            dn++;
-                            tmpf = num[0];
-                            num[0] = tmpf + 1;
+                            tmp[dn] = valf;
+                            tmpf = ev[0];
+                            ev[0] = tmpf + 1;
                             for(int j = 1; j < dn; ++j)
                             {
                                 tmpn = tmpf;
-                                tmpf = num[j];
-                                num[j] = tmpf - tmpn * valf + den[j - 1];
+                                tmpf = ev[j];
+                                ev[j] = tmpf - tmpn * valf + poly[j - 1];
                             }
-                            num[dn] = -tmpf * valf + den[dn - 1];
-
+                            ev[dn] = -tmpf * valf + poly[dn - 1];
+    
                             // update denominator
-                            dd++;
                             tmpf = 1;
                             for(int j = 1; j < dd; ++j)
                             {
                                 tmpn = tmpf;
-                                tmpf = den[j - 1];
-                                den[j - 1] = tmpf - tmpn * valf;
+                                tmpf = poly[j - 1];
+                                poly[j - 1] = tmpf - tmpn * valf;
                             }
-                            den[dd - 1] = -tmpf * valf;
+                            poly[dd - 1] = -tmpf * valf;
                         }
                     }
-                    for(int i = 0; i < dd; ++i)
-                        den[i] = den[i] - num[i];
                 }
                 __syncthreads();
                 
-                // Find roots of secular eqns
-                // (Using a basic implementation of a Newt-safe algorithm.
-                // TODO: We may want to investigate other root-finding methods, or
-                // optimize the Newt-safe, in the future if necessary)
-//                newtsafe(sz, dpoly + in, D + in, ev + in, idd + in, iam * tn + tidb);
-//                __syncthreads();
+                // put final polynomial in poly and diagonal elements in ev
+                iam = iam * tn + tidb;
+                bdm *= tn;
+                for(int i = iam; i < sz; i += bdm)
+                {
+                    poly[i] -= p * ev[i];
+                    ev[i] = diag[i];
+                }
+                __syncthreads();
+                // +++++++++++++++++++++++++++++++++++
+                
+                // +++++++++++++++++++++++++++++++++++
+                // e. Solve secular eqns, i.e. find the dd roots of dpoly
+                // first, order elements in temps to find initial intervals for the roots
+                // (using a simple parallel selection/bubble sort)
+                for(int i = 0; i < dd; ++i)
+                {
+                    for(int j = iam; j < dd/2; j += bdm)
+                    {
+                        if(i % 2 == 0)
+                        {
+                            if(tmp[2 * j] > tmp[2 * j + 1])
+                            {
+                                valf = tmp[2 * j];
+                                tmp[2 * j] = tmp[2 * j + 1];
+                                tmp[2 * j + 1] = valf; 
+                            }
+                        }
+                        else
+                        {
+                            if(tmp[2 * j + 1] > tmp[2 * j + 2])
+                            {
+                                valf = tmp[2 * j + 1];
+                                tmp[2 * j + 1] = tmp[2 * j + 2];
+                                tmp[2 * j + 2] = valf;
+                            }    
+                        }
+                    }
+                    __syncthreads();
+                }
+                
+                // now, each thread will find a different root in parallel
+                S a, b; 
+                for(int i = iam; i < sz; i += bdm)
+                {
+                    if(mask[i] == 1)
+                    {
+                        // determine initial interval; root is in (a, b)
+                        int cc = 0;
+                        valf = ev[i];
+                        for(int j = 0; j < dd; ++j)
+                        {
+                            if(tmp[j] == valf)
+                                break;
+                            else
+                                cc++;
+                        }
+                        if(p > 0)
+                        {
+                            a = valf;
+                            if(cc < dd - 1)
+                                b = tmp[cc + 1];
+                            else
+                            {
+                                // last root is in (a, inf). Find a finite 'b' where the 
+                                // secular polynomial changes signs
+                                valg = abs(a);
+                                b = a + valg;
+                                valf = horner(dd, poly, a);
+                                while(valf == horner(dd, poly, b))    
+                                {
+                                    // TODO: better ways to find the initial interval can be 
+                                    // investigated in the future if necessary.
+                                    b += valg;
+                                }   
+                            }
+                        }    
+                        else
+                        {
+                            b = valf;
+                            if(cc > 0)
+                                a = tmp[cc - 1];
+                            else
+                            {
+                                // first root is in (-inf, b). Find a finite 'a' where the 
+                                // secular polynomial changes signs
+                                valg = abs(b);
+                                a = b - valg;
+                                valf = horner(dd, poly, b);
+                                while(valf == horner(dd, poly, a))    
+                                {
+                                    // TODO: better ways to find the initial interval can be 
+                                    // investigated in the future if necessary.
+                                    a -= valg;
+                                }
+                            }
+                        }    
 
-/*if(id==0)
+printf("for diagonal %f: a = %f, b = %f\n", ev[i], a, b);
+                        // find root within the given initial interval
+                        // (Using a basic implementation of a Newt-safe algorithm.
+                        // TODO: We may want to investigate other root-finding methods, or
+                        // optimize the Newt-safe in the future if necessary)
+                        rocblas_int linfo = newtsafe(dd, poly, a, b, ev + i, tol, ssfmin, ssfmax);
+                    }
+                }
+                __syncthreads();
+                 
+
+if(id==0)
 {
-    for(int i=0;i<n;++i)
-    {
-        if(idd[i]==1)
-            ev[i] = k + D[i] / 10;
-    }
 printf("ev:\n");
 for(int j=0;j<n;++j)
 {
@@ -572,15 +833,26 @@ printf("\n");
 printf("poly:\n");
 for(int j=0;j<n;++j)
 {
-    printf("%f ",dpoly[j]);
+    printf("%f ",poly[j]);
 }
 printf("\n");
+printf("temps:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",temps[j]);
 }
-__syncthreads();*/
+printf("\n");
+//    for(int i=0;i<n;++i)
+//    {
+//        if(idd[i]==1)
+//            ev[i] = k + D[i] / 10;
+//    }
+}
+__syncthreads();
                 // +++++++++++++++++++++++++++++++++++
                                         
                 // +++++++++++++++++++++++++++++++++++
-                // e. Compute vectors corresponding to non-deflated values
+                // f. Compute vectors corresponding to non-deflated values
                 S temp, nrm, evj;
                 rocblas_int nn = (n - 1) / blks + 1;
                 bool go;
@@ -597,7 +869,7 @@ __syncthreads();*/
                         {
                             valf =  z[i] / (D[i] - evj);
                             nrm += valf * valf;
-                            npoly[i + (p2 + j) * n] = valf;
+                            temps[i + (p2 + j) * n] = valf;
                         }
                     }
                     inrms[tid * tn + tidb] = nrm;
@@ -622,7 +894,7 @@ __syncthreads();*/
                         if(go)
                         {
                             for(int kk = tidb; kk < n; kk += tn)
-                                temp += C[i + kk * ldc] * npoly[kk + (p2 + j) * n]; 
+                                temp += C[i + kk * ldc] * temps[kk + (p2 + j) * n]; 
                         }
                         inrms[tid * tn + tidb] = temp;
                         __syncthreads();
@@ -640,7 +912,7 @@ __syncthreads();*/
 
                         // result
                         if(go && tidb == 0)
-                            dpoly[i + (p2 + j) * n] = temp / sqrt(nrm);
+                            polys[i + (p2 + j) * n] = temp / sqrt(nrm);
                         __syncthreads();
                     }
                 }
@@ -653,9 +925,9 @@ __syncthreads();*/
                 {
                     if(idd[p2 + j] == 1)
                     {
-                        D[p2 + j] = ev[p2 + j];
+                        D[p2 + j] = evs[p2 + j];
                         for(int i = tidb; i < n; i += tn)
-                            C[i + (p2 + j) * ldc] = dpoly[i + (p2 + j) * n];
+                            C[i + (p2 + j) * ldc] = polys[i + (p2 + j) * n];
                     }
                 }
 
@@ -994,8 +1266,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     ROCSOLVER_ENTER("stedc", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
-//print_device_matrix(std::cout, "D", 1, n, D, 1);
-//print_device_matrix(std::cout, "E", 1, n, E, 1);
+print_device_matrix(std::cout, "D", 1, n, D, 1);
+print_device_matrix(std::cout, "E", 1, n, E, 1);
 
     // quick return
     if(batch_count == 0)
