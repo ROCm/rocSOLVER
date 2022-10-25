@@ -315,7 +315,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
             }
         }
 
-        // otherwise, divide & conquer with blks threads (one thread per sub-block)
+        // otherwise, divide & conquer 
         else
         {
             // arrange threads so that a group of bdim/blks threads works with each sub-block
@@ -368,16 +368,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
             /******************************************************************/
 
 
-/*if(id == 0)
+if(id == 0)
 {
-printf("D: \n");
+printf("divided D: \n");
 for(int j=0;j<n;++j)
 {
     printf("%f ",D[j]);
 }
 printf("\n");
 }
-__syncthreads();*/
+__syncthreads();
 
 
             /************************* 2. solve phase *************************/
@@ -402,9 +402,9 @@ for(int i=0;i<n;++i)
 }
 __syncthreads();*/
 
-/*if(id == 0)
+if(id == 0)
 {
-    printf("C: \n");
+    printf("C after solve sub-blocks: \n");
     for(int i=0;i<n;++i)
     {
         for(int j=0;j<n;++j)
@@ -414,7 +414,7 @@ __syncthreads();*/
         printf("\n");
     }
 }
-__syncthreads();*/
+__syncthreads();
 
             /************************* 3. Merge phase *************************/
             /*******************************************************************/
@@ -624,7 +624,7 @@ __syncthreads();*/
                 }
 if(id == 0)
 {
-    printf("after inter-blocks\n");
+    printf("after deflation\n");
     printf("C:");
     for(int i=0;i<n;++i)
     {
@@ -640,10 +640,10 @@ for(int j=0;j<n;++j)
     printf("%d ",idd[j]);
 }
 printf("\n");
-printf("D:\n");//z
+printf("z:\n");//z
 for(int j=0;j<n;++j)
 {
-    printf("%f ",D[j]);//z[j]
+    printf("%f ",z[j]);//z[j]
 }
 printf("\n");
 }
@@ -667,13 +667,16 @@ __syncthreads();
                 S* poly = polys + in;
                 S* diag = D + in;
                 rocblas_int* mask = idd + in;
+S* zz = z + in;
                 S tmpf, tmpn;
                 rocblas_int dn = 0; // degree of numerator
                 rocblas_int dd = 1; // degree of denominator
                 if(tidb == 0 && iam == 0)
                 {
                     valf = diag[0];
-                    ev[0] = 1;
+//                    ev[0] = 1;
+valg = zz[0] * zz[0];
+ev[0] = valg;
                     poly[0] = -valf;
                     tmp[0] = valf;
                 }
@@ -688,16 +691,20 @@ __syncthreads();
                         {
                             // update numerator
                             valf = diag[i];
+valg = zz[i] * zz[i];
                             tmp[dn] = valf;
                             tmpf = ev[0];
-                            ev[0] = tmpf + 1;
+//                            ev[0] = tmpf + 1;
+                            ev[0] = tmpf + valg;
                             for(int j = 1; j < dn; ++j)
                             {
                                 tmpn = tmpf;
                                 tmpf = ev[j];
-                                ev[j] = tmpf - tmpn * valf + poly[j - 1];
+//                                ev[j] = tmpf - tmpn * valf + poly[j - 1];
+                                ev[j] = tmpf - tmpn * valf + poly[j - 1] * valg;
                             }
-                            ev[dn] = -tmpf * valf + poly[dn - 1];
+//                            ev[dn] = -tmpf * valf + poly[dn - 1];
+                            ev[dn] = -tmpf * valf + poly[dn - 1] * valg;
     
                             // update denominator
                             tmpf = 1;
@@ -723,6 +730,28 @@ __syncthreads();
                 }
                 __syncthreads();
                 // +++++++++++++++++++++++++++++++++++
+if(id==0)
+{
+printf("ev:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",ev[j]);
+}
+printf("\n");
+printf("poly:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",poly[j]);
+}
+printf("\n");
+printf("temps before order:\n");
+for(int j=0;j<n;++j)
+{
+    printf("%f ",temps[j]);
+}
+printf("\n\n");
+}
+__syncthreads();
                 
                 // +++++++++++++++++++++++++++++++++++
                 // e. Solve secular eqns, i.e. find the dd roots of dpoly
@@ -730,9 +759,9 @@ __syncthreads();
                 // (using a simple parallel selection/bubble sort)
                 for(int i = 0; i < dd; ++i)
                 {
-                    for(int j = iam; j < dd/2; j += bdm)
+                    if(i % 2 == 0)
                     {
-                        if(i % 2 == 0)
+                        for(int j = iam; j < dd / 2; j += bdm) 
                         {
                             if(tmp[2 * j] > tmp[2 * j + 1])
                             {
@@ -741,7 +770,10 @@ __syncthreads();
                                 tmp[2 * j + 1] = valf; 
                             }
                         }
-                        else
+                    }
+                    else
+                    {
+                        for(int j = iam; j < (dd - 1) / 2; j += bdm)
                         {
                             if(tmp[2 * j + 1] > tmp[2 * j + 2])
                             {
@@ -753,6 +785,19 @@ __syncthreads();
                     }
                     __syncthreads();
                 }
+if(id==0)
+{
+    printf("temps after order\n");
+    for(int i=0;i<n;++i)
+    {
+        for(int j=0;j<n;++j)
+        {
+            printf("%f ",temps[i + j * n]);
+        }
+        printf("\n");
+    }
+}
+__syncthreads();
                 
                 // now, each thread will find a different root in parallel
                 S a, b; 
@@ -811,7 +856,6 @@ __syncthreads();
                             }
                         }    
 
-printf("for diagonal %f: a = %f, b = %f\n", ev[i], a, b);
                         // find root within the given initial interval
                         // (Using a basic implementation of a Newt-safe algorithm.
                         // TODO: We may want to investigate other root-finding methods, or
@@ -820,35 +864,21 @@ printf("for diagonal %f: a = %f, b = %f\n", ev[i], a, b);
                     }
                 }
                 __syncthreads();
-                 
 
 if(id==0)
 {
-printf("ev:\n");
+printf("\nnew ev after solve\n");
 for(int j=0;j<n;++j)
 {
     printf("%f ",ev[j]);
 }
 printf("\n");
-printf("poly:\n");
-for(int j=0;j<n;++j)
-{
-    printf("%f ",poly[j]);
-}
-printf("\n");
-printf("temps:\n");
-for(int j=0;j<n;++j)
-{
-    printf("%f ",temps[j]);
-}
-printf("\n");
-//    for(int i=0;i<n;++i)
-//    {
-//        if(idd[i]==1)
-//            ev[i] = k + D[i] / 10;
-//    }
 }
 __syncthreads();
+
+//printf("for diagonal %f: a = %f, b = %f\n", ev[i], a, b);
+                 
+
                 // +++++++++++++++++++++++++++++++++++
                                         
                 // +++++++++++++++++++++++++++++++++++
@@ -858,6 +888,7 @@ __syncthreads();
                 bool go;
                 for(int j = 0; j < nn; ++j)
                 {
+printf("%d,%d => %d,%d\n",tid,tidb,p2,ns[tid]);
                     go = (j < ns[tid] && idd[p2 + j] == 1);
 
                     // compute vectors and norms
@@ -865,9 +896,10 @@ __syncthreads();
                     if(go)
                     {
                         evj = ev[p2 + j];
+                        //for(int i = in + tidb; i < in + sz; i += tn)
                         for(int i = tidb; i < n; i += tn)
                         {
-                            valf =  z[i] / (D[i] - evj);
+                            valf =  i;//z[i];// / (D[i] - evj);
                             nrm += valf * valf;
                             temps[i + (p2 + j) * n] = valf;
                         }
@@ -887,13 +919,13 @@ __syncthreads();
                     }
                     
                     // multiply by C (row by row) 
-                    for(int i = 0; i < n; ++i)
+                    for(int i = in; i < in + sz; ++i)
                     {
                         // inner products
                         temp = 0;
                         if(go)
                         {
-                            for(int kk = tidb; kk < n; kk += tn)
+                            for(int kk = in + tidb; kk < in + sz; kk += tn)
                                 temp += C[i + kk * ldc] * temps[kk + (p2 + j) * n]; 
                         }
                         inrms[tid * tn + tidb] = temp;
@@ -918,6 +950,20 @@ __syncthreads();
                 }
                 __syncthreads();
                 // +++++++++++++++++++++++++++++++++++
+__syncthreads();
+if(id == 0)
+{
+    printf("\ntemps after update\n");
+    for(int i=0;i<n;++i)
+    {
+        for(int j=0;j<n;++j)
+        {
+            printf("%f ",temps[i + j * n]);
+        }
+        printf("\n");
+    }
+}
+__syncthreads();
 
                 // +++++++++++++++++++++++++++++++++++
                 // f. update D and C with computed values
@@ -926,12 +972,12 @@ __syncthreads();
                     if(idd[p2 + j] == 1)
                     {
                         D[p2 + j] = evs[p2 + j];
-                        for(int i = tidb; i < n; i += tn)
+                        for(int i = in + tidb; i < in + sz; i += tn)
                             C[i + (p2 + j) * ldc] = polys[i + (p2 + j) * n];
                     }
                 }
 
-/*__syncthreads();
+__syncthreads();
 if(id == 0)
 {
     printf("after update\n");
@@ -952,7 +998,7 @@ for(int j=0;j<n;++j)
 printf("\n");
 }
 __syncthreads();
-*/
+
 
             }
             /**********************************************/
