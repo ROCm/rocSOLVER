@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -26,7 +27,7 @@ void stedc_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, rocblas_evect(-1), n, dD, dE, dC, ldc, dInfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedc(handle, rocblas_evect(0), n, dD, dE, dC, ldc, dInfo),
                           rocblas_status_invalid_value);
 
     // pointers
@@ -458,3 +459,7 @@ void testing_stedc(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_STEDC(...) extern template void testing_stedc<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_STEDC, FOREACH_SCALAR_TYPE, APPLY_STAMP)

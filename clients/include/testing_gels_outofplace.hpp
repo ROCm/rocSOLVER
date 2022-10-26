@@ -35,7 +35,7 @@ void gels_outofplace_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_gels_outofplace(STRIDED, handle, rocblas_operation(-1), m, n,
+    EXPECT_ROCBLAS_STATUS(rocsolver_gels_outofplace(STRIDED, handle, rocblas_operation(0), m, n,
                                                     nrhs, dA, lda, stA, dB, ldb, stB, dX, ldx, stX,
                                                     info, bc),
                           rocblas_status_invalid_value);

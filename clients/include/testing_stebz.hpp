@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -36,10 +37,10 @@ void stebz_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, rocblas_erange(-1), eorder, n, vl, vu, il, iu,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, rocblas_erange(0), eorder, n, vl, vu, il, iu,
                                           abstol, dD, dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, rocblas_eorder(-1), n, vl, vu, il, iu,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stebz(handle, erange, rocblas_eorder(0), n, vl, vu, il, iu,
                                           abstol, dD, dE, dnev, dnsplit, dW, dIblock, dIsplit, dinfo),
                           rocblas_status_invalid_value);
 
@@ -505,3 +506,7 @@ void testing_stebz(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_STEBZ(...) extern template void testing_stebz<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_STEBZ, FOREACH_REAL_TYPE, APPLY_STAMP)

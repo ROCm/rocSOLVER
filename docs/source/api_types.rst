@@ -27,6 +27,10 @@ rocblas_svect
 ---------------
 .. doxygenenum:: rocblas_svect
 
+rocblas_srange
+---------------
+.. doxygenenum:: rocblas_srange
+
 rocblas_evect
 ---------------
 .. doxygenenum:: rocblas_evect

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "client_util.hpp"
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
@@ -30,10 +31,10 @@ void ormxr_unmxr_checkBadArgs(const rocblas_handle handle,
         rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, rocblas_side(-1), trans, m, n, k, dA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, rocblas_side(0), trans, m, n, k, dA,
                                                 lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, side, rocblas_operation(-1), m, n, k,
+    EXPECT_ROCBLAS_STATUS(rocsolver_ormxr_unmxr(MQR, handle, side, rocblas_operation(0), m, n, k,
                                                 dA, lda, dIpiv, dC, ldc),
                           rocblas_status_invalid_value);
     if(COMPLEX)
@@ -432,3 +433,8 @@ void testing_ormxr_unmxr(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_ORMXR_UNMXR(...) \
+    extern template void testing_ormxr_unmxr<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_ORMXR_UNMXR, FOREACH_SCALAR_TYPE, FOREACH_BLOCKED_VARIANT, APPLY_STAMP)
