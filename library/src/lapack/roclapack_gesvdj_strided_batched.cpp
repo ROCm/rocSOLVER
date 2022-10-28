@@ -50,28 +50,44 @@ rocblas_status rocsolver_gesvdj_strided_batched_impl(rocblas_handle handle,
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
+    // size for temporary matrix storage
+    size_t size_VUtmp;
+    // extra requirements for calling SYEVJ/HEEVJ, GEQRF, ORGQR/UNGQR, GELQF, ORGLQ/UNGLQ
+    size_t size_work1_UVtmp, size_work2, size_work3, size_work4, size_work5_ipiv, size_work6_workArr;
 
-    rocsolver_gesvdj_getMemorySize<false, T, SS>(left_svect, right_svect, m, n, batch_count,
-                                                 &size_scalars);
+    rocsolver_gesvdj_getMemorySize<false, T, SS>(
+        left_svect, right_svect, m, n, batch_count, &size_scalars, &size_VUtmp, &size_work1_UVtmp,
+        &size_work2, &size_work3, &size_work4, &size_work5_ipiv, &size_work6_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars);
+        return rocblas_set_optimal_device_memory_size(
+            handle, size_scalars, size_VUtmp, size_work1_UVtmp, size_work2, size_work3, size_work4,
+            size_work5_ipiv, size_work6_workArr);
 
     // memory workspace allocation
-    void* scalars;
-    rocblas_device_malloc mem(handle, size_scalars);
+    void *scalars, *VUtmp, *work1_UVtmp, *work2, *work3, *work4, *work5_ipiv, *work6_workArr;
+    rocblas_device_malloc mem(handle, size_scalars, size_VUtmp, size_work1_UVtmp, size_work2,
+                              size_work3, size_work4, size_work5_ipiv, size_work6_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     scalars = mem[0];
+    VUtmp = mem[1];
+    work1_UVtmp = mem[2];
+    work2 = mem[3];
+    work3 = mem[4];
+    work4 = mem[5];
+    work5_ipiv = mem[6];
+    work6_workArr = mem[7];
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
     // execution
     return rocsolver_gesvdj_template<false, true, T>(
-        handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, abstol, residual, max_sweeps,
-        n_sweeps, S, strideS, U, ldu, strideU, V, ldv, strideV, info, batch_count, (T*)scalars);
+        handle, left_svect, right_svect, m, n, A, shiftA, lda, strideA, abstol, residual,
+        max_sweeps, n_sweeps, S, strideS, U, ldu, strideU, V, ldv, strideV, info, batch_count,
+        (T*)scalars, (T*)VUtmp, work1_UVtmp, work2, work3, work4, work5_ipiv, work6_workArr);
 }
 
 /*

@@ -9,8 +9,51 @@
 
 #pragma once
 
+#include "auxiliary/rocauxiliary_orglq_unglq.hpp"
+#include "auxiliary/rocauxiliary_orgqr_ungqr.hpp"
 #include "rocblas.hpp"
+#include "roclapack_gelqf.hpp"
+#include "roclapack_geqrf.hpp"
+#include "roclapack_syevj_heevj.hpp"
 #include "rocsolver/rocsolver.h"
+
+template <typename T, typename SS>
+ROCSOLVER_KERNEL void gesvdj_finalize(const rocblas_int n,
+                                      SS* SA,
+                                      const rocblas_stride strideS,
+                                      T* AA,
+                                      const rocblas_int lda,
+                                      const rocblas_stride strideA,
+                                      T* BA,
+                                      const rocblas_int ldb,
+                                      const rocblas_stride strideB)
+{
+    rocblas_int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocblas_int bid = hipBlockIdx_y;
+
+    // array pointers
+    SS* S = SA + bid * strideS;
+    T* A = AA + bid * strideA;
+    T* B = BA + bid * strideB;
+
+    // local variables
+    rocblas_int j;
+    SS sigma;
+
+    if(tid >= n)
+        return;
+
+    for(j = 0; j < n; j++)
+    {
+        sigma = std::real(A[j + j * lda]);
+
+        if(tid == 0)
+            S[j] = std::abs(sigma);
+
+        if(sigma < 0)
+            B[tid + j * ldb] = -B[tid + j * ldb];
+    }
+}
 
 /** Argument checking **/
 template <typename T, typename SS, typename W>
@@ -58,7 +101,7 @@ rocblas_status rocsolver_gesvdj_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_pointer;
     if(left_svect == rocblas_svect_singular && min(m, n) && !U)
         return rocblas_status_invalid_pointer;
-    if(right_svect == rocblas_svect_singular && n && !V)
+    if(right_svect == rocblas_svect_singular && min(m, n) && !V)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -71,19 +114,92 @@ void rocsolver_gesvdj_getMemorySize(const rocblas_svect left_svect,
                                     const rocblas_int m,
                                     const rocblas_int n,
                                     const rocblas_int batch_count,
-                                    size_t* size_scalars)
+                                    size_t* size_scalars,
+                                    size_t* size_VUtmp,
+                                    size_t* size_work1_UVtmp,
+                                    size_t* size_work2,
+                                    size_t* size_work3,
+                                    size_t* size_work4,
+                                    size_t* size_work5_ipiv,
+                                    size_t* size_work6_workArr)
 {
     // if quick return, set workspace to zero
     if(n == 0 || m == 0 || batch_count == 0)
     {
         *size_scalars = 0;
+        *size_VUtmp = 0;
+        *size_work1_UVtmp = 0;
+        *size_work2 = 0;
+        *size_work3 = 0;
+        *size_work4 = 0;
+        *size_work5_ipiv = 0;
+        *size_work6_workArr = 0;
         return;
     }
 
-    // size of scalars (constants) for rocblas calls
-    *size_scalars = sizeof(T) * 3;
+    bool leftv = left_svect != rocblas_svect_none;
+    bool rightv = right_svect != rocblas_svect_none;
+    size_t a1 = 0, a2 = 0;
+    size_t b1 = 0, b2 = 0, b3 = 0;
+    size_t c1 = 0, c2 = 0, c3 = 0;
+    size_t d1 = 0, d2 = 0, d3 = 0;
+    size_t e1 = 0, e2 = 0;
+    size_t f1 = 0, f2 = 0, f3 = 0, f4 = 0;
+    size_t unused;
 
-    // to be implemented
+    *size_VUtmp = 0;
+
+    if(m >= n)
+    {
+        // requirements for Jacobi eigensolver
+        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(
+            rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1);
+
+        // requirements for QR factorization
+        rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
+                                                  &f2);
+        if(left_svect != rocblas_svect_none)
+            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, n, n, batch_count, &unused, &b3, &c3,
+                                                            &d3, &f3);
+
+        // extra requirements for temporary V & U storage
+        *size_VUtmp = sizeof(T) * n * n * batch_count;
+        if(!leftv)
+            a2 = sizeof(T) * m * n * batch_count;
+    }
+    else
+    {
+        // requirements for Jacobi eigensolver
+        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(
+            rocblas_evect_original, rocblas_fill_upper, m, batch_count, &a1, &b1, &c1, &d1, &e1);
+
+        // requirements for LQ factorization
+        rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
+                                                  &f2);
+        if(right_svect != rocblas_svect_none)
+            rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(m, n, m, batch_count, &unused, &b3, &c3,
+                                                            &d3, &f3);
+
+        // extra requirements for temporary U & V storage
+        if(!leftv)
+            *size_VUtmp = sizeof(T) * m * m * batch_count;
+        if(!rightv)
+            a2 = sizeof(T) * m * n * batch_count;
+    }
+
+    // extra requirements for temporary Householder scalars
+    e2 = sizeof(T) * min(m, n) * batch_count;
+
+    // size of array of pointers (batched cases)
+    if(BATCHED)
+        f4 = sizeof(T*) * 2 * batch_count;
+
+    *size_work1_UVtmp = std::max({a1, a2});
+    *size_work2 = std::max({b1, b2, b3});
+    *size_work3 = std::max({c1, c2, c3});
+    *size_work4 = std::max({d1, d2, d3});
+    *size_work5_ipiv = std::max({e1, e2});
+    *size_work6_workArr = std::max({f1, f2, f3, f4});
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename SS, typename W>
@@ -110,11 +226,152 @@ rocblas_status rocsolver_gesvdj_template(rocblas_handle handle,
                                          const rocblas_stride strideV,
                                          rocblas_int* info,
                                          const rocblas_int batch_count,
-                                         T* scalars)
+                                         T* scalars,
+                                         T* VUtmp,
+                                         void* work1_UVtmp,
+                                         void* work2,
+                                         void* work3,
+                                         void* work4,
+                                         void* work5_ipiv,
+                                         void* work6_workArr)
 {
     ROCSOLVER_ENTER("gesvdj", "leftsv:", left_svect, "rightsv:", right_svect, "m:", m, "n:", n,
                     "shiftA:", shiftA, "lda:", lda, "abstol:", abstol, "max_sweeps:", max_sweeps,
                     "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
 
-    return rocblas_status_not_implemented;
+    // quick return
+    if(batch_count == 0)
+        return rocblas_status_success;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    // quick return
+    if(m == 0 || n == 0)
+    {
+        rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
+        dim3 gridReset(blocksReset, 1, 1);
+        dim3 threadsReset(BS1, 1, 1);
+
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, residual,
+                                batch_count, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, n_sweeps,
+                                batch_count, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
+
+        return rocblas_status_success;
+    }
+
+    // everything must be executed with scalars on the host
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle, &old_mode);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+
+    bool leftv = left_svect != rocblas_svect_none;
+    bool rightv = right_svect != rocblas_svect_none;
+    T minone = T(-1);
+    T one = T(1);
+    T zero = T(0);
+
+    if(m >= n)
+    {
+        // compute -A'A
+        T* V_gemm = VUtmp;
+        rocblas_int ldv_gemm = n;
+        rocblas_int strideV_gemm = n * n;
+
+        rocblasCall_gemm<BATCHED, STRIDED, T>(
+            handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, n, n, m, &minone,
+            A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, V_gemm, 0, ldv_gemm,
+            strideV_gemm, batch_count, (T**)work6_workArr);
+
+        // apply eigenvalue decomposition to -A'A, obtaining V as eigenvectors
+        rocsolver_syevj_heevj_template<false, STRIDED, T>(
+            handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, n, V_gemm,
+            0, ldv_gemm, strideV_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info,
+            batch_count, (T*)work1_UVtmp, (SS*)work2, (SS*)work3, (T*)work4,
+            (rocblas_int*)work5_ipiv);
+
+        // compute AV
+        T* U_gemm = (leftv ? U : (T*)work1_UVtmp);
+        rocblas_int ldu_gemm = (leftv ? ldu : m);
+        rocblas_int strideU_gemm = (leftv ? strideU : m * n);
+
+        rocblasCall_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, rocblas_operation_none,
+                                              m, n, n, &one, A, shiftA, lda, strideA, V_gemm, 0,
+                                              ldv_gemm, strideV_gemm, &zero, U_gemm, 0, ldu_gemm,
+                                              strideU_gemm, batch_count, (T**)work6_workArr);
+
+        // apply QR factorization to AV, obtaining U = Q and S = R
+        rocsolver_geqrf_template<false, STRIDED, T>(handle, m, n, U_gemm, 0, ldu_gemm, strideU_gemm,
+                                                    (T*)work5_ipiv, n, batch_count, scalars, work2,
+                                                    (T*)work3, (T*)work4, (T**)work6_workArr);
+
+        rocblas_int blocks = (n - 1) / BS1 + 1;
+        ROCSOLVER_LAUNCH_KERNEL(gesvdj_finalize<T>, dim3(blocks, batch_count, 1), dim3(BS1, 1, 1),
+                                0, stream, n, S, strideS, U_gemm, ldu_gemm, strideU_gemm, V_gemm,
+                                ldv_gemm, strideV_gemm);
+
+        if(leftv)
+            rocsolver_orgqr_ungqr_template<false, STRIDED, T>(
+                handle, m, n, n, U_gemm, 0, ldu_gemm, strideU_gemm, (T*)work5_ipiv, n, batch_count,
+                scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
+
+        // transpose V
+        if(rightv)
+        {
+            rocblas_int blocks_n = (n - 1) / BS2 + 1;
+            ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat<T>, dim3(blocks_n, blocks_n, batch_count),
+                                    dim3(BS2, BS2, 1), 0, stream,
+                                    rocblas_operation_conjugate_transpose, n, n, V_gemm, 0,
+                                    ldv_gemm, strideV_gemm, V, 0, ldv, strideV);
+        }
+    }
+    else
+    {
+        // compute -AA'
+        T* U_gemm = (leftv ? U : VUtmp);
+        rocblas_int ldu_gemm = (leftv ? ldu : m);
+        rocblas_int strideU_gemm = (leftv ? strideU : m * m);
+
+        rocblasCall_gemm<BATCHED, STRIDED, T>(
+            handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, m, m, n, &minone,
+            A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, U_gemm, 0, ldu_gemm,
+            strideU_gemm, batch_count, (T**)work6_workArr);
+
+        // apply eigenvalue decomposition to -AA', obtaining U as eigenvectors
+        rocsolver_syevj_heevj_template<false, STRIDED, T>(
+            handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, m, U_gemm,
+            0, ldu_gemm, strideU_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info,
+            batch_count, (T*)work1_UVtmp, (SS*)work2, (SS*)work3, (T*)work4,
+            (rocblas_int*)work5_ipiv);
+
+        // compute U'A
+        T* V_gemm = (rightv ? V : (T*)work1_UVtmp);
+        rocblas_int ldv_gemm = (rightv ? ldv : m);
+        rocblas_int strideV_gemm = (rightv ? strideV : m * n);
+
+        rocblasCall_gemm<BATCHED, STRIDED, T>(
+            handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, m, n, m, &one,
+            U_gemm, 0, ldu_gemm, strideU_gemm, A, shiftA, lda, strideA, &zero, V_gemm, 0, ldv_gemm,
+            strideV_gemm, batch_count, (T**)work6_workArr);
+
+        // apply LQ factorization to U'A, obtaining S = L and V' = Q
+        rocsolver_gelqf_template<false, STRIDED, T>(handle, m, n, V_gemm, 0, ldv_gemm, strideV_gemm,
+                                                    (T*)work5_ipiv, m, batch_count, scalars, work2,
+                                                    (T*)work3, (T*)work4, (T**)work6_workArr);
+
+        rocblas_int blocks = (m - 1) / BS1 + 1;
+        ROCSOLVER_LAUNCH_KERNEL(gesvdj_finalize<T>, dim3(blocks, batch_count, 1), dim3(BS1, 1, 1),
+                                0, stream, m, S, strideS, V_gemm, ldv_gemm, strideV_gemm, U_gemm,
+                                ldu_gemm, strideU_gemm);
+
+        if(rightv)
+            rocsolver_orglq_unglq_template<false, STRIDED, T>(
+                handle, m, n, m, V_gemm, 0, ldv_gemm, strideV_gemm, (T*)work5_ipiv, m, batch_count,
+                scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
+    }
+
+    rocblas_set_pointer_mode(handle, old_mode);
+    return rocblas_status_success;
 }
