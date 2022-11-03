@@ -64,21 +64,21 @@ def parse_results(bench_output):
 
 def getrf_suite(*, precision):
     for fn in ['getrf', 'getrf_npvt']:
-        for m in chain(range(2, 59, 8),
-                       range(64, 257, 32),
-                       range(320, 2049, 64),
-                       range(2176, 4097, 128),
-                       range(4352, 8193, 256),
-                       range(8704, 12289, 512)):
+        for m in chain(range(2, 64, 8),
+                       range(64, 256, 32),
+                       range(256, 2048, 64),
+                       range(2048, 4096, 128),
+                       range(4096, 8193, 256)):
             yield (fn, f'-f {fn} -r {precision} -m {m} --iters 10')
 
 def getrf_strided_batched_suite(*, precision):
     for fn in ['getrf_strided_batched', 'getrf_npvt_strided_batched']:
-        for m, bc in chain(zip(range(2, 65, 1), repeat(5000)),
-                           zip(range(72, 257, 8), repeat(2500)),
-                           zip(range(272, 513, 16), repeat(1000)),
-                           zip(range(544, 1025, 32), repeat(500)),
-                           zip(range(1088, 2049, 64), repeat(50))):
+        for m, bc in chain(zip(range(2, 64, 1), repeat(5000)),
+                           zip(range(64, 256, 8), repeat(2500)),
+                           zip(range(256, 384, 16), repeat(1000)),
+                           zip(range(384, 512, 32), repeat(750)),
+                           zip(range(512, 640, 32), repeat(500)),
+                           zip(range(640, 1025, 64), repeat(50))):
             yield (fn, f'-f {fn} -r {precision} -m {m} --iters 10 --batch_count {bc}')
 
         yield (fn, f'-f {fn} -r {precision} -m 20 --iters 10 --batch_count 4096')
@@ -100,40 +100,43 @@ def getrf_strided_batched_suite(*, precision):
 
 def getri_suite(*, precision):
     for fn in ['getri', 'getri_npvt']:
-        for n in chain(range(2, 59, 8),
-                       range(64, 257, 32),
-                       range(320, 2049, 64),
-                       range(2176, 4097, 128),
-                       range(4352, 8193, 256),
-                       range(8704, 12289, 512)):
+        for n in chain(range(2, 64, 8),
+                       range(64, 256, 32),
+                       range(256, 1024, 64),
+                       range(1024, 2048, 128),
+                       range(2048, 4096, 256),
+                       range(4096, 8193, 512)):
             yield (fn, f'-f {fn} -r {precision} -n {n} --iters 10')
+
 
 def getri_strided_batched_suite(*, precision):
     for fn in ['getri_strided_batched', 'getri_npvt_strided_batched']:
-        for n, bc in chain(zip(range(2, 65, 1), repeat(5000)),
-                           zip(range(72, 257, 8), repeat(2500)),
-                           zip(range(272, 513, 16), repeat(1000)),
-                           zip(range(544, 1025, 32), repeat(500)),
-                           zip(range(1088, 2049, 64), repeat(50))):
+        for n, bc in chain(zip(range(2, 64, 1), repeat(5000)),
+                           zip(range(64, 256, 8), repeat(2500)),
+                           zip(range(256, 384, 16), repeat(1000)),
+                           zip(range(384, 512, 32), repeat(750)),
+                           zip(range(512, 640, 32), repeat(500)),
+                           zip(range(640, 1025, 64), repeat(50))):
             yield (fn, f'-f {fn} -r {precision} -n {n} --iters 10 --batch_count {bc}')
 
 def geqrf_suite(*, precision):
     for fn in ['geqrf']:
-        for m in chain(range(2, 59, 8),
-                       range(64, 257, 32),
-                       range(320, 2049, 64),
-                       range(2176, 4097, 128),
-                       range(4352, 8193, 256),
-                       range(8704, 12289, 512)):
+        for m in chain(range(2, 64, 8),
+                       range(64, 256, 32),
+                       range(256, 1024, 64),
+                       range(1024, 2048, 128),
+                       range(2048, 4096, 256),
+                       range(4096, 8193, 512)):
             yield (fn, f'-f {fn} -r {precision} -m {m} --iters 10')
 
 def geqrf_strided_batched_suite(*, precision):
     for fn in ['geqrf_strided_batched']:
-        for m, bc in chain(zip(range(2, 65, 1), repeat(5000)),
-                           zip(range(72, 257, 8), repeat(2500)),
-                           zip(range(272, 513, 16), repeat(1000)),
-                           zip(range(544, 1025, 32), repeat(500)),
-                           zip(range(1088, 2049, 64), repeat(50))):
+        for m, bc in chain(zip(range(2, 64, 1), repeat(5000)),
+                           zip(range(64, 256, 8), repeat(2500)),
+                           zip(range(256, 384, 16), repeat(1000)),
+                           zip(range(384, 512, 32), repeat(750)),
+                           zip(range(512, 640, 32), repeat(500)),
+                           zip(range(640, 1025, 64), repeat(50))):
             yield (fn, f'-f {fn} -r {precision} -m {m} --iters 10 --batch_count {bc}')
 
 suites = {
