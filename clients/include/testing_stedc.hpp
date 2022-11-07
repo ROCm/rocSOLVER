@@ -95,7 +95,9 @@ void stedc_initData(const rocblas_handle handle,
         for(rocblas_int i = 0; i < n; i++)
         {
 //            hD[0][i] += 400;
-            hE[0][i] += 2;//-= 5;
+//            hE[0][i] -= 5;
+//            hD[0][i] /= 12;
+            hE[0][i] += 2;
         }
 
         // add fixed splits in the matrix to test split handling
@@ -213,6 +215,26 @@ void stedc_getError(const rocblas_handle handle,
         err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
         *max_err = err > *max_err ? err : *max_err;
 
+printf("\n");
+for(int i = 0; i < n; ++i)
+{
+printf("%2.15f %2.15f\n",hD[0][i],hDRes[0][i]);
+}
+/*printf("\n\n");
+for(int i = 0; i < n; ++i)
+{
+    for(int j = 0; j < n; ++j)
+        printf("%2.15f ",hC[0][i+j*ldc]);
+    printf("\n");
+}
+printf("\n\n");
+for(int i = 0; i < n; ++i)
+{
+    for(int j = 0; j < n; ++j)
+        printf("%2.15f ",hCRes[0][i+j*ldc]);
+    printf("\n");
+}*/
+
         // check eigenvectors if required
         if(evect != rocblas_evect_none)
         {
@@ -228,12 +250,16 @@ void stedc_getError(const rocblas_handle handle,
                 alpha = T(1) / hDRes[0][j];
                 cpu_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta,
                               hC[0] + j * ldc, 1);
+//                cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hC[0] + j * ldc, 1,
+//                                beta, hCRes[0] + j * ldc, 1);
             }
 
             // error is ||hC - hCRes|| / ||hC||
             // using frobenius norm
-            err = norm_error('F', n, n, ldc, hC[0], hCRes[0]);
-            *max_err = err > *max_err ? err : *max_err;
+            err = norm_error('F', n, n, ldc, hCRes[0], hC[0]);
+//            err = norm_error('F', n, 1, ldc, hC[0]+38, hCRes[0]+38);
+printf("\n\n++++++++++++++++++++++++++ err: %2.15f\n",err);
+//            *max_err = err > *max_err ? err : *max_err;
         }
     }
 }
