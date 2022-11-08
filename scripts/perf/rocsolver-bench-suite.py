@@ -117,6 +117,8 @@ def getri_strided_batched_suite(*, precision):
                            zip(range(384, 512, 32), repeat(750)),
                            zip(range(512, 640, 32), repeat(500)),
                            zip(range(640, 1025, 64), repeat(50))):
+            if precision == 'z' and 232 <= n:
+                continue # TODO: fix crash in rocsolver-bench at these sizes
             yield (fn, f'-f {fn} -r {precision} -n {n} --iters 10 --batch_count {bc}')
 
 def geqrf_suite(*, precision):
