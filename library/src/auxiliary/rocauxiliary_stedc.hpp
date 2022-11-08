@@ -15,7 +15,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#define BDIM 512  // Number of threads per block used in main stedc kernel
+#define BDIM 8  // Number of threads per block used in main stedc kernel
 #define MAXITERS 100 // Max number of iterations for Newton's method
 
 
@@ -230,7 +230,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
     initial interval [a,b]. It updates ev with r. Returns 1 if failed to converge, 0 otherwise **/
 template <typename S>
 __device__ rocblas_int seq_newtsafe(const rocblas_int dd, 
-                                    const S* D,
+                                    S* D,
                                     const S* z,
                                     const S p, 
                                     rocblas_int k, 
@@ -303,7 +303,11 @@ __device__ rocblas_int seq_newtsafe(const rocblas_int dd,
                 x = nx;
         }
     }
-    
+
+
+for(int i=0;i<dd;++i)
+    D[i] = D[i] - x;
+
     *ev = x;
     return converged ? 0 : 1;    
 }
@@ -414,7 +418,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     /* --------------------------------------------------- */
     // contains the beginning of split blocks
     rocblas_int* splits = splitsA + bid * (2 * n + 2); 
-    // worksapce 
+    // worksapce for STEQR and container of permutations when solving the secular eqns 
     S* W = WA + bid * (2 * n);  
     // if idd[i] = 0, the value in position i has been deflated
     rocblas_int* idd = splits + n + 2;  
@@ -463,6 +467,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     /* --------------------------------------------------- */
     for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
     {
+        __syncthreads();
+
         // Select current split block
         p1 = splits[kb];
         p2 = splits[kb + 1];
@@ -486,8 +492,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
         else
         {
             // arrange threads so that a group of bdim/blks threads works with each sub-block
+            // tn is the number of threads associated to each sub-block
             rocblas_int tn = BDIM / blks;
+            // tid indexes the sub-block
             tid = id / tn;
+            // tidb indexes the threads in each sub-block
             tidb = id % tn;
              
             // 1. DIVIDE PHASE
@@ -537,7 +546,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
             
             // 2. SOLVE PHASE
             /* ----------------------------------------------------------------- */
-            // (solve the blks sub-blocks in parallel)
+            // Solve the blks sub-blocks in parallel. 
+            // (Until STEQR is parallelized, only the first thread associated 
+            // to each sub-block do computations)
             if(tidb == 0)
             {
                 run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info,
@@ -546,6 +557,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
             __syncthreads();
             /* ----------------------------------------------------------------- */
 
+/*if(id==0)
+{
+printf("\n\nC: ");
+for(int i=0;i<n;++i)
+{
+    for(int j=0;j<n;++j)
+        printf("%2.15f ",C[i+j*n]);
+    printf("\n");
+}
+}*/
 
             // 3. MERGE PHASE
             /* ----------------------------------------------------------------- */
@@ -558,12 +579,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
             for(int k = 0; k < levs; ++k)
             {
                 // 3a. find rank-1 modification components (z and p) for this merge
-                // (threads with iam < bd work with components above the merge point;
-                //  threads with iam >= bd work below the merge point)
                 /* ----------------------------------------------------------------- */
+                // iam indexes the sub-blocks according to its level in the merge tree
                 rocblas_int bd = 1 << k;
                 bdm = bd << 1;
                 iam = tid % bdm;
+
+                // Threads with iam < bd work with components above the merge point;
+                //  threads with iam >= bd work below the merge point
                 if(iam < bd && tid < blks)
                 {
                     sz = ns[tid];
@@ -595,17 +618,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
 
 
                 // 3b. calculate deflation tolerance
-                // tol = 8 * eps * (max diagonal or z element participating in merge)
                 /* ----------------------------------------------------------------- */
-                S valf, valg, f, g, c, s, r;
-                S tol;// = 0.00001;
-                tol = k == 0 ? 0.000000001 : 0.000000001;
+                // tol = 8 * eps * (max diagonal or z element participating in merge)
+                S tol = 0.000000001;
                 /* ----------------------------------------------------------------- */
 
 
                 // 3c. deflate enigenvalues
                 /* ----------------------------------------------------------------- */
+                S valf, valg, f, g, c, s, r;
+                
                 // first deflate each thread sub-block
+                // (only the first thread of each sub-block works as this is 
+                // a sequential process)
                 if(tidb == 0)
                 {
                     for(int i = 0; i < ns[tid]; ++i)
@@ -654,7 +679,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
                 __syncthreads();
 
                 // then compare with other sub-blocks participating in this merge
-                // (follows a simple, reduction-like process)
+                // following a simple, reduction-like process.
+                // (only the first thread of each sub-block works in the reduction)
                 for(int ii = 0; ii <= k; ++ii)
                 {
                     if(tidb == 0)
@@ -715,52 +741,65 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
                 
                 // 3d. Organize data with non-deflated values to prepare secular equation
                 /* ----------------------------------------------------------------- */
-                // determine boundaries in D
+                // determine boundaries of what would be the new merged sub-block 
+                // 'in' will be its initial position
                 rocblas_int in = ps[tid - iam];
+                // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
                 sz = ns[tid];
                 for(int i = iam; i > 0; --i)
                     sz += ns[tid - i];
                 for(int i = bdm - 1 - iam; i > 0; --i)
                     sz += ns[tid + i];
 
+                // All threads of the participating merging blocks will work together
+                // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
+                iam = iam * tn + tidb;
+                bdm *= tn;
+
                 // define shifted arrays 
-                S* tmpd = temps + in;
-                S* tmpz = tmpd + n;
+                S* tmpd = temps + in * n ;
                 S* ev = evs + in;
                 S* diag = D + in;
                 rocblas_int* mask = idd + in;
                 S* zz = z + in;
-                rocblas_int dd = 0; // degree of secular equation
-                
-                // 
+                rocblas_int* per = (rocblas_int*)W + in;
+
+                // find degree and components of secular equation
+                // tmpd contains the non-deflated diagonal elements (ie. poles of the secular eqn)
+                // zz contains the corresponding non-zero elements of the rank-1 modif vector
+                rocblas_int dd = 0; 
                 for(int i = 0; i < sz; ++i)
                 {
                     if(mask[i] == 1)
                     {
                         if(tidb == 0 && iam == 0)
                         {
+                            per[dd] = in + i;
                             tmpd[dd] = diag[i];
-                            tmpz[dd] = zz[i];
+                            if(dd != i)
+                                zz[dd] = zz[i];
                         }
                         dd++;
                     }
                 }
                 __syncthreads();
+
+if(id==0)
+{
+printf("\n\ntmpd:");
+for(int i=0;i<n;++i)
+    printf("%2.15f ",temps[i]);
+printf("\n\nz:");
+for(int i=0;i<n;++i)
+    printf("%2.15f ",z[i]);
+printf("\n\nper:");
+for(int i=0;i<n;++i)
+    printf("%d ",per[i]);
+}
+
                 
-                // put final polynomial in poly and diagonal elements in ev
-                iam = iam * tn + tidb;
-                bdm *= tn;
-                for(int i = iam; i < sz; i += bdm)
-                    ev[i] = diag[i];
-                __syncthreads();
-                /* ----------------------------------------------------------------- */
-                
-                
-                // 3e. Solve secular eqns, i.e. find the dd roots 
-                // corresponding to non-deflated eigenvalues
-                /* ----------------------------------------------------------------- */
-                // first, order elements in temps to find initial intervals for the roots
-                // (using a simple parallel selection/bubble sort)
+                // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
+                // This will allows to find initial intervals for eigenvalue guesses
                 for(int i = 0; i < dd; ++i)
                 {
                     if(i % 2 == 0)
@@ -772,9 +811,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
                                 valf = tmpd[2 * j];
                                 tmpd[2 * j] = tmpd[2 * j + 1];
                                 tmpd[2 * j + 1] = valf; 
-                                valf = tmpz[2 * j];
-                                tmpz[2 * j] = tmpz[2 * j + 1];
-                                tmpz[2 * j + 1] = valf; 
+                                valf = zz[2 * j];
+                                zz[2 * j] = zz[2 * j + 1];
+                                zz[2 * j + 1] = valf; 
+                                bd = per[2 * j];
+                                per[2 * j] = per[2 * j + 1];
+                                per[2 * j + 1] = bd; 
                             }
                         }
                     }
@@ -787,48 +829,111 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
                                 valf = tmpd[2 * j + 1];
                                 tmpd[2 * j + 1] = tmpd[2 * j + 2];
                                 tmpd[2 * j + 2] = valf;
-                                valf = tmpz[2 * j + 1];
-                                tmpz[2 * j + 1] = tmpz[2 * j + 2];
-                                tmpz[2 * j + 2] = valf;
+                                valf = zz[2 * j + 1];
+                                zz[2 * j + 1] = zz[2 * j + 2];
+                                zz[2 * j + 2] = valf;
+                                bd = per[2 * j + 1];
+                                per[2 * j + 1] = per[2 * j + 2];
+                                per[2 * j + 2] = bd; 
                             }    
                         }
                     }
                     __syncthreads();
                 }
 
-                // now, each thread will find a different root in parallel
-                S a, b; 
-                for(int i = iam; i < sz; i += bdm)
+if(id==0)
+{
+printf("\n\ntmpd:");
+for(int i=0;i<n;++i)
+    printf("%2.15f ",temps[i]);
+printf("\n\nz:");
+for(int i=0;i<n;++i)
+    printf("%2.15f ",z[i]);
+printf("\n\nper:");
+for(int i=0;i<n;++i)
+    printf("%d ",per[i]);
+}
+                // make dd copies of the non-deflated ordered diagonal elements 
+                // (i.e. the poles of the secular eqn) so that the distances to the 
+                // eigenvalues (D - lambda_i) are updated while computing each eigenvalue. 
+                // This will prevent collapses and division by zero when an eigenvalue 
+                // is too close to a pole. 
+                for(int j = iam + 1; j < sz; j += bdm)
                 {
-                    if(mask[i] == 1)
+                    for(int i = 0; i < dd; ++i)
+                        tmpd[i + j * n] = tmpd[i];
+                }
+                
+if(id==0)
+{
+printf("\n\ntmpds before solve:");
+for(int i=0;i<n;++i)
+{
+    for(int j=0;j<n;++j)
+        printf("%2.15f ",temps[i+j*n]);
+    printf("\n");
+}
+}
+                // finaly copy over all diagonal elements in ev. ev will be overwritten by the
+                // new computed eigenvalues of the merged block
+                for(int i = iam; i < sz; i += bdm)
+                    ev[i] = diag[i];
+                __syncthreads();
+                /* ----------------------------------------------------------------- */
+                
+                
+                // 3e. Solve secular eqns, i.e. find the dd zeros 
+                // corresponding to non-deflated new eigenvalues of the merged block
+                /* ----------------------------------------------------------------- */
+                // each thread will find a different zero in parallel
+                S a, b; 
+                for(int j = iam; j < sz; j += bdm)
+                {
+                    if(mask[j] == 1)
                     {
-                        // determine initial interval; root is in (a, b)
+                        // find position in the ordered array
                         int cc = 0;
-                        valf = ev[i];
-                        for(int j = 0; j < dd; ++j)
+                        valf = ev[j];
+                        for(int jj = 0; jj < dd; ++jj)
                         {
-                            if(tmpd[j] == valf)
+                            if(tmpd[jj + j * n] == valf)
                                 break;
                             else
                                 cc++;
                         }
 
-                        // find root within the given initial interval
-                        // (Using a basic implementation of a Newt-safe algorithm.
-                        // TODO: We may want to investigate other root-finding methods, or
-                        // optimize the Newt-safe in the future if necessary)
+                        // computed zero will overwrite 'ev' at the corresponding position. 
+                        // 'tmpd' will be updated with the distances D - lambda_i.
+                        // deflated values are not changed.
 bool print = false;
-                        rocblas_int linfo = seq_newtsafe(dd, tmpd, tmpz, 1/p, cc, ev + i, eps, ssfmin, ssfmax, print);
+//if(j==0 || j == 8)
+//print=true;
+
+//printf("\nsoy iam %d con in = %d, mi j es %d\n",iam,in,j); 
+                        rocblas_int linfo = seq_newtsafe(dd, tmpd + j * n, zz, 1 / p, cc, ev + j, eps, ssfmin, ssfmax, print);
                     }
                 }
                 __syncthreads();
                 /* ----------------------------------------------------------------- */
+if(id==0)
+{
+printf("\n\nevs after solve:");
+for(int i=0;i<n;++i)
+    printf("%2.15f ",evs[i]);
+printf("\n\ntmpds after solve:");
+for(int i=0;i<n;++i)
+{
+    for(int j=0;j<n;++j)
+        printf("%2.15f ",temps[i+j*n]);
+    printf("\n");
+}
+}
 
 
                 // 3f. Compute vectors corresponding to non-deflated values
                 /* ----------------------------------------------------------------- */
                 // Re-arrange vector Z to avoid bad numerics when ev[i] is close to D[i]
-                for(int i = iam; i < sz; i += bdm)
+/*                for(int i = iam; i < sz; i += bdm)
                 {
                     if(mask[i] == 1)
                     { 
@@ -842,7 +947,7 @@ bool print = false;
                         zz[i] = zz[i] < 0 ? -valf : valf;
                     }
                 }
-                __syncthreads();    
+                __syncthreads();    */
                                                         
                 // g. Compute vectors corresponding to non-deflated values
                 S temp, nrm, evj;
@@ -857,9 +962,9 @@ bool print = false;
                     if(go)
                     {
                         evj = evs[p2 + j];
-                        for(int i = in + tidb; i < in + sz; i += tn)
+                        for(int i = tidb; i < dd; i += tn)
                         {
-                            valf = z[i] / (D[i] - evj);
+                            valf = zz[i] / temps[i + (p2 + j) * n];
                             nrm += valf * valf;
                             temps[i + (p2 + j) * n] = valf;
                         }
@@ -886,8 +991,8 @@ bool print = false;
                         temp = 0;
                         if(go)
                         {
-                            for(int kk = in + tidb; kk < in + sz; kk += tn)
-                                temp += C[i + kk * ldc] * temps[kk + (p2 + j) * n]; 
+                            for(int kk = tidb; kk < dd; kk += tn)
+                                temp += C[i + per[kk] * ldc] * temps[kk + (p2 + j) * n]; 
                         }
                         inrms[tid * tn + tidb] = temp;
                         __syncthreads();
@@ -911,9 +1016,18 @@ bool print = false;
                 }
                 __syncthreads();
                 /* ----------------------------------------------------------------- */
+/*if(id==0)
+{
+printf("\n\ntmpds:");
+for(int i=0;i<n;++i)
+{
+    for(int j=0;j<n;++j)
+        printf("%2.15f ",vecs[i+j*n]);
+    printf("\n");
+}
+}*/
 
-
-                // 3g. update D and C with computed values
+                // 3g. update D and C with computed values and vectors
                 /* ----------------------------------------------------------------- */
                 for(int j = 0; j < ns[tid]; ++j)
                 {
@@ -926,13 +1040,13 @@ bool print = false;
                 }
                 /* ----------------------------------------------------------------- */
 
-            } // end of main loop in merge phase
-            /* ----------------------------------------------------------------- */
+            } // end of main loop in merge phase of divide & conquer
 
-        }
-        __syncthreads();
-    } // end of for-loop for the split blocks
+        } // end of conditional that decides when to use normal algorithm or divide & conquer  
+    
+    } // end of for-loop for the independent split blocks
 }
+
 
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 template <typename T, typename S, typename U>
