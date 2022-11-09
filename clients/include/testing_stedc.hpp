@@ -220,7 +220,7 @@ for(int i = 0; i < n; ++i)
 {
 printf("%2.15f %2.15f\n",hD[0][i],hDRes[0][i]);
 }
-/*printf("\n\n");
+printf("\n\n");
 for(int i = 0; i < n; ++i)
 {
     for(int j = 0; j < n; ++j)
@@ -233,7 +233,7 @@ for(int i = 0; i < n; ++i)
     for(int j = 0; j < n; ++j)
         printf("%2.15f ",hCRes[0][i+j*ldc]);
     printf("\n");
-}*/
+}
 
         // check eigenvectors if required
         if(evect != rocblas_evect_none)

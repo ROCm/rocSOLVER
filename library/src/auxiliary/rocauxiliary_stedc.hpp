@@ -16,51 +16,16 @@
 #include "rocsolver/rocsolver.h"
 
 #define BDIM 8  // Number of threads per block used in main stedc kernel
-#define MAXITERS 100 // Max number of iterations for Newton's method
-
-
-/** This function evaluates the secular equation (rational function f) at x. 
-    It updates fx with f(x) and fdx with f'(x).
-    Returns -1 if f(x) < 0, and 1 otherwise **/
-/*template <typename S>
-__device__ void seq_eval(const rocblas_int din,
-                         const rocblas_int dout,
-                         const rocblas_int dd,
-                         const S* D,
-                         const S* z,
-                         const S p,
-                         const S x,
-                         S* fx, 
-                         S* fdx) 
-{
-    S vald = 0;
-    S zz, den;
-    S val = (dout - din == dd) ? p : 0;
-    int inc = (din < dout) ? 1 : -1;
-    int i = din;
-
-    while(i != dout)
-    {
-        zz = z[i] * z[i];
-        den = D[i] - x;
-        val += zz / den;
-        vald += zz / (den * den);
-        i += inc;
-    }
-
-    *fx = val;
-    *fdx = vald;
-}*/
-
+#define MAXITERS 50 // Max number of iterations for Newton's method
 
 template <typename S>
 __device__ void seq_eval(const rocblas_int type,
                          const rocblas_int k,
                          const rocblas_int dd,
-                         const S* D,
+                         S* D,
                          const S* z,
                          const S p,
-                         const S x,
+                         const S cor,
                          S* pt_fx, 
                          S* pt_fdx,
                          S* pt_gx,
@@ -97,8 +62,10 @@ __device__ void seq_eval(const rocblas_int type,
     er = 0;
     for(int i = 0; i < gout; ++i)
     {
+        tmp = D[i] - cor;
+        D[i] = tmp;
         zz = z[i];
-        tmp = zz / (D[i] - x);
+        tmp = zz / tmp;
         gx += zz * tmp;
         gdx += tmp * tmp;
         er += gx;
@@ -109,8 +76,10 @@ __device__ void seq_eval(const rocblas_int type,
     hdx = 0;
     for(int i = dd - 1; i > hout; --i)
     {
+        tmp = D[i] - cor;
+        D[i] = tmp;
         zz = z[i];
-        tmp = zz / (D[i] - x);
+        tmp = zz / tmp;
         hx += zz * tmp;
         hdx += tmp * tmp;
         er += hx;
@@ -259,13 +228,13 @@ __device__ rocblas_int seq_newtsafe(const rocblas_int dd,
         b = D[k + 1];
     }
     x = (a + b) / 2;
+    seq_eval(0, k, dd, D, z, p, x, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, print);                
 
     for(int i = 0; i < MAXITERS; ++i)
     {
         // find the full correction 'cor' to 'x' (new step would be x + cor)
-        dk = D[k] - x;
-        dk1 = D[k + 1] - x;
-        seq_eval(0, k, dd, D, z, p, x, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, print);                
+        dk = D[k];
+        dk1 = D[k + 1];
         aa = (dk + dk1) * fx - dk * dk1 * fdx;
         bb = dk * dk1 * fx;
         if(ext)
@@ -296,17 +265,20 @@ __device__ rocblas_int seq_newtsafe(const rocblas_int dd,
             // verify that the correction is not too large 
             // (take a damped correction if necessary)
             if(nx <= a)
+            {
                 x = (a + x) / 2;
+                cor = (a - x) / 2;
+            }
             else if(!ext && nx >= b)
+            {
                 x = (x + b) / 2;
+                cor = (b - x) / 2;
+            }
             else
                 x = nx;
+            seq_eval(0, k, dd, D, z, p, cor, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, print);                
         }
     }
-
-
-for(int i=0;i<dd;++i)
-    D[i] = D[i] - x;
 
     *ev = x;
     return converged ? 0 : 1;    
@@ -317,7 +289,7 @@ for(int i=0;i<dd;++i)
     i.e. number of sub-blocks = 2^levels **/
 __host__ __device__ inline rocblas_int stedc_num_levs(const rocblas_int n)
 {
-    return 1;
+    return 2;
 }
 
 /** STEDC_SPLIT finds independent blocks in the tridiagonal matrix
@@ -784,7 +756,7 @@ for(int i=0;i<n;++i)
                 }
                 __syncthreads();
 
-if(id==0)
+/*if(id==0)
 {
 printf("\n\ntmpd:");
 for(int i=0;i<n;++i)
@@ -795,7 +767,7 @@ for(int i=0;i<n;++i)
 printf("\n\nper:");
 for(int i=0;i<n;++i)
     printf("%d ",per[i]);
-}
+}*/
 
                 
                 // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
@@ -841,7 +813,7 @@ for(int i=0;i<n;++i)
                     __syncthreads();
                 }
 
-if(id==0)
+/*if(id==0)
 {
 printf("\n\ntmpd:");
 for(int i=0;i<n;++i)
@@ -852,7 +824,7 @@ for(int i=0;i<n;++i)
 printf("\n\nper:");
 for(int i=0;i<n;++i)
     printf("%d ",per[i]);
-}
+}*/
                 // make dd copies of the non-deflated ordered diagonal elements 
                 // (i.e. the poles of the secular eqn) so that the distances to the 
                 // eigenvalues (D - lambda_i) are updated while computing each eigenvalue. 
@@ -864,7 +836,7 @@ for(int i=0;i<n;++i)
                         tmpd[i + j * n] = tmpd[i];
                 }
                 
-if(id==0)
+/*if(id==0)
 {
 printf("\n\ntmpds before solve:");
 for(int i=0;i<n;++i)
@@ -873,7 +845,7 @@ for(int i=0;i<n;++i)
         printf("%2.15f ",temps[i+j*n]);
     printf("\n");
 }
-}
+}*/
                 // finaly copy over all diagonal elements in ev. ev will be overwritten by the
                 // new computed eigenvalues of the merged block
                 for(int i = iam; i < sz; i += bdm)
@@ -914,8 +886,26 @@ bool print = false;
                     }
                 }
                 __syncthreads();
+                
+                // Re-scale vector Z to avoid bad numerics when an eigenvalue 
+                // is too close to a pole
+                for(int i = iam; i < dd; i += bdm)
+                {
+                    valf = 1;            
+                    for(int j = 0; j < sz; ++j)
+                    {
+                        if(mask[j] == 1)
+                        {
+                            valg = tmpd[i + j * n];
+                            valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);            
+                        }
+                    }
+                    valf = sqrt(-valf);
+                    zz[i] = zz[i] < 0 ? -valf : valf;
+                }
+                __syncthreads();    
                 /* ----------------------------------------------------------------- */
-if(id==0)
+/*if(id==0)
 {
 printf("\n\nevs after solve:");
 for(int i=0;i<n;++i)
@@ -927,29 +917,17 @@ for(int i=0;i<n;++i)
         printf("%2.15f ",temps[i+j*n]);
     printf("\n");
 }
-}
+}*/
 
 
                 // 3f. Compute vectors corresponding to non-deflated values
                 /* ----------------------------------------------------------------- */
-                // Re-arrange vector Z to avoid bad numerics when ev[i] is close to D[i]
-/*                for(int i = iam; i < sz; i += bdm)
-                {
-                    if(mask[i] == 1)
-                    { 
-                        valf = (diag[i] - ev[i]);            
-                        for(int j = 0; j < sz; ++j)
-                        {
-                            if(mask[j] == 1 && j != i)
-                                valf *= (diag[i] - ev[j]) / (diag[i] - diag[j]);            
-                        }
-                        valf = sqrt(-valf);
-                        zz[i] = zz[i] < 0 ? -valf : valf;
-                    }
-                }
-                __syncthreads();    */
-                                                        
-                // g. Compute vectors corresponding to non-deflated values
+/*if(id==0)
+{                                                        
+printf("\n\nz:");
+for(int i=0;i<n;++i)
+    printf("%2.15f ",z[i]);
+}*/
                 S temp, nrm, evj;
                 rocblas_int nn = (n - 1) / blks + 1;
                 bool go;
@@ -957,7 +935,7 @@ for(int i=0;i<n;++i)
                 {
                     go = (j < ns[tid] && idd[p2 + j] == 1);
 
-                    // compute vectors and norms
+                    // compute vectors of rank-1 perturbed system and their norms
                     nrm = 0;
                     if(go)
                     {
@@ -972,7 +950,7 @@ for(int i=0;i<n;++i)
                     inrms[tid * tn + tidb] = nrm;
                     __syncthreads();
 
-                    // reduction (for the norm)
+                    // reduction (for the norms)
                     for(int r = tn / 2; r > 0; r /= 2)
                     {
                         if(go && tidb < r)
@@ -1018,7 +996,7 @@ for(int i=0;i<n;++i)
                 /* ----------------------------------------------------------------- */
 /*if(id==0)
 {
-printf("\n\ntmpds:");
+printf("\n\nvecs:");
 for(int i=0;i<n;++i)
 {
     for(int j=0;j<n;++j)
