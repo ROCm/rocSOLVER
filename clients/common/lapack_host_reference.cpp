@@ -2907,12 +2907,12 @@ void cblas_gesvd(rocblas_svect leftv,
                  rocblas_int ldv,
                  float* work,
                  rocblas_int lwork,
-                 float* E,
+                 float* rwork,
                  rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    sgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, E, &lwork, info);
+    sgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, info);
 }
 
 template <>
@@ -2929,12 +2929,12 @@ void cblas_gesvd(rocblas_svect leftv,
                  rocblas_int ldv,
                  double* work,
                  rocblas_int lwork,
-                 double* E,
+                 double* rwork,
                  rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    dgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, E, &lwork, info);
+    dgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, info);
 }
 
 template <>
@@ -2951,12 +2951,12 @@ void cblas_gesvd(rocblas_svect leftv,
                  rocblas_int ldv,
                  rocblas_float_complex* work,
                  rocblas_int lwork,
-                 float* E,
+                 float* rwork,
                  rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    cgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info);
+    cgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, rwork, info);
 }
 
 template <>
@@ -2973,12 +2973,12 @@ void cblas_gesvd(rocblas_svect leftv,
                  rocblas_int ldv,
                  rocblas_double_complex* work,
                  rocblas_int lwork,
-                 double* E,
+                 double* rwork,
                  rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info);
+    zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, rwork, info);
 }
 
 // gesvdx

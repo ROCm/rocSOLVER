@@ -291,7 +291,7 @@ void gesvdj_getError(const rocblas_handle handle,
 {
     SS atol = (abstol <= 0) ? get_epsilon<SS>() : abstol;
     rocblas_int lwork = 5 * max(m, n);
-    rocblas_int lrwork = 5 * min(m, n);
+    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
     std::vector<T> work(lwork);
     std::vector<SS> rwork(lrwork);
     std::vector<T> A(lda * n * bc);
@@ -315,8 +315,8 @@ void gesvdj_getError(const rocblas_handle handle,
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
-        cblas_gesvd<T>(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
-                       work.data(), lwork, rwork.data(), hinfo[b]);
+        cblas_gesvd<T>(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
+                       hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
 
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gesvdj(STRIDED, handle, left_svect, right_svect, m, n, dA.data(),

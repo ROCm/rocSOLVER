@@ -578,7 +578,7 @@ void cblas_gesvd(rocblas_svect leftv,
                  rocblas_int ldv,
                  T* work,
                  rocblas_int lwork,
-                 W* E,
+                 W* rwork,
                  rocblas_int* info);
 
 template <typename T>
