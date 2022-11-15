@@ -4,6 +4,7 @@
  * ************************************************************************ */
 
 #include "testing_gesvdj.hpp"
+#include "testing_gesvdj_notransv.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -61,7 +62,7 @@ const vector<vector<int>> large_size_range = {{120, 100}, {300, 120}, {100, 120}
 const vector<vector<int>> large_opt_range
     = {{0, 0, 0, 1, 1}, {1, 0, 0, 0, 0}, {0, 1, 0, 0, 1}, {0, 0, 1, 1, 0}};
 
-Arguments gesvdj_setup_arguments(gesvdj_tuple tup)
+Arguments gesvdj_setup_arguments(gesvdj_tuple tup, bool notransv)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> opt = std::get<1>(tup);
@@ -77,7 +78,10 @@ Arguments gesvdj_setup_arguments(gesvdj_tuple tup)
     // leading dimensions
     arg.set<rocblas_int>("lda", m + opt[0] * 10);
     arg.set<rocblas_int>("ldu", m + opt[1] * 10);
-    arg.set<rocblas_int>("ldv", min(m, n) + opt[2] * 10);
+    if(notransv)
+        arg.set<rocblas_int>("ldv", n + opt[2] * 10);
+    else
+        arg.set<rocblas_int>("ldv", min(m, n) + opt[2] * 10);
 
     // vector options
     if(opt[3] == 0)
@@ -110,7 +114,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = gesvdj_setup_arguments(GetParam());
+        Arguments arg = gesvdj_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0
            && arg.peek<char>("left_svect") == 'N' && arg.peek<char>("right_svect") == 'N')
@@ -118,6 +122,27 @@ protected:
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         testing_gesvdj<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class GESVDJ_NOTRANSV : public ::TestWithParam<gesvdj_tuple>
+{
+protected:
+    GESVDJ_NOTRANSV() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = gesvdj_setup_arguments(GetParam(), true);
+
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0
+           && arg.peek<char>("left_svect") == 'N' && arg.peek<char>("right_svect") == 'N')
+            testing_gesvdj_notransv_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_gesvdj_notransv<BATCHED, STRIDED, T>(arg);
     }
 };
 
@@ -139,6 +164,26 @@ TEST_P(GESVDJ, __float_complex)
 }
 
 TEST_P(GESVDJ, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(GESVDJ_NOTRANSV, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GESVDJ_NOTRANSV, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GESVDJ_NOTRANSV, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GESVDJ_NOTRANSV, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -187,11 +232,36 @@ TEST_P(GESVDJ, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
-// daily_lapack tests normal execution with medium to large sizes
+TEST_P(GESVDJ_NOTRANSV, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GESVDJ_NOTRANSV, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GESVDJ_NOTRANSV, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GESVDJ_NOTRANSV, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          GESVDJ,
                          Combine(ValuesIn(large_size_range), ValuesIn(large_opt_range)));
 
-// checkin_lapack tests normal execution with small sizes, invalid sizes,
-// quick returns, and corner cases
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, GESVDJ, Combine(ValuesIn(size_range), ValuesIn(opt_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GESVDJ_NOTRANSV,
+                         Combine(ValuesIn(large_size_range), ValuesIn(large_opt_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GESVDJ_NOTRANSV,
+                         Combine(ValuesIn(size_range), ValuesIn(opt_range)));

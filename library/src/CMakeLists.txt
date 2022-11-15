@@ -108,6 +108,8 @@ set(rocsolver_lapack_source
   lapack/roclapack_gesvdj.cpp
   lapack/roclapack_gesvdj_batched.cpp
   lapack/roclapack_gesvdj_strided_batched.cpp
+  lapack/roclapack_gesvdj_notransv.cpp
+  lapack/roclapack_gesvdj_notransv_strided_batched.cpp
   lapack/roclapack_gesvdx.cpp
   lapack/roclapack_gesvdx_batched.cpp
   lapack/roclapack_gesvdx_strided_batched.cpp
