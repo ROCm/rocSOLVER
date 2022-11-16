@@ -18803,6 +18803,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -18922,6 +18926,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -19040,6 +19048,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
         Z_j^T B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -19171,6 +19183,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -19300,6 +19316,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
         Z_j^T B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -19442,6 +19462,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
         Z_j^H B_j^{-1} Z_j=I & \: \text{if 3rd form.}
         \end{array}
     \f]
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
