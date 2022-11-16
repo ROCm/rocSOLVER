@@ -3,9 +3,6 @@
 # ########################################################################
 
 project(rocsolver-clients LANGUAGES C CXX)
-if(UNIX)
-  enable_language(Fortran)
-endif()
 
 # Specify where to put the client binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
