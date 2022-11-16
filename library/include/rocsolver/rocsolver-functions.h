@@ -11783,6 +11783,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     (resp. LQ factorization to U'A if m < n), where V (resp. U) is found as the
     eigenvectors of A'A (resp. AA') using the Jacobi eigenvalue algorithm.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -11950,6 +11954,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
     (resp. LQ factorization to \f$U_j'A_j\f$ if m < n), where \f$V_j\f$ (resp. \f$U_j\f$) is
     found as the eigenvectors of \f$A_j'A_j\f$ (resp. \f$A_jA_j'\f$) using the Jacobi
     eigenvalue algorithm.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -12153,6 +12161,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
     (resp. LQ factorization to \f$U_j'A_j\f$ if m < n), where \f$V_j\f$ (resp. \f$U_j\f$) is
     found as the eigenvectors of \f$A_j'A_j\f$ (resp. \f$A_jA_j'\f$) using the Jacobi
     eigenvalue algorithm.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
