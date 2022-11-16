@@ -15810,6 +15810,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -15906,6 +15910,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -16001,6 +16009,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     such that \f$off(A_j^{(k)}) < off(A_j^{(k-1)})\f$, where \f$A_j^{(0)} = A_j\f$ and \f$off(A_j^{(k)})\f$ is the
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -16109,6 +16121,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -16216,6 +16232,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -16311,7 +16331,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief CHEVJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
+    \brief HEEVJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
     complex Hermitian matrices A_j.
 
     \details
@@ -16328,6 +16348,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     such that \f$off(A_j^{(k)}) < off(A_j^{(k-1)})\f$, where \f$A_j^{(0)} = A_j\f$ and \f$off(A_j^{(k)})\f$ is the
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
