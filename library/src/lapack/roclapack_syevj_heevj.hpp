@@ -129,18 +129,6 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
     for(i = 0; i < half_n; i++)
         local_res += cosines_res[i];
 
-    // quick return if norm is already small
-    if(local_res <= abstol * abstol)
-    {
-        if(tix == 0 && tiy == 0)
-        {
-            residual[bid] = sqrt(local_res);
-            n_sweeps[bid] = 0;
-            info[bid] = 0;
-        }
-        return;
-    }
-
     // initialize top/bottom pairs
     if(tiy == 0)
     {
