@@ -1438,7 +1438,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         size_t lmemsize = (sizeof(S) + sizeof(T) + 2 * sizeof(rocblas_int)) * half_n;
 
         ROCSOLVER_LAUNCH_KERNEL(syevj_small_kernel<T>, grid, threads, lmemsize, stream, esort,
-                                evect, uplo, n, A, shiftA, lda, strideA, abstol, eps, residual,
+                                evect, uplo, n, A, shiftA, lda, strideA, atol, eps, residual,
                                 max_sweeps, n_sweeps, W, strideW, info, Acpy);
     }
     else
