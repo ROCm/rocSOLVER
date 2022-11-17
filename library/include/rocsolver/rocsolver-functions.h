@@ -15844,7 +15844,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     @param[in]
     abstol      type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
@@ -15944,7 +15944,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     @param[in]
     abstol      real type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
@@ -16044,7 +16044,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     @param[in]
     abstol      type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16155,7 +16155,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     @param[in]
     abstol      real type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16270,7 +16270,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     @param[in]
     abstol      type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16387,7 +16387,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     @param[in]
     abstol      real type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -18843,11 +18843,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
                 Specifies the leading dimension of B.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(T)
+                is <= norm(T) * abstol, where T is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration.
+                The Frobenius norm of the off-diagonal elements of T (i.e. off(T)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -18965,12 +18967,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of B.
     @param[in]
-    abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(T)
+                is <= norm(T) * abstol, where T is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T (i.e. off(T)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19089,11 +19093,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
                 Specifies the leading dimension of B_j.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19222,12 +19228,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of B_j.
     @param[in]
-    abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19365,11 +19373,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19510,12 +19520,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
                 Stride from the start of one matrix B_j to the next one B_(j+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
-    abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= n * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.

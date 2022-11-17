@@ -336,7 +336,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
 
     // Also check validity of residual
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfoRes[b][0] == 0 && (hResidualRes[b][0] < 0 || hResidualRes[b][0] > n * atol))
+        if(hInfoRes[b][0] == 0 && hResidualRes[b][0] < 0)
             *max_err += 1;
 
     // Also check validity of sweeps
