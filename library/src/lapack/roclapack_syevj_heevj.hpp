@@ -455,9 +455,9 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
             local_diag += sh_diag[i];
         }
 
-        norms[bid] = local_res + local_diag;
+        norms[bid] = (local_res + local_diag) * abstol * abstol;
         residual[bid] = local_res;
-        if(local_res < norms[bid] * abstol * abstol)
+        if(local_res < norms[bid])
         {
             completed[bid + 1] = 1;
             atomicAdd(completed, 1);
@@ -1156,7 +1156,6 @@ ROCSOLVER_KERNEL void
 template <typename T, typename S>
 ROCSOLVER_KERNEL void syevj_calc_norm(const rocblas_int n,
                                       const rocblas_int sweeps,
-                                      S abstol,
                                       S* residual,
                                       T* AcpyA,
                                       rocblas_int* completed,
@@ -1193,7 +1192,7 @@ ROCSOLVER_KERNEL void syevj_calc_norm(const rocblas_int n,
             local_res += sh_res[i];
 
         residual[bid] = local_res;
-        if(local_res < norms[bid] * abstol * abstol)
+        if(local_res < norms[bid])
         {
             completed[bid + 1] = sweeps + 1;
             atomicAdd(completed, 1);
@@ -1579,7 +1578,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
             // compute new residual
             h_sweeps++;
             ROCSOLVER_LAUNCH_KERNEL(syevj_calc_norm<T>, grid, threads, lmemsizeInit, stream, n,
-                                    h_sweeps, atol, residual, Acpy, completed, norms);
+                                    h_sweeps, residual, Acpy, completed, norms);
         }
 
         // set outputs and sort eigenvalues & vectors
