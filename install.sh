@@ -538,6 +538,7 @@ fi
 cmake_common_options+=(
   "-DROCM_PATH=${rocm_path}"
   '-DCPACK_SET_DESTDIR=OFF'
+  "-DCMAKE_SKIP_INSTALL_RPATH=TRUE"
   "-DCMAKE_INSTALL_PREFIX=${lib_dir}"
   "-DCPACK_PACKAGING_INSTALL_PREFIX=${install_dir}"
   "-DCMAKE_BUILD_TYPE=${build_type}"
@@ -582,12 +583,7 @@ else
   cmake_common_options+=('-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF')
 fi
 
-rocm_rpath=""
 if [[ "${build_relocatable}" == true ]]; then
-    rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,/opt/rocm/lib:/opt/rocm/lib64"
-    if ! [ -z ${ROCM_RPATH+x} ]; then
-        rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,${ROCM_RPATH}"
-    fi
     cmake_common_options+=('-DROCM_DISABLE_LDCONFIG=ON')
 fi
 
@@ -602,7 +598,7 @@ fi
 # check exit codes for everything from here onwards
 set -eu
 
-${cmake_executable} "${cmake_common_options[@]}" "${cmake_client_options[@]}" -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" "${main}"
+${cmake_executable} "${cmake_common_options[@]}" "${cmake_client_options[@]}" "${main}"
 
 if [[ "${build_library}" == true ]]; then
   ${cmake_executable} --build . -j$(nproc) --target install
