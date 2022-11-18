@@ -59,7 +59,7 @@ Options:
   -s | --static               Pass this flag to build rocsolver as a static library.
                               (rocsolver must be built statically when the used companion rocblas is also static).
 
-  -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
+  -r | --relocatable          Pass this flag to disable creation of ldconfig files in generated packages.
 
   -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
 
