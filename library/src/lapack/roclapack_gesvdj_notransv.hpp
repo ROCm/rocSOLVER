@@ -41,17 +41,19 @@ rocblas_status rocsolver_gesvdj_notransv_argCheck(rocblas_handle handle,
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    if(left_svect != rocblas_svect_singular && left_svect != rocblas_svect_none)
+    if(left_svect != rocblas_svect_all && left_svect != rocblas_svect_singular
+       && left_svect != rocblas_svect_none)
         return rocblas_status_invalid_value;
-    if(right_svect != rocblas_svect_singular && right_svect != rocblas_svect_none)
+    if(right_svect != rocblas_svect_all && right_svect != rocblas_svect_singular
+       && right_svect != rocblas_svect_none)
         return rocblas_status_invalid_value;
 
     // 2. invalid size
     if(n < 0 || m < 0 || lda < m || max_sweeps <= 0 || ldu < 1 || ldv < 1 || batch_count < 0)
         return rocblas_status_invalid_size;
-    if(left_svect == rocblas_svect_singular && ldu < m)
+    if((left_svect == rocblas_svect_all || left_svect == rocblas_svect_singular) && ldu < m)
         return rocblas_status_invalid_size;
-    if(right_svect == rocblas_svect_singular && ldv < n)
+    if((right_svect == rocblas_svect_all || right_svect == rocblas_svect_singular) && ldv < n)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -62,9 +64,11 @@ rocblas_status rocsolver_gesvdj_notransv_argCheck(rocblas_handle handle,
     if((n * m && !A) || (batch_count && !residual) || (batch_count && !n_sweeps)
        || (min(m, n) && !S) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
-    if(left_svect == rocblas_svect_singular && min(m, n) && !U)
+    if((left_svect == rocblas_svect_all && m && !U)
+       || (left_svect == rocblas_svect_singular && min(m, n) && !U))
         return rocblas_status_invalid_pointer;
-    if(right_svect == rocblas_svect_singular && min(m, n) && !V)
+    if((right_svect == rocblas_svect_all && n && !V)
+       || (right_svect == rocblas_svect_singular && min(m, n) && !V))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -102,6 +106,8 @@ void rocsolver_gesvdj_notransv_getMemorySize(const rocblas_svect left_svect,
 
     bool leftv = left_svect != rocblas_svect_none;
     bool rightv = right_svect != rocblas_svect_none;
+    bool left_full = left_svect == rocblas_svect_all;
+    bool right_full = right_svect == rocblas_svect_all;
     size_t a1 = 0, a2 = 0;
     size_t b1 = 0, b2 = 0, b3 = 0;
     size_t c1 = 0, c2 = 0, c3 = 0;
@@ -122,8 +128,8 @@ void rocsolver_gesvdj_notransv_getMemorySize(const rocblas_svect left_svect,
         rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
                                                   &f2);
         if(left_svect != rocblas_svect_none)
-            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, n, n, batch_count, &unused, &b3, &c3,
-                                                            &d3, &f3);
+            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, (left_full ? m : n), n, batch_count,
+                                                            &unused, &b3, &c3, &d3, &f3);
 
         // extra requirements for temporary V & U storage
         if(!rightv)
@@ -141,8 +147,8 @@ void rocsolver_gesvdj_notransv_getMemorySize(const rocblas_svect left_svect,
         rocsolver_geqrf_getMemorySize<BATCHED, T>(n, m, batch_count, size_scalars, &b2, &c2, &d2,
                                                   &f2);
         if(right_svect != rocblas_svect_none)
-            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(n, m, m, batch_count, &unused, &b3, &c3,
-                                                            &d3, &f3);
+            rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(n, (right_full ? n : m), m, batch_count,
+                                                            &unused, &b3, &c3, &d3, &f3);
 
         // extra requirements for temporary U & V storage
         if(!leftv)
@@ -233,6 +239,8 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
 
     bool leftv = left_svect != rocblas_svect_none;
     bool rightv = right_svect != rocblas_svect_none;
+    bool left_full = left_svect == rocblas_svect_all;
+    bool right_full = right_svect == rocblas_svect_all;
     T minone = T(-1);
     T one = T(1);
     T zero = T(0);
@@ -278,8 +286,8 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
 
         if(leftv)
             rocsolver_orgqr_ungqr_template<false, STRIDED, T>(
-                handle, m, n, n, U_gemm, 0, ldu_gemm, strideU_gemm, (T*)work5_ipiv, n, batch_count,
-                scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
+                handle, m, (left_full ? m : n), n, U_gemm, 0, ldu_gemm, strideU_gemm, (T*)work5_ipiv,
+                n, batch_count, scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
     }
     else
     {
@@ -322,8 +330,8 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
 
         if(rightv)
             rocsolver_orgqr_ungqr_template<false, STRIDED, T>(
-                handle, n, m, m, V_gemm, 0, ldv_gemm, strideV_gemm, (T*)work5_ipiv, m, batch_count,
-                scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
+                handle, n, (right_full ? n : m), m, V_gemm, 0, ldv_gemm, strideV_gemm, (T*)work5_ipiv,
+                m, batch_count, scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

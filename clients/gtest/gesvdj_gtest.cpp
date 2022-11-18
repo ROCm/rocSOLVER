@@ -20,10 +20,11 @@ typedef std::tuple<vector<int>, vector<int>> gesvdj_tuple;
 // if ldx = -1 then ldx < limit (invalid size)
 // if ldx = 0 then ldx = limit
 // if ldx = 1 then ldx > limit
-// if leftsv (rightsv) = 0 then compute singular vectors
-// if leftsv (rightsv) = 1 then no singular vectors are computed
+// if leftsv (rightsv) = 0 then no singular vectors are computed
+// if leftsv (rightsv) = 1 then compute singular vectors
+// if leftsv (rightsv) = 2 then compute all orthogonal matrix
 
-// case when m = n = 0 and rightsv = leftsv = 1 will also execute the bad
+// case when m = n = 0 and rightsv = leftsv = 0 will also execute the bad
 // arguments test (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
@@ -50,17 +51,22 @@ const vector<vector<int>> opt_range = {
     {0, -1, 0, 0, 1},
     {0, 0, -1, 1, 0},
     // normal (valid) samples
-    {1, 1, 1, 1, 1},
-    {0, 1, 0, 1, 0},
+    {1, 1, 1, 0, 0},
     {0, 0, 1, 0, 1},
-    {0, 0, 0, 0, 0},
+    {0, 1, 0, 0, 2},
+    {0, 0, 0, 1, 0},
+    {0, 0, 0, 1, 1},
+    {0, 0, 0, 1, 2},
+    {1, 0, 0, 2, 0},
+    {1, 0, 1, 2, 1},
+    {1, 1, 0, 2, 2},
 };
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range = {{120, 100}, {300, 120}, {100, 120}, {120, 300}};
 
 const vector<vector<int>> large_opt_range
-    = {{0, 0, 0, 1, 1}, {1, 0, 0, 0, 0}, {0, 1, 0, 0, 1}, {0, 0, 1, 1, 0}};
+    = {{0, 0, 0, 0, 0}, {1, 0, 0, 1, 1}, {0, 1, 0, 2, 0}, {0, 0, 1, 0, 2}};
 
 Arguments gesvdj_setup_arguments(gesvdj_tuple tup, bool notransv)
 {
@@ -85,14 +91,18 @@ Arguments gesvdj_setup_arguments(gesvdj_tuple tup, bool notransv)
 
     // vector options
     if(opt[3] == 0)
+        arg.set<char>("left_svect", 'N');
+    else if(opt[3] == 1)
         arg.set<char>("left_svect", 'S');
     else
-        arg.set<char>("left_svect", 'N');
+        arg.set<char>("left_svect", 'A');
 
     if(opt[4] == 0)
+        arg.set<char>("right_svect", 'N');
+    else if(opt[4] == 1)
         arg.set<char>("right_svect", 'S');
     else
-        arg.set<char>("right_svect", 'N');
+        arg.set<char>("right_svect", 'A');
 
     arg.set<double>("abstol", 0);
     arg.set<rocblas_int>("max_sweeps", 100);

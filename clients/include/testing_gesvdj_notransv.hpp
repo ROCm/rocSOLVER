@@ -303,7 +303,6 @@ void gesvdj_notransv_getError(const rocblas_handle handle,
                               double* max_err,
                               double* max_errv)
 {
-    SS atol = (abstol <= 0) ? get_epsilon<SS>() : abstol;
     rocblas_int lwork = 5 * max(m, n);
     rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
     std::vector<T> work(lwork);
@@ -345,9 +344,9 @@ void gesvdj_notransv_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hSres.transfer_from(dS));
     CHECK_HIP_ERROR(hinfoRes.transfer_from(dinfo));
 
-    if(left_svect == rocblas_svect_singular)
+    if(left_svect == rocblas_svect_singular || left_svect == rocblas_svect_all)
         CHECK_HIP_ERROR(Ures.transfer_from(dU));
-    if(right_svect == rocblas_svect_singular)
+    if(right_svect == rocblas_svect_singular || right_svect == rocblas_svect_all)
         CHECK_HIP_ERROR(Vres.transfer_from(dV));
 
     // Check info for non-convergence
@@ -525,8 +524,10 @@ void testing_gesvdj_notransv(Arguments& argus)
     rocblas_int ldv = argus.get<rocblas_int>("ldv", n);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stS = argus.get<rocblas_stride>("strideS", min(m, n));
-    rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * min(m, n));
-    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * min(m, n));
+    rocblas_stride stU
+        = argus.get<rocblas_stride>("strideU", (leftvC == 'A' ? ldu * m : ldu * min(m, n)));
+    rocblas_stride stV
+        = argus.get<rocblas_stride>("strideV", (rightvC == 'A' ? ldv * n : ldv * min(m, n)));
 
     S abstol = S(argus.get<double>("abstol", 0));
     rocblas_int max_sweeps = argus.get<rocblas_int>("max_sweeps", 100);
@@ -537,8 +538,9 @@ void testing_gesvdj_notransv(Arguments& argus)
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
-    if((rightv != rocblas_svect_none && rightv != rocblas_svect_singular)
-       || (leftv != rocblas_svect_none && leftv != rocblas_svect_singular))
+    if((rightv != rocblas_svect_none && rightv != rocblas_svect_singular && rightv != rocblas_svect_all)
+       || (leftv != rocblas_svect_none && leftv != rocblas_svect_singular
+           && leftv != rocblas_svect_all))
     {
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(
@@ -602,17 +604,16 @@ void testing_gesvdj_notransv(Arguments& argus)
     size_t size_VT = 0;
     size_t size_A = size_t(lda) * n;
     size_t size_S = size_t(min(m, n));
-    size_t size_V = size_t(ldv) * min(m, n);
-    size_t size_U = size_t(ldu) * min(m, n);
+    size_t size_U = (leftvC == 'A' ? size_t(ldu) * m : size_t(ldu) * min(m, n));
+    size_t size_V = (rightvC == 'A' ? size_t(ldv) * n : size_t(ldv) * min(m, n));
     if(argus.unit_check || argus.norm_check)
     {
-        size_VT = size_t(ldvT) * min(mT, nT);
-        size_UT = size_t(lduT) * min(mT, nT);
         size_Sres = size_S;
         if(svects)
         {
             if(leftv == rocblas_svect_none)
             {
+                size_UT = size_t(lduT) * min(mT, nT);
                 size_Ures = size_UT;
                 ldures = lduT;
             }
@@ -624,6 +625,7 @@ void testing_gesvdj_notransv(Arguments& argus)
 
             if(rightv == rocblas_svect_none)
             {
+                size_VT = size_t(ldvT) * min(mT, nT);
                 size_Vres = size_VT;
                 ldvres = ldvT;
             }
@@ -643,8 +645,8 @@ void testing_gesvdj_notransv(Arguments& argus)
 
     // check invalid sizes
     bool invalid_size = (n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || bc < 0)
-        || (leftv == rocblas_svect_singular && ldu < m)
-        || (rightv == rocblas_svect_singular && ldv < n);
+        || ((leftv == rocblas_svect_all || leftv == rocblas_svect_singular) && ldu < m)
+        || ((rightv == rocblas_svect_all || rightv == rocblas_svect_singular) && ldv < n);
 
     if(invalid_size)
     {

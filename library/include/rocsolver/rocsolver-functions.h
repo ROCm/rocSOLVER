@@ -11774,6 +11774,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     left_svect and right_svect are #rocblas_svect enums that can take the
     following values:
 
+    - rocblas_svect_all: the entire matrix U (or V') is computed,
     - rocblas_svect_singular: the singular vectors (first min(m,n)
       columns of U or rows of V') are computed, or
     - rocblas_svect_none: no columns (or rows) of U (or V') are computed, i.e.
@@ -11792,11 +11793,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     @param[in]
     left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
-                rocblas_svect_all and rocblas_svect_overwrite are not supported.
+                rocblas_svect_overwrite is not supported.
     @param[in]
     right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
-                rocblas_svect_all and rocblas_svect_overwrite are not supported.
+                rocblas_svect_overwrite is not supported.
     @param[in]
     m           rocblas_int. m >= 0.\n
                 The number of rows of matrix A.
@@ -11829,18 +11830,20 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     S           pointer to real type. Array on the GPU of dimension min(m,n). \n
                 The singular values of A in decreasing order.
     @param[out]
-    U           pointer to type. Array on the GPU of dimension ldu*min(m,n).\n
+    U           pointer to type. Array on the GPU of dimension ldu*min(m,n) if
+                left_svect is set to singular, or ldu*m when left_svect is equal to all.\n
                 The matrix of left singular vectors stored as columns. Not
                 referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is set to singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
                 The leading dimension of U.
     @param[out]
     V           pointer to type. Array on the GPU of dimension ldv*n. \n
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
-    ldv         rocblas_int. ldv >= min(m,n) if right_svect is set to singular; ldv >= 1 otherwise.\n
+    ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
+                set to singular; or ldv >= 1 otherwise.\n
                 The leading dimension of V.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
@@ -11945,6 +11948,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
     left_svect and right_svect are #rocblas_svect enums that can take the
     following values:
 
+    - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
     - rocblas_svect_singular: the singular vectors (first min(m,n)
       columns of \f$U_j\f$ or rows of \f$V_j'\f$) are computed, or
     - rocblas_svect_none: no columns (or rows) of \f$U_j\f$ (or \f$V_j'\f$) are computed,
@@ -11964,11 +11968,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
     @param[in]
     left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
-                rocblas_svect_all and rocblas_svect_overwrite are not supported.
+                rocblas_svect_overwrite is not supported.
     @param[in]
     right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
-                rocblas_svect_all and rocblas_svect_overwrite are not supported.
+                rocblas_svect_overwrite is not supported.
     @param[in]
     m           rocblas_int. m >= 0.\n
                 The number of rows of all matrices A_j in the batch.
@@ -12011,19 +12015,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
                 The matrices U_j of left singular vectors stored as columns.
                 Not referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is set to singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
                 The leading dimension of U_j.
     @param[in]
     strideU     rocblas_stride.\n
                 Stride from the start of one matrix U_j to the next one U_(j+1).
                 There is no restriction for the value of strideU.
-                Normal use case is strideU >= ldu*min(m,n).
+                Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
+                or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
     V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
                 The matrices V_j of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
-    ldv         rocblas_int. ldv >= min(m,n) if right_svect is set to singular; ldv >= 1 otherwise.\n
+    ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
+                set to singular; or ldv >= 1 otherwise.\n
                 The leading dimension of V.
     @param[in]
     strideV     rocblas_stride.\n
@@ -12152,6 +12158,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
     left_svect and right_svect are #rocblas_svect enums that can take the
     following values:
 
+    - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
     - rocblas_svect_singular: the singular vectors (first min(m,n)
       columns of \f$U_j\f$ or rows of \f$V_j'\f$) are computed, or
     - rocblas_svect_none: no columns (or rows) of \f$U_j\f$ (or \f$V_j'\f$) are computed,
@@ -12171,11 +12178,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
     @param[in]
     left_svect  #rocblas_svect.\n
                 Specifies how the left singular vectors are computed.
-                rocblas_svect_all and rocblas_svect_overwrite are not supported.
+                rocblas_svect_overwrite is not supported.
     @param[in]
     right_svect #rocblas_svect.\n
                 Specifies how the right singular vectors are computed.
-                rocblas_svect_all and rocblas_svect_overwrite are not supported.
+                rocblas_svect_overwrite is not supported.
     @param[in]
     m           rocblas_int. m >= 0.\n
                 The number of rows of all matrices A_j in the batch.
@@ -12222,19 +12229,21 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
                 The matrices U_j of left singular vectors stored as columns.
                 Not referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is set to singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
                 The leading dimension of U_j.
     @param[in]
     strideU     rocblas_stride.\n
                 Stride from the start of one matrix U_j to the next one U_(j+1).
                 There is no restriction for the value of strideU.
-                Normal use case is strideU >= ldu*min(m,n).
+                Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
+                or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
     V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
                 The matrices V_j of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
-    ldv         rocblas_int. ldv >= min(m,n) if right_svect is set to singular; ldv >= 1 otherwise.\n
+    ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
+                set to singular; or ldv >= 1 otherwise.\n
                 The leading dimension of V.
     @param[in]
     strideV     rocblas_stride.\n
