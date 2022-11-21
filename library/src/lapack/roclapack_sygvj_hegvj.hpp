@@ -29,7 +29,6 @@ void rocsolver_sygvj_hegvj_getMemorySize(const rocblas_eform itype,
                                          size_t* size_work4,
                                          size_t* size_work5,
                                          size_t* size_work6,
-                                         size_t* size_work7,
                                          size_t* size_iinfo,
                                          bool* optim_mem)
 {
@@ -43,7 +42,6 @@ void rocsolver_sygvj_hegvj_getMemorySize(const rocblas_eform itype,
         *size_work4 = 0;
         *size_work5 = 0;
         *size_work6 = 0;
-        *size_work7 = 0;
         *size_iinfo = 0;
         *optim_mem = true;
         return;
@@ -67,8 +65,8 @@ void rocsolver_sygvj_hegvj_getMemorySize(const rocblas_eform itype,
     *size_work4 = max(*size_work4, temp4);
 
     // requirements for calling SYEVJ/HEEVJ
-    rocsolver_syevj_heevj_getMemorySize<BATCHED, T, S>(
-        evect, uplo, n, batch_count, &temp1, &temp2, &temp3, &temp4, &temp5, size_work6, size_work7);
+    rocsolver_syevj_heevj_getMemorySize<BATCHED, T, S>(evect, uplo, n, batch_count, &temp1, &temp2,
+                                                       &temp3, &temp4, &temp5, size_work6);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -176,7 +174,6 @@ rocblas_status rocsolver_sygvj_hegvj_template(rocblas_handle handle,
                                               void* work4,
                                               void* work5,
                                               void* work6,
-                                              void* work7,
                                               rocblas_int* iinfo,
                                               bool optim_mem)
 {
@@ -232,8 +229,8 @@ rocblas_status rocsolver_sygvj_hegvj_template(rocblas_handle handle,
 
     rocsolver_syevj_heevj_template<BATCHED, STRIDED, T>(
         handle, rocblas_esort_ascending, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual,
-        max_sweeps, n_sweeps, W, strideW, iinfo, batch_count, (T*)work1, (S*)work2, (T*)work3,
-        (rocblas_int*)work4, (rocblas_int*)work5, (rocblas_int*)work6, (S*)work7);
+        max_sweeps, n_sweeps, W, strideW, iinfo, batch_count, (T*)work1, (T*)work2, (S*)work3,
+        (rocblas_int*)work4, (rocblas_int*)work5, (rocblas_int*)work6);
 
     // combine info from POTRF with info from SYEV/HEEV
     ROCSOLVER_LAUNCH_KERNEL(sygv_update_info, gridReset, threadsReset, 0, stream, info, iinfo, n,

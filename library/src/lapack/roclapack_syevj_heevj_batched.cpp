@@ -43,38 +43,36 @@ rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size of temporary workspace
-    size_t size_Acpy, size_cosines, size_sines, size_top, size_bottom, size_completed, size_norms;
+    size_t size_Acpy, size_J, size_norms, size_top, size_bottom, size_completed;
 
     rocsolver_syevj_heevj_getMemorySize<true, T, S>(evect, uplo, n, batch_count, &size_Acpy,
-                                                    &size_cosines, &size_sines, &size_top,
-                                                    &size_bottom, &size_completed, &size_norms);
+                                                    &size_J, &size_norms, &size_top, &size_bottom,
+                                                    &size_completed);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_Acpy, size_cosines, size_sines,
-                                                      size_top, size_bottom, size_completed,
-                                                      size_norms);
+        return rocblas_set_optimal_device_memory_size(handle, size_Acpy, size_J, size_norms,
+                                                      size_top, size_bottom, size_completed);
 
     // memory workspace allocation
-    void *Acpy, *cosines, *sines, *top, *bottom, *completed, *norms;
-    rocblas_device_malloc mem(handle, size_Acpy, size_cosines, size_sines, size_top, size_bottom,
+    void *Acpy, *J, *norms, *top, *bottom, *completed;
+    rocblas_device_malloc mem(handle, size_Acpy, size_J, size_norms, size_top, size_bottom,
                               size_completed, size_norms);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     Acpy = mem[0];
-    cosines = mem[1];
-    sines = mem[2];
+    J = mem[1];
+    norms = mem[2];
     top = mem[3];
     bottom = mem[4];
     completed = mem[5];
-    norms = mem[6];
 
     // execution
     return rocsolver_syevj_heevj_template<true, false, T>(
         handle, esort, evect, uplo, n, A, shiftA, lda, strideA, abstol, residual, max_sweeps,
-        n_sweeps, W, strideW, info, batch_count, (T*)Acpy, (S*)cosines, (T*)sines,
-        (rocblas_int*)top, (rocblas_int*)bottom, (rocblas_int*)completed, (S*)norms);
+        n_sweeps, W, strideW, info, batch_count, (T*)Acpy, (T*)J, (S*)norms, (rocblas_int*)top,
+        (rocblas_int*)bottom, (rocblas_int*)completed);
 }
 
 /*
