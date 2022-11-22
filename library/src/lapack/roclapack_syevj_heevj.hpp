@@ -298,7 +298,7 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
         else
         {
             n_sweeps[bid] = max_sweeps;
-            info[bid] = 0;
+            info[bid] = 1;
         }
     }
 
