@@ -273,9 +273,8 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
 
             // form B = U' U
             T one = T(1);
-            cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper,
-                          rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, n,
-                          one, U[b], ldu, hB[b], ldb);
+            cpu_trmm(rocblas_side_left, rocblas_fill_upper, rocblas_operation_conjugate_transpose,
+                     rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hB[b], ldb);
 
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
@@ -297,20 +296,19 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
             if(itype == rocblas_eform_ax)
             {
                 // form A = U' M U
-                cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper,
-                              rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
-                              n, one, U[b], ldu, hA[b], lda);
-                cblas_trmm<T>(rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
-                              rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
+                cpu_trmm(rocblas_side_left, rocblas_fill_upper, rocblas_operation_conjugate_transpose,
+                         rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
+                cpu_trmm(rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
             }
             else
             {
                 // form A = inv(U) M inv(U')
-                cblas_trsm<T>(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
-                              rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
-                cblas_trsm<T>(rocblas_side_right, rocblas_fill_upper,
-                              rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
-                              n, one, U[b], ldu, hA[b], lda);
+                cpu_trsm(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
+                cpu_trsm(rocblas_side_right, rocblas_fill_upper,
+                         rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, n,
+                         one, U[b], ldu, hA[b], lda);
             }
 
             // store A and B for testing purposes
@@ -424,9 +422,9 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_sygvx_hegvx<T>(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu,
-                             atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(),
-                             iwork.data(), hIfail[b], hInfo[b]);
+        cpu_sygvx_hegvx<T>(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu,
+                           atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(),
+                           iwork.data(), hIfail[b], hInfo[b]);
     }
 
     // (We expect the used input matrices to always converge. Testing
@@ -481,8 +479,8 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
 
                 // hZRes contains eigenvectors x
                 // compute B*x (or A*x) and store in hB
-                cblas_symm_hemm<T>(rocblas_side_left, uplo, n, hNev[b][0], alpha, B[b], ldb,
-                                   hZRes[b], ldz, beta, hB[b], ldb);
+                cpu_symm_hemm<T>(rocblas_side_left, uplo, n, hNev[b][0], alpha, B[b], ldb, hZRes[b],
+                                 ldz, beta, hB[b], ldb);
 
                 if(itype == rocblas_eform_ax)
                 {
@@ -492,8 +490,8 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                     for(int j = 0; j < hNev[b][0]; j++)
                     {
                         alpha = T(1) / hWRes[b][j];
-                        cblas_symv_hemv(uplo, n, alpha, A[b], lda, hZRes[b] + j * ldz, 1, beta,
-                                        hA[b] + j * lda, 1);
+                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hZRes[b] + j * ldz, 1, beta,
+                                      hA[b] + j * lda, 1);
                     }
 
                     // move B*x into hZRes
@@ -509,8 +507,8 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                     for(int j = 0; j < hNev[b][0]; j++)
                     {
                         alpha = T(1) / hWRes[b][j];
-                        cblas_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + j * ldb, 1, beta,
-                                        hA[b] + j * lda, 1);
+                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + j * ldb, 1, beta,
+                                      hA[b] + j * lda, 1);
                     }
                 }
 
@@ -601,9 +599,9 @@ void sygvx_hegvx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_sygvx_hegvx<T>(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il,
-                                 iu, atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork,
-                                 rwork.data(), iwork.data(), hIfail[b], hInfo[b]);
+            cpu_sygvx_hegvx<T>(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il,
+                               iu, atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork,
+                               rwork.data(), iwork.data(), hIfail[b], hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

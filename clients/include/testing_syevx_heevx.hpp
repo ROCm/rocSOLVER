@@ -302,9 +302,9 @@ void syevx_heevx_getError(const rocblas_handle handle,
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
     S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
     for(rocblas_int b = 0; b < bc; ++b)
-        cblas_syevx_heevx<T>(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b],
-                             hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(),
-                             hIfail[b], hinfo[b]);
+        cpu_syevx_heevx<T>(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b], hW[b],
+                           hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(), hIfail[b],
+                           hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
@@ -357,8 +357,8 @@ void syevx_heevx_getError(const rocblas_handle handle,
                 for(int j = 0; j < hNev[b][0]; j++)
                 {
                     alpha = T(1) / hWRes[b][j];
-                    cblas_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hZRes[b] + j * ldz,
-                                    1, beta, hZ[b] + j * ldz, 1);
+                    cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hZRes[b] + j * ldz,
+                                  1, beta, hZ[b] + j * ldz, 1);
                 }
 
                 // error is ||hZ - hZRes|| / ||hZ||
@@ -439,9 +439,9 @@ void syevx_heevx_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
-            cblas_syevx_heevx<T>(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b],
-                                 hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(),
-                                 hIfail[b], hinfo[b]);
+            cpu_syevx_heevx<T>(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b],
+                               hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(),
+                               hIfail[b], hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

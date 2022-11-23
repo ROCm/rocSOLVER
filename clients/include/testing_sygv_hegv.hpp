@@ -292,8 +292,8 @@ void sygv_hegv_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_sygv_hegv<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
-                           rwork.data(), hInfo[b]);
+        cpu_sygv_hegv<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(), lwork,
+                         rwork.data(), hInfo[b]);
     }
 
     // (We expect the used input matrices to always converge. Testing
@@ -334,8 +334,8 @@ void sygv_hegv_getError(const rocblas_handle handle,
 
                 // hARes contains eigenvectors x
                 // compute B*x (or A*x) and store in hB
-                cblas_symm_hemm<T>(rocblas_side_left, uplo, n, n, alpha, B[b], ldb, hARes[b], lda,
-                                   beta, hB[b], ldb);
+                cpu_symm_hemm<T>(rocblas_side_left, uplo, n, n, alpha, B[b], ldb, hARes[b], lda,
+                                 beta, hB[b], ldb);
 
                 if(itype == rocblas_eform_ax)
                 {
@@ -345,8 +345,8 @@ void sygv_hegv_getError(const rocblas_handle handle,
                     for(int j = 0; j < n; j++)
                     {
                         alpha = T(1) / hDRes[b][j];
-                        cblas_symv_hemv(uplo, n, alpha, A[b], lda, hARes[b] + j * lda, 1, beta,
-                                        hA[b] + j * lda, 1);
+                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hARes[b] + j * lda, 1, beta,
+                                      hA[b] + j * lda, 1);
                     }
 
                     // move B*x into hARes
@@ -362,8 +362,8 @@ void sygv_hegv_getError(const rocblas_handle handle,
                     for(int j = 0; j < n; j++)
                     {
                         alpha = T(1) / hDRes[b][j];
-                        cblas_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + j * ldb, 1, beta,
-                                        hA[b] + j * lda, 1);
+                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + j * ldb, 1, beta,
+                                      hA[b] + j * lda, 1);
                     }
                 }
 
@@ -425,8 +425,8 @@ void sygv_hegv_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_sygv_hegv<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
-                               lwork, rwork.data(), hInfo[b]);
+            cpu_sygv_hegv<T>(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hD[b], work.data(),
+                             lwork, rwork.data(), hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

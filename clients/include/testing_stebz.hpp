@@ -199,8 +199,8 @@ void stebz_getError(const rocblas_handle handle,
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
     double atol = (abstol == 0) ? 2 * get_safemin<T>() : abstol;
-    cblas_stebz<T>(erange, eorder, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0],
-                   hW[0], hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
+    cpu_stebz(erange, eorder, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0], hW[0],
+              hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
 
     // check info
     if(hinfo[0][0] != hinfoRes[0][0])
@@ -286,8 +286,8 @@ void stebz_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_stebz<T>(erange, eorder, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0],
-                       hW[0], hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
+        cpu_stebz(erange, eorder, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0], hnsplit[0], hW[0],
+                  hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

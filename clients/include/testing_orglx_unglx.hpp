@@ -92,7 +92,7 @@ void orglx_unglx_initData(const rocblas_handle handle,
         }
 
         // compute LQ factorization
-        cblas_gelqf<T>(m, n, hA[0], lda, hIpiv[0], hW.data(), size_W);
+        cpu_gelqf(m, n, hA[0], lda, hIpiv[0], hW.data(), size_W);
     }
 
     if(GPU)
@@ -128,8 +128,8 @@ void orglx_unglx_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    GLQ ? cblas_orglq_unglq<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
-        : cblas_orgl2_ungl2<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data());
+    GLQ ? cpu_orglq_unglq<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
+        : cpu_orgl2_ungl2<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data());
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -164,8 +164,8 @@ void orglx_unglx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        GLQ ? cblas_orglq_unglq<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
-            : cblas_orgl2_ungl2<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data());
+        GLQ ? cpu_orglq_unglq<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
+            : cpu_orgl2_ungl2<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data());
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

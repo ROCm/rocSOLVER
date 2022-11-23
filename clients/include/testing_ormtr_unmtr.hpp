@@ -138,7 +138,7 @@ void ormtr_unmtr_initData(const rocblas_handle handle,
         }
 
         // compute sytrd/hetrd
-        cblas_sytrd_hetrd<T>(uplo, nq, hA[0], lda, D.data(), E.data(), hIpiv[0], hW.data(), size_W);
+        cpu_sytrd_hetrd<T>(uplo, nq, hA[0], lda, D.data(), E.data(), hIpiv[0], hW.data(), size_W);
     }
 
     if(GPU)
@@ -182,8 +182,7 @@ void ormtr_unmtr_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hCr.transfer_from(dC));
 
     // CPU lapack
-    cblas_ormtr_unmtr<T>(side, uplo, trans, m, n, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(),
-                         size_W);
+    cpu_ormtr_unmtr<T>(side, uplo, trans, m, n, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(), size_W);
 
     // error is ||hC - hCr|| / ||hC||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -224,8 +223,8 @@ void ormtr_unmtr_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_ormtr_unmtr<T>(side, uplo, trans, m, n, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(),
-                             size_W);
+        cpu_ormtr_unmtr<T>(side, uplo, trans, m, n, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(),
+                           size_W);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

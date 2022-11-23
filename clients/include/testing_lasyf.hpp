@@ -186,7 +186,7 @@ void lasyf_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    cblas_lasyf(uplo, n, nb, hKB[0], hA[0], lda, hIpiv[0], work.data(), ldw, hInfo[0]);
+    cpu_lasyf(uplo, n, nb, hKB[0], hA[0], lda, hIpiv[0], work.data(), ldw, hInfo[0]);
 
     // error is ||hA - hARes|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY
@@ -257,7 +257,7 @@ void lasyf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance
         *cpu_time_used = get_time_us_no_sync();
-        cblas_lasyf(uplo, n, nb, hKB[0], hA[0], lda, hIpiv[0], work.data(), ldw, hInfo[0]);
+        cpu_lasyf(uplo, n, nb, hKB[0], hA[0], lda, hIpiv[0], work.data(), ldw, hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

@@ -197,15 +197,15 @@ void bdsvdx_getError(const rocblas_handle handle,
     rocblas_int ioffset = 0;
     if(srange == rocblas_srange_index)
     {
-        cblas_bdsvdx<T>(uplo, rocblas_svect_none, rocblas_srange_all, n, hD[0], hE[0], vl, vu, il,
-                        iu, hNsv[0], hS[0], hZ[0], ldz, work.data(), iwork.data(), hInfo[0]);
+        cpu_bdsvdx(uplo, rocblas_svect_none, rocblas_srange_all, n, hD[0], hE[0], vl, vu, il, iu,
+                   hNsv[0], hS[0], hZ[0], ldz, work.data(), iwork.data(), hInfo[0]);
         ioffset = il - 1;
         hNsv[0][0] = iu - il + 1;
     }
     else
     {
-        cblas_bdsvdx<T>(uplo, rocblas_svect_none, srange, n, hD[0], hE[0], vl, vu, il, iu, hNsv[0],
-                        hS[0], hZ[0], ldz, work.data(), iwork.data(), hInfo[0]);
+        cpu_bdsvdx(uplo, rocblas_svect_none, srange, n, hD[0], hE[0], vl, vu, il, iu, hNsv[0],
+                   hS[0], hZ[0], ldz, work.data(), iwork.data(), hInfo[0]);
     }
 
     // check info
@@ -253,8 +253,8 @@ void bdsvdx_getError(const rocblas_handle handle,
             // check singular vectors implicitly (B*v_k = s_k*u_k)
             for(rocblas_int k = 0; k < nn; ++k)
             {
-                cblas_gemv<T>(rocblas_operation_none, n, n, 1.0, B.data(), n,
-                              hZRes[0] + n + k * ldz, 1, -hSRes[0][k], hZRes[0] + k * ldz, 1);
+                cpu_gemv(rocblas_operation_none, n, n, 1.0, B.data(), n, hZRes[0] + n + k * ldz, 1,
+                         -hSRes[0][k], hZRes[0] + k * ldz, 1);
             }
             err = double(snorm('F', n, nn, hZRes[0], ldz)) / double(snorm('F', n, n, B.data(), n));
             *max_err = err > *max_err ? err : *max_err;
@@ -325,8 +325,8 @@ void bdsvdx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_bdsvdx<T>(uplo, svect, srange, n, hD[0], hE[0], vl, vu, il, iu, hNsv[0], hS[0], hZ[0],
-                        ldz, work.data(), iwork.data(), hInfo[0]);
+        cpu_bdsvdx(uplo, svect, srange, n, hD[0], hE[0], vl, vu, il, iu, hNsv[0], hS[0], hZ[0], ldz,
+                   work.data(), iwork.data(), hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
