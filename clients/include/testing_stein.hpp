@@ -149,8 +149,9 @@ void stein_initData(const rocblas_handle handle,
         S il = n - nev + 1;
         S iu = n;
         S abstol = 2 * get_safemin<S>();
-        cpu_stebz(rocblas_erange_index, rocblas_eorder_blocks, n, 0, 0, il, iu, abstol, hD[0], hE[0],
-                  hNev[0], &nsplit, hW[0], hIblock[0], hIsplit[0], work.data(), iwork.data(), &info);
+        cpu_stebz(rocblas_erange_index, rocblas_eorder_blocks, n, S(0), S(0), il, iu, abstol, hD[0],
+                  hE[0], hNev[0], &nsplit, hW[0], hIblock[0], hIsplit[0], work.data(), iwork.data(),
+                  &info);
     }
 
     if(GPU)

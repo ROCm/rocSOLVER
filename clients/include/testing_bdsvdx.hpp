@@ -253,7 +253,7 @@ void bdsvdx_getError(const rocblas_handle handle,
             // check singular vectors implicitly (B*v_k = s_k*u_k)
             for(rocblas_int k = 0; k < nn; ++k)
             {
-                cpu_gemv(rocblas_operation_none, n, n, 1.0, B.data(), n, hZRes[0] + n + k * ldz, 1,
+                cpu_gemv(rocblas_operation_none, n, n, T(1), B.data(), n, hZRes[0] + n + k * ldz, 1,
                          -hSRes[0][k], hZRes[0] + k * ldz, 1);
             }
             err = double(snorm('F', n, nn, hZRes[0], ldz)) / double(snorm('F', n, n, B.data(), n));
