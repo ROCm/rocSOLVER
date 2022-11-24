@@ -584,22 +584,22 @@ ROCSOLVER_KERNEL void syevj_diag_kernel(const rocblas_int n,
             s1 = sh_sines[tix];
             s2 = conj(s1);
 
-            // store J
+            // store J row-wise
             if(J)
             {
                 xx1 = i - offset;
                 xx2 = j - offset;
-                temp1 = J[yy1 + xx1 * nb_max];
-                temp2 = J[yy1 + xx2 * nb_max];
-                J[yy1 + xx1 * nb_max] = c * temp1 + s2 * temp2;
-                J[yy1 + xx2 * nb_max] = -s1 * temp1 + c * temp2;
+                temp1 = J[xx1 + yy1 * nb_max];
+                temp2 = J[xx2 + yy1 * nb_max];
+                J[xx1 + yy1 * nb_max] = c * temp1 + s2 * temp2;
+                J[xx2 + yy1 * nb_max] = -s1 * temp1 + c * temp2;
 
                 if(y2 < n)
                 {
-                    temp1 = J[yy2 + xx1 * nb_max];
-                    temp2 = J[yy2 + xx2 * nb_max];
-                    J[yy2 + xx1 * nb_max] = c * temp1 + s2 * temp2;
-                    J[yy2 + xx2 * nb_max] = -s1 * temp1 + c * temp2;
+                    temp1 = J[xx1 + yy2 * nb_max];
+                    temp2 = J[xx2 + yy2 * nb_max];
+                    J[xx1 + yy2 * nb_max] = c * temp1 + s2 * temp2;
+                    J[xx2 + yy2 * nb_max] = -s1 * temp1 + c * temp2;
                 }
             }
 
@@ -715,7 +715,7 @@ ROCSOLVER_KERNEL void syevj_diag_rotate(const bool skip_block,
     {
         temp = 0;
         for(k = 0; k < nb; k++)
-            temp += J[k + tix * nb_max] * A[y + (k + offsetx) * lda];
+            temp += J[tix + k * nb_max] * A[y + (k + offsetx) * lda];
         __syncthreads();
         A[y + x * lda] = temp;
     }
@@ -723,7 +723,7 @@ ROCSOLVER_KERNEL void syevj_diag_rotate(const bool skip_block,
     {
         temp = 0;
         for(k = 0; k < nb; k++)
-            temp += conj(J[k + tix * nb_max]) * A[(k + offsetx) + y * lda];
+            temp += conj(J[tix + k * nb_max]) * A[(k + offsetx) + y * lda];
         __syncthreads();
         A[x + y * lda] = temp;
     }
@@ -843,22 +843,22 @@ ROCSOLVER_KERNEL void syevj_offd_kernel(const rocblas_int blocks,
             s1 = sh_sines[tix];
             s2 = conj(s1);
 
-            // store J
+            // store J row-wise
             if(J)
             {
                 xx1 = i - offseti;
                 xx2 = j - offsetj + nb_max;
-                temp1 = J[yy1 + xx1 * ldj];
-                temp2 = J[yy1 + xx2 * ldj];
-                J[yy1 + xx1 * ldj] = c * temp1 + s2 * temp2;
-                J[yy1 + xx2 * ldj] = -s1 * temp1 + c * temp2;
+                temp1 = J[xx1 + yy1 * ldj];
+                temp2 = J[xx2 + yy1 * ldj];
+                J[xx1 + yy1 * ldj] = c * temp1 + s2 * temp2;
+                J[xx2 + yy1 * ldj] = -s1 * temp1 + c * temp2;
 
                 if(y2 < n)
                 {
-                    temp1 = J[yy2 + xx1 * ldj];
-                    temp2 = J[yy2 + xx2 * ldj];
-                    J[yy2 + xx1 * ldj] = c * temp1 + s2 * temp2;
-                    J[yy2 + xx2 * ldj] = -s1 * temp1 + c * temp2;
+                    temp1 = J[xx1 + yy2 * ldj];
+                    temp2 = J[xx2 + yy2 * ldj];
+                    J[xx1 + yy2 * ldj] = c * temp1 + s2 * temp2;
+                    J[xx2 + yy2 * ldj] = -s1 * temp1 + c * temp2;
                 }
             }
 
@@ -968,9 +968,9 @@ ROCSOLVER_KERNEL void syevj_offd_rotate(const bool skip_block,
     {
         temp = 0;
         for(k = 0; k < nb_max; k++)
-            temp += J[k + tix * ldj] * A[y + (k + offseti) * lda];
+            temp += J[tix + k * ldj] * A[y + (k + offseti) * lda];
         for(k = 0; k < nb; k++)
-            temp += J[(k + nb_max) + tix * ldj] * A[y + (k + offsetj) * lda];
+            temp += J[tix + (k + nb_max) * ldj] * A[y + (k + offsetj) * lda];
         __syncthreads();
         A[y + x * lda] = temp;
     }
@@ -978,9 +978,9 @@ ROCSOLVER_KERNEL void syevj_offd_rotate(const bool skip_block,
     {
         temp = 0;
         for(k = 0; k < nb_max; k++)
-            temp += conj(J[k + tix * ldj]) * A[(k + offseti) + y * lda];
+            temp += conj(J[tix + k * ldj]) * A[(k + offseti) + y * lda];
         for(k = 0; k < nb; k++)
-            temp += conj(J[(k + nb_max) + tix * ldj]) * A[(k + offsetj) + y * lda];
+            temp += conj(J[tix + (k + nb_max) * ldj]) * A[(k + offsetj) + y * lda];
         __syncthreads();
         A[x + y * lda] = temp;
     }
