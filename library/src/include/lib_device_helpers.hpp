@@ -37,18 +37,6 @@ __device__ S aabs(T val)
     return asum(val);
 }
 
-template <typename S, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-__device__ S roc_hypot(T x, T y)
-{
-    return std::hypot(x, y);
-}
-
-template <typename S, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-__device__ S roc_hypot(T x, T y)
-{
-    return std::hypot(std::abs(x), std::abs(y));
-}
-
 template <typename T>
 __device__ __forceinline__ void swap(T& a, T& b)
 {

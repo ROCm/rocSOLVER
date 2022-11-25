@@ -173,7 +173,7 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
                 {
                     g = 2 * mag;
                     f = std::real(Acpy[j + j * n] - Acpy[i + i * n]);
-                    f += (f < 0) ? -roc_hypot<S>(f, g) : roc_hypot<S>(f, g);
+                    f += (f < 0) ? -std::hypot(f, g) : std::hypot(f, g);
                     lartg(f, g, c, s, r);
                     s1 = s * aij / mag;
                 }
@@ -562,7 +562,7 @@ ROCSOLVER_KERNEL void syevj_diag_kernel(const rocblas_evect evect,
             {
                 g = 2 * mag;
                 f = std::real(Acpy[j + j * n] - Acpy[i + i * n]);
-                f += (f < 0) ? -roc_hypot<S>(f, g) : roc_hypot<S>(f, g);
+                f += (f < 0) ? -std::hypot(f, g) : std::hypot(f, g);
                 lartg(f, g, c, s, r);
                 s1 = s * aij / mag;
             }
@@ -906,7 +906,7 @@ ROCSOLVER_KERNEL void syevj_offd_kernel(const rocblas_evect evect,
             {
                 g = 2 * mag;
                 f = std::real(Acpy[j + j * n] - Acpy[i + i * n]);
-                f += (f < 0) ? -roc_hypot<S>(f, g) : roc_hypot<S>(f, g);
+                f += (f < 0) ? -std::hypot(f, g) : std::hypot(f, g);
                 lartg(f, g, c, s, r);
                 s1 = s * aij / mag;
             }
