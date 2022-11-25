@@ -128,8 +128,8 @@ void orgxr_ungxr_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    GQR ? cpu_orgqr_ungqr<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
-        : cpu_org2r_ung2r<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data());
+    GQR ? cpu_orgqr_ungqr(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
+        : cpu_org2r_ung2r(m, n, k, hA[0], lda, hIpiv[0], hW.data());
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -164,8 +164,8 @@ void orgxr_ungxr_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        GQR ? cpu_orgqr_ungqr<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
-            : cpu_org2r_ung2r<T>(m, n, k, hA[0], lda, hIpiv[0], hW.data());
+        GQR ? cpu_orgqr_ungqr(m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W)
+            : cpu_org2r_ung2r(m, n, k, hA[0], lda, hIpiv[0], hW.data());
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

@@ -4780,13 +4780,13 @@ void cpu_trsm<rocblas_double_complex>(rocblas_side side,
 // trsv
 template <>
 void cpu_trsv<float>(rocblas_fill uplo,
-                       rocblas_operation transA,
-                       rocblas_diagonal diag,
-                       rocblas_int n,
-                       float* A,
-                       rocblas_int lda,
-                       float* x,
-                       rocblas_int incx)
+                     rocblas_operation transA,
+                     rocblas_diagonal diag,
+                     rocblas_int n,
+                     float* A,
+                     rocblas_int lda,
+                     float* x,
+                     rocblas_int incx)
 {
     char uploC = rocblas2char_fill(uplo);
     char transC = rocblas2char_operation(transA);
@@ -4796,13 +4796,13 @@ void cpu_trsv<float>(rocblas_fill uplo,
 
 template <>
 void cpu_trsv<double>(rocblas_fill uplo,
-                        rocblas_operation transA,
-                        rocblas_diagonal diag,
-                        rocblas_int n,
-                        double* A,
-                        rocblas_int lda,
-                        double* x,
-                        rocblas_int incx)
+                      rocblas_operation transA,
+                      rocblas_diagonal diag,
+                      rocblas_int n,
+                      double* A,
+                      rocblas_int lda,
+                      double* x,
+                      rocblas_int incx)
 {
     char uploC = rocblas2char_fill(uplo);
     char transC = rocblas2char_operation(transA);
@@ -4812,13 +4812,13 @@ void cpu_trsv<double>(rocblas_fill uplo,
 
 template <>
 void cpu_trsv<rocblas_float_complex>(rocblas_fill uplo,
-                                       rocblas_operation transA,
-                                       rocblas_diagonal diag,
-                                       rocblas_int n,
-                                       rocblas_float_complex* A,
-                                       rocblas_int lda,
-                                       rocblas_float_complex* x,
-                                       rocblas_int incx)
+                                     rocblas_operation transA,
+                                     rocblas_diagonal diag,
+                                     rocblas_int n,
+                                     rocblas_float_complex* A,
+                                     rocblas_int lda,
+                                     rocblas_float_complex* x,
+                                     rocblas_int incx)
 {
     char uploC = rocblas2char_fill(uplo);
     char transC = rocblas2char_operation(transA);
@@ -4828,13 +4828,13 @@ void cpu_trsv<rocblas_float_complex>(rocblas_fill uplo,
 
 template <>
 void cpu_trsv<rocblas_double_complex>(rocblas_fill uplo,
-                                        rocblas_operation transA,
-                                        rocblas_diagonal diag,
-                                        rocblas_int n,
-                                        rocblas_double_complex* A,
-                                        rocblas_int lda,
-                                        rocblas_double_complex* x,
-                                        rocblas_int incx)
+                                      rocblas_operation transA,
+                                      rocblas_diagonal diag,
+                                      rocblas_int n,
+                                      rocblas_double_complex* A,
+                                      rocblas_int lda,
+                                      rocblas_double_complex* x,
+                                      rocblas_int incx)
 {
     char uploC = rocblas2char_fill(uplo);
     char transC = rocblas2char_operation(transA);

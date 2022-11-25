@@ -158,7 +158,7 @@ void orgbr_ungbr_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cpu_orgbr_ungbr<T>(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
+    cpu_orgbr_ungbr(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -195,7 +195,7 @@ void orgbr_ungbr_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cpu_orgbr_ungbr<T>(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
+        cpu_orgbr_ungbr(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

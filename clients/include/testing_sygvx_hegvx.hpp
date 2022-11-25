@@ -422,9 +422,9 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cpu_sygvx_hegvx<T>(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu,
-                           atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(),
-                           iwork.data(), hIfail[b], hInfo[b]);
+        cpu_sygvx_hegvx(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu, atol,
+                        hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(),
+                        hIfail[b], hInfo[b]);
     }
 
     // (We expect the used input matrices to always converge. Testing
@@ -479,8 +479,8 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
 
                 // hZRes contains eigenvectors x
                 // compute B*x (or A*x) and store in hB
-                cpu_symm_hemm<T>(rocblas_side_left, uplo, n, hNev[b][0], alpha, B[b], ldb, hZRes[b],
-                                 ldz, beta, hB[b], ldb);
+                cpu_symm_hemm(rocblas_side_left, uplo, n, hNev[b][0], alpha, B[b], ldb, hZRes[b],
+                              ldz, beta, hB[b], ldb);
 
                 if(itype == rocblas_eform_ax)
                 {
@@ -599,9 +599,9 @@ void sygvx_hegvx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cpu_sygvx_hegvx<T>(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il,
-                               iu, atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork,
-                               rwork.data(), iwork.data(), hIfail[b], hInfo[b]);
+            cpu_sygvx_hegvx(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu,
+                            atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(),
+                            iwork.data(), hIfail[b], hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

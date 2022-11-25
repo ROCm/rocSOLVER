@@ -179,8 +179,8 @@ void ormlx_unmlx_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hCr.transfer_from(dC));
 
     // CPU lapack
-    MLQ ? cpu_ormlq_unmlq<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(), size_W)
-        : cpu_orml2_unml2<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
+    MLQ ? cpu_ormlq_unmlq(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(), size_W)
+        : cpu_orml2_unml2(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
 
     // error is ||hC - hCr|| / ||hC||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -221,9 +221,9 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        MLQ ? cpu_ormlq_unmlq<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(),
-                                 size_W)
-            : cpu_orml2_unml2<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
+        MLQ ? cpu_ormlq_unmlq(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(),
+                              size_W)
+            : cpu_orml2_unml2(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

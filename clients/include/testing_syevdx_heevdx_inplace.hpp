@@ -264,9 +264,9 @@ void syevdx_heevdx_inplace_getError(const rocblas_handle handle,
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
     S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
     for(rocblas_int b = 0; b < bc; ++b)
-        cpu_syevx_heevx<T>(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b], hW[b],
-                           Z.data(), ldz, work.data(), lwork, rwork.data(), iwork.data(),
-                           ifail.data(), hinfo[b]);
+        cpu_syevx_heevx(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b], hW[b],
+                        Z.data(), ldz, work.data(), lwork, rwork.data(), iwork.data(), ifail.data(),
+                        hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
@@ -377,9 +377,9 @@ void syevdx_heevdx_inplace_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
-            cpu_syevx_heevx<T>(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b],
-                               hW[b], Z.data(), ldz, work.data(), lwork, rwork.data(), iwork.data(),
-                               ifail.data(), hinfo[b]);
+            cpu_syevx_heevx(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b],
+                            hW[b], Z.data(), ldz, work.data(), lwork, rwork.data(), iwork.data(),
+                            ifail.data(), hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

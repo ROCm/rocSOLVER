@@ -228,8 +228,8 @@ void syevd_heevd_getError(const rocblas_handle handle,
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
-        cpu_syevd_heevd<T>(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
-                           iwork.data(), liwork, hinfo[b]);
+        cpu_syevd_heevd(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
+                        iwork.data(), liwork, hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
@@ -333,8 +333,8 @@ void syevd_heevd_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
-            cpu_syevd_heevd<T>(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(),
-                               sizeE, iwork.data(), liwork, hinfo[b]);
+            cpu_syevd_heevd(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
+                            iwork.data(), liwork, hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
