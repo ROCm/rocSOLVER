@@ -388,6 +388,19 @@ try
             "                           Only applicable to stebz.\n"
             "                           ")
 
+        // bttrf options
+        ("nb",
+         value<rocblas_int>(),
+            "Number of rows and columns in each block.\n"
+            "                           Only applicable to bttrf.\n"
+            "                           ")
+
+        ("nblocks",
+         value<rocblas_int>(),
+            "Number of blocks along the diagonal.\n"
+            "                           Only applicable to bttrf.\n"
+            "                           ")
+
         // partial eigenvalue/singular value decomposition options
         ("il",
          value<rocblas_int>(),

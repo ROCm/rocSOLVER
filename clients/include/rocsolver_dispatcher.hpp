@@ -11,6 +11,7 @@
 
 #include "testing_bdsqr.hpp"
 #include "testing_bdsvdx.hpp"
+#include "testing_bttrf_npvt.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
@@ -215,6 +216,10 @@ class rocsolver_dispatcher
             {"sytrf", testing_sytf2_sytrf<false, false, 1, T>},
             {"sytrf_batched", testing_sytf2_sytrf<true, true, 1, T>},
             {"sytrf_strided_batched", testing_sytf2_sytrf<false, true, 1, T>},
+            // bttrf_npvt
+            {"bttrf_npvt", testing_bttrf_npvt<false, false, T>},
+            {"bttrf_npvt_batched", testing_bttrf_npvt<true, true, T>},
+            {"bttrf_npvt_strided_batched", testing_bttrf_npvt<false, true, T>},
         };
 
         // Grab function from the map and execute
