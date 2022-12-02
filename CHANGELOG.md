@@ -4,6 +4,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- LU factorization without pivoting for block tridiagonal matrices:
+    - BTTRF_NPVT (with batched and strided\_batched versions)
+
 ### Optimized
 ### Changed
 ### Deprecated
