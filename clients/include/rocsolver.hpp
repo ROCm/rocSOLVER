@@ -8175,3 +8175,62 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
     return rocsolver_zbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
 }
 /********************************************************/
+
+/******************** BTTRF_NPVT_INTERLEAVED ********************/
+// interleaved_batched
+inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
+                                                       rocblas_int nb,
+                                                       rocblas_int nblocks,
+                                                       float* A,
+                                                       rocblas_int lda,
+                                                       float* B,
+                                                       rocblas_int ldb,
+                                                       float* C,
+                                                       rocblas_int ldc,
+                                                       rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_sbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+}
+
+inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
+                                                       rocblas_int nb,
+                                                       rocblas_int nblocks,
+                                                       double* A,
+                                                       rocblas_int lda,
+                                                       double* B,
+                                                       rocblas_int ldb,
+                                                       double* C,
+                                                       rocblas_int ldc,
+                                                       rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_dbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+}
+
+inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
+                                                       rocblas_int nb,
+                                                       rocblas_int nblocks,
+                                                       rocblas_float_complex* A,
+                                                       rocblas_int lda,
+                                                       rocblas_float_complex* B,
+                                                       rocblas_int ldb,
+                                                       rocblas_float_complex* C,
+                                                       rocblas_int ldc,
+                                                       rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_cbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+}
+
+inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
+                                                       rocblas_int nb,
+                                                       rocblas_int nblocks,
+                                                       rocblas_double_complex* A,
+                                                       rocblas_int lda,
+                                                       rocblas_double_complex* B,
+                                                       rocblas_int ldb,
+                                                       rocblas_double_complex* C,
+                                                       rocblas_int ldc,
+                                                       rocblas_int bc)
+{
+    return rocblas_status_not_implemented; // rocsolver_zbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+}
+/********************************************************/

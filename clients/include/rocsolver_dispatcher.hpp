@@ -12,6 +12,7 @@
 #include "testing_bdsqr.hpp"
 #include "testing_bdsvdx.hpp"
 #include "testing_bttrf_npvt.hpp"
+#include "testing_bttrf_npvt_interleaved.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
@@ -220,6 +221,7 @@ class rocsolver_dispatcher
             {"bttrf_npvt", testing_bttrf_npvt<false, false, T>},
             {"bttrf_npvt_batched", testing_bttrf_npvt<true, true, T>},
             {"bttrf_npvt_strided_batched", testing_bttrf_npvt<false, true, T>},
+            {"bttrf_npvt_interleaved_batched", testing_bttrf_npvt_interleaved<T>},
         };
 
         // Grab function from the map and execute
