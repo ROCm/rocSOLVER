@@ -8189,7 +8189,7 @@ inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
                                                        rocblas_int ldc,
                                                        rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_sbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_sbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
@@ -8203,7 +8203,7 @@ inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
                                                        rocblas_int ldc,
                                                        rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_dbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_dbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
@@ -8217,7 +8217,7 @@ inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
                                                        rocblas_int ldc,
                                                        rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_cbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_cbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
@@ -8231,6 +8231,6 @@ inline rocblas_status rocsolver_bttrf_npvt_interleaved(rocblas_handle handle,
                                                        rocblas_int ldc,
                                                        rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_zbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_zbttrf_npvt_interleaved_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
 }
 /********************************************************/

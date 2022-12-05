@@ -128,6 +128,16 @@ rocsolver_<type>bttrf_npvt_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sbttrf_npvt_strided_batched
 
+rocsolver_<type>bttrf_npvt_interleaved_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zbttrf_npvt_interleaved_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cbttrf_npvt_interleaved_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dbttrf_npvt_interleaved_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sbttrf_npvt_interleaved_batched
+
 
 
 .. _likelinears:
