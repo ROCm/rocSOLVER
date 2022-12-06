@@ -145,6 +145,8 @@ void bttrf_npvt_initData(const rocblas_handle handle,
         rocblas_init<T>(hB, false);
         rocblas_init<T>(hC, false);
 
+        rocblas_int n = nb * nblocks;
+
         for(rocblas_int b = 0; b < bc; ++b)
         {
             // scale to avoid singularities
@@ -169,7 +171,53 @@ void bttrf_npvt_initData(const rocblas_handle handle,
                 }
             }
 
-            // TODO: add singularities to the matrix
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+            {
+                // When required, add some singularities
+                // (always the same elements for debugging purposes)
+
+                rocblas_int jj = n / 4 + b;
+                jj -= (jj / n) * n;
+                rocblas_int j = jj % nb;
+                rocblas_int k = jj / nb;
+                for(rocblas_int i = 0; i < nb; i++)
+                {
+                    // zero the jj-th column
+                    hB[b][i + j * ldb + k * ldb * nb] = 0;
+                    if(k < nblocks - 1)
+                        hA[b][i + j * lda + k * lda * nb] = 0;
+                    if(k > 0)
+                        hC[b][i + j * ldc + (k - 1) * ldc * nb] = 0;
+                }
+
+                jj = n / 2 + b;
+                jj -= (jj / n) * n;
+                j = jj % nb;
+                k = jj / nb;
+                for(rocblas_int i = 0; i < nb; i++)
+                {
+                    // zero the jj-th column
+                    hB[b][i + j * ldb + k * ldb * nb] = 0;
+                    if(k < nblocks - 1)
+                        hA[b][i + j * lda + k * lda * nb] = 0;
+                    if(k > 0)
+                        hC[b][i + j * ldc + (k - 1) * ldc * nb] = 0;
+                }
+
+                jj = n - 1 + b;
+                jj -= (jj / n) * n;
+                j = jj % nb;
+                k = jj / nb;
+                for(rocblas_int i = 0; i < nb; i++)
+                {
+                    // zero the jj-th column
+                    hB[b][i + j * ldb + k * ldb * nb] = 0;
+                    if(k < nblocks - 1)
+                        hA[b][i + j * lda + k * lda * nb] = 0;
+                    if(k > 0)
+                        hC[b][i + j * ldc + (k - 1) * ldc * nb] = 0;
+                }
+            }
         }
     }
 
@@ -231,8 +279,16 @@ void bttrf_npvt_getError(const rocblas_handle handle,
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        if(hInfoRes[b][0] != 0)
-            err++;
+        if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+        {
+            if(hInfoRes[b][0] <= 0)
+                err++;
+        }
+        else
+        {
+            if(hInfoRes[b][0] != 0)
+                err++;
+        }
     }
     *max_err += err;
 
@@ -242,13 +298,16 @@ void bttrf_npvt_getError(const rocblas_handle handle,
     // using frobenius norm
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        // TODO: Complete the test error calculation
+        if(hInfoRes[b][0] == 0)
+        {
+            // TODO: Complete the test error calculation
 
-        err = norm_error('F', nb, nb * nblocks, ldb, hB[b], hBRes[b]);
-        *max_err = err > *max_err ? err : *max_err;
+            err = norm_error('F', nb, nb * nblocks, ldb, hB[b], hBRes[b]);
+            *max_err = err > *max_err ? err : *max_err;
 
-        err = norm_error('F', nb, nb * (nblocks - 1), ldc, hC[b], hCRes[b]);
-        *max_err = err > *max_err ? err : *max_err;
+            err = norm_error('F', nb, nb * (nblocks - 1), ldc, hC[b], hCRes[b]);
+            *max_err = err > *max_err ? err : *max_err;
+        }
     }
 }
 
