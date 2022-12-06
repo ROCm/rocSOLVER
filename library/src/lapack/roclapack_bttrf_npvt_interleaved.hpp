@@ -35,6 +35,7 @@ rocblas_status rocsolver_bttrf_npvt_interleaved_argCheck(rocblas_handle handle,
                                                          T A,
                                                          T B,
                                                          T C,
+                                                         rocblas_int* info,
                                                          const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
@@ -51,7 +52,8 @@ rocblas_status rocsolver_bttrf_npvt_interleaved_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((nb && nblocks > 1 && !A) || (nb && nblocks && !B) || (nb && nblocks > 1 && !C))
+    if((nb && nblocks > 1 && !A) || (nb && nblocks && !B) || (nb && nblocks > 1 && !C)
+       || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -67,6 +69,7 @@ rocblas_status rocsolver_bttrf_npvt_interleaved_template(rocblas_handle handle,
                                                          const rocblas_int ldb,
                                                          U C,
                                                          const rocblas_int ldc,
+                                                         rocblas_int* info,
                                                          const rocblas_int batch_count,
                                                          void* work)
 {

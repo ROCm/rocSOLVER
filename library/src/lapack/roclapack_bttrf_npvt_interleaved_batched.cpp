@@ -14,6 +14,7 @@ rocblas_status rocsolver_bttrf_npvt_interleaved_batched_impl(rocblas_handle hand
                                                              const rocblas_int ldb,
                                                              U C,
                                                              const rocblas_int ldc,
+                                                             rocblas_int* info,
                                                              const rocblas_int batch_count)
 {
     ROCSOLVER_ENTER_TOP("bttrf_npvt_interleaved_batched", "--nb", nb, "--nblocks", nblocks, "--lda",
@@ -24,7 +25,7 @@ rocblas_status rocsolver_bttrf_npvt_interleaved_batched_impl(rocblas_handle hand
 
     // argument checking
     rocblas_status st = rocsolver_bttrf_npvt_interleaved_argCheck(handle, nb, nblocks, lda, ldb,
-                                                                  ldc, A, B, C, batch_count);
+                                                                  ldc, A, B, C, info, batch_count);
     if(st != rocblas_status_continue)
         return st;
 
@@ -47,7 +48,7 @@ rocblas_status rocsolver_bttrf_npvt_interleaved_batched_impl(rocblas_handle hand
 
     // Execution
     return rocsolver_bttrf_npvt_interleaved_template<T>(handle, nb, nblocks, A, lda, B, ldb, C, ldc,
-                                                        batch_count, work);
+                                                        info, batch_count, work);
 }
 
 /*
@@ -67,10 +68,11 @@ rocblas_status rocsolver_sbttrf_npvt_interleaved_batched(rocblas_handle handle,
                                                          const rocblas_int ldb,
                                                          float* C,
                                                          const rocblas_int ldc,
+                                                         rocblas_int* info,
                                                          const rocblas_int batch_count)
 {
     return rocsolver_bttrf_npvt_interleaved_batched_impl<float>(handle, nb, nblocks, A, lda, B, ldb,
-                                                                C, ldc, batch_count);
+                                                                C, ldc, info, batch_count);
 }
 
 rocblas_status rocsolver_dbttrf_npvt_interleaved_batched(rocblas_handle handle,
@@ -82,10 +84,11 @@ rocblas_status rocsolver_dbttrf_npvt_interleaved_batched(rocblas_handle handle,
                                                          const rocblas_int ldb,
                                                          double* C,
                                                          const rocblas_int ldc,
+                                                         rocblas_int* info,
                                                          const rocblas_int batch_count)
 {
     return rocsolver_bttrf_npvt_interleaved_batched_impl<double>(handle, nb, nblocks, A, lda, B,
-                                                                 ldb, C, ldc, batch_count);
+                                                                 ldb, C, ldc, info, batch_count);
 }
 
 rocblas_status rocsolver_cbttrf_npvt_interleaved_batched(rocblas_handle handle,
@@ -97,10 +100,11 @@ rocblas_status rocsolver_cbttrf_npvt_interleaved_batched(rocblas_handle handle,
                                                          const rocblas_int ldb,
                                                          rocblas_float_complex* C,
                                                          const rocblas_int ldc,
+                                                         rocblas_int* info,
                                                          const rocblas_int batch_count)
 {
     return rocsolver_bttrf_npvt_interleaved_batched_impl<rocblas_float_complex>(
-        handle, nb, nblocks, A, lda, B, ldb, C, ldc, batch_count);
+        handle, nb, nblocks, A, lda, B, ldb, C, ldc, info, batch_count);
 }
 
 rocblas_status rocsolver_zbttrf_npvt_interleaved_batched(rocblas_handle handle,
@@ -112,10 +116,11 @@ rocblas_status rocsolver_zbttrf_npvt_interleaved_batched(rocblas_handle handle,
                                                          const rocblas_int ldb,
                                                          rocblas_double_complex* C,
                                                          const rocblas_int ldc,
+                                                         rocblas_int* info,
                                                          const rocblas_int batch_count)
 {
     return rocsolver_bttrf_npvt_interleaved_batched_impl<rocblas_double_complex>(
-        handle, nb, nblocks, A, lda, B, ldb, C, ldc, batch_count);
+        handle, nb, nblocks, A, lda, B, ldb, C, ldc, info, batch_count);
 }
 
 } // extern C

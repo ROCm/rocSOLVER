@@ -100,6 +100,10 @@ protected:
             testing_bttrf_npvt_interleaved_bad_arg<T>();
 
         arg.batch_count = 3;
+        if(arg.singular == 1)
+            testing_bttrf_npvt_interleaved<T>(arg);
+
+        arg.singular = 0;
         testing_bttrf_npvt_interleaved<T>(arg);
     }
 };

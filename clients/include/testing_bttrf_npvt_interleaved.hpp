@@ -12,7 +12,7 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename T>
+template <typename T, typename U>
 void bttrf_npvt_interleaved_checkBadArgs(const rocblas_handle handle,
                                          const rocblas_int nb,
                                          const rocblas_int nblocks,
@@ -22,44 +22,50 @@ void bttrf_npvt_interleaved_checkBadArgs(const rocblas_handle handle,
                                          const rocblas_int ldb,
                                          T dC,
                                          const rocblas_int ldc,
+                                         U dInfo,
                                          const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_bttrf_npvt_interleaved(nullptr, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc),
-        rocblas_status_invalid_handle);
+    EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(nullptr, nb, nblocks, dA, lda, dB, ldb,
+                                                           dC, ldc, dInfo, bc),
+                          rocblas_status_invalid_handle);
 
     // values
     // N/A
 
     // sizes (only check batch_count if applicable)
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, -1),
+        rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, dInfo, -1),
         rocblas_status_invalid_size);
 
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, (T) nullptr, lda,
-                                                           dB, ldb, dC, ldc, bc),
+                                                           dB, ldb, dC, ldc, dInfo, bc),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA, lda,
-                                                           (T) nullptr, ldb, dC, ldc, bc),
+                                                           (T) nullptr, ldb, dC, ldc, dInfo, bc),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA, lda, dB, ldb,
-                                                           (T) nullptr, ldc, bc),
+                                                           (T) nullptr, ldc, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA, lda, dB, ldb,
+                                                           dC, ldc, (U) nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, 0, nblocks, (T) nullptr, lda,
-                                                           (T) nullptr, ldb, (T) nullptr, ldc, bc),
+                                                           (T) nullptr, ldb, (T) nullptr, ldc,
+                                                           dInfo, bc),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, 0, (T) nullptr, lda,
-                                                           (T) nullptr, ldb, (T) nullptr, ldc, bc),
+                                                           (T) nullptr, ldb, (T) nullptr, ldc,
+                                                           dInfo, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, 0),
-        rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA, lda, dB, ldb,
+                                                           dC, ldc, (U) nullptr, 0),
+                          rocblas_status_success);
 }
 
 template <typename T>
@@ -78,13 +84,15 @@ void testing_bttrf_npvt_interleaved_bad_arg()
     device_strided_batch_vector<T> dA(1, 1, 1, 1);
     device_strided_batch_vector<T> dB(1, 1, 1, 1);
     device_strided_batch_vector<T> dC(1, 1, 1, 1);
+    device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
     CHECK_HIP_ERROR(dA.memcheck());
     CHECK_HIP_ERROR(dB.memcheck());
     CHECK_HIP_ERROR(dC.memcheck());
+    CHECK_HIP_ERROR(dInfo.memcheck());
 
     // check bad arguments
     bttrf_npvt_interleaved_checkBadArgs(handle, nb, nblocks, dA.data(), lda, dB.data(), ldb,
-                                        dC.data(), ldc, bc);
+                                        dC.data(), ldc, dInfo.data(), bc);
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
@@ -100,7 +108,8 @@ void bttrf_npvt_interleaved_initData(const rocblas_handle handle,
                                      const rocblas_int bc,
                                      Th& hA,
                                      Th& hB,
-                                     Th& hC)
+                                     Th& hC,
+                                     const bool singular)
 {
     if(CPU)
     {
@@ -132,6 +141,8 @@ void bttrf_npvt_interleaved_initData(const rocblas_handle handle,
                     }
                 }
             }
+
+            // TODO: Add singularities to the matrix
         }
     }
 
@@ -144,7 +155,7 @@ void bttrf_npvt_interleaved_initData(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th>
+template <typename T, typename Td, typename Ud, typename Th, typename Uh>
 void bttrf_npvt_interleaved_getError(const rocblas_handle handle,
                                      const rocblas_int nb,
                                      const rocblas_int nblocks,
@@ -154,24 +165,29 @@ void bttrf_npvt_interleaved_getError(const rocblas_handle handle,
                                      const rocblas_int ldb,
                                      Td& dC,
                                      const rocblas_int ldc,
+                                     Ud& dInfo,
                                      const rocblas_int bc,
                                      Th& hA,
                                      Th& hB,
                                      Th& hBRes,
                                      Th& hC,
                                      Th& hCRes,
-                                     double* max_err)
+                                     Uh& hInfo,
+                                     Uh& hInfoRes,
+                                     double* max_err,
+                                     const bool singular)
 {
     // input data initialization
     bttrf_npvt_interleaved_initData<true, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc,
-                                                   bc, hA, hB, hC);
+                                                   bc, hA, hB, hC, singular);
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA.data(), lda,
-                                                         dB.data(), ldb, dC.data(), ldc, bc));
+    CHECK_ROCBLAS_ERROR(rocsolver_bttrf_npvt_interleaved(
+        handle, nb, nblocks, dA.data(), lda, dB.data(), ldb, dC.data(), ldc, dInfo.data(), bc));
     CHECK_HIP_ERROR(hBRes.transfer_from(dB));
     CHECK_HIP_ERROR(hCRes.transfer_from(dC));
+    CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
@@ -179,8 +195,15 @@ void bttrf_npvt_interleaved_getError(const rocblas_handle handle,
         //cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
     }
 
+    // check info for singularities
     double err = 0;
     *max_err = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        if(hInfoRes[b][0] != 0)
+            err++;
+    }
+    *max_err += err;
 
     // error is ||hB - hBRes|| / ||hB|| or ||hC - hCRes|| / ||hC||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -192,7 +215,7 @@ void bttrf_npvt_interleaved_getError(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th>
+template <typename T, typename Td, typename Ud, typename Th>
 void bttrf_npvt_interleaved_getPerfData(const rocblas_handle handle,
                                         const rocblas_int nb,
                                         const rocblas_int nblocks,
@@ -202,6 +225,7 @@ void bttrf_npvt_interleaved_getPerfData(const rocblas_handle handle,
                                         const rocblas_int ldb,
                                         Td& dC,
                                         const rocblas_int ldc,
+                                        Ud& dInfo,
                                         const rocblas_int bc,
                                         Th& hA,
                                         Th& hB,
@@ -211,12 +235,13 @@ void bttrf_npvt_interleaved_getPerfData(const rocblas_handle handle,
                                         const rocblas_int hot_calls,
                                         const int profile,
                                         const bool profile_kernels,
-                                        const bool perf)
+                                        const bool perf,
+                                        const bool singular)
 {
     if(!perf)
     {
         // bttrf_npvt_interleaved_initData<true, false, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc, hA,
-        //                                     hB, hC);
+        //                                     hB, hC, singular);
 
         // // cpu-lapack performance (only if not in perf mode)
         // *cpu_time_used = get_time_us_no_sync();
@@ -229,16 +254,16 @@ void bttrf_npvt_interleaved_getPerfData(const rocblas_handle handle,
     }
 
     bttrf_npvt_interleaved_initData<true, false, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc,
-                                                    bc, hA, hB, hC);
+                                                    bc, hA, hB, hC, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         bttrf_npvt_interleaved_initData<false, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC,
-                                                        ldc, bc, hA, hB, hC);
+                                                        ldc, bc, hA, hB, hC, singular);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA.data(), lda,
-                                                             dB.data(), ldb, dC.data(), ldc, bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_bttrf_npvt_interleaved(
+            handle, nb, nblocks, dA.data(), lda, dB.data(), ldb, dC.data(), ldc, dInfo.data(), bc));
     }
 
     // gpu-lapack performance
@@ -259,11 +284,11 @@ void bttrf_npvt_interleaved_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         bttrf_npvt_interleaved_initData<false, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC,
-                                                        ldc, bc, hA, hB, hC);
+                                                        ldc, bc, hA, hB, hC, singular);
 
         start = get_time_us_sync(stream);
         rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA.data(), lda, dB.data(), ldb,
-                                         dC.data(), ldc, bc);
+                                         dC.data(), ldc, dInfo.data(), bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -301,7 +326,7 @@ void testing_bttrf_npvt_interleaved(Arguments& argus)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, (T*)nullptr,
                                                                lda, (T*)nullptr, ldb, (T*)nullptr,
-                                                               ldc, bc),
+                                                               ldc, (rocblas_int*)nullptr, bc),
                               rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -315,7 +340,8 @@ void testing_bttrf_npvt_interleaved(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, (T*)nullptr, lda,
-                                                           (T*)nullptr, ldb, (T*)nullptr, ldc, bc));
+                                                           (T*)nullptr, ldb, (T*)nullptr, ldc,
+                                                           (rocblas_int*)nullptr, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -334,21 +360,26 @@ void testing_bttrf_npvt_interleaved(Arguments& argus)
     host_strided_batch_vector<T> hC(size_C, 1, size_C, max(1, nblocks));
     host_strided_batch_vector<T> hBRes(size_BRes, 1, size_BRes, max(1, nblocks));
     host_strided_batch_vector<T> hCRes(size_CRes, 1, size_CRes, max(1, nblocks));
+    host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+    host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
     device_strided_batch_vector<T> dA(size_A, 1, size_A, max(1, nblocks));
     device_strided_batch_vector<T> dB(size_B, 1, size_B, max(1, nblocks));
     device_strided_batch_vector<T> dC(size_C, 1, size_C, max(1, nblocks));
+    device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
     if(size_A)
         CHECK_HIP_ERROR(dA.memcheck());
     if(size_B)
         CHECK_HIP_ERROR(dB.memcheck());
     if(size_C)
         CHECK_HIP_ERROR(dC.memcheck());
+    CHECK_HIP_ERROR(dInfo.memcheck());
 
     // check quick return
     if(nb == 0 || nblocks == 0 || bc == 0)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt_interleaved(handle, nb, nblocks, dA.data(), lda,
-                                                               dB.data(), ldb, dC.data(), ldc, bc),
+                                                               dB.data(), ldb, dC.data(), ldc,
+                                                               dInfo.data(), bc),
                               rocblas_status_success);
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);
@@ -358,14 +389,16 @@ void testing_bttrf_npvt_interleaved(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        bttrf_npvt_interleaved_getError<T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc, hA,
-                                           hB, hBRes, hC, hCRes, &max_error);
+        bttrf_npvt_interleaved_getError<T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, dInfo,
+                                           bc, hA, hB, hBRes, hC, hCRes, hInfo, hInfoRes,
+                                           &max_error, argus.singular);
 
     // collect performance data
     if(argus.timing)
-        bttrf_npvt_interleaved_getPerfData<T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc,
-                                              hA, hB, hC, &gpu_time_used, &cpu_time_used, hot_calls,
-                                              argus.profile, argus.profile_kernels, argus.perf);
+        bttrf_npvt_interleaved_getPerfData<T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, dInfo,
+                                              bc, hA, hB, hC, &gpu_time_used, &cpu_time_used,
+                                              hot_calls, argus.profile, argus.profile_kernels,
+                                              argus.perf, argus.singular);
 
     // validate results for rocsolver-test
     // using nb * machine_precision as tolerance
