@@ -12,7 +12,7 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <bool STRIDED, typename T>
+template <bool STRIDED, typename T, typename U>
 void bttrf_npvt_checkBadArgs(const rocblas_handle handle,
                              const rocblas_int nb,
                              const rocblas_int nblocks,
@@ -25,11 +25,12 @@ void bttrf_npvt_checkBadArgs(const rocblas_handle handle,
                              T dC,
                              const rocblas_int ldc,
                              const rocblas_stride stC,
+                             U dInfo,
                              const rocblas_int bc)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, nullptr, nb, nblocks, dA, lda, stA, dB, ldb,
-                                               stB, dC, ldc, stC, bc),
+                                               stB, dC, ldc, stC, dInfo, bc),
                           rocblas_status_invalid_handle);
 
     // values
@@ -38,32 +39,37 @@ void bttrf_npvt_checkBadArgs(const rocblas_handle handle,
     // sizes (only check batch_count if applicable)
     if(STRIDED)
         EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA, lda, stA, dB,
-                                                   ldb, stB, dC, ldc, stC, -1),
+                                                   ldb, stB, dC, ldc, stC, dInfo, -1),
                               rocblas_status_invalid_size);
 
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, (T) nullptr, lda, stA,
-                                               dB, ldb, stB, dC, ldc, stC, bc),
+                                               dB, ldb, stB, dC, ldc, stC, dInfo, bc),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA, lda, stA,
-                                               (T) nullptr, ldb, stB, dC, ldc, stC, bc),
+                                               (T) nullptr, ldb, stB, dC, ldc, stC, dInfo, bc),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA, lda, stA, dB, ldb,
-                                               stB, (T) nullptr, ldc, stC, bc),
+                                               stB, (T) nullptr, ldc, stC, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA, lda, stA, dB, ldb,
+                                               stB, dC, ldc, stC, (U) nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, 0, nblocks, (T) nullptr, lda, stA,
-                                               (T) nullptr, ldb, stB, (T) nullptr, ldc, stC, bc),
+                                               (T) nullptr, ldb, stB, (T) nullptr, ldc, stC, dInfo,
+                                               bc),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, 0, (T) nullptr, lda, stA,
-                                               (T) nullptr, ldb, stB, (T) nullptr, ldc, stC, bc),
+                                               (T) nullptr, ldb, stB, (T) nullptr, ldc, stC, dInfo,
+                                               bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
         EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA, lda, stA, dB,
-                                                   ldb, stB, dC, ldc, stC, 0),
+                                                   ldb, stB, dC, ldc, stC, (U) nullptr, 0),
                               rocblas_status_success);
 }
 
@@ -88,13 +94,15 @@ void testing_bttrf_npvt_bad_arg()
         device_batch_vector<T> dA(1, 1, 1);
         device_batch_vector<T> dB(1, 1, 1);
         device_batch_vector<T> dC(1, 1, 1);
+        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dB.memcheck());
         CHECK_HIP_ERROR(dC.memcheck());
+        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
         bttrf_npvt_checkBadArgs<STRIDED>(handle, nb, nblocks, dA.data(), lda, stA, dB.data(), ldb,
-                                         stB, dC.data(), ldc, stC, bc);
+                                         stB, dC.data(), ldc, stC, dInfo.data(), bc);
     }
     else
     {
@@ -102,13 +110,15 @@ void testing_bttrf_npvt_bad_arg()
         device_strided_batch_vector<T> dA(1, 1, 1, 1);
         device_strided_batch_vector<T> dB(1, 1, 1, 1);
         device_strided_batch_vector<T> dC(1, 1, 1, 1);
+        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dB.memcheck());
         CHECK_HIP_ERROR(dC.memcheck());
+        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
         bttrf_npvt_checkBadArgs<STRIDED>(handle, nb, nblocks, dA.data(), lda, stA, dB.data(), ldb,
-                                         stB, dC.data(), ldc, stC, bc);
+                                         stB, dC.data(), ldc, stC, dInfo.data(), bc);
     }
 }
 
@@ -125,7 +135,8 @@ void bttrf_npvt_initData(const rocblas_handle handle,
                          const rocblas_int bc,
                          Th& hA,
                          Th& hB,
-                         Th& hC)
+                         Th& hC,
+                         const bool singular)
 {
     if(CPU)
     {
@@ -157,6 +168,8 @@ void bttrf_npvt_initData(const rocblas_handle handle,
                     }
                 }
             }
+
+            // TODO: add singularities to the matrix
         }
     }
 
@@ -169,7 +182,7 @@ void bttrf_npvt_initData(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, typename T, typename Td, typename Th>
+template <bool STRIDED, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void bttrf_npvt_getError(const rocblas_handle handle,
                          const rocblas_int nb,
                          const rocblas_int nblocks,
@@ -182,24 +195,30 @@ void bttrf_npvt_getError(const rocblas_handle handle,
                          Td& dC,
                          const rocblas_int ldc,
                          const rocblas_stride stC,
+                         Ud& dInfo,
                          const rocblas_int bc,
                          Th& hA,
                          Th& hB,
                          Th& hBRes,
                          Th& hC,
                          Th& hCRes,
-                         double* max_err)
+                         Uh& hInfo,
+                         Uh& hInfoRes,
+                         double* max_err,
+                         const bool singular)
 {
     // input data initialization
     bttrf_npvt_initData<true, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc, hA, hB,
-                                       hC);
+                                       hC, singular);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA.data(), lda, stA,
-                                             dB.data(), ldb, stB, dC.data(), ldc, stC, bc));
+                                             dB.data(), ldb, stB, dC.data(), ldc, stC, dInfo.data(),
+                                             bc));
     CHECK_HIP_ERROR(hBRes.transfer_from(dB));
     CHECK_HIP_ERROR(hCRes.transfer_from(dC));
+    CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
@@ -207,8 +226,15 @@ void bttrf_npvt_getError(const rocblas_handle handle,
         //cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
     }
 
+    // check info for singularities
     double err = 0;
     *max_err = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        if(hInfoRes[b][0] != 0)
+            err++;
+    }
+    *max_err += err;
 
     // error is ||hB - hBRes|| / ||hB|| or ||hC - hCRes|| / ||hC||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -226,7 +252,7 @@ void bttrf_npvt_getError(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, typename T, typename Td, typename Th>
+template <bool STRIDED, typename T, typename Td, typename Ud, typename Th>
 void bttrf_npvt_getPerfData(const rocblas_handle handle,
                             const rocblas_int nb,
                             const rocblas_int nblocks,
@@ -239,6 +265,7 @@ void bttrf_npvt_getPerfData(const rocblas_handle handle,
                             Td& dC,
                             const rocblas_int ldc,
                             const rocblas_stride stC,
+                            Ud& dInfo,
                             const rocblas_int bc,
                             Th& hA,
                             Th& hB,
@@ -248,12 +275,13 @@ void bttrf_npvt_getPerfData(const rocblas_handle handle,
                             const rocblas_int hot_calls,
                             const int profile,
                             const bool profile_kernels,
-                            const bool perf)
+                            const bool perf,
+                            const bool singular)
 {
     if(!perf)
     {
         // bttrf_npvt_initData<true, false, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc, hA,
-        //                                     hB, hC);
+        //                                     hB, hC, singular);
 
         // // cpu-lapack performance (only if not in perf mode)
         // *cpu_time_used = get_time_us_no_sync();
@@ -266,16 +294,17 @@ void bttrf_npvt_getPerfData(const rocblas_handle handle,
     }
 
     bttrf_npvt_initData<true, false, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc, hA, hB,
-                                        hC);
+                                        hC, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         bttrf_npvt_initData<false, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc, hA,
-                                            hB, hC);
+                                            hB, hC, singular);
 
         CHECK_ROCBLAS_ERROR(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA.data(), lda, stA,
-                                                 dB.data(), ldb, stB, dC.data(), ldc, stC, bc));
+                                                 dB.data(), ldb, stB, dC.data(), ldc, stC,
+                                                 dInfo.data(), bc));
     }
 
     // gpu-lapack performance
@@ -296,11 +325,11 @@ void bttrf_npvt_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         bttrf_npvt_initData<false, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc, hA,
-                                            hB, hC);
+                                            hB, hC, singular);
 
         start = get_time_us_sync(stream);
         rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA.data(), lda, stA, dB.data(), ldb, stB,
-                             dC.data(), ldc, stC, bc);
+                             dC.data(), ldc, stC, dInfo.data(), bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -345,12 +374,13 @@ void testing_bttrf_npvt(Arguments& argus)
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(
                 rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, (T* const*)nullptr, lda, stA,
-                                     (T* const*)nullptr, ldb, stB, (T* const*)nullptr, ldc, stC, bc),
+                                     (T* const*)nullptr, ldb, stB, (T* const*)nullptr, ldc, stC,
+                                     (rocblas_int*)nullptr, bc),
                 rocblas_status_invalid_size);
         else
             EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, (T*)nullptr,
                                                        lda, stA, (T*)nullptr, ldb, stB, (T*)nullptr,
-                                                       ldc, stC, bc),
+                                                       ldc, stC, (rocblas_int*)nullptr, bc),
                                   rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -364,13 +394,13 @@ void testing_bttrf_npvt(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, (T* const*)nullptr,
-                                                   lda, stA, (T* const*)nullptr, ldb, stB,
-                                                   (T* const*)nullptr, ldc, stC, bc));
+            CHECK_ALLOC_QUERY(rocsolver_bttrf_npvt(
+                STRIDED, handle, nb, nblocks, (T* const*)nullptr, lda, stA, (T* const*)nullptr, ldb,
+                stB, (T* const*)nullptr, ldc, stC, (rocblas_int*)nullptr, bc));
         else
             CHECK_ALLOC_QUERY(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, (T*)nullptr, lda,
                                                    stA, (T*)nullptr, ldb, stB, (T*)nullptr, ldc,
-                                                   stC, bc));
+                                                   stC, (rocblas_int*)nullptr, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -391,22 +421,26 @@ void testing_bttrf_npvt(Arguments& argus)
         host_batch_vector<T> hC(size_C, 1, bc);
         host_batch_vector<T> hBRes(size_BRes, 1, bc);
         host_batch_vector<T> hCRes(size_CRes, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
         device_batch_vector<T> dB(size_B, 1, bc);
         device_batch_vector<T> dC(size_C, 1, bc);
+        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         if(size_B)
             CHECK_HIP_ERROR(dB.memcheck());
         if(size_C)
             CHECK_HIP_ERROR(dC.memcheck());
+        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check quick return
         if(nb == 0 || nblocks == 0 || bc == 0)
         {
             EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA.data(), lda,
                                                        stA, dB.data(), ldb, stB, dC.data(), ldc,
-                                                       stC, bc),
+                                                       stC, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -417,14 +451,15 @@ void testing_bttrf_npvt(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             bttrf_npvt_getError<STRIDED, T>(handle, nb, nblocks, dA, lda, stA, dB, ldb, stB, dC,
-                                            ldc, stC, bc, hA, hB, hBRes, hC, hCRes, &max_error);
+                                            ldc, stC, dInfo, bc, hA, hB, hBRes, hC, hCRes, hInfo,
+                                            hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
             bttrf_npvt_getPerfData<STRIDED, T>(handle, nb, nblocks, dA, lda, stA, dB, ldb, stB, dC,
-                                               ldc, stC, bc, hA, hB, hC, &gpu_time_used,
+                                               ldc, stC, dInfo, bc, hA, hB, hC, &gpu_time_used,
                                                &cpu_time_used, hot_calls, argus.profile,
-                                               argus.profile_kernels, argus.perf);
+                                               argus.profile_kernels, argus.perf, argus.singular);
     }
 
     else
@@ -435,22 +470,26 @@ void testing_bttrf_npvt(Arguments& argus)
         host_strided_batch_vector<T> hC(size_C, 1, stC, bc);
         host_strided_batch_vector<T> hBRes(size_BRes, 1, stBRes, bc);
         host_strided_batch_vector<T> hCRes(size_CRes, 1, stCRes, bc);
+        host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
+        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
         device_strided_batch_vector<T> dB(size_B, 1, stB, bc);
         device_strided_batch_vector<T> dC(size_C, 1, stC, bc);
+        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         if(size_B)
             CHECK_HIP_ERROR(dB.memcheck());
         if(size_C)
             CHECK_HIP_ERROR(dC.memcheck());
+        CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check quick return
         if(nb == 0 || nblocks == 0 || bc == 0)
         {
             EXPECT_ROCBLAS_STATUS(rocsolver_bttrf_npvt(STRIDED, handle, nb, nblocks, dA.data(), lda,
                                                        stA, dB.data(), ldb, stB, dC.data(), ldc,
-                                                       stC, bc),
+                                                       stC, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -461,14 +500,15 @@ void testing_bttrf_npvt(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
             bttrf_npvt_getError<STRIDED, T>(handle, nb, nblocks, dA, lda, stA, dB, ldb, stB, dC,
-                                            ldc, stC, bc, hA, hB, hBRes, hC, hCRes, &max_error);
+                                            ldc, stC, dInfo, bc, hA, hB, hBRes, hC, hCRes, hInfo,
+                                            hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
             bttrf_npvt_getPerfData<STRIDED, T>(handle, nb, nblocks, dA, lda, stA, dB, ldb, stB, dC,
-                                               ldc, stC, bc, hA, hB, hC, &gpu_time_used,
+                                               ldc, stC, dInfo, bc, hA, hB, hC, &gpu_time_used,
                                                &cpu_time_used, hot_calls, argus.profile,
-                                               argus.profile_kernels, argus.perf);
+                                               argus.profile_kernels, argus.perf, argus.singular);
     }
 
     // validate results for rocsolver-test

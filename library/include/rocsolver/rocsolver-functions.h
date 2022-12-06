@@ -22220,19 +22220,23 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_strided_batched(rocblas_handle 
                 TBD
     @param[in]
     lda         rocblas_int. lda >= nb.\n
-                Specifies the leading dimension of A.
+                Specifies the leading dimension of matrix blocks A.
     @param[in]
     B           pointer to type. Array on the GPU of dimension ldb*nb*nblocks.\n
                 TBD
     @param[in]
     ldb         rocblas_int. ldb >= nb.\n
-                Specifies the leading dimension of B.
+                Specifies the leading dimension of matrix blocks B.
     @param[out]
     C           pointer to type. Array on the GPU of dimension max(0, ldc*nb*(nblocks-1)).\n
                 TBD
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
-                Specifies the leading dimension of C.
+                Specifies the leading dimension of matrix blocks C.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit.
+                If info = i > 0, the matrix is singular.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt(rocblas_handle handle,
@@ -22243,7 +22247,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt(rocblas_handle handle,
                                                       float* B,
                                                       const rocblas_int ldb,
                                                       float* C,
-                                                      const rocblas_int ldc);
+                                                      const rocblas_int ldc,
+                                                      rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt(rocblas_handle handle,
                                                       const rocblas_int nb,
@@ -22253,7 +22258,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt(rocblas_handle handle,
                                                       double* B,
                                                       const rocblas_int ldb,
                                                       double* C,
-                                                      const rocblas_int ldc);
+                                                      const rocblas_int ldc,
+                                                      rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt(rocblas_handle handle,
                                                       const rocblas_int nb,
@@ -22263,7 +22269,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt(rocblas_handle handle,
                                                       rocblas_float_complex* B,
                                                       const rocblas_int ldb,
                                                       rocblas_float_complex* C,
-                                                      const rocblas_int ldc);
+                                                      const rocblas_int ldc,
+                                                      rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt(rocblas_handle handle,
                                                       const rocblas_int nb,
@@ -22273,7 +22280,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt(rocblas_handle handle,
                                                       rocblas_double_complex* B,
                                                       const rocblas_int ldb,
                                                       rocblas_double_complex* C,
-                                                      const rocblas_int ldc);
+                                                      const rocblas_int ldc,
+                                                      rocblas_int* info);
 //! @}
 
 /*! @{
@@ -22297,21 +22305,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt(rocblas_handle handle,
                 TBD
     @param[in]
     lda         rocblas_int. lda >= nb.\n
-                Specifies the leading dimension of matrices A_j.
+                Specifies the leading dimension of matrix blocks A_j.
     @param[in]
     B           array of pointers to type. Each pointer points to an array on the GPU of dimension
                 lda*nb*nblocks.\n
                 TBD
     @param[in]
     ldb         rocblas_int. ldb >= nb.\n
-                Specifies the leading dimension of matrices B_j.
+                Specifies the leading dimension of matrix blocks B_j.
     @param[out]
     C           array of pointers to type. Each pointer points to an array on the GPU of dimension
                 max(0, ldc*nb*(nblocks-1)).\n
                 TBD
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
-                Specifies the leading dimension of C_j.
+                Specifies the leading dimension of matrix blocks C_j.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of j-th batch instance.
+                If info[j] = i > 0, the j-th batch instance is singular.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -22326,6 +22338,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt_batched(rocblas_handle han
                                                               const rocblas_int ldb,
                                                               float* const C[],
                                                               const rocblas_int ldc,
+                                                              rocblas_int* info,
                                                               const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt_batched(rocblas_handle handle,
@@ -22337,6 +22350,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt_batched(rocblas_handle han
                                                               const rocblas_int ldb,
                                                               double* const C[],
                                                               const rocblas_int ldc,
+                                                              rocblas_int* info,
                                                               const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt_batched(rocblas_handle handle,
@@ -22348,6 +22362,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt_batched(rocblas_handle han
                                                               const rocblas_int ldb,
                                                               rocblas_float_complex* const C[],
                                                               const rocblas_int ldc,
+                                                              rocblas_int* info,
                                                               const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_batched(rocblas_handle handle,
@@ -22359,6 +22374,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_batched(rocblas_handle han
                                                               const rocblas_int ldb,
                                                               rocblas_double_complex* const C[],
                                                               const rocblas_int ldc,
+                                                              rocblas_int* info,
                                                               const rocblas_int batch_count);
 //! @}
 
@@ -22382,7 +22398,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_batched(rocblas_handle han
                 TBD
     @param[in]
     lda         rocblas_int. lda >= nb.\n
-                Specifies the leading dimension of matrices A_j.
+                Specifies the leading dimension of matrix blocks A_j.
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one matrix A_j to the next one A_(j+1).
@@ -22393,7 +22409,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_batched(rocblas_handle han
                 TBD
     @param[in]
     ldb         rocblas_int. ldb >= nb.\n
-                Specifies the leading dimension of matrices B_j.
+                Specifies the leading dimension of matrix blocks B_j.
     @param[in]
     strideB     rocblas_stride.\n
                 Stride from the start of one matrix B_j to the next one B_(j+1).
@@ -22404,12 +22420,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_batched(rocblas_handle han
                 TBD
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
-                Specifies the leading dimension of C_j.
+                Specifies the leading dimension of matrix blocks C_j.
     @param[in]
     strideC     rocblas_stride.\n
                 Stride from the start of one matrix C_j to the next one C_(j+1).
                 There is no restriction for the value of strideC. Normal use case is strideC >=
                 max(0, ldc*nb*(nblocks-1))
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for factorization of j-th batch instance.
+                If info[j] = i > 0, the j-th batch instance is singular.
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.
@@ -22427,6 +22447,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt_strided_batched(rocblas_ha
                                                                       float* C,
                                                                       const rocblas_int ldc,
                                                                       const rocblas_stride strideC,
+                                                                      rocblas_int* info,
                                                                       const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt_strided_batched(rocblas_handle handle,
@@ -22441,6 +22462,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt_strided_batched(rocblas_ha
                                                                       double* C,
                                                                       const rocblas_int ldc,
                                                                       const rocblas_stride strideC,
+                                                                      rocblas_int* info,
                                                                       const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt_strided_batched(rocblas_handle handle,
@@ -22455,6 +22477,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt_strided_batched(rocblas_ha
                                                                       rocblas_float_complex* C,
                                                                       const rocblas_int ldc,
                                                                       const rocblas_stride strideC,
+                                                                      rocblas_int* info,
                                                                       const rocblas_int batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_strided_batched(rocblas_handle handle,
@@ -22469,6 +22492,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_strided_batched(rocblas_ha
                                                                       rocblas_double_complex* C,
                                                                       const rocblas_int ldc,
                                                                       const rocblas_stride strideC,
+                                                                      rocblas_int* info,
                                                                       const rocblas_int batch_count);
 //! @}
 

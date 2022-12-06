@@ -8035,11 +8035,12 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            float* C,
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
     return STRIDED ? rocsolver_sbttrf_npvt_strided_batched(handle, nb, nblocks, A, lda, stA, B, ldb,
-                                                           stB, C, ldc, stC, bc)
-                   : rocsolver_sbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc);
+                                                           stB, C, ldc, stC, info, bc)
+                   : rocsolver_sbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
@@ -8055,11 +8056,12 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            double* C,
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
     return STRIDED ? rocsolver_dbttrf_npvt_strided_batched(handle, nb, nblocks, A, lda, stA, B, ldb,
-                                                           stB, C, ldc, stC, bc)
-                   : rocsolver_dbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc);
+                                                           stB, C, ldc, stC, info, bc)
+                   : rocsolver_dbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
@@ -8075,11 +8077,12 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            rocblas_float_complex* C,
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
     return STRIDED ? rocsolver_cbttrf_npvt_strided_batched(handle, nb, nblocks, A, lda, stA, B, ldb,
-                                                           stB, C, ldc, stC, bc)
-                   : rocsolver_cbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc);
+                                                           stB, C, ldc, stC, info, bc)
+                   : rocsolver_cbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
@@ -8095,11 +8098,12 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            rocblas_double_complex* C,
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
     return STRIDED ? rocsolver_zbttrf_npvt_strided_batched(handle, nb, nblocks, A, lda, stA, B, ldb,
-                                                           stB, C, ldc, stC, bc)
-                   : rocsolver_zbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc);
+                                                           stB, C, ldc, stC, info, bc)
+                   : rocsolver_zbttrf_npvt(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info);
 }
 
 // batched
@@ -8116,9 +8120,10 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            float* const C[],
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
-    return rocsolver_sbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_sbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info, bc);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
@@ -8134,9 +8139,10 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            double* const C[],
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
-    return rocsolver_dbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_dbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info, bc);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
@@ -8152,9 +8158,10 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            rocblas_float_complex* const C[],
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
-    return rocsolver_cbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_cbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info, bc);
 }
 
 inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
@@ -8170,9 +8177,10 @@ inline rocblas_status rocsolver_bttrf_npvt(bool STRIDED,
                                            rocblas_double_complex* const C[],
                                            rocblas_int ldc,
                                            rocblas_stride stC,
+                                           rocblas_int* info,
                                            rocblas_int bc)
 {
-    return rocsolver_zbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, bc);
+    return rocsolver_zbttrf_npvt_batched(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info, bc);
 }
 /********************************************************/
 

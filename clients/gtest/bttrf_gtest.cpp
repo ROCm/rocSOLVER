@@ -14,7 +14,8 @@ using namespace std;
 
 typedef vector<int> bttrf_tuple;
 
-// each matrix_size_range vector is a {nb, nblocks, lda, ldb, ldc}
+// each matrix_size_range vector is a {nb, nblocks, lda, ldb, ldc, singular}
+// if singular = 1, then the used matrix for the tests is singular
 
 // case when nb = 0 and nblocks = 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -22,22 +23,24 @@ typedef vector<int> bttrf_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
     // quick return
-    {0, 1, 1, 1, 1},
-    {1, 0, 1, 1, 1},
+    {0, 1, 1, 1, 1, 0},
+    {1, 0, 1, 1, 1, 0},
     // invalid
-    {-1, 1, 1, 1, 1},
-    {1, -1, 1, 1, 1},
-    {10, 2, 1, 1, 1},
+    {-1, 1, 1, 1, 1, 0},
+    {1, -1, 1, 1, 1, 0},
+    {10, 2, 1, 1, 1, 0},
     // normal (valid) samples
-    {32, 1, 32, 32, 32},
-    {16, 2, 20, 16, 16},
-    {10, 7, 10, 20, 10},
-    {10, 10, 10, 10, 20},
+    {32, 1, 32, 32, 32, 0},
+    {16, 2, 20, 16, 16, 1},
+    {10, 7, 10, 20, 10, 0},
+    {10, 10, 10, 10, 20, 1},
 };
 
 // for daily_lapack tests
-const vector<vector<int>> large_matrix_size_range
-    = {{32, 6, 32, 32, 32}, {50, 10, 60, 50, 50}, {32, 10, 32, 40, 32}, {32, 20, 32, 32, 40}};
+const vector<vector<int>> large_matrix_size_range = {{32, 6, 32, 32, 32, 0},
+                                                     {50, 10, 60, 50, 50, 1},
+                                                     {32, 10, 32, 40, 32, 0},
+                                                     {32, 20, 32, 32, 40, 0}};
 
 Arguments bttrf_setup_arguments(bttrf_tuple tup)
 {
@@ -52,6 +55,7 @@ Arguments bttrf_setup_arguments(bttrf_tuple tup)
     // only testing standard use case/defaults for strides
 
     arg.timing = 0;
+    arg.singular = tup[5];
 
     return arg;
 }
@@ -72,6 +76,10 @@ protected:
             testing_bttrf_npvt_bad_arg<BATCHED, STRIDED, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_bttrf_npvt<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
         testing_bttrf_npvt<BATCHED, STRIDED, T>(arg);
     }
 };

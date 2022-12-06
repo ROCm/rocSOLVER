@@ -13,7 +13,8 @@ rocblas_status rocsolver_bttrf_npvt_impl(rocblas_handle handle,
                                          U B,
                                          const rocblas_int ldb,
                                          U C,
-                                         const rocblas_int ldc)
+                                         const rocblas_int ldc,
+                                         rocblas_int* info)
 {
     ROCSOLVER_ENTER_TOP("bttrf_npvt", "--nb", nb, "--nblocks", nblocks, "--lda", lda, "--ldb", ldb,
                         "--ldc", ldc);
@@ -22,7 +23,8 @@ rocblas_status rocsolver_bttrf_npvt_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_bttrf_npvt_argCheck(handle, nb, nblocks, lda, ldb, ldc, A, B, C);
+    rocblas_status st
+        = rocsolver_bttrf_npvt_argCheck(handle, nb, nblocks, lda, ldb, ldc, A, B, C, info);
     if(st != rocblas_status_continue)
         return st;
 
@@ -56,8 +58,8 @@ rocblas_status rocsolver_bttrf_npvt_impl(rocblas_handle handle,
 
     // Execution
     return rocsolver_bttrf_npvt_template<false, false, T>(handle, nb, nblocks, A, shiftA, lda,
-                                                          strideA, B, shiftB, ldb, strideB, C,
-                                                          shiftC, ldc, strideC, batch_count, work);
+                                                          strideA, B, shiftB, ldb, strideB, C, shiftC,
+                                                          ldc, strideC, info, batch_count, work);
 }
 
 /*
@@ -76,9 +78,10 @@ rocblas_status rocsolver_sbttrf_npvt(rocblas_handle handle,
                                      float* B,
                                      const rocblas_int ldb,
                                      float* C,
-                                     const rocblas_int ldc)
+                                     const rocblas_int ldc,
+                                     rocblas_int* info)
 {
-    return rocsolver_bttrf_npvt_impl<float>(handle, nb, nblocks, A, lda, B, ldb, C, ldc);
+    return rocsolver_bttrf_npvt_impl<float>(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info);
 }
 
 rocblas_status rocsolver_dbttrf_npvt(rocblas_handle handle,
@@ -89,9 +92,10 @@ rocblas_status rocsolver_dbttrf_npvt(rocblas_handle handle,
                                      double* B,
                                      const rocblas_int ldb,
                                      double* C,
-                                     const rocblas_int ldc)
+                                     const rocblas_int ldc,
+                                     rocblas_int* info)
 {
-    return rocsolver_bttrf_npvt_impl<double>(handle, nb, nblocks, A, lda, B, ldb, C, ldc);
+    return rocsolver_bttrf_npvt_impl<double>(handle, nb, nblocks, A, lda, B, ldb, C, ldc, info);
 }
 
 rocblas_status rocsolver_cbttrf_npvt(rocblas_handle handle,
@@ -102,10 +106,11 @@ rocblas_status rocsolver_cbttrf_npvt(rocblas_handle handle,
                                      rocblas_float_complex* B,
                                      const rocblas_int ldb,
                                      rocblas_float_complex* C,
-                                     const rocblas_int ldc)
+                                     const rocblas_int ldc,
+                                     rocblas_int* info)
 {
     return rocsolver_bttrf_npvt_impl<rocblas_float_complex>(handle, nb, nblocks, A, lda, B, ldb, C,
-                                                            ldc);
+                                                            ldc, info);
 }
 
 rocblas_status rocsolver_zbttrf_npvt(rocblas_handle handle,
@@ -116,10 +121,11 @@ rocblas_status rocsolver_zbttrf_npvt(rocblas_handle handle,
                                      rocblas_double_complex* B,
                                      const rocblas_int ldb,
                                      rocblas_double_complex* C,
-                                     const rocblas_int ldc)
+                                     const rocblas_int ldc,
+                                     rocblas_int* info)
 {
     return rocsolver_bttrf_npvt_impl<rocblas_double_complex>(handle, nb, nblocks, A, lda, B, ldb, C,
-                                                             ldc);
+                                                             ldc, info);
 }
 
 } // extern C
