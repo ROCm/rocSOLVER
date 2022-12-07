@@ -88,7 +88,7 @@ void managed_malloc_getError(const rocblas_handle handle,
     hipDeviceSynchronize();
 
     // CPU lapack
-    cblas_labrd<T>(m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
+    cpu_labrd(m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
 
     // error is max(||hA - hARes|| / ||hA||, ||hX - hXRes|| / ||hX||, ||hY -
     // hYRes|| / ||hY||) (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY
@@ -134,7 +134,7 @@ void managed_malloc_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance
         *cpu_time_used = get_time_us_no_sync();
-        cblas_labrd<T>(m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
+        cpu_labrd(m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

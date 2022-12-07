@@ -82,7 +82,7 @@ void lacgv_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cblas_lacgv<T>(n, hA[0], inc);
+    cpu_lacgv(n, hA[0], inc);
 
     // error |hA - hAr| (elements must be identical)
     *max_err = 0;
@@ -113,7 +113,7 @@ void lacgv_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_lacgv<T>(n, hA[0], inc);
+        cpu_lacgv(n, hA[0], inc);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

@@ -181,7 +181,7 @@ void trtri_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_trtri<T>(uplo, diag, n, hA[b], lda, hInfo[b]);
+        cpu_trtri(uplo, diag, n, hA[b], lda, hInfo[b]);
     }
 
     // check info for singularities
@@ -236,7 +236,7 @@ void trtri_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_trtri<T>(uplo, diag, n, hA[b], lda, hInfo[b]);
+            cpu_trtri(uplo, diag, n, hA[b], lda, hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
