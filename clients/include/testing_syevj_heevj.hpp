@@ -182,7 +182,7 @@ void syevj_heevj_initData(const rocblas_handle handle,
             }
 
             // make copy of original data to test vectors if required
-            if(test && evect == rocblas_evect_original)
+            if(test)
             {
                 for(rocblas_int i = 0; i < n; i++)
                 {
@@ -266,7 +266,8 @@ void syevj_heevj_getError(const rocblas_handle handle,
 
     // Also check validity of residual
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hResidualRes[b][0] < 0 || hResidualRes[b][0] > atol)
+        if(hResidualRes[b][0] < 0
+           || hResidualRes[b][0] > snorm('F', n, n, A.data() + b * lda * n, lda) * atol)
             *max_err += 1;
 
     // Also check validity of sweeps
