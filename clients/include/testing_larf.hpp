@@ -94,7 +94,7 @@ void larf_initData(const rocblas_handle handle,
         rocblas_init<T>(xx, true);
 
         // compute householder reflector
-        cblas_larfg<T>(order, xx[0], xx[0] + abs(inc), abs(inc), ht[0]);
+        cpu_larfg(order, xx[0], xx[0] + abs(inc), abs(inc), ht[0]);
         xx[0][0] = 1;
         for(rocblas_int i = 0; i < order; i++)
         {
@@ -143,7 +143,7 @@ void larf_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cblas_larf<T>(side, m, n, hx[0], inc, ht[0], hA[0], lda, hw.data());
+    cpu_larf(side, m, n, hx[0], inc, ht[0], hA[0], lda, hw.data());
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -182,7 +182,7 @@ void larf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_larf<T>(side, m, n, hx[0], inc, ht[0], hA[0], lda, hw.data());
+        cpu_larf(side, m, n, hx[0], inc, ht[0], hA[0], lda, hw.data());
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

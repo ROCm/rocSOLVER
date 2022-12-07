@@ -112,7 +112,7 @@ void sterf_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hERes.transfer_from(dE));
 
     // CPU lapack
-    cblas_sterf<T>(n, hD[0], hE[0]);
+    cpu_sterf(n, hD[0], hE[0]);
 
     // error is ||hD - hDRes|| / ||hD||
     // using frobenius norm
@@ -141,7 +141,7 @@ void sterf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_sterf<T>(n, hD[0], hE[0]);
+        cpu_sterf(n, hD[0], hE[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

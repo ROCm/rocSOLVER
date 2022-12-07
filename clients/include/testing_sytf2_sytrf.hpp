@@ -232,8 +232,8 @@ void sytf2_sytrf_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        SYTRF ? cblas_sytrf<T>(uplo, n, hA[b], lda, hIpiv[b], work.data(), lwork, hInfo[b])
-              : cblas_sytf2<T>(uplo, n, hA[b], lda, hIpiv[b], hInfo[b]);
+        SYTRF ? cpu_sytrf(uplo, n, hA[b], lda, hIpiv[b], work.data(), lwork, hInfo[b])
+              : cpu_sytf2(uplo, n, hA[b], lda, hIpiv[b], hInfo[b]);
     }
 
     // error is ||hA - hARes|| / ||hA||
@@ -297,8 +297,8 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            SYTRF ? cblas_sytrf<T>(uplo, n, hA[b], lda, hIpiv[b], work.data(), lwork, hInfo[b])
-                  : cblas_sytf2<T>(uplo, n, hA[b], lda, hIpiv[b], hInfo[b]);
+            SYTRF ? cpu_sytrf(uplo, n, hA[b], lda, hIpiv[b], work.data(), lwork, hInfo[b])
+                  : cpu_sytf2(uplo, n, hA[b], lda, hIpiv[b], hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

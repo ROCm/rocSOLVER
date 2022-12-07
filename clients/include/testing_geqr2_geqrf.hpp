@@ -167,8 +167,8 @@ void geqr2_geqrf_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        GEQRF ? cblas_geqrf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), n)
-              : cblas_geqr2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+        GEQRF ? cpu_geqrf(m, n, hA[b], lda, hIpiv[b], hW.data(), n)
+              : cpu_geqr2(m, n, hA[b], lda, hIpiv[b], hW.data());
     }
 
     // error is ||hA - hARes|| / ||hA|| (ideally ||QR - Qres Rres|| / ||QR||)
@@ -213,8 +213,8 @@ void geqr2_geqrf_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            GEQRF ? cblas_geqrf<T>(m, n, hA[b], lda, hIpiv[b], hW.data(), n)
-                  : cblas_geqr2<T>(m, n, hA[b], lda, hIpiv[b], hW.data());
+            GEQRF ? cpu_geqrf(m, n, hA[b], lda, hIpiv[b], hW.data(), n)
+                  : cpu_geqr2(m, n, hA[b], lda, hIpiv[b], hW.data());
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

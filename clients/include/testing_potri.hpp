@@ -114,7 +114,7 @@ void potri_initData(const rocblas_handle handle,
                 hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             // do the Cholesky factorization of matrix A w/ the reference LAPACK routine
-            cblas_potrf<T>(uplo, n, hA[b], lda, hInfo[b]);
+            cpu_potrf(uplo, n, hA[b], lda, hInfo[b]);
 
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
@@ -171,7 +171,7 @@ void potri_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_potri<T>(uplo, n, hA[b], lda, hInfo[b]);
+        cpu_potri(uplo, n, hA[b], lda, hInfo[b]);
     }
 
     // check info for singularities
@@ -225,7 +225,7 @@ void potri_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_potri<T>(uplo, n, hA[b], lda, hInfo[b]);
+            cpu_potri(uplo, n, hA[b], lda, hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

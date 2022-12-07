@@ -149,9 +149,9 @@ void stein_initData(const rocblas_handle handle,
         S il = n - nev + 1;
         S iu = n;
         S abstol = 2 * get_safemin<S>();
-        cblas_stebz<S>(rocblas_erange_index, rocblas_eorder_blocks, n, 0, 0, il, iu, abstol, hD[0],
-                       hE[0], hNev[0], &nsplit, hW[0], hIblock[0], hIsplit[0], work.data(),
-                       iwork.data(), &info);
+        cpu_stebz(rocblas_erange_index, rocblas_eorder_blocks, n, S(0), S(0), il, iu, abstol, hD[0],
+                  hE[0], hNev[0], &nsplit, hW[0], hIblock[0], hIsplit[0], work.data(), iwork.data(),
+                  &info);
     }
 
     if(GPU)
@@ -216,8 +216,8 @@ void stein_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    cblas_stein<T>(n, hD[0], hE[0], hNev[0], hW[0], hIblock[0], hIsplit[0], hZ[0], ldz, work.data(),
-                   iwork.data(), hIfail[0], hInfo[0]);
+    cpu_stein(n, hD[0], hE[0], hNev[0], hW[0], hIblock[0], hIsplit[0], hZ[0], ldz, work.data(),
+              iwork.data(), hIfail[0], hInfo[0]);
 
     // check info
     if(hInfo[0][0] != hInfoRes[0][0])
@@ -324,8 +324,8 @@ void stein_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_stein<T>(n, hD[0], hE[0], hNev[0], hW[0], hIblock[0], hIsplit[0], hZ[0], ldz,
-                       work.data(), iwork.data(), hIfail[0], hInfo[0]);
+        cpu_stein(n, hD[0], hE[0], hNev[0], hW[0], hIblock[0], hIsplit[0], hZ[0], ldz, work.data(),
+                  iwork.data(), hIfail[0], hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

@@ -179,20 +179,19 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
             if(itype == rocblas_eform_ax)
             {
                 // form A = U' M U
-                cblas_trmm<T>(rocblas_side_left, rocblas_fill_upper,
-                              rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
-                              n, one, U[b], ldu, hA[b], lda);
-                cblas_trmm<T>(rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
-                              rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
+                cpu_trmm(rocblas_side_left, rocblas_fill_upper, rocblas_operation_conjugate_transpose,
+                         rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
+                cpu_trmm(rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
             }
             else
             {
                 // form A = inv(U) M inv(U')
-                cblas_trsm<T>(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
-                              rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
-                cblas_trsm<T>(rocblas_side_right, rocblas_fill_upper,
-                              rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
-                              n, one, U[b], ldu, hA[b], lda);
+                cpu_trsm(rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, n, n, one, U[b], ldu, hA[b], lda);
+                cpu_trsm(rocblas_side_right, rocblas_fill_upper,
+                         rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n, n,
+                         one, U[b], ldu, hA[b], lda);
             }
         }
     }
@@ -245,8 +244,8 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
         for(rocblas_int b = 0; b < bc; ++b)
         {
             memcpy(hARes[b], hA[b], lda * n * sizeof(T));
-            SYGST ? cblas_sygst_hegst<T>(itype, uplo, n, hARes[b], lda, hB[b], ldb)
-                  : cblas_sygs2_hegs2<T>(itype, uplo, n, hARes[b], lda, hB[b], ldb);
+            SYGST ? cpu_sygst_hegst(itype, uplo, n, hARes[b], lda, hB[b], ldb)
+                  : cpu_sygs2_hegs2(itype, uplo, n, hARes[b], lda, hB[b], ldb);
         }
     }
 
@@ -296,8 +295,8 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            SYGST ? cblas_sygst_hegst<T>(itype, uplo, n, hA[b], lda, hB[b], ldb)
-                  : cblas_sygs2_hegs2<T>(itype, uplo, n, hA[b], lda, hB[b], ldb);
+            SYGST ? cpu_sygst_hegst(itype, uplo, n, hA[b], lda, hB[b], ldb)
+                  : cpu_sygs2_hegs2(itype, uplo, n, hA[b], lda, hB[b], ldb);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

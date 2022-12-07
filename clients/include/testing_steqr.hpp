@@ -188,7 +188,7 @@ void steqr_getError(const rocblas_handle handle,
     }
 
     // CPU lapack
-    cblas_steqr<T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), hInfo[0]);
+    cpu_steqr(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), hInfo[0]);
 
     // check info
     if(hInfo[0][0] != hInfoRes[0][0])
@@ -219,8 +219,8 @@ void steqr_getError(const rocblas_handle handle,
             for(int j = 0; j < n; j++)
             {
                 alpha = T(1) / hDRes[0][j];
-                cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1,
-                                beta, hC[0] + j * ldc, 1);
+                cpu_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta,
+                              hC[0] + j * ldc, 1);
             }
 
             // error is ||hC - hCRes|| / ||hC||
@@ -262,7 +262,7 @@ void steqr_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_steqr<T>(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), hInfo[0]);
+        cpu_steqr(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), hInfo[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

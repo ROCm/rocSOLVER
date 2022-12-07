@@ -171,7 +171,7 @@ void latrd_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hWRes.transfer_from(dW));
 
     // CPU lapack
-    cblas_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
+    cpu_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
 
     // error is max(||hA - hARes|| / ||hA||, ||hW - hWRes|| / ||hW||)
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY
@@ -214,7 +214,7 @@ void latrd_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance
         *cpu_time_used = get_time_us_no_sync();
         memset(hW[0], 0, ldw * k * sizeof(T));
-        cblas_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
+        cpu_latrd(uplo, n, k, hA[0], lda, hE[0], hTau[0], hW[0], ldw);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

@@ -110,9 +110,9 @@ void larft_initData(const rocblas_handle handle,
             }
 
             if(direct == rocblas_forward_direction)
-                cblas_geqrf<T>(n, k, hV[0], ldv, ht[0], hw.data(), k);
+                cpu_geqrf(n, k, hV[0], ldv, ht[0], hw.data(), k);
             else
-                cblas_geqlf<T>(n, k, hV[0], ldv, ht[0], hw.data(), k);
+                cpu_geqlf(n, k, hV[0], ldv, ht[0], hw.data(), k);
         }
         else
         {
@@ -128,9 +128,9 @@ void larft_initData(const rocblas_handle handle,
             }
 
             if(direct == rocblas_forward_direction)
-                cblas_gelqf<T>(k, n, hV[0], ldv, ht[0], hw.data(), k);
+                cpu_gelqf(k, n, hV[0], ldv, ht[0], hw.data(), k);
             else
-                cblas_gerqf<T>(k, n, hV[0], ldv, ht[0], hw.data(), k);
+                cpu_gerqf(k, n, hV[0], ldv, ht[0], hw.data(), k);
         }
     }
 
@@ -173,7 +173,7 @@ void larft_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hTr.transfer_from(dT));
 
     // CPU lapack
-    cblas_larft<T>(direct, storev, n, k, hV[0], ldv, ht[0], hT[0], ldt);
+    cpu_larft(direct, storev, n, k, hV[0], ldv, ht[0], hT[0], ldt);
 
     // error is ||hT - hTr|| / ||hT||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -215,7 +215,7 @@ void larft_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_larft<T>(direct, storev, n, k, hV[0], ldv, ht[0], hT[0], ldt);
+        cpu_larft(direct, storev, n, k, hV[0], ldv, ht[0], hT[0], ldt);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

@@ -258,12 +258,12 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
                 v[0] = 1;
 
                 // apply householder reflector
-                cblas_larf(rocblas_side_left, n - 1 - j, n - j, v.data(), 1, t + j,
-                           a + (j + 1) + j * lda, lda, hW.data());
+                cpu_larf(rocblas_side_left, n - 1 - j, n - j, v.data(), 1, t + j,
+                         a + (j + 1) + j * lda, lda, hW.data());
                 if(COMPLEX)
-                    cblas_lacgv(1, t + j, 1);
-                cblas_larf(rocblas_side_right, n - j, n - 1 - j, v.data(), 1, t + j,
-                           a + j + (j + 1) * lda, lda, hW.data());
+                    cpu_lacgv(1, t + j, 1);
+                cpu_larf(rocblas_side_right, n - j, n - 1 - j, v.data(), 1, t + j,
+                         a + j + (j + 1) * lda, lda, hW.data());
             }
         }
 
@@ -289,10 +289,10 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
                     a[i + j * lda] = 0;
 
                 // apply householder reflector
-                cblas_larf(rocblas_side_left, j, j + 1, v.data(), 1, t + j - 1, a, lda, hW.data());
+                cpu_larf(rocblas_side_left, j, j + 1, v.data(), 1, t + j - 1, a, lda, hW.data());
                 if(COMPLEX)
-                    cblas_lacgv(1, t + j - 1, 1);
-                cblas_larf(rocblas_side_right, j + 1, j, v.data(), 1, t + j - 1, a, lda, hW.data());
+                    cpu_lacgv(1, t + j - 1, 1);
+                cpu_larf(rocblas_side_right, j + 1, j, v.data(), 1, t + j - 1, a, lda, hW.data());
             }
         }
     }
@@ -345,8 +345,8 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
         for(rocblas_int b = 0; b < bc; ++b)
         {
             SYTRD
-            ? cblas_sytrd_hetrd<T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(), 32 * n)
-            : cblas_sytd2_hetd2<T>(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b]);
+            ? cpu_sytrd_hetrd(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(), 32 * n)
+            : cpu_sytd2_hetd2(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

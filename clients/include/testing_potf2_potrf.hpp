@@ -178,8 +178,7 @@ void potf2_potrf_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        POTRF ? cblas_potrf<T>(uplo, n, hA[b], lda, hInfo[b])
-              : cblas_potf2<T>(uplo, n, hA[b], lda, hInfo[b]);
+        POTRF ? cpu_potrf(uplo, n, hA[b], lda, hInfo[b]) : cpu_potf2(uplo, n, hA[b], lda, hInfo[b]);
     }
 
     // error is ||hA - hARes|| / ||hA|| (ideally ||LL' - Lres Lres'|| / ||LL'||)
@@ -236,8 +235,8 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            POTRF ? cblas_potrf<T>(uplo, n, hA[b], lda, hInfo[b])
-                  : cblas_potf2<T>(uplo, n, hA[b], lda, hInfo[b]);
+            POTRF ? cpu_potrf(uplo, n, hA[b], lda, hInfo[b])
+                  : cpu_potf2(uplo, n, hA[b], lda, hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

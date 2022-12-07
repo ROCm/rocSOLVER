@@ -135,7 +135,7 @@ void ormxr_unmxr_initData(const rocblas_handle handle,
         }
 
         // compute QR factorization
-        cblas_geqrf<T>(nq, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
+        cpu_geqrf(nq, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
     }
 
     if(GPU)
@@ -179,9 +179,8 @@ void ormxr_unmxr_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hCr.transfer_from(dC));
 
     // CPU lapack
-    MQR ? cblas_ormqr_unmqr<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(),
-                               size_W)
-        : cblas_orm2r_unm2r<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
+    MQR ? cpu_ormqr_unmqr(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(), size_W)
+        : cpu_orm2r_unm2r(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
 
     // error is ||hC - hCr|| / ||hC||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -222,9 +221,9 @@ void ormxr_unmxr_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        MQR ? cblas_ormqr_unmqr<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc,
-                                   hW.data(), size_W)
-            : cblas_orm2r_unm2r<T>(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
+        MQR ? cpu_ormqr_unmqr(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data(),
+                              size_W)
+            : cpu_orm2r_unm2r(side, trans, m, n, k, hA[0], lda, hIpiv[0], hC[0], ldc, hW.data());
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

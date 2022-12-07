@@ -188,8 +188,8 @@ void getf2_getrf_npvt_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        GETRF ? cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b])
-              : cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
+        GETRF ? cpu_getrf(m, n, hA[b], lda, hIpiv[b], hinfo[b])
+              : cpu_getf2(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
     }
 
     // expecting original matrix to be non-singular
@@ -242,8 +242,8 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            GETRF ? cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b])
-                  : cblas_getf2<T>(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
+            GETRF ? cpu_getrf(m, n, hA[b], lda, hIpiv[b], hinfo[b])
+                  : cpu_getf2(m, n, hA[b], lda, hIpiv[b], hinfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
