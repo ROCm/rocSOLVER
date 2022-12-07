@@ -107,7 +107,7 @@ void larfg_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hxr.transfer_from(dx));
 
     // CPU lapack
-    cblas_larfg<T>(n, ha[0], hx[0], inc, ht[0]);
+    cpu_larfg(n, ha[0], hx[0], inc, ht[0]);
 
     // error is ||hx - hxr|| (not necessary to check tau, for now)
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -139,7 +139,7 @@ void larfg_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_larfg<T>(n, ha[0], hx[0], inc, ht[0]);
+        cpu_larfg(n, ha[0], hx[0], inc, ht[0]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

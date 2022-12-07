@@ -254,8 +254,8 @@ void syevj_heevj_getError(const rocblas_handle handle,
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
-        cblas_syev_heev<T>(evect, uplo, n, hA[b], lda, hW[b], work.data(), lwork, rwork.data(),
-                           lrwork, hInfo[b]);
+        cpu_syev_heev(evect, uplo, n, hA[b], lda, hW[b], work.data(), lwork, rwork.data(), lrwork,
+                      hInfo[b]);
 
     // (We expect the used input matrices to always converge)
     // Check info for non-convergence
@@ -303,8 +303,8 @@ void syevj_heevj_getError(const rocblas_handle handle,
                 for(int j = 0; j < n; j++)
                 {
                     alpha = T(1) / hWRes[b][j];
-                    cblas_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hARes[b] + j * lda,
-                                    1, beta, hA[b] + j * lda, 1);
+                    cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hARes[b] + j * lda,
+                                  1, beta, hA[b] + j * lda, 1);
                 }
 
                 // error is ||hA - hARes|| / ||hA||
@@ -358,8 +358,8 @@ void syevj_heevj_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
-            cblas_syev_heev<T>(evect, uplo, n, hA[b], lda, hW[b], work.data(), lwork, rwork.data(),
-                               lrwork, hInfo[b]);
+            cpu_syev_heev(evect, uplo, n, hA[b], lda, hW[b], work.data(), lwork, rwork.data(),
+                          lrwork, hInfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

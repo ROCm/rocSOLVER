@@ -19,7 +19,7 @@
 namespace roc
 {
 // Regular expression for token delimiters (whitespace and commas)
-static const std::regex program_options_regex{"[, \\f\\n\\r\\t\\v]+", std::regex_constants::optimize};
+extern const std::regex program_options_regex;
 
 // Polymorphic base class to use with dynamic_cast
 class value_base

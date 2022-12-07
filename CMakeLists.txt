@@ -128,16 +128,20 @@ message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
-# Query for compiler support of GPU archs
-rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
-  TARGETS
-    gfx90a:xnack-
-    gfx90a:xnack+
-)
+if(NOT DEFINED AMDGPU_TARGETS)
+  # Query for compiler support of GPU archs
+  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
+    TARGETS
+      gfx90a:xnack-
+      gfx90a:xnack+
+      gfx1100
+      gfx1102
+  )
+endif()
 
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
-set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;gfx1102;gfx1100;${OPTIONAL_AMDGPU_TARGETS}"
+set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
   CACHE STRING "List of specific machine types for library to target")
 
 # Find HIP dependencies
@@ -205,8 +209,6 @@ endif()
 
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
   "\${CPACK_PACKAGING_INSTALL_PREFIX}"
-  "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}"
-  "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
 )
 
 set(ROCSOLVER_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
