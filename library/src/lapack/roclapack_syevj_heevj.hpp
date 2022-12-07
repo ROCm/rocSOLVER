@@ -20,7 +20,7 @@
 /*****************************************************************************/
 
 /** SYEVJ_SMALL_KERNEL applies the Jacobi eigenvalue algorithm to matrices of size
-    n <= SYEVJ_SWITCH_SIZE. For each off-diagonal element A[i,j], a Jacobi rotation J is
+    n <= SYEVJ_BLOCKED_SWITCH. For each off-diagonal element A[i,j], a Jacobi rotation J is
     calculated so that (J'AJ)[i,j] = 0. J only affects rows i and j, and J' only affects
     columns i and j. Therefore, ceil(n / 2) rotations can be computed and applied
     in parallel, so long as the rotations do not conflict between threads. We use top/bottom pairs
@@ -1216,7 +1216,7 @@ void rocsolver_syevj_heevj_getMemorySize(const rocblas_evect evect,
     // size of temporary workspace for copying A
     *size_Acpy = sizeof(T) * n * n * batch_count;
 
-    if(n <= SYEVJ_SWITCHSIZE)
+    if(n <= SYEVJ_BLOCKED_SWITCH)
     {
         *size_J = 0;
         *size_norms = 0;
@@ -1353,7 +1353,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
 
-    if(n <= SYEVJ_SWITCHSIZE)
+    if(n <= SYEVJ_BLOCKED_SWITCH)
     {
         // *** USE SINGLE SMALL-SIZE KERNEL ***
 

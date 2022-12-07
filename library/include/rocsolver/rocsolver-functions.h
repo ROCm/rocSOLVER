@@ -16044,7 +16044,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     @param[in]
     abstol      type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16155,7 +16155,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     @param[in]
     abstol      real type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16270,7 +16270,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     @param[in]
     abstol      type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16387,7 +16387,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     @param[in]
     abstol      real type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A_j)
-                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.

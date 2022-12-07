@@ -172,9 +172,9 @@
     the small-size kernel to the blocked algorithm when executing SYEVJ. It also applies to the
     corresponding batched and strided-batched routines. Must be <= 64.
 
-    \details If the size of the matrix is not greater than SYEVJ_SWITCHSIZE, the eigenvalues
+    \details If the size of the matrix is not greater than SYEVJ_BLOCKED_SWITCH, the eigenvalues
     and eigenvectors will be computed with a single kernel call. */
-#define SYEVJ_SWITCHSIZE 58
+#define SYEVJ_BLOCKED_SWITCH 58
 
 /*************************** sytf2/sytrf **************************************
 *******************************************************************************/

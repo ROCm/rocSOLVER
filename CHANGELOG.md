@@ -5,7 +5,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ## (Unreleased) rocSOLVER
 ### Added
 ### Optimized
-- Significantly improved the performance of SYEVJ/HEEVJ.
+- Improved the performance of SYEVJ/HEEVJ.
 
 ### Changed
 ### Deprecated
