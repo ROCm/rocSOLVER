@@ -194,7 +194,7 @@ LAPACK-like functions
 
     :ref:`rocsolver_getf2_npvt <getf2_npvt>`, x, x, x, x
     :ref:`rocsolver_getrf_npvt <getrf_npvt>`, x, x, x, x
-    :ref:`rocsolver_bttrf_npvt <bttrf_npvt>`, x, x, x, x
+    :ref:`rocsolver_geblttrf_npvt <geblttrf_npvt>`, x, x, x, x
 
 .. csv-table:: Linear-systems solvers
     :header: "Function", "single", "double", "single complex", "double complex"

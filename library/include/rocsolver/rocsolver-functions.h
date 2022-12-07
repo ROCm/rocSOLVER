@@ -22202,7 +22202,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief BTTRF_NPVT computes the LU factorization of a block tridiagonal matrix without partial pivoting.
+    \brief GEBLTTRF_NPVT computes the LU factorization of a block tridiagonal matrix without partial pivoting.
 
     \details
     TBD
@@ -22239,53 +22239,53 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_strided_batched(rocblas_handle 
                 If info = i > 0, the matrix is singular.
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt(rocblas_handle handle,
-                                                      const rocblas_int nb,
-                                                      const rocblas_int nblocks,
-                                                      float* A,
-                                                      const rocblas_int lda,
-                                                      float* B,
-                                                      const rocblas_int ldb,
-                                                      float* C,
-                                                      const rocblas_int ldc,
-                                                      rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeblttrf_npvt(rocblas_handle handle,
+                                                         const rocblas_int nb,
+                                                         const rocblas_int nblocks,
+                                                         float* A,
+                                                         const rocblas_int lda,
+                                                         float* B,
+                                                         const rocblas_int ldb,
+                                                         float* C,
+                                                         const rocblas_int ldc,
+                                                         rocblas_int* info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt(rocblas_handle handle,
-                                                      const rocblas_int nb,
-                                                      const rocblas_int nblocks,
-                                                      double* A,
-                                                      const rocblas_int lda,
-                                                      double* B,
-                                                      const rocblas_int ldb,
-                                                      double* C,
-                                                      const rocblas_int ldc,
-                                                      rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeblttrf_npvt(rocblas_handle handle,
+                                                         const rocblas_int nb,
+                                                         const rocblas_int nblocks,
+                                                         double* A,
+                                                         const rocblas_int lda,
+                                                         double* B,
+                                                         const rocblas_int ldb,
+                                                         double* C,
+                                                         const rocblas_int ldc,
+                                                         rocblas_int* info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt(rocblas_handle handle,
-                                                      const rocblas_int nb,
-                                                      const rocblas_int nblocks,
-                                                      rocblas_float_complex* A,
-                                                      const rocblas_int lda,
-                                                      rocblas_float_complex* B,
-                                                      const rocblas_int ldb,
-                                                      rocblas_float_complex* C,
-                                                      const rocblas_int ldc,
-                                                      rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeblttrf_npvt(rocblas_handle handle,
+                                                         const rocblas_int nb,
+                                                         const rocblas_int nblocks,
+                                                         rocblas_float_complex* A,
+                                                         const rocblas_int lda,
+                                                         rocblas_float_complex* B,
+                                                         const rocblas_int ldb,
+                                                         rocblas_float_complex* C,
+                                                         const rocblas_int ldc,
+                                                         rocblas_int* info);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt(rocblas_handle handle,
-                                                      const rocblas_int nb,
-                                                      const rocblas_int nblocks,
-                                                      rocblas_double_complex* A,
-                                                      const rocblas_int lda,
-                                                      rocblas_double_complex* B,
-                                                      const rocblas_int ldb,
-                                                      rocblas_double_complex* C,
-                                                      const rocblas_int ldc,
-                                                      rocblas_int* info);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt(rocblas_handle handle,
+                                                         const rocblas_int nb,
+                                                         const rocblas_int nblocks,
+                                                         rocblas_double_complex* A,
+                                                         const rocblas_int lda,
+                                                         rocblas_double_complex* B,
+                                                         const rocblas_int ldb,
+                                                         rocblas_double_complex* C,
+                                                         const rocblas_int ldc,
+                                                         rocblas_int* info);
 //! @}
 
 /*! @{
-    \brief BTTRF_NPVT_BATCHED computes the LU factorization of a batch of block tridiagonal matrices without
+    \brief GEBLTTRF_NPVT_BATCHED computes the LU factorization of a batch of block tridiagonal matrices without
     partial pivoting.
 
     \details
@@ -22329,57 +22329,57 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt(rocblas_handle handle,
                 Number of matrices in the batch.
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt_batched(rocblas_handle handle,
-                                                              const rocblas_int nb,
-                                                              const rocblas_int nblocks,
-                                                              float* const A[],
-                                                              const rocblas_int lda,
-                                                              float* const B[],
-                                                              const rocblas_int ldb,
-                                                              float* const C[],
-                                                              const rocblas_int ldc,
-                                                              rocblas_int* info,
-                                                              const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeblttrf_npvt_batched(rocblas_handle handle,
+                                                                 const rocblas_int nb,
+                                                                 const rocblas_int nblocks,
+                                                                 float* const A[],
+                                                                 const rocblas_int lda,
+                                                                 float* const B[],
+                                                                 const rocblas_int ldb,
+                                                                 float* const C[],
+                                                                 const rocblas_int ldc,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt_batched(rocblas_handle handle,
-                                                              const rocblas_int nb,
-                                                              const rocblas_int nblocks,
-                                                              double* const A[],
-                                                              const rocblas_int lda,
-                                                              double* const B[],
-                                                              const rocblas_int ldb,
-                                                              double* const C[],
-                                                              const rocblas_int ldc,
-                                                              rocblas_int* info,
-                                                              const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeblttrf_npvt_batched(rocblas_handle handle,
+                                                                 const rocblas_int nb,
+                                                                 const rocblas_int nblocks,
+                                                                 double* const A[],
+                                                                 const rocblas_int lda,
+                                                                 double* const B[],
+                                                                 const rocblas_int ldb,
+                                                                 double* const C[],
+                                                                 const rocblas_int ldc,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt_batched(rocblas_handle handle,
-                                                              const rocblas_int nb,
-                                                              const rocblas_int nblocks,
-                                                              rocblas_float_complex* const A[],
-                                                              const rocblas_int lda,
-                                                              rocblas_float_complex* const B[],
-                                                              const rocblas_int ldb,
-                                                              rocblas_float_complex* const C[],
-                                                              const rocblas_int ldc,
-                                                              rocblas_int* info,
-                                                              const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeblttrf_npvt_batched(rocblas_handle handle,
+                                                                 const rocblas_int nb,
+                                                                 const rocblas_int nblocks,
+                                                                 rocblas_float_complex* const A[],
+                                                                 const rocblas_int lda,
+                                                                 rocblas_float_complex* const B[],
+                                                                 const rocblas_int ldb,
+                                                                 rocblas_float_complex* const C[],
+                                                                 const rocblas_int ldc,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_batched(rocblas_handle handle,
-                                                              const rocblas_int nb,
-                                                              const rocblas_int nblocks,
-                                                              rocblas_double_complex* const A[],
-                                                              const rocblas_int lda,
-                                                              rocblas_double_complex* const B[],
-                                                              const rocblas_int ldb,
-                                                              rocblas_double_complex* const C[],
-                                                              const rocblas_int ldc,
-                                                              rocblas_int* info,
-                                                              const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt_batched(rocblas_handle handle,
+                                                                 const rocblas_int nb,
+                                                                 const rocblas_int nblocks,
+                                                                 rocblas_double_complex* const A[],
+                                                                 const rocblas_int lda,
+                                                                 rocblas_double_complex* const B[],
+                                                                 const rocblas_int ldb,
+                                                                 rocblas_double_complex* const C[],
+                                                                 const rocblas_int ldc,
+                                                                 rocblas_int* info,
+                                                                 const rocblas_int batch_count);
 //! @}
 
 /*! @{
-    \brief BTTRF_NPVT_STRIDED_BATCHED computes the LU factorization of a batch of block tridiagonal
+    \brief GEBLTTRF_NPVT_STRIDED_BATCHED computes the LU factorization of a batch of block tridiagonal
     matrices without partial pivoting.
 
     \details
@@ -22435,69 +22435,73 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_batched(rocblas_handle han
                 Number of matrices in the batch.
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt_strided_batched(rocblas_handle handle,
-                                                                      const rocblas_int nb,
-                                                                      const rocblas_int nblocks,
-                                                                      float* A,
-                                                                      const rocblas_int lda,
-                                                                      const rocblas_stride strideA,
-                                                                      float* B,
-                                                                      const rocblas_int ldb,
-                                                                      const rocblas_stride strideB,
-                                                                      float* C,
-                                                                      const rocblas_int ldc,
-                                                                      const rocblas_stride strideC,
-                                                                      rocblas_int* info,
-                                                                      const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_sgeblttrf_npvt_strided_batched(rocblas_handle handle,
+                                             const rocblas_int nb,
+                                             const rocblas_int nblocks,
+                                             float* A,
+                                             const rocblas_int lda,
+                                             const rocblas_stride strideA,
+                                             float* B,
+                                             const rocblas_int ldb,
+                                             const rocblas_stride strideB,
+                                             float* C,
+                                             const rocblas_int ldc,
+                                             const rocblas_stride strideC,
+                                             rocblas_int* info,
+                                             const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt_strided_batched(rocblas_handle handle,
-                                                                      const rocblas_int nb,
-                                                                      const rocblas_int nblocks,
-                                                                      double* A,
-                                                                      const rocblas_int lda,
-                                                                      const rocblas_stride strideA,
-                                                                      double* B,
-                                                                      const rocblas_int ldb,
-                                                                      const rocblas_stride strideB,
-                                                                      double* C,
-                                                                      const rocblas_int ldc,
-                                                                      const rocblas_stride strideC,
-                                                                      rocblas_int* info,
-                                                                      const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_dgeblttrf_npvt_strided_batched(rocblas_handle handle,
+                                             const rocblas_int nb,
+                                             const rocblas_int nblocks,
+                                             double* A,
+                                             const rocblas_int lda,
+                                             const rocblas_stride strideA,
+                                             double* B,
+                                             const rocblas_int ldb,
+                                             const rocblas_stride strideB,
+                                             double* C,
+                                             const rocblas_int ldc,
+                                             const rocblas_stride strideC,
+                                             rocblas_int* info,
+                                             const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt_strided_batched(rocblas_handle handle,
-                                                                      const rocblas_int nb,
-                                                                      const rocblas_int nblocks,
-                                                                      rocblas_float_complex* A,
-                                                                      const rocblas_int lda,
-                                                                      const rocblas_stride strideA,
-                                                                      rocblas_float_complex* B,
-                                                                      const rocblas_int ldb,
-                                                                      const rocblas_stride strideB,
-                                                                      rocblas_float_complex* C,
-                                                                      const rocblas_int ldc,
-                                                                      const rocblas_stride strideC,
-                                                                      rocblas_int* info,
-                                                                      const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_cgeblttrf_npvt_strided_batched(rocblas_handle handle,
+                                             const rocblas_int nb,
+                                             const rocblas_int nblocks,
+                                             rocblas_float_complex* A,
+                                             const rocblas_int lda,
+                                             const rocblas_stride strideA,
+                                             rocblas_float_complex* B,
+                                             const rocblas_int ldb,
+                                             const rocblas_stride strideB,
+                                             rocblas_float_complex* C,
+                                             const rocblas_int ldc,
+                                             const rocblas_stride strideC,
+                                             rocblas_int* info,
+                                             const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_strided_batched(rocblas_handle handle,
-                                                                      const rocblas_int nb,
-                                                                      const rocblas_int nblocks,
-                                                                      rocblas_double_complex* A,
-                                                                      const rocblas_int lda,
-                                                                      const rocblas_stride strideA,
-                                                                      rocblas_double_complex* B,
-                                                                      const rocblas_int ldb,
-                                                                      const rocblas_stride strideB,
-                                                                      rocblas_double_complex* C,
-                                                                      const rocblas_int ldc,
-                                                                      const rocblas_stride strideC,
-                                                                      rocblas_int* info,
-                                                                      const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_zgeblttrf_npvt_strided_batched(rocblas_handle handle,
+                                             const rocblas_int nb,
+                                             const rocblas_int nblocks,
+                                             rocblas_double_complex* A,
+                                             const rocblas_int lda,
+                                             const rocblas_stride strideA,
+                                             rocblas_double_complex* B,
+                                             const rocblas_int ldb,
+                                             const rocblas_stride strideB,
+                                             rocblas_double_complex* C,
+                                             const rocblas_int ldc,
+                                             const rocblas_stride strideC,
+                                             rocblas_int* info,
+                                             const rocblas_int batch_count);
 //! @}
 
 /*! @{
-    \brief BTTRF_NPVT_INTERLEAVED_BATCHED computes the LU factorization of a batch of block tridiagonal
+    \brief GEBLTTRF_NPVT_INTERLEAVED_BATCHED computes the LU factorization of a batch of block tridiagonal
     matrices without partial pivoting.
 
     \details
@@ -22538,53 +22542,57 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_strided_batched(rocblas_ha
                 Number of matrices in the batch.
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_sbttrf_npvt_interleaved_batched(rocblas_handle handle,
-                                                                          const rocblas_int nb,
-                                                                          const rocblas_int nblocks,
-                                                                          float* A,
-                                                                          const rocblas_int lda,
-                                                                          float* B,
-                                                                          const rocblas_int ldb,
-                                                                          float* C,
-                                                                          const rocblas_int ldc,
-                                                                          rocblas_int* info,
-                                                                          const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_sgeblttrf_npvt_interleaved_batched(rocblas_handle handle,
+                                                 const rocblas_int nb,
+                                                 const rocblas_int nblocks,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 float* B,
+                                                 const rocblas_int ldb,
+                                                 float* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info,
+                                                 const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_dbttrf_npvt_interleaved_batched(rocblas_handle handle,
-                                                                          const rocblas_int nb,
-                                                                          const rocblas_int nblocks,
-                                                                          double* A,
-                                                                          const rocblas_int lda,
-                                                                          double* B,
-                                                                          const rocblas_int ldb,
-                                                                          double* C,
-                                                                          const rocblas_int ldc,
-                                                                          rocblas_int* info,
-                                                                          const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_dgeblttrf_npvt_interleaved_batched(rocblas_handle handle,
+                                                 const rocblas_int nb,
+                                                 const rocblas_int nblocks,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 double* B,
+                                                 const rocblas_int ldb,
+                                                 double* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info,
+                                                 const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_cbttrf_npvt_interleaved_batched(rocblas_handle handle,
-                                                                          const rocblas_int nb,
-                                                                          const rocblas_int nblocks,
-                                                                          rocblas_float_complex* A,
-                                                                          const rocblas_int lda,
-                                                                          rocblas_float_complex* B,
-                                                                          const rocblas_int ldb,
-                                                                          rocblas_float_complex* C,
-                                                                          const rocblas_int ldc,
-                                                                          rocblas_int* info,
-                                                                          const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_cgeblttrf_npvt_interleaved_batched(rocblas_handle handle,
+                                                 const rocblas_int nb,
+                                                 const rocblas_int nblocks,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_float_complex* B,
+                                                 const rocblas_int ldb,
+                                                 rocblas_float_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info,
+                                                 const rocblas_int batch_count);
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_zbttrf_npvt_interleaved_batched(rocblas_handle handle,
-                                                                          const rocblas_int nb,
-                                                                          const rocblas_int nblocks,
-                                                                          rocblas_double_complex* A,
-                                                                          const rocblas_int lda,
-                                                                          rocblas_double_complex* B,
-                                                                          const rocblas_int ldb,
-                                                                          rocblas_double_complex* C,
-                                                                          const rocblas_int ldc,
-                                                                          rocblas_int* info,
-                                                                          const rocblas_int batch_count);
+ROCSOLVER_EXPORT rocblas_status
+    rocsolver_zgeblttrf_npvt_interleaved_batched(rocblas_handle handle,
+                                                 const rocblas_int nb,
+                                                 const rocblas_int nblocks,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_double_complex* B,
+                                                 const rocblas_int ldb,
+                                                 rocblas_double_complex* C,
+                                                 const rocblas_int ldc,
+                                                 rocblas_int* info,
+                                                 const rocblas_int batch_count);
 //! @}
 
 #ifdef __cplusplus

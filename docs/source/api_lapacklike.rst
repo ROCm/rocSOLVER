@@ -96,47 +96,47 @@ rocsolver_<type>getrf_npvt_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgetrf_npvt_strided_batched
 
-.. _bttrf_npvt:
+.. _geblttrf_npvt:
 
-rocsolver_<type>bttrf_npvt()
+rocsolver_<type>geblttrf_npvt()
 --------------------------------------------------------
-.. doxygenfunction:: rocsolver_zbttrf_npvt
+.. doxygenfunction:: rocsolver_zgeblttrf_npvt
    :outline:
-.. doxygenfunction:: rocsolver_cbttrf_npvt
+.. doxygenfunction:: rocsolver_cgeblttrf_npvt
    :outline:
-.. doxygenfunction:: rocsolver_dbttrf_npvt
+.. doxygenfunction:: rocsolver_dgeblttrf_npvt
    :outline:
-.. doxygenfunction:: rocsolver_sbttrf_npvt
+.. doxygenfunction:: rocsolver_sgeblttrf_npvt
 
-rocsolver_<type>bttrf_npvt_batched()
+rocsolver_<type>geblttrf_npvt_batched()
 --------------------------------------------------------
-.. doxygenfunction:: rocsolver_zbttrf_npvt_batched
+.. doxygenfunction:: rocsolver_zgeblttrf_npvt_batched
    :outline:
-.. doxygenfunction:: rocsolver_cbttrf_npvt_batched
+.. doxygenfunction:: rocsolver_cgeblttrf_npvt_batched
    :outline:
-.. doxygenfunction:: rocsolver_dbttrf_npvt_batched
+.. doxygenfunction:: rocsolver_dgeblttrf_npvt_batched
    :outline:
-.. doxygenfunction:: rocsolver_sbttrf_npvt_batched
+.. doxygenfunction:: rocsolver_sgeblttrf_npvt_batched
 
-rocsolver_<type>bttrf_npvt_strided_batched()
+rocsolver_<type>geblttrf_npvt_strided_batched()
 --------------------------------------------------------
-.. doxygenfunction:: rocsolver_zbttrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_zgeblttrf_npvt_strided_batched
    :outline:
-.. doxygenfunction:: rocsolver_cbttrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_cgeblttrf_npvt_strided_batched
    :outline:
-.. doxygenfunction:: rocsolver_dbttrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_dgeblttrf_npvt_strided_batched
    :outline:
-.. doxygenfunction:: rocsolver_sbttrf_npvt_strided_batched
+.. doxygenfunction:: rocsolver_sgeblttrf_npvt_strided_batched
 
-rocsolver_<type>bttrf_npvt_interleaved_batched()
+rocsolver_<type>geblttrf_npvt_interleaved_batched()
 --------------------------------------------------------
-.. doxygenfunction:: rocsolver_zbttrf_npvt_interleaved_batched
+.. doxygenfunction:: rocsolver_zgeblttrf_npvt_interleaved_batched
    :outline:
-.. doxygenfunction:: rocsolver_cbttrf_npvt_interleaved_batched
+.. doxygenfunction:: rocsolver_cgeblttrf_npvt_interleaved_batched
    :outline:
-.. doxygenfunction:: rocsolver_dbttrf_npvt_interleaved_batched
+.. doxygenfunction:: rocsolver_dgeblttrf_npvt_interleaved_batched
    :outline:
-.. doxygenfunction:: rocsolver_sbttrf_npvt_interleaved_batched
+.. doxygenfunction:: rocsolver_sgeblttrf_npvt_interleaved_batched
 
 
 
