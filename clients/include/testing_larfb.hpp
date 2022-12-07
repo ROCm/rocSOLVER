@@ -146,9 +146,9 @@ void larfb_initData(const rocblas_handle handle,
                 }
 
                 if(forward)
-                    cblas_geqrf<T>(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_geqrf(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
                 else
-                    cblas_geqlf<T>(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_geqlf(m, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
             }
             else
             {
@@ -164,12 +164,12 @@ void larfb_initData(const rocblas_handle handle,
                 }
 
                 if(forward)
-                    cblas_gelqf<T>(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_gelqf(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
                 else
-                    cblas_gerqf<T>(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_gerqf(k, m, hV[0], ldv, htau.data(), hW.data(), sizeW);
             }
 
-            cblas_larft<T>(direct, storev, m, k, hV[0], ldv, htau.data(), hT[0], ldt);
+            cpu_larft(direct, storev, m, k, hV[0], ldv, htau.data(), hT[0], ldt);
         }
         else
         {
@@ -187,9 +187,9 @@ void larfb_initData(const rocblas_handle handle,
                 }
 
                 if(forward)
-                    cblas_geqrf<T>(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_geqrf(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
                 else
-                    cblas_geqlf<T>(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_geqlf(n, k, hV[0], ldv, htau.data(), hW.data(), sizeW);
             }
             else
             {
@@ -205,12 +205,12 @@ void larfb_initData(const rocblas_handle handle,
                 }
 
                 if(forward)
-                    cblas_gelqf<T>(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_gelqf(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
                 else
-                    cblas_gerqf<T>(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
+                    cpu_gerqf(k, n, hV[0], ldv, htau.data(), hW.data(), sizeW);
             }
 
-            cblas_larft<T>(direct, storev, n, k, hV[0], ldv, htau.data(), hT[0], ldt);
+            cpu_larft(direct, storev, n, k, hV[0], ldv, htau.data(), hT[0], ldt);
         }
     }
 
@@ -260,8 +260,8 @@ void larfb_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cblas_larfb<T>(side, trans, direct, storev, m, n, k, hV[0], ldv, hT[0], ldt, hA[0], lda,
-                   hW.data(), ldw);
+    cpu_larfb(side, trans, direct, storev, m, n, k, hV[0], ldv, hT[0], ldt, hA[0], lda, hW.data(),
+              ldw);
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -307,8 +307,8 @@ void larfb_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_larfb<T>(side, trans, direct, storev, m, n, k, hV[0], ldv, hT[0], ldt, hA[0], lda,
-                       hW.data(), ldw);
+        cpu_larfb(side, trans, direct, storev, m, n, k, hV[0], ldv, hT[0], ldt, hA[0], lda,
+                  hW.data(), ldw);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

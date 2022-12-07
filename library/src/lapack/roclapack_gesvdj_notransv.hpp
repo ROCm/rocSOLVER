@@ -122,7 +122,7 @@ void rocsolver_gesvdj_notransv_getMemorySize(const rocblas_svect left_svect,
     {
         // requirements for Jacobi eigensolver
         rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(
-            rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1);
+            rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1, &f1);
 
         // requirements for QR factorization
         rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
@@ -141,7 +141,7 @@ void rocsolver_gesvdj_notransv_getMemorySize(const rocblas_svect left_svect,
     {
         // requirements for Jacobi eigensolver
         rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(
-            rocblas_evect_original, rocblas_fill_upper, m, batch_count, &a1, &b1, &c1, &d1, &e1);
+            rocblas_evect_original, rocblas_fill_upper, m, batch_count, &a1, &b1, &c1, &d1, &e1, &f1);
 
         // requirements for QR factorization
         rocsolver_geqrf_getMemorySize<BATCHED, T>(n, m, batch_count, size_scalars, &b2, &c2, &d2,
@@ -261,8 +261,8 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
         rocsolver_syevj_heevj_template<false, STRIDED, T>(
             handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, n, V_gemm,
             0, ldv_gemm, strideV_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info,
-            batch_count, (T*)work1_UVtmp, (SS*)work2, (SS*)work3, (T*)work4,
-            (rocblas_int*)work5_ipiv);
+            batch_count, (T*)work1_UVtmp, (T*)work2, (SS*)work3, (rocblas_int*)work4,
+            (rocblas_int*)work5_ipiv, (rocblas_int*)work6_workArr);
 
         // compute AV
         T* U_gemm = (leftv ? U : (T*)work1_UVtmp);
@@ -305,8 +305,8 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
         rocsolver_syevj_heevj_template<false, STRIDED, T>(
             handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, m, U_gemm,
             0, ldu_gemm, strideU_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info,
-            batch_count, (T*)work1_UVtmp, (SS*)work2, (SS*)work3, (T*)work4,
-            (rocblas_int*)work5_ipiv);
+            batch_count, (T*)work1_UVtmp, (T*)work2, (SS*)work3, (rocblas_int*)work4,
+            (rocblas_int*)work5_ipiv, (rocblas_int*)work6_workArr);
 
         // compute A'U
         T* V_gemm = (rightv ? V : (T*)work1_UVtmp);

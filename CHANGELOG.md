@@ -8,10 +8,15 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - GESVDJ (with batched and strided\_batched versions)
 
 ### Optimized
+- Improved the performance of SYEVJ/HEEVJ.
+
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
+- SYEVJ/HEEVJ should now be invariant under matrix scaling.
+- SYEVJ/HEEVJ should now properly output the eigenvalues when no sweeps are executed.
+
 ### Known Issues
 ### Security
 
