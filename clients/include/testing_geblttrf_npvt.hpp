@@ -268,11 +268,11 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hCRes.transfer_from(dC));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
-    // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
-    {
-        //cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
-    }
+    // // CPU lapack
+    // for(rocblas_int b = 0; b < bc; ++b)
+    // {
+    //     cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
+    // }
 
     // check info for singularities
     double err = 0;
