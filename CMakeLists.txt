@@ -135,6 +135,7 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx90a:xnack-
       gfx90a:xnack+
       gfx1100
+      gfx1101
       gfx1102
   )
 endif()
