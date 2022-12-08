@@ -314,8 +314,8 @@ void gesvdj_getError(const rocblas_handle handle,
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
-        cpu_gesvd<T>(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
-                       hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
+        cpu_gesvd(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
+                  hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
 
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gesvdj(STRIDED, handle, left_svect, right_svect, m, n, dA.data(),
@@ -442,8 +442,8 @@ void gesvdj_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
-            cpu_gesvd<T>(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
-                           work.data(), lwork, rwork.data(), hinfo[b]);
+            cpu_gesvd(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
+                      work.data(), lwork, rwork.data(), hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

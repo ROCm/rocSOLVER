@@ -2895,20 +2895,20 @@ void cpu_bdsqr(rocblas_fill uplo,
 // gesvd
 template <>
 void cpu_gesvd(rocblas_svect leftv,
-                 rocblas_svect rightv,
-                 rocblas_int m,
-                 rocblas_int n,
-                 float* A,
-                 rocblas_int lda,
-                 float* S,
-                 float* U,
-                 rocblas_int ldu,
-                 float* V,
-                 rocblas_int ldv,
-                 float* work,
-                 rocblas_int lwork,
-                 float* rwork,
-                 rocblas_int* info)
+               rocblas_svect rightv,
+               rocblas_int m,
+               rocblas_int n,
+               float* A,
+               rocblas_int lda,
+               float* S,
+               float* U,
+               rocblas_int ldu,
+               float* V,
+               rocblas_int ldv,
+               float* work,
+               rocblas_int lwork,
+               float* rwork,
+               rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
@@ -2917,20 +2917,20 @@ void cpu_gesvd(rocblas_svect leftv,
 
 template <>
 void cpu_gesvd(rocblas_svect leftv,
-                 rocblas_svect rightv,
-                 rocblas_int m,
-                 rocblas_int n,
-                 double* A,
-                 rocblas_int lda,
-                 double* S,
-                 double* U,
-                 rocblas_int ldu,
-                 double* V,
-                 rocblas_int ldv,
-                 double* work,
-                 rocblas_int lwork,
-                 double* rwork,
-                 rocblas_int* info)
+               rocblas_svect rightv,
+               rocblas_int m,
+               rocblas_int n,
+               double* A,
+               rocblas_int lda,
+               double* S,
+               double* U,
+               rocblas_int ldu,
+               double* V,
+               rocblas_int ldv,
+               double* work,
+               rocblas_int lwork,
+               double* rwork,
+               rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
@@ -2939,20 +2939,20 @@ void cpu_gesvd(rocblas_svect leftv,
 
 template <>
 void cpu_gesvd(rocblas_svect leftv,
-                 rocblas_svect rightv,
-                 rocblas_int m,
-                 rocblas_int n,
-                 rocblas_float_complex* A,
-                 rocblas_int lda,
-                 float* S,
-                 rocblas_float_complex* U,
-                 rocblas_int ldu,
-                 rocblas_float_complex* V,
-                 rocblas_int ldv,
-                 rocblas_float_complex* work,
-                 rocblas_int lwork,
-                 float* rwork,
-                 rocblas_int* info)
+               rocblas_svect rightv,
+               rocblas_int m,
+               rocblas_int n,
+               rocblas_float_complex* A,
+               rocblas_int lda,
+               float* S,
+               rocblas_float_complex* U,
+               rocblas_int ldu,
+               rocblas_float_complex* V,
+               rocblas_int ldv,
+               rocblas_float_complex* work,
+               rocblas_int lwork,
+               float* rwork,
+               rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
@@ -2961,20 +2961,20 @@ void cpu_gesvd(rocblas_svect leftv,
 
 template <>
 void cpu_gesvd(rocblas_svect leftv,
-                 rocblas_svect rightv,
-                 rocblas_int m,
-                 rocblas_int n,
-                 rocblas_double_complex* A,
-                 rocblas_int lda,
-                 double* S,
-                 rocblas_double_complex* U,
-                 rocblas_int ldu,
-                 rocblas_double_complex* V,
-                 rocblas_int ldv,
-                 rocblas_double_complex* work,
-                 rocblas_int lwork,
-                 double* rwork,
-                 rocblas_int* info)
+               rocblas_svect rightv,
+               rocblas_int m,
+               rocblas_int n,
+               rocblas_double_complex* A,
+               rocblas_int lda,
+               double* S,
+               rocblas_double_complex* U,
+               rocblas_int ldu,
+               rocblas_double_complex* V,
+               rocblas_int ldv,
+               rocblas_double_complex* work,
+               rocblas_int lwork,
+               double* rwork,
+               rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);

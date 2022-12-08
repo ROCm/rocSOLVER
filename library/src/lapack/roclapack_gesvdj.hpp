@@ -159,8 +159,9 @@ void rocsolver_gesvdj_getMemorySize(const rocblas_svect left_svect,
     if(m >= n)
     {
         // requirements for Jacobi eigensolver
-        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(
-            rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1, &f1);
+        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
+                                                            rocblas_fill_upper, n, batch_count, &a1,
+                                                            &b1, &c1, &d1, &e1, &f1);
 
         // requirements for QR factorization
         rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
@@ -177,8 +178,9 @@ void rocsolver_gesvdj_getMemorySize(const rocblas_svect left_svect,
     else
     {
         // requirements for Jacobi eigensolver
-        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(
-            rocblas_evect_original, rocblas_fill_upper, m, batch_count, &a1, &b1, &c1, &d1, &e1, &f1);
+        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
+                                                            rocblas_fill_upper, m, batch_count, &a1,
+                                                            &b1, &c1, &d1, &e1, &f1);
 
         // requirements for LQ factorization
         rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
