@@ -271,7 +271,7 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     // // CPU lapack
     // for(rocblas_int b = 0; b < bc; ++b)
     // {
-    //     cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
+    //     cpu_getrf(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
     // }
 
     // check info for singularities
@@ -346,7 +346,7 @@ void geblttrf_npvt_getPerfData(const rocblas_handle handle,
         // *cpu_time_used = get_time_us_no_sync();
         // for(rocblas_int b = 0; b < bc; ++b)
         // {
-        //     cblas_getrf<T>(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
+        //     cpu_getrf(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
         // }
         // *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
         *cpu_time_used = nan("");

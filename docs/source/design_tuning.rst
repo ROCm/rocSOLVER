@@ -253,6 +253,24 @@ STEDC_MIN_DC_SIZE
 
 
 
+syevj and heevj functions
+==========================
+
+The Jacobi eigensolver routines SYEVJ/HEEVJ (or the corresponding batched and strided-batched routines) can
+be executed with a single kernel call (for small-size matrices) or with multiple kernel calls (for large-size
+matrices). In the former case, the matrix is considered unblocked, Jacobi rotations are applied directly using the
+computed cosine and sine values, and the number of iterations/sweeps is controlled on the GPU. In the latter case,
+the matrix is partitioned into blocks, Jacobi rotations are accumulated per block (to be applied in separate kernel
+calls), and the number of iterations/sweeps is controlled by the CPU (requiring synchronization of the handle stream).
+
+SYEVJ_BLOCKED_SWITCH
+----------------------
+.. doxygendefine:: SYEVJ_BLOCKED_SWITCH
+
+(As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
+
+
+
 potf2/potrf functions
 =========================
 

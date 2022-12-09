@@ -223,7 +223,7 @@ void gesv_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_gesv<T>(n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb, hInfo[b]);
+        cpu_gesv(n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb, hInfo[b]);
     }
 
     // error is ||hB - hBRes|| / ||hB||
@@ -281,7 +281,7 @@ void gesv_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_gesv<T>(n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb, hInfo[b]);
+            cpu_gesv(n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb, hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

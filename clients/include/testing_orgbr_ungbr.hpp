@@ -105,8 +105,7 @@ void orgbr_ungbr_initData(const rocblas_handle handle,
                         hA[0][i + j * lda] -= 4;
                 }
             }
-            cblas_gebrd<T>(m, k, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(),
-                           size_W);
+            cpu_gebrd(m, k, hA[0], lda, D.data(), E.data(), hIpiv[0], P.data(), hW.data(), size_W);
         }
         else
         {
@@ -120,8 +119,7 @@ void orgbr_ungbr_initData(const rocblas_handle handle,
                         hA[0][i + j * lda] -= 4;
                 }
             }
-            cblas_gebrd<T>(k, n, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(),
-                           size_W);
+            cpu_gebrd(k, n, hA[0], lda, D.data(), E.data(), P.data(), hIpiv[0], hW.data(), size_W);
         }
     }
 
@@ -160,7 +158,7 @@ void orgbr_ungbr_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cblas_orgbr_ungbr<T>(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
+    cpu_orgbr_ungbr(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -197,7 +195,7 @@ void orgbr_ungbr_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_orgbr_ungbr<T>(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
+        cpu_orgbr_ungbr(storev, m, n, k, hA[0], lda, hIpiv[0], hW.data(), size_W);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

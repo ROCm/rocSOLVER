@@ -269,7 +269,7 @@ ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
     If uplo = rocblas_fill_upper, only the upper triangular part is copied
     If uplo = rocblas_fill_lower, only the lower triangular part is copied **/
 template <typename T1, typename T2, typename Mask = no_mask>
-ROCSOLVER_KERNEL void copy_trans_mat(const bool trans,
+ROCSOLVER_KERNEL void copy_trans_mat(const rocblas_operation trans,
                                      const rocblas_int m,
                                      const rocblas_int n,
                                      T1* A,
@@ -302,7 +302,9 @@ ROCSOLVER_KERNEL void copy_trans_mat(const bool trans,
             T1* Ap = load_ptr_batch<T1>(A, b, shiftA, strideA);
             T2* Bp = load_ptr_batch<T2>(B, b, shiftB, strideB);
 
-            if(trans)
+            if(trans == rocblas_operation_conjugate_transpose)
+                Bp[j + i * ldb] = T2(conj(Ap[i + j * lda]));
+            else if(trans == rocblas_operation_transpose)
                 Bp[j + i * ldb] = T2(Ap[i + j * lda]);
             else
                 Bp[i + j * ldb] = T2(Ap[i + j * lda]);
