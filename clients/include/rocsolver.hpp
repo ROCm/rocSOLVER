@@ -8925,8 +8925,9 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_sgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb, stB, C, ldc, stC, X, ldx, stX, bc)
-        : rocblas_status_not_implemented; // rocsolver_sgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
+        ? rocsolver_sgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb,
+                                                   stB, C, ldc, stC, X, ldx, stX, bc)
+        : rocsolver_sgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
@@ -8949,8 +8950,9 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_dgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb, stB, C, ldc, stC, X, ldx, stX, bc)
-        : rocblas_status_not_implemented; // rocsolver_dgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
+        ? rocsolver_dgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb,
+                                                   stB, C, ldc, stC, X, ldx, stX, bc)
+        : rocsolver_dgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
@@ -8973,8 +8975,9 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_cgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb, stB, C, ldc, stC, X, ldx, stX, bc)
-        : rocblas_status_not_implemented; // rocsolver_cgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
+        ? rocsolver_cgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb,
+                                                   stB, C, ldc, stC, X, ldx, stX, bc)
+        : rocsolver_cgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
@@ -8997,8 +9000,9 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_zgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb, stB, C, ldc, stC, X, ldx, stX, bc)
-        : rocblas_status_not_implemented; // rocsolver_zgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
+        ? rocsolver_zgeblttrs_npvt_strided_batched(handle, nb, nblocks, nrhs, A, lda, stA, B, ldb,
+                                                   stB, C, ldc, stC, X, ldx, stX, bc)
+        : rocsolver_zgeblttrs_npvt(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
 }
 
 // batched
@@ -9021,7 +9025,8 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_stride stX,
                                               rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_sgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_sgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X,
+                                            ldx, bc);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
@@ -9043,7 +9048,8 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_stride stX,
                                               rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_dgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_dgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X,
+                                            ldx, bc);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
@@ -9065,7 +9071,8 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_stride stX,
                                               rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_cgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_cgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X,
+                                            ldx, bc);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
@@ -9087,7 +9094,8 @@ inline rocblas_status rocsolver_geblttrs_npvt(bool STRIDED,
                                               rocblas_stride stX,
                                               rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_zgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_zgeblttrs_npvt_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X,
+                                            ldx, bc);
 }
 /********************************************************/
 
@@ -9107,7 +9115,8 @@ inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
                                                           rocblas_int ldx,
                                                           rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_sgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_sgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb,
+                                                        C, ldc, X, ldx, bc);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
@@ -9124,7 +9133,8 @@ inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
                                                           rocblas_int ldx,
                                                           rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_dgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_dgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb,
+                                                        C, ldc, X, ldx, bc);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
@@ -9141,7 +9151,8 @@ inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
                                                           rocblas_int ldx,
                                                           rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_cgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_cgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb,
+                                                        C, ldc, X, ldx, bc);
 }
 
 inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
@@ -9158,6 +9169,7 @@ inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
                                                           rocblas_int ldx,
                                                           rocblas_int bc)
 {
-    return rocblas_status_not_implemented; // rocsolver_zgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, bc);
+    return rocsolver_zgeblttrs_npvt_interleaved_batched(handle, nb, nblocks, nrhs, A, lda, B, ldb,
+                                                        C, ldc, X, ldx, bc);
 }
 /********************************************************/

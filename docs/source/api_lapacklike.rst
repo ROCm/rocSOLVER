@@ -246,6 +246,48 @@ rocsolver_<type>getri_npvt_outofplace_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_npvt_outofplace_strided_batched
 
+.. _geblttrs_npvt:
+
+rocsolver_<type>geblttrs_npvt()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrs_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrs_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrs_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrs_npvt
+
+rocsolver_<type>geblttrs_npvt_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrs_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrs_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrs_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrs_npvt_batched
+
+rocsolver_<type>geblttrs_npvt_strided_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrs_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrs_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrs_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrs_npvt_strided_batched
+
+rocsolver_<type>geblttrs_npvt_interleaved_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrs_npvt_interleaved_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrs_npvt_interleaved_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrs_npvt_interleaved_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrs_npvt_interleaved_batched
+
 
 
 .. _likeeigens:
