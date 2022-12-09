@@ -13,6 +13,7 @@ set(roclapack_test_source
   posv_gtest.cpp
   potri_gtest.cpp
   trtri_gtest.cpp
+  geblttrs_gtest.cpp
   # least squares solvers
   gels_gtest.cpp
   # triangular factorizations

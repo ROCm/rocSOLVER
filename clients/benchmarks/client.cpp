@@ -302,6 +302,12 @@ try
             "                           Stride for matrices/vectors W.\n"
             "                           ")
 
+        ("strideX",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors X.\n"
+            "                           ")
+
         ("strideZ",
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
