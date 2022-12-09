@@ -348,8 +348,9 @@ void gesvdx_getError(const rocblas_handle handle,
 
     std::vector<rocblas_int> offset(bc);
     rocblas_int lwork = 5 * max(m, n);
+    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
     std::vector<T> work(lwork);
-    std::vector<S> rwork(lwork);
+    std::vector<S> rwork(lrwork);
     rocblas_int minn = std::min(m, n);
 
     // input data initialization

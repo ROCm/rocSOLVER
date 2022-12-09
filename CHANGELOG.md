@@ -4,6 +4,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- SVD for general matrices using Jacobi algorithm:
+    - GESVDJ (with batched and strided\_batched versions)
+
 ### Optimized
 - Improved the performance of SYEVJ/HEEVJ.
 

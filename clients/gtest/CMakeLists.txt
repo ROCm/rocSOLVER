@@ -30,6 +30,7 @@ set(roclapack_test_source
   sygsx_hegsx_gtest.cpp
   # singular value decomposition
   gesvd_gtest.cpp
+  gesvdj_gtest.cpp
   gesvdx_gtest.cpp
   # symmetric eigensolvers
   syev_heev_gtest.cpp

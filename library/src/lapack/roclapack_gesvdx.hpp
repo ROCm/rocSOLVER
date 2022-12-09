@@ -422,8 +422,9 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
 
         // copy left vectors to matrix U
         ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_k, batch_count),
-                                dim3(thread_count, thread_count, 1), 0, stream, false, k, k, tmpZ,
-                                0, ldz, strideZ, U, 0, ldu, strideU);
+                                dim3(thread_count, thread_count, 1), 0, stream,
+                                rocblas_operation_none, k, k, tmpZ, 0, ldz, strideZ, U, 0, ldu,
+                                strideU);
 
         if(thinSVD)
         {
@@ -472,8 +473,9 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
 
         // copy right vectors to matrix V
         ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_k, batch_count),
-                                dim3(thread_count, thread_count, 1), 0, stream, true, k, k, tmpZ, k,
-                                ldz, strideZ, V, 0, ldv, strideV);
+                                dim3(thread_count, thread_count, 1), 0, stream,
+                                rocblas_operation_transpose, k, k, tmpZ, k, ldz, strideZ, V, 0, ldv,
+                                strideV);
 
         if(thinSVD)
         {

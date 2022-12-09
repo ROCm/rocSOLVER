@@ -263,15 +263,17 @@ void gesvd_getError(const rocblas_handle handle,
                     Uh& hV,
                     Uh& Vres,
                     const rocblas_int ldvres,
-                    Th& hE,
-                    Th& hEres,
                     Ih& hinfo,
                     Ih& hinfoRes,
                     double* max_err,
                     double* max_errv)
 {
+    using W = decltype(std::real(T{}));
+
     rocblas_int lwork = 5 * max(m, n);
-    std::vector<T> hWork(lwork);
+    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
+    std::vector<T> work(lwork);
+    std::vector<W> rwork(lrwork);
     std::vector<T> A(lda * n * bc);
 
     // input data initialization
@@ -294,8 +296,8 @@ void gesvd_getError(const rocblas_handle handle,
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
-        cpu_gesvd(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
-                  hWork.data(), lwork, hE[b], hinfo[b]);
+        cpu_gesvd(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
+                  hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
 
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gesvd(STRIDED, handle, left_svect, right_svect, m, n, dA.data(),
@@ -303,7 +305,6 @@ void gesvd_getError(const rocblas_handle handle,
                                         ldv, stV, dE.data(), stE, fa, dinfo.data(), bc));
 
     CHECK_HIP_ERROR(hSres.transfer_from(dS));
-    CHECK_HIP_ERROR(hEres.transfer_from(dE));
     CHECK_HIP_ERROR(hinfoRes.transfer_from(dinfo));
 
     if(left_svect == rocblas_svect_singular || left_svect == rocblas_svect_all)
@@ -403,7 +404,6 @@ void gesvd_getPerfData(const rocblas_handle handle,
                        Th& hS,
                        Uh& hU,
                        Uh& hV,
-                       Th& hE,
                        Ih& hinfo,
                        double* gpu_time_used,
                        double* cpu_time_used,
@@ -412,8 +412,12 @@ void gesvd_getPerfData(const rocblas_handle handle,
                        const bool profile_kernels,
                        const bool perf)
 {
+    using W = decltype(std::real(T{}));
+
     rocblas_int lwork = 5 * max(m, n);
-    std::vector<T> hWork(lwork);
+    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
+    std::vector<T> work(lwork);
+    std::vector<W> rwork(lrwork);
     std::vector<T> A;
 
     if(!perf)
@@ -424,7 +428,7 @@ void gesvd_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
             cpu_gesvd(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
-                      hWork.data(), lwork, hE[b], hinfo[b]);
+                      work.data(), lwork, rwork.data(), hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
@@ -556,7 +560,6 @@ void testing_gesvd(Arguments& argus)
     rocblas_int ldures = 1;
     rocblas_int ldvres = 1;
     size_t size_Sres = 0;
-    size_t size_Eres = 0;
     size_t size_Ures = 0;
     size_t size_Vres = 0;
     size_t size_UT = 0;
@@ -571,7 +574,6 @@ void testing_gesvd(Arguments& argus)
         size_VT = size_t(ldvT) * nT;
         size_UT = size_t(lduT) * mT;
         size_Sres = size_S;
-        size_Eres = size_E;
         if(svects)
         {
             if(leftv == rocblas_svect_none)
@@ -681,14 +683,12 @@ void testing_gesvd(Arguments& argus)
 
     // memory allocations (all cases)
     // host
-    host_strided_batch_vector<S> hE(5 * max(m, n), 1, 5 * max(m, n), bc);
     host_strided_batch_vector<S> hS(size_S, 1, stS, bc);
     host_strided_batch_vector<T> hV(size_V, 1, stV, bc);
     host_strided_batch_vector<T> hU(size_U, 1, stU, bc);
     host_strided_batch_vector<rocblas_int> hinfo(1, 1, 1, bc);
     host_strided_batch_vector<rocblas_int> hinfoRes(1, 1, 1, bc);
     host_strided_batch_vector<S> hSres(size_Sres, 1, stS, bc);
-    host_strided_batch_vector<S> hEres(size_Eres, 1, stE, bc);
     host_strided_batch_vector<T> Vres(size_Vres, 1, stVres, bc);
     host_strided_batch_vector<T> Ures(size_Ures, 1, stUres, bc);
     // device
@@ -741,16 +741,16 @@ void testing_gesvd(Arguments& argus)
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
                                        mT, nT, dUT, lduT, stUT, dVT, ldvT, stVT, hA, hS, hSres, hU,
-                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes,
-                                       &max_error, &max_errorv);
+                                       Ures, ldures, hV, Vres, ldvres, hinfo, hinfoRes, &max_error,
+                                       &max_errorv);
         }
 
         // collect performance data
         if(argus.timing)
         {
             gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
-                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS, hU,
-                                          hV, hE, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
+                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
+                                          hU, hV, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                           argus.profile, argus.profile_kernels, argus.perf);
         }
     }
@@ -783,16 +783,16 @@ void testing_gesvd(Arguments& argus)
             gesvd_getError<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU, ldu,
                                        stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, leftvT, rightvT,
                                        mT, nT, dUT, lduT, stUT, dVT, ldvT, stVT, hA, hS, hSres, hU,
-                                       Ures, ldures, hV, Vres, ldvres, hE, hEres, hinfo, hinfoRes,
-                                       &max_error, &max_errorv);
+                                       Ures, ldures, hV, Vres, ldvres, hinfo, hinfoRes, &max_error,
+                                       &max_errorv);
         }
 
         // collect performance data
         if(argus.timing)
         {
             gesvd_getPerfData<STRIDED, T>(handle, leftv, rightv, m, n, dA, lda, stA, dS, stS, dU,
-                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS, hU,
-                                          hV, hE, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
+                                          ldu, stU, dV, ldv, stV, dE, stE, fa, dinfo, bc, hA, hS,
+                                          hU, hV, hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                           argus.profile, argus.profile_kernels, argus.perf);
         }
     }
