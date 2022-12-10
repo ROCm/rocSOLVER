@@ -302,6 +302,12 @@ try
             "                           Stride for matrices/vectors W.\n"
             "                           ")
 
+        ("strideX",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors X.\n"
+            "                           ")
+
         ("strideZ",
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
@@ -388,17 +394,17 @@ try
             "                           Only applicable to stebz.\n"
             "                           ")
 
-        // bttrf options
+        // geblttrf options
         ("nb",
          value<rocblas_int>(),
             "Number of rows and columns in each block.\n"
-            "                           Only applicable to bttrf.\n"
+            "                           Only applicable to geblttrf.\n"
             "                           ")
 
         ("nblocks",
          value<rocblas_int>(),
             "Number of blocks along the diagonal.\n"
-            "                           Only applicable to bttrf.\n"
+            "                           Only applicable to geblttrf.\n"
             "                           ")
 
         // partial eigenvalue/singular value decomposition options

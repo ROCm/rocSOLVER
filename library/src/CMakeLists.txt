@@ -32,6 +32,10 @@ set(rocsolver_lapack_source
   lapack/roclapack_trtri.cpp
   lapack/roclapack_trtri_batched.cpp
   lapack/roclapack_trtri_strided_batched.cpp
+  lapack/roclapack_geblttrs_npvt.cpp
+  lapack/roclapack_geblttrs_npvt_batched.cpp
+  lapack/roclapack_geblttrs_npvt_strided_batched.cpp
+  lapack/roclapack_geblttrs_npvt_interleaved_batched.cpp
   # least squares solvers
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
@@ -56,10 +60,10 @@ set(rocsolver_lapack_source
   lapack/roclapack_sytrf.cpp
   lapack/roclapack_sytrf_batched.cpp
   lapack/roclapack_sytrf_strided_batched.cpp
-  lapack/roclapack_bttrf_npvt.cpp
-  lapack/roclapack_bttrf_npvt_batched.cpp
-  lapack/roclapack_bttrf_npvt_strided_batched.cpp
-  lapack/roclapack_bttrf_npvt_interleaved_batched.cpp
+  lapack/roclapack_geblttrf_npvt.cpp
+  lapack/roclapack_geblttrf_npvt_batched.cpp
+  lapack/roclapack_geblttrf_npvt_strided_batched.cpp
+  lapack/roclapack_geblttrf_npvt_interleaved_batched.cpp
   # orthogonal factorizations
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
@@ -109,6 +113,11 @@ set(rocsolver_lapack_source
   lapack/roclapack_gesvd.cpp
   lapack/roclapack_gesvd_batched.cpp
   lapack/roclapack_gesvd_strided_batched.cpp
+  lapack/roclapack_gesvdj.cpp
+  lapack/roclapack_gesvdj_batched.cpp
+  lapack/roclapack_gesvdj_strided_batched.cpp
+  lapack/roclapack_gesvdj_notransv.cpp
+  lapack/roclapack_gesvdj_notransv_strided_batched.cpp
   lapack/roclapack_gesvdx.cpp
   lapack/roclapack_gesvdx_batched.cpp
   lapack/roclapack_gesvdx_strided_batched.cpp
