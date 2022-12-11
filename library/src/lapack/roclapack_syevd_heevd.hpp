@@ -76,6 +76,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
         rocsolver_sterf_getMemorySize<T>(n, batch_count, &w12);
 
         *size_work3 = 0;
+        *size_tmpz = 0;
         *size_splits = 0;
     }
 
