@@ -17,7 +17,7 @@
 /****************************************************************************
 (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
   FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
-  BATCH).)
+  BATCH))
 ***************************************************************************/
 
 /** STEQR_KERNEL/RUN_STEQR implements the main loop of the sterf algorithm

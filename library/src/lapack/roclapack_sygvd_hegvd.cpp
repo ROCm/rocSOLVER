@@ -1,6 +1,6 @@
 /* ************************************************************************
  * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
- * ************************************************************************ */
+ * *************************************************************************/
 
 #include "roclapack_sygvd_hegvd.hpp"
 
@@ -56,12 +56,13 @@ rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
     size_t size_iinfo;
     rocsolver_sygvd_hegvd_getMemorySize<false, false, T, S>(
         itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_tmpz, &size_splits, &size_tau, &size_pivots_workArr, &size_iinfo, &optim_mem);
+        &size_work4, &size_tmpz, &size_splits, &size_tau, &size_pivots_workArr, &size_iinfo,
+        &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_work4, size_tmpz, size_splits, size_tau,
-                                                      size_pivots_workArr, size_iinfo);
+                                                      size_work3, size_work4, size_tmpz, size_splits,
+                                                      size_tau, size_pivots_workArr, size_iinfo);
 
     // memory workspace allocation
     void *scalars, *work1, *work2, *work3, *work4, *tau, *pivots_workArr, *iinfo, *splits, *tmpz;
@@ -87,8 +88,8 @@ rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
     // execution
     return rocsolver_sygvd_hegvd_template<false, false, T>(
         handle, itype, evect, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, D, strideD,
-        E, strideE, info, batch_count, (T*)scalars, work1, work2, work3, work4, (S*)tmpz, (rocblas_int*)splits, (T*)tau,
-        pivots_workArr, (rocblas_int*)iinfo, optim_mem);
+        E, strideE, info, batch_count, (T*)scalars, work1, work2, work3, work4, (S*)tmpz,
+        (rocblas_int*)splits, (T*)tau, pivots_workArr, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*

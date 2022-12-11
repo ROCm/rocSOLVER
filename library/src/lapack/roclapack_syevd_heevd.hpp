@@ -5,7 +5,7 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
- * ***********************************************************************/
+ * ************************************************************************/
 
 #pragma once
 
@@ -61,8 +61,8 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     if(evect == rocblas_evect_original)
     {
         // extra requirements for computing eigenvalues and vectors (stedc)
-        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12, &w22, &w31, size_tmpz, size_splits,
-                                                     &unused);
+        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
+                                                     &w22, &w31, size_tmpz, size_splits, &unused);
 
         // extra requirements for ormtr/unmtr
         rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
@@ -117,7 +117,7 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
                                               void* work1,
                                               void* work2,
                                               void* work3,
-                                              S* tmpz,  
+                                              S* tmpz,
                                               rocblas_int* splits,
                                               T* tmptau_W,
                                               T* tau,

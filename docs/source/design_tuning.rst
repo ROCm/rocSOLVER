@@ -238,7 +238,7 @@ xxGST_BLOCKSIZE
 
 
 syevd, heevd and stedc functions
-====================================
+=====================================
 
 When running SYEVD/HEEVD (or the corresponding batched and strided-batched routines),
 the computation of the eigenvectors of the associated tridiagonal matrix

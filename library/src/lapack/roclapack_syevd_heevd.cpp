@@ -1,6 +1,6 @@
 /* ************************************************************************
  * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
- * ************************************************************************ */
+ * *************************************************************************/
 
 #include "roclapack_syevd_heevd.hpp"
 
@@ -50,14 +50,14 @@ rocblas_status rocsolver_syevd_heevd_impl(rocblas_handle handle,
     // size for temporary householder scalars
     size_t size_tau;
 
-    rocsolver_syevd_heevd_getMemorySize<false, T, S>(evect, uplo, n, batch_count, &size_scalars,
-                                                     &size_work1, &size_work2, &size_work3, &size_tmpz, &size_splits,
-                                                     &size_tmptau_W, &size_tau, &size_workArr);
+    rocsolver_syevd_heevd_getMemorySize<false, T, S>(
+        evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
+        &size_tmpz, &size_splits, &size_tmptau_W, &size_tau, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_tmpz, size_splits, size_tmptau_W, size_tau,
-                                                      size_workArr);
+                                                      size_work3, size_tmpz, size_splits,
+                                                      size_tmptau_W, size_tau, size_workArr);
 
     // memory workspace allocation
     void *scalars, *work1, *work2, *work3, *tmptau_W, *tau, *workArr, *splits, *tmpz;
@@ -82,7 +82,8 @@ rocblas_status rocsolver_syevd_heevd_impl(rocblas_handle handle,
     // execution
     return rocsolver_syevd_heevd_template<false, false, T>(
         handle, evect, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, info, batch_count,
-        (T*)scalars, work1, work2, work3, (S*)tmpz, (rocblas_int*)splits, (T*)tmptau_W, (T*)tau, (T**)workArr);
+        (T*)scalars, work1, work2, work3, (S*)tmpz, (rocblas_int*)splits, (T*)tmptau_W, (T*)tau,
+        (T**)workArr);
 }
 
 /*

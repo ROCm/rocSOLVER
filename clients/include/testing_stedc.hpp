@@ -96,8 +96,8 @@ void stedc_initData(const rocblas_handle handle,
             rocblas_init<S>(hE, true);
         }
 
-        // otherwise, the marix will be divided in exactly 2 independent blocks, if the size is even, 
-        // or 3 if the size if odd. The 2 main indepedent blocks will have the same eigenvalues. 
+        // otherwise, the marix will be divided in exactly 2 independent blocks, if the size is even,
+        // or 3 if the size if odd. The 2 main indepedent blocks will have the same eigenvalues.
         // The last block, if the case, will have eigenalue equal 1.
         else
         {
@@ -153,13 +153,19 @@ void stedc_initData(const rocblas_handle handle,
             cblas_geqrf<S>(NN1, NN1, Q1.data(), NN1, ipiv1.data(), hW.data(), sw);
             cblas_geqrf<S>(NN2, NN2, Q2.data(), NN2, ipiv2.data(), hW.data(), sw);
             // now multiply the orthogonal matrices by the diagonals A1 and A2 to hide the eigenvalues
-            cblas_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN1, NN1, NN1, Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
-            cblas_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN1, NN1, NN1, Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
-            cblas_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN2, NN2, NN2, Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
-            cblas_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN2, NN2, NN2, Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
+            cblas_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN1, NN1, NN1,
+                                 Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
+            cblas_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN1, NN1, NN1,
+                                 Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
+            cblas_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN2, NN2, NN2,
+                                 Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
+            cblas_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN2, NN2, NN2,
+                                 Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
             // finally, perform tridiagonalization
-            cblas_sytrd_hetrd<S>(rocblas_fill_upper, NN1, A1.data(), NN1, hD[0], hE[0], ipiv1.data(), hW.data(), sw);
-            cblas_sytrd_hetrd<S>(rocblas_fill_upper, NN2, A2.data(), NN2, hD[0]+NN1, hE[0]+NN1, ipiv2.data(), hW.data(), sw);
+            cblas_sytrd_hetrd<S>(rocblas_fill_upper, NN1, A1.data(), NN1, hD[0], hE[0],
+                                 ipiv1.data(), hW.data(), sw);
+            cblas_sytrd_hetrd<S>(rocblas_fill_upper, NN2, A2.data(), NN2, hD[0] + NN1, hE[0] + NN1,
+                                 ipiv2.data(), hW.data(), sw);
 
             // c. integrate blocks into final matrix
             // integrate the 2 sub-blocks into the first independent block
@@ -295,26 +301,6 @@ void stedc_getError(const rocblas_handle handle,
         err = norm_error('F', 1, n, 1, hD[0], hDRes[0]);
         *max_err = err > *max_err ? err : *max_err;
 
-//printf("\n\n");
-//for(int i = 0; i < n; ++i)
-//{
-//printf("%2.15f %2.15f\n",hD[0][i],hDRes[0][i]);
-//}
-/*printf("\n\n");
-for(int i = 0; i < n; ++i)
-{
-    for(int j = 0; j < n; ++j)
-        printf("%2.15f ",hC[0][i+j*ldc]);
-    printf("\n");
-}
-printf("\n\n");
-for(int i = 0; i < n; ++i)
-{
-    for(int j = 0; j < n; ++j)
-        printf("%2.15f ",hCRes[0][i+j*ldc]);
-    printf("\n");
-}*/
-
         // check eigenvectors if required
         if(evect != rocblas_evect_none)
         {
@@ -337,7 +323,6 @@ for(int i = 0; i < n; ++i)
             // error is ||hC - hCRes|| / ||hC||
             // using frobenius norm
             *max_errv = norm_error('F', n, n, ldc, hCRes[0], hC[0]);
-//printf("\n\n++++++++++++++++++++++++++ err: %2.15f\n",err);
         }
     }
 }
@@ -519,10 +504,10 @@ void testing_stedc(Arguments& argus)
                           hInfo, hInfoRes, &max_err, &max_errv);
 
     // collect performance data
-//    if(argus.timing)
-//        stedc_getPerfData<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
-//                             &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
-//                             argus.profile_kernels, argus.perf);
+    if(argus.timing)
+        stedc_getPerfData<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
+                             &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                             argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
@@ -530,8 +515,8 @@ void testing_stedc(Arguments& argus)
     {
         ROCSOLVER_TEST_CHECK(T, max_err, n);
         if(evect != rocblas_evect_none)
-            ROCSOLVER_TEST_CHECK(T, max_errv, n*n);
-    }       
+            ROCSOLVER_TEST_CHECK(T, max_errv, n * n);
+    }
 
     // output results for rocsolver-bench
     if(argus.timing)
@@ -571,4 +556,3 @@ void testing_stedc(Arguments& argus)
 #define EXTERN_TESTING_STEDC(...) extern template void testing_stedc<__VA_ARGS__>(Arguments&);
 
 INSTANTIATE(EXTERN_TESTING_STEDC, FOREACH_SCALAR_TYPE, APPLY_STAMP)
-
