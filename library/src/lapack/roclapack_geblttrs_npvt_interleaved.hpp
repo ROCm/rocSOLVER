@@ -1,11 +1,33 @@
-/************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
- * ***********************************************************************/
+/*! \file */
+/* ************************************************************************
+ * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * ************************************************************************ */
 
 #pragma once
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
+#include "geblttrs_npvt_bf.hpp"
 
 template <typename T>
 void rocsolver_geblttrs_npvt_interleaved_getMemorySize(const rocblas_int nb,
@@ -44,7 +66,9 @@ rocblas_status rocsolver_geblttrs_npvt_interleaved_argCheck(rocblas_handle handl
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    // N/A
+    if (handle == nullptr) {
+         return(rocblas_status_invalid_handle);
+         };
 
     // 2. invalid size
     if(nb < 0 || nblocks < 0 || nrhs < 0 || lda < nb || ldb < nb || ldc < nb || ldx < nb
@@ -89,5 +113,9 @@ rocblas_status rocsolver_geblttrs_npvt_interleaved_template(rocblas_handle handl
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    return rocblas_status_not_implemented;
+    return( geblttrs_npvt_bf_template(
+                       handle,  nb, nblocks, nrhs, 
+                       A, lda, B, ldb, C, ldc,
+                       X, ldx,
+                       batch_count ) );
 }

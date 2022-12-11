@@ -7,6 +7,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+#include "geblttrf_npvt_bf.hpp"
+
 template <typename T>
 void rocsolver_geblttrf_npvt_interleaved_getMemorySize(const rocblas_int nb,
                                                        const rocblas_int nblocks,
@@ -41,7 +43,9 @@ rocblas_status rocsolver_geblttrf_npvt_interleaved_argCheck(rocblas_handle handl
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    // N/A
+    if(handle == nullptr) {
+        return rocblas_status_invalid_handle;
+        };
 
     // 2. invalid size
     if(nb < 0 || nblocks < 0 || lda < nb || ldb < nb || ldc < nb || batch_count < 0)
@@ -83,5 +87,10 @@ rocblas_status rocsolver_geblttrf_npvt_interleaved_template(rocblas_handle handl
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    return rocblas_status_not_implemented;
+    return (geblttrf_npvt_interleaved_batch_template( 
+                             handle,
+                             nb, nblocks,
+                             A, lda,  B, ldb, C, ldc,
+                             info,
+                             batch_count ) );
 }
