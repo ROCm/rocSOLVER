@@ -87,7 +87,7 @@ rocblas_status rocsolver_geblttrf_npvt_interleaved_template(rocblas_handle handl
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    return (geblttrf_npvt_interleaved_batch_template( 
+    return (geblttrf_npvt_bf_template(
                              handle,
                              nb, nblocks,
                              A, lda,  B, ldb, C, ldc,

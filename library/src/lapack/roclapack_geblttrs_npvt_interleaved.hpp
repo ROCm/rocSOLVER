@@ -110,8 +110,6 @@ rocblas_status rocsolver_geblttrs_npvt_interleaved_template(rocblas_handle handl
     if(nb == 0 || nblocks == 0 || nrhs == 0 || batch_count == 0)
         return rocblas_status_success;
 
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
 
     return( geblttrs_npvt_bf_template(
                        handle,  nb, nblocks, nrhs, 

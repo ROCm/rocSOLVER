@@ -29,7 +29,8 @@
 #include "geblt_common.h"
 
 template <typename T>
-DEVICE_FUNCTION void gemm_nn_bf_device(rocblas_int batchCount,
+DEVICE_FUNCTION void gemm_nn_bf_device(
+                                       const rocblas_int batch_count,
                                        const rocblas_int m,
                                        const rocblas_int n,
                                        const rocblas_int k,
@@ -42,19 +43,13 @@ DEVICE_FUNCTION void gemm_nn_bf_device(rocblas_int batchCount,
                                        T* C_,
                                        const rocblas_int ldc)
 {
-#define A(iv, ia, ja) A_[indx3f(iv, ia, ja, batchCount, lda)]
-#define B(iv, ib, jb) B_[indx3f(iv, ib, jb, batchCount, ldb)]
-#define C(iv, ic, jc) C_[indx3f(iv, ic, jc, batchCount, ldc)]
+#define A(iv, ia, ja) A_[indx3f(iv, ia, ja, batch_count, lda)]
+#define B(iv, ib, jb) B_[indx3f(iv, ib, jb, batch_count, ldb)]
+#define C(iv, ic, jc) C_[indx3f(iv, ic, jc, batch_count, ldc)]
 
-#ifdef USE_GPU
     rocblas_int const iv_start = (blockIdx.x * blockDim.x + threadIdx.x) + 1;
-    rocblas_int const iv_end = batchCount;
+    rocblas_int const iv_end = batch_count;
     rocblas_int const iv_inc = (gridDim.x * blockDim.x);
-#else
-    rocblas_int const iv_start = 1;
-    rocblas_int const iv_end = batchCount;
-    rocblas_int const iv_inc = 1;
-#endif
 
     T const zero = 0;
 

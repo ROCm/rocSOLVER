@@ -1,9 +1,28 @@
-/*
-! -------------------------------------------------------------------
-! Copyright(c) 2022. Advanced Micro Devices, Inc. All rights reserved
-! -------------------------------------------------------------------
-*/
+/*! \file */
+/* ************************************************************************
+ * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * ************************************************************************ */
 
+#pragma once
 #ifndef GBTRF_NPVT_BF_HPP
 #define GBTRF_NPVT_BF_HPP
 
@@ -153,8 +172,8 @@ GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
             I const ld2 = ldu;
             I const ld3 = ldd;
 
-            T const* const Ap = &(A(iv, 1, 1, k + 1));
-            T const* const Bp = &(U(iv, 1, 1, k));
+            T* Ap = &(A(iv, 1, 1, k + 1));
+            T* Bp = &(U(iv, 1, 1, k));
             T* Cp = &(D(iv, 1, 1, k + 1));
             gemm_nn_bf_device<T>(batch_count, mm, nn, kk, alpha, Ap, ld1, Bp, ld2, beta, Cp, ld3);
             SYNCTHREADS;
