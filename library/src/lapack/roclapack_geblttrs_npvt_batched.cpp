@@ -45,26 +45,33 @@ rocblas_status rocsolver_geblttrs_npvt_batched_impl(rocblas_handle handle,
     rocblas_stride strideX = 0;
 
     // memory workspace sizes:
-    // size of reusable workspace
-    size_t size_work;
+    // requirements for calling GETRS
+    bool optim_mem;
+    size_t size_work1, size_work2, size_work3, size_work4;
 
-    rocsolver_geblttrs_npvt_getMemorySize<true, false, T>(nb, nblocks, nrhs, batch_count, &size_work);
+    rocsolver_geblttrs_npvt_getMemorySize<true, false, T>(nb, nblocks, nrhs, batch_count,
+                                                          &size_work1, &size_work2, &size_work3,
+                                                          &size_work4, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work);
+        return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
+                                                      size_work4);
 
     // memory workspace allocation
-    void* work;
-    rocblas_device_malloc mem(handle, size_work);
+    void *work1, *work2, *work3, *work4;
+    rocblas_device_malloc mem(handle, size_work1, size_work2, size_work3, size_work4);
 
     if(!mem)
         return rocblas_status_memory_error;
-    work = mem[0];
+    work1 = mem[0];
+    work2 = mem[1];
+    work3 = mem[2];
+    work4 = mem[3];
 
     // Execution
     return rocsolver_geblttrs_npvt_template<true, false, T>(
         handle, nb, nblocks, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, C, shiftC, ldc,
-        strideC, X, shiftX, ldx, strideX, batch_count, work);
+        strideC, X, shiftX, ldx, strideX, batch_count, work1, work2, work3, work4, optim_mem);
 }
 
 /*
