@@ -21,46 +21,34 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #pragma once
-#ifndef GETRS_NPVT_BF_HPP
-#define GETRS_NPVT_BF_HPP
+#ifndef GETRS_NPVT_HPP
+#define GETRS_NPVT_HPP
 
 #include "geblt_common.h"
 
-template <typename T>
-DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
-                                   rocblas_int const n,
-                                   rocblas_int const nrhs,
-                                   T* A_,
-                                   rocblas_int const lda,
-                                   T* B_,
-                                   rocblas_int const ldb,
-                                   rocblas_int* pinfo)
+template <typename T, typename I>
+DEVICE_FUNCTION void
+    getrs_npvt_device(
+           const I  n, 
+           const I  nrhs, 
+           T *  A_, 
+           const I  lda, 
+           T* B_, 
+           const I  ldb, 
+           I* pinfo)
 {
+#define A(ia, ja) A_[indx2f(ia, ja, lda)]
+#define B(ib, jb) B_[indx2f(ib, jb, ldb)]
+
+    T const zero = 0;
+    T const one = 1;
+    I info = 0;
     /*
 !     ---------------------------------------------------
 !     Perform forward and backward solve without pivoting
 !     ---------------------------------------------------
 */
-
-#define A(iv, ia, ja) A_[indx3f(iv, ia, ja, batchCount, lda)]
-#define B(iv, ib, irhs) B_[indx3f(iv, ib, irhs, batchCount, ldb)]
-
-#ifdef USE_GPU
-    rocblas_int const iv_start = (blockIdx.x * blockDim.x + threadIdx.x) + 1;
-    rocblas_int const iv_end = batchCount;
-    rocblas_int const iv_inc = (gridDim.x * blockDim.x);
-#else
-    rocblas_int const iv_start = 1;
-    rocblas_int const iv_end = batchCount;
-    rocblas_int const iv_inc = 1;
-#endif
-
-    T const one = 1;
-    T const zero = 0;
-
-    rocblas_int info = 0;
     /*
 ! 
 ! % ------------------------
@@ -68,6 +56,9 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
 ! % step 1: solve L * Y = B
 ! % step 2: solve U * X = Y
 ! % ------------------------
+*/
+
+    /*
 ! 
 ! 
 ! % ------------------------------
@@ -75,11 +66,6 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
 ! % [L21 I     ] [ Y2 ] = [ B2 ]
 ! % [L31 L21 I ] [ Y3 ]   [ B3 ]
 ! % ------------------------------
-! 
-! 
-! % ------------
-! % special case
-! % ------------
 */
 
     /*
@@ -91,21 +77,17 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
 ! end;
 */
 
-    for(rocblas_int i = 1; i <= n; i++)
+    for(I i = 1; i <= n; i++)
     {
-        for(rocblas_int j = 1; j <= (i - 1); j++)
+        for(I j = 1; j <= (i - 1); j++)
         {
-            for(rocblas_int k = 1; k <= nrhs; k++)
+            for(I k = 1; k <= nrhs; k++)
             {
-                for(rocblas_int iv = iv_start; iv <= iv_end; iv += iv_inc)
-                {
-                    B(iv, i, k) = B(iv, i, k) - A(iv, i, j) * B(iv, j, k);
-                };
+                B(i, k) = B(i, k) - A(i, j) * B(j, k);
             };
-
-            SYNCTHREADS;
         };
     };
+
     /*
 ! 
 ! % ------------------------------
@@ -123,43 +105,33 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
 ! end;
 ! 
 */
-    for(rocblas_int ir = 1; ir <= n; ir++)
+
+    for(I ir = 1; ir <= n; ir++)
     {
-        rocblas_int i = n - ir + 1;
-        for(rocblas_int j = (i + 1); j <= n; j++)
+        I const i = n - ir + 1;
+
+        for(I j = (i + 1); j <= n; j++)
         {
-            for(rocblas_int k = 1; k <= nrhs; k++)
+            for(I k = 1; k <= nrhs; k++)
             {
-                for(rocblas_int iv = iv_start; iv <= iv_end; iv += iv_inc)
-                {
-                    B(iv, i, k) = B(iv, i, k) - A(iv, i, j) * B(iv, j, k);
-                };
+                B(i, k) = B(i, k) - A(i, j) * B(j, k);
             };
-            SYNCTHREADS;
+        };
 
-        }; // end for j
+        bool const is_diag_zero = (A(i, i) == zero);
+        T const inv_Uii = (is_diag_zero) ? one : one / A(i, i);
+        info = is_diag_zero && (info == 0) ? i : info;
 
-        for(rocblas_int iv = 1; iv <= iv_end; iv += iv_inc)
+        for(I k = 1; k <= nrhs; k++)
         {
-            T const A_iv_i_i = A(iv, i, i);
-            bool const is_diag_zero = (std::abs(A_iv_i_i) == zero);
-            info = (is_diag_zero && (info == 0)) ? i : info;
+            B(i, k) *= inv_Uii;
+        };
+    };
 
-            T const inv_Uii_iv = (is_diag_zero) ? one : one / A_iv_i_i;
-
-            for(rocblas_int k = 1; k <= nrhs; k++)
-            {
-                B(iv, i, k) = B(iv, i, k) * inv_Uii_iv;
-            };
-
-        }; // end for iv
-
-        SYNCTHREADS;
-
-    }; // end for ir
-
-    *pinfo = info;
-}
+    {
+        *pinfo = info;
+    };
+};
 
 #undef A
 #undef B

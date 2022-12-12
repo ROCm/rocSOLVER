@@ -145,7 +145,7 @@ GLOBAL_FUNCTION void geblttrs_npvt_bf_kernel(
             rocblas_int const ld1 = ldd;
             rocblas_int const ld2 = ldbrhs * nblocks;
 
-            T const* const Ap = &(D(iv, 1, 1, k));
+            T* Ap = &(D(iv, 1, 1, k));
             T* Bp = &(y(iv, 1, k, 1));
             rocblas_int linfo = 0;
             getrs_npvt_bf<T>(batch_count, nn, nrhs, Ap, ld1, Bp, ld2, &linfo);

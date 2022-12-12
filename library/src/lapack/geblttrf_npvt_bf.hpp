@@ -150,7 +150,7 @@ GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
             I const nrhs = nb;
             I const iv = 1;
 
-            T const* const Ap = &(D(iv, 1, 1, k));
+            T* Ap = &(D(iv, 1, 1, k));
             T* Bp = &(C(iv, 1, 1, k));
             getrs_npvt_bf<T>(batch_count, nn, nrhs, Ap, ldd, Bp, ldc, devinfo_array);
             SYNCTHREADS;
