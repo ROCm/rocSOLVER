@@ -7,6 +7,9 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+#include "roclapack_geblttrs_npvt_strided_batched.hpp"
+#include "roclapack_geblttrs_npvt_batched.hpp"
+
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_geblttrs_npvt_getMemorySize(const rocblas_int nb,
                                            const rocblas_int nblocks,
@@ -44,7 +47,9 @@ rocblas_status rocsolver_geblttrs_npvt_argCheck(rocblas_handle handle,
     // order is important for unit tests:
 
     // 1. invalid/non-supported values
-    // N/A
+    if (handle == nullptr) {
+       return( rocblas_status_invalid_handle );
+       };
 
     // 2. invalid size
     if(nb < 0 || nblocks < 0 || nrhs < 0 || lda < nb || ldb < nb || ldc < nb || ldx < nb
@@ -95,8 +100,70 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     if(nb == 0 || nblocks == 0 || nrhs == 0 || batch_count == 0)
         return rocblas_status_success;
 
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
 
-    return rocblas_status_not_implemented;
+    bool constexpr is_strided_batched = (!BATCHED) && STRIDED;
+    bool constexpr is_batched_only = BATCHED && (!STRIDED);
+    bool constexpr is_no_batched = (!BATCHED) && (!STRIDED);
+    
+    rocblas_status istat = rocblas_status_not_implemented;
+    if constexpr (is_no_batched ) {
+       // -------------------------------------------------
+       // treat non batched case  as trivial strided batched 
+       // of batch_count == 1
+       // -------------------------------------------------
+       const rocblas_int dummy_batch_count = 1;
+
+       const rocblas_stride lnblocks = nblocks;
+       const rocblas_stride dummy_strideA = lda * nb * lnblocks;
+       const rocblas_stride dummy_strideB = ldb * nb * lnblocks;
+       const rocblas_stride dummy_strideC = ldc * nb * lnblocks;
+       const rocblas_stride dummy_strideX = ldx * nb * lnblocks;
+
+       T * Ap = (T *) A;
+       T * Bp = (T *) B;
+       T * Cp = (T *) C;
+       T * Xp = (T *) X;
+
+       istat = rocsolver_geblttrs_npvt_strided_batched_template( 
+                        handle,
+                        nb, nblocks, nrhs,
+                        Ap,  lda, dummy_strideA,
+                        Bp,  ldb, dummy_strideB,
+                        Cp,  ldc, dummy_strideC,
+                        Xp,  ldx, dummy_strideX,
+                        dummy_batch_count);
+      }
+   else if constexpr (is_strided_batched) {
+       T * Ap = (T *) A;
+       T * Bp = (T *) B;
+       T * Cp = (T *) C;
+       T * Xp = (T *) X;
+
+       istat = rocsolver_geblttrs_npvt_strided_batched_template(
+                        handle,
+                        nb, nblocks, nrhs,
+                        Ap, lda, strideA,
+                        Bp, ldb, strideB,
+                        Cp, ldc, strideC,
+                        Xp, ldx, strideX,
+                        batch_count );
+      }
+   else if constexpr (is_batched_only) {
+       T ** A_array =  (T **) A;
+       T ** B_array =  (T **) B;
+       T ** C_array =  (T **) C;
+       T ** X_array =  (T **) X;
+       istat =  rocsolver_geblttrs_npvt_batched_template(
+                        handle,
+                        nb, nblocks, nrhs,
+                        A_array, lda, 
+                        B_array, ldb, 
+                        C_array, ldc, 
+                        X_array, ldx, 
+                        batch_count);
+      };
+
+
+    return( istat ); 
+
 }

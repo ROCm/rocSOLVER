@@ -92,8 +92,6 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
     if(nb == 0 || nblocks == 0 || batch_count == 0)
         return rocblas_status_success;
 
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
 
     bool constexpr is_strided_batched = (!BATCHED) && STRIDED;
     bool constexpr is_batched_only = BATCHED && (!STRIDED);
