@@ -18,6 +18,8 @@
 #define BDIM 512 // Number of threads per thread-block used in main stedc kernel
 #define MAXITERS 50 // Max number of iterations for root finding method
 
+/** SEQ_EVAL evaluates the secular equation at a given point. It accumulates the
+    corrections to the elements in D so that distance to poles are computed accurately **/
 template <typename S>
 __device__ void seq_eval(const rocblas_int type,
                          const rocblas_int k,
@@ -38,13 +40,14 @@ __device__ void seq_eval(const rocblas_int type,
     S er, fx, gx, hx, fdx, gdx, hdx, zz, tmp;
     rocblas_int gout, hout;
 
-    // type = 0: evaluates secular equation
+    // prepare computations
+    // if type = 0: evaluate secular equation
     if(type == 0)
     {
         gout = k + 1;
         hout = k;
     }
-    // type = 1: evaluates secular equation without the k-th pole
+    // if type = 1: evaluate secular equation without the k-th pole
     else if(type == 1)
     {
         if(modif)
@@ -55,7 +58,7 @@ __device__ void seq_eval(const rocblas_int type,
         gout = k;
         hout = k;
     }
-    // type = 2: evaluates secular equation without the k-th and (k+1)-th poles
+    // if type = 2: evaluate secular equation without the k-th and (k+1)-th poles
     else
     {
         if(modif)
@@ -69,6 +72,7 @@ __device__ void seq_eval(const rocblas_int type,
         hout = k + 1;
     }
 
+    // computations
     gx = 0;
     gdx = 0;
     er = 0;
@@ -102,6 +106,7 @@ __device__ void seq_eval(const rocblas_int type,
     fx = p + gx + hx;
     fdx = gdx + hdx;
 
+    // return results
     *pt_fx = fx;
     *pt_fdx = fdx;
     *pt_gx = gx;
@@ -111,6 +116,12 @@ __device__ void seq_eval(const rocblas_int type,
     *pt_er = er;
 }
 
+/** SEQ_SOLVE solves secular equation at point k (i.e. computes kth eigenvalue that
+    is within an internal interval). We use rational interpolation and fixed weigths
+    method between the 2 poles of the interval.
+    (TODO: In the future, we could consider using 3 poles for those cases that may need it
+    to reduce the number of required iterations to converge. The performance improvements
+    are expected to be marginal, though) **/
 template <typename S>
 __device__ rocblas_int seq_solve(const rocblas_int dd,
                                  S* D,
@@ -367,6 +378,11 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
     return converged ? 0 : 1;
 }
 
+/** SEQ_SOLVE_EXT solves secular equation at point n (i.e. computes last eigenvalue).
+    We use rational interpolation and fixed weigths method between the (n-1)th and nth poles.
+    (TODO: In the future, we could consider using 3 poles for those cases that may need it
+    to reduce the number of required iterations to converge. The performance improvements
+    are expected to be marginal, though) **/
 template <typename S>
 __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
                                      S* D,
@@ -554,7 +570,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     return converged ? 0 : 1;
 }
 
-/** STEDC_NUM_LEVS returns the ideal number of times or levels a matrix (or split block)
+/** STEDC_NUM_LEVS returns the ideal number of times/levels in which a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
 __host__ __device__ inline rocblas_int stedc_num_levs(const rocblas_int n)
@@ -744,7 +760,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
             }
         }
 
-        // otherwise, divide & conquer
+        // ===== otherwise, use divide & conquer =====
         else
         {
             // arrange threads so that a group of bdim/blks threads works with each sub-block
@@ -1441,6 +1457,7 @@ void local_gemm(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
 }
 
+/** This helper calculates required workspace size **/
 template <bool BATCHED, typename T, typename S>
 void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
                                    const rocblas_int n,
@@ -1517,6 +1534,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     }
 }
 
+/** This helper check argument correctness for stedc API **/
 template <typename T, typename S>
 rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
                                         const rocblas_evect evect,
@@ -1551,6 +1569,7 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
+/** STEDC templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         const rocblas_evect evect,

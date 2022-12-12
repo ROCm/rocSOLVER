@@ -146,7 +146,7 @@
 /*! \brief Determines the minimum size required for the eigenvectors of an independent block of
     a tridiagonal matrix to be computed using the divide-and-conquer algorithm (STEDC).
 
-    \details If the size of the block is not greater than STEDC_MIN_DC_SIZE (bs <= STEDC_MIN_DC_SIZE),
+    \details If the size of the block is smaller than STEDC_MIN_DC_SIZE (bs < STEDC_MIN_DC_SIZE),
     the eigenvectors are computed with the normal QR algorithm. */
 #define STEDC_MIN_DC_SIZE 32
 
