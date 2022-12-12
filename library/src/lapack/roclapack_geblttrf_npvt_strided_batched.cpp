@@ -39,26 +39,49 @@ rocblas_status rocsolver_geblttrf_npvt_strided_batched_impl(rocblas_handle handl
     rocblas_int shiftC = 0;
 
     // memory workspace sizes:
-    // size of reusable workspace
-    size_t size_work;
+    // requirements for calling GETRF/GETRS
+    bool optim_mem;
+    size_t size_scalars, size_work1, size_work2, size_work3, size_work4, size_pivotval,
+        size_pivotidx, size_iipiv, size_iinfo1;
+    // size for temporary info values
+    size_t size_iinfo2;
 
-    rocsolver_geblttrf_npvt_getMemorySize<false, true, T>(nb, nblocks, batch_count, &size_work);
+    rocsolver_geblttrf_npvt_getMemorySize<false, true, T>(
+        nb, nblocks, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3, &size_work4,
+        &size_pivotval, &size_pivotidx, &size_iipiv, &size_iinfo1, &size_iinfo2, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work);
+        return rocblas_set_optimal_device_memory_size(
+            handle, size_scalars, size_work1, size_work2, size_work3, size_work4, size_pivotval,
+            size_pivotidx, size_iipiv, size_iinfo1, size_iinfo2);
 
     // memory workspace allocation
-    void* work;
-    rocblas_device_malloc mem(handle, size_work);
+    void *scalars, *work1, *work2, *work3, *work4, *pivotval, *pivotidx, *iipiv, *iinfo1, *iinfo2;
+    rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
+                              size_pivotval, size_pivotidx, size_iipiv, size_iinfo1, size_iinfo2);
 
     if(!mem)
         return rocblas_status_memory_error;
-    work = mem[0];
+
+    scalars = mem[0];
+    work1 = mem[1];
+    work2 = mem[2];
+    work3 = mem[3];
+    work4 = mem[4];
+    pivotval = mem[5];
+    pivotidx = mem[6];
+    iipiv = mem[7];
+    iinfo1 = mem[8];
+    iinfo2 = mem[9];
+    if(size_scalars > 0)
+        init_scalars(handle, (T*)scalars);
 
     // Execution
     return rocsolver_geblttrf_npvt_template<false, true, T>(
         handle, nb, nblocks, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, C, shiftC, ldc,
-        strideC, info, batch_count, work);
+        strideC, info, batch_count, (T*)scalars, work1, work2, work3, work4, (T*)pivotval,
+        (rocblas_int*)pivotidx, (rocblas_int*)iipiv, (rocblas_int*)iinfo1, (rocblas_int*)iinfo2,
+        optim_mem);
 }
 
 /*
