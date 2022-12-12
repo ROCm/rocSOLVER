@@ -257,9 +257,9 @@ ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
             if(direction == copymat_to_buffer)
                 Bp[i + j * ldb] = REAL ? Ap[i + j * lda].real() : Ap[i + j * lda].imag();
             else if(REAL)
-                Ap[i + j * lda] = rocblas_complex_num<S>(Bp[i + j * ldb], A[i + j * lda].imag());
+                Ap[i + j * lda] = rocblas_complex_num<S>(Bp[i + j * ldb], Ap[i + j * lda].imag());
             else
-                Ap[i + j * lda] = rocblas_complex_num<S>(A[i + j * lda].real(), Bp[i + j * ldb]);
+                Ap[i + j * lda] = rocblas_complex_num<S>(Ap[i + j * lda].real(), Bp[i + j * ldb]);
         }
     }
 }

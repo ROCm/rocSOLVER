@@ -15,8 +15,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#define BDIM 512  // Number of threads per block used in main stedc kernel
-#define MAXITERS 50 // Max number of iterations for Newton's method
+#define BDIM 512 // Number of threads per thread-block used in main stedc kernel
+#define MAXITERS 50 // Max number of iterations for root finding method
 
 template <typename S>
 __device__ void seq_eval(const rocblas_int type,
@@ -113,18 +113,15 @@ __device__ void seq_eval(const rocblas_int type,
 
 template <typename S>
 __device__ rocblas_int seq_solve(const rocblas_int dd,
-                                    S* D,
-                                    const S* z,
-                                    const S p,
-                                    rocblas_int k,
-                                    S* ev,
-                                    const S tol,
-                                    const S ssfmin,
-                                    const S ssfmax,
-                                    bool print)
+                                 S* D,
+                                 const S* z,
+                                 const S p,
+                                 rocblas_int k,
+                                 S* ev,
+                                 const S tol,
+                                 const S ssfmin,
+                                 const S ssfmax)
 {
-//if(print)
-//printf("\n\nestoy en solve con k = %d",k);
     bool converged = false;
     bool up, fixed;
     S lowb, uppb, aa, bb, cc, x;
@@ -141,14 +138,11 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
     tau = (dk1 - dk);
     S pinv = 1 / p;
 
-
     // find bounds and initial guess; translate origin
     seq_eval(2, k, dd, D, z, pinv, x, &cc, &fdx, &gx, &gdx, &hx, &hdx, &er, false);
     gdx = z[k] * z[k];
     hdx = z[k1] * z[k1];
     fx = cc + 2 * (hdx - gdx) / tau;
-//if(print)
-//printf("\ndk = %2.15f, dk1 = %2.15f, midpt = %2.15f, fx = %2.15f",dk, dk1,x,fx);
     if(fx > 0)
     {
         // if the secular eq at the midpoint is positive, the root is in between D[k] and the midpoint
@@ -160,16 +154,10 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         aa = cc * tau + gdx + hdx;
         bb = gdx * tau;
         eta = sqrt(abs(aa * aa - 4 * bb * cc));
-//if(print)
-//printf("\n========== aa = %2.15f, bb = %2.15f, eta = %2.15f",aa,bb,eta);
         if(aa > 0)
-           tau = 2 * bb / (aa + eta);
+            tau = 2 * bb / (aa + eta);
         else
-           tau = (aa - eta) / (2 * cc);
-//if(print)
-//printf("\n\n========== tau= %2.15f",tau);
-//if(print && tau == 0)
-//printf("\n\n========== queso");
+            tau = (aa - eta) / (2 * cc);
         x = dk + tau; // initial guess
     }
     else
@@ -184,17 +172,15 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         bb = hdx * tau;
         eta = sqrt(abs(aa * aa + 4 * bb * cc));
         if(aa < 0)
-           tau = 2 * bb / (aa - eta);
+            tau = 2 * bb / (aa - eta);
         else
-           tau = -(aa + eta) / (2 * cc);
+            tau = -(aa + eta) / (2 * cc);
         x = dk1 + tau; // initial guess
     }
 
     // evaluate secualar eq and get input values to calculate step correction
     seq_eval(0, kk, dd, D, z, pinv, (up ? dk : dk1), &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
     seq_eval(1, kk, dd, D, z, pinv, tau, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
-//if(print)
-//printf("\n\npara saber si 3 polos con k = %d, dk = %2.15f: fx = %2.15f",k,dk,fx);
     bb = z[kk];
     aa = bb / D[kk];
     fdx += aa * aa;
@@ -203,8 +189,6 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
 
     // calculate tolerance er for convergence test
     er += 8 * (hx - gx) + 2 * pinv + 3 * abs(bb) + abs(tau) * fdx;
-//if(print)
-//printf("\nlowb = %2.15f, uppb = %2.15f, initial guess = %2.15f, fx = %2.15f, er = %2.15f",lowb,uppb,x,fx,er);
 
     // if the value of secular eq is small enough, no point to continue; converged!!!
     if(abs(fx) <= tol * er)
@@ -220,16 +204,12 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         // calculate first step correction with fixed weight method
         ddk = D[k];
         ddk1 = D[k1];
-//if(print)
-//printf("\n\n>>>>>>> fx = %2.15f, fdx = %2.15f, dk = %2.15f, dk1 = %2.15f, zk = %2.15f, ddk = %2.15f, ddk1 = %2.15f",fx,fdx,dk,dk1,z[k],ddk,ddk1);
         if(up)
             cc = fx - ddk1 * fdx - (dk - dk1) * z[k] * z[k] / ddk / ddk;
         else
             cc = fx - ddk * fdx - (dk1 - dk) * z[k1] * z[k1] / ddk1 / ddk1;
         aa = (ddk + ddk1) * fx - ddk * ddk1 * fdx;
         bb = ddk * ddk1 * fx;
-//if(print)
-//printf("\n\n>>>>>>> aa = %2.15f, bb = %2.15f, cc = %2.15f",aa,bb,cc);
         if(cc == 0)
         {
             if(aa == 0)
@@ -249,8 +229,6 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
             else
                 eta = (2 * bb) / (aa + eta);
         }
-//if(print)
-//printf("\nlowb = %2.15f, uppb = %2.15f, first correction = %2.15f",lowb,uppb,eta);
 
         // verify that the correction eta will get x closer to the root
         // i.e. eta*fx should be negative. If not the case, take a Newton step instead
@@ -282,8 +260,6 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
 
         // calculate tolerance er for convergence test
         er += 8 * (hx - gx) + 2 * pinv + 3 * abs(bb) + abs(tau) * fdx;
-//if(print)
-//printf("\naccepted first correcttion = %2.15f, tau = %2.15f, x = %2.15f, fx = %2.15f, er = %2.15f",eta,tau,x,fx,er);
 
         // from now on, further step corrections will be calculated either with fixed weights method
         // or with normal interpolation depending on the value of boolean fixed
@@ -349,8 +325,6 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
                 else
                     eta = (2 * bb) / (aa + eta);
             }
-//if(print)
-//printf("\nlowb = %2.15f, uppb = %2.15f, correction_%d = %2.15f",lowb,uppb,i,eta);
 
             // verify that the correction eta will get x closer to the root
             // i.e. eta*fx should be negative. If not the case, take a Newton step instead
@@ -382,8 +356,6 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
 
             // calculate tolerance er for convergence test
             er += 8 * (hx - gx) + 2 * pinv + 3 * abs(bb) + abs(tau) * fdx;
-//if(print)
-//printf("\naccepted correcttion_%d = %2.15f, tau = %2.15f, x = %2.15f, fx = %2.15f, er = %2.15f",i,eta,tau,x,fx,er);
 
             // update boolean fixed if necessary
             if(fx * oldfx > 0 && abs(fx) > abs(oldfx) / 10)
@@ -397,17 +369,14 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
 
 template <typename S>
 __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
-                                    S* D,
-                                    const S* z,
-                                    const S p,
-                                    S* ev,
-                                    const S tol,
-                                    const S ssfmin,
-                                    const S ssfmax,
-                                    bool print)
+                                     S* D,
+                                     const S* z,
+                                     const S p,
+                                     S* ev,
+                                     const S tol,
+                                     const S ssfmin,
+                                     const S ssfmax)
 {
-//if(print)
-//printf("\n\nestoy en solve con last k");
     bool converged = false;
     S lowb, uppb, aa, bb, cc, x;
     S er, fx, fdx, gx, gdx, hx, hdx;
@@ -427,8 +396,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     gdx = z[km1] * z[km1];
     hdx = z[k] * z[k];
     fx = cc + gdx / (dkm1 - x) - 2 * hdx * pinv;
-//if(print)
-//printf("\ndk = %2.15f, dkm1 = %2.15f, midpt = %2.15f, fx = %2.15f",dk, dkm1,x,fx);
     if(fx > 0)
     {
         // if the secular eq at the midpoint is positive, the root is in between D[k] and the midpoint
@@ -439,14 +406,10 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         aa = -cc * tau + gdx + hdx;
         bb = hdx * tau;
         eta = sqrt(aa * aa + 4 * bb * cc);
-//if(print)
-//printf("\n========== aa = %2.15f, bb = %2.15f, eta = %2.15f",aa,bb,eta);
         if(aa < 0)
-           tau = 2 * bb / (eta - aa);
+            tau = 2 * bb / (eta - aa);
         else
-           tau = (aa + eta) / (2 * cc);
-//if(print)
-//printf("\n========== tau= %2.15f",tau);
+            tau = (aa + eta) / (2 * cc);
     }
     else
     {
@@ -464,9 +427,9 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             bb = hdx * tau;
             eta = sqrt(aa * aa + 4 * bb * cc);
             if(aa < 0)
-               tau = 2 * bb / (eta - aa);
+                tau = 2 * bb / (eta - aa);
             else
-               tau = (aa + eta) / (2 * cc);
+                tau = (aa + eta) / (2 * cc);
         }
     }
     x = dk + tau; // initial guess
@@ -477,8 +440,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
 
     // calculate tolerance er for convergence test
     er += abs(tau) * (hdx + gdx) - 8 * (hx + gx) - hx + pinv;
-//if(print)
-//printf("\nlowb = %2.15f, uppb = %2.15f, initial guess = %2.15f, fx = %2.15f, er = %2.15f",lowb,uppb,x,fx,er);
 
     // if the value of secular eq is small enough, no point to continue; converged!!!
     if(abs(fx) <= tol * er)
@@ -494,13 +455,9 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         // calculate first step correction with fixed weight method
         ddk = D[k];
         ddkm1 = D[km1];
-//if(print)
-//printf("\n\n>>>>>>> fx = %2.15f, fdx = %2.15f, dk = %2.15f, dk1 = %2.15f, zk = %2.15f, ddk = %2.15f, ddk1 = %2.15f",fx,fdx,dk,dkm1,z[k],ddk,ddkm1);
         cc = abs(fx - ddkm1 * gdx - ddk * hdx);
         aa = (ddk + ddkm1) * fx - ddk * ddkm1 * (gdx + hdx);
         bb = ddk * ddkm1 * fx;
-//if(print)
-//printf("\n>>>>>>> aa = %2.15f, bb = %2.15f, cc = %2.15f",aa,bb,cc);
         if(cc == 0)
         {
             eta = uppb - tau;
@@ -513,8 +470,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             else
                 eta = (2 * bb) / (aa - eta);
         }
-//if(print)
-//printf("\nlowb = %2.15f, uppb = %2.15f, first correction = %2.15f",lowb,uppb,eta);
 
         // verify that the correction eta will get x closer to the root
         // i.e. eta*fx should be negative. If not the case, take a Newton step instead
@@ -540,8 +495,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
 
         // calculate tolerance er for convergence test
         er += abs(tau) * (hdx + gdx) - 8 * (hx + gx) - hx + pinv;
-//if(print)
-//printf("\naccepted correcttion = %2.15f, tau = %2.15f, x = %2.15f, fx = %2.15f, er = %2.15f",eta,tau,x,fx,er);
 
         // MAIN ITERATION LOOP
         // ==============================================
@@ -561,20 +514,14 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             // calculate step correction
             ddk = D[k];
             ddkm1 = D[km1];
-//if(print)
-//printf("\n\n>>>>>>> fx = %2.15f, fdx = %2.15f, dk = %2.15f, dk1 = %2.15f, zk = %2.15f, ddk = %2.15f, ddk1 = %2.15f",fx,fdx,dk,dk1,z[k],ddk,ddk1);
             cc = fx - ddkm1 * gdx - ddk * hdx;
             aa = (ddk + ddkm1) * fx - ddk * ddkm1 * (gdx + hdx);
             bb = ddk * ddkm1 * fx;
-//if(print)
-//printf("\n>>>>>>> aa = %2.15f, bb = %2.15f, cc = %2.15f",aa,bb,cc);
             eta = sqrt(abs(aa * aa - 4 * bb * cc));
             if(aa >= 0)
                 eta = (aa + eta) / (2 * cc);
             else
                 eta = (2 * bb) / (aa - eta);
-//if(print)
-//printf("\nlowb = %2.15f, uppb = %2.15f, first correction = %2.15f",lowb,uppb,eta);
 
             // verify that the correction eta will get x closer to the root
             // i.e. eta*fx should be negative. If not the case, take a Newton step instead
@@ -600,8 +547,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
 
             // calculate tolerance er for convergence test
             er += abs(tau) * (hdx + gdx) - 8 * (hx + gx) - hx + pinv;
-//if(print)
-//printf("\naccepted correcttion = %2.15f, tau = %2.15f, x = %2.15f, fx = %2.15f, er = %2.15f",eta,tau,x,fx,er);
         }
     }
 
@@ -609,16 +554,15 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     return converged ? 0 : 1;
 }
 
-
 /** STEDC_NUM_LEVS returns the ideal number of times or levels a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
 __host__ __device__ inline rocblas_int stedc_num_levs(const rocblas_int n)
 {
     rocblas_int levels;
-    
+
     // return the max number of levels such that the sub-blocks are at least of size 8, and
-    // there are no more than 256 sub-blocks 
+    // there are no more than 256 sub-blocks
     // (TODO: some tuning will be necessary to find the optimal number of sub-blocks
     //  for a given matrix size)
     if(n >= 2048)
@@ -632,9 +576,9 @@ __host__ __device__ inline rocblas_int stedc_num_levs(const rocblas_int n)
     else
     {
         levels = n / 8;
-        levels = floor(log(levels)/log(2));        
+        levels = floor(log(levels) / log(2));
     }
-    
+
     return levels;
 }
 
@@ -674,7 +618,7 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
             {
                 // Split next independent block
                 // save its location in matrix
-                splits[nb] = j+1;
+                splits[nb] = j + 1;
                 nb++;
                 break;
             }
@@ -690,25 +634,24 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
     to compute the eigenvalues/eigenvectors of the symmetric tridiagonal
     submatrices **/
 template <typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
-                        stedc_kernel(const rocblas_int n,
-                                   S* DD,
-                                   const rocblas_stride strideD,
-                                   S* EE,
-                                   const rocblas_stride strideE,
-                                   S* CC,
-                                   const rocblas_int shiftC,
-                                   const rocblas_int ldc,
-                                   const rocblas_stride strideC,
-                                   rocblas_int* iinfo,
-                                   S* WA,
-                                   S* tmpzA,
-                                   S* vecsA,
-                                   rocblas_int* splitsA,
-                                   const S eps,
-                                   const S ssfmin,
-                                   const S ssfmax,
-                                   const rocblas_int maxblks)
+ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
+                                                           S* DD,
+                                                           const rocblas_stride strideD,
+                                                           S* EE,
+                                                           const rocblas_stride strideE,
+                                                           S* CC,
+                                                           const rocblas_int shiftC,
+                                                           const rocblas_int ldc,
+                                                           const rocblas_stride strideC,
+                                                           rocblas_int* iinfo,
+                                                           S* WA,
+                                                           S* tmpzA,
+                                                           S* vecsA,
+                                                           rocblas_int* splitsA,
+                                                           const S eps,
+                                                           const S ssfmin,
+                                                           const S ssfmax,
+                                                           const rocblas_int maxblks)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -720,7 +663,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     rocblas_int tid, tidb;
     /* --------------------------------------------------- */
 
-
     // select batch instance to work with
     /* --------------------------------------------------- */
     S* C;
@@ -730,7 +672,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     S* E = EE + bid * strideE;
     rocblas_int* info = iinfo + bid;
     /* --------------------------------------------------- */
-
 
     // temporary arrays in global memory
     /* --------------------------------------------------- */
@@ -750,7 +691,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     S* temps = vecs + (n * n);
     /* --------------------------------------------------- */
 
-
     // temporary arrays in shared memory
     /* --------------------------------------------------- */
     extern __shared__ rocblas_int lmem[];
@@ -761,7 +701,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     // used to store temp values during the different reductions
     S* inrms = reinterpret_cast<S*>(ps + maxblks);
     /* --------------------------------------------------- */
-
 
     // local variables
     /* --------------------------------------------------- */
@@ -779,7 +718,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
     rocblas_int levs;
     S p;
     /* --------------------------------------------------- */
-
 
     // work with STEDC_NUM_SPLIT_BLKS split blocks in parallel
     /* --------------------------------------------------- */
@@ -841,14 +779,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM)
                 }
             }
             __syncthreads();
-/*if(id==0 && sid==0)
-{
-printf("\n\nblock sizes :\n");
-for(int i=0;i<blks;++i)
-    printf("%d ",ns[i]);
-}
-__syncthreads();
-*/
+
             // find begining of sub-block and update D elements
             p2 = 0;
             for(int i = 0; i < tid; ++i)
@@ -867,17 +798,7 @@ __syncthreads();
             }
             __syncthreads();
             /* ----------------------------------------------------------------- */
-/*if(id==0 && sid==0)
-{
-printf("\n\nblock positions:\n");
-for(int i=0;i<blks;++i)
-    printf("%d ",ps[i]);
-printf("\n\ndivided D:\n");
-for(int i=0;i<n;++i)
-    printf("%2.15f ",D[i]);
-}
-__syncthreads();
-*/
+
             // 2. SOLVE PHASE
             /* ----------------------------------------------------------------- */
             // Solve the blks sub-blocks in parallel.
@@ -885,12 +806,11 @@ __syncthreads();
             // to each sub-block do computations)
             if(tidb == 0)
             {
-                run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info,
-                          W + p2 * 2, 30 * bs, eps, ssfmin, ssfmax, false);
+                run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info, W + p2 * 2,
+                          30 * bs, eps, ssfmin, ssfmax, false);
             }
             __syncthreads();
             /* ----------------------------------------------------------------- */
-
 
             // 3. MERGE PHASE
             /* ----------------------------------------------------------------- */
@@ -902,21 +822,6 @@ __syncthreads();
             // work together to solve the secular equation and update eiegenvectors)
             for(int k = 0; k < levs; ++k)
             {
-//                __syncthreads();
-//if(id==0 && sid == 0)
-//{
-//printf("\n\nC: ");
-//for(int i=0;i<n;++i)
-//{
-//    for(int j=0;j<n;++j)
-//        printf("%2.15f ",C[i+j*n]);
-//    printf("\n");
-//}
-//printf("\n\nD:\n");
-//for(int i=0;i<n;++i)
-//    printf("%2.15f ",D[i]);
-//}
-//__syncthreads();
                 // 3a. find rank-1 modification components (z and p) for this merge
                 /* ----------------------------------------------------------------- */
                 // iam indexes the sub-blocks according to its level in the merge tree
@@ -956,14 +861,7 @@ __syncthreads();
                 }
                 __syncthreads();
                 /* ----------------------------------------------------------------- */
-/*if(id == 0 && sid == 0)
-{
-printf("\n\nZ:\n");
-for(int i=0;i<n;++i)
-    printf("%2.15f ",z[i]);
-}
-__syncthreads();
-*/
+
                 // 3b. calculate deflation tolerance
                 /* ----------------------------------------------------------------- */
                 S valf, valg, maxd, maxz;
@@ -1004,16 +902,9 @@ __syncthreads();
                 // tol should be  8 * eps * (max diagonal or z element participating in merge)
                 maxd = inrms[tid - iam];
                 maxz = inrms[tid - iam + blks];
-/*if(tidb==0 && sid==0)
-{
-printf("\n\n++++ maxd = %2.15f, maxz = %2.15f\n",maxd,maxz);
-}
-__syncthreads();*/
                 maxd = maxz > maxd ? maxz : maxd;
                 S tol = 8 * eps * maxd;
-//tol=0.00000000001;
                 /* ----------------------------------------------------------------- */
-
 
                 // 3c. deflate enigenvalues
                 /* ----------------------------------------------------------------- */
@@ -1040,8 +931,6 @@ __syncthreads();*/
                             {
                                 if(idd[p2 + j] == 1 && abs(D[p2 + j] - valg) <= tol)
                                 {
-//if(sid==0)
-//printf("\n\n >>>>>>>> %2.15f deflated in block\n\n", valg);
                                     // deflated ev because it is repeated
                                     idd[p2 + i] = 0;
                                     // rotation to eliminate component in z
@@ -1104,8 +993,6 @@ __syncthreads();*/
                                     {
                                         if(idd[inc + j] == 1 && abs(D[inc + j] - valg) <= tol)
                                         {
-//if(sid==0)
-//printf("\n\n >>>>>>>>>>>>>>> %2.15f deflated interblocks\n\n", valg);
                                             // deflated ev because it is repeated
                                             idd[inb + i] = 0;
                                             // rotation to eliminate component in z
@@ -1133,7 +1020,6 @@ __syncthreads();*/
                 }
                 /* ----------------------------------------------------------------- */
 
-
                 // 3d. Organize data with non-deflated values to prepare secular equation
                 /* ----------------------------------------------------------------- */
                 // determine boundaries of what would be the new merged sub-block
@@ -1152,7 +1038,7 @@ __syncthreads();*/
                 bdm *= tn;
 
                 // define shifted arrays
-                S* tmpd = temps + in * n ;
+                S* tmpd = temps + in * n;
                 S* ev = evs + in;
                 S* diag = D + in;
                 rocblas_int* mask = idd + in;
@@ -1171,8 +1057,6 @@ __syncthreads();*/
                         {
                             per[dd] = i;
                             tmpd[dd] = p < 0 ? -diag[i] : diag[i];
-//if(in==6)
-//printf("\n\n ///////// for in %d: p = %2.15f, diag[%d] = %2.15f, tmpd[%dd] = %2.15f\n", in,p,i,diag[i],dd,tmpd[dd]);
                             if(dd != i)
                                 zz[dd] = zz[i];
                         }
@@ -1181,29 +1065,11 @@ __syncthreads();*/
                 }
                 __syncthreads();
 
-/*if(id==0 && sid==0)
-{
-printf("\n\ntmpd before ordering:\n ");
-for(int i=0;i<n;++i)
-{
-    for(int j=0;j<n;++j)
-        printf("%2.15f ",temps[i+j*n]);
-    printf("\n");
-}
-printf("\n\nz before ordering:\n");
-for(int i=0;i<n;++i)
-    printf("%2.15f ",z[i]);
-//printf("\n\nper:");
-//for(int i=0;i<n;++i)
-//    printf("%d ",per[i]);
-}
-__syncthreads();
-*/
                 // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
                 // This will allows to find initial intervals for eigenvalue guesses
                 rocblas_int tsz = 1 << (levs - 1 - k);
                 tsz = (n - 1) / tsz + 1;
-                for(int i = 0; i < tsz; ++i)//dd
+                for(int i = 0; i < tsz; ++i) //dd
                 {
                     if(i < dd)
                     {
@@ -1246,25 +1112,7 @@ __syncthreads();
                     }
                     __syncthreads();
                 }
-/*__syncthreads();
-if(id==0 && sid==0)
-{
-printf("\n\ntmpd after ordering:\n ");
-for(int i=0;i<n;++i)
-{
-    for(int j=0;j<n;++j)
-        printf("%2.15f ",temps[i+j*n]);
-    printf("\n");
-}
-printf("\n\nz after ordering:\n");
-for(int i=0;i<n;++i)
-    printf("%2.15f ",z[i]);
-printf("\n\nper:\n");
-for(int i=0;i<n;++i)
-    printf("%d ",per[i]);
-}
-__syncthreads();
-*/
+
                 // make dd copies of the non-deflated ordered diagonal elements
                 // (i.e. the poles of the secular eqn) so that the distances to the
                 // eigenvalues (D - lambda_i) are updated while computing each eigenvalue.
@@ -1282,21 +1130,7 @@ __syncthreads();
                     ev[i] = diag[i];
                 __syncthreads();
                 /* ----------------------------------------------------------------- */
-/*if(id==0 && sid==0)
-{
-printf("\n\ntmpds before solve:\n");
-for(int i=0;i<n;++i)
-{
-    for(int j=0;j<n;++j)
-        printf("%2.15f ",temps[i+j*n]);
-    printf("\n");
-}
-printf("\n\n ev before solve:\n");
-for(int i=0;i<n;++i)
-    printf("%2.15f ",evs[i]);
-}
-__syncthreads();
-*/
+
                 // 3e. Solve secular eqns, i.e. find the dd zeros
                 // corresponding to non-deflated new eigenvalues of the merged block
                 /* ----------------------------------------------------------------- */
@@ -1308,7 +1142,6 @@ __syncthreads();
                     {
                         // find position in the ordered array
                         int cc = 0;
-//                        valf = ev[j];
                         valf = p < 0 ? -ev[j] : ev[j];
                         for(int jj = 0; jj < dd; ++jj)
                         {
@@ -1321,16 +1154,13 @@ __syncthreads();
                         // computed zero will overwrite 'ev' at the corresponding position.
                         // 'tmpd' will be updated with the distances D - lambda_i.
                         // deflated values are not changed.
-bool print = false;
-//if(in==6 && j==1)
-//print=true;
-
-//printf("\nsoy iam %d con in = %d, mi j es %d\n",iam,in,j);
                         rocblas_int linfo;
                         if(cc == dd - 1)
-                            linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps, ssfmin, ssfmax, print);
+                            linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j,
+                                                  eps, ssfmin, ssfmax);
                         else
-                            linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps, ssfmin, ssfmax, print);
+                            linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j,
+                                              eps, ssfmin, ssfmax);
                         if(p < 0)
                             ev[j] *= -1;
                     }
@@ -1358,33 +1188,9 @@ bool print = false;
                 }
                 __syncthreads();
                 /* ----------------------------------------------------------------- */
-/*if(id==0)
-{
-printf("\n\nevs after solve:\n");
-for(int i=0;i<n;++i)
-    printf("%2.15f ",evs[i]);
-//printf("\n\ntmpds after solve:\n");
-//for(int i=0;i<n;++i)
-//{
-//    for(int j=0;j<n;++j)
-//        printf("%2.15f ",temps[i+j*n]);
-//    printf("\n");
-//}
-}
-__syncthreads();*/
 
                 // 3f. Compute vectors corresponding to non-deflated values
                 /* ----------------------------------------------------------------- */
-/*if(id==0)
-{
-printf("\n\nz rescaled:\n");
-for(int i=0;i<n;++i)
-    printf("%2.15f ",z[i]);
-}*/
-
-//__syncthreads();
-//if(id==0 || id == 64) printf("\n\n++++++++++++++++ empiezo %d",id);
-//__syncthreads();
                 S temp, nrm, evj;
                 rocblas_int nn = (n - 1) / blks + 1;
                 bool go;
@@ -1406,9 +1212,6 @@ for(int i=0;i<n;++i)
                     }
                     inrms[tid * tn + tidb] = nrm;
                     __syncthreads();
-//__syncthreads();
-//if(id==0 || id == 64) printf("\n\n++++++++++++++++ %d despues de temps %d",j,id);
-//__syncthreads();
 
                     // reduction (for the norms)
                     for(int r = tn / 2; r > 0; r /= 2)
@@ -1420,13 +1223,9 @@ for(int i=0;i<n;++i)
                         }
                         __syncthreads();
                     }
-                    nrm=sqrt(nrm);
-//__syncthreads();
-//if(id==0 || id == 64) printf("\n\n++++++++++++++++ %d despues de norm reduction %d",j,id);
-//__syncthreads();
+                    nrm = sqrt(nrm);
 
                     // multiply by C (row by row)
-//                    for(int i = in; i < in + sz; ++i)
                     for(int ii = 0; ii < tsz; ++ii)
                     {
                         rocblas_int i = in + ii;
@@ -1441,9 +1240,6 @@ for(int i=0;i<n;++i)
                         }
                         inrms[tid * tn + tidb] = temp;
                         __syncthreads();
-//__syncthreads();
-//if(id==0 || id == 64) printf("\n\n++++++++++++++++ %d,%d despues de mult %d",i,j,id);
-//__syncthreads();
 
                         // reduction
                         for(int r = tn / 2; r > 0; r /= 2)
@@ -1455,47 +1251,20 @@ for(int i=0;i<n;++i)
                             }
                             __syncthreads();
                         }
-//__syncthreads();
-//if(id==0 || id == 64) printf("\n\n++++++++++++++++ %d,%d despues de mult reduction %d",i,j,id);
-//__syncthreads();
 
                         // result
                         if(go && tidb == 0)
                             vecs[i + (p2 + j) * n] = temp / nrm;
                         __syncthreads();
-//__syncthreads();
-//if(id==0 || id == 64) printf("\n\n++++++++++++++++ %d,%d despues de result %d",i,j,id);
-//__syncthreads();
                     }
                 }
                 __syncthreads();
                 /* ----------------------------------------------------------------- */
-//if(id==0)
-//{
-//printf("\n\nfinal evs:\n");
-//for(int i=0;i<n;++i)
-//    printf("id = %d, j = %d, %2.15f ",evs[i]);
-//}
-//__syncthreads();
-//if(id==0) printf("\n\n++++++++++++++++ antes de update");
-//__syncthreads();
-//printf("\nhola soy id = %d",id);
-//__syncthreads();
+
                 // 3g. update D and C with computed values and vectors
                 /* ----------------------------------------------------------------- */
-/*if(id==0)
-{
-    for(int j = 0; j < n; ++j)
-    {
-        D[j] = evs[j];
-printf("\n\nid = %d, p2 = %d, j = %d, ev = %2.15f ",id,p2,j,evs[p2 + j]);
-        for(int i = 0; i < n; ++i)
-            C[i + j * ldc] = vecs[i + j * n];
-    }
-}*/
-                for(int j = 0; j < nn; ++j)//ns[tid]
+                for(int j = 0; j < nn; ++j)
                 {
-//printf("\n\nid = %d, p2 = %d, j = %d, ev = %2.15f ",id,p2,j,evs[p2 + j]);
                     if(j < ns[tid] && idd[p2 + j] == 1)
                     {
                         if(tidb == 0)
@@ -1505,12 +1274,6 @@ printf("\n\nid = %d, p2 = %d, j = %d, ev = %2.15f ",id,p2,j,evs[p2 + j]);
                     }
                     __syncthreads();
                 }
-//                __syncthreads();
-//if(id==0) printf("\n\n++++++++++++++++ after de update");
-//__syncthreads();
-//printf("\nhola soy id = %d",id);
-//__syncthreads();
-
                 /* ----------------------------------------------------------------- */
 
             } // end of main loop in merge phase of divide & conquer
@@ -1519,7 +1282,6 @@ printf("\n\nid = %d, p2 = %d, j = %d, ev = %2.15f ",id,p2,j,evs[p2 + j]);
 
     } // end of for-loop for the independent split blocks
 }
-
 
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 template <typename T, typename S, typename U>
@@ -1732,12 +1494,9 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         size_t s1, s2;
 
         // requirements for steqr of small independent blocks
-        // (TODO: Size should be STEDC_MIN_DC_SIZE when DC method is implemented)
         rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
 
         // extra requirements for original eigenvectors of small independent blocks
-        //        if(evect != rocblas_evect_tridiagonal)
-        //        {
         *size_tempvect = (n * n) * batch_count * sizeof(S);
         *size_tempgemm = 2 * (n * n) * batch_count * sizeof(S);
         if(COMPLEX)
@@ -1748,14 +1507,6 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
             *size_workArr = sizeof(S*) * batch_count;
         else
             *size_workArr = 0;
-        //        }
-        //        else
-        //        {
-        //            *size_tempvect = 0;
-        //            *size_tempgemm = 0;
-        //            *size_workArr = 0;
-        //            s2 = 0;
-        //        }
         *size_work_stack = max(s1, s2);
 
         // size for split blocks and sub-blocks positions
@@ -1826,9 +1577,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     ROCSOLVER_ENTER("stedc", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
-//print_device_matrix(std::cout, "D", 1, n, D, 1);
-//print_device_matrix(std::cout, "E", 1, n, E, 1);
-
     // quick return
     if(batch_count == 0)
         return rocblas_status_success;
@@ -1858,7 +1606,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     }
 
     // if size is too small, use steqr
-    else if(n <= STEDC_MIN_DC_SIZE)
+    else if(n < STEDC_MIN_DC_SIZE)
     {
         rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
                                     shiftC, ldc, strideC, info, batch_count, work_stack);
@@ -1897,15 +1645,12 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         // execute divide and conquer kernel with tempvect
         ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),
                                 dim3(BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE,
-                                strideE, tempvect, 0, ldt, strideT, info, (S*)work_stack, tmpz, tempgemm, splits,
-                                eps, ssfmin, ssfmax, maxblks);
+                                strideE, tempvect, 0, ldt, strideT, info, (S*)work_stack, tmpz,
+                                tempgemm, splits, eps, ssfmin, ssfmax, maxblks);
 
         // update eigenvectors C <- C*tempvect
         local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
                                         (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
-
-//print_device_matrix(std::cout, "Dfin", 1, n, D, 1);
-//print_device_matrix(std::cout, "idd", 1, n, splits + n + 2, 1);
 
         // finally sort eigenvalues and eigenvectors
         ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n,
@@ -1914,4 +1659,3 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-
