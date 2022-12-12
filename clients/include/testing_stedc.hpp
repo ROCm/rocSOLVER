@@ -150,22 +150,22 @@ void stedc_initData(const rocblas_handle handle,
             std::vector<S> hW(sw);
             std::vector<S> ipiv1(NN1);
             std::vector<S> ipiv2(NN2);
-            cblas_geqrf<S>(NN1, NN1, Q1.data(), NN1, ipiv1.data(), hW.data(), sw);
-            cblas_geqrf<S>(NN2, NN2, Q2.data(), NN2, ipiv2.data(), hW.data(), sw);
+            cpu_geqrf<S>(NN1, NN1, Q1.data(), NN1, ipiv1.data(), hW.data(), sw);
+            cpu_geqrf<S>(NN2, NN2, Q2.data(), NN2, ipiv2.data(), hW.data(), sw);
             // now multiply the orthogonal matrices by the diagonals A1 and A2 to hide the eigenvalues
-            cblas_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN1, NN1, NN1,
-                                 Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
-            cblas_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN1, NN1, NN1,
-                                 Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
-            cblas_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN2, NN2, NN2,
-                                 Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
-            cblas_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN2, NN2, NN2,
-                                 Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
+            cpu_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN1, NN1, NN1,
+                               Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
+            cpu_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN1, NN1, NN1, Q1.data(),
+                               NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
+            cpu_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN2, NN2, NN2,
+                               Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
+            cpu_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN2, NN2, NN2, Q2.data(),
+                               NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
             // finally, perform tridiagonalization
-            cblas_sytrd_hetrd<S>(rocblas_fill_upper, NN1, A1.data(), NN1, hD[0], hE[0],
-                                 ipiv1.data(), hW.data(), sw);
-            cblas_sytrd_hetrd<S>(rocblas_fill_upper, NN2, A2.data(), NN2, hD[0] + NN1, hE[0] + NN1,
-                                 ipiv2.data(), hW.data(), sw);
+            cpu_sytrd_hetrd<S>(rocblas_fill_upper, NN1, A1.data(), NN1, hD[0], hE[0], ipiv1.data(),
+                               hW.data(), sw);
+            cpu_sytrd_hetrd<S>(rocblas_fill_upper, NN2, A2.data(), NN2, hD[0] + NN1, hE[0] + NN1,
+                               ipiv2.data(), hW.data(), sw);
 
             // c. integrate blocks into final matrix
             // integrate the 2 sub-blocks into the first independent block
@@ -316,8 +316,6 @@ void stedc_getError(const rocblas_handle handle,
                 alpha = T(1) / hDRes[0][j];
                 cpu_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta,
                               hC[0] + j * ldc, 1);
-//                cblas_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hC[0] + j * ldc, 1,
-//                                beta, hCRes[0] + j * ldc, 1);
             }
 
             // error is ||hC - hCRes|| / ||hC||
