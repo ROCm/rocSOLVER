@@ -33,9 +33,9 @@ DEVICE_FUNCTION void geblttrs_npvt_device(I const nb,
 ! %
 ! %
 ! % [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-! % [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-! % [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-! % [        A4, B4 ]   [       A4 D4]   [          I4 ]
+! % [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+! % [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+! % [        A3, B4 ]   [       A3 D4]   [          I4 ]
 ! %
 ! % ----------------------
 ! % Solve L * U * x = brhs
@@ -44,7 +44,9 @@ DEVICE_FUNCTION void geblttrs_npvt_device(I const nb,
 ! % ----------------------
 */
 
-#define A(ia, ja, iblock) A_[indx3f(ia, ja, iblock, lda, nb)]
+// note adjust block index for array A
+#define A(ia, ja, iblock) A_[indx3f(ia, ja, ((iblock)-1), lda, nb)]
+
 #define D(id, jd, iblock) D_[indx3f(id, jd, iblock, ldd, nb)]
 #define U(iu, ju, iblock) U_[indx3f(iu, ju, iblock, ldu, nb)]
 
@@ -74,16 +76,16 @@ DEVICE_FUNCTION void geblttrs_npvt_device(I const nb,
 ! % forward solve
 ! % --------------------------------
 ! % [ D1          ]   [ y1 ]   [ b1 ]
-! % [ A2 D2       ] * [ y2 ] = [ b2 ]
-! % [    A3 D3    ]   [ y3 ]   [ b3 ]
-! % [       A4 D4 ]   [ y4 ]   [ b4 ]
+! % [ A1 D2       ] * [ y2 ] = [ b2 ]
+! % [    A2 D3    ]   [ y3 ]   [ b3 ]
+! % [       A3 D4 ]   [ y4 ]   [ b4 ]
 ! % --------------------------------
 ! %
 ! % ------------------
 ! % y1 = D1 \ b1
-! % y2 = D2 \ (b2 - A2 * y1)
-! % y3 = D3 \ (b3 - A3 * y2)
-! % y4 = D4 \ (b4 - A4 * y3)
+! % y2 = D2 \ (b2 - A1 * y1)
+! % y3 = D3 \ (b3 - A2 * y2)
+! % y4 = D4 \ (b4 - A3 * y3)
 ! % ------------------
 ! 
 ! 

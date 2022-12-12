@@ -48,9 +48,9 @@ DEVICE_FUNCTION void geblttrf_npvt_device(I const nb,
 !     Perform LU factorization without pivoting
 !     of block tridiagonal matrix
 ! % [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-! % [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-! % [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-! % [        A4, B4 ]   [       A4 D4]   [          I4 ]
+! % [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+! % [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+! % [        A3, B4 ]   [       A3 D4]   [          I4 ]
 ! ------------------------------------------------------
 */
 
@@ -61,7 +61,9 @@ DEVICE_FUNCTION void geblttrf_npvt_device(I const nb,
 #endif
 */
 
-#define A(ia, ja, iblock) A_[indx3f(ia, ja, iblock, lda, nb)]
+// note adjust indexing for array A
+#define A(ia, ja, iblock) A_[indx3f(ia, ja, ((iblock)-1), lda, nb)]
+
 #define B(ib, jb, iblock) B_[indx3f(ib, jb, iblock, ldb, nb)]
 #define C(ic, jc, iblock) C_[indx3f(ic, jc, iblock, ldc, nb)]
 
@@ -84,13 +86,13 @@ DEVICE_FUNCTION void geblttrf_npvt_device(I const nb,
 ! 
 ! % B1 = D1
 ! % D1 * U1 = C1 => U1 = D1 \ C1
-! % D2 + A2*U1 = B2 => D2 = B2 - A2*U1
+! % D2 + A1*U1 = B2 => D2 = B2 - A1*U1
 ! %
 ! % D2*U2 = C2 => U2 = D2 \ C2
-! % D3 + A3*U2 = B3 => D3 = B3 - A3*U2
+! % D3 + A2*U2 = B3 => D3 = B3 - A2*U2
 ! %
 ! % D3*U3 = C3 => U3 = D3 \ C3
-! % D4 + A4*U3 = B4 => D4 = B4 - A4*U3
+! % D4 + A3*U3 = B4 => D4 = B4 - A3*U3
 */
 
     /*
