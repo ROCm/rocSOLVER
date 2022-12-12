@@ -33,9 +33,9 @@
 !     Perform LU factorization without pivoting
 !     of block tridiagonal matrix
 ! % [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-! % [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-! % [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-! % [        A4, B4 ]   [       A4 D4]   [          I4 ]
+! % [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+! % [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+! % [        A3, B4 ]   [       A3 D4]   [          I4 ]
 ! ------------------------------------------------------
 */
 #include "gemm_nn_bf.hpp"
@@ -54,7 +54,10 @@ GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
                                              I devinfo_array[],
                                              I batch_count)
 {
-#define A(iv, ia, ja, k) A_[indx4f(iv, ia, ja, k, batch_count, lda, nb)]
+// note adjust indexing for array A
+#define A(iv, ia, ja, k) A_[indx4f(iv, ia, ja, ((k)-1), batch_count, lda, nb)]
+
+
 #define B(iv, ib, jb, k) B_[indx4f(iv, ib, jb, k, batch_count, ldb, nb)]
 #define C(iv, ic, jc, k) C_[indx4f(iv, ic, jc, k, batch_count, ldc, nb)]
 

@@ -31,9 +31,9 @@
 ! %
 ! %
 ! % [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-! % [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-! % [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-! % [        A4, B4 ]   [       A4 D4]   [          I4 ]
+! % [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+! % [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+! % [        A3, B4 ]   [       A3 D4]   [          I4 ]
 ! %
 ! % ----------------------
 ! % Solve L * U * x = brhs
@@ -64,7 +64,9 @@ GLOBAL_FUNCTION void geblttrs_npvt_bf_kernel(
                                              const rocblas_int  batch_count
                                              )
 {
-#define A(iv, ia, ja, iblock) A_[indx4f(iv, ia, ja, iblock, batch_count, lda, nb)]
+// note adjust indexing for array A
+#define A(iv, ia, ja, iblock) A_[indx4f(iv, ia, ja, ((iblock)-1), batch_count, lda, nb)]
+
 #define D(iv, id, jd, iblock) D_[indx4f(iv, id, jd, iblock, batch_count, ldd, nb)]
 #define U(iv, iu, ju, iblock) U_[indx4f(iv, iu, ju, iblock, batch_count, ldu, nb)]
 #define brhs(iv, ib, iblock, irhs) brhs_[indx4f(iv, ib, iblock, irhs, batch_count, ldbrhs, nblocks)]

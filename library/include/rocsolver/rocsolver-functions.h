@@ -22872,11 +22872,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_strided_batched(rocblas_handle 
     diagonal.
 
 
+ [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+ [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+ [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+ [        A3, B4 ]   [       A3 D4]   [          I4 ]
 
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
 
 
     
@@ -22889,20 +22889,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_strided_batched(rocblas_handle 
     nblocks     rocblas_int. nblocks >= 0.\n
                 The number of blocks along the diagonal of the matrix.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension max(0, lda*nb*nblocks).\n
-                Array A is dimensioned as lda by nb by nblocks.
+    A           pointer to type. Array on the GPU of dimension max(0, lda*nb*(nblocks-1)).\n
     @param[in]
     lda         rocblas_int. lda >= nb.\n
                 Specifies the leading dimension of matrix blocks A.
     @param[in]
     B           pointer to type. Array on the GPU of dimension ldb*nb*nblocks.\n
-                Array B is dimensioned as ldb by nb by nblocks.
     @param[in]
     ldb         rocblas_int. ldb >= nb.\n
                 Specifies the leading dimension of matrix blocks B.
     @param[out]
-    C           pointer to type. Array on the GPU of dimension max(0, ldc*nb*nblocks).\n
-                Array C is dimensioned as ldc by nb by nblocks.
+    C           pointer to type. Array on the GPU of dimension max(0, ldc*nb*(nblocks-1)).\n
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
                 Specifies the leading dimension of matrix blocks C.
@@ -22969,13 +22966,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt(rocblas_handle handle,
     diagonal.
 
 
-
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
-
-
+ [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+ [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+ [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+ [        A3, B4 ]   [       A3 D4]   [          I4 ]
     
 
     @param[in]
@@ -22988,7 +22982,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt(rocblas_handle handle,
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
     Aarray       array of pointers to type. Each pointer points to an array on the GPU of dimension
-                max(0, lda*nb*nblocks).\n
+                max(0, lda*nb*(nblocks-1)).\n
                 
     @param[in]
     lda         rocblas_int. lda >= nb.\n
@@ -23002,7 +22996,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt(rocblas_handle handle,
                 Specifies the leading dimension of matrix blocks B_j.
     @param[out]
     Carray      array of pointers to type. Each pointer points to an array on the GPU of dimension
-                max(0, ldc*nb*nblocks).\n
+                max(0, ldc*nb*(nblocks-1)).\n
                 
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
@@ -23078,12 +23072,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt_batched(rocblas_handle 
 
 
 
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
-
-
+ [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+ [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+ [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+ [        A3, B4 ]   [       A3 D4]   [          I4 ]
     
 
     @param[in]
@@ -23096,7 +23088,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt_batched(rocblas_handle 
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-                Each linear system has dimensions lda by nb by nblocks.
+                Each linear system has dimensions lda by nb by (nblocks-1).
     @param[in]
     lda         rocblas_int. lda >= nb.\n
                 Specifies the leading dimension of matrix blocks A_j.
@@ -23118,7 +23110,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt_batched(rocblas_handle 
                 ldb*nb*nblocks
     @param[out]
     C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
-                Each linear system has dimensions ldc by nb by nblocks.
+                Each linear system has dimensions ldc by nb by (nblocks-1).
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
                 Specifies the leading dimension of matrix blocks C_j.
@@ -23213,14 +23205,10 @@ ROCSOLVER_EXPORT rocblas_status
     diagonal.
 
 
-
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
-
-
-    
+   [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+   [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+   [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+   [        A3, B4 ]   [       A3 D4]   [          I4 ]
 
     @param[in]
     handle      rocblas_handle.
@@ -23231,8 +23219,8 @@ ROCSOLVER_EXPORT rocblas_status
     nblocks     rocblas_int. nblocks >= 0.\n
                 The number of blocks along the diagonal of the matrix.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension max(0, batch_count*lda*nb*nblocks).\n
-                Array A is dimensioned as (batch_count by lda by nb by nblocks).
+    A           pointer to type. Array on the GPU of dimension max(0, batch_count*lda*nb*(nblocks-1)).\n
+                Array A is dimensioned as (batch_count by lda by nb by (nblocks-1)).
     @param[in]
     lda         rocblas_int. lda >= nb.\n
                 Specifies the leading dimension of matrix blocks A_j.
@@ -23243,8 +23231,8 @@ ROCSOLVER_EXPORT rocblas_status
     ldb         rocblas_int. ldb >= nb.\n
                 Specifies the leading dimension of matrix blocks B_j.
     @param[out]
-    C           pointer to type. Array on the GPU of dimension max(0, batch_count*ldc*nb*nblocks).\n
-                Array C is dimensioned as (batch_count by ldc by nb by nblocks).
+    C           pointer to type. Array on the GPU of dimension max(0, batch_count*ldc*nb*(nblocks-1)).\n
+                Array C is dimensioned as (batch_count by ldc by nb by (nblocks-1)).
                 
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
@@ -23324,12 +23312,11 @@ ROCSOLVER_EXPORT rocblas_status
 
 
 
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
 
-
+ [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+ [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+ [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+ [        A3, B4 ]   [       A3 D4]   [          I4 ]
     
     @param[in]
     handle      rocblas_handle.
@@ -23343,7 +23330,7 @@ ROCSOLVER_EXPORT rocblas_status
     nrhs        rocblas_int. nrhs >= 0.\n
                 The number of right hand sides, i.e., the number of columns of X.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension max(0, lda*nb*nblocks).\n
+    A           pointer to type. Array on the GPU of dimension max(0, lda*nb*(nblocks-1)).\n
     @param[in]
     lda         rocblas_int. lda >= nb.\n
                 Specifies the leading dimension of matrix blocks A.
@@ -23353,7 +23340,7 @@ ROCSOLVER_EXPORT rocblas_status
     ldb         rocblas_int. ldb >= nb.\n
                 Specifies the leading dimension of matrix blocks B.
     @param[out]
-    C           pointer to type. Array on the GPU of dimension max(0, ldc*nb*nblocks).\n
+    C           pointer to type. Array on the GPU of dimension max(0, ldc*nb*(nblocks-1)).\n
                 
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
@@ -23433,12 +23420,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt(rocblas_handle handle,
 
 
 
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
 
-
+ [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+ [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+ [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+ [        A3, B4 ]   [       A3 D4]   [          I4 ]
     
 
     @param[in]
@@ -23454,7 +23440,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt(rocblas_handle handle,
                 The number of right hand sides, i.e., the number of columns of X_j.
     @param[in]
     Aarray      array of pointers to type. Each pointer points to an array on the GPU of dimension
-                max(0, lda*nb*nblocks).\n
+                max(0, lda*nb*(nblocks-1)).\n
     @param[in]
     lda         rocblas_int. lda >= nb.\n
                 Specifies the leading dimension of matrix blocks A_j.
@@ -23467,7 +23453,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt(rocblas_handle handle,
                 Specifies the leading dimension of matrix blocks B_j.
     @param[out]
     Carray      array of pointers to type. Each pointer points to an array on the GPU of dimension
-                max(0, ldc*nb*nblocks).\n
+                max(0, ldc*nb*(nblocks-1)).\n
                 
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
@@ -23555,11 +23541,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt_batched(rocblas_handle 
 
 
 
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
 
+ [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+ [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+ [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+ [        A3, B4 ]   [       A3 D4]   [          I4 ]
 
     
 
@@ -23576,7 +23562,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt_batched(rocblas_handle 
                 The number of right hand sides, i.e., the number of columns of X_j.
     @param[in]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-                Each linear system has dimensions lda by nb by nblocks.
+                Each linear system has dimensions lda by nb by (nblocks-1).
     @param[in]
     lda         rocblas_int. lda >= nb.\n
                 Specifies the leading dimension of matrix blocks A_j.
@@ -23598,7 +23584,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt_batched(rocblas_handle 
                 ldb*nb*nblocks
     @param[out]
     C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
-                Each linear system has dimensions ldc by nb by nblocks.
+                Each linear system has dimensions ldc by nb by (nblocks-1).
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
                 Specifies the leading dimension of matrix blocks C_j.
@@ -23714,12 +23700,12 @@ ROCSOLVER_EXPORT rocblas_status
 
 
 
-       [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
-       [A2, B2, C2     ] = [ A2 D2      ] * [    I  U2    ]
-       [    A3, B3, C3 ]   [    A3 D3   ]   [       I  U3 ]
-       [        A4, B4 ]   [       A4 D4]   [          I4 ]
 
 
+ [B1, C1, 0      ]   [ D1         ]   [ I  U1       ]
+ [A1, B2, C2     ] = [ A1 D2      ] * [    I  U2    ]
+ [    A2, B3, C3 ]   [    A2 D3   ]   [       I  U3 ]
+ [        A3, B4 ]   [       A3 D4]   [          I4 ]
     
 
     @param[in]
@@ -23734,7 +23720,7 @@ ROCSOLVER_EXPORT rocblas_status
     nrhs        rocblas_int. nrhs >= 0.\n
                 The number of right hand sides, i.e., the number of columns of X_j.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension max(0, batch_count*lda*nb*nblocks).\n
+    A           pointer to type. Array on the GPU of dimension max(0, batch_count*lda*nb*(nblocks-1)).\n
                 
     @param[in]
     lda         rocblas_int. lda >= nb.\n
@@ -23746,7 +23732,7 @@ ROCSOLVER_EXPORT rocblas_status
     ldb         rocblas_int. ldb >= nb.\n
                 Specifies the leading dimension of matrix blocks B_j.
     @param[out]
-    C           pointer to type. Array on the GPU of dimension max(0, batch_count*ldc*nb*nblocks).\n
+    C           pointer to type. Array on the GPU of dimension max(0, batch_count*ldc*nb*(nblocks-1)).\n
                 
     @param[in]
     ldc         rocblas_int. ldc >= nb.\n
