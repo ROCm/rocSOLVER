@@ -256,8 +256,6 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
                             const bool singular)
 {
     int n = nb * nblocks;
-    std::vector<T> L1(n * n);
-    std::vector<T> U1(n * n);
     std::vector<T> L(n * n);
     std::vector<T> U(n * n);
     std::vector<T> M(n * n);
@@ -308,44 +306,43 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     {
         if(hInfoRes[b][0] == 0)
         {
-            // move block L and U factors into full matrices L1 and U1
-            for(rocblas_int i = 0; i < nb; i++)
+            // compute original blocks B and store in L
+            for(rocblas_int k = 0; k < nblocks; k++)
             {
-                for(rocblas_int j = 0; j < nb; j++)
+                for(rocblas_int i = 0; i < nb; i++)
                 {
-                    for(rocblas_int k = 0; k < nblocks; k++)
+                    for(rocblas_int j = 0; j < nb; j++)
                     {
-                        if(i == j)
-                        {
-                            U1[i + j * n + k * (n + 1) * nb] = hBRes[b][i + j * ldb + k * ldb * nb];
-                            L1[i + j * n + k * (n + 1) * nb] = 1;
-                        }
-                        else if(i < j)
-                            U1[i + j * n + k * (n + 1) * nb] = hBRes[b][i + j * ldb + k * ldb * nb];
+                        if(i <= j)
+                            L[i + j * n + k * (n + 1) * nb] = hBRes[b][i + j * ldb + k * ldb * nb];
                         else
-                            L1[i + j * n + k * (n + 1) * nb] = hBRes[b][i + j * ldb + k * ldb * nb];
+                            L[i + j * n + k * (n + 1) * nb] = 0;
                     }
                 }
+
+                cpu_trmm(rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
+                         rocblas_diagonal_unit, nb, nb, T(1), hBRes[b] + k * ldb * nb, ldb,
+                         L.data() + k * (n + 1) * nb, n);
             }
 
-            // compute original blocks B and store in L
-            cpu_gemm(rocblas_operation_none, rocblas_operation_none, n, n, n, T(1), L1.data(), n,
-                     U1.data(), n, T(0), L.data(), n);
-
             // move blocks A and C (and I) into full matrices L and U
-            for(rocblas_int i = 0; i < nb; i++)
+            for(rocblas_int k = 0; k < nblocks; k++)
             {
-                for(rocblas_int j = 0; j < nb; j++)
+                for(rocblas_int i = 0; i < nb; i++)
                 {
-                    for(rocblas_int k = 0; k < nblocks - 1; k++)
+                    if(k < nblocks - 1)
                     {
-                        U[i + (j + nb) * n + k * (n + 1) * nb] = hCRes[b][i + j * ldc + k * ldc * nb];
-                        L[(i + nb) + j * n + k * (n + 1) * nb] = hA[b][i + j * lda + k * lda * nb];
+                        for(rocblas_int j = 0; j < nb; j++)
+                        {
+                            U[i + (j + nb) * n + k * (n + 1) * nb]
+                                = hCRes[b][i + j * ldc + k * ldc * nb];
+                            L[(i + nb) + j * n + k * (n + 1) * nb]
+                                = hA[b][i + j * lda + k * lda * nb];
+                        }
                     }
-                }
 
-                for(rocblas_int k = 0; k < nblocks; k++)
                     U[i + i * n + k * (n + 1) * nb] = 1;
+                }
             }
 
             // compute original matrix and store in MRes
@@ -353,17 +350,21 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
                      U.data(), n, T(0), MRes.data(), n);
 
             // form original matrix from original blocks
-            for(rocblas_int i = 0; i < nb; i++)
+            for(rocblas_int k = 0; k < nblocks; k++)
             {
-                for(rocblas_int j = 0; j < nb; j++)
+                for(rocblas_int i = 0; i < nb; i++)
                 {
-                    for(rocblas_int k = 0; k < nblocks; k++)
+                    for(rocblas_int j = 0; j < nb; j++)
+                    {
                         M[i + j * n + k * (n + 1) * nb] = hB[b][i + j * ldb + k * ldb * nb];
 
-                    for(rocblas_int k = 0; k < nblocks - 1; k++)
-                    {
-                        M[(i + nb) + j * n + k * (n + 1) * nb] = hA[b][i + j * lda + k * lda * nb];
-                        M[i + (j + nb) * n + k * (n + 1) * nb] = hC[b][i + j * ldc + k * ldc * nb];
+                        if(k < nblocks - 1)
+                        {
+                            M[(i + nb) + j * n + k * (n + 1) * nb]
+                                = hA[b][i + j * lda + k * lda * nb];
+                            M[i + (j + nb) * n + k * (n + 1) * nb]
+                                = hC[b][i + j * ldc + k * ldc * nb];
+                        }
                     }
                 }
             }
