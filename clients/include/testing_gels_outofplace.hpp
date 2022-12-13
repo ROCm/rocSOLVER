@@ -280,7 +280,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hX[b], max(m, n), hW.data(), sizeW, hInfo[b]);
+        cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], max(m, n), hW.data(), sizeW, hInfo[b]);
     }
 
     // error is ||hX - hXRes|| / ||hX||
@@ -352,8 +352,7 @@ void gels_outofplace_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_gels<T>(trans, m, n, nrhs, hA[b], lda, hX[b], max(m, n), hW.data(), sizeW,
-                          hInfo[b]);
+            cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], max(m, n), hW.data(), sizeW, hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

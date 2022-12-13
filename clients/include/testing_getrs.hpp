@@ -156,7 +156,7 @@ void getrs_initData(const rocblas_handle handle,
         for(rocblas_int b = 0; b < bc; ++b)
         {
             int info;
-            cblas_getrf<T>(n, n, hA[b], lda, hIpiv[b], &info);
+            cpu_getrf(n, n, hA[b], lda, hIpiv[b], &info);
         }
     }
 
@@ -202,7 +202,7 @@ void getrs_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cblas_getrs<T>(trans, n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
+        cpu_getrs(trans, n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
     }
 
     // error is ||hB - hBRes|| / ||hB||
@@ -251,7 +251,7 @@ void getrs_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cblas_getrs<T>(trans, n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
+            cpu_getrs(trans, n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }

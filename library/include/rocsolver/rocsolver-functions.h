@@ -11809,6 +11809,607 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
+    \brief GESVDJ computes the singular values and optionally the singular
+    vectors of a general m-by-n matrix A (Singular Value Decomposition).
+
+    \details
+    The SVD of matrix A is given by:
+
+    \f[
+        A = U  S  V'
+    \f]
+
+    where the m-by-n matrix S is zero except, possibly, for its min(m,n)
+    diagonal elements, which are the singular values of A. U and V are orthogonal
+    (unitary) matrices. The first min(m,n) columns of U and V are the left and
+    right singular vectors of A, respectively.
+
+    The computation of the singular vectors is optional and it is controlled by
+    the function arguments left_svect and right_svect as described below. When
+    computed, this function returns the transpose (or transpose conjugate) of the
+    right singular vectors, i.e. the rows of V'.
+
+    left_svect and right_svect are #rocblas_svect enums that can take the
+    following values:
+
+    - rocblas_svect_all: the entire matrix U (or V') is computed,
+    - rocblas_svect_singular: the singular vectors (first min(m,n)
+      columns of U or rows of V') are computed, or
+    - rocblas_svect_none: no columns (or rows) of U (or V') are computed, i.e.
+      no singular vectors.
+
+    The singular values are computed by applying QR factorization to AV if m >= n
+    (resp. LQ factorization to U'A if m < n), where V (resp. U) is found as the
+    eigenvectors of A'A (resp. AA') using the Jacobi eigenvalue algorithm.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    left_svect  #rocblas_svect.\n
+                Specifies how the left singular vectors are computed.
+                rocblas_svect_overwrite is not supported.
+    @param[in]
+    right_svect #rocblas_svect.\n
+                Specifies how the right singular vectors are computed.
+                rocblas_svect_overwrite is not supported.
+    @param[in]
+    m           rocblas_int. m >= 0.\n
+                The number of rows of matrix A.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A.
+                On exit, the contents of A are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                The leading dimension of A.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A'A)
+                is <= norm(A'A) * abstol [resp. off(AA') <= norm(AA') * abstol]. If abstol <= 0,
+                then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to real type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A'A (resp. AA') at the final
+                iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to a rocblas_int on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm.
+    @param[out]
+    S           pointer to real type. Array on the GPU of dimension min(m,n). \n
+                The singular values of A in decreasing order.
+    @param[out]
+    U           pointer to type. Array on the GPU of dimension ldu*min(m,n) if
+                left_svect is set to singular, or ldu*m when left_svect is equal to all.\n
+                The matrix of left singular vectors stored as columns. Not
+                referenced if left_svect is set to none.
+    @param[in]
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
+                The leading dimension of U.
+    @param[out]
+    V           pointer to type. Array on the GPU of dimension ldv*n. \n
+                The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
+                Not referenced if right_svect is set to none.
+    @param[in]
+    ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
+                set to singular; or ldv >= 1 otherwise.\n
+                The leading dimension of V.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdj(rocblas_handle handle,
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  float* A,
+                                                  const rocblas_int lda,
+                                                  const float abstol,
+                                                  float* residual,
+                                                  const rocblas_int max_sweeps,
+                                                  rocblas_int* n_sweeps,
+                                                  float* S,
+                                                  float* U,
+                                                  const rocblas_int ldu,
+                                                  float* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdj(rocblas_handle handle,
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  double* A,
+                                                  const rocblas_int lda,
+                                                  const double abstol,
+                                                  double* residual,
+                                                  const rocblas_int max_sweeps,
+                                                  rocblas_int* n_sweeps,
+                                                  double* S,
+                                                  double* U,
+                                                  const rocblas_int ldu,
+                                                  double* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdj(rocblas_handle handle,
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  rocblas_float_complex* A,
+                                                  const rocblas_int lda,
+                                                  const float abstol,
+                                                  float* residual,
+                                                  const rocblas_int max_sweeps,
+                                                  rocblas_int* n_sweeps,
+                                                  float* S,
+                                                  rocblas_float_complex* U,
+                                                  const rocblas_int ldu,
+                                                  rocblas_float_complex* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  rocblas_double_complex* A,
+                                                  const rocblas_int lda,
+                                                  const double abstol,
+                                                  double* residual,
+                                                  const rocblas_int max_sweeps,
+                                                  rocblas_int* n_sweeps,
+                                                  double* S,
+                                                  rocblas_double_complex* U,
+                                                  const rocblas_int ldu,
+                                                  rocblas_double_complex* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief GESVDJ_BATCHED computes the singular values and optionally the
+    singular vectors of a batch of general m-by-n matrix A (Singular Value
+    Decomposition).
+
+    \details
+    The SVD of matrix A_j in the batch is given by:
+
+    \f[
+        A_j = U_j  S_j  V_j'
+    \f]
+
+    where the m-by-n matrix \f$S_j\f$ is zero except, possibly, for its min(m,n)
+    diagonal elements, which are the singular values of \f$A_j\f$. \f$U_j\f$ and \f$V_j\f$ are
+    orthogonal (unitary) matrices. The first min(m,n) columns of \f$U_j\f$ and \f$V_j\f$ are
+    the left and right singular vectors of \f$A_j\f$, respectively.
+
+    The computation of the singular vectors is optional and it is controlled by
+    the function arguments left_svect and right_svect as described below. When
+    computed, this function returns the transpose (or transpose conjugate) of the
+    right singular vectors, i.e. the rows of \f$V_j'\f$.
+
+    left_svect and right_svect are #rocblas_svect enums that can take the
+    following values:
+
+    - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
+    - rocblas_svect_singular: the singular vectors (first min(m,n)
+      columns of \f$U_j\f$ or rows of \f$V_j'\f$) are computed, or
+    - rocblas_svect_none: no columns (or rows) of \f$U_j\f$ (or \f$V_j'\f$) are computed,
+      i.e. no singular vectors.
+
+    The singular values are computed by applying QR factorization to \f$A_jV_j\f$ if m >= n
+    (resp. LQ factorization to \f$U_j'A_j\f$ if m < n), where \f$V_j\f$ (resp. \f$U_j\f$) is
+    found as the eigenvectors of \f$A_j'A_j\f$ (resp. \f$A_jA_j'\f$) using the Jacobi
+    eigenvalue algorithm.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    left_svect  #rocblas_svect.\n
+                Specifies how the left singular vectors are computed.
+                rocblas_svect_overwrite is not supported.
+    @param[in]
+    right_svect #rocblas_svect.\n
+                Specifies how the right singular vectors are computed.
+                rocblas_svect_overwrite is not supported.
+    @param[in]
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
+    @param[inout]
+    A           Array of pointers to type. Each pointer points to an array on
+                the GPU of dimension lda*n.\n
+                On entry, the matrices A_j.
+                On exit, the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                The leading dimension of A_j.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j'A_j)
+                is <= norm(A_j'A_j) * abstol [resp. off(A_jA_j') <= norm(A_jA_j') * abstol]. If abstol <= 0,
+                then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to real type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A_j'A_j (resp. A_jA_j') at the final
+                iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
+    @param[out]
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).\n
+                The singular values of A_j in decreasing order.
+    @param[in]
+    strideS     rocblas_stride.\n
+                Stride from the start of one vector S_j to the next one S_(j+1).
+                There is no restriction for the value of strideS.
+                Normal use case is strideS >= min(m,n).
+    @param[out]
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU). \n
+                The matrices U_j of left singular vectors stored as columns.
+                Not referenced if left_svect is set to none.
+    @param[in]
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
+                The leading dimension of U_j.
+    @param[in]
+    strideU     rocblas_stride.\n
+                Stride from the start of one matrix U_j to the next one U_(j+1).
+                There is no restriction for the value of strideU.
+                Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
+                or strideU >= ldu*m when left_svect is equal to all.
+    @param[out]
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+                The matrices V_j of right singular vectors stored as rows (transposed / conjugate-transposed).
+                Not referenced if right_svect is set to none.
+    @param[in]
+    ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
+                set to singular; or ldv >= 1 otherwise.\n
+                The leading dimension of V.
+    @param[in]
+    strideV     rocblas_stride.\n
+                Stride from the start of one matrix V_j to the next one V_(j+1).
+                There is no restriction for the value of strideV.
+                Normal use case is strideV >= ldv*n.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdj_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          float* const A[],
+                                                          const rocblas_int lda,
+                                                          const float abstol,
+                                                          float* residual,
+                                                          const rocblas_int max_sweeps,
+                                                          rocblas_int* n_sweeps,
+                                                          float* S,
+                                                          const rocblas_stride strideS,
+                                                          float* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          float* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdj_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          double* const A[],
+                                                          const rocblas_int lda,
+                                                          const double abstol,
+                                                          double* residual,
+                                                          const rocblas_int max_sweeps,
+                                                          rocblas_int* n_sweeps,
+                                                          double* S,
+                                                          const rocblas_stride strideS,
+                                                          double* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          double* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdj_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          rocblas_float_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          const float abstol,
+                                                          float* residual,
+                                                          const rocblas_int max_sweeps,
+                                                          rocblas_int* n_sweeps,
+                                                          float* S,
+                                                          const rocblas_stride strideS,
+                                                          rocblas_float_complex* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          rocblas_float_complex* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          rocblas_double_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          const double abstol,
+                                                          double* residual,
+                                                          const rocblas_int max_sweeps,
+                                                          rocblas_int* n_sweeps,
+                                                          double* S,
+                                                          const rocblas_stride strideS,
+                                                          rocblas_double_complex* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          rocblas_double_complex* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief GESVDJ_STRIDED_BATCHED computes the singular values and optionally the
+    singular vectors of a batch of general m-by-n matrix A (Singular Value
+    Decomposition).
+
+    \details
+    The SVD of matrix A_j in the batch is given by:
+
+    \f[
+        A_j = U_j  S_j  V_j'
+    \f]
+
+    where the m-by-n matrix \f$S_j\f$ is zero except, possibly, for its min(m,n)
+    diagonal elements, which are the singular values of \f$A_j\f$. \f$U_j\f$ and \f$V_j\f$ are
+    orthogonal (unitary) matrices. The first min(m,n) columns of \f$U_j\f$ and \f$V_j\f$ are
+    the left and right singular vectors of \f$A_j\f$, respectively.
+
+    The computation of the singular vectors is optional and it is controlled by
+    the function arguments left_svect and right_svect as described below. When
+    computed, this function returns the transpose (or transpose conjugate) of the
+    right singular vectors, i.e. the rows of \f$V_j'\f$.
+
+    left_svect and right_svect are #rocblas_svect enums that can take the
+    following values:
+
+    - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
+    - rocblas_svect_singular: the singular vectors (first min(m,n)
+      columns of \f$U_j\f$ or rows of \f$V_j'\f$) are computed, or
+    - rocblas_svect_none: no columns (or rows) of \f$U_j\f$ (or \f$V_j'\f$) are computed,
+      i.e. no singular vectors.
+
+    The singular values are computed by applying QR factorization to \f$A_jV_j\f$ if m >= n
+    (resp. LQ factorization to \f$U_j'A_j\f$ if m < n), where \f$V_j\f$ (resp. \f$U_j\f$) is
+    found as the eigenvectors of \f$A_j'A_j\f$ (resp. \f$A_jA_j'\f$) using the Jacobi
+    eigenvalue algorithm.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    left_svect  #rocblas_svect.\n
+                Specifies how the left singular vectors are computed.
+                rocblas_svect_overwrite is not supported.
+    @param[in]
+    right_svect #rocblas_svect.\n
+                Specifies how the right singular vectors are computed.
+                rocblas_svect_overwrite is not supported.
+    @param[in]
+    m           rocblas_int. m >= 0.\n
+                The number of rows of all matrices A_j in the batch.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of columns of all matrices A_j in the batch.
+    @param[inout]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j.
+                On exit, the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= m.\n
+                The leading dimension of A_j.
+    @param[in]
+    strideA     rocblas_stride.\n
+                Stride from the start of one matrix A_j to the next one A_(j+1).
+                There is no restriction for the value of strideA.
+                Normal use case is strideA >= lda*n.
+    @param[in]
+    abstol      real type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j'A_j)
+                is <= norm(A_j'A_j) * abstol [resp. off(A_jA_j') <= norm(A_jA_j') * abstol]. If abstol <= 0,
+                then the tolerance will be set to machine precision.
+    @param[out]
+    residual    pointer to real type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of A_j'A_j (resp. A_jA_j') at the final
+                iteration.
+    @param[in]
+    max_sweeps  rocblas_int. max_sweeps > 0.\n
+                Maximum number of sweeps (iterations) to be used by the algorithm.
+    @param[out]
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
+    @param[out]
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).\n
+                The singular values of A_j in decreasing order.
+    @param[in]
+    strideS     rocblas_stride.\n
+                Stride from the start of one vector S_j to the next one S_(j+1).
+                There is no restriction for the value of strideS.
+                Normal use case is strideS >= min(m,n).
+    @param[out]
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU). \n
+                The matrices U_j of left singular vectors stored as columns.
+                Not referenced if left_svect is set to none.
+    @param[in]
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
+                The leading dimension of U_j.
+    @param[in]
+    strideU     rocblas_stride.\n
+                Stride from the start of one matrix U_j to the next one U_(j+1).
+                There is no restriction for the value of strideU.
+                Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
+                or strideU >= ldu*m when left_svect is equal to all.
+    @param[out]
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+                The matrices V_j of right singular vectors stored as rows (transposed / conjugate-transposed).
+                Not referenced if right_svect is set to none.
+    @param[in]
+    ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
+                set to singular; or ldv >= 1 otherwise.\n
+                The leading dimension of V.
+    @param[in]
+    strideV     rocblas_stride.\n
+                Stride from the start of one matrix V_j to the next one V_(j+1).
+                There is no restriction for the value of strideV.
+                Normal use case is strideV >= ldv*n.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge.
+    @param[in]
+    batch_count rocblas_int. batch_count >= 0.\n
+                Number of matrices in the batch.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  float* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const float abstol,
+                                                                  float* residual,
+                                                                  const rocblas_int max_sweeps,
+                                                                  rocblas_int* n_sweeps,
+                                                                  float* S,
+                                                                  const rocblas_stride strideS,
+                                                                  float* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  float* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  double* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const double abstol,
+                                                                  double* residual,
+                                                                  const rocblas_int max_sweeps,
+                                                                  rocblas_int* n_sweeps,
+                                                                  double* S,
+                                                                  const rocblas_stride strideS,
+                                                                  double* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  double* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  rocblas_float_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const float abstol,
+                                                                  float* residual,
+                                                                  const rocblas_int max_sweeps,
+                                                                  rocblas_int* n_sweeps,
+                                                                  float* S,
+                                                                  const rocblas_stride strideS,
+                                                                  rocblas_float_complex* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  rocblas_float_complex* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_svect left_svect,
+                                                                  const rocblas_svect right_svect,
+                                                                  const rocblas_int m,
+                                                                  const rocblas_int n,
+                                                                  rocblas_double_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  const double abstol,
+                                                                  double* residual,
+                                                                  const rocblas_int max_sweeps,
+                                                                  rocblas_int* n_sweeps,
+                                                                  double* S,
+                                                                  const rocblas_stride strideS,
+                                                                  rocblas_double_complex* U,
+                                                                  const rocblas_int ldu,
+                                                                  const rocblas_stride strideU,
+                                                                  rocblas_double_complex* V,
+                                                                  const rocblas_int ldv,
+                                                                  const rocblas_stride strideV,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+//! @}
+
+/*! @{
     \brief GESVDX computes a set of singular values and optionally the corresponding singular
     vectors of a general m-by-n matrix A (partial Singular Value Decomposition).
 
@@ -15868,6 +16469,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -15898,7 +16503,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     @param[in]
     abstol      type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
@@ -15964,6 +16569,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -15994,7 +16603,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     @param[in]
     abstol      real type.\n
                 The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                is <= norm(A) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A (i.e. off(A)) at the final iteration.
@@ -16060,6 +16669,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -16089,8 +16702,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
                 Specifies the leading dimension of matrices A_j.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16167,6 +16780,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -16196,8 +16813,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
                 Specifies the leading dimension of matrices A_j.
     @param[in]
     abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16274,6 +16891,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -16307,8 +16928,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -16369,7 +16990,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
-    \brief CHEVJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
+    \brief HEEVJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a batch of
     complex Hermitian matrices A_j.
 
     \details
@@ -16386,6 +17007,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     such that \f$off(A_j^{(k)}) < off(A_j^{(k-1)})\f$, where \f$A_j^{(0)} = A_j\f$ and \f$off(A_j^{(k)})\f$ is the
     Frobenius norm of the off-diagonal elements of \f$A_j^{(k)}\f$. As \f$off(A_j^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_j^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_j\f$.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -16420,8 +17045,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
     abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once off(A)
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(A_j)
+                is <= norm(A_j) * abstol. If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to real type. Array of batch_count scalars on the GPU.\n
                 The Frobenius norm of the off-diagonal elements of A_j (i.e. off(A_j)) at the final iteration.
@@ -18837,6 +19462,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -18873,11 +19502,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
                 Specifies the leading dimension of B.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(T)
+                is <= norm(T) * abstol, where T is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
     residual    pointer to type on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration.
+                The Frobenius norm of the off-diagonal elements of T (i.e. off(T)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -18956,6 +19587,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -18991,12 +19626,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of B.
     @param[in]
-    abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(T)
+                is <= norm(T) * abstol, where T is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T (i.e. off(T)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19075,6 +19712,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -19111,11 +19752,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
                 Specifies the leading dimension of B_j.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19205,6 +19848,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -19240,12 +19887,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of B_j.
     @param[in]
-    abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19335,6 +19984,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -19379,11 +20032,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
     abstol      type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.
@@ -19477,6 +20132,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -19520,12 +20179,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
                 Stride from the start of one matrix B_j to the next one B_(j+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[in]
-    abstol      real type.\n
-                The absolute tolerance. The algorithm is considered to have converged once the residual
-                is <= abstol. If abstol <= 0, then the tolerance will be set to machine precision.
+    abstol      type.\n
+                The absolute tolerance. The algorithm is considered to have converged once off(T_j)
+                is <= norm(T_j) * abstol, where T_j is the matrix obtained by reduction to standard form.
+                If abstol <= 0, then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type. Array of batch_count scalars on the GPU.\n
-                The Frobenius norm of the off-diagonal elements at the final iteration for each batch instance.
+    residual    pointer to type on the GPU.\n
+                The Frobenius norm of the off-diagonal elements of T_j (i.e. off(T_j)) at the final iteration,
+                where T is the matrix obtained by reduction to standard form.
     @param[in]
     max_sweeps  rocblas_int. max_sweeps > 0.\n
                 Maximum number of sweeps (iterations) to be used by the algorithm.

@@ -116,7 +116,7 @@ void laswp_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cblas_laswp<T>(n, hA[0], lda, k1, k2, hIpiv[0], inc);
+    cpu_laswp(n, hA[0], lda, k1, k2, hIpiv[0], inc);
 
     // error |hA - hAr| (elements must be identical)
     *max_err = 0;
@@ -155,7 +155,7 @@ void laswp_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_laswp<T>(n, hA[0], lda, k1, k2, hIpiv[0], inc);
+        cpu_laswp(n, hA[0], lda, k1, k2, hIpiv[0], inc);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 

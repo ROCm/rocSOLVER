@@ -328,7 +328,7 @@ void gesvdx_getError(const rocblas_handle handle,
 
         Making the memory query to get the correct workspace dimension:
         std::vector<T> query(1);
-        cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
+        cpu_gesvdx(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
                        query.data(), -1, rwork.data(), hifail[0], hinfo[0]);
         rocblas_int lwork = int(std::real(query[0]));
         std::vector<T> work(lwork);
@@ -348,8 +348,9 @@ void gesvdx_getError(const rocblas_handle handle,
 
     std::vector<rocblas_int> offset(bc);
     rocblas_int lwork = 5 * max(m, n);
+    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
     std::vector<T> work(lwork);
-    std::vector<S> rwork(lwork);
+    std::vector<S> rwork(lrwork);
     rocblas_int minn = std::min(m, n);
 
     // input data initialization
@@ -376,12 +377,12 @@ void gesvdx_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        //cblas_gesvdx<T>(rocblas_svect_none, rocblas_svect_none, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
+        //cpu_gesvdx(rocblas_svect_none, rocblas_svect_none, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
         //               work.data(), lwork, rwork.data(), hifail[b], hinfo[b]);
 
         /*** WORKAROUND: ***/
-        cblas_gesvd<T>(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
-                       hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
+        cpu_gesvd(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
+                  hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
         hNsv[b][0] = 0;
         offset[b] = -1;
         if(srange == rocblas_srange_index)
@@ -547,7 +548,7 @@ void gesvdx_getPerfData(const rocblas_handle handle,
 
         Making the memory query to get the correct workspace dimension:
         std::vector<T> query(1);
-        cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
+        cpu_gesvdx(left_svect, right_svect, srange, m, n, hA[0], lda, vl, vu, il, iu, hNsv[0], hS[0], hU[0], ldu, hV[0], ldv,
                        query.data(), -1, rwork.data(), hifail[0], hinfo[0]);
         rocblas_int lwork = int(std::real(query[0]));
         std::vector<T> work(lwork);
@@ -566,7 +567,7 @@ void gesvdx_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         //*cpu_time_used = get_time_us_no_sync();
         //for(rocblas_int b = 0; b < bc; ++b)
-        //    cblas_gesvdx<T>(left_svect, right_svect, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
+        //    cpu_gesvdx(left_svect, right_svect, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
         //                   work.data(), lwork, rwork.data(), hifail[b], hinfo[b]);
         //*cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
         *cpu_time_used = nan("");

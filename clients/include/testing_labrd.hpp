@@ -194,7 +194,7 @@ void labrd_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hYRes.transfer_from(dY));
 
     // CPU lapack
-    cblas_labrd<T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
+    cpu_labrd(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
 
     // error is max(||hA - hARes|| / ||hA||, ||hX - hXRes|| / ||hX||, ||hY -
     // hYRes|| / ||hY||) (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY
@@ -247,8 +247,7 @@ void labrd_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         memset(hX[0], 0, ldx * nb * sizeof(T));
         memset(hY[0], 0, ldy * nb * sizeof(T));
-        cblas_labrd<T>(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0],
-                       ldy);
+        cpu_labrd(m, n, nb, hA[0], lda, hD[0], hE[0], hTauq[0], hTaup[0], hX[0], ldx, hY[0], ldy);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
