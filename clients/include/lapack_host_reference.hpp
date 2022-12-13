@@ -340,6 +340,9 @@ template <typename T>
 void cblas_lacgv(rocblas_int n, T* x, rocblas_int incx);
 
 template <typename T>
+void cblas_lauum(rocblas_fill uploR, rocblas_int n, T* A, rocblas_int lda, rocblas_int* info);
+
+template <typename T>
 void cblas_laswp(rocblas_int n,
                  T* A,
                  rocblas_int lda,

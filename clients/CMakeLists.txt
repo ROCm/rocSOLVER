@@ -52,6 +52,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_larfb.cpp
     common/testing_latrd.cpp
     common/testing_labrd.cpp
+    common/testing_lauum.cpp
     common/testing_bdsqr.cpp
     common/testing_bdsvdx.cpp
     common/testing_steqr.cpp

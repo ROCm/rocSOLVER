@@ -1070,6 +1070,64 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
 //! @}
 
 /*! @{
+    \brief LAUUM computes the product of a triangular matrix A with its transpose.
+
+    \details
+    If uplo denotes upper, then \f$AA^T$ is computed, if uplo denotes lower then \f$A^TA$ is computed instead.
+    For complex types computes \f$AA^H$ or \f$A^HA$ depending on uplo.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the matrix A is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n. \n
+                On entry, the matrix to which the product will be applied.
+                On exit, the resulting matrix.
+    @param[in]
+    lda         rocblas_int. lda > 0.\n
+    @param[out]
+    info        pointer to rocblas_int. On exit if info is negative then the -info-th argument was invalid
+                The leading dimension of the array A.
+    **************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                float* A,
+                                const rocblas_int lda,
+                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                double* A,
+                                const rocblas_int lda,
+                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                rocblas_float_complex* A,
+                                const rocblas_int lda,
+                                rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                rocblas_double_complex* A,
+                                const rocblas_int lda,
+                                rocblas_int* info);
+
+//! @}
+
+/*! @{
     \brief ORG2R generates an m-by-n Matrix Q with orthonormal columns.
 
     \details

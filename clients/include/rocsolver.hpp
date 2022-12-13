@@ -591,6 +591,49 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle,
 }
 /***************************************************************/
 
+/******************** LAUUM ********************/
+
+inline rocblas_status rocsolver_lauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                float* A,
+                                const rocblas_int lda,
+                                rocblas_int* info)
+{
+    return rocsolver_slauum(handle, uplo, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_lauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                double* A,
+                                const rocblas_int lda,
+                                rocblas_int* info)
+{
+    return rocsolver_dlauum(handle, uplo, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_lauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                rocblas_float_complex* A,
+                                const rocblas_int lda,
+                                rocblas_int* info)
+{
+    return rocsolver_clauum(handle, uplo, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_lauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                rocblas_double_complex* A,
+                                const rocblas_int lda,
+                                rocblas_int* info)
+{
+    return rocsolver_zlauum(handle, uplo, n, A, lda, info);
+}
+/***************************************************************/
+
 /******************** BDSQR ********************/
 inline rocblas_status rocsolver_bdsqr(rocblas_handle handle,
                                       rocblas_fill uplo,

@@ -77,6 +77,8 @@ set(rocauxiliary_test_source
   latrd_gtest.cpp
   # symmetric matrices
   lasyf_gtest.cpp
+  # triangular matrices
+  lauum_gtest.cpp
 )
 
 set(others_test_source
