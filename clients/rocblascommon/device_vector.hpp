@@ -1,16 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
 #include "d_vector.hpp"
-
-//
-// Local declaration of the host vector.
-//
-template <typename T>
-class host_vector;
 
 //!
 //! @brief pseudo-vector subclass which uses device memory
@@ -140,17 +134,6 @@ public:
     explicit operator bool() const
     {
         return nullptr != this->m_data;
-    }
-
-    //!
-    //! @brief Transfer data from a host vector.
-    //! @param that The host vector.
-    //! @return the hip error.
-    //!
-    hipError_t transfer_from(const host_vector<T>& that)
-    {
-        return hipMemcpy(this->m_data, (const T*)that, this->nmemb() * sizeof(T),
-                         hipMemcpyHostToDevice);
     }
 
     hipError_t memcheck() const
