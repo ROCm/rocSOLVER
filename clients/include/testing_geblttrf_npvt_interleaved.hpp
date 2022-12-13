@@ -269,7 +269,7 @@ void geblttrf_npvt_interleaved_getError(const rocblas_handle handle,
     }
     *max_err += err;
 
-    // error is ||hB - hBRes|| / ||hB|| or ||hC - hCRes|| / ||hC||
+    // error is ||M - MRes|| / ||M||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
