@@ -570,7 +570,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     return converged ? 0 : 1;
 }
 
-/** STEDC_NUM_LEVS returns the ideal number of times/levels in which a matrix (or split block)
+/** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n)
@@ -1245,7 +1245,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                     for(int ii = 0; ii < tsz; ++ii)
                     {
                         rocblas_int i = in + ii;
-                        //go = go && (ii < sz);
                         go &= (ii < sz);
 
                         // inner products
