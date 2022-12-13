@@ -20,8 +20,7 @@ void lauum_checkBadArgs(const rocblas_handle handle,
                         const rocblas_int lda)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(nullptr, uplo, n, A, lda),
-                          rocblas_status_invalid_handle);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(nullptr, uplo, n, A, lda), rocblas_status_invalid_handle);
 
     // values
     EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, rocblas_fill_full, n, A, lda),
@@ -32,8 +31,7 @@ void lauum_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, 0, (T) nullptr, lda),
-                          rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, 0, (T) nullptr, lda), rocblas_status_success);
 }
 
 template <typename T>
@@ -179,9 +177,8 @@ void testing_lauum(Arguments& argus)
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
     {
-        EXPECT_ROCBLAS_STATUS(
-            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda),
-            rocblas_status_invalid_value);
+        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda),
+                              rocblas_status_invalid_value);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_args);
@@ -197,9 +194,8 @@ void testing_lauum(Arguments& argus)
     bool invalid_size = (n < 0 || lda < n);
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(
-            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda),
-            rocblas_status_invalid_size);
+        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda),
+                              rocblas_status_invalid_size);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_size);
@@ -295,4 +291,4 @@ void testing_lauum(Arguments& argus)
 
 #define EXTERN_TESTING_LAUUM(...) extern template void testing_lauum<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_LAUUM, FOREACH_SCALAR_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_LAUUM, FOREACH_REAL_TYPE, APPLY_STAMP)

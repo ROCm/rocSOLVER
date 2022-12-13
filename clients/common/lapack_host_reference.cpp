@@ -2829,10 +2829,10 @@ void cpu_lauum(rocblas_fill uploR, rocblas_int n, double* A, rocblas_int lda, ro
 
 template <>
 void cpu_lauum(rocblas_fill uploR,
-                 rocblas_int n,
-                 rocblas_float_complex* A,
-                 rocblas_int lda,
-                 rocblas_int* info)
+               rocblas_int n,
+               rocblas_float_complex* A,
+               rocblas_int lda,
+               rocblas_int* info)
 {
     char uplo = rocblas2char_fill(uploR);
     clauum_(&uplo, &n, A, &lda, info);
@@ -2840,10 +2840,10 @@ void cpu_lauum(rocblas_fill uploR,
 
 template <>
 void cpu_lauum(rocblas_fill uploR,
-                 rocblas_int n,
-                 rocblas_double_complex* A,
-                 rocblas_int lda,
-                 rocblas_int* info)
+               rocblas_int n,
+               rocblas_double_complex* A,
+               rocblas_int lda,
+               rocblas_int* info)
 {
     char uplo = rocblas2char_fill(uploR);
     zlauum_(&uplo, &n, A, &lda, info);

@@ -96,7 +96,6 @@ class rocsolver_dispatcher
             {"larfb", testing_larfb<T>},
             {"latrd", testing_latrd<T>},
             {"labrd", testing_labrd<T>},
-            {"lauum", testing_lauum<T>},
             {"bdsqr", testing_bdsqr<T>},
             {"steqr", testing_steqr<T>},
             {"stedc", testing_stedc<T>},
@@ -243,6 +242,7 @@ class rocsolver_dispatcher
             {"sterf", testing_sterf<T>},
             {"stebz", testing_stebz<T>},
             {"bdsvdx", testing_bdsvdx<T>},
+            {"lauum", testing_lauum<T>},
             // orgxx
             {"org2r", testing_orgxr_ungxr<T, 0>},
             {"orgqr", testing_orgxr_ungxr<T, 1>},

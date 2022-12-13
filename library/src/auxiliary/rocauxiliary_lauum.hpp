@@ -79,8 +79,7 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
     rocblas_fill uploC = (uplo == rocblas_fill_upper) ? rocblas_fill_lower : rocblas_fill_upper;
 
     // put the triangular factor of interest in work
-    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW,
-                            uploC);
+    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW, uploC);
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, A, shiftA, lda, strideA,
                             work, 0, n, strideW, no_mask{}, uplo);
 
@@ -92,8 +91,8 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
                                      strideA, work, 0, n, strideW, batch_count);
 
     // copy the new factor into the relevant triangle of A leaving the rest untouched
-    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW,
-                            A, shiftA, lda, strideA, no_mask{}, uplo);
+    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW, A,
+                            shiftA, lda, strideA, no_mask{}, uplo);
 
     return rocblas_status_success;
 }
