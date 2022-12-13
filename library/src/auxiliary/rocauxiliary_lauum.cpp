@@ -9,8 +9,7 @@ rocblas_status rocsolver_lauum_impl(rocblas_handle handle,
                                     const rocblas_fill uplo,
                                     const rocblas_int n,
                                     U* A,
-                                    const rocblas_int lda,
-                                    rocblas_int* info)
+                                    const rocblas_int lda)
 {
     ROCSOLVER_ENTER_TOP("lauum", "--uplo", uplo, "-n", n, "--lda", lda);
 
@@ -18,7 +17,7 @@ rocblas_status rocsolver_lauum_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_lauum_argCheck(handle, uplo, n, A, lda, info);
+    rocblas_status st = rocsolver_lauum_argCheck(handle, uplo, n, A, lda);
     if(st != rocblas_status_continue)
         return st;
 
@@ -44,7 +43,7 @@ rocblas_status rocsolver_lauum_impl(rocblas_handle handle,
     work = mem[0];
 
     // execution
-    return rocsolver_lauum_template<T>(handle, uplo, n, A, shiftA, lda, info, strideA, batch_count,
+    return rocsolver_lauum_template<T>(handle, uplo, n, A, shiftA, lda, strideA, batch_count,
                                        (U*)work, size_work);
 }
 
@@ -60,40 +59,36 @@ rocblas_status rocsolver_slauum(rocblas_handle handle,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 float* A,
-                                const rocblas_int lda,
-                                rocblas_int* info)
+                                const rocblas_int lda)
 {
-    return rocsolver_lauum_impl<float>(handle, uplo, n, A, lda, info);
+    return rocsolver_lauum_impl<float>(handle, uplo, n, A, lda);
 }
 
 rocblas_status rocsolver_dlauum(rocblas_handle handle,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 double* A,
-                                const rocblas_int lda,
-                                rocblas_int* info)
+                                const rocblas_int lda)
 {
-    return rocsolver_lauum_impl<double>(handle, uplo, n, A, lda, info);
+    return rocsolver_lauum_impl<double>(handle, uplo, n, A, lda);
 }
 
 rocblas_status rocsolver_clauum(rocblas_handle handle,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 rocblas_float_complex* A,
-                                const rocblas_int lda,
-                                rocblas_int* info)
+                                const rocblas_int lda)
 {
-    return rocsolver_lauum_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info);
+    return rocsolver_lauum_impl<rocblas_float_complex>(handle, uplo, n, A, lda);
 }
 
 rocblas_status rocsolver_zlauum(rocblas_handle handle,
                                 const rocblas_fill uplo,
                                 const rocblas_int n,
                                 rocblas_double_complex* A,
-                                const rocblas_int lda,
-                                rocblas_int* info)
+                                const rocblas_int lda)
 {
-    return rocsolver_lauum_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info);
+    return rocsolver_lauum_impl<rocblas_double_complex>(handle, uplo, n, A, lda);
 }
 
 } // extern C

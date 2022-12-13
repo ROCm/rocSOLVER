@@ -1,10 +1,8 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
-
-#include <iostream>
 
 #include "client_util.hpp"
 #include "clientcommon.hpp"
@@ -19,25 +17,22 @@ void lauum_checkBadArgs(const rocblas_handle handle,
                         const rocblas_fill uplo,
                         const rocblas_int n,
                         T A,
-                        const rocblas_int lda,
-                        rocblas_int* info)
+                        const rocblas_int lda)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(nullptr, uplo, n, A, lda, info),
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(nullptr, uplo, n, A, lda),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, rocblas_fill_full, n, A, lda, info),
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, rocblas_fill_full, n, A, lda),
                           rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T) nullptr, lda, info),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, A, lda, (rocblas_int*)nullptr),
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T) nullptr, lda),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, 0, (T) nullptr, lda, info),
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, 0, (T) nullptr, lda),
                           rocblas_status_success);
 }
 
@@ -56,7 +51,7 @@ void testing_lauum_bad_arg()
     CHECK_HIP_ERROR(dA.memcheck());
 
     // check bad arguments
-    lauum_checkBadArgs(handle, uplo, n, dA.data(), lda, &info);
+    lauum_checkBadArgs(handle, uplo, n, dA.data(), lda);
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
@@ -85,7 +80,6 @@ void lauum_getError(const rocblas_handle handle,
                     const rocblas_int n,
                     Td& dA,
                     const rocblas_int lda,
-                    rocblas_int* info,
                     Th& hA,
                     Th& hAr,
                     double* max_err)
@@ -95,11 +89,12 @@ void lauum_getError(const rocblas_handle handle,
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_lauum(handle, uplo, n, dA.data(), lda, info));
+    CHECK_ROCBLAS_ERROR(rocsolver_lauum(handle, uplo, n, dA.data(), lda));
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cblas_lauum<T>(uplo, n, hA[0], lda, info);
+    rocblas_int info;
+    cpu_lauum<T>(uplo, n, hA[0], lda, &info);
 
     // error |hA - hAr| (elements must be identical)
     *max_err = 0;
@@ -120,7 +115,6 @@ void lauum_getPerfData(const rocblas_handle handle,
                        const rocblas_int n,
                        Td& dA,
                        const rocblas_int lda,
-                       rocblas_int* info,
                        Th& hA,
                        double* gpu_time_used,
                        double* cpu_time_used,
@@ -132,10 +126,11 @@ void lauum_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         lauum_initData<true, false, T>(handle, uplo, n, dA, lda, hA);
+        rocblas_int info;
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cblas_lauum<T>(uplo, n, hA[0], lda, info);
+        cpu_lauum<T>(uplo, n, hA[0], lda, &info);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
@@ -146,7 +141,7 @@ void lauum_getPerfData(const rocblas_handle handle,
     {
         lauum_initData<false, true, T>(handle, uplo, n, dA, lda, hA);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_lauum(handle, uplo, n, dA.data(), lda, info));
+        CHECK_ROCBLAS_ERROR(rocsolver_lauum(handle, uplo, n, dA.data(), lda));
     }
 
     // gpu-lapack performance
@@ -169,7 +164,7 @@ void lauum_getPerfData(const rocblas_handle handle,
         lauum_initData<false, true, T>(handle, uplo, n, dA, lda, hA);
 
         start = get_time_us_sync(stream);
-        rocsolver_lauum(handle, uplo, n, dA.data(), lda, info);
+        rocsolver_lauum(handle, uplo, n, dA.data(), lda);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -182,7 +177,7 @@ void testing_lauum(Arguments& argus)
     rocblas_local_handle handle;
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int lda = argus.get<rocblas_int>("lda");
+    rocblas_int lda = argus.get<rocblas_int>("lda", n);
 
     rocblas_int hot_calls = argus.iters;
     rocblas_fill uplo = char2rocblas_fill(uploC);
@@ -191,7 +186,7 @@ void testing_lauum(Arguments& argus)
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
     {
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda, (rocblas_int*)nullptr),
+            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda),
             rocblas_status_invalid_value);
 
         if(argus.timing)
@@ -209,7 +204,7 @@ void testing_lauum(Arguments& argus)
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda, (rocblas_int*)nullptr),
+            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda),
             rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -222,7 +217,7 @@ void testing_lauum(Arguments& argus)
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda, (rocblas_int*)nullptr));
+        CHECK_ALLOC_QUERY(rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -239,7 +234,6 @@ void testing_lauum(Arguments& argus)
     host_strided_batch_vector<T> hA(size_A, 1, size_A, 1);
     host_strided_batch_vector<T> hAr(size_A, 1, size_A, 1);
     device_strided_batch_vector<T> dA(size_A, 1, size_A, 1);
-    rocblas_int hInfo;
 
     if(size_A)
         CHECK_HIP_ERROR(dA.memcheck());
@@ -247,7 +241,7 @@ void testing_lauum(Arguments& argus)
     // check quick return
     if(n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, dA.data(), lda, &hInfo),
+        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, dA.data(), lda),
                               rocblas_status_success);
 
         if(argus.timing)
@@ -258,11 +252,11 @@ void testing_lauum(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        lauum_getError<T>(handle, uplo, n, dA, lda, &hInfo, hA, hAr, &max_error);
+        lauum_getError<T>(handle, uplo, n, dA, lda, hA, hAr, &max_error);
 
     // collect performance data
     if(argus.timing)
-        lauum_getPerfData<T>(handle, uplo, n, dA, lda, &hInfo, hA, &gpu_time_used, &cpu_time_used,
+        lauum_getPerfData<T>(handle, uplo, n, dA, lda, hA, &gpu_time_used, &cpu_time_used,
                              hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test

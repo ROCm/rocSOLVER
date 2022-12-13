@@ -12,8 +12,7 @@ rocblas_status rocsolver_lauum_argCheck(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
                                         T A,
-                                        const rocblas_int lda,
-                                        rocblas_int* info)
+                                        const rocblas_int lda)
 {
     // order is important for unit tests:
 
@@ -30,7 +29,7 @@ rocblas_status rocsolver_lauum_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || !info)
+    if(n && !A)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -56,7 +55,6 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
                                         U* A,
                                         const rocblas_int shiftA,
                                         const rocblas_int lda,
-                                        rocblas_int* info,
                                         const rocblas_stride strideA,
                                         const rocblas_int batch_count,
                                         U* work,

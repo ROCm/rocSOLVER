@@ -462,16 +462,7 @@ void cpu_ormlq_unmlq(rocblas_side side,
                      rocblas_int sizeW);
 
 template <typename T>
-void cblas_lauum(rocblas_fill uploR, rocblas_int n, T* A, rocblas_int lda, rocblas_int* info);
-
-template <typename T>
-void cblas_laswp(rocblas_int n,
-                 T* A,
-                 rocblas_int lda,
-                 rocblas_int k1,
-                 rocblas_int k2,
-                 rocblas_int* ipiv,
-                 rocblas_int inc);
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, T* A, rocblas_int lda, rocblas_int* info);
 
 template <typename T>
 void cpu_orm2l_unm2l(rocblas_side side,

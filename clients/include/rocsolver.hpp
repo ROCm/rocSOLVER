@@ -761,40 +761,36 @@ inline rocblas_status rocsolver_lauum(rocblas_handle handle,
                                       const rocblas_fill uplo,
                                       const rocblas_int n,
                                       float* A,
-                                      const rocblas_int lda,
-                                      rocblas_int* info)
+                                      const rocblas_int lda)
 {
-    return rocsolver_slauum(handle, uplo, n, A, lda, info);
+    return rocsolver_slauum(handle, uplo, n, A, lda);
 }
 
 inline rocblas_status rocsolver_lauum(rocblas_handle handle,
                                       const rocblas_fill uplo,
                                       const rocblas_int n,
                                       double* A,
-                                      const rocblas_int lda,
-                                      rocblas_int* info)
+                                      const rocblas_int lda)
 {
-    return rocsolver_dlauum(handle, uplo, n, A, lda, info);
+    return rocsolver_dlauum(handle, uplo, n, A, lda);
 }
 
 inline rocblas_status rocsolver_lauum(rocblas_handle handle,
                                       const rocblas_fill uplo,
                                       const rocblas_int n,
                                       rocblas_float_complex* A,
-                                      const rocblas_int lda,
-                                      rocblas_int* info)
+                                      const rocblas_int lda)
 {
-    return rocsolver_clauum(handle, uplo, n, A, lda, info);
+    return rocsolver_clauum(handle, uplo, n, A, lda);
 }
 
 inline rocblas_status rocsolver_lauum(rocblas_handle handle,
                                       const rocblas_fill uplo,
                                       const rocblas_int n,
                                       rocblas_double_complex* A,
-                                      const rocblas_int lda,
-                                      rocblas_int* info)
+                                      const rocblas_int lda)
 {
-    return rocsolver_zlauum(handle, uplo, n, A, lda, info);
+    return rocsolver_zlauum(handle, uplo, n, A, lda);
 }
 /***************************************************************/
 

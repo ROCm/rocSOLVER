@@ -1073,8 +1073,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
     \brief LAUUM computes the product of a triangular matrix A with its transpose.
 
     \details
-    If uplo denotes upper, then \f$AA^T$ is computed, if uplo denotes lower then \f$A^TA$ is computed instead.
-    For complex types computes \f$AA^H$ or \f$A^HA$ depending on uplo.
+    If uplo denotes upper, then \f$AA^T\f$ is computed, if uplo denotes lower then \f$A^TA\f$ is computed instead.
+    For complex types computes \f$AA^H\f$ or \f$A^HA\f$ depending on uplo.
 
     @param[in]
     handle      rocblas_handle.
@@ -1092,8 +1092,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
                 On exit, the resulting matrix.
     @param[in]
     lda         rocblas_int. lda > 0.\n
-    @param[out]
-    info        pointer to rocblas_int. On exit if info is negative then the -info-th argument was invalid
                 The leading dimension of the array A.
     **************************************************************************/
 
@@ -1101,29 +1099,25 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_slauum(rocblas_handle handle,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
                                                  float* A,
-                                                 const rocblas_int lda,
-                                                 rocblas_int* info);
+                                                 const rocblas_int lda);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dlauum(rocblas_handle handle,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
                                                  double* A,
-                                                 const rocblas_int lda,
-                                                 rocblas_int* info);
+                                                 const rocblas_int lda);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_clauum(rocblas_handle handle,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
                                                  rocblas_float_complex* A,
-                                                 const rocblas_int lda,
-                                                 rocblas_int* info);
+                                                 const rocblas_int lda);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zlauum(rocblas_handle handle,
                                                  const rocblas_fill uplo,
                                                  const rocblas_int n,
                                                  rocblas_double_complex* A,
-                                                 const rocblas_int lda,
-                                                 rocblas_int* info);
+                                                 const rocblas_int lda);
 
 //! @}
 

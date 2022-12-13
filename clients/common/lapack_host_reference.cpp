@@ -2814,21 +2814,21 @@ void cpu_larfb<rocblas_double_complex>(rocblas_side sideR,
 
 // lauum
 template <>
-void cblas_lauum(rocblas_fill uploR, rocblas_int n, float* A, rocblas_int lda, rocblas_int* info)
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, float* A, rocblas_int lda, rocblas_int* info)
 {
     char uplo = rocblas2char_fill(uploR);
     slauum_(&uplo, &n, A, &lda, info);
 }
 
 template <>
-void cblas_lauum(rocblas_fill uploR, rocblas_int n, double* A, rocblas_int lda, rocblas_int* info)
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, double* A, rocblas_int lda, rocblas_int* info)
 {
     char uplo = rocblas2char_fill(uploR);
     dlauum_(&uplo, &n, A, &lda, info);
 }
 
 template <>
-void cblas_lauum(rocblas_fill uploR,
+void cpu_lauum(rocblas_fill uploR,
                  rocblas_int n,
                  rocblas_float_complex* A,
                  rocblas_int lda,
@@ -2839,7 +2839,7 @@ void cblas_lauum(rocblas_fill uploR,
 }
 
 template <>
-void cblas_lauum(rocblas_fill uploR,
+void cpu_lauum(rocblas_fill uploR,
                  rocblas_int n,
                  rocblas_double_complex* A,
                  rocblas_int lda,
