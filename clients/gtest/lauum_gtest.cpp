@@ -26,7 +26,9 @@ const vector<vector<int>> size_range = {
     {3, 3},
     {10, 10},
     {20, 20},
-    {30, 30}};
+    {30, 30},
+    {10, 20},
+    {20, 30}};
 const vector<vector<int>> large_size_range = {{100, 100}, {200, 200}};
 const vector<printable_char> uplo_range = {'L', 'U'};
 

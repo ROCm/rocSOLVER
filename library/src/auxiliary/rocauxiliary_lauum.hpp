@@ -57,8 +57,7 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
                                         const rocblas_int batch_count,
-                                        U* work,
-                                        size_t size_work)
+                                        U* work)
 {
     ROCSOLVER_ENTER("lauum", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
                     "strideA:", strideA, "bc:", batch_count);
@@ -70,37 +69,30 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocks = (n - 1) / 32 + 1;
+    rocblas_int strideW = n * n;
+    rocblas_int blocks = (n - 1) / BS2 + 1;
     dim3 grid(blocks, blocks, batch_count);
-    dim3 threads(32, 32);
+    dim3 threads(BS2, BS2);
     T one = 1;
     T zero = 0;
 
     rocblas_fill uploC = (uplo == rocblas_fill_upper) ? rocblas_fill_lower : rocblas_fill_upper;
 
     // put the triangular factor of interest in work
-    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, shiftA, lda, strideA,
+    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW,
                             uploC);
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, A, shiftA, lda, strideA,
-                            work, shiftA, lda, strideA, no_mask{}, uplo);
+                            work, 0, n, strideW, no_mask{}, uplo);
 
-    rocblas_side side;
-    if(uplo == rocblas_fill_upper)
-    {
-        side = rocblas_side_right;
-    }
-    else
-    {
-        side = rocblas_side_left;
-    }
+    rocblas_side side = (uplo == rocblas_fill_upper) ? rocblas_side_right : rocblas_side_left;
 
     // work = work * A' or work = A' * work
     rocblasCall_trmm<false, true, T>(handle, side, uplo, rocblas_operation_conjugate_transpose,
-                                     rocblas_diagonal_non_unit, lda, n, &one, 0, A, shiftA, lda,
-                                     strideA, work, shiftA, lda, strideA, batch_count);
+                                     rocblas_diagonal_non_unit, n, n, &one, 0, A, shiftA, lda,
+                                     strideA, work, 0, n, strideW, batch_count);
 
     // copy the new factor into the relevant triangle of A leaving the rest untouched
-    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, work, shiftA, lda, strideA,
+    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW,
                             A, shiftA, lda, strideA, no_mask{}, uplo);
 
     return rocblas_status_success;

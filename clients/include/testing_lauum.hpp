@@ -96,17 +96,11 @@ void lauum_getError(const rocblas_handle handle,
     rocblas_int info;
     cpu_lauum<T>(uplo, n, hA[0], lda, &info);
 
-    // error |hA - hAr| (elements must be identical)
-    *max_err = 0;
-    double diff;
-    for(int i = 0; i < n; i++)
-    {
-        for(int j = 0; j < n; j++)
-        {
-            diff = std::abs(hAr[0][i + j * lda] - hA[0][i + j * lda]);
-            *max_err = diff > *max_err ? diff : *max_err;
-        }
-    }
+    // error is ||hA - hAr|| / ||hA||
+    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
+    // IT MIGHT BE REVISITED IN THE FUTURE)
+    // using frobenius
+    *max_err = norm_error('F', n, n, lda, hA[0], hAr[0]);
 }
 
 template <typename T, typename Td, typename Th>
@@ -260,9 +254,9 @@ void testing_lauum(Arguments& argus)
                              hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
-    // no tolerance
+    // using machine precision * n for tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, 0);
+        ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)
