@@ -5,8 +5,12 @@
 #include "rocauxiliary_lauum.hpp"
 
 template <typename T, typename U>
-rocblas_status
-    rocsolver_lauum_impl(rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n, U* A, const rocblas_int lda, rocblas_int* info)
+rocblas_status rocsolver_lauum_impl(rocblas_handle handle,
+                                    const rocblas_fill uplo,
+                                    const rocblas_int n,
+                                    U* A,
+                                    const rocblas_int lda,
+                                    rocblas_int* info)
 {
     ROCSOLVER_ENTER_TOP("lauum", "--uplo", uplo, "-n", n, "--lda", lda);
 
@@ -40,7 +44,8 @@ rocblas_status
     work = mem[0];
 
     // execution
-    return rocsolver_lauum_template<T>(handle, uplo, n, A, shiftA, lda, info, strideA, batch_count, (U*) work, size_work);
+    return rocsolver_lauum_template<T>(handle, uplo, n, A, shiftA, lda, info, strideA, batch_count,
+                                       (U*)work, size_work);
 }
 
 /*

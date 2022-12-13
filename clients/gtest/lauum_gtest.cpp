@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -27,9 +27,7 @@ const vector<vector<int>> size_range = {
     {10, 10},
     {20, 20},
     {30, 30}};
-const vector<vector<int>> large_size_range = {
-    {100, 100}, 
-    {200, 200}};
+const vector<vector<int>> large_size_range = {{100, 100}, {200, 200}};
 const vector<printable_char> uplo_range = {'L', 'U'};
 
 Arguments lauum_setup_arguments(lauum_tuple tup)
@@ -75,13 +73,12 @@ TEST_P(LAUUM, __float)
     run_tests<float>();
 }
 
-
 TEST_P(LAUUM, __double)
 {
     run_tests<double>();
 }
 
-/* 
+/*
 TEST_P(LAUUM, __float_complex)
 {
     run_tests<rocblas_float_complex>();
@@ -93,6 +90,8 @@ TEST_P(LAUUM, __double_complex)
 }
 */
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, LAUUM, Combine(ValuesIn(uplo_range), ValuesIn(large_size_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         LAUUM,
+                         Combine(ValuesIn(uplo_range), ValuesIn(large_size_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LAUUM, Combine(ValuesIn(uplo_range), ValuesIn(size_range)));

@@ -2791,7 +2791,7 @@ void cblas_larfb<rocblas_float_complex>(rocblas_side sideR,
 template <>
 void cblas_larfb<rocblas_double_complex>(rocblas_side sideR,
                                          rocblas_operation transR,
-                                        rocblas_direct directR,
+                                         rocblas_direct directR,
                                          rocblas_storev storevR,
                                          rocblas_int m,
                                          rocblas_int n,
@@ -2828,14 +2828,22 @@ void cblas_lauum(rocblas_fill uploR, rocblas_int n, double* A, rocblas_int lda, 
 }
 
 template <>
-void cblas_lauum(rocblas_fill uploR, rocblas_int n, rocblas_float_complex* A, rocblas_int lda, rocblas_int* info)
+void cblas_lauum(rocblas_fill uploR,
+                 rocblas_int n,
+                 rocblas_float_complex* A,
+                 rocblas_int lda,
+                 rocblas_int* info)
 {
     char uplo = rocblas2char_fill(uploR);
     clauum_(&uplo, &n, A, &lda, info);
 }
 
 template <>
-void cblas_lauum(rocblas_fill uploR, rocblas_int n, rocblas_double_complex* A, rocblas_int lda, rocblas_int* info)
+void cblas_lauum(rocblas_fill uploR,
+                 rocblas_int n,
+                 rocblas_double_complex* A,
+                 rocblas_int lda,
+                 rocblas_int* info)
 {
     char uplo = rocblas2char_fill(uploR);
     zlauum_(&uplo, &n, A, &lda, info);

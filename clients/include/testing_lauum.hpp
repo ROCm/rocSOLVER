@@ -15,20 +15,30 @@
 #include "rocsolver_test.hpp"
 
 template <typename T>
-void lauum_checkBadArgs(const rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n, T A, const rocblas_int lda, rocblas_int* info)
+void lauum_checkBadArgs(const rocblas_handle handle,
+                        const rocblas_fill uplo,
+                        const rocblas_int n,
+                        T A,
+                        const rocblas_int lda,
+                        rocblas_int* info)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(nullptr, uplo, n, A, lda, info), rocblas_status_invalid_handle);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(nullptr, uplo, n, A, lda, info),
+                          rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, rocblas_fill_full, n, A, lda, info), rocblas_status_invalid_value);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, rocblas_fill_full, n, A, lda, info),
+                          rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T) nullptr, lda, info), rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, A, lda, (rocblas_int*) nullptr), rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T) nullptr, lda, info),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, A, lda, (rocblas_int*)nullptr),
+                          rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, 0, (T) nullptr, lda, info), rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, 0, (T) nullptr, lda, info),
+                          rocblas_status_success);
 }
 
 template <typename T>
@@ -94,7 +104,7 @@ void lauum_getError(const rocblas_handle handle,
     // error |hA - hAr| (elements must be identical)
     *max_err = 0;
     double diff;
-    for(int i = 0; i < n; i++) 
+    for(int i = 0; i < n; i++)
     {
         for(int j = 0; j < n; j++)
         {
@@ -135,7 +145,6 @@ void lauum_getPerfData(const rocblas_handle handle,
     for(int iter = 0; iter < 2; iter++)
     {
         lauum_initData<false, true, T>(handle, uplo, n, dA, lda, hA);
-
 
         CHECK_ROCBLAS_ERROR(rocsolver_lauum(handle, uplo, n, dA.data(), lda, info));
     }
@@ -181,8 +190,9 @@ void testing_lauum(Arguments& argus)
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda, (rocblas_int*)nullptr),
-                              rocblas_status_invalid_value);
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda, (rocblas_int*)nullptr),
+            rocblas_status_invalid_value);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_args);
@@ -198,8 +208,9 @@ void testing_lauum(Arguments& argus)
     bool invalid_size = (n < 0 || lda < n);
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda, (rocblas_int*)nullptr),
-                              rocblas_status_invalid_size);
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_lauum(handle, uplo, n, (T*)nullptr, lda, (rocblas_int*)nullptr),
+            rocblas_status_invalid_size);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_size);
@@ -236,7 +247,8 @@ void testing_lauum(Arguments& argus)
     // check quick return
     if(n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, dA.data(), lda, &hInfo), rocblas_status_success);
+        EXPECT_ROCBLAS_STATUS(rocsolver_lauum(handle, uplo, n, dA.data(), lda, &hInfo),
+                              rocblas_status_success);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);
@@ -250,8 +262,8 @@ void testing_lauum(Arguments& argus)
 
     // collect performance data
     if(argus.timing)
-        lauum_getPerfData<T>(handle, uplo, n, dA, lda, &hInfo, hA, &gpu_time_used, &cpu_time_used, hot_calls,
-                             argus.profile, argus.profile_kernels, argus.perf);
+        lauum_getPerfData<T>(handle, uplo, n, dA, lda, &hInfo, hA, &gpu_time_used, &cpu_time_used,
+                             hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // no tolerance

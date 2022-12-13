@@ -1098,32 +1098,32 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
     **************************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_slauum(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                float* A,
-                                const rocblas_int lda,
-                                rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dlauum(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                double* A,
-                                const rocblas_int lda,
-                                rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_clauum(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                rocblas_float_complex* A,
-                                const rocblas_int lda,
-                                rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_float_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zlauum(rocblas_handle handle,
-                                const rocblas_fill uplo,
-                                const rocblas_int n,
-                                rocblas_double_complex* A,
-                                const rocblas_int lda,
-                                rocblas_int* info);
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 const rocblas_int lda,
+                                                 rocblas_int* info);
 
 //! @}
 
