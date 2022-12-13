@@ -56,7 +56,7 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
                                                       size_workArr);
 
     // memory workspace allocation
-    void *work_stack, *tempvect, *tempgemm, *workArr, *splits, *tmpz;
+    void *work_stack, *tempvect, *tempgemm, *tmpz, *splits, *workArr;
     rocblas_device_malloc mem(handle, size_work_stack, size_tempvect, size_tempgemm, size_tmpz,
                               size_splits, size_workArr);
     if(!mem)

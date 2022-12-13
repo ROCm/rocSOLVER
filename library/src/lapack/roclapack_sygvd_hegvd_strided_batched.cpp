@@ -64,7 +64,7 @@ rocblas_status rocsolver_sygvd_hegvd_strided_batched_impl(rocblas_handle handle,
                                                       size_tau, size_pivots_workArr, size_iinfo);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *tau, *pivots_workArr, *iinfo, *splits, *tmpz;
+    void *scalars, *work1, *work2, *work3, *work4, *tmpz, *splits, *tau, *pivots_workArr, *iinfo;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
                               size_tmpz, size_splits, size_tau, size_pivots_workArr, size_iinfo);
 

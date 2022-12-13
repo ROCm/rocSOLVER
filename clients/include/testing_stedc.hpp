@@ -97,8 +97,8 @@ void stedc_initData(const rocblas_handle handle,
         }
 
         // otherwise, the marix will be divided in exactly 2 independent blocks, if the size is even,
-        // or 3 if the size if odd. The 2 main indepedent blocks will have the same eigenvalues.
-        // The last block, if the case, will have eigenalue equal 1.
+        // or 3 if the size is odd. The 2 main independent blocks will have the same eigenvalues.
+        // The last block, when the size is odd, will have eigenvalue equal 1.
         else
         {
             rocblas_int N1 = n / 2;
@@ -529,7 +529,7 @@ void testing_stedc(Arguments& argus)
             if(argus.norm_check)
             {
                 rocsolver_bench_output("cpu_time_us", "gpu_time_us", "error");
-                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_err);
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, std::max(max_err, max_errv));
             }
             else
             {

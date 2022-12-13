@@ -301,7 +301,7 @@ ROCSOLVER_KERNEL void steqr_kernel(const rocblas_int n,
 {
     // select bacth instance
     rocblas_int bid = hipBlockIdx_x;
-    rocblas_stride strideW = 2 * n - 2;
+    rocblas_stride strideW = 2 * n;
 
     S* D = DD + (bid * strideD);
     S* E = EE + (bid * strideE);

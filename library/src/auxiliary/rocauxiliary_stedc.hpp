@@ -1,5 +1,5 @@
 /************************************************************************
-  Derived from the BSD3-licensed
+ * Derived from the BSD3-licensed
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
@@ -275,7 +275,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         // from now on, further step corrections will be calculated either with fixed weights method
         // or with normal interpolation depending on the value of boolean fixed
         cc = up ? -1 : 1;
-        fixed = (cc * fx > abs(oldfx) / 10) ? true : false;
+        fixed = (cc * fx) > (abs(oldfx) / 10);
 
         // MAIN ITERATION LOOP
         // ==============================================
@@ -573,7 +573,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
 /** STEDC_NUM_LEVS returns the ideal number of times/levels in which a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
-__host__ __device__ inline rocblas_int stedc_num_levs(const rocblas_int n)
+__host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n)
 {
     rocblas_int levels;
 
@@ -747,7 +747,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
         bs = p2 - p1;
 
         // determine ideal number of sub-blocks
-        levs = stedc_num_levs(bs);
+        levs = stedc_num_levels(bs);
         blks = 1 << levs;
 
         // if split block is too small, solve it with steqr
@@ -1245,7 +1245,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                     for(int ii = 0; ii < tsz; ++ii)
                     {
                         rocblas_int i = in + ii;
-                        go = go && (ii < sz);
+                        //go = go && (ii < sz);
+                        go &= (ii < sz);
 
                         // inner products
                         temp = 0;
@@ -1658,7 +1659,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 0, stream, n, n, tempvect, 0, ldt, strideT);
 
         // find max number of sub-blocks to consider during the divide phase
-        rocblas_int maxblks = 1 << stedc_num_levs(n);
+        rocblas_int maxblks = 1 << stedc_num_levels(n);
         size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks + sizeof(S) * BDIM;
 
         // execute divide and conquer kernel with tempvect
