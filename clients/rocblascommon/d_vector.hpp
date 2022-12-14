@@ -11,6 +11,7 @@
 #include <fmt/ostream.h>
 #include <rocblas/rocblas.h>
 
+#include "common_host_helpers.hpp"
 #include "rocblas_init.hpp"
 #include "rocblas_test.hpp"
 
@@ -63,13 +64,13 @@ public:
             if(PAD > 0)
             {
                 // Copy guard to device memory before allocated memory
-                hipMemcpy(d, guard, sizeof(guard), hipMemcpyHostToDevice);
+                THROW_IF_HIP_ERROR(hipMemcpy(d, guard, sizeof(guard), hipMemcpyHostToDevice));
 
                 // Point to allocated block
                 d += PAD;
 
                 // Copy guard to device memory after allocated memory
-                hipMemcpy(d + size, guard, sizeof(guard), hipMemcpyHostToDevice);
+                THROW_IF_HIP_ERROR(hipMemcpy(d + size, guard, sizeof(guard), hipMemcpyHostToDevice));
             }
         }
 #endif
@@ -84,7 +85,7 @@ public:
             U host[PAD];
 
             // Copy device memory after allocated memory to host
-            hipMemcpy(host, d + this->size, sizeof(guard), hipMemcpyDeviceToHost);
+            THROW_IF_HIP_ERROR(hipMemcpy(host, d + this->size, sizeof(guard), hipMemcpyDeviceToHost));
 
             // Make sure no corruption has occurred
             EXPECT_EQ(memcmp(host, guard, sizeof(guard)), 0);
@@ -93,7 +94,7 @@ public:
             d -= PAD;
 
             // Copy device memory after allocated memory to host
-            hipMemcpy(host, d, sizeof(guard), hipMemcpyDeviceToHost);
+            THROW_IF_HIP_ERROR(hipMemcpy(host, d, sizeof(guard), hipMemcpyDeviceToHost));
 
             // Make sure no corruption has occurred
             EXPECT_EQ(memcmp(host, guard, sizeof(guard)), 0);
@@ -111,7 +112,8 @@ public:
                 U host[PAD];
 
                 // Copy device memory after allocated memory to host
-                hipMemcpy(host, d + this->size, sizeof(guard), hipMemcpyDeviceToHost);
+                THROW_IF_HIP_ERROR(
+                    hipMemcpy(host, d + this->size, sizeof(guard), hipMemcpyDeviceToHost));
 
                 // Make sure no corruption has occurred
                 EXPECT_EQ(memcmp(host, guard, sizeof(guard)), 0);
@@ -120,14 +122,14 @@ public:
                 d -= PAD;
 
                 // Copy device memory after allocated memory to host
-                hipMemcpy(host, d, sizeof(guard), hipMemcpyDeviceToHost);
+                THROW_IF_HIP_ERROR(hipMemcpy(host, d, sizeof(guard), hipMemcpyDeviceToHost));
 
                 // Make sure no corruption has occurred
                 EXPECT_EQ(memcmp(host, guard, sizeof(guard)), 0);
             }
 #endif
             // Free device memory
-            CHECK_HIP_ERROR((hipFree)(d));
+            THROW_IF_HIP_ERROR((hipFree)(d));
         }
     }
 };
