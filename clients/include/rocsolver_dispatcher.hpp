@@ -13,9 +13,7 @@
 #include "testing_bdsvdx.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_geblttrf_npvt.hpp"
-#include "testing_geblttrf_npvt_interleaved.hpp"
 #include "testing_geblttrs_npvt.hpp"
-#include "testing_geblttrs_npvt_interleaved.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
@@ -228,12 +226,10 @@ class rocsolver_dispatcher
             {"geblttrf_npvt", testing_geblttrf_npvt<false, false, T>},
             {"geblttrf_npvt_batched", testing_geblttrf_npvt<true, true, T>},
             {"geblttrf_npvt_strided_batched", testing_geblttrf_npvt<false, true, T>},
-            {"geblttrf_npvt_interleaved_batched", testing_geblttrf_npvt_interleaved<T>},
             // geblttrs_npvt
             {"geblttrs_npvt", testing_geblttrs_npvt<false, false, T>},
             {"geblttrs_npvt_batched", testing_geblttrs_npvt<true, true, T>},
             {"geblttrs_npvt_strided_batched", testing_geblttrs_npvt<false, true, T>},
-            {"geblttrs_npvt_interleaved_batched", testing_geblttrs_npvt_interleaved<T>},
         };
 
         // Grab function from the map and execute

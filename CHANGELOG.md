@@ -7,9 +7,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - SVD for general matrices using Jacobi algorithm:
     - GESVDJ (with batched and strided\_batched versions)
 - LU factorization without pivoting for block tridiagonal matrices:
-    - GEBLTTRF_NPVT (with batched, strided\_batched, and interleaved\_batched versions)
+    - GEBLTTRF_NPVT (with batched and strided\_batched versions)
 - Linear system solver without pivoting for block tridiagonal matrices:
-    - GEBLTTRS_NPVT (with batched, strided\_batched, and interleaved\_batched versions)
+    - GEBLTTRS_NPVT (with batched and strided\_batched, versions)
 
 ### Optimized
 - Improved the performance of SYEVJ/HEEVJ.

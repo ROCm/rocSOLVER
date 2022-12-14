@@ -105,9 +105,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_sygvx_hegvx.cpp
     common/testing_lacgv.cpp
     common/testing_geblttrf_npvt.cpp
-    common/testing_geblttrf_npvt_interleaved.cpp
     common/testing_geblttrs_npvt.cpp
-    common/testing_geblttrs_npvt_interleaved.cpp
   )
   set(common_source_files
     common/lapack_host_reference.cpp
