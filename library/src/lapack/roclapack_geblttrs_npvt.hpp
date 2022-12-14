@@ -114,6 +114,7 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     T one = T(1);
     T minone = T(-1);
 
+    // forward solve
     for(rocblas_int k = 0; k < nblocks; k++)
     {
         if(k > 0)
@@ -126,6 +127,15 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
             handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * ldb * nb, ldb, strideB,
             nullptr, 0, X, shiftX + k * ldx * nrhs, ldx, strideX, batch_count, work1, work2, work3,
             work4, optim_mem, false);
+    }
+
+    // backward solve
+    for(rocblas_int k = nblocks - 2; k >= 0; k--)
+    {
+        rocblasCall_gemm<BATCHED, STRIDED, T>(
+                handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, C,
+                shiftC + k * ldc * nb, ldc, strideC, X, shiftX + (k + 1) * ldx * nrhs, ldx,
+                strideX, &one, X, shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
     }
 
     return rocblas_status_success;
