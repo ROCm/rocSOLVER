@@ -133,9 +133,9 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     for(rocblas_int k = nblocks - 2; k >= 0; k--)
     {
         rocblasCall_gemm<BATCHED, STRIDED, T>(
-                handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, C,
-                shiftC + k * ldc * nb, ldc, strideC, X, shiftX + (k + 1) * ldx * nrhs, ldx,
-                strideX, &one, X, shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
+            handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, C,
+            shiftC + k * ldc * nb, ldc, strideC, X, shiftX + (k + 1) * ldx * nrhs, ldx, strideX,
+            &one, X, shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
     }
 
     return rocblas_status_success;
