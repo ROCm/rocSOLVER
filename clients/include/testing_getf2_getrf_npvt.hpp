@@ -235,8 +235,8 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
 {
     if(!perf)
     {
-        getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA,
-                                                  singular, hinfo);
+        getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, hinfo,
+                                                  singular);
 
         // cpu-lapack performance (only if no perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -248,14 +248,14 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
-    getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, singular,
-                                              hinfo);
+    getf2_getrf_npvt_initData<true, false, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, hinfo,
+                                              singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA,
-                                                  singular, hinfo);
+        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, hinfo,
+                                                  singular);
 
         CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf_npvt(STRIDED, GETRF, handle, m, n, dA.data(), lda,
                                                        stA, dinfo.data(), bc));
@@ -277,8 +277,8 @@ void getf2_getrf_npvt_getPerfData(const rocblas_handle handle,
     }
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA,
-                                                  singular, hinfo);
+        getf2_getrf_npvt_initData<false, true, T>(handle, m, n, dA, lda, stA, dinfo, bc, hA, hinfo,
+                                                  singular);
 
         start = get_time_us_sync(stream);
         rocsolver_getf2_getrf_npvt(STRIDED, GETRF, handle, m, n, dA.data(), lda, stA, dinfo.data(),
