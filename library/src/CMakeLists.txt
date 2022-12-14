@@ -249,6 +249,10 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
+if(LAPACK_FUNCTIONS)
+  target_link_libraries(rocsolver PRIVATE lapack)
+endif()
+
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
 else()
@@ -300,6 +304,15 @@ endif()
 if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif()
+
+if(HYBRID_CPU)
+  target_compile_definitions(rocsolver PRIVATE HYBRID_CPU)
+endif()
+
+if(EXPERIMENTAL)
+  target_compile_definitions(rocsolver PRIVATE EXPERIMENTAL)
+endif()
+
 
 target_compile_definitions(rocsolver PRIVATE
   ROCM_USE_FLOAT16

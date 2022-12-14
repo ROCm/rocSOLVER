@@ -71,7 +71,11 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
         // extra requirements for computing only the eigenvalues (sterf)
         rocsolver_sterf_getMemorySize<T>(n, batch_count, &w12);
 
+#ifdef EXPERIMENTAL
+        *size_work3 = sizeof(rocblas_int) * (n);
+#else
         *size_work3 = 0;
+#endif
     }
 
     // size of array for temporary matrix products
@@ -154,8 +158,13 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     if(evect != rocblas_evect_original)
     {
         // only compute eigenvalues
+#ifdef EXPERIMENTAL
+        rocsolver_sterf_template<S>(handle, n, D, 0, strideD, E, 0, strideE, info, batch_count,
+                                    (rocblas_int*)work3);
+#else
         rocsolver_sterf_template<S>(handle, n, D, 0, strideD, E, 0, strideE, info, batch_count,
                                     (rocblas_int*)work1);
+#endif
     }
     else
     {

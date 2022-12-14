@@ -60,6 +60,82 @@ inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_in
     return i;
 }
 
+/** FIND_MAX_TRIDIAG finds the element with the largest magnitude in the
+    tridiagonal matrix **/
+template <typename T>
+T host_find_max_tridiag(const rocblas_int start, const rocblas_int end, T* D, T* E)
+{
+    T anorm = abs(D[end]);
+    for(int i = start; i < end; i++)
+        anorm = max(anorm, max(abs(D[i]), abs(E[i])));
+    return anorm;
+}
+
+/** SCALE_TRIDIAG scales the elements of the tridiagonal matrix by a given
+    scale factor **/
+template <typename T>
+void host_scale_tridiag(const rocblas_int start, const rocblas_int end, T* D, T* E, T scale)
+{
+    D[end] *= scale;
+    for(int i = start; i < end; i++)
+    {
+        D[i] *= scale;
+        E[i] *= scale;
+    }
+}
+
+/** LAE2 computes the eigenvalues of a 2x2 symmetric matrix
+    [ a b ]
+    [ b c ] **/
+template <typename T, std::enable_if_t<!is_complex<T>, int> = 0>
+void host_lae2(T& a, T& b, T& c, T& rt1, T& rt2)
+{
+    T sm = a + c;
+    T adf = abs(a - c);
+    T ab = abs(b + b);
+
+    T rt, acmx, acmn;
+    if(adf > ab)
+    {
+        rt = ab / adf;
+        rt = adf * sqrt(1 + rt * rt);
+    }
+    else if(adf < ab)
+    {
+        rt = adf / ab;
+        rt = ab * sqrt(1 + rt * rt);
+    }
+    else
+        rt = ab * sqrt(2);
+
+    // Compute the eigenvalues
+    if(abs(a) > abs(c))
+    {
+        acmx = a;
+        acmn = c;
+    }
+    else
+    {
+        acmx = c;
+        acmn = a;
+    }
+    if(sm < 0)
+    {
+        rt1 = T(0.5) * (sm - rt);
+        rt2 = T((acmx / (double)rt1) * acmn - (b / (double)rt1) * b);
+    }
+    else if(sm > 0)
+    {
+        rt1 = T(0.5) * (sm + rt);
+        rt2 = T((acmx / (double)rt1) * acmn - (b / (double)rt1) * b);
+    }
+    else
+    {
+        rt1 = T(0.5) * rt;
+        rt2 = T(-0.5) * rt;
+    }
+}
+
 #ifdef ROCSOLVER_VERIFY_ASSUMPTIONS
 // Ensure __assert_fail is declared.
 #if !__is_identifier(__assert_fail)
