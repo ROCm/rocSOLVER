@@ -19,6 +19,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Fixed
 - SYEVJ/HEEVJ should now be invariant under matrix scaling.
 - SYEVJ/HEEVJ should now properly output the eigenvalues when no sweeps are executed.
+- Fixed GETF2\_NPVT and GETRF\_NPVT input data initialization in tests and benchmarks.
 
 ### Known Issues
 ### Security
