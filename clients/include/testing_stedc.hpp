@@ -541,7 +541,7 @@ void testing_stedc(Arguments& argus)
         else
         {
             if(argus.norm_check)
-                rocsolver_bench_output(gpu_time_used, max_err);
+                rocsolver_bench_output(gpu_time_used, std::max(max_err, max_errv));
             else
                 rocsolver_bench_output(gpu_time_used);
         }
