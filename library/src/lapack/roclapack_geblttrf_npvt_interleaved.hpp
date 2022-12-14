@@ -7,7 +7,13 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#include "geblt_common.h"
+#define GEBLT_BLOCK_DIM 256
+#define NB_SMALL 16
+
+#define indx4f(i1, i2, i3, i4, n1, n2, n3) \
+    (indx3f(i1, i2, i3, n1, n2) + ((i4)-1) * (((int64_t)(n1)) * (n2)) * (n3))
+#define indx3f(i1, i2, i3, n1, n2) (indx2f(i1, i2, n1) + ((i3)-1) * (((int64_t)(n1)) * (n2)))
+#define indx2f(i1, i2, n1) (((i1)-1) + ((i2)-1) * ((int64_t)(n1)))
 
 /*
 ! ------------------------------------------------------
@@ -21,18 +27,18 @@
 */
 
 template <typename T>
-DEVICE_FUNCTION void gemm_nn_bf_device(const rocblas_int batch_count,
-                                       const rocblas_int m,
-                                       const rocblas_int n,
-                                       const rocblas_int k,
-                                       const T alpha,
-                                       T* A_,
-                                       const rocblas_int lda,
-                                       T* B_,
-                                       const rocblas_int ldb,
-                                       const T beta,
-                                       T* C_,
-                                       const rocblas_int ldc)
+__device__ void gemm_nn_bf_device(const rocblas_int batch_count,
+                                  const rocblas_int m,
+                                  const rocblas_int n,
+                                  const rocblas_int k,
+                                  const T alpha,
+                                  T* A_,
+                                  const rocblas_int lda,
+                                  T* B_,
+                                  const rocblas_int ldb,
+                                  const T beta,
+                                  T* C_,
+                                  const rocblas_int ldc)
 {
 #define A(iv, ia, ja) A_[indx3f(iv, ia, ja, batch_count, lda)]
 #define B(iv, ib, jb) B_[indx3f(iv, ib, jb, batch_count, ldb)]
@@ -67,8 +73,7 @@ DEVICE_FUNCTION void gemm_nn_bf_device(const rocblas_int batch_count,
                     C(iv, ic, jc) = beta * C(iv, ic, jc) + alpha * cij;
                 };
             }; // end for iv
-
-            SYNCTHREADS;
+            __syncthreads();
 
         }; // end for ic
     }; // end for jc
@@ -79,7 +84,7 @@ DEVICE_FUNCTION void gemm_nn_bf_device(const rocblas_int batch_count,
 }
 
 template <typename T, typename I>
-DEVICE_FUNCTION void
+__device__ void
     getrf_npvt_bf_device(I const batchCount, I const m, I const n, T* A_, I const lda, I info[])
 {
     I const min_mn = (m < n) ? m : n;
@@ -108,8 +113,7 @@ DEVICE_FUNCTION void
                 A(iv, ia, j) = A(iv, ia, j) / Ujj_iv;
             };
         };
-
-        SYNCTHREADS;
+        __syncthreads();
 
         for(I ja = jp1; ja <= n; ja++)
         {
@@ -121,22 +125,21 @@ DEVICE_FUNCTION void
                 };
             };
         };
-
-        SYNCTHREADS;
+        __syncthreads();
     };
 
 #undef A
 }
 
 template <typename T>
-DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
-                                   rocblas_int const n,
-                                   rocblas_int const nrhs,
-                                   T* A_,
-                                   rocblas_int const lda,
-                                   T* B_,
-                                   rocblas_int const ldb,
-                                   rocblas_int* pinfo)
+__device__ void getrs_npvt_bf(rocblas_int const batchCount,
+                              rocblas_int const n,
+                              rocblas_int const nrhs,
+                              T* A_,
+                              rocblas_int const lda,
+                              T* B_,
+                              rocblas_int const ldb,
+                              rocblas_int* pinfo)
 {
     /*
     !     ---------------------------------------------------
@@ -187,8 +190,7 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
                     B(iv, i, k) = B(iv, i, k) - A(iv, i, j) * B(iv, j, k);
                 };
             };
-
-            SYNCTHREADS;
+            __syncthreads();
         };
     };
     /*
@@ -210,7 +212,7 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
                     B(iv, i, k) = B(iv, i, k) - A(iv, i, j) * B(iv, j, k);
                 };
             };
-            SYNCTHREADS;
+            __syncthreads();
 
         }; // end for j
 
@@ -228,8 +230,7 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
             };
 
         }; // end for iv
-
-        SYNCTHREADS;
+        __syncthreads();
 
     }; // end for ir
 
@@ -240,16 +241,16 @@ DEVICE_FUNCTION void getrs_npvt_bf(rocblas_int const batchCount,
 }
 
 template <typename T, typename I>
-GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
-                                             I const nblocks,
-                                             T* A_,
-                                             I const lda,
-                                             T* B_,
-                                             I const ldb,
-                                             T* C_,
-                                             I const ldc,
-                                             I devinfo_array[],
-                                             I batch_count)
+__global__ __launch_bounds__(GEBLT_BLOCK_DIM) void geblttrf_npvt_bf_kernel(I const nb,
+                                                                           I const nblocks,
+                                                                           T* A_,
+                                                                           I const lda,
+                                                                           T* B_,
+                                                                           I const ldb,
+                                                                           T* C_,
+                                                                           I const ldc,
+                                                                           I devinfo_array[],
+                                                                           I batch_count)
 {
 // note adjust indexing for array A
 #define A(iv, ia, ja, k) A_[indx4f(iv, ia, ja, ((k)-1), batch_count, lda, nb)]
@@ -288,7 +289,7 @@ GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
         T* Ap = &(D(iv, 1, 1, k));
 
         getrf_npvt_bf_device<T>(batch_count, mm, nn, Ap, ldd, devinfo_array);
-        SYNCTHREADS;
+        __syncthreads();
     };
 
     for(I k = 1; k <= (nblocks - 1); k++)
@@ -301,7 +302,7 @@ GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
             T* Ap = &(D(iv, 1, 1, k));
             T* Bp = &(C(iv, 1, 1, k));
             getrs_npvt_bf<T>(batch_count, nn, nrhs, Ap, ldd, Bp, ldc, devinfo_array);
-            SYNCTHREADS;
+            __syncthreads();
         };
 
         {
@@ -319,7 +320,7 @@ GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
             T* Bp = &(U(iv, 1, 1, k));
             T* Cp = &(D(iv, 1, 1, k + 1));
             gemm_nn_bf_device<T>(batch_count, mm, nn, kk, alpha, Ap, ld1, Bp, ld2, beta, Cp, ld3);
-            SYNCTHREADS;
+            __syncthreads();
         };
 
         {
@@ -329,8 +330,7 @@ GLOBAL_FUNCTION void geblttrf_npvt_bf_kernel(I const nb,
             T* Ap = &(D(iv, 1, 1, k + 1));
 
             getrf_npvt_bf_device<T>(batch_count, mm, nn, Ap, ldd, devinfo_array);
-
-            SYNCTHREADS;
+            __syncthreads();
         };
 
     }; // end for k

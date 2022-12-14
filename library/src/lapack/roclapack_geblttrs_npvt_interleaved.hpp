@@ -29,18 +29,19 @@
 #include "rocsolver/rocsolver.h"
 
 template <typename T>
-GLOBAL_FUNCTION void geblttrs_npvt_bf_kernel(const rocblas_int nb,
-                                             const rocblas_int nblocks,
-                                             const rocblas_int nrhs,
-                                             T* A_,
-                                             const rocblas_int lda,
-                                             T* D_,
-                                             const rocblas_int ldd,
-                                             T* U_,
-                                             const rocblas_int ldu,
-                                             T* brhs_,
-                                             const rocblas_int ldbrhs,
-                                             const rocblas_int batch_count)
+__global__
+    __launch_bounds__(GEBLT_BLOCK_DIM) void geblttrs_npvt_bf_kernel(const rocblas_int nb,
+                                                                    const rocblas_int nblocks,
+                                                                    const rocblas_int nrhs,
+                                                                    T* A_,
+                                                                    const rocblas_int lda,
+                                                                    T* D_,
+                                                                    const rocblas_int ldd,
+                                                                    T* U_,
+                                                                    const rocblas_int ldu,
+                                                                    T* brhs_,
+                                                                    const rocblas_int ldbrhs,
+                                                                    const rocblas_int batch_count)
 {
 // note adjust indexing for array A
 #define A(iv, ia, ja, iblock) A_[indx4f(iv, ia, ja, ((iblock)-1), batch_count, lda, nb)]
@@ -108,8 +109,8 @@ GLOBAL_FUNCTION void geblttrs_npvt_bf_kernel(const rocblas_int nb,
         };
 
     }; // end for  k
+    __syncthreads();
 
-    SYNCTHREADS;
     /*
     !
     ! % backward solve
