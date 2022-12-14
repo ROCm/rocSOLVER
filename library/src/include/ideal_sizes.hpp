@@ -141,14 +141,18 @@
     multiple of xxGST_BLOCKSIZE, the last block reduced in the blocked process is allowed to be smaller than xxGST_BLOCKSIZE.*/
 #define xxGST_BLOCKSIZE 64
 
-/****************************** stedc *****************************************
+/****************************** stedc ******************************************
 *******************************************************************************/
 /*! \brief Determines the minimum size required for the eigenvectors of an independent block of
     a tridiagonal matrix to be computed using the divide-and-conquer algorithm (STEDC).
 
-    \details If the size of the block is not greater than STEDC_MIN_DC_SIZE (bs <= STEDC_MIN_DC_SIZE),
+    \details If the size of the block is smaller than STEDC_MIN_DC_SIZE (bs < STEDC_MIN_DC_SIZE),
     the eigenvectors are computed with the normal QR algorithm. */
 #define STEDC_MIN_DC_SIZE 32
+
+/*! \brief Determines the number of split blocks (independent blocks) of a tridiagonal matrix that
+    are analyzed in parallel with the divide & conquer method. */
+#define STEDC_NUM_SPLIT_BLKS 8
 
 /************************** potf2/potrf ***************************************
 *******************************************************************************/

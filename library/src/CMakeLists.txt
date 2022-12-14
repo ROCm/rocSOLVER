@@ -188,6 +188,8 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_latrd.cpp
   # symmetric matrices
   auxiliary/rocauxiliary_lasyf.cpp
+  # triangular matrices
+  auxiliary/rocauxiliary_lauum.cpp
 )
 
 set(rocsolver_specialized_source
