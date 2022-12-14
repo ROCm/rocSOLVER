@@ -11,7 +11,6 @@
 #include "rocblascommon/clients_utility.hpp"
 #include "rocblascommon/rocblas_test.hpp"
 #include "rocblascommon/rocblas_vector.hpp"
-//#include "rocblascommon/device_vector.hpp"
 //#include "rocblascommon/device_batch_vector.hpp"
 //#include "rocblascommon/device_strided_batch_vector.hpp"
 //#include "rocblascommon/host_batch_vector.hpp"
