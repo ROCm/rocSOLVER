@@ -149,17 +149,118 @@ void geblttrs_npvt_initData(const rocblas_handle handle,
                             Th& hA,
                             Th& hB,
                             Th& hC,
-                            Th& hX)
+                            Th& hX,
+                            Th& hRHS)
 {
     if(CPU)
     {
-        T tmp;
+        int n = nb * nblocks;
+        std::vector<T> L1(n * n);
+        std::vector<T> U1(n * n);
+        std::vector<T> L(n * n);
+        std::vector<T> U(n * n);
+        std::vector<T> M(n * n);
+        std::vector<T> XX(n * nrhs);
+        std::vector<T> XB(n * nrhs);
+
+        // initialize blocks corresponding to the L and U factors
         rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, false);
         rocblas_init<T>(hC, false);
-        rocblas_init<T>(hX, false);
 
-        rocblas_int n = nb * nblocks;
+        // initialize solution vectors
+        rocblas_init<T>(hX, false);
+        
+
+print_host_matrix(std::cout,"As",nb,n,hA[0],lda);
+print_host_matrix(std::cout,"Bs",nb,n,hB[0],ldb);
+print_host_matrix(std::cout,"Cs",nb,n,hC[0],ldc);
+print_host_matrix(std::cout,"Xs",nb,nblocks*nrhs,hX[0],ldx);
+
+        for(rocblas_int b = 0; b < bc; ++b)
+        {
+            // move triangular factors of diagonal blocks into full matrices L1 and U1
+            for(rocblas_int i = 0; i < nb; i++)
+            {
+                for(rocblas_int j = 0; j < nb; j++)
+                {
+                    for(rocblas_int k = 0; k < nblocks; k++)
+                    {
+                        if(i == j)
+                        {
+                            U1[i + j * n + k * (n + 1) * nb] = hB[b][i + j * ldb + k * ldb * nb];
+                            L1[i + j * n + k * (n + 1) * nb] = 1;
+                        }
+                        else if(i < j)
+                            U1[i + j * n + k * (n + 1) * nb] = hB[b][i + j * ldb + k * ldb * nb];
+                        else
+                            L1[i + j * n + k * (n + 1) * nb] = hB[b][i + j * ldb + k * ldb * nb];
+                    }
+                }
+            }
+print_host_matrix(std::cout,"L1",n,n,L1.data(),n);
+print_host_matrix(std::cout,"U1",n,n,U1.data(),n);
+
+            // compute diagonal blocks B and store in L
+            cpu_gemm(rocblas_operation_none, rocblas_operation_none, n, n, n, T(1), L1.data(), n,
+                     U1.data(), n, T(0), L.data(), n);
+print_host_matrix(std::cout,"L",n,n,L.data(),n);
+
+            // move blocks A and C (and I) into full matrices L and U
+            for(rocblas_int i = 0; i < nb; i++)
+            {
+                for(rocblas_int j = 0; j < nb; j++)
+                {
+                    for(rocblas_int k = 0; k < nblocks - 1; k++)
+                    {
+                        U[i + (j + nb) * n + k * (n + 1) * nb] = hC[b][i + j * ldc + k * ldc * nb];
+                        L[(i + nb) + j * n + k * (n + 1) * nb] = hA[b][i + j * lda + k * lda * nb];
+                    }
+                }
+
+                for(rocblas_int k = 0; k < nblocks; k++)
+                    U[i + i * n + k * (n + 1) * nb] = 1;
+            }
+print_host_matrix(std::cout,"L",n,n,L.data(),n);
+print_host_matrix(std::cout,"U",n,n,U.data(),n);
+
+            // compute corresponding matrix and store in M
+            cpu_gemm(rocblas_operation_none, rocblas_operation_none, n, n, n, T(1), L.data(), n,
+                     U.data(), n, T(0), M.data(), n);                
+print_host_matrix(std::cout,"M",n,n,M.data(),n);
+
+            // move blocks of X to full matrix XX
+            for(rocblas_int i = 0; i < nb; i++)
+            {
+                for(rocblas_int j = 0; j < nrhs; j++)
+                {
+                    for(rocblas_int k = 0; k < nblocks; k++)
+                        XX[i + j * n + k * nb] = hX[b][i + j * ldx + k * ldx * nrhs];
+                }
+            }
+print_host_matrix(std::cout,"XX",n,nrhs,XX.data(),n);
+
+            // generate the full matrix of right-hand-side vectors XB by computing M * XX
+            cpu_gemm(rocblas_operation_none, rocblas_operation_none, n, nrhs, n, T(1), M.data(), n,
+                     XX.data(), n, T(0), XB.data(), n);            
+print_host_matrix(std::cout,"XB",n,nrhs,XB.data(),n);
+
+            // finally move XB to block format in hRHS
+            for(rocblas_int i = 0; i < nb; i++)
+            {
+                for(rocblas_int j = 0; j < nrhs; j++)
+                {
+                    for(rocblas_int k = 0; k < nblocks; k++)
+                        hRHS[b][i + j * ldx + k * ldx * nrhs] = XB[i + j * n + k * nb];
+                }
+            }
+        }
+print_host_matrix(std::cout,"RHSs",nb,nblocks*nrhs,hRHS[0],ldx);
+
+
+
+
+/*        rocblas_int n = nb * nblocks;
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
@@ -186,7 +287,7 @@ void geblttrs_npvt_initData(const rocblas_handle handle,
             }
 
             // TODO: Factorize the blocked matrix
-        }
+        }*/
     }
 
     // now copy data to the GPU
@@ -195,7 +296,7 @@ void geblttrs_npvt_initData(const rocblas_handle handle,
         CHECK_HIP_ERROR(dA.transfer_from(hA));
         CHECK_HIP_ERROR(dB.transfer_from(hB));
         CHECK_HIP_ERROR(dC.transfer_from(hC));
-        CHECK_HIP_ERROR(dX.transfer_from(hX));
+        CHECK_HIP_ERROR(dX.transfer_from(hRHS));
     }
 }
 
@@ -226,7 +327,13 @@ void geblttrs_npvt_getError(const rocblas_handle handle,
 {
     // input data initialization
     geblttrs_npvt_initData<true, true, T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc, dX,
-                                          ldx, bc, hA, hB, hC, hX);
+                                          ldx, bc, hA, hB, hC, hX, hXRes);
+
+print_host_matrix(std::cout,"real X",nb,nblocks*nrhs,hX[0],ldx);
+print_device_matrix(std::cout,"device As",nb,nb*nblocks,dA.data(),lda);
+print_device_matrix(std::cout,"device Bs",nb,nb*nblocks,dB.data(),ldb);
+print_device_matrix(std::cout,"device Cs",nb,nb*nblocks,dC.data(),ldc);
+print_device_matrix(std::cout,"device Xs",nb,nblocks*nrhs,dX.data(),ldx);
 
     // execute computations
     // GPU lapack
@@ -234,6 +341,7 @@ void geblttrs_npvt_getError(const rocblas_handle handle,
                                                 stA, dB.data(), ldb, stB, dC.data(), ldc, stC,
                                                 dX.data(), ldx, stX, bc));
     CHECK_HIP_ERROR(hXRes.transfer_from(dX));
+print_host_matrix(std::cout,"computed X",nb,nblocks*nrhs,hXRes[0],ldx);
 
     // // CPU lapack
     // for(rocblas_int b = 0; b < bc; ++b)
@@ -279,6 +387,7 @@ void geblttrs_npvt_getPerfData(const rocblas_handle handle,
                                Th& hB,
                                Th& hC,
                                Th& hX,
+                               Th& hXRes,
                                double* gpu_time_used,
                                double* cpu_time_used,
                                const rocblas_int hot_calls,
@@ -302,13 +411,13 @@ void geblttrs_npvt_getPerfData(const rocblas_handle handle,
     }
 
     geblttrs_npvt_initData<true, false, T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc, dX,
-                                           ldx, bc, hA, hB, hC, hX);
+                                           ldx, bc, hA, hB, hC, hX, hXRes);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         geblttrs_npvt_initData<false, true, T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc,
-                                               dX, ldx, bc, hA, hB, hC, hX);
+                                               dX, ldx, bc, hA, hB, hC, hX, hXRes);
 
         CHECK_ROCBLAS_ERROR(rocsolver_geblttrs_npvt(STRIDED, handle, nb, nblocks, nrhs, dA.data(),
                                                     lda, stA, dB.data(), ldb, stB, dC.data(), ldc,
@@ -333,7 +442,7 @@ void geblttrs_npvt_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         geblttrs_npvt_initData<false, true, T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc,
-                                               dX, ldx, bc, hA, hB, hC, hX);
+                                               dX, ldx, bc, hA, hB, hC, hX, hXRes);
 
         start = get_time_us_sync(stream);
         rocsolver_geblttrs_npvt(STRIDED, handle, nb, nblocks, nrhs, dA.data(), lda, stA, dB.data(),
@@ -363,7 +472,7 @@ void testing_geblttrs_npvt(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stXRes = (argus.unit_check || argus.norm_check) ? stX : 0;
+    rocblas_stride stXRes = stX;
 
     // check non-supported values
     // N/A
@@ -375,7 +484,7 @@ void testing_geblttrs_npvt(Arguments& argus)
     size_t size_X = size_t(ldx) * nrhs * nblocks;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_XRes = (argus.unit_check || argus.norm_check) ? size_X : 0;
+    size_t size_XRes = size_X;
 
     // check invalid sizes
     bool invalid_size = (nb < 0 || nblocks < 0 || nrhs < 0 || lda < nb || ldb < nb || ldc < nb
@@ -467,11 +576,12 @@ void testing_geblttrs_npvt(Arguments& argus)
                                                hXRes, &max_error);
 
         // collect performance data
-        if(argus.timing)
+/*        if(argus.timing)
             geblttrs_npvt_getPerfData<STRIDED, T>(handle, nb, nblocks, nrhs, dA, lda, stA, dB, ldb,
                                                   stB, dC, ldc, stC, dX, ldx, stX, bc, hA, hB, hC,
-                                                  hX, &gpu_time_used, &cpu_time_used, hot_calls,
+                                                  hX, hXRes, &gpu_time_used, &cpu_time_used, hot_calls,
                                                   argus.profile, argus.profile_kernels, argus.perf);
+*/
     }
 
     else
@@ -516,11 +626,12 @@ void testing_geblttrs_npvt(Arguments& argus)
                                                hXRes, &max_error);
 
         // collect performance data
-        if(argus.timing)
+/*        if(argus.timing)
             geblttrs_npvt_getPerfData<STRIDED, T>(handle, nb, nblocks, nrhs, dA, lda, stA, dB, ldb,
                                                   stB, dC, ldc, stC, dX, ldx, stX, bc, hA, hB, hC,
-                                                  hX, &gpu_time_used, &cpu_time_used, hot_calls,
+                                                  hX, hXRes, &gpu_time_used, &cpu_time_used, hot_calls,
                                                   argus.profile, argus.profile_kernels, argus.perf);
+*/
     }
 
     // validate results for rocsolver-test
