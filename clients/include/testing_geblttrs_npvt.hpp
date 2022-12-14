@@ -344,16 +344,8 @@ void geblttrs_npvt_getPerfData(const rocblas_handle handle,
 {
     if(!perf)
     {
-        // geblttrs_npvt_initData<true, false, T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc,
-        //                                        dX, ldx, bc, hA, hB, hC, hX);
-
-        // // cpu-lapack performance (only if not in perf mode)
-        // *cpu_time_used = get_time_us_no_sync();
-        // for(rocblas_int b = 0; b < bc; ++b)
-        // {
-        //     cpu_getrs(trans, n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
-        // }
-        // *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
+        // there is no direct CPU/LAPACK equivalent for this function, therefore
+        // we return an invalid CPU time
         *cpu_time_used = nan("");
     }
 
