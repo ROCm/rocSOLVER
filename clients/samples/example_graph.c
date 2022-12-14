@@ -3,7 +3,7 @@
 #include <stdio.h>   // for printf
 #include <stdlib.h>  // for malloc
 
-// Example: Compute the QR Factorization of a matrix asynchronously on the GPU
+// Example: Compute the QR Factorization of a matrix asynchronously on the GPU using the hipGraph API
 
 double *create_example_matrix(rocblas_int *M_out,
                               rocblas_int *N_out,
@@ -78,6 +78,7 @@ int main() {
   // create the stream object
   hipStream_t stream;
   hipStreamCreate(&stream);
+  rocblas_set_stream(handle, stream);
 
   // create graph management objects
   hipGraph_t graph;
