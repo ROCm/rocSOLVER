@@ -37,6 +37,7 @@
 #include "testing_laswp.hpp"
 #include "testing_lasyf.hpp"
 #include "testing_latrd.hpp"
+#include "testing_lauum.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
 #include "testing_orgtr_ungtr.hpp"
@@ -241,6 +242,7 @@ class rocsolver_dispatcher
             {"sterf", testing_sterf<T>},
             {"stebz", testing_stebz<T>},
             {"bdsvdx", testing_bdsvdx<T>},
+            {"lauum", testing_lauum<T>},
             // orgxx
             {"org2r", testing_orgxr_ungxr<T, 0>},
             {"orgqr", testing_orgxr_ungxr<T, 1>},

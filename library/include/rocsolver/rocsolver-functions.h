@@ -1070,6 +1070,44 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
 //! @}
 
 /*! @{
+    \brief LAUUM computes the product of a triangular matrix A with its transpose.
+
+    \details
+    If uplo indicates upper, then \f$AA^T\f$ is computed. If uplo indicates lower, then \f$A^TA\f$ is computed instead.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the matrix A is upper or lower triangular.
+                If uplo indicates lower (or upper), then the upper (or lower)
+                part of A is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of columns of the matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n. \n
+                On entry, the matrix to which the product will be applied.
+                On exit, A with the upper (or lower) part overwritten with the result.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                The leading dimension of the array A.
+    **************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slauum(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 float* A,
+                                                 const rocblas_int lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlauum(rocblas_handle handle,
+                                                 const rocblas_fill uplo,
+                                                 const rocblas_int n,
+                                                 double* A,
+                                                 const rocblas_int lda);
+//! @}
+
+/*! @{
     \brief ORG2R generates an m-by-n Matrix Q with orthonormal columns.
 
     \details

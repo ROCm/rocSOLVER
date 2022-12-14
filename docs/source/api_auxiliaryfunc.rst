@@ -57,6 +57,14 @@ rocsolver_<type>laswp()
    :outline:
 .. doxygenfunction:: rocsolver_slaswp
 
+.. _lauum:
+
+rocsolver_<type>lauum()
+---------------------------------------
+.. doxygenfunction:: rocsolver_dlauum
+   :outline:
+.. doxygenfunction:: rocsolver_slauum
+
 
 
 .. _householder:
