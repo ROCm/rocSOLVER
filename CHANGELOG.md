@@ -2,10 +2,13 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSOLVER
+## (Unreleased) rocSOLVER 3.21.0
 ### Added
 - SVD for general matrices using Jacobi algorithm:
     - GESVDJ (with batched and strided\_batched versions)
+- Product of triangular matrices
+    - LAUUM
+- Added experimental hipGraph support for rocSOLVER functions
 
 ### Optimized
 - Improved the performance of SYEVJ/HEEVJ.
@@ -18,12 +21,13 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Fixed
 - SYEVJ/HEEVJ should now be invariant under matrix scaling.
 - SYEVJ/HEEVJ should now properly output the eigenvalues when no sweeps are executed.
+- Fixed GETF2\_NPVT and GETRF\_NPVT input data initialization in tests and benchmarks.
 
 ### Known Issues
 ### Security
 
 
-## (Unreleased) rocSOLVER 3.20.0
+## rocSOLVER 3.20.0 for ROCm 5.4.0
 ### Added
 - Partial SVD for bidiagonal matrices:
     - BDSVDX
