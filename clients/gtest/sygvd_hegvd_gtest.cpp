@@ -35,7 +35,7 @@ const vector<vector<int>> matrix_size_range = {
     // normal (valid) samples
     {20, 30, 20, 1},
     {35, 35, 35, 0},
-    {50, 50, 60, 1}};
+    {52, 52, 52, 1}}; //{50, 50, 60, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
