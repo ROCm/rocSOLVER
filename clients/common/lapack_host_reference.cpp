@@ -2826,7 +2826,7 @@ void cpu_lauum(rocblas_fill uploR, rocblas_int n, double* A, rocblas_int lda)
 {
     rocblas_int info;
     char uplo = rocblas2char_fill(uploR);
-    dlauum_(&uplo, &n, A, &lda, info);
+    dlauum_(&uplo, &n, A, &lda, &info);
 }
 
 template <>
