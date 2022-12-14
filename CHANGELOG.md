@@ -11,6 +11,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Improved the performance of SYEVJ/HEEVJ.
 
 ### Changed
+- STEDC, SYEVD/HEEVD and SYGVD/HEGVD now use fully implemented Divide and Conquer approach.
+
 ### Deprecated
 ### Removed
 ### Fixed
