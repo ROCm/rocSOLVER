@@ -1,4 +1,4 @@
-/************************************************************************
+/*************************************************************************
  * Derived from the BSD3-licensed
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
@@ -27,6 +27,8 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
                                          size_t* size_work2,
                                          size_t* size_work3,
                                          size_t* size_work4,
+                                         size_t* size_tmpz,
+                                         size_t* size_splits,
                                          size_t* size_tau,
                                          size_t* size_pivots_workArr,
                                          size_t* size_iinfo,
@@ -43,6 +45,8 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
         *size_tau = 0;
         *size_pivots_workArr = 0;
         *size_iinfo = 0;
+        *size_splits = 0;
+        *size_tmpz = 0;
         *optim_mem = true;
         return;
     }
@@ -66,7 +70,8 @@ void rocsolver_sygvd_hegvd_getMemorySize(const rocblas_eform itype,
 
     // requirements for calling SYEV/HEEV
     rocsolver_syevd_heevd_getMemorySize<BATCHED, T, S>(evect, uplo, n, batch_count, &unused, &temp1,
-                                                       &temp2, &temp3, &temp4, size_tau, &temp5);
+                                                       &temp2, &temp3, size_tmpz, size_splits,
+                                                       &temp4, size_tau, &temp5);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -118,6 +123,8 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
                                               void* work2,
                                               void* work3,
                                               void* work4,
+                                              S* tmpz,
+                                              rocblas_int* splits,
                                               T* tau,
                                               void* pivots_workArr,
                                               rocblas_int* iinfo,
@@ -170,7 +177,7 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
 
     rocsolver_syevd_heevd_template<BATCHED, STRIDED, T>(
         handle, evect, uplo, n, A, shiftA, lda, strideA, D, strideD, E, strideE, iinfo, batch_count,
-        scalars, work1, work2, work3, (T*)work4, tau, (T**)pivots_workArr);
+        scalars, work1, work2, work3, tmpz, splits, (T*)work4, tau, (T**)pivots_workArr);
 
     // combine info from POTRF with info from SYEV/HEEV
     ROCSOLVER_LAUNCH_KERNEL(sygv_update_info, gridReset, threads, 0, stream, info, iinfo, n,

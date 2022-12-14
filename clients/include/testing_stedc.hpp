@@ -88,20 +88,107 @@ void stedc_initData(const rocblas_handle handle,
     if(CPU)
     {
         using S = decltype(std::real(T{}));
-        rocblas_init<S>(hD, true);
-        rocblas_init<S>(hE, true);
 
-        // scale matrix and add random splits
-        for(rocblas_int i = 0; i < n; i++)
+        // if the matrix is too small (n < 4), simply initialize D and E
+        if(n < 4)
         {
-            hD[0][i] += 400;
-            hE[0][i] -= 5;
+            rocblas_init<S>(hD, true);
+            rocblas_init<S>(hE, true);
         }
 
-        // add fixed splits in the matrix to test split handling
-        rocblas_int k = n / 2;
-        hE[0][k] = 0;
-        hE[0][k - 1] = 0;
+        // otherwise, the marix will be divided in exactly 2 independent blocks, if the size is even,
+        // or 3 if the size is odd. The 2 main independent blocks will have the same eigenvalues.
+        // The last block, when the size is odd, will have eigenvalue equal 1.
+        else
+        {
+            rocblas_int N1 = n / 2;
+            rocblas_int E = n - 2 * N1;
+
+            // a. initialize the eigenvalues for the uppermost sub-blocks of the main independent blocks.
+            // The second sub-block will have some repeated eigenvalues in order to test the deflation process
+            S d;
+            rocblas_int NN1 = N1 / 2;
+            rocblas_int NN2 = N1 - NN1;
+            rocblas_int s1 = NN1 * NN1;
+            rocblas_int s2 = NN2 * NN2;
+            rocblas_int sw = NN2 * 32;
+            std::vector<S> A1(s1);
+            std::vector<S> A2(s2);
+            for(rocblas_int i = 0; i < NN1; ++i)
+            {
+                for(rocblas_int j = 0; j < NN1; ++j)
+                {
+                    if(i == j)
+                    {
+                        d = (i + 1) / S(NN1);
+                        A1[i + i * NN1] = d;
+                        A2[i + i * NN2] = (i % 2 == 0) ? d : -d;
+                    }
+                    else
+                    {
+                        A1[i + j * NN1] = 0;
+                        A2[i + j * NN2] = 0;
+                    }
+                }
+            }
+            if(NN2 > NN1)
+            {
+                for(rocblas_int i = 0; i < NN1; ++i)
+                {
+                    A2[NN1 + i * NN2] = 0;
+                    A2[i + NN1 * NN2] = 0;
+                }
+                A2[NN1 + NN1 * NN2] = 0;
+            }
+
+            // b. find the corresponding tridiagonal matrices containing the setup eigenvalues of each sub-block
+            // first find random orthogonal matrices Q1 and Q2
+            Sh Q1(s1, 1, s1, 1);
+            Sh Q2(s2, 1, s2, 1);
+            rocblas_init<S>(Q1, true);
+            rocblas_init<S>(Q2, true);
+            std::vector<S> hW(sw);
+            std::vector<S> ipiv1(NN1);
+            std::vector<S> ipiv2(NN2);
+            cpu_geqrf<S>(NN1, NN1, Q1.data(), NN1, ipiv1.data(), hW.data(), sw);
+            cpu_geqrf<S>(NN2, NN2, Q2.data(), NN2, ipiv2.data(), hW.data(), sw);
+            // now multiply the orthogonal matrices by the diagonals A1 and A2 to hide the eigenvalues
+            cpu_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN1, NN1, NN1,
+                               Q1.data(), NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
+            cpu_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN1, NN1, NN1, Q1.data(),
+                               NN1, ipiv1.data(), A1.data(), NN1, hW.data(), sw);
+            cpu_ormqr_unmqr<S>(rocblas_side_left, rocblas_operation_transpose, NN2, NN2, NN2,
+                               Q2.data(), NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
+            cpu_ormqr_unmqr<S>(rocblas_side_right, rocblas_operation_none, NN2, NN2, NN2, Q2.data(),
+                               NN2, ipiv2.data(), A2.data(), NN2, hW.data(), sw);
+            // finally, perform tridiagonalization
+            cpu_sytrd_hetrd<S>(rocblas_fill_upper, NN1, A1.data(), NN1, hD[0], hE[0], ipiv1.data(),
+                               hW.data(), sw);
+            cpu_sytrd_hetrd<S>(rocblas_fill_upper, NN2, A2.data(), NN2, hD[0] + NN1, hE[0] + NN1,
+                               ipiv2.data(), hW.data(), sw);
+
+            // c. integrate blocks into final matrix
+            // integrate the 2 sub-blocks into the first independent block
+            hE[0][NN1 - 1] = 1;
+            hD[0][NN1 - 1] += 1;
+            hD[0][NN1] += 1;
+            // copy the independent block over
+            for(rocblas_int i = 0; i < N1; ++i)
+            {
+                hD[0][N1 + i] = hD[0][i];
+                hE[0][N1 + i] = hE[0][i];
+            }
+            hE[0][N1 - 1] = 0;
+            hE[0][2 * N1 - 1] = 0;
+            // integrate the 2 sub-blocks into the second independent block
+            // (using negative p to test secular eqn algorithm)
+            hE[0][N1 + NN1 - 1] = -1;
+            hD[0][N1 + NN1 - 1] -= 2;
+            hD[0][N1 + NN1] -= 2;
+            // if there is a third independent block, initialize it with 1
+            if(E == 1)
+                hD[0][n - 1] = 1;
+        }
 
         // initialize C to the identity matrix
         if(evect == rocblas_evect_original)
@@ -147,7 +234,8 @@ void stedc_getError(const rocblas_handle handle,
                     Th& hCRes,
                     Uh& hInfo,
                     Uh& hInfoRes,
-                    double* max_err)
+                    double* max_err,
+                    double* max_errv)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
@@ -232,8 +320,7 @@ void stedc_getError(const rocblas_handle handle,
 
             // error is ||hC - hCRes|| / ||hC||
             // using frobenius norm
-            err = norm_error('F', n, n, ldc, hC[0], hCRes[0]);
-            *max_err = err > *max_err ? err : *max_err;
+            *max_errv = norm_error('F', n, n, ldc, hCRes[0], hC[0]);
         }
     }
 }
@@ -338,7 +425,7 @@ void testing_stedc(Arguments& argus)
     size_t size_D = n;
     size_t size_E = n;
     size_t size_C = ldc * n;
-    double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+    double max_err = 0, max_errv = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_DRes = (argus.unit_check || argus.norm_check) ? size_D : 0;
     size_t size_ERes = (argus.unit_check || argus.norm_check) ? size_E : 0;
@@ -412,7 +499,7 @@ void testing_stedc(Arguments& argus)
     // check computations
     if(argus.unit_check || argus.norm_check)
         stedc_getError<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hDRes, hE, hERes, hC, hCRes,
-                          hInfo, hInfoRes, &max_error);
+                          hInfo, hInfoRes, &max_err, &max_errv);
 
     // collect performance data
     if(argus.timing)
@@ -423,7 +510,11 @@ void testing_stedc(Arguments& argus)
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+    {
+        ROCSOLVER_TEST_CHECK(T, max_err, n);
+        if(evect != rocblas_evect_none)
+            ROCSOLVER_TEST_CHECK(T, max_errv, n * n);
+    }
 
     // output results for rocsolver-bench
     if(argus.timing)
@@ -438,7 +529,7 @@ void testing_stedc(Arguments& argus)
             if(argus.norm_check)
             {
                 rocsolver_bench_output("cpu_time_us", "gpu_time_us", "error");
-                rocsolver_bench_output(cpu_time_used, gpu_time_used, max_error);
+                rocsolver_bench_output(cpu_time_used, gpu_time_used, std::max(max_err, max_errv));
             }
             else
             {
@@ -450,7 +541,7 @@ void testing_stedc(Arguments& argus)
         else
         {
             if(argus.norm_check)
-                rocsolver_bench_output(gpu_time_used, max_error);
+                rocsolver_bench_output(gpu_time_used, std::max(max_err, max_errv));
             else
                 rocsolver_bench_output(gpu_time_used);
         }

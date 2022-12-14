@@ -238,7 +238,7 @@ xxGST_BLOCKSIZE
 
 
 syevd, heevd and stedc functions
-====================================
+=====================================
 
 When running SYEVD/HEEVD (or the corresponding batched and strided-batched routines),
 the computation of the eigenvectors of the associated tridiagonal matrix
@@ -266,6 +266,12 @@ calls), and the number of iterations/sweeps is controlled by the CPU (requiring 
 SYEVJ_BLOCKED_SWITCH
 ----------------------
 .. doxygendefine:: SYEVJ_BLOCKED_SWITCH
+
+(As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
+
+STEDC_NUM_SPLIT_BLKS
+---------------------
+.. doxygendefine:: STEDC_NUM_SPLIT_BLKS
 
 (As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
 

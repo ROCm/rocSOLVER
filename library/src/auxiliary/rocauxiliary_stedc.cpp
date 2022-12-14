@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_stedc.hpp"
@@ -42,28 +42,38 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
     size_t size_tempvect, size_tempgemm;
     // size for pointers to workspace (batched case)
     size_t size_workArr;
+    // size for vector with positions of split blocks
+    size_t size_splits;
+    // size for temporary diagonal and z vectors.
+    size_t size_tmpz;
     rocsolver_stedc_getMemorySize<false, T, S>(evect, n, batch_count, &size_work_stack,
-                                               &size_tempvect, &size_tempgemm, &size_workArr);
+                                               &size_tempvect, &size_tempgemm, &size_tmpz,
+                                               &size_splits, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work_stack, size_tempvect,
-                                                      size_tempgemm, size_workArr);
+                                                      size_tempgemm, size_tmpz, size_splits,
+                                                      size_workArr);
 
     // memory workspace allocation
-    void *work_stack, *tempvect, *tempgemm, *workArr;
-    rocblas_device_malloc mem(handle, size_work_stack, size_tempvect, size_tempgemm, size_workArr);
+    void *work_stack, *tempvect, *tempgemm, *tmpz, *splits, *workArr;
+    rocblas_device_malloc mem(handle, size_work_stack, size_tempvect, size_tempgemm, size_tmpz,
+                              size_splits, size_workArr);
     if(!mem)
         return rocblas_status_memory_error;
 
     work_stack = mem[0];
     tempvect = mem[1];
     tempgemm = mem[2];
-    workArr = mem[3];
+    tmpz = mem[3];
+    splits = mem[4];
+    workArr = mem[5];
 
     // execution
     return rocsolver_stedc_template<false, false, T>(
         handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C, shiftC, ldc, strideC, info,
-        batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S**)workArr);
+        batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz, (rocblas_int*)splits,
+        (S**)workArr);
 }
 
 /*
