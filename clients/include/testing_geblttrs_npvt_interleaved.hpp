@@ -119,43 +119,98 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
                                         Th& hA,
                                         Th& hB,
                                         Th& hC,
-                                        Th& hX)
+                                        Th& hX,
+                                        Th& hRHS)
 {
     if(CPU)
     {
-        T tmp;
+        int info;
+        int n = nb * nblocks;
+        std::vector<T> M(n * n);
+        std::vector<T> XX(n * nrhs);
+        std::vector<T> XB(n * nrhs);
+        std::vector<rocblas_int> ipiv(nb);
+
+        // initialize blocks of the original matrix
         rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, false);
         rocblas_init<T>(hC, false);
-        rocblas_init<T>(hX, false);
 
-        rocblas_int n = nb * nblocks;
+        // initialize solution vectors
+        rocblas_init<T>(hX, false);
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // scale to avoid singularities
-            // leaving matrix as diagonal dominant so that pivoting is not required
-            for(rocblas_int i = 0; i < nb; i++)
+            // form original matrix M and scale to avoid singularities
+            for(rocblas_int k = 0; k < nblocks; k++)
             {
-                for(rocblas_int j = 0; j < nb; j++)
+                for(rocblas_int i = 0; i < nb; i++)
                 {
-                    for(rocblas_int k = 0; k < nblocks; k++)
+                    for(rocblas_int j = 0; j < nb; j++)
                     {
                         if(i == j)
-                            hB[k][b + i * bc + j * bc * ldb] += 400;
+                            M[i + j * n + k * (n + 1) * nb] = hB[k][b + i * bc + j * bc * ldb] + 400;
                         else
-                            hB[k][b + i * bc + j * bc * ldb] -= 4;
-                    }
+                            M[i + j * n + k * (n + 1) * nb] = hB[k][b + i * bc + j * bc * ldb] - 4;
 
-                    for(rocblas_int k = 0; k < nblocks - 1; k++)
-                    {
-                        hA[k][b + i * bc + j * bc * lda] -= 4;
-                        hC[k][b + i * bc + j * bc * ldc] -= 4;
+                        if(k < nblocks - 1)
+                        {
+                            M[(i + nb) + j * n + k * (n + 1) * nb]
+                                = hA[k][b + i * bc + j * bc * lda] - 4;
+                            M[i + (j + nb) * n + k * (n + 1) * nb]
+                                = hC[k][b + i * bc + j * bc * ldc] - 4;
+                        }
                     }
                 }
             }
 
-            // TODO: Factorize the blocked matrix
+            // move blocks of X to full matrix XX
+            for(rocblas_int k = 0; k < nblocks; k++)
+                for(rocblas_int i = 0; i < nb; i++)
+                    for(rocblas_int j = 0; j < nrhs; j++)
+                        XX[i + j * n + k * nb] = hX[k][b + i * bc + j * bc * ldx];
+
+            // generate the full matrix of right-hand-side vectors XB by computing M * XX
+            cpu_gemm(rocblas_operation_none, rocblas_operation_none, n, nrhs, n, T(1), M.data(), n,
+                     XX.data(), n, T(0), XB.data(), n);
+
+            // move XB to block format in hRHS
+            for(rocblas_int k = 0; k < nblocks; k++)
+                for(rocblas_int i = 0; i < nb; i++)
+                    for(rocblas_int j = 0; j < nrhs; j++)
+                        hRHS[k][b + i * bc + j * bc * ldx] = XB[i + j * n + k * nb];
+
+            // factorize M
+            cpu_getrf(nb, nb, M.data(), n, ipiv.data(), &info);
+            for(rocblas_int k = 0; k < nblocks - 1; k++)
+            {
+                cpu_getrs(rocblas_operation_none, nb, nb, M.data() + k * (n + 1) * nb, n,
+                          ipiv.data(), M.data() + nb * n + k * (n + 1) * nb, n);
+
+                cpu_gemm(rocblas_operation_none, rocblas_operation_none, nb, nb, nb, T(-1),
+                         M.data() + nb + k * (n + 1) * nb, n, M.data() + nb * n + k * (n + 1) * nb,
+                         n, T(1), M.data() + (k + 1) * (n + 1) * nb, n);
+
+                cpu_getrf(nb, nb, M.data() + (k + 1) * (n + 1) * nb, n, ipiv.data(), &info);
+            }
+
+            // move factorized blocks from M into hA, hB, and hC
+            for(rocblas_int k = 0; k < nblocks; k++)
+            {
+                for(rocblas_int i = 0; i < nb; i++)
+                {
+                    for(rocblas_int j = 0; j < nb; j++)
+                    {
+                        hB[k][b + i * bc + j * bc * ldb] = M[i + j * n + k * (n + 1) * nb];
+
+                        if(k < nblocks - 1)
+                        {
+                            hA[k][b + i * bc + j * bc * lda] = M[(i + nb) + j * n + k * (n + 1) * nb];
+                            hC[k][b + i * bc + j * bc * ldc] = M[i + (j + nb) * n + k * (n + 1) * nb];
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -190,9 +245,13 @@ void geblttrs_npvt_interleaved_getError(const rocblas_handle handle,
                                         Th& hXRes,
                                         double* max_err)
 {
+    int n = nb * nblocks;
+    std::vector<T> XX(n * nrhs);
+    std::vector<T> XXRes(n * nrhs);
+
     // input data initialization
     geblttrs_npvt_interleaved_initData<true, true, T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb,
-                                                      dC, ldc, dX, ldx, bc, hA, hB, hC, hX);
+                                                      dC, ldc, dX, ldx, bc, hA, hB, hC, hX, hXRes);
 
     // execute computations
     // GPU lapack
@@ -216,7 +275,21 @@ void geblttrs_npvt_interleaved_getError(const rocblas_handle handle,
     // using frobenius norm
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        // TODO: Complete the test error calculation
+        // move blocks of X to full matrix XX
+        for(rocblas_int k = 0; k < nblocks; k++)
+        {
+            for(rocblas_int i = 0; i < nb; i++)
+            {
+                for(rocblas_int j = 0; j < nrhs; j++)
+                {
+                    XX[i + j * n + k * nb] = hX[k][b + i * bc + j * bc * ldx];
+                    XXRes[i + j * n + k * nb] = hXRes[k][b + i * bc + j * bc * ldx];
+                }
+            }
+        }
+
+        err = norm_error('F', n, nrhs, n, XX.data(), XXRes.data());
+        *max_err = err > *max_err ? err : *max_err;
     }
 }
 
@@ -238,6 +311,7 @@ void geblttrs_npvt_interleaved_getPerfData(const rocblas_handle handle,
                                            Th& hB,
                                            Th& hC,
                                            Th& hX,
+                                           Th& hXRes,
                                            double* gpu_time_used,
                                            double* cpu_time_used,
                                            const rocblas_int hot_calls,
@@ -248,7 +322,7 @@ void geblttrs_npvt_interleaved_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         // geblttrs_npvt_interleaved_initData<true, false, T>(
-        //     handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc, dX, ldx, bc, hA, hB, hC, hX);
+        //     handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc, dX, ldx, bc, hA, hB, hC, hX, hXRes);
 
         // // cpu-lapack performance (only if not in perf mode)
         // *cpu_time_used = get_time_us_no_sync();
@@ -261,13 +335,14 @@ void geblttrs_npvt_interleaved_getPerfData(const rocblas_handle handle,
     }
 
     geblttrs_npvt_interleaved_initData<true, false, T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb,
-                                                       dC, ldc, dX, ldx, bc, hA, hB, hC, hX);
+                                                       dC, ldc, dX, ldx, bc, hA, hB, hC, hX, hXRes);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        geblttrs_npvt_interleaved_initData<false, true, T>(
-            handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc, dX, ldx, bc, hA, hB, hC, hX);
+        geblttrs_npvt_interleaved_initData<false, true, T>(handle, nb, nblocks, nrhs, dA, lda, dB,
+                                                           ldb, dC, ldc, dX, ldx, bc, hA, hB, hC,
+                                                           hX, hXRes);
 
         CHECK_ROCBLAS_ERROR(rocsolver_geblttrs_npvt_interleaved(handle, nb, nblocks, nrhs,
                                                                 dA.data(), lda, dB.data(), ldb,
@@ -291,8 +366,9 @@ void geblttrs_npvt_interleaved_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        geblttrs_npvt_interleaved_initData<false, true, T>(
-            handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC, ldc, dX, ldx, bc, hA, hB, hC, hX);
+        geblttrs_npvt_interleaved_initData<false, true, T>(handle, nb, nblocks, nrhs, dA, lda, dB,
+                                                           ldb, dC, ldc, dX, ldx, bc, hA, hB, hC,
+                                                           hX, hXRes);
 
         start = get_time_us_sync(stream);
         rocsolver_geblttrs_npvt_interleaved(handle, nb, nblocks, nrhs, dA.data(), lda, dB.data(),
@@ -328,7 +404,7 @@ void testing_geblttrs_npvt_interleaved(Arguments& argus)
     size_t size_X = size_t(ldx) * nrhs * bc;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_XRes = (argus.unit_check || argus.norm_check) ? size_X : 0;
+    size_t size_XRes = size_X;
 
     // check invalid sizes
     bool invalid_size = (nb < 0 || nblocks < 0 || nrhs < 0 || lda < nb || ldb < nb || ldc < nb
@@ -405,9 +481,9 @@ void testing_geblttrs_npvt_interleaved(Arguments& argus)
     // collect performance data
     if(argus.timing)
         geblttrs_npvt_interleaved_getPerfData<T>(handle, nb, nblocks, nrhs, dA, lda, dB, ldb, dC,
-                                                 ldc, dX, ldx, bc, hA, hB, hC, hX, &gpu_time_used,
-                                                 &cpu_time_used, hot_calls, argus.profile,
-                                                 argus.profile_kernels, argus.perf);
+                                                 ldc, dX, ldx, bc, hA, hB, hC, hX, hXRes,
+                                                 &gpu_time_used, &cpu_time_used, hot_calls,
+                                                 argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using nb * machine_precision as tolerance
