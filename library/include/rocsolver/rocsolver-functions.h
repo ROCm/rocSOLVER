@@ -1073,8 +1073,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
     \brief LAUUM computes the product of a triangular matrix A with its transpose.
 
     \details
-    If uplo denotes upper, then \f$AA^T\f$ is computed, if uplo denotes lower then \f$A^TA\f$ is computed instead.
-    For complex types computes \f$AA^H\f$ or \f$A^HA\f$ depending on uplo.
+    If uplo indicates upper, then \f$AA^T\f$ is computed. If uplo indicates lower, then \f$A^TA\f$ is computed instead.
 
     @param[in]
     handle      rocblas_handle.
