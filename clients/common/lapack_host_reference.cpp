@@ -910,6 +910,11 @@ void dlaswp_(int* n, double* A, int* lda, int* k1, int* k2, int* ipiv, int* inc)
 void claswp_(int* n, rocblas_float_complex* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
 void zlaswp_(int* n, rocblas_double_complex* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
 
+void slauum_(char* uplo, int* n, float* A, int* lda, int* info);
+void dlauum_(char* uplo, int* n, double* A, int* lda, int* info);
+void clauum_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* info);
+void zlauum_(char* uplo, int* n, rocblas_double_complex* A, int* lda, int* info);
+
 void sorg2r_(int* m, int* n, int* k, float* A, int* lda, float* ipiv, float* work, int* info);
 void dorg2r_(int* m, int* n, int* k, double* A, int* lda, double* ipiv, double* work, int* info);
 void cung2r_(int* m,
@@ -2805,6 +2810,39 @@ void cpu_larfb<rocblas_double_complex>(rocblas_side sideR,
     char direct = rocblas2char_direct(directR);
     char storev = rocblas2char_storev(storevR);
     zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
+}
+
+// lauum
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, float* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    slauum_(&uplo, &n, A, &lda, &info);
+}
+
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, double* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    dlauum_(&uplo, &n, A, &lda, &info);
+}
+
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, rocblas_float_complex* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    clauum_(&uplo, &n, A, &lda, &info);
+}
+
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, rocblas_double_complex* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    zlauum_(&uplo, &n, A, &lda, &info);
 }
 
 // bdsqr

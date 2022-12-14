@@ -755,6 +755,27 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle,
 }
 /***************************************************************/
 
+/******************** LAUUM ********************/
+
+inline rocblas_status rocsolver_lauum(rocblas_handle handle,
+                                      const rocblas_fill uplo,
+                                      const rocblas_int n,
+                                      float* A,
+                                      const rocblas_int lda)
+{
+    return rocsolver_slauum(handle, uplo, n, A, lda);
+}
+
+inline rocblas_status rocsolver_lauum(rocblas_handle handle,
+                                      const rocblas_fill uplo,
+                                      const rocblas_int n,
+                                      double* A,
+                                      const rocblas_int lda)
+{
+    return rocsolver_dlauum(handle, uplo, n, A, lda);
+}
+/***************************************************************/
+
 /******************** BDSQR ********************/
 inline rocblas_status rocsolver_bdsqr(rocblas_handle handle,
                                       rocblas_fill uplo,
