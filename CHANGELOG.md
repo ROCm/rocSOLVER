@@ -24,6 +24,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Fixed GETF2\_NPVT and GETRF\_NPVT input data initialization in tests and benchmarks.
 
 ### Known Issues
+- The Divide and Conquer approach currently fails under some circumstances.
+
 ### Security
 
 
