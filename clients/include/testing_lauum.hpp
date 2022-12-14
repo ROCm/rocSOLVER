@@ -42,7 +42,6 @@ void testing_lauum_bad_arg()
     rocblas_fill uplo = rocblas_fill_upper;
     rocblas_int n = 1;
     rocblas_int lda = 1;
-    rocblas_int info;
 
     // memory allocation
     device_strided_batch_vector<T> dA(1, 1, 1, 1);
@@ -91,8 +90,7 @@ void lauum_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    rocblas_int info;
-    cpu_lauum<T>(uplo, n, hA[0], lda, &info);
+    cpu_lauum<T>(uplo, n, hA[0], lda);
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -118,11 +116,10 @@ void lauum_getPerfData(const rocblas_handle handle,
     if(!perf)
     {
         lauum_initData<true, false, T>(handle, uplo, n, dA, lda, hA);
-        rocblas_int info;
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        cpu_lauum<T>(uplo, n, hA[0], lda, &info);
+        cpu_lauum<T>(uplo, n, hA[0], lda);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
@@ -250,9 +247,9 @@ void testing_lauum(Arguments& argus)
                              hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
-    // using machine precision * n for tolerance
+    // using machine precision for tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 1);
 
     // output results for rocsolver-bench
     if(argus.timing)
@@ -261,7 +258,7 @@ void testing_lauum(Arguments& argus)
         {
             rocsolver_bench_header("Arguments:");
             rocsolver_bench_output("uplo", "n", "lda");
-            rocsolver_bench_output(uplo, n, lda);
+            rocsolver_bench_output(uploC, n, lda);
 
             rocsolver_bench_header("Results:");
             if(argus.norm_check)

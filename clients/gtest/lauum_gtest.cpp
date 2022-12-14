@@ -61,7 +61,7 @@ protected:
     {
         Arguments arg = lauum_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0)
+        if((arg.peek<rocblas_int>("n") == 0) && (arg.peek<char>("uplo") == 'L'))
             testing_lauum_bad_arg<T>();
 
         testing_lauum<T>(arg);

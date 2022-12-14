@@ -1088,9 +1088,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n. \n
                 On entry, the matrix to which the product will be applied.
-                On exit, the resulting matrix.
+                On exit, A with the upper (or lower) part overwritten with the result.
     @param[in]
-    lda         rocblas_int. lda > 0.\n
+    lda         rocblas_int. lda >= n.\n
                 The leading dimension of the array A.
     **************************************************************************/
 
