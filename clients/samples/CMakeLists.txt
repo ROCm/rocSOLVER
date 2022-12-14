@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2016-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # declare sample programs
@@ -8,6 +8,9 @@ add_executable(example-c-basic
 )
 add_executable(example-cpp-basic
   example_basic.cpp
+)
+add_executable(example-c-graph
+  example_graph.c
 )
 add_executable(example-c-hmm
   example_hmm.c
@@ -25,6 +28,7 @@ add_executable(example-c-strided-batched
 # group sample programs by language
 set(c_samples
   example-c-basic
+  example-c-graph
   example-c-hmm
   example-c-batched
   example-c-strided-batched
