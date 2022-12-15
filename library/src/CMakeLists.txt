@@ -32,6 +32,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_trtri.cpp
   lapack/roclapack_trtri_batched.cpp
   lapack/roclapack_trtri_strided_batched.cpp
+  lapack/roclapack_geblttrs_npvt.cpp
+  lapack/roclapack_geblttrs_npvt_batched.cpp
+  lapack/roclapack_geblttrs_npvt_strided_batched.cpp
   # least squares solvers
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
@@ -56,6 +59,9 @@ set(rocsolver_lapack_source
   lapack/roclapack_sytrf.cpp
   lapack/roclapack_sytrf_batched.cpp
   lapack/roclapack_sytrf_strided_batched.cpp
+  lapack/roclapack_geblttrf_npvt.cpp
+  lapack/roclapack_geblttrf_npvt_batched.cpp
+  lapack/roclapack_geblttrf_npvt_strided_batched.cpp
   # orthogonal factorizations
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp

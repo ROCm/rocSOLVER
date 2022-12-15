@@ -302,6 +302,12 @@ try
             "                           Stride for matrices/vectors W.\n"
             "                           ")
 
+        ("strideX",
+         value<rocblas_stride>(),
+            "Matrix/vector stride parameter.\n"
+            "                           Stride for matrices/vectors X.\n"
+            "                           ")
+
         ("strideZ",
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
@@ -386,6 +392,19 @@ try
             "E = entire matrix, B = by blocks.\n"
             "                           Indicates whether the computed eigenvalues are ordered by blocks or for the entire matrix.\n"
             "                           Only applicable to stebz.\n"
+            "                           ")
+
+        // geblttrf/geblttrs options
+        ("nb",
+         value<rocblas_int>(),
+            "Number of rows and columns in each block.\n"
+            "                           Only applicable to block tridiagonal matrix APIs.\n"
+            "                           ")
+
+        ("nblocks",
+         value<rocblas_int>(),
+            "Number of blocks along the diagonal.\n"
+            "                           Only applicable to block tridiagonal matrix APIs.\n"
             "                           ")
 
         // partial eigenvalue/singular value decomposition options

@@ -6,6 +6,10 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 - SVD for general matrices using Jacobi algorithm:
     - GESVDJ (with batched and strided\_batched versions)
+- LU factorization without pivoting for block tridiagonal matrices:
+    - GEBLTTRF_NPVT (with batched and strided\_batched versions)
+- Linear system solver without pivoting for block tridiagonal matrices:
+    - GEBLTTRS_NPVT (with batched and strided\_batched, versions)
 - Product of triangular matrices
     - LAUUM
 - Added experimental hipGraph support for rocSOLVER functions
