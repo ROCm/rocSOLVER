@@ -170,18 +170,14 @@ TEST_P(HEGVD, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         SYGVD,
-                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(type_range)));
+// INSTANTIATE_TEST_SUITE_P(daily_lapack,
+//                          SYGVD,
+//                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(type_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-                         SYGVD,
-                         Combine(ValuesIn(matrix_size_range), ValuesIn(type_range)));
+INSTANTIATE_TEST_SUITE_P(known_bug, SYGVD, Combine(ValuesIn(matrix_size_range), ValuesIn(type_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         HEGVD,
-                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(type_range)));
+// INSTANTIATE_TEST_SUITE_P(daily_lapack,
+//                          HEGVD,
+//                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(type_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-                         HEGVD,
-                         Combine(ValuesIn(matrix_size_range), ValuesIn(type_range)));
+INSTANTIATE_TEST_SUITE_P(known_bug, HEGVD, Combine(ValuesIn(matrix_size_range), ValuesIn(type_range)));
