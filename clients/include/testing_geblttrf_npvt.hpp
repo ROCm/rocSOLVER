@@ -273,12 +273,6 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hCRes.transfer_from(dC));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
-    // // CPU lapack
-    // for(rocblas_int b = 0; b < bc; ++b)
-    // {
-    //     cpu_getrf(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
-    // }
-
     // check info for singularities
     double err = 0;
     *max_err = 0;
@@ -297,15 +291,11 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     }
     *max_err += err;
 
-    // error is ||M - MRes|| / ||M||
-    // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
-    // IT MIGHT BE REVISITED IN THE FUTURE)
-    // using frobenius norm
     for(rocblas_int b = 0; b < bc; ++b)
     {
         if(hInfoRes[b][0] == 0)
         {
-            // compute original blocks B and store in L
+            // compute diagonal blocks and store in full matrix L
             for(rocblas_int k = 0; k < nblocks; k++)
             {
                 for(rocblas_int i = 0; i < nb; i++)
@@ -324,7 +314,7 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
                          L.data() + k * (n + 1) * nb, n);
             }
 
-            // move blocks A and C (and I) into full matrices L and U
+            // move blocks A, updated C, and I into full matrices L and U
             for(rocblas_int k = 0; k < nblocks; k++)
             {
                 for(rocblas_int i = 0; i < nb; i++)
@@ -344,7 +334,7 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
                 }
             }
 
-            // compute original matrix and store in MRes
+            // reconstruct input matrix from factors and store it in MRes
             cpu_gemm(rocblas_operation_none, rocblas_operation_none, n, n, n, T(1), L.data(), n,
                      U.data(), n, T(0), MRes.data(), n);
 
@@ -368,6 +358,10 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
                 }
             }
 
+            // error is ||M - MRes|| / ||M||
+            // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
+            // IT MIGHT BE REVISITED IN THE FUTURE)
+            // using frobenius norm
             err = norm_error('F', n, n, n, M.data(), MRes.data());
             *max_err = err > *max_err ? err : *max_err;
         }

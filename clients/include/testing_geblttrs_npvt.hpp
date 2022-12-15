@@ -292,12 +292,6 @@ void geblttrs_npvt_getError(const rocblas_handle handle,
                                                 dX.data(), ldx, stX, bc));
     CHECK_HIP_ERROR(hXRes.transfer_from(dX));
 
-    // // CPU lapack
-    // for(rocblas_int b = 0; b < bc; ++b)
-    // {
-    //     cpu_getrs(trans, n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb);
-    // }
-
     double err = 0;
     *max_err = 0;
 

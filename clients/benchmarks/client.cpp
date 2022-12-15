@@ -394,17 +394,17 @@ try
             "                           Only applicable to stebz.\n"
             "                           ")
 
-        // geblttrf options
+        // geblttrf/geblttrs options
         ("nb",
          value<rocblas_int>(),
             "Number of rows and columns in each block.\n"
-            "                           Only applicable to geblttrf.\n"
+            "                           Only applicable to block tridiagonal matrix APIs.\n"
             "                           ")
 
         ("nblocks",
          value<rocblas_int>(),
             "Number of blocks along the diagonal.\n"
-            "                           Only applicable to geblttrf.\n"
+            "                           Only applicable to block tridiagonal matrix APIs.\n"
             "                           ")
 
         // partial eigenvalue/singular value decomposition options
