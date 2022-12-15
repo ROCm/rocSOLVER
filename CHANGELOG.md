@@ -20,8 +20,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Changed
 - STEDC, SYEVD/HEEVD and SYGVD/HEGVD now use fully implemented Divide and Conquer approach.
 
-### Deprecated
-### Removed
 ### Fixed
 - SYEVJ/HEEVJ should now be invariant under matrix scaling.
 - SYEVJ/HEEVJ should now properly output the eigenvalues when no sweeps are executed.
@@ -29,8 +27,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Known Issues
 - The Divide and Conquer approach currently fails under some circumstances.
-
-### Security
 
 
 ## rocSOLVER 3.20.0 for ROCm 5.4.0
