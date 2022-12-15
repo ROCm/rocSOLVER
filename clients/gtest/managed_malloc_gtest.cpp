@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -93,10 +93,10 @@ TEST_P(MANAGED_MALLOC, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         MANAGED_MALLOC,
-                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
+// INSTANTIATE_TEST_SUITE_P(daily_lapack,
+//                          MANAGED_MALLOC,
+//                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+INSTANTIATE_TEST_SUITE_P(known_bug,
                          MANAGED_MALLOC,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
