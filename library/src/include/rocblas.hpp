@@ -43,7 +43,7 @@ rocblas_status rocblasCall_axpy(rocblas_handle handle,
 }
 
 // iamax
-template <bool ISBATCHED, typename T, typename S, typename U>
+template <typename T, typename S, typename U>
 rocblas_status rocblasCall_iamax(rocblas_handle handle,
                                  rocblas_int n,
                                  U x,
@@ -56,7 +56,7 @@ rocblas_status rocblasCall_iamax(rocblas_handle handle,
 {
     ROCBLAS_ENTER("iamax", "n:", n, "shiftX:", shiftx, "incx:", incx, "bc:", batch_count);
 
-    return rocblas_internal_iamax_template<ROCBLAS_IAMAX_NB, ISBATCHED>(
+    return rocblas_internal_iamax_template<ROCBLAS_IAMAX_NB>(
         handle, n, cast2constType<T>(x), shiftx, incx, stridex, batch_count, result, workspace);
 }
 
