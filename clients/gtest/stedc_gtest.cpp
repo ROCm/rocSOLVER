@@ -40,7 +40,7 @@ const vector<vector<int>> matrix_size_range = {
 // (TODO: the instance {256, 270} failed on CI and was removed.
 //  The cause is unknown at the moment. We should reproduce, troubleshoot, and
 //  add a hotfix in the future if needed)
-const vector<vector<int>> large_matrix_size_range = {{192, 192}, {250, 250}, {300, 300}};
+const vector<vector<int>> large_matrix_size_range = {{192, 192}, {250, 250}, {256, 270}, {300, 300}};
 
 Arguments stedc_setup_arguments(stedc_tuple tup)
 {
@@ -100,8 +100,10 @@ TEST_P(STEDC, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
-// INSTANTIATE_TEST_SUITE_P(daily_lapack,
-//                          STEDC,
-//                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         STEDC,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(known_bug, STEDC, Combine(ValuesIn(matrix_size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         STEDC,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(op_range)));
