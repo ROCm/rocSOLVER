@@ -36,10 +36,6 @@ const vector<vector<int>> matrix_size_range = {
     {35, 40}};
 
 // for daily_lapack tests
-// const vector<vector<int>> large_matrix_size_range = {{192, 192}, {256, 270}, {300, 300}};
-// (TODO: the instance {256, 270} failed on CI and was removed.
-//  The cause is unknown at the moment. We should reproduce, troubleshoot, and
-//  add a hotfix in the future if needed)
 const vector<vector<int>> large_matrix_size_range = {{192, 192}, {250, 250}, {256, 270}, {300, 300}};
 
 Arguments stedc_setup_arguments(stedc_tuple tup)

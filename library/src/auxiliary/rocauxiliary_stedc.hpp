@@ -1496,7 +1496,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     }
 
     // if size is too small, use steqr
-    else if(n <= STEDC_MIN_DC_SIZE)
+    else if(n < STEDC_MIN_DC_SIZE)
     {
         rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
         *size_tempvect = 0;
