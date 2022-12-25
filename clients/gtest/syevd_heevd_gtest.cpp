@@ -155,12 +155,12 @@ TEST_P(HEEVD, strided_batched__double_complex)
 }
 
 // daily_lapack tests normal execution with medium to large sizes
-// INSTANTIATE_TEST_SUITE_P(daily_lapack, SYEVD, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, SYEVD, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
-// INSTANTIATE_TEST_SUITE_P(daily_lapack, HEEVD, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, HEEVD, Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
 
 // checkin_lapack tests normal execution with small sizes, invalid sizes,
 // quick returns, and corner cases
-INSTANTIATE_TEST_SUITE_P(known_bug, SYEVD, Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, SYEVD, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
-INSTANTIATE_TEST_SUITE_P(known_bug, HEEVD, Combine(ValuesIn(size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, HEEVD, Combine(ValuesIn(size_range), ValuesIn(op_range)));

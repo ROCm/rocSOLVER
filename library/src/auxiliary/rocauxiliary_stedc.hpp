@@ -777,6 +777,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
             // find initial positions of each sub-blocks)
             if(tidb == 0)
                 ns[tid] = 0;
+            __syncthreads();
 
             // find sub-block sizes
             if(id == 0)
@@ -1495,7 +1496,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     }
 
     // if size is too small, use steqr
-    else if(n <= STEDC_MIN_DC_SIZE)
+    else if(n < STEDC_MIN_DC_SIZE)
     {
         rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
         *size_tempvect = 0;

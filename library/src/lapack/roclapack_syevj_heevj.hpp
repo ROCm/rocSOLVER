@@ -1166,6 +1166,7 @@ ROCSOLVER_KERNEL void syevj_finalize(const rocblas_esort esort,
                 p = W[i];
             }
         }
+        __syncthreads();
 
         if(m != j)
         {
