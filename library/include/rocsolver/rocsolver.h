@@ -10,10 +10,10 @@
 #define _ROCSOLVER_H_
 
 /* library headers */
-#include "rocsolver-aliases.h"
-#include "rocsolver-export.h"
-#include "rocsolver-extra-types.h"
-#include "rocsolver-functions.h"
-#include "rocsolver-version.h"
+#include "internal/rocsolver-export.h"
+#include "internal/rocsolver-extra-types.h"
+#include "internal/rocsolver-aliases.h"
+#include "internal/rocsolver-functions.h"
+#include "internal/rocsolver-version.h"
 
 #endif /* _ROCSOLVER_H_ */
