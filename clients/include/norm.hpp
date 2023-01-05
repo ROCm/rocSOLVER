@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <type_traits>
 #include <vector>
 
 #include <rocblas/rocblas.h>
@@ -64,7 +65,7 @@ inline void xaxpy(int* n,
 
 /* Norm of error functions */
 
-template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+template <typename T>
 double norm_error(char norm_type,
                   rocblas_int M,
                   rocblas_int N,
@@ -73,70 +74,32 @@ double norm_error(char norm_type,
                   T* comp,
                   rocblas_int lda_comp = 0)
 {
+    using DoublePrecisionType
+        = std::conditional_t<rocblas_is_complex<T>, rocblas_double_complex, double>;
+
     // norm type can be 'O', 'I', 'F', 'o', 'i', 'f' for one, infinity or
     // Frobenius norm one norm is max column sum infinity norm is max row sum
     // Frobenius is l2 norm of matrix entries
 
     rocblas_int lda = M;
-    lda_comp = lda_comp > 0 ? lda_comp : lda_gold;
+    if(lda_comp <= 0)
+        lda_comp = lda_gold;
 
-    host_vector<double> gold_double(N * lda);
-    host_vector<double> comp_double(N * lda);
+    std::vector<DoublePrecisionType> gold_double(N * lda);
+    std::vector<DoublePrecisionType> comp_double(N * lda);
 
-    for(rocblas_int i = 0; i < M; i++)
+    for(rocblas_int j = 0; j < N; j++)
     {
-        for(rocblas_int j = 0; j < N; j++)
+        for(rocblas_int i = 0; i < M; i++)
         {
-            gold_double[i + j * lda] = double(gold[i + j * lda_gold]);
-            comp_double[i + j * lda] = double(comp[i + j * lda_comp]);
+            gold_double[i + j * lda] = DoublePrecisionType(gold[i + j * lda_gold]);
+            comp_double[i + j * lda] = DoublePrecisionType(comp[i + j * lda_comp]);
         }
     }
 
     std::vector<double> work(M);
     rocblas_int incx = 1;
-    double alpha = -1.0;
-    rocblas_int size = lda * N;
-
-    double gold_norm = xlange(&norm_type, &M, &N, gold_double.data(), &lda, work.data());
-    xaxpy(&size, &alpha, gold_double.data(), &incx, comp_double.data(), &incx);
-    double error = xlange(&norm_type, &M, &N, comp_double.data(), &lda, work.data());
-    if(gold_norm > 0)
-        error /= gold_norm;
-
-    return error;
-}
-
-template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-double norm_error(char norm_type,
-                  rocblas_int M,
-                  rocblas_int N,
-                  rocblas_int lda_gold,
-                  T* gold,
-                  T* comp,
-                  rocblas_int lda_comp = 0)
-{
-    // norm type can be 'O', 'I', 'F', 'o', 'i', 'f' for one, infinity or
-    // Frobenius norm one norm is max column sum infinity norm is max row sum
-    // Frobenius is l2 norm of matrix entries
-
-    rocblas_int lda = M;
-    lda_comp = lda_comp > 0 ? lda_comp : lda_gold;
-
-    host_vector<rocblas_double_complex> gold_double(N * lda);
-    host_vector<rocblas_double_complex> comp_double(N * lda);
-
-    for(rocblas_int i = 0; i < M; i++)
-    {
-        for(rocblas_int j = 0; j < N; j++)
-        {
-            gold_double[i + j * lda] = rocblas_double_complex(gold[i + j * lda_gold]);
-            comp_double[i + j * lda] = rocblas_double_complex(comp[i + j * lda_comp]);
-        }
-    }
-
-    std::vector<double> work(M);
-    rocblas_int incx = 1;
-    rocblas_double_complex alpha = -1.0;
+    DoublePrecisionType alpha = -1.0;
     rocblas_int size = lda * N;
 
     double gold_norm = xlange(&norm_type, &M, &N, gold_double.data(), &lda, work.data());
