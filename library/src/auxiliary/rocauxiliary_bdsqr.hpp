@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -24,11 +24,11 @@
   and vector operations
 ***************************************************************************/
 
-/** ESTIMATE device function computes an estimate of the smallest
+/** BDSQR_ESTIMATE device function computes an estimate of the smallest
     singular value of a n-by-n upper bidiagonal matrix given by D and E
     It also applies convergence test if conver = 1 **/
 template <typename T>
-__device__ T estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int conver)
+__device__ T bdsqr_estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int conver)
 {
     T smin = t2b ? std::abs(D[0]) : std::abs(D[n - 1]);
     T t = smin;
@@ -54,7 +54,7 @@ __device__ T estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int conve
 
 /** NEGVECT device function multiply a vector x of dimension n by -1**/
 template <typename T>
-__device__ void negvect(const rocblas_int n, T* x, const rocblas_int incx)
+__device__ void bdsqr_negvect(const rocblas_int n, T* x, const rocblas_int incx)
 {
     for(rocblas_int i = 0; i < n; ++i)
     {
@@ -63,24 +63,24 @@ __device__ void negvect(const rocblas_int n, T* x, const rocblas_int incx)
     }
 }
 
-/** T2BQRSTEP device function applies implicit QR interation to
+/** BDSQR_T2BQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from top to bottom **/
 template <typename S, typename W>
-__device__ void t2bQRstep(const rocblas_int n,
-                          const rocblas_int nv,
-                          const rocblas_int nu,
-                          const rocblas_int nc,
-                          S* D,
-                          S* E,
-                          W* V,
-                          const rocblas_int ldv,
-                          W* U,
-                          const rocblas_int ldu,
-                          W* C,
-                          const rocblas_int ldc,
-                          const S sh,
-                          S* rots)
+__device__ void bdsqr_t2bQRstep(const rocblas_int n,
+                                const rocblas_int nv,
+                                const rocblas_int nu,
+                                const rocblas_int nc,
+                                S* D,
+                                S* E,
+                                W* V,
+                                const rocblas_int ldv,
+                                W* U,
+                                const rocblas_int ldu,
+                                W* C,
+                                const rocblas_int ldc,
+                                const S sh,
+                                S* rots)
 {
     S f, g, c, s, r;
     rocblas_int nr = nv ? 2 * (n - 1) : 0;
@@ -139,24 +139,24 @@ __device__ void t2bQRstep(const rocblas_int n,
              ldc);
 }
 
-/** B2TQRSTEP device function applies implicit QR interation to
+/** BDSQR_B2TQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from bottom to top **/
 template <typename S, typename W>
-__device__ void b2tQRstep(const rocblas_int n,
-                          const rocblas_int nv,
-                          const rocblas_int nu,
-                          const rocblas_int nc,
-                          S* D,
-                          S* E,
-                          W* V,
-                          const rocblas_int ldv,
-                          W* U,
-                          const rocblas_int ldu,
-                          W* C,
-                          const rocblas_int ldc,
-                          const S sh,
-                          S* rots)
+__device__ void bdsqr_b2tQRstep(const rocblas_int n,
+                                const rocblas_int nv,
+                                const rocblas_int nu,
+                                const rocblas_int nc,
+                                S* D,
+                                S* E,
+                                W* V,
+                                const rocblas_int ldv,
+                                W* U,
+                                const rocblas_int ldu,
+                                W* C,
+                                const rocblas_int ldc,
+                                const S sh,
+                                S* rots)
 {
     S f, g, c, s, r;
     rocblas_int nr = nv ? 2 * (n - 1) : 0;
@@ -215,37 +215,37 @@ __device__ void b2tQRstep(const rocblas_int n,
              ldc);
 }
 
-/** BDSQRKERNEL implements the main loop of the bdsqr algorithm
+/** BDSQR_KERNEL implements the main loop of the bdsqr algorithm
     to compute the SVD of an upper bidiagonal matrix given by D and E **/
 template <typename T, typename S, typename W>
-ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
-                                  const rocblas_int nv,
-                                  const rocblas_int nu,
-                                  const rocblas_int nc,
-                                  S* DD,
-                                  const rocblas_stride strideD,
-                                  S* EE,
-                                  const rocblas_stride strideE,
-                                  W VV,
-                                  const rocblas_int shiftV,
-                                  const rocblas_int ldv,
-                                  const rocblas_stride strideV,
-                                  W UU,
-                                  const rocblas_int shiftU,
-                                  const rocblas_int ldu,
-                                  const rocblas_stride strideU,
-                                  W CC,
-                                  const rocblas_int shiftC,
-                                  const rocblas_int ldc,
-                                  const rocblas_stride strideC,
-                                  rocblas_int* info,
-                                  const rocblas_int maxiter,
-                                  const S eps,
-                                  const S sfm,
-                                  const S tol,
-                                  const S minshift,
-                                  S* workA,
-                                  const rocblas_stride strideW)
+ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
+                                   const rocblas_int nv,
+                                   const rocblas_int nu,
+                                   const rocblas_int nc,
+                                   S* DD,
+                                   const rocblas_stride strideD,
+                                   S* EE,
+                                   const rocblas_stride strideE,
+                                   W VV,
+                                   const rocblas_int shiftV,
+                                   const rocblas_int ldv,
+                                   const rocblas_stride strideV,
+                                   W UU,
+                                   const rocblas_int shiftU,
+                                   const rocblas_int ldu,
+                                   const rocblas_stride strideU,
+                                   W CC,
+                                   const rocblas_int shiftC,
+                                   const rocblas_int ldc,
+                                   const rocblas_stride strideC,
+                                   rocblas_int* info,
+                                   const rocblas_int maxiter,
+                                   const S eps,
+                                   const S sfm,
+                                   const S tol,
+                                   const S minshift,
+                                   S* workA,
+                                   const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
 
@@ -266,8 +266,8 @@ ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
 
     // calculate threshold for zeroing elements (convergence threshold)
     int t2b = (D[0] >= D[n - 1]) ? 1 : 0; // direction
-    S smin = estimate<S>(n, D, E, t2b, tol,
-                         0); // estimate of the smallest singular value
+    S smin = bdsqr_estimate<S>(n, D, E, t2b, tol,
+                               0); // estimate of the smallest singular value
     S thresh = std::max(tol * smin / S(std::sqrt(n)),
                         S(maxiter) * sfm); // threshold
 
@@ -311,7 +311,7 @@ ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
                 t2b = 0;
                 sh = std::abs(D[k]);
             }
-            smin = estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1); // shift
+            smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1); // shift
             smax = find_max_tridiag(i, k, D, E); // estimate of the largest singular value in the block
 
             // check for gaps, if none then continue
@@ -328,11 +328,11 @@ ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
                 // apply QR step
                 iter += k - i;
                 if(t2b)
-                    t2bQRstep(k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu, ldu,
-                              C + i, ldc, smin, rots);
+                    bdsqr_t2bQRstep(k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
+                                    ldu, C + i, ldc, smin, rots);
                 else
-                    b2tQRstep(k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu, ldu,
-                              C + i, ldc, smin, rots);
+                    bdsqr_b2tQRstep(k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
+                                    ldu, C + i, ldc, smin, rots);
             }
         }
     }
@@ -349,7 +349,7 @@ ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
             {
                 D[ii] = -D[ii];
                 if(nv)
-                    negvect(nv, V + ii, ldv);
+                    bdsqr_negvect(nv, V + ii, ldv);
             }
         }
 
@@ -392,26 +392,26 @@ ROCSOLVER_KERNEL void bdsqrKernel(const rocblas_int n,
     }
 }
 
-/** LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
+/** BDSQR_LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
     into an upper bidiagonal matrix via givens rotations **/
 template <typename T, typename S, typename W>
-ROCSOLVER_KERNEL void lower2upper(const rocblas_int n,
-                                  const rocblas_int nu,
-                                  const rocblas_int nc,
-                                  S* DD,
-                                  const rocblas_stride strideD,
-                                  S* EE,
-                                  const rocblas_stride strideE,
-                                  W UU,
-                                  const rocblas_int shiftU,
-                                  const rocblas_int ldu,
-                                  const rocblas_stride strideU,
-                                  W CC,
-                                  const rocblas_int shiftC,
-                                  const rocblas_int ldc,
-                                  const rocblas_stride strideC,
-                                  S* workA,
-                                  const rocblas_stride strideW)
+ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
+                                        const rocblas_int nu,
+                                        const rocblas_int nc,
+                                        S* DD,
+                                        const rocblas_stride strideD,
+                                        S* EE,
+                                        const rocblas_stride strideE,
+                                        W UU,
+                                        const rocblas_int shiftU,
+                                        const rocblas_int ldu,
+                                        const rocblas_stride strideU,
+                                        W CC,
+                                        const rocblas_int shiftC,
+                                        const rocblas_int ldc,
+                                        const rocblas_stride strideC,
+                                        S* workA,
+                                        const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
     S f, g, c, s, r;
@@ -581,13 +581,13 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     // rotate to upper bidiagonal if necessary
     if(uplo == rocblas_fill_lower)
     {
-        ROCSOLVER_LAUNCH_KERNEL((lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n, nu, nc,
-                                D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc,
-                                strideC, work, strideW);
+        ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n,
+                                nu, nc, D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC,
+                                ldc, strideC, work, strideW);
     }
 
     // main computation of SVD
-    ROCSOLVER_LAUNCH_KERNEL((bdsqrKernel<T>), dim3(batch_count), dim3(1), 0, stream, n, nv, nu, nc,
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_kernel<T>), dim3(batch_count), dim3(1), 0, stream, n, nv, nu, nc,
                             D, strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
                             strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
                             minshift, work, strideW);
