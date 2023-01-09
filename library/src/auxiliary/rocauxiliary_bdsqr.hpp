@@ -13,6 +13,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+#include <cmath>
+
 /****************************************************************************
 (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
   FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
@@ -249,6 +251,10 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
 {
     rocblas_int bid = hipBlockIdx_x;
 
+    // if a NaN or Inf was detected in the input, return
+    if(info[bid] != 0)
+        return;
+
     // select batch instance to work with
     // (avoiding arithmetics with possible nullptrs)
     S* rots;
@@ -337,8 +343,6 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
         }
     }
 
-    info[bid] = 0;
-
     // re-arrange singular values/vectors if algorithm converged
     if(k == 0)
     {
@@ -410,11 +414,16 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
                                         const rocblas_int shiftC,
                                         const rocblas_int ldc,
                                         const rocblas_stride strideC,
+                                        rocblas_int* info,
                                         S* workA,
                                         const rocblas_stride strideW)
 {
     rocblas_int bid = hipBlockIdx_x;
     S f, g, c, s, r;
+
+    // if a NaN or Inf was detected in the input, return
+    if(info[bid] != 0)
+        return;
 
     // select batch instance to work with
     // (avoiding arithmetics with possible nullptrs)
@@ -454,6 +463,57 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
         lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots + n - 1, U, ldu);
     if(nc)
         lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots + n - 1, C, ldc);
+}
+
+/** BDSQR_INPUT_CHECK kernel determines if there are any NaNs or Infs in the input,
+    and sets appropriate outputs if there are. **/
+template <typename T, typename S>
+ROCSOLVER_KERNEL void bdsqr_input_check(const rocblas_int n,
+                                        S* DD,
+                                        const rocblas_stride strideD,
+                                        S* EE,
+                                        const rocblas_stride strideE,
+                                        rocblas_int* info)
+{
+    rocblas_int tid = hipThreadIdx_x;
+    rocblas_int bid = hipBlockIdx_y;
+
+    // select batch instance to work with
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
+
+    __shared__ bool found;
+    if(tid == 0)
+        found = false;
+    __syncthreads();
+
+    for(rocblas_int i = tid; i < n - 1; i += hipBlockDim_x)
+    {
+        if(!std::isfinite(D[i]) || !std::isfinite(E[i]))
+            found = true;
+    }
+    if(tid == 0 && !std::isfinite(D[n - 1]))
+        found = true;
+    __syncthreads();
+
+    if(found)
+    {
+        for(rocblas_int i = tid; i < n - 1; i += hipBlockDim_x)
+        {
+            D[i] = nan("");
+            E[i] = nan("");
+        }
+        if(tid == 0)
+        {
+            D[n - 1] = nan("");
+            info[bid] = n;
+        }
+    }
+    else
+    {
+        if(tid == 0)
+            info[bid] = 0;
+    }
 }
 
 template <typename T>
@@ -578,12 +638,18 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
         strideW += 2;
     strideW *= n;
 
+    // check for NaNs and Infs in input
+    dim3 grid(1, batch_count, 1);
+    dim3 threads(min(n, BS1), 1, 1);
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_input_check<T>), grid, threads, 0, stream, n, D, strideD, E,
+                            strideE, info);
+
     // rotate to upper bidiagonal if necessary
     if(uplo == rocblas_fill_lower)
     {
         ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n,
                                 nu, nc, D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC,
-                                ldc, strideC, work, strideW);
+                                ldc, strideC, info, work, strideW);
     }
 
     // main computation of SVD
