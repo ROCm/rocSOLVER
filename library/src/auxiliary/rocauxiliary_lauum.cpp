@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_lauum.hpp"
@@ -71,6 +71,24 @@ rocblas_status rocsolver_dlauum(rocblas_handle handle,
                                 const rocblas_int lda)
 {
     return rocsolver_lauum_impl<double>(handle, uplo, n, A, lda);
+}
+
+rocblas_status rocsolver_clauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                rocblas_float_complex* A,
+                                const rocblas_int lda)
+{
+    return rocsolver_lauum_impl<rocblas_float_complex>(handle, uplo, n, A, lda);
+}
+
+rocblas_status rocsolver_zlauum(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                rocblas_double_complex* A,
+                                const rocblas_int lda)
+{
+    return rocsolver_lauum_impl<rocblas_double_complex>(handle, uplo, n, A, lda);
 }
 
 } // extern C
