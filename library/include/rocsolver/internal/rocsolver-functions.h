@@ -5,8 +5,9 @@
 #ifndef _ROCLAPACK_FUNCTIONS_H
 #define _ROCLAPACK_FUNCTIONS_H
 
-#include "rocsolver-extra-types.h"
 #include <rocblas/rocblas.h>
+
+#include "rocsolver-extra-types.h"
 
 /*! \file
     \brief rocsolver_functions.h provides Lapack functionality for the ROCm platform.

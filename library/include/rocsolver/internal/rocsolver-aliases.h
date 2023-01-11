@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 //
@@ -14,8 +14,6 @@
 #ifndef ROCSOLVER_ALIASES_H_
 #define ROCSOLVER_ALIASES_H_
 
-#include "rocsolver-export.h"
-#include "rocsolver-extra-types.h"
 #include <rocblas/rocblas.h>
 
 #ifndef ROCSOLVER_DEPRECATED_X

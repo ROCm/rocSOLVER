@@ -6,6 +6,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 ### Optimized
 ### Changed
+- Moved internal headers into a subdirectory.
+
 ### Deprecated
 ### Removed
 ### Fixed
@@ -35,9 +37,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - SYEVJ/HEEVJ should now be invariant under matrix scaling.
 - SYEVJ/HEEVJ should now properly output the eigenvalues when no sweeps are executed.
 - Fixed GETF2\_NPVT and GETRF\_NPVT input data initialization in tests and benchmarks.
-
-### Known Issues
-- The Divide and Conquer approach currently fails under some circumstances.
+- Fixed rocblas missing from the dependency list of the rocsolver deb and rpm packages.
 
 
 ## rocSOLVER 3.20.0 for ROCm 5.4.0
