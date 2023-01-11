@@ -10,6 +10,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ### Deprecated
 ### Removed
+- Removed deprecated aliases for rocBLAS functions and types.
+
 ### Fixed
 ### Known Issues
 ### Security

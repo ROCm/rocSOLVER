@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 /*! \file
@@ -12,7 +12,6 @@
 /* clang-format off */
 #include "internal/rocsolver-export.h"
 #include "internal/rocsolver-extra-types.h"
-#include "internal/rocsolver-aliases.h"
 #include "internal/rocsolver-functions.h"
 #include "internal/rocsolver-version.h"
 /* clang-format on */

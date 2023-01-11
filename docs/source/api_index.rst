@@ -12,5 +12,4 @@ rocSOLVER API
    api_lapackfunc
    api_lapacklike
    api_loggingfunc
-   api_deprecated
 
