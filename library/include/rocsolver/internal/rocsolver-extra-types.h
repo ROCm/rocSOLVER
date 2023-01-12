@@ -1,9 +1,9 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSOLVER_EXTRAS_H_
-#define ROCSOLVER_EXTRAS_H_
+#ifndef ROCSOLVER_EXTRA_TYPES_H
+#define ROCSOLVER_EXTRA_TYPES_H
 
 #include <stdint.h>
 
@@ -121,4 +121,4 @@ typedef enum rocblas_srange_
     rocblas_srange_index = 263, /**< The \f$il\f$-th through \f$iu\f$-th singular values will be found.*/
 } rocblas_srange;
 
-#endif /* ROCSOLVER_EXTRAS_H_ */
+#endif /* ROCSOLVER_EXTRAS_H */
