@@ -121,4 +121,4 @@ typedef enum rocblas_srange_
     rocblas_srange_index = 263, /**< The \f$il\f$-th through \f$iu\f$-th singular values will be found.*/
 } rocblas_srange;
 
-#endif /* ROCSOLVER_EXTRAS_H */
+#endif /* ROCSOLVER_EXTRA_TYPES_H */
