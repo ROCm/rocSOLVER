@@ -1,5 +1,5 @@
 /************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -76,10 +76,8 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
     T one = 1;
     T zero = 0;
 
-    rocblas_fill uploC = (uplo == rocblas_fill_upper) ? rocblas_fill_lower : rocblas_fill_upper;
-
     // put the triangular factor of interest in work
-    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW, uploC);
+    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW, uplo);
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, A, shiftA, lda, strideA,
                             work, 0, n, strideW, no_mask{}, uplo);
 
