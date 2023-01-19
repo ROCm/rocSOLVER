@@ -13,12 +13,14 @@ set(roclapack_test_source
   posv_gtest.cpp
   potri_gtest.cpp
   trtri_gtest.cpp
+  geblttrs_gtest.cpp
   # least squares solvers
   gels_gtest.cpp
   # triangular factorizations
   getf2_getrf_gtest.cpp
   potf2_potrf_gtest.cpp
   sytf2_sytrf_gtest.cpp
+  geblttrf_gtest.cpp
   # orthogonal factorizations
   geqr2_geqrf_gtest.cpp
   gerq2_gerqf_gtest.cpp
@@ -78,6 +80,8 @@ set(rocauxiliary_test_source
   latrd_gtest.cpp
   # symmetric matrices
   lasyf_gtest.cpp
+  # triangular matrices
+  lauum_gtest.cpp
 )
 
 set(others_test_source

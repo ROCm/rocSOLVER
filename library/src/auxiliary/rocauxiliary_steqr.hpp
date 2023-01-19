@@ -17,7 +17,7 @@
 /****************************************************************************
 (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
   FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
-  BATCH).)
+  BATCH))
 ***************************************************************************/
 
 /** STEQR_KERNEL/RUN_STEQR implements the main loop of the sterf algorithm
@@ -301,7 +301,7 @@ ROCSOLVER_KERNEL void steqr_kernel(const rocblas_int n,
 {
     // select bacth instance
     rocblas_int bid = hipBlockIdx_x;
-    rocblas_stride strideW = 2 * n - 2;
+    rocblas_stride strideW = 2 * n;
 
     S* D = DD + (bid * strideD);
     S* E = EE + (bid * strideE);
@@ -330,7 +330,7 @@ void rocsolver_steqr_getMemorySize(const rocblas_evect evect,
     if(evect == rocblas_evect_none)
         *size_work_stack = sizeof(rocblas_int) * (2 * 32) * batch_count;
     else
-        *size_work_stack = sizeof(S) * (2 * n - 2) * batch_count;
+        *size_work_stack = sizeof(S) * (2 * n) * batch_count;
 }
 
 template <typename T, typename S>

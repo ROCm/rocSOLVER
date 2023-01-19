@@ -12,6 +12,8 @@
 #include "testing_bdsqr.hpp"
 #include "testing_bdsvdx.hpp"
 #include "testing_gebd2_gebrd.hpp"
+#include "testing_geblttrf_npvt.hpp"
+#include "testing_geblttrs_npvt.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
@@ -37,6 +39,7 @@
 #include "testing_laswp.hpp"
 #include "testing_lasyf.hpp"
 #include "testing_latrd.hpp"
+#include "testing_lauum.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
 #include "testing_orgtr_ungtr.hpp"
@@ -220,6 +223,14 @@ class rocsolver_dispatcher
             {"sytrf", testing_sytf2_sytrf<false, false, 1, T>},
             {"sytrf_batched", testing_sytf2_sytrf<true, true, 1, T>},
             {"sytrf_strided_batched", testing_sytf2_sytrf<false, true, 1, T>},
+            // geblttrf_npvt
+            {"geblttrf_npvt", testing_geblttrf_npvt<false, false, T>},
+            {"geblttrf_npvt_batched", testing_geblttrf_npvt<true, true, T>},
+            {"geblttrf_npvt_strided_batched", testing_geblttrf_npvt<false, true, T>},
+            // geblttrs_npvt
+            {"geblttrs_npvt", testing_geblttrs_npvt<false, false, T>},
+            {"geblttrs_npvt_batched", testing_geblttrs_npvt<true, true, T>},
+            {"geblttrs_npvt_strided_batched", testing_geblttrs_npvt<false, true, T>},
         };
 
         // Grab function from the map and execute
@@ -241,6 +252,7 @@ class rocsolver_dispatcher
             {"sterf", testing_sterf<T>},
             {"stebz", testing_stebz<T>},
             {"bdsvdx", testing_bdsvdx<T>},
+            {"lauum", testing_lauum<T>},
             // orgxx
             {"org2r", testing_orgxr_ungxr<T, 0>},
             {"orgqr", testing_orgxr_ungxr<T, 1>},
