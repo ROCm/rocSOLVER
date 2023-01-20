@@ -112,18 +112,12 @@ struct rocsolver_info_accumulator
     }
 };
 
-#define EXPECT_EQ(v1, v2) \
-    rocsolver_info_accumulator {}
-#define EXPECT_NE(v1, v2) \
-    rocsolver_info_accumulator {}
-#define EXPECT_LT(v1, v2) \
-    rocsolver_info_accumulator {}
-#define EXPECT_LE(v1, v2) \
-    rocsolver_info_accumulator {}
-#define EXPECT_GT(v1, v2) \
-    rocsolver_info_accumulator {}
-#define EXPECT_GE(v1, v2) \
-    rocsolver_info_accumulator {}
+#define EXPECT_EQ(v1, v2) rocsolver_info_accumulator()
+#define EXPECT_NE(v1, v2) rocsolver_info_accumulator()
+#define EXPECT_LT(v1, v2) rocsolver_info_accumulator()
+#define EXPECT_LE(v1, v2) rocsolver_info_accumulator()
+#define EXPECT_GT(v1, v2) rocsolver_info_accumulator()
+#define EXPECT_GE(v1, v2) rocsolver_info_accumulator()
 
 #endif // ROCSOLVER_CLIENTS_TEST
 
