@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -447,6 +447,7 @@ void gesvdx_getError(const rocblas_handle handle,
     double err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
+        EXPECT_EQ(hNsv[b][0], hNsvRes[b][0]) << "where b = " << b;
         if(hNsv[b][0] != hNsvRes[b][0])
             err++;
     }
