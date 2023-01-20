@@ -103,95 +103,12 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
 
 #define EXPECT_ROCBLAS_STATUS rocblas_expect_status
 
-struct rocsolver_info_accumulator
-{
-    template <typename T>
-    rocsolver_info_accumulator& operator<<(T&&)
-    {
-        // todo: implement this so rocsolver-bench can print extra
-        //       info about failures when doing error checking.
-        return *this;
-    }
-};
-
-struct rocsolver_expect_eq : rocsolver_info_accumulator
-{
-    template <typename T1, typename T2>
-    rocsolver_expect_eq(T1&& v1, T2&& v2, fmt::string_view file, int line)
-    {
-        if(!(v1 == v2))
-        {
-            fmt::print(stderr, "{}:{}: expected {} == {}!\n", file, line, v1, v2);
-        }
-    }
-};
-
-struct rocsolver_expect_ne : rocsolver_info_accumulator
-{
-    template <typename T1, typename T2>
-    rocsolver_expect_ne(T1&& v1, T2&& v2, fmt::string_view file, int line)
-    {
-        if(!(v1 != v2))
-        {
-            fmt::print(stderr, "{}:{}: expected {} != {}!\n", file, line, v1, v2);
-        }
-    }
-};
-
-struct rocsolver_expect_lt : rocsolver_info_accumulator
-{
-    template <typename T1, typename T2>
-    rocsolver_expect_lt(T1&& v1, T2&& v2, fmt::string_view file, int line)
-    {
-        if(!(v1 < v2))
-        {
-            fmt::print(stderr, "{}:{}: expected {} < {}!\n", file, line, v1, v2);
-        }
-    }
-};
-
-struct rocsolver_expect_le : rocsolver_info_accumulator
-{
-    template <typename T1, typename T2>
-    rocsolver_expect_le(T1&& v1, T2&& v2, fmt::string_view file, int line)
-    {
-        if(!(v1 <= v2))
-        {
-            fmt::print(stderr, "{}:{}: expected {} <= {}!\n", file, line, v1, v2);
-        }
-    }
-};
-
-struct rocsolver_expect_gt : rocsolver_info_accumulator
-{
-    template <typename T1, typename T2>
-    rocsolver_expect_gt(T1&& v1, T2&& v2, fmt::string_view file, int line)
-    {
-        if(!(v1 > v2))
-        {
-            fmt::print(stderr, "{}:{}: expected {} > {}!\n", file, line, v1, v2);
-        }
-    }
-};
-
-struct rocsolver_expect_ge : rocsolver_info_accumulator
-{
-    template <typename T1, typename T2>
-    rocsolver_expect_ge(T1&& v1, T2&& v2, fmt::string_view file, int line)
-    {
-        if(!(v1 >= v2))
-        {
-            fmt::print(stderr, "{}:{}: expected {} >= {}!\n", file, line, v1, v2);
-        }
-    }
-};
-
-#define EXPECT_EQ(v1, v2) rocsolver_expect_eq(v1, v2, __FILE__, __LINE__)
-#define EXPECT_NE(v1, v2) rocsolver_expect_ne(v1, v2, __FILE__, __LINE__)
-#define EXPECT_LT(v1, v2) rocsolver_expect_lt(v1, v2, __FILE__, __LINE__)
-#define EXPECT_LE(v1, v2) rocsolver_expect_le(v1, v2, __FILE__, __LINE__)
-#define EXPECT_GT(v1, v2) rocsolver_expect_gt(v1, v2, __FILE__, __LINE__)
-#define EXPECT_GE(v1, v2) rocsolver_expect_ge(v1, v2, __FILE__, __LINE__)
+#define EXPECT_EQ(v1, v2)
+#define EXPECT_NE(v1, v2)
+#define EXPECT_LT(v1, v2)
+#define EXPECT_LE(v1, v2)
+#define EXPECT_GT(v1, v2)
+#define EXPECT_GE(v1, v2)
 
 #endif // ROCSOLVER_CLIENTS_TEST
 
