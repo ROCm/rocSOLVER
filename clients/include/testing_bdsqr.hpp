@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -123,7 +123,8 @@ void bdsqr_initData(const rocblas_handle handle,
                     Th& hC,
                     Uh& hInfo,
                     std::vector<S>& D,
-                    std::vector<S>& E)
+                    std::vector<S>& E,
+                    const bool test)
 {
     if(CPU)
     {
@@ -144,14 +145,14 @@ void bdsqr_initData(const rocblas_handle handle,
         // down to essentially run the algorithm again and until convergence is achieved).
 
         // make copy of original data to test vectors if required
-        if(nv || nu || nc)
+        if(test && (nv || nu || nc))
         {
-            for(rocblas_int i = 0; i < nv - 1; ++i)
+            for(rocblas_int i = 0; i < n - 1; ++i)
             {
                 E[i] = hE[0][i];
                 D[i] = hD[0][i];
             }
-            D[nv - 1] = hD[0][nv - 1];
+            D[n - 1] = hD[0][n - 1];
         }
 
         // make V,U and C identities so that results are actually singular vectors
@@ -220,12 +221,12 @@ void bdsqr_getError(const rocblas_handle handle,
 {
     using S = decltype(std::real(T{}));
     std::vector<S> hW(4 * n);
-    std::vector<S> D(nv);
-    std::vector<S> E(nv);
+    std::vector<S> D(n);
+    std::vector<S> E(n);
 
     // input data initialization
     bdsqr_initData<true, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc,
-                                  dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+                                  dInfo, hD, hE, hV, hU, hC, hInfo, D, E, true);
 
     // execute computations
     // CPU lapack
@@ -355,13 +356,13 @@ void bdsqr_getPerfData(const rocblas_handle handle,
 {
     using S = decltype(std::real(T{}));
     std::vector<S> hW(4 * n);
-    std::vector<S> D(nv);
-    std::vector<S> E(nv);
+    std::vector<S> D;
+    std::vector<S> E;
 
     if(!perf)
     {
         bdsqr_initData<true, false, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
-                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E, false);
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
@@ -371,13 +372,13 @@ void bdsqr_getPerfData(const rocblas_handle handle,
     }
 
     bdsqr_initData<true, false, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc,
-                                   dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+                                   dInfo, hD, hE, hV, hU, hC, hInfo, D, E, false);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         bdsqr_initData<false, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
-                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E, false);
 
         CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(),
                                             dV.data(), ldv, dU.data(), ldu, dC.data(), ldc,
@@ -402,7 +403,7 @@ void bdsqr_getPerfData(const rocblas_handle handle,
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
         bdsqr_initData<false, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC,
-                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E);
+                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E, false);
 
         start = get_time_us_sync(stream);
         rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(), dV.data(), ldv,
@@ -425,7 +426,7 @@ void testing_bdsqr(Arguments& argus)
     rocblas_int nu = argus.get<rocblas_int>("nu");
     rocblas_int nc = argus.get<rocblas_int>("nc");
     rocblas_int ldv = argus.get<rocblas_int>("ldv", nv > 0 ? n : 1);
-    rocblas_int ldu = argus.get<rocblas_int>("ldu", nu);
+    rocblas_int ldu = argus.get<rocblas_int>("ldu", nu > 0 ? nu : 1);
     rocblas_int ldc = argus.get<rocblas_int>("ldc", nc > 0 ? n : 1);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
