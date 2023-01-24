@@ -207,6 +207,10 @@ void bdsqr_getError(const rocblas_handle handle,
                     Td& dC,
                     const rocblas_int ldc,
                     Ud& dInfo,
+                    const rocblas_int nvT,
+                    const rocblas_int nuT,
+                    const rocblas_int nvRes,
+                    const rocblas_int nuRes,
                     Sh& hD,
                     Sh& hDRes,
                     Sh& hE,
@@ -225,12 +229,29 @@ void bdsqr_getError(const rocblas_handle handle,
     std::vector<S> E(n);
 
     // input data initialization
-    bdsqr_initData<true, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc,
-                                  dInfo, hD, hE, hV, hU, hC, hInfo, D, E, true);
+    bdsqr_initData<true, false, T>(handle, uplo, n, nvRes, nuRes, nc, dD, dE, dV, ldv, dU, ldu, dC,
+                                   ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E, true);
+
+    // execute computations:
+    // complementary execution to compute all singular vectors if needed
+    if(nvT > 0 || nuT > 0)
+    {
+        // send data to GPU
+        bdsqr_initData<false, true, T>(handle, uplo, n, nvT, nuT, 0, dD, dE, dV, ldv, dU, ldu, dC,
+                                       ldc, dInfo, hD, hE, hV, hU, hC, hInfo, D, E, false);
+
+        CHECK_ROCBLAS_ERROR(rocsolver_bdsqr(handle, uplo, n, nvT, nuT, 0, dD.data(), dE.data(),
+                                            dV.data(), ldv, dU.data(), ldu, dC.data(), ldc,
+                                            dInfo.data()));
+    }
+
+    // send data to GPU
+    bdsqr_initData<false, true, T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc,
+                                   dInfo, hD, hE, hV, hU, hC, hInfo, D, E, false);
 
     // execute computations
     // CPU lapack
-    cpu_bdsqr(uplo, n, nv, nu, nc, hD[0], hE[0], hV[0], ldv, hU[0], ldu, hC[0], ldc, hW.data(),
+    cpu_bdsqr(uplo, n, 0, 0, 0, hD[0], hE[0], hV[0], ldv, hU[0], ldu, hC[0], ldc, hW.data(),
               hInfo[0]);
 
     // GPU lapack
@@ -239,9 +260,9 @@ void bdsqr_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hDRes.transfer_from(dD));
     CHECK_HIP_ERROR(hERes.transfer_from(dE));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
-    if(nv > 0)
+    if(nvRes > 0)
         CHECK_HIP_ERROR(hV.transfer_from(dV));
-    if(nu > 0)
+    if(nuRes > 0)
         CHECK_HIP_ERROR(hU.transfer_from(dU));
     if(nc > 0)
         CHECK_HIP_ERROR(hC.transfer_from(dC));
@@ -265,14 +286,15 @@ void bdsqr_getError(const rocblas_handle handle,
     *max_err = err > *max_err ? err : *max_err;
 
     // Check the singular vectors if required
-    if(hInfo[0][0] == 0 && (nv || nu || nc))
+    if(hInfo[0][0] == 0 && (nv || nu))
     {
         err = 0;
+        rocblas_int n_comp = min(n, nvRes);
 
         if(uplo == rocblas_fill_upper)
         {
-            // check singular vectors implicitely (A'*u_i = s_i*v_i)
-            for(rocblas_int i = 0; i < nv; ++i)
+            // check singular vectors implicitly (A'*u_i = s_i*v_i)
+            for(rocblas_int i = 0; i < n_comp; ++i)
             {
                 for(rocblas_int j = 0; j < n; ++j)
                 {
@@ -287,8 +309,8 @@ void bdsqr_getError(const rocblas_handle handle,
         }
         else
         {
-            // check singular vectors implicitely (A*v_i = s_i*u_i)
-            for(rocblas_int i = 0; i < nv; ++i)
+            // check singular vectors implicitly (A*v_i = s_i*u_i)
+            for(rocblas_int i = 0; i < n_comp; ++i)
             {
                 for(rocblas_int j = 0; j < n; ++j)
                 {
@@ -306,22 +328,22 @@ void bdsqr_getError(const rocblas_handle handle,
         double normE = double(snorm('F', 1, n - 1, E.data(), 1));
         err = std::sqrt(err) / std::sqrt(normD * normD + normE * normE);
         *max_errv = err > *max_errv ? err : *max_errv;
+    }
 
-        // C should be the transpose of U
-        if(nc)
+    // C should be the transpose of U
+    if(hInfo[0][0] == 0 && nc)
+    {
+        err = 0;
+        for(rocblas_int i = 0; i < nc; ++i)
         {
-            err = 0;
-            for(rocblas_int i = 0; i < nv; ++i)
+            for(rocblas_int j = 0; j < n; ++j)
             {
-                for(rocblas_int j = 0; j < n; ++j)
-                {
-                    tmp = hC[0][j + i * ldc] - hU[0][i + j * ldu];
-                    err += std::abs(tmp) * std::abs(tmp);
-                }
+                tmp = hC[0][j + i * ldc] - hU[0][i + j * ldu];
+                err += std::abs(tmp) * std::abs(tmp);
             }
-            err = std::sqrt(err);
-            *max_errv = err > *max_errv ? err : *max_errv;
         }
+        err = std::sqrt(err);
+        *max_errv = err > *max_errv ? err : *max_errv;
     }
 }
 
@@ -422,18 +444,15 @@ void testing_bdsqr(Arguments& argus)
     rocblas_local_handle handle;
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int nv = argus.get<rocblas_int>("nv");
-    rocblas_int nu = argus.get<rocblas_int>("nu");
-    rocblas_int nc = argus.get<rocblas_int>("nc");
+    rocblas_int nv = argus.get<rocblas_int>("nv", 0);
+    rocblas_int nu = argus.get<rocblas_int>("nu", 0);
+    rocblas_int nc = argus.get<rocblas_int>("nc", 0);
     rocblas_int ldv = argus.get<rocblas_int>("ldv", nv > 0 ? n : 1);
     rocblas_int ldu = argus.get<rocblas_int>("ldu", nu > 0 ? nu : 1);
     rocblas_int ldc = argus.get<rocblas_int>("ldc", nc > 0 ? n : 1);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_int hot_calls = argus.iters;
-
-    // size for testing singular vectors
-    rocblas_int nT, nvT = 0, nuT = 0, ncT = 0, lduT = 1, ldcT = 1, ldvT = 1;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -449,29 +468,34 @@ void testing_bdsqr(Arguments& argus)
         return;
     }
 
-    // determine sizes
-    // (TESTING OF SINGULAR VECTORS IS DONE IMPLICITLY (NOT EXPLICITLY COMPARING
-    // WITH LAPACK)
-    //  SO, WE ALWAYS NEED TO COMPUTE THE SAME NUMBER OF ELEMENTS OF THE RIGHT AND
-    //  LEFT VECTORS)
-    if(nc)
+    // sizes for testing singular vectors
+    // TESTING OF SINGULAR VECTORS IS DONE IMPLICITLY (NOT EXPLICITLY COMPARING
+    // WITH LAPACK), SO WE ALWAYS NEED TO COMPUTE THE SAME NUMBER OF ELEMENTS OF
+    // THE RIGHT AND LEFT VECTORS
+    rocblas_int nvA = nv, nuA = nu;
+    rocblas_int nvT = 0, nuT = 0;
+    rocblas_int nvRes = nv, nuRes = nu;
+    rocblas_int ldvRes = ldv, lduRes = ldu;
+
+    if(nv && nu)
     {
-        nT = min(n, max(nc, max(nu, nv)));
-        nuT = nT;
-        nvT = nT;
-        ncT = nT;
-        ldvT = n;
-        ldcT = n;
-        lduT = nT;
+        nvRes = nvA = max(nv, nu);
+        nuRes = nuA = max(nvRes, nc);
+        lduRes = max(lduRes, nuRes);
     }
-    else if(nv || nu)
+    else if(nu)
     {
-        nT = min(n, max(nv, nu));
-        nuT = nT;
-        nvT = nT;
-        lduT = nT;
-        ldvT = n;
+        nvRes = nvT = nu;
+        nuRes = nuA = max(nu, nc);
+        ldvRes = n;
+        lduRes = max(lduRes, nuRes);
     }
+    else if(nv || nc)
+    {
+        nuRes = nuT = max(nv, nc);
+        lduRes = nuRes;
+    }
+
     // E, V, U, and C could have size zero in cases that are not quick-return or
     // invalid cases setting the size to one to avoid possible memory-access
     // errors in the rest of the unit test
@@ -480,9 +504,8 @@ void testing_bdsqr(Arguments& argus)
     size_t size_V = max(size_t(ldv) * nv, 1);
     size_t size_U = max(size_t(ldu) * n, 1);
     size_t size_C = max(size_t(ldc) * nc, 1);
-    size_t size_VT = max(size_t(ldvT) * nvT, 1);
-    size_t size_UT = max(size_t(lduT) * n, 1);
-    size_t size_CT = max(size_t(ldcT) * ncT, 1);
+    size_t size_VRes = max(size_t(ldvRes) * nvRes, 1);
+    size_t size_URes = max(size_t(lduRes) * n, 1);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0, max_errorv = 0;
 
     // check invalid sizes
@@ -523,51 +546,51 @@ void testing_bdsqr(Arguments& argus)
     // memory allocations
     host_strided_batch_vector<S> hD(size_D, 1, size_D, 1);
     host_strided_batch_vector<S> hE(size_E, 1, size_E, 1);
+    host_strided_batch_vector<T> hC(size_C, 1, size_C, 1);
     host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, 1);
     device_strided_batch_vector<S> dD(size_D, 1, size_D, 1);
     device_strided_batch_vector<S> dE(size_E, 1, size_E, 1);
+    device_strided_batch_vector<T> dC(size_C, 1, size_C, 1);
     device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
     if(size_D)
         CHECK_HIP_ERROR(dD.memcheck());
     if(size_E)
         CHECK_HIP_ERROR(dE.memcheck());
+    if(size_C)
+        CHECK_HIP_ERROR(dC.memcheck());
     CHECK_HIP_ERROR(dInfo.memcheck());
-
-    // check quick return
-    if(n == 0)
-    {
-        EXPECT_ROCBLAS_STATUS(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(),
-                                              (T*)nullptr, ldv, (T*)nullptr, ldu, (T*)nullptr, ldc,
-                                              dInfo.data()),
-                              rocblas_status_success);
-        if(argus.timing)
-            rocsolver_bench_inform(inform_quick_return);
-
-        return;
-    }
 
     // check computations
     if(argus.unit_check || argus.norm_check)
     {
         host_strided_batch_vector<S> hDRes(size_D, 1, size_D, 1);
         host_strided_batch_vector<S> hERes(size_E, 1, size_E, 1);
-        host_strided_batch_vector<T> hV(size_VT, 1, size_VT, 1);
-        host_strided_batch_vector<T> hU(size_UT, 1, size_UT, 1);
-        host_strided_batch_vector<T> hC(size_CT, 1, size_CT, 1);
+        host_strided_batch_vector<T> hV(size_VRes, 1, size_VRes, 1);
+        host_strided_batch_vector<T> hU(size_URes, 1, size_URes, 1);
         host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, 1);
-        device_strided_batch_vector<T> dV(size_VT, 1, size_VT, 1);
-        device_strided_batch_vector<T> dU(size_UT, 1, size_UT, 1);
-        device_strided_batch_vector<T> dC(size_CT, 1, size_CT, 1);
-        if(size_VT)
+        device_strided_batch_vector<T> dV(size_VRes, 1, size_VRes, 1);
+        device_strided_batch_vector<T> dU(size_URes, 1, size_URes, 1);
+        if(size_VRes)
             CHECK_HIP_ERROR(dV.memcheck());
-        if(size_UT)
+        if(size_URes)
             CHECK_HIP_ERROR(dU.memcheck());
-        if(size_CT)
-            CHECK_HIP_ERROR(dC.memcheck());
 
-        bdsqr_getError<T>(handle, uplo, n, nvT, nuT, ncT, dD, dE, dV, ldvT, dU, lduT, dC, ldcT,
-                          dInfo, hD, hDRes, hE, hERes, hV, hU, hC, hInfo, hInfoRes, &max_error,
-                          &max_errorv);
+        // check quick return
+        if(n == 0)
+        {
+            EXPECT_ROCBLAS_STATUS(rocsolver_bdsqr(handle, uplo, n, nv, nu, nc, dD.data(), dE.data(),
+                                                  dV.data(), ldv, dU.data(), ldu, dC.data(), ldc,
+                                                  dInfo.data()),
+                                  rocblas_status_success);
+            if(argus.timing)
+                rocsolver_bench_inform(inform_quick_return);
+
+            return;
+        }
+
+        bdsqr_getError<T>(handle, uplo, n, nvA, nuA, nc, dD, dE, dV, ldvRes, dU, lduRes, dC, ldc,
+                          dInfo, nvT, nuT, nvRes, nuRes, hD, hDRes, hE, hERes, hV, hU, hC, hInfo,
+                          hInfoRes, &max_error, &max_errorv);
     }
 
     // collect performance data
@@ -575,16 +598,12 @@ void testing_bdsqr(Arguments& argus)
     {
         host_strided_batch_vector<T> hV(size_V, 1, size_V, 1);
         host_strided_batch_vector<T> hU(size_U, 1, size_U, 1);
-        host_strided_batch_vector<T> hC(size_C, 1, size_C, 1);
         device_strided_batch_vector<T> dV(size_V, 1, size_V, 1);
         device_strided_batch_vector<T> dU(size_U, 1, size_U, 1);
-        device_strided_batch_vector<T> dC(size_C, 1, size_C, 1);
         if(size_V)
             CHECK_HIP_ERROR(dV.memcheck());
         if(size_U)
             CHECK_HIP_ERROR(dU.memcheck());
-        if(size_C)
-            CHECK_HIP_ERROR(dC.memcheck());
 
         bdsqr_getPerfData<T>(handle, uplo, n, nv, nu, nc, dD, dE, dV, ldv, dU, ldu, dC, ldc, dInfo,
                              hD, hE, hV, hU, hC, hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
