@@ -1,291 +1,152 @@
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
+#include <cassert>
+#include <cmath>
+#include <memory>
 #include <ostream>
 
-//
-// Local declaration of the device strided batch vector.
-//
+#include <hip/hip_runtime_api.h>
+#include <rocblas/rocblas.h>
+
 template <typename T, size_t PAD, typename U>
 class device_strided_batch_vector;
 
-//!
-//! @brief Implementation of a host strided batched vector.
-//!
 template <typename T>
 class host_strided_batch_vector
 {
 public:
-    using value_type = T;
-
-public:
-    //!
-    //! @brief The storage type to use.
-    //!
-    typedef enum class estorage
+    host_strided_batch_vector(rocblas_int n,
+                              rocblas_int inc,
+                              rocblas_stride stride,
+                              rocblas_int batch_count)
+        : n_(n)
+        , inc_(inc)
+        , stride_(stride)
+        , batch_count_(batch_count)
     {
-        block,
-        interleave
-    } storage;
+        assert(n > 0);
+        assert(stride != 0);
+        assert(batch_count > 0);
+        assert(size_t(n) * std::abs(inc) <= std::abs(stride));
 
-    //!
-    //! @brief Disallow copying.
-    //!
-    host_strided_batch_vector(const host_strided_batch_vector&) = delete;
-
-    //!
-    //! @brief Disallow assigning.
-    //!
-    host_strided_batch_vector& operator=(const host_strided_batch_vector&) = delete;
-
-    //!
-    //! @brief Constructor.
-    //! @param n   The length of the vector.
-    //! @param inc The increment.
-    //! @param stride The stride.
-    //! @param batch_count The batch count.
-    //! @param stg The storage format to use.
-    //!
-    explicit host_strided_batch_vector(rocblas_int n,
-                                       rocblas_int inc,
-                                       rocblas_stride stride,
-                                       rocblas_int batch_count,
-                                       storage stg = storage::block)
-        : m_storage(stg)
-        , m_n(n)
-        , m_inc(inc)
-        , m_stride(stride)
-        , m_batch_count(batch_count)
-        , m_nmemb(calculate_nmemb(n, inc, stride, batch_count, stg))
-    {
-        bool valid_parameters = this->m_nmemb > 0;
-        if(valid_parameters)
-        {
-            switch(this->m_storage)
-            {
-            case storage::block:
-            {
-                if(std::abs(this->m_stride) < this->m_n * std::abs(this->m_inc))
-                {
-                    valid_parameters = false;
-                }
-                break;
-            }
-            case storage::interleave:
-            {
-                if(std::abs(this->m_inc) < std::abs(this->m_stride) * this->m_batch_count)
-                {
-                    valid_parameters = false;
-                }
-                break;
-            }
-            }
-
-            if(valid_parameters)
-            {
-                this->m_data = new T[this->m_nmemb];
-            }
-        }
+        const size_t sz = size();
+        assert(sz > 0);
+        data_ = std::make_unique<T[]>(sz);
     }
 
-    //!
-    //! @brief Destructor.
-    //!
-    ~host_strided_batch_vector()
+    // The number of elements in each vector.
+    rocblas_int n() const noexcept
     {
-        if(nullptr != this->m_data)
-        {
-            delete[] this->m_data;
-            this->m_data = nullptr;
-        }
+        return n_;
     }
 
-    //!
-    //! @brief Returns the data pointer.
-    //!
-    T* data()
+    // The increment between elements in each vector.
+    rocblas_int inc() const noexcept
     {
-        return this->m_data;
+        return inc_;
     }
 
-    //!
-    //! @brief Returns the data pointer.
-    //!
-    const T* data() const
+    // The number of vectors in the batch.
+    rocblas_int batch_count() const noexcept
     {
-        return this->m_data;
+        return batch_count_;
     }
 
-    //!
-    //! @brief Returns the length.
-    //!
-    rocblas_int n() const
+    // The total number elements in all vectors in the batch.
+    rocblas_stride size() const
     {
-        return this->m_n;
+        return size_t(std::abs(stride_)) * batch_count_;
     }
 
-    //!
-    //! @brief Returns the increment.
-    //!
-    rocblas_int inc() const
+    // The number of elements from the start of one vector to the start of the next.
+    rocblas_stride stride() const noexcept
     {
-        return this->m_inc;
+        return stride_;
     }
 
-    //!
-    //! @brief Returns the batch count.
-    //!
-    rocblas_int batch_count() const
-    {
-        return this->m_batch_count;
-    }
-
-    //!
-    //! @brief Returns the stride.
-    //!
-    rocblas_stride stride() const
-    {
-        return this->m_stride;
-    }
-
-    //!
-    //! @brief Returns pointer.
-    //! @param batch_index The batch index.
-    //! @return A mutable pointer to the batch_index'th vector.
-    //!
+    // Returns a vector from the batch.
     T* operator[](rocblas_int batch_index)
     {
-        return (this->m_stride >= 0)
-            ? this->m_data + this->m_stride * batch_index
-            : this->m_data + (batch_index + 1 - this->m_batch_count) * this->m_stride;
+        assert(batch_index >= 0);
+        assert(batch_index < batch_count_);
+
+        rocblas_stride index
+            = stride_ >= 0 ? stride_ * batch_index : stride_ * (batch_index - batch_count_ + 1);
+
+        assert(index >= 0);
+        assert(index < size());
+
+        return &data_[index];
     }
 
-    //!
-    //! @brief Returns non-mutable pointer.
-    //! @param batch_index The batch index.
-    //! @return A non-mutable mutable pointer to the batch_index'th vector.
-    //!
+    // Returns a vector from the batch.
     const T* operator[](rocblas_int batch_index) const
     {
-        return (this->m_stride >= 0)
-            ? this->m_data + this->m_stride * batch_index
-            : this->m_data + (batch_index + 1 - this->m_batch_count) * this->m_stride;
+        assert(batch_index >= 0);
+        assert(batch_index < batch_count_);
+
+        rocblas_stride index
+            = stride_ >= 0 ? stride_ * batch_index : stride_ * (batch_index - batch_count_ + 1);
+
+        assert(index >= 0);
+        assert(index < size());
+
+        return &data_[index];
     }
 
-    //!
-    //! @brief Cast operator.
-    //! @remark Returns the pointer of the first vector.
-    //!
-    operator T*()
+    // Returns a pointer to the underlying array.
+    T* data() noexcept
     {
-        return (*this)[0];
+        return data_.get();
     }
 
-    //!
-    //! @brief Non-mutable cast operator.
-    //! @remark Returns the non-mutable pointer of the first vector.
-    //!
-    operator const T*() const
+    // Returns a pointer to the underlying array.
+    const T* data() const noexcept
     {
-        return (*this)[0];
+        return data_.get();
     }
 
-    //!
-    //! @brief Tell whether ressources allocation failed.
-    //!
-    explicit operator bool() const
-    {
-        return nullptr != this->m_data;
-    }
-
-    //!
-    //! @brief Copy data from a strided batched vector on host.
-    //! @param that That strided batched vector on host.
-    //! @return true if successful, false otherwise.
-    //!
-    bool copy_from(const host_strided_batch_vector& that)
-    {
-        if(that.n() == this->m_n && that.inc() == this->m_inc && that.stride() == this->m_stride
-           && that.batch_count() == this->m_batch_count)
-        {
-            memcpy(this->data(), that.data(), sizeof(T) * this->m_nmemb);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    //!
-    //! @brief Transfer data from a strided batched vector on device.
-    //! @param that That strided batched vector on device.
-    //! @return The hip error.
-    //!
     template <size_t PAD, typename U>
     hipError_t transfer_from(const device_strided_batch_vector<T, PAD, U>& that)
     {
-        return hipMemcpy(this->m_data, that.data(), sizeof(T) * this->m_nmemb, hipMemcpyDeviceToHost);
-    }
+        assert(n_ == that.n());
+        assert(inc_ == that.inc());
+        assert(stride_ == that.stride());
+        assert(batch_count_ == that.batch_count());
 
-    //!
-    //! @brief Check if memory exists.
-    //! @return hipSuccess if memory exists, hipErrorOutOfMemory otherwise.
-    //!
-    hipError_t memcheck() const
-    {
-        return ((bool)*this) ? hipSuccess : hipErrorOutOfMemory;
+        return hipMemcpy(data_.get(), that.data(), sizeof(T) * size(), hipMemcpyDeviceToHost);
     }
 
 private:
-    storage m_storage{storage::block};
-    rocblas_int m_n{};
-    rocblas_int m_inc{};
-    rocblas_stride m_stride{};
-    rocblas_int m_batch_count{};
-    size_t m_nmemb{};
-    T* m_data{};
-
-    static size_t calculate_nmemb(rocblas_int n,
-                                  rocblas_int inc,
-                                  rocblas_stride stride,
-                                  rocblas_int batch_count,
-                                  storage st)
-    {
-        switch(st)
-        {
-        case storage::block: return size_t(std::abs(stride)) * batch_count;
-        case storage::interleave: return size_t(n) * std::abs(inc);
-        }
-        return 0;
-    }
+    std::unique_ptr<T[]> data_;
+    rocblas_int n_;
+    rocblas_int inc_;
+    rocblas_stride stride_;
+    rocblas_int batch_count_;
 };
 
-//!
-//! @brief Overload output operator.
-//! @param os The ostream.
-//! @param that That host strided batch vector.
-//!
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const host_strided_batch_vector<T>& that)
+std::ostream& operator<<(std::ostream& os, const host_strided_batch_vector<T>& hsbv)
 {
-    auto n = that.n();
-    auto inc = std::abs(that.inc());
-    auto batch_count = that.batch_count();
+    rocblas_int n = hsbv.n();
+    rocblas_int inc = std::abs(hsbv.inc());
+    rocblas_int batch_count = hsbv.batch_count();
 
-    for(rocblas_int batch_index = 0; batch_index < batch_count; ++batch_index)
+    for(rocblas_int b = 0; b < batch_count; ++b)
     {
-        auto batch_data = that[batch_index];
-        os << "[" << batch_index << "] = { " << batch_data[0];
-        for(rocblas_int i = 1; i < n; ++i)
+        T* hv = hsbv[b];
+        os << "[" << b << "] = { ";
+        for(rocblas_int i = 0; i < n; ++i)
         {
-            os << ", " << batch_data[i * inc];
+            os << hv[i * inc];
+            if(i + 1 < n)
+                os << ", ";
         }
         os << " }" << std::endl;
     }
-
     return os;
 }
