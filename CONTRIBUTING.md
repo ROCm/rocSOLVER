@@ -21,8 +21,7 @@ The public interface must be:
 - Fully documented with Doxygen and Sphinx
 
 All identifiers in the public headers must be prefixed with `rocblas`, `ROCBLAS`, `rocsolver`,
-or `ROCSOLVER`. The prefixes `_ROCLAPACK` and `_ROCSOLVER` are deprecated and should not be used
-in new code.
+or `ROCSOLVER`.
 
 All user-visible symbols must be prefixed with `rocblas` or `rocsolver`.
 
