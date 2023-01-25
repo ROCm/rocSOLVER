@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <cstdlib>
@@ -49,7 +49,7 @@ protected:
         {
             if(HasFailure() && std::getenv("ROCSOLVER_TEST_DEBUG"))
                 fmt::print(stderr, "ROCSOLVER_TEST_DEBUG is set so {} was not removed.\n",
-                           log_filepath);
+                           log_filepath.string());
             else
                 EXPECT_TRUE(fs::remove(log_filepath));
         }
