@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <chrono>
@@ -25,8 +25,9 @@ double get_time_us()
 {
     hipError_t status = hipDeviceSynchronize();
 #ifdef ROCSOLVER_LIBRARY
-    fmt::print(std::cerr, "{}: [{}] {}\n", __PRETTY_FUNCTION__, hipGetErrorName(status),
-               hipGetErrorString(status));
+    if(status != hipSuccess)
+        fmt::print(std::cerr, "{}: [{}] {}\n", __PRETTY_FUNCTION__, hipGetErrorName(status),
+                   hipGetErrorString(status));
 #else
     THROW_IF_HIP_ERROR(status);
 #endif
@@ -39,8 +40,9 @@ double get_time_us_sync(hipStream_t stream)
 {
     hipError_t status = hipStreamSynchronize(stream);
 #ifdef ROCSOLVER_LIBRARY
-    fmt::print(std::cerr, "{}: [{}] {}\n", __PRETTY_FUNCTION__, hipGetErrorName(status),
-               hipGetErrorString(status));
+    if(status != hipSuccess)
+        fmt::print(std::cerr, "{}: [{}] {}\n", __PRETTY_FUNCTION__, hipGetErrorName(status),
+                   hipGetErrorString(status));
 #else
     THROW_IF_HIP_ERROR(status);
 #endif
