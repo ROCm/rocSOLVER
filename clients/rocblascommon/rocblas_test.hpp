@@ -103,21 +103,23 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
 
 #define EXPECT_ROCBLAS_STATUS rocblas_expect_status
 
-struct rocsolver_info_accumulator
+// The info provided to EXPECT macros is used in rocsolver-test, but
+// in rocsolver-bench, the information is just discarded.
+struct rocsolver_info_discarder
 {
     template <typename T>
-    rocsolver_info_accumulator& operator<<(T&&)
+    rocsolver_info_discarder& operator<<(T&&)
     {
         return *this;
     }
 };
 
-#define EXPECT_EQ(v1, v2) rocsolver_info_accumulator()
-#define EXPECT_NE(v1, v2) rocsolver_info_accumulator()
-#define EXPECT_LT(v1, v2) rocsolver_info_accumulator()
-#define EXPECT_LE(v1, v2) rocsolver_info_accumulator()
-#define EXPECT_GT(v1, v2) rocsolver_info_accumulator()
-#define EXPECT_GE(v1, v2) rocsolver_info_accumulator()
+#define EXPECT_EQ(v1, v2) rocsolver_info_discarder()
+#define EXPECT_NE(v1, v2) rocsolver_info_discarder()
+#define EXPECT_LT(v1, v2) rocsolver_info_discarder()
+#define EXPECT_LE(v1, v2) rocsolver_info_discarder()
+#define EXPECT_GT(v1, v2) rocsolver_info_discarder()
+#define EXPECT_GE(v1, v2) rocsolver_info_discarder()
 
 #endif // ROCSOLVER_CLIENTS_TEST
 
