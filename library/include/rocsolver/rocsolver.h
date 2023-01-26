@@ -12,7 +12,6 @@
 /* clang-format off */
 #include "internal/rocsolver-export.h"
 #include "internal/rocsolver-extra-types.h"
-#include "internal/rocsolver-aliases.h"
 #include "internal/rocsolver-functions.h"
 #include "internal/rocsolver-version.h"
 /* clang-format on */
