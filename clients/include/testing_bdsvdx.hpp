@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -209,6 +209,7 @@ void bdsvdx_getError(const rocblas_handle handle,
     }
 
     // check info
+    EXPECT_EQ(hInfo[0][0], hInfoRes[0][0]);
     if(hInfo[0][0] != hInfoRes[0][0])
         *max_err = 1;
     else
@@ -263,6 +264,7 @@ void bdsvdx_getError(const rocblas_handle handle,
             err = 0;
             for(int j = 0; j < nn; j++)
             {
+                EXPECT_EQ(hIfailRes[0][j], 0) << "where j = " << j;
                 if(hIfailRes[0][j] != 0)
                     err++;
             }
@@ -277,6 +279,7 @@ void bdsvdx_getError(const rocblas_handle handle,
             err = 0;
             for(int j = 0; j < hInfoRes[0][0]; j++)
             {
+                EXPECT_EQ(hIfailRes[0][j], 0) << "where j = " << j;
                 if(hIfailRes[0][j] == 0)
                     err++;
             }

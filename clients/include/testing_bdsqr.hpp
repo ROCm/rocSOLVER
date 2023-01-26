@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -247,6 +247,7 @@ void bdsqr_getError(const rocblas_handle handle,
 
     // Check info for non-covergence
     *max_err = 0;
+    EXPECT_EQ(hInfo[0][0], hInfoRes[0][0]);
     if(hInfo[0][0] != hInfoRes[0][0])
         *max_err = 1;
 

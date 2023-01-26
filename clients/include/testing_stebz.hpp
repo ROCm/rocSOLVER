@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -203,6 +203,7 @@ void stebz_getError(const rocblas_handle handle,
               hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
 
     // check info
+    EXPECT_EQ(hinfo[0][0], hinfoRes[0][0]);
     if(hinfo[0][0] != hinfoRes[0][0])
         *max_err = 1;
     else

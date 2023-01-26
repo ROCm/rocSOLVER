@@ -351,6 +351,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
                 err = 0;
                 for(int j = 0; j < hNev[b][0]; j++)
                 {
+                    EXPECT_EQ(hIfailRes[b][j], 0) << "where b = " << b << ", j = " << j;
                     if(hIfailRes[b][j] != 0)
                         err++;
                 }
@@ -378,6 +379,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
                 err = 0;
                 for(int j = 0; j < hinfo[b][0]; j++)
                 {
+                    EXPECT_NE(hIfailRes[b][j], 0) << "where b = " << b  << ", j = " << j;
                     if(hIfailRes[b][j] == 0)
                         err++;
                 }
