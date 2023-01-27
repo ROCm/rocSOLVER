@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -7,6 +7,8 @@
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
+#include "rocblascommon/rocblas_init.hpp"
+#include "rocblascommon/rocblas_vector.hpp"
 #include "rocsolver.hpp"
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"

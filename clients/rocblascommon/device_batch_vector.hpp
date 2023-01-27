@@ -1,298 +1,170 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
-#include "d_vector.hpp"
+#include <cassert>
+#include <cmath>
+#include <memory>
+#include <ostream>
 
-//
-// Local declaration of the host strided batch vector.
-//
+#include <hip/hip_runtime_api.h>
+#include <rocblas/rocblas.h>
+
+#include "common_host_helpers.hpp"
+#include "device_memory.hpp"
+
 template <typename T>
 class host_batch_vector;
 
-//!
-//! @brief  pseudo-vector subclass which uses a batch of device memory pointers
-//! and
-//!  - an array of pointers in host memory
-//!  - an array of pointers in device memory
-//!
 template <typename T, size_t PAD = 0, typename U = T>
-class device_batch_vector : private d_vector<T, PAD, U>
+class device_batch_vector
 {
 public:
-    using value_type = T;
-
-public:
-    //!
-    //! @brief Disallow copying.
-    //!
-    device_batch_vector(const device_batch_vector&) = delete;
-
-    //!
-    //! @brief Disallow assigning.
-    //!
-    device_batch_vector& operator=(const device_batch_vector&) = delete;
-
-    //!
-    //! @brief Constructor.
-    //! @param n           The length of the vector.
-    //! @param inc         The increment.
-    //! @param batch_count The batch count.
-    //!
-    explicit device_batch_vector(rocblas_int n, rocblas_int inc, rocblas_int batch_count)
-        : d_vector<T, PAD, U>(size_t(n) * std::abs(inc))
-        , m_n(n)
-        , m_inc(inc)
-        , m_batch_count(batch_count)
+    device_batch_vector(rocblas_int n, rocblas_int inc, rocblas_int batch_count)
+        : hPtrArr_(std::make_unique<PtrDArrT[]>(batch_count))
+        , n_(n)
+        , inc_(inc)
+        , batch_count_(batch_count)
     {
-        if(false == this->try_initialize_memory())
+        assert(n > 0);
+        assert(batch_count > 0);
+
+        T** dPtrArr;
+        THROW_IF_HIP_ERROR(hipMalloc(&dPtrArr, sizeof(T*) * batch_count));
+        dPtrArr_ = std::unique_ptr<T*[], device_deleter>(dPtrArr);
+
+        auto tmp = std::make_unique<T*[]>(batch_count);
+        const size_t size = vsize();
+        for(rocblas_int i = 0; i < batch_count; ++i)
         {
-            this->free_memory();
+            T* dArr;
+            THROW_IF_HIP_ERROR(hipMalloc(&dArr, sizeof(T) * size));
+            hPtrArr_[i].reset(dArr);
+            tmp[i] = dArr;
         }
+        THROW_IF_HIP_ERROR(hipMemcpy(dPtrArr, tmp.get(), sizeof(T*) * batch_count, hipMemcpyHostToDevice));
     }
 
-    //!
-    //! @brief Constructor.
-    //! @param n           The length of the vector.
-    //! @param inc         The increment.
-    //! @param stride      (UNUSED) The stride.
-    //! @param batch_count The batch count.
-    //!
-    explicit device_batch_vector(rocblas_int n,
-                                 rocblas_int inc,
-                                 rocblas_stride stride,
-                                 rocblas_int batch_count)
+    device_batch_vector(rocblas_int n, rocblas_int inc, rocblas_stride stride, rocblas_int batch_count)
         : device_batch_vector(n, inc, batch_count)
     {
+        assert(stride == 1);
     }
 
-    //!
-    //! @brief Constructor (kept for backward compatibility only, to be removed).
-    //! @param batch_count The number of vectors.
-    //! @param size_vector The size of each vectors.
-    //!
-    explicit device_batch_vector(rocblas_int batch_count, size_t size_vector)
-        : device_batch_vector(size_vector, 1, batch_count)
+    // The number of elements in each vector.
+    rocblas_int n() const noexcept
     {
+        return n_;
     }
 
-    //!
-    //! @brief Destructor.
-    //!
-    ~device_batch_vector()
+    // The increment between elements in each vector.
+    rocblas_int inc() const noexcept
     {
-        this->free_memory();
+        return inc_;
     }
 
-    //!
-    //! @brief Returns the length of the vector.
-    //!
-    rocblas_int n() const
+    // The size of each vector. This is a derived property of the number of elements in the vector
+    // and the spacing between them.
+    size_t vsize() const
     {
-        return this->m_n;
+        return size_t(n_) * std::abs(inc_);
     }
 
-    //!
-    //! @brief Returns the increment of the vector.
-    //!
-    rocblas_int inc() const
+    // The number of vectors in the batch.
+    rocblas_int batch_count() const noexcept
     {
-        return this->m_inc;
-    }
-
-    //!
-    //! @brief Returns the value of batch_count.
-    //!
-    rocblas_int batch_count() const
-    {
-        return this->m_batch_count;
-    }
-
-    //!
-    //! @brief Returns the stride value.
-    //!
-    rocblas_stride stride() const
-    {
-        return 0;
-    }
-
-    //!
-    //! @brief Access to device data.
-    //! @return Pointer to the device data.
-    //!
-    T** ptr_on_device()
-    {
-        return this->m_device_data;
-    }
-
-    //!
-    //! @brief Const access to device data.
-    //! @return Const pointer to the device data.
-    //!
-    const T* const* ptr_on_device() const
-    {
-        return this->m_device_data;
+        return batch_count_;
     }
 
     T* const* data()
     {
-        return this->m_device_data;
+        return dPtrArr_.get();
     }
 
     const T* const* data() const
     {
-        return this->m_device_data;
+        return dPtrArr_.get();
+    }
+/*
+    T* const* ddata()
+    {
+        return dPtrArr_;
     }
 
-    //!
-    //! @brief Random access.
-    //! @param batch_index The batch index.
-    //! @return Pointer to the array on device.
-    //!
+    const T* const* ddata() const
+    {
+        return dPtrArr_;
+    }
+
+    T* const* hdata()
+    {
+        return hPtrArr_;
+    }
+
+    const T* const* hdata() const
+    {
+        return hPtrArr_;
+    }
+*/
     T* operator[](rocblas_int batch_index)
     {
-        return this->m_data[batch_index];
+        assert(batch_index >= 0);
+        assert(batch_index < batch_count_);
+        return hPtrArr_[batch_index].get();
     }
 
-    //!
-    //! @brief Constant random access.
-    //! @param batch_index The batch index.
-    //! @return Constant pointer to the array on device.
-    //!
     const T* operator[](rocblas_int batch_index) const
     {
-        return this->m_data[batch_index];
+        assert(batch_index >= 0);
+        assert(batch_index < batch_count_);
+        return hPtrArr_[batch_index].get();
     }
 
-    //!
-    //! @brief Const cast of the data on host.
-    //!
     operator const T* const *() const
     {
-        return this->m_data;
+        return hPtrArr_;
     }
 
     // clang-format off
-    //!
-    //! @brief Cast of the data on host.
-    //!
     operator T**()
     {
-        return this->m_data;
+        return hPtrArr_;
     }
     // clang-format on
 
-    //!
-    //! @brief Tell whether ressources allocation failed.
-    //!
     explicit operator bool() const
     {
-        return nullptr != this->m_data;
+        return nullptr != hPtrArr_;
     }
 
-    //!
-    //! @brief Copy from a host batched vector.
-    //! @param that The host_batch_vector to copy.
-    //!
     hipError_t transfer_from(const host_batch_vector<T>& that)
     {
-        hipError_t hip_err;
-        //
-        // Copy each vector.
-        //
-        for(rocblas_int batch_index = 0; batch_index < this->m_batch_count; ++batch_index)
-        {
-            if(hipSuccess
-               != (hip_err = hipMemcpy((*this)[batch_index], that[batch_index],
-                                       sizeof(T) * this->nmemb(), hipMemcpyHostToDevice)))
-            {
-                return hip_err;
-            }
-        }
+        assert(n_ == that.n());
+        assert(inc_ == that.inc());
+        assert(batch_count_ == that.batch_count());
 
+        hipError_t err = hipSuccess;
+        device_batch_vector<T, PAD, U>& self = *this;
+        size_t num_bytes = vsize() * sizeof(T);
+        for(size_t b = 0; err == hipSuccess && b < batch_count_; ++b)
+            err = hipMemcpy(self[b], that[b], num_bytes, hipMemcpyHostToDevice);
+        return err;
+    }
+
+    hipError_t memcheck() const
+    {
         return hipSuccess;
     }
 
-    //!
-    //! @brief Check if memory exists.
-    //! @return hipSuccess if memory exists, hipErrorOutOfMemory otherwise.
-    //!
-    hipError_t memcheck() const
-    {
-        if(*this)
-            return hipSuccess;
-        else
-            return hipErrorOutOfMemory;
-    }
+private:
+    using PtrDArrT = std::unique_ptr<T[], device_deleter>;
 
 private:
-    rocblas_int m_n{};
-    rocblas_int m_inc{};
-    rocblas_int m_batch_count{};
-    T** m_data{};
-    T** m_device_data{};
-
-    //!
-    //! @brief Try to allocate the ressources.
-    //! @return true if success false otherwise.
-    //!
-    bool try_initialize_memory()
-    {
-        bool success = false;
-
-        success = (hipSuccess == (hipMalloc)(&this->m_device_data, this->m_batch_count * sizeof(T*)));
-        if(success)
-        {
-            success = (nullptr != (this->m_data = (T**)calloc(this->m_batch_count, sizeof(T*))));
-            if(success)
-            {
-                for(rocblas_int batch_index = 0; batch_index < this->m_batch_count; ++batch_index)
-                {
-                    success = (nullptr != (this->m_data[batch_index] = this->device_vector_setup()));
-                    if(!success)
-                    {
-                        break;
-                    }
-                }
-
-                if(success)
-                {
-                    success = (hipSuccess
-                               == hipMemcpy(this->m_device_data, this->m_data,
-                                            sizeof(T*) * this->m_batch_count, hipMemcpyHostToDevice));
-                }
-            }
-        }
-        return success;
-    }
-
-    //!
-    //! @brief Free the ressources, as much as we can.
-    //!
-    void free_memory()
-    {
-        if(nullptr != this->m_data)
-        {
-            for(rocblas_int batch_index = 0; batch_index < this->m_batch_count; ++batch_index)
-            {
-                if(nullptr != this->m_data[batch_index])
-                {
-                    this->device_vector_teardown(this->m_data[batch_index]);
-                    this->m_data[batch_index] = nullptr;
-                }
-            }
-
-            free(this->m_data);
-            this->m_data = nullptr;
-        }
-
-        if(nullptr != this->m_device_data)
-        {
-            auto tmp_device_data = this->m_device_data;
-            this->m_device_data = nullptr;
-            CHECK_HIP_ERROR((hipFree)(tmp_device_data));
-        }
-    }
+    std::unique_ptr<PtrDArrT[]> hPtrArr_;
+    std::unique_ptr<T*[], device_deleter> dPtrArr_;
+    rocblas_int n_;
+    rocblas_int inc_;
+    rocblas_int batch_count_;
 };

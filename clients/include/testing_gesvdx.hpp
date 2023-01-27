@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -166,7 +166,7 @@ void testing_gesvdx_bad_arg()
 
         // check bad arguments
         gesvdx_checkBadArgs<STRIDED>(handle, left_svect, right_svect, srange, m, n, dA.data(), lda,
-                                     stA, vl, vu, il, iu, dNsv, dS.data(), stS, dU.data(), ldu, stU,
+                                     stA, vl, vu, il, iu, dNsv.data(), dS.data(), stS, dU.data(), ldu, stU,
                                      dV.data(), ldv, stV, difail.data(), stF, dinfo.data(), bc);
     }
     else
@@ -177,7 +177,7 @@ void testing_gesvdx_bad_arg()
 
         // check bad arguments
         gesvdx_checkBadArgs<STRIDED>(handle, left_svect, right_svect, srange, m, n, dA.data(), lda,
-                                     stA, vl, vu, il, iu, dNsv, dS.data(), stS, dU.data(), ldu, stU,
+                                     stA, vl, vu, il, iu, dNsv.data(), dS.data(), stS, dU.data(), ldu, stU,
                                      dV.data(), ldv, stV, difail.data(), stF, dinfo.data(), bc);
     }
 }

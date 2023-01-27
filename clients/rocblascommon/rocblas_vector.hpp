@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -9,6 +9,8 @@
 
 #include "host_batch_vector.hpp"
 #include "host_strided_batch_vector.hpp"
+
+#include "rocblas_random.hpp"
 
 //!
 //! @brief Random number with type deductions.
