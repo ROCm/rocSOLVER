@@ -26,6 +26,9 @@
   and vector operations
 ***************************************************************************/
 
+/************** Kernels and device functions *******************/
+/***************************************************************/
+
 /** BDSQR_ESTIMATE device function computes an estimate of the smallest
     singular value of a n-by-n upper bidiagonal matrix given by D and E
     It also applies convergence test if conver = 1 **/
@@ -52,17 +55,6 @@ __device__ T bdsqr_estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int
     }
 
     return smin;
-}
-
-/** NEGVECT device function multiply a vector x of dimension n by -1**/
-template <typename T>
-__device__ void bdsqr_negvect(const rocblas_int n, T* x, const rocblas_int incx)
-{
-    for(rocblas_int i = 0; i < n; ++i)
-    {
-        if(x[incx * i] != 0)
-            x[incx * i] = -x[incx * i];
-    }
 }
 
 /** BDSQR_T2BQRSTEP device function applies implicit QR interation to
@@ -343,52 +335,8 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
         }
     }
 
-    // re-arrange singular values/vectors if algorithm converged
-    if(k == 0)
-    {
-        // all positive
-        for(rocblas_int ii = 0; ii < n; ++ii)
-        {
-            if(D[ii] < 0)
-            {
-                D[ii] = -D[ii];
-                if(nv)
-                    bdsqr_negvect(nv, V + ii, ldv);
-            }
-        }
-
-        // in decreasing order
-        rocblas_int idx;
-        for(rocblas_int ii = 0; ii < n - 1; ++ii)
-        {
-            idx = ii;
-            smax = D[ii];
-            // detect maximum
-            for(rocblas_int jj = ii + 1; jj < n; ++jj)
-            {
-                if(D[jj] > smax)
-                {
-                    idx = jj;
-                    smax = D[jj];
-                }
-            }
-            // swap
-            if(idx != ii)
-            {
-                D[idx] = D[ii];
-                D[ii] = smax;
-                if(nv)
-                    swapvect(nv, V + idx, ldv, V + ii, ldv);
-                if(nu)
-                    swapvect(nu, U + idx * ldu, 1, U + ii * ldu, 1);
-                if(nc)
-                    swapvect(nc, C + idx, ldc, C + ii, ldc);
-            }
-        }
-    }
-
-    // if not, set value of info
-    else
+    // if algorithm didn't converge, set value of info
+    if(k != 0)
     {
         for(rocblas_int i = 0; i < n - 1; ++i)
             if(E[i] != 0)
@@ -515,6 +463,115 @@ ROCSOLVER_KERNEL void bdsqr_input_check(const rocblas_int n,
             info[bid] = 0;
     }
 }
+
+/** BDSQR_SORT sorts the singular values and vectors by selection sort if applicable. **/
+template <typename T, typename S, typename W>
+ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
+                                 const rocblas_int nv,
+                                 const rocblas_int nu,
+                                 const rocblas_int nc,
+                                 S* DD,
+                                 const rocblas_stride strideD,
+                                 W VV,
+                                 const rocblas_int shiftV,
+                                 const rocblas_int ldv,
+                                 const rocblas_stride strideV,
+                                 W UU,
+                                 const rocblas_int shiftU,
+                                 const rocblas_int ldu,
+                                 const rocblas_stride strideU,
+                                 W CC,
+                                 const rocblas_int shiftC,
+                                 const rocblas_int ldc,
+                                 const rocblas_stride strideC,
+                                 rocblas_int* info)
+{
+    rocblas_int tid = hipThreadIdx_x;
+    rocblas_int bid = hipBlockIdx_y;
+
+    // if algorithm did not converge, return
+    if(info[bid] != 0)
+        return;
+
+    // local variables
+    rocblas_int i, j, m;
+
+    // array pointers
+    T *V, *U, *C;
+    S* D = DD + bid * strideD;
+    if(nv)
+        V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
+    if(nu)
+        U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
+    if(nc)
+        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+
+    // ensure all singular values are positive
+    for(rocblas_int i = 0; i < n; i++)
+    {
+        if(D[i] < 0)
+        {
+            if(nv)
+            {
+                for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
+                    V[i + j * ldv] = -V[i + j * ldv];
+                __syncthreads();
+            }
+
+            if(tid == 0)
+                D[i] = -D[i];
+        }
+    }
+    __syncthreads();
+
+    // sort singular values & vectors
+    S p;
+    for(i = 0; i < n - 1; i++)
+    {
+        m = i;
+        p = D[i];
+        for(j = i + 1; j < n; j++)
+        {
+            if(D[j] > p)
+            {
+                m = j;
+                p = D[j];
+            }
+        }
+        __syncthreads();
+
+        if(m != i)
+        {
+            if(tid == 0)
+            {
+                D[m] = D[i];
+                D[i] = p;
+            }
+
+            if(nv)
+            {
+                for(j = tid; j < nv; j += hipBlockDim_x)
+                    swap(V[m + j * ldv], V[i + j * ldv]);
+                __syncthreads();
+            }
+            if(nu)
+            {
+                for(j = tid; j < nu; j += hipBlockDim_x)
+                    swap(U[j + m * ldu], U[j + i * ldu]);
+                __syncthreads();
+            }
+            if(nc)
+            {
+                for(j = tid; j < nc; j += hipBlockDim_x)
+                    swap(C[m + j * ldc], C[i + j * ldc]);
+                __syncthreads();
+            }
+        }
+    }
+}
+
+/****** Template function, workspace size and argument validation **********/
+/***************************************************************************/
 
 template <typename T>
 void rocsolver_bdsqr_getMemorySize(const rocblas_int n,
@@ -657,6 +714,12 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                             D, strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
                             strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
                             minshift, work, strideW);
+
+    // sort the singular values and vectors
+    rocblas_int threads_sort = (nv || nu || nc ? BS1 : 1);
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_sort<T>), dim3(1, batch_count), dim3(threads_sort), 0, stream, n,
+                            nv, nu, nc, D, strideD, V, shiftV, ldv, strideV, U, shiftU, ldu,
+                            strideU, C, shiftC, ldc, strideC, info);
 
     return rocblas_status_success;
 }
