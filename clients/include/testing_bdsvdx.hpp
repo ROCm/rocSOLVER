@@ -215,13 +215,14 @@ void bdsvdx_getError(const rocblas_handle handle,
     else
         *max_err = 0;
 
-    // if finding singular values succeded, check values
+    // if finding singular values succeeded, check values
     double err;
     if(hInfoRes[0][0] == 0)
     {
         // check number of computed singular values
         rocblas_int nn = hNsvRes[0][0];
         *max_err += std::abs(nn - hNsv[0][0]);
+        EXPECT_EQ(hNsv[0][0], hNsvRes[0][0]);
 
         // error is ||hS - hSRes|| / ||hS||
         // using frobenius norm
