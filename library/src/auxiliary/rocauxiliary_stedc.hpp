@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -615,7 +615,7 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
     // select batch instance
     S* D = DD + (bid * strideD);
     S* E = EE + (bid * strideE);
-    rocblas_int* splits = splitsA + bid * (2 * n + 2);
+    rocblas_int* splits = splitsA + bid * (3 * n + 2);
 
     rocblas_int k = 0; //position where the last block starts
     S tol; //tolerance. If an element of E is <= tol we have an independent block
@@ -692,11 +692,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
     // temporary arrays in global memory
     /* --------------------------------------------------- */
     // contains the beginning of split blocks
-    rocblas_int* splits = splitsA + bid * (2 * n + 2);
-    // worksapce for STEQR and container of permutations when solving the secular eqns
-    S* W = WA + bid * (2 * n);
+    rocblas_int* splits = splitsA + bid * (3 * n + 2);
     // if idd[i] = 0, the value in position i has been deflated
     rocblas_int* idd = splits + n + 2;
+    // container of permutations when solving the secular eqns
+    rocblas_int* pers = idd + n;
+    // worksapce for STEQR
+    S* W = WA + bid * (2 * n);
     // the rank-1 modification vectors in the merges
     S* z = tmpzA + bid * (2 * n);
     // roots of secular equations
@@ -1060,7 +1062,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                 S* diag = D + in;
                 rocblas_int* mask = idd + in;
                 S* zz = z + in;
-                rocblas_int* per = (rocblas_int*)W + in;
+                rocblas_int* per = pers + in;
 
                 // find degree and components of secular equation
                 // tmpd contains the non-deflated diagonal elements (ie. poles of the secular eqn)
@@ -1085,8 +1087,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                 // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
                 // This will allows to find initial intervals for eigenvalue guesses
                 rocblas_int tsz = 1 << (levs - 1 - k);
-                tsz = (n - 1) / tsz + 1;
-                for(int i = 0; i < tsz; ++i) //dd
+                tsz = (bs - 1) / tsz + 1;
+                for(int i = 0; i < tsz; ++i)
                 {
                     if(i < dd)
                     {
@@ -1209,7 +1211,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                 // 3f. Compute vectors corresponding to non-deflated values
                 /* ----------------------------------------------------------------- */
                 S temp, nrm, evj;
-                rocblas_int nn = (n - 1) / blks + 1;
+                rocblas_int nn = (bs - 1) / blks + 1;
                 bool go;
                 for(int j = 0; j < nn; ++j)
                 {
@@ -1528,7 +1530,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_work_stack = max(s1, s2);
 
         // size for split blocks and sub-blocks positions
-        *size_splits = sizeof(rocblas_int) * (2 * n + 2) * batch_count;
+        *size_splits = sizeof(rocblas_int) * (3 * n + 2) * batch_count;
 
         // size for temporary diagonal and rank-1 modif vector
         *size_tmpz = sizeof(S) * (2 * n) * batch_count;
