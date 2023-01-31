@@ -60,18 +60,18 @@ __device__ T bdsqr_estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int
 /** BDSQR_T2BQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from top to bottom **/
-template <typename S, typename W>
+template <typename T, typename S>
 __device__ void bdsqr_t2bQRstep(const rocblas_int n,
                                 const rocblas_int nv,
                                 const rocblas_int nu,
                                 const rocblas_int nc,
                                 S* D,
                                 S* E,
-                                W* V,
+                                T* V,
                                 const rocblas_int ldv,
-                                W* U,
+                                T* U,
                                 const rocblas_int ldu,
-                                W* C,
+                                T* C,
                                 const rocblas_int ldc,
                                 const S sh,
                                 S* rots)
@@ -136,18 +136,18 @@ __device__ void bdsqr_t2bQRstep(const rocblas_int n,
 /** BDSQR_B2TQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from bottom to top **/
-template <typename S, typename W>
+template <typename T, typename S>
 __device__ void bdsqr_b2tQRstep(const rocblas_int n,
                                 const rocblas_int nv,
                                 const rocblas_int nu,
                                 const rocblas_int nc,
                                 S* D,
                                 S* E,
-                                W* V,
+                                T* V,
                                 const rocblas_int ldv,
-                                W* U,
+                                T* U,
                                 const rocblas_int ldu,
-                                W* C,
+                                T* C,
                                 const rocblas_int ldc,
                                 const S sh,
                                 S* rots)
@@ -211,7 +211,7 @@ __device__ void bdsqr_b2tQRstep(const rocblas_int n,
 
 /** BDSQR_KERNEL implements the main loop of the bdsqr algorithm
     to compute the SVD of an upper bidiagonal matrix given by D and E **/
-template <typename T, typename S, typename W>
+template <typename T, typename S, typename W1, typename W2, typename W3>
 ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
                                    const rocblas_int nv,
                                    const rocblas_int nu,
@@ -220,15 +220,15 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
                                    const rocblas_stride strideD,
                                    S* EE,
                                    const rocblas_stride strideE,
-                                   W VV,
+                                   W1 VV,
                                    const rocblas_int shiftV,
                                    const rocblas_int ldv,
                                    const rocblas_stride strideV,
-                                   W UU,
+                                   W2 UU,
                                    const rocblas_int shiftU,
                                    const rocblas_int ldu,
                                    const rocblas_stride strideU,
-                                   W CC,
+                                   W3 CC,
                                    const rocblas_int shiftC,
                                    const rocblas_int ldc,
                                    const rocblas_stride strideC,
@@ -346,7 +346,7 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
 
 /** BDSQR_LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
     into an upper bidiagonal matrix via givens rotations **/
-template <typename T, typename S, typename W>
+template <typename T, typename S, typename W1, typename W2>
 ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
                                         const rocblas_int nu,
                                         const rocblas_int nc,
@@ -354,11 +354,11 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
                                         const rocblas_stride strideD,
                                         S* EE,
                                         const rocblas_stride strideE,
-                                        W UU,
+                                        W1 UU,
                                         const rocblas_int shiftU,
                                         const rocblas_int ldu,
                                         const rocblas_stride strideU,
-                                        W CC,
+                                        W2 CC,
                                         const rocblas_int shiftC,
                                         const rocblas_int ldc,
                                         const rocblas_stride strideC,
@@ -465,22 +465,22 @@ ROCSOLVER_KERNEL void bdsqr_input_check(const rocblas_int n,
 }
 
 /** BDSQR_SORT sorts the singular values and vectors by selection sort if applicable. **/
-template <typename T, typename S, typename W>
+template <typename T, typename S, typename W1, typename W2, typename W3>
 ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
                                  const rocblas_int nv,
                                  const rocblas_int nu,
                                  const rocblas_int nc,
                                  S* DD,
                                  const rocblas_stride strideD,
-                                 W VV,
+                                 W1 VV,
                                  const rocblas_int shiftV,
                                  const rocblas_int ldv,
                                  const rocblas_stride strideV,
-                                 W UU,
+                                 W2 UU,
                                  const rocblas_int shiftU,
                                  const rocblas_int ldu,
                                  const rocblas_stride strideU,
-                                 W CC,
+                                 W3 CC,
                                  const rocblas_int shiftC,
                                  const rocblas_int ldc,
                                  const rocblas_stride strideC,
@@ -636,7 +636,7 @@ rocblas_status rocsolver_bdsqr_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename S, typename W>
+template <typename T, typename S, typename W1, typename W2, typename W3>
 rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -647,22 +647,21 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                         const rocblas_stride strideD,
                                         S* E,
                                         const rocblas_stride strideE,
-                                        W V,
+                                        W1 V,
                                         const rocblas_int shiftV,
                                         const rocblas_int ldv,
                                         const rocblas_stride strideV,
-                                        W U,
+                                        W2 U,
                                         const rocblas_int shiftU,
                                         const rocblas_int ldu,
                                         const rocblas_stride strideU,
-                                        W C,
+                                        W3 C,
                                         const rocblas_int shiftC,
                                         const rocblas_int ldc,
                                         const rocblas_stride strideC,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
-                                        S* work,
-                                        T** workArr = nullptr)
+                                        S* work)
 {
     ROCSOLVER_ENTER("bdsqr", "uplo:", uplo, "n:", n, "nv:", nv, "nu:", nu, "nc:", nc,
                     "shiftV:", shiftV, "ldv:", ldv, "shiftU:", shiftU, "ldu:", ldu,
@@ -722,86 +721,4 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                             strideU, C, shiftC, ldc, strideC, info);
 
     return rocblas_status_success;
-}
-
-/** Adapts U and V to be of the same type **/
-template <typename T, typename S>
-void rocsolver_bdsqr_template(rocblas_handle handle,
-                              const rocblas_fill uplo,
-                              const rocblas_int n,
-                              const rocblas_int nv,
-                              const rocblas_int nu,
-                              const rocblas_int nc,
-                              S* D,
-                              const rocblas_stride strideD,
-                              S* E,
-                              const rocblas_stride strideE,
-                              T* const V[],
-                              const rocblas_int shiftV,
-                              const rocblas_int ldv,
-                              const rocblas_stride strideV,
-                              T* U,
-                              const rocblas_int shiftU,
-                              const rocblas_int ldu,
-                              const rocblas_stride strideU,
-                              T* const C[],
-                              const rocblas_int shiftC,
-                              const rocblas_int ldc,
-                              const rocblas_stride strideC,
-                              rocblas_int* info,
-                              const rocblas_int batch_count,
-                              S* work,
-                              T** workArr)
-{
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, U, strideU,
-                            batch_count);
-
-    rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, 0, D, strideD, E, strideE, V, shiftV, ldv,
-                                strideV, (T* const*)workArr, shiftU, ldu, strideU, C, shiftC, ldc,
-                                strideC, info, batch_count, work);
-}
-
-/** Adapts U and V to be of the same type **/
-template <typename T, typename S>
-void rocsolver_bdsqr_template(rocblas_handle handle,
-                              const rocblas_fill uplo,
-                              const rocblas_int n,
-                              const rocblas_int nv,
-                              const rocblas_int nu,
-                              const rocblas_int nc,
-                              S* D,
-                              const rocblas_stride strideD,
-                              S* E,
-                              const rocblas_stride strideE,
-                              T* V,
-                              const rocblas_int shiftV,
-                              const rocblas_int ldv,
-                              const rocblas_stride strideV,
-                              T* const U[],
-                              const rocblas_int shiftU,
-                              const rocblas_int ldu,
-                              const rocblas_stride strideU,
-                              T* const C[],
-                              const rocblas_int shiftC,
-                              const rocblas_int ldc,
-                              const rocblas_stride strideC,
-                              rocblas_int* info,
-                              const rocblas_int batch_count,
-                              S* work,
-                              T** workArr)
-{
-    hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
-
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
-    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, V, strideV,
-                            batch_count);
-
-    rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE,
-                                (T* const*)workArr, shiftV, ldv, strideV, U, shiftU, ldu, strideU,
-                                C, shiftC, ldc, strideC, info, batch_count, work);
 }

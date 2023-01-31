@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -517,12 +517,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, A, shiftA, lda, strideA, U, shiftU, ldu,
                                             strideU, (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr, workArr);
+                                            (TT*)work_workArr);
             else
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, V, shiftV, ldv, strideV, A, shiftA, lda,
                                             strideA, (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr, workArr);
+                                            (TT*)work_workArr);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(othervS || othervA)
@@ -603,12 +603,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, bufferC, shiftC, ldc, strideC, bufferT, shiftT,
                                             ldt, strideT, (T*)nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr, workArr);
+                                            (TT*)work_workArr);
             else
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, bufferT, shiftT, ldt, strideT, bufferC, shiftC,
                                             ldc, strideC, (T*)nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr, workArr);
+                                            (TT*)work_workArr);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(leadvO)
@@ -793,21 +793,21 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                             shiftV, ldv, strideV, U, shiftU, ldu, strideU,
                                             (T*)nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr, workArr);
+                                            (TT*)work_workArr);
             }
             else if(leftvO && !rightvO)
             {
                 rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                             shiftV, ldv, strideV, A, shiftA, lda, strideA,
                                             (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr, workArr);
+                                            (TT*)work_workArr);
             }
             else
             {
                 rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, A,
                                             shiftA, lda, strideA, U, shiftU, ldu, strideU,
                                             (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr, workArr);
+                                            (TT*)work_workArr);
             }
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
@@ -880,21 +880,21 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         {
             rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                         shiftV, ldv, strideV, U, shiftU, ldu, strideU, (T*)nullptr,
-                                        0, 1, 1, info, batch_count, (TT*)work_workArr, workArr);
+                                        0, 1, 1, info, batch_count, (TT*)work_workArr);
         }
 
         else if(leftvO && !rightvO)
         {
             rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                         shiftV, ldv, strideV, A, shiftA, lda, strideA, (W) nullptr,
-                                        0, 1, 1, info, batch_count, (TT*)work_workArr, workArr);
+                                        0, 1, 1, info, batch_count, (TT*)work_workArr);
         }
 
         else
         {
             rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, A,
                                         shiftA, lda, strideA, U, shiftU, ldu, strideU, (W) nullptr,
-                                        0, 1, 1, info, batch_count, (TT*)work_workArr, workArr);
+                                        0, 1, 1, info, batch_count, (TT*)work_workArr);
         }
 
         //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
