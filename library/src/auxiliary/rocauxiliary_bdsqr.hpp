@@ -61,7 +61,8 @@ __device__ T bdsqr_estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from top to bottom **/
 template <typename T, typename S>
-__device__ void bdsqr_t2bQRstep(const rocblas_int n,
+__device__ void bdsqr_t2bQRstep(const rocblas_int tid,
+                                const rocblas_int n,
                                 const rocblas_int nv,
                                 const rocblas_int nu,
                                 const rocblas_int nc,
@@ -77,67 +78,113 @@ __device__ void bdsqr_t2bQRstep(const rocblas_int n,
                                 S* rots)
 {
     S f, g, c, s, r;
-    rocblas_int nr = nv ? 2 * (n - 1) : 0;
+    T temp1, temp2;
+    rocblas_int nr = nv ? 2 * n : 0;
 
-    int sgn = (S(0) < D[0]) - (D[0] < S(0));
-    if(D[0] == 0)
-        f = 0;
-    else
-        f = (std::abs(D[0]) - sh) * (S(sgn) + sh / D[0]);
-    g = E[0];
-
-    for(rocblas_int k = 0; k < n - 1; ++k)
+    if(tid == 0)
     {
-        // first apply rotation by columns
-        lartg(f, g, c, s, r);
-        if(k > 0)
-            E[k - 1] = r;
-        f = c * D[k] - s * E[k];
-        E[k] = c * E[k] + s * D[k];
-        g = -s * D[k + 1];
-        D[k + 1] = c * D[k + 1];
-        // save rotations to update singular vectors
-        if(nv)
-        {
-            rots[k] = c;
-            rots[k + n - 1] = -s;
-        }
+        int sgn = (S(0) < D[0]) - (D[0] < S(0));
+        if(D[0] == 0)
+            f = 0;
+        else
+            f = (std::abs(D[0]) - sh) * (S(sgn) + sh / D[0]);
+        g = E[0];
 
-        // then apply rotation by rows
-        lartg(f, g, c, s, r);
-        D[k] = r;
-        f = c * E[k] - s * D[k + 1];
-        D[k + 1] = c * D[k + 1] + s * E[k];
-        if(k < n - 2)
+        for(rocblas_int k = 0; k < n - 1; ++k)
         {
-            g = -s * E[k + 1];
-            E[k + 1] = c * E[k + 1];
+            // first apply rotation by columns
+            lartg(f, g, c, s, r);
+            if(k > 0)
+                E[k - 1] = r;
+            f = c * D[k] - s * E[k];
+            E[k] = c * E[k] + s * D[k];
+            g = -s * D[k + 1];
+            D[k + 1] = c * D[k + 1];
+            // save rotations to update singular vectors
+            if(nv)
+            {
+                rots[k] = c;
+                rots[k + n] = -s;
+            }
+
+            // then apply rotation by rows
+            lartg(f, g, c, s, r);
+            D[k] = r;
+            f = c * E[k] - s * D[k + 1];
+            D[k + 1] = c * D[k + 1] + s * E[k];
+            if(k < n - 2)
+            {
+                g = -s * E[k + 1];
+                E[k + 1] = c * E[k + 1];
+            }
+            // save rotations to update singular vectors
+            if(nu || nc)
+            {
+                rots[k + nr] = c;
+                rots[k + nr + n] = -s;
+            }
         }
-        // save rotations to update singular vectors
-        if(nu || nc)
-        {
-            rots[k + nr] = c;
-            rots[k + nr + n - 1] = -s;
-        }
+        E[n - 2] = f;
     }
-    E[n - 2] = f;
+    __syncthreads();
 
     // update singular vectors
     if(nv)
-        lasr(rocblas_side_left, rocblas_forward_direction, n, nv, rots, rots + n - 1, V, ldv);
+    {
+        // rotate from the left (forward direction)
+        for(rocblas_int i = 0; i < n - 1; i++)
+        {
+            for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
+            {
+                temp1 = V[i + j * ldv];
+                temp2 = V[i + 1 + j * ldv];
+                c = rots[i];
+                s = rots[i + n];
+                V[i + j * ldv] = c * temp1 + s * temp2;
+                V[i + 1 + j * ldv] = c * temp2 - s * temp1;
+            }
+        }
+    }
     if(nu)
-        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots + nr, rots + nr + n - 1, U,
-             ldu);
+    {
+        // rotate from the right (forward direction)
+        for(rocblas_int j = 0; j < n - 1; j++)
+        {
+            for(rocblas_int i = tid; i < nu; i += hipBlockDim_x)
+            {
+                temp1 = U[i + j * ldu];
+                temp2 = U[i + (j + 1) * ldu];
+                c = rots[j + nr];
+                s = rots[j + nr + n];
+                U[i + j * ldu] = c * temp1 + s * temp2;
+                U[i + (j + 1) * ldu] = c * temp2 - s * temp1;
+            }
+        }
+    }
     if(nc)
-        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots + nr, rots + nr + n - 1, C,
-             ldc);
+    {
+        // rotate from the left (forward direction)
+        for(rocblas_int i = 0; i < n - 1; i++)
+        {
+            for(rocblas_int j = tid; j < nc; j += hipBlockDim_x)
+            {
+                temp1 = C[i + j * ldc];
+                temp2 = C[i + 1 + j * ldc];
+                c = rots[i + nr];
+                s = rots[i + nr + n];
+                C[i + j * ldc] = c * temp1 + s * temp2;
+                C[i + 1 + j * ldc] = c * temp2 - s * temp1;
+            }
+        }
+    }
 }
 
 /** BDSQR_B2TQRSTEP device function applies implicit QR interation to
     the n-by-n bidiagonal matrix given by D and E, using shift = sh,
     from bottom to top **/
 template <typename T, typename S>
-__device__ void bdsqr_b2tQRstep(const rocblas_int n,
+__device__ void bdsqr_b2tQRstep(const rocblas_int tid,
+                                const rocblas_int n,
                                 const rocblas_int nv,
                                 const rocblas_int nu,
                                 const rocblas_int nc,
@@ -153,60 +200,105 @@ __device__ void bdsqr_b2tQRstep(const rocblas_int n,
                                 S* rots)
 {
     S f, g, c, s, r;
-    rocblas_int nr = nv ? 2 * (n - 1) : 0;
+    T temp1, temp2;
+    rocblas_int nr = nv ? 2 * n : 0;
 
-    int sgn = (S(0) < D[n - 1]) - (D[n - 1] < S(0));
-    if(D[n - 1] == 0)
-        f = 0;
-    else
-        f = (std::abs(D[n - 1]) - sh) * (S(sgn) + sh / D[n - 1]);
-    g = E[n - 2];
-
-    for(rocblas_int k = n - 1; k > 0; --k)
+    if(tid == 0)
     {
-        // first apply rotation by rows
-        lartg(f, g, c, s, r);
-        if(k < n - 1)
-            E[k] = r;
-        f = c * D[k] - s * E[k - 1];
-        E[k - 1] = c * E[k - 1] + s * D[k];
-        g = -s * D[k - 1];
-        D[k - 1] = c * D[k - 1];
-        // save rotations to update singular vectors
-        if(nu || nc)
-        {
-            rots[(k - 1) + nr] = c;
-            rots[(k - 1) + nr + n - 1] = s;
-        }
+        int sgn = (S(0) < D[n - 1]) - (D[n - 1] < S(0));
+        if(D[n - 1] == 0)
+            f = 0;
+        else
+            f = (std::abs(D[n - 1]) - sh) * (S(sgn) + sh / D[n - 1]);
+        g = E[n - 2];
 
-        // then apply rotation by columns
-        lartg(f, g, c, s, r);
-        D[k] = r;
-        f = c * E[k - 1] - s * D[k - 1];
-        D[k - 1] = c * D[k - 1] + s * E[k - 1];
-        if(k > 1)
+        for(rocblas_int k = n - 1; k > 0; --k)
         {
-            g = -s * E[k - 2];
-            E[k - 2] = c * E[k - 2];
+            // first apply rotation by rows
+            lartg(f, g, c, s, r);
+            if(k < n - 1)
+                E[k] = r;
+            f = c * D[k] - s * E[k - 1];
+            E[k - 1] = c * E[k - 1] + s * D[k];
+            g = -s * D[k - 1];
+            D[k - 1] = c * D[k - 1];
+            // save rotations to update singular vectors
+            if(nu || nc)
+            {
+                rots[(k - 1) + nr] = c;
+                rots[(k - 1) + nr + n] = s;
+            }
+
+            // then apply rotation by columns
+            lartg(f, g, c, s, r);
+            D[k] = r;
+            f = c * E[k - 1] - s * D[k - 1];
+            D[k - 1] = c * D[k - 1] + s * E[k - 1];
+            if(k > 1)
+            {
+                g = -s * E[k - 2];
+                E[k - 2] = c * E[k - 2];
+            }
+            // save rotations to update singular vectors
+            if(nv)
+            {
+                rots[k - 1] = c;
+                rots[(k - 1) + n] = s;
+            }
         }
-        // save rotations to update singular vectors
-        if(nv)
-        {
-            rots[k - 1] = c;
-            rots[(k - 1) + n - 1] = s;
-        }
+        E[0] = f;
     }
-    E[0] = f;
+    __syncthreads();
 
     // update singular vectors
     if(nv)
-        lasr(rocblas_side_left, rocblas_backward_direction, n, nv, rots, rots + n - 1, V, ldv);
+    {
+        // rotate from the left (backward direction)
+        for(rocblas_int i = n - 1; i > 0; i--)
+        {
+            for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
+            {
+                temp1 = V[i + j * ldv];
+                temp2 = V[i - 1 + j * ldv];
+                c = rots[i - 1];
+                s = rots[(i - 1) + n];
+                V[i + j * ldv] = c * temp1 - s * temp2;
+                V[i - 1 + j * ldv] = c * temp2 + s * temp1;
+            }
+        }
+    }
     if(nu)
-        lasr(rocblas_side_right, rocblas_backward_direction, nu, n, rots + nr, rots + nr + n - 1, U,
-             ldu);
+    {
+        // rotate from the right (backward direction)
+        for(rocblas_int j = n - 1; j > 0; j--)
+        {
+            for(rocblas_int i = tid; i < nu; i += hipBlockDim_x)
+            {
+                temp1 = U[i + j * ldu];
+                temp2 = U[i + (j - 1) * ldu];
+                c = rots[(j - 1) + nr];
+                s = rots[(j - 1) + nr + n];
+                U[i + j * ldu] = c * temp1 - s * temp2;
+                U[i + (j - 1) * ldu] = c * temp2 + s * temp1;
+            }
+        }
+    }
     if(nc)
-        lasr(rocblas_side_left, rocblas_backward_direction, n, nc, rots + nr, rots + nr + n - 1, C,
-             ldc);
+    {
+        // rotate from the left (backward direction)
+        for(rocblas_int i = n - 1; i > 0; i--)
+        {
+            for(rocblas_int j = tid; j < nc; j += hipBlockDim_x)
+            {
+                temp1 = C[i + j * ldc];
+                temp2 = C[i - 1 + j * ldc];
+                c = rots[(i - 1) + nr];
+                s = rots[(i - 1) + nr + n];
+                C[i + j * ldc] = c * temp1 - s * temp2;
+                C[i - 1 + j * ldc] = c * temp2 + s * temp1;
+            }
+        }
+    }
 }
 
 /** BDSQR_KERNEL implements the main loop of the bdsqr algorithm
@@ -241,7 +333,8 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
                                    S* workA,
                                    const rocblas_stride strideW)
 {
-    rocblas_int bid = hipBlockIdx_x;
+    rocblas_int tid = hipThreadIdx_x;
+    rocblas_int bid = hipBlockIdx_y;
 
     // if a NaN or Inf was detected in the input, return
     if(info[bid] != 0)
@@ -262,81 +355,105 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
     if(workA)
         rots = workA + bid * strideW;
 
-    // calculate threshold for zeroing elements (convergence threshold)
-    int t2b = (D[0] >= D[n - 1]) ? 1 : 0; // direction
-    S smin = bdsqr_estimate<S>(n, D, E, t2b, tol,
-                               0); // estimate of the smallest singular value
-    S thresh = std::max(tol * smin / S(std::sqrt(n)),
-                        S(maxiter) * sfm); // threshold
+    // shared variables
+    __shared__ bool applyqr;
+    __shared__ int t2b;
+    __shared__ S smin, smax, sh, thresh;
+    __shared__ rocblas_int i, k;
+    __shared__ rocblas_int iter;
 
-    rocblas_int k = n - 1; // k is the last element of last unconverged diagonal block
-    rocblas_int iter = 0; // iter is the number of iterations (QR steps) applied
-    S sh, smax;
+    // calculate threshold for zeroing elements (convergence threshold)
+    if(tid == 0)
+    {
+        t2b = (D[0] >= D[n - 1]) ? 1 : 0; // direction
+        smin = bdsqr_estimate<S>(n, D, E, t2b, tol,
+                                 0); // estimate of the smallest singular value
+        thresh = std::max(tol * smin / S(std::sqrt(n)),
+                          S(maxiter) * sfm); // threshold
+
+        k = n - 1; // k is the last element of last unconverged diagonal block
+        iter = 0; // iter is the number of iterations (QR steps) applied
+    }
+    __syncthreads();
 
     // main loop
     while(k > 0 && iter < maxiter)
     {
-        rocblas_int i;
-        // split the diagonal blocks
-        for(rocblas_int j = 0; j < k + 1; ++j)
+        if(tid == 0)
         {
-            i = k - j - 1;
-            if(i >= 0 && std::abs(E[i]) < thresh)
-            {
-                E[i] = 0;
-                break;
-            }
-        }
+            applyqr = false;
 
-        // check if last singular value converged,
-        // if not, continue with the QR step
-        //(TODO: splitted blocks can be analyzed in parallel)
-        if(i == k - 1)
-            k--;
-        else
-        {
-            // last block goes from i+1 until k
-            // determine shift for the QR step
-            // (apply convergence test to find gaps)
-            i++;
-            if(std::abs(D[i]) >= std::abs(D[k]))
+            // split the diagonal blocks
+            for(rocblas_int j = 0; j < k + 1; ++j)
             {
-                t2b = 1;
-                sh = std::abs(D[i]);
+                i = k - j - 1;
+                if(i >= 0 && std::abs(E[i]) < thresh)
+                {
+                    E[i] = 0;
+                    break;
+                }
             }
+
+            // check if last singular value converged,
+            // if not, continue with the QR step
+            //(TODO: splitted blocks can be analyzed in parallel)
+            if(i == k - 1)
+                k--;
             else
             {
-                t2b = 0;
-                sh = std::abs(D[k]);
-            }
-            smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1); // shift
-            smax = find_max_tridiag(i, k, D, E); // estimate of the largest singular value in the block
-
-            // check for gaps, if none then continue
-            if(smin >= 0)
-            {
-                if(smin / smax <= minshift)
-                    smin = 0; // shift set to zero if less than accepted value
-                else if(sh > 0)
+                // last block goes from i+1 until k
+                // determine shift for the QR step
+                // (apply convergence test to find gaps)
+                i++;
+                if(std::abs(D[i]) >= std::abs(D[k]))
                 {
-                    if(smin * smin / sh / sh < eps)
-                        smin = 0; // shift set to zero if negligible
+                    t2b = 1;
+                    sh = std::abs(D[i]);
                 }
-
-                // apply QR step
-                iter += k - i;
-                if(t2b)
-                    bdsqr_t2bQRstep(k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
-                                    ldu, C + i, ldc, smin, rots);
                 else
-                    bdsqr_b2tQRstep(k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
-                                    ldu, C + i, ldc, smin, rots);
+                {
+                    t2b = 0;
+                    sh = std::abs(D[k]);
+                }
+                smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1); // shift
+                smax = find_max_tridiag(i, k, D,
+                                        E); // estimate of the largest singular value in the block
+
+                // check for gaps, if none then continue
+                if(smin >= 0)
+                {
+                    if(smin / smax <= minshift)
+                        smin = 0; // shift set to zero if less than accepted value
+                    else if(sh > 0)
+                    {
+                        if(smin * smin / sh / sh < eps)
+                            smin = 0; // shift set to zero if negligible
+                    }
+
+                    applyqr = true;
+                }
             }
         }
+        __syncthreads();
+
+        // apply QR step
+        if(applyqr)
+        {
+            if(tid == 0)
+                iter += k - i;
+
+            if(t2b)
+                bdsqr_t2bQRstep(tid, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
+                                ldu, C + i, ldc, smin, rots);
+            else
+                bdsqr_b2tQRstep(tid, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
+                                ldu, C + i, ldc, smin, rots);
+        }
+        __syncthreads();
     }
 
     // if algorithm didn't converge, set value of info
-    if(k != 0)
+    if(tid == 0 && k != 0)
     {
         for(rocblas_int i = 0; i < n - 1; ++i)
             if(E[i] != 0)
@@ -366,8 +483,13 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
                                         S* workA,
                                         const rocblas_stride strideW)
 {
-    rocblas_int bid = hipBlockIdx_x;
+    rocblas_int tid = hipThreadIdx_x;
+    rocblas_int bid = hipBlockIdx_y;
+
+    // local variables
+    rocblas_int i, j;
     S f, g, c, s, r;
+    T temp1, temp2;
 
     // if a NaN or Inf was detected in the input, return
     if(info[bid] != 0)
@@ -386,31 +508,63 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
     if(workA)
         rots = workA + bid * strideW;
 
-    f = D[0];
-    g = E[0];
-    for(rocblas_int i = 0; i < n - 1; ++i)
+    if(tid == 0)
     {
-        // apply rotations by rows
-        lartg(f, g, c, s, r);
-        D[i] = r;
-        E[i] = -s * D[i + 1];
-        f = c * D[i + 1];
-        g = E[i + 1];
-
-        // save rotation to update singular vectors
-        if(nu || nc)
+        f = D[0];
+        g = E[0];
+        for(i = 0; i < n - 1; ++i)
         {
-            rots[i] = c;
-            rots[i + n - 1] = -s;
+            // apply rotations by rows
+            lartg(f, g, c, s, r);
+            D[i] = r;
+            E[i] = -s * D[i + 1];
+            f = c * D[i + 1];
+            g = E[i + 1];
+
+            // save rotation to update singular vectors
+            if(nu || nc)
+            {
+                rots[i] = c;
+                rots[i + n] = -s;
+            }
         }
+        D[n - 1] = f;
     }
-    D[n - 1] = f;
+    __syncthreads();
 
     // update singular vectors
     if(nu)
-        lasr(rocblas_side_right, rocblas_forward_direction, nu, n, rots, rots + n - 1, U, ldu);
+    {
+        // rotate from the right (forward direction)
+        for(j = 0; j < n - 1; j++)
+        {
+            for(i = tid; i < nu; i += hipBlockDim_x)
+            {
+                temp1 = U[i + j * ldu];
+                temp2 = U[i + (j + 1) * ldu];
+                c = rots[j];
+                s = rots[j + n];
+                U[i + j * ldu] = c * temp1 + s * temp2;
+                U[i + (j + 1) * ldu] = c * temp2 - s * temp1;
+            }
+        }
+    }
     if(nc)
-        lasr(rocblas_side_left, rocblas_forward_direction, n, nc, rots, rots + n - 1, C, ldc);
+    {
+        // rotate from the left (forward direction)
+        for(i = 0; i < n - 1; i++)
+        {
+            for(j = tid; j < nc; j += hipBlockDim_x)
+            {
+                temp1 = C[i + j * ldc];
+                temp2 = C[(i + 1) + j * ldc];
+                c = rots[i];
+                s = rots[i + n];
+                C[i + j * ldc] = c * temp1 + s * temp2;
+                C[(i + 1) + j * ldc] = c * temp2 - s * temp1;
+            }
+        }
+    }
 }
 
 /** BDSQR_INPUT_CHECK kernel determines if there are any NaNs or Infs in the input,
@@ -694,31 +848,36 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
         strideW += 2;
     strideW *= n;
 
-    // check for NaNs and Infs in input
+    // grid dimensions
+    rocblas_int nuc_max = max(nu, nc);
+    rocblas_int nvuc_max = max(nv, nuc_max);
+
     dim3 grid(1, batch_count, 1);
-    dim3 threads(min(n, BS1), 1, 1);
-    ROCSOLVER_LAUNCH_KERNEL((bdsqr_input_check<T>), grid, threads, 0, stream, n, D, strideD, E,
+    dim3 threads1(min(n, BS1), 1, 1);
+    dim3 threads2((nu || nc ? min(nuc_max, BS1) : 1), 1, 1);
+    dim3 threads3((nv || nu || nc ? min(nvuc_max, BS1) : 1), 1, 1);
+
+    // check for NaNs and Infs in input
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_input_check<T>), grid, threads1, 0, stream, n, D, strideD, E,
                             strideE, info);
 
     // rotate to upper bidiagonal if necessary
     if(uplo == rocblas_fill_lower)
     {
-        ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), dim3(batch_count), dim3(1), 0, stream, n,
-                                nu, nc, D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC,
-                                ldc, strideC, info, work, strideW);
+        ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), grid, threads2, 0, stream, n, nu, nc, D,
+                                strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc,
+                                strideC, info, work, strideW);
     }
 
     // main computation of SVD
-    ROCSOLVER_LAUNCH_KERNEL((bdsqr_kernel<T>), dim3(batch_count), dim3(1), 0, stream, n, nv, nu, nc,
-                            D, strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
-                            strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
-                            minshift, work, strideW);
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_kernel<T>), grid, threads3, 0, stream, n, nv, nu, nc, D, strideD,
+                            E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
+                            ldc, strideC, info, maxiter, eps, sfm, tol, minshift, work, strideW);
 
     // sort the singular values and vectors
-    rocblas_int threads_sort = (nv || nu || nc ? BS1 : 1);
-    ROCSOLVER_LAUNCH_KERNEL((bdsqr_sort<T>), dim3(1, batch_count), dim3(threads_sort), 0, stream, n,
-                            nv, nu, nc, D, strideD, V, shiftV, ldv, strideV, U, shiftU, ldu,
-                            strideU, C, shiftC, ldc, strideC, info);
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_sort<T>), grid, threads3, 0, stream, n, nv, nu, nc, D, strideD,
+                            V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC, ldc,
+                            strideC, info);
 
     return rocblas_status_success;
 }
