@@ -280,7 +280,7 @@ void testing_lauum(Arguments& argus)
             else
                 rocsolver_bench_output(gpu_time_used);
         }
-    }
+}
 
     // ensure all arguments were consumed
     argus.validate_consumed();
@@ -288,4 +288,4 @@ void testing_lauum(Arguments& argus)
 
 #define EXTERN_TESTING_LAUUM(...) extern template void testing_lauum<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_LAUUM, FOREACH_REAL_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_LAUUM, FOREACH_SCALAR_TYPE, APPLY_STAMP)
