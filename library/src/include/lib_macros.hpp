@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -10,8 +10,4 @@
  * ===========================================================================
  */
 
-#ifdef _WIN32
 #define ROCSOLVER_KERNEL static __global__
-#else
-#define ROCSOLVER_KERNEL __global__
-#endif

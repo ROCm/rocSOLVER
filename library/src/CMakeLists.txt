@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # package_targets is used as a list of install target
@@ -150,7 +150,6 @@ set(rocsolver_lapack_source
 
 set(rocsolver_auxiliary_source
   # vector & matrix manipulations
-  auxiliary/rocauxiliary_aliases.cpp
   auxiliary/rocauxiliary_lacgv.cpp
   auxiliary/rocauxiliary_laswp.cpp
   # householder reflections
@@ -233,10 +232,7 @@ set(auxiliaries
   common/rocsolver_logger.cpp
 )
 
-prepend_path(".." rocsolver_headers_public relative_rocsolver_headers_public)
-
 add_library(rocsolver
-  ${relative_rocsolver_headers_public}
   ${auxiliaries}
   ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}

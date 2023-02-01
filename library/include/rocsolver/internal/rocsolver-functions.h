@@ -2,8 +2,8 @@
  * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef _ROCLAPACK_FUNCTIONS_H
-#define _ROCLAPACK_FUNCTIONS_H
+#ifndef ROCSOLVER_FUNCTIONS_H
+#define ROCSOLVER_FUNCTIONS_H
 
 #include <rocblas/rocblas.h>
 
@@ -23741,4 +23741,4 @@ ROCSOLVER_EXPORT rocblas_status
 }
 #endif
 
-#endif /* _ROCLAPACK_FUNCTIONS_H */
+#endif /* ROCSOLVER_FUNCTIONS_H */

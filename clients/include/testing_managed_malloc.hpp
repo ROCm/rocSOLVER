@@ -85,7 +85,7 @@ void managed_malloc_getError(const rocblas_handle handle,
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_labrd(handle, m, n, nb, dARes, lda, dD, dE, dTauq, dTaup, dXRes,
                                         ldx, dYRes, ldy));
-    hipDeviceSynchronize();
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
 
     // CPU lapack
     cpu_labrd(m, n, nb, dA, lda, dD, dE, dTauq, dTaup, dX, ldx, dY, ldy);
@@ -147,7 +147,7 @@ void managed_malloc_getPerfData(const rocblas_handle handle,
 
         CHECK_ROCBLAS_ERROR(rocsolver_labrd(handle, m, n, nb, dARes, lda, dD, dE, dTauq, dTaup,
                                             dXRes, ldx, dYRes, ldy));
-        hipDeviceSynchronize();
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
     }
 
     // gpu-lapack performance
@@ -171,7 +171,7 @@ void managed_malloc_getPerfData(const rocblas_handle handle,
 
         start = get_time_us_sync(stream);
         rocsolver_labrd(handle, m, n, nb, dARes, lda, dD, dE, dTauq, dTaup, dXRes, ldx, dYRes, ldy);
-        hipDeviceSynchronize();
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -195,8 +195,8 @@ void testing_managed_malloc(Arguments& argus)
 
     // check managed memory enablement
     int deviceID, hmm_enabled;
-    hipGetDevice(&deviceID);
-    hipDeviceGetAttribute(&hmm_enabled, hipDeviceAttributeManagedMemory, deviceID);
+    CHECK_HIP_ERROR(hipGetDevice(&deviceID));
+    CHECK_HIP_ERROR(hipDeviceGetAttribute(&hmm_enabled, hipDeviceAttributeManagedMemory, deviceID));
     if(!hmm_enabled)
     {
         std::puts("Managed memory not enabled on device. Skipping test...");
@@ -254,16 +254,16 @@ void testing_managed_malloc(Arguments& argus)
     // memory allocations
     S *dD, *dE;
     T *dA, *dARes, *dTauq, *dTaup, *dX, *dXRes, *dY, *dYRes;
-    hipMallocManaged(&dA, sizeof(T) * size_A);
-    hipMallocManaged(&dARes, sizeof(T) * size_A);
-    hipMallocManaged(&dD, sizeof(S) * size_D);
-    hipMallocManaged(&dE, sizeof(S) * size_E);
-    hipMallocManaged(&dTauq, sizeof(T) * size_Q);
-    hipMallocManaged(&dTaup, sizeof(T) * size_P);
-    hipMallocManaged(&dX, sizeof(T) * size_X);
-    hipMallocManaged(&dXRes, sizeof(T) * size_X);
-    hipMallocManaged(&dY, sizeof(T) * size_Y);
-    hipMallocManaged(&dYRes, sizeof(T) * size_Y);
+    CHECK_HIP_ERROR(hipMallocManaged(&dA, sizeof(T) * size_A));
+    CHECK_HIP_ERROR(hipMallocManaged(&dARes, sizeof(T) * size_A));
+    CHECK_HIP_ERROR(hipMallocManaged(&dD, sizeof(S) * size_D));
+    CHECK_HIP_ERROR(hipMallocManaged(&dE, sizeof(S) * size_E));
+    CHECK_HIP_ERROR(hipMallocManaged(&dTauq, sizeof(T) * size_Q));
+    CHECK_HIP_ERROR(hipMallocManaged(&dTaup, sizeof(T) * size_P));
+    CHECK_HIP_ERROR(hipMallocManaged(&dX, sizeof(T) * size_X));
+    CHECK_HIP_ERROR(hipMallocManaged(&dXRes, sizeof(T) * size_X));
+    CHECK_HIP_ERROR(hipMallocManaged(&dY, sizeof(T) * size_Y));
+    CHECK_HIP_ERROR(hipMallocManaged(&dYRes, sizeof(T) * size_Y));
 
     // check quick return
     if(m == 0 || n == 0 || nb == 0)
@@ -289,16 +289,16 @@ void testing_managed_malloc(Arguments& argus)
                                       hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // free memory
-    hipFree(dA);
-    hipFree(dARes);
-    hipFree(dD);
-    hipFree(dE);
-    hipFree(dTauq);
-    hipFree(dTaup);
-    hipFree(dX);
-    hipFree(dXRes);
-    hipFree(dY);
-    hipFree(dYRes);
+    CHECK_HIP_ERROR(hipFree(dA));
+    CHECK_HIP_ERROR(hipFree(dARes));
+    CHECK_HIP_ERROR(hipFree(dD));
+    CHECK_HIP_ERROR(hipFree(dE));
+    CHECK_HIP_ERROR(hipFree(dTauq));
+    CHECK_HIP_ERROR(hipFree(dTaup));
+    CHECK_HIP_ERROR(hipFree(dX));
+    CHECK_HIP_ERROR(hipFree(dXRes));
+    CHECK_HIP_ERROR(hipFree(dY));
+    CHECK_HIP_ERROR(hipFree(dYRes));
 
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance
