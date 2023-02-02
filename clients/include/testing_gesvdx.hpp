@@ -434,10 +434,12 @@ void gesvdx_getError(const rocblas_handle handle,
     //  meaning in gesvd_, however, We expect the used input matrices to always converge)
     /*for(rocblas_int b = 0; b < bc; ++b)
     {
+        EXPECT_EQ(hinfo[b][0], hinfoRes[b][0]) << "where b = " << b;
         if(hinfo[b][0] != hinfoRes[b][0])
             *max_err += 1;
         for(int j = 0; j < hNsv[b][0]; ++j)
         {
+            EXPECT_EQ(hifail[b][j], hifailRes[b][j]) << "where b = " << b << ", j = " << j;
             if(hifail[b][j] != hifailRes[b][j])
                 *max_err += 1;
         }
