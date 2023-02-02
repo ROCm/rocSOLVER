@@ -11,8 +11,8 @@
 //
 //
 
-#ifndef ROCSOLVER_ALIASES_H_
-#define ROCSOLVER_ALIASES_H_
+#ifndef ROCSOLVER_ALIASES_H
+#define ROCSOLVER_ALIASES_H
 
 #include <rocblas/rocblas.h>
 
@@ -184,4 +184,4 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_get_matrix(rocsolver_int rows,
 
 #undef ROCSOLVER_DEPRECATED_X
 
-#endif /* ROCSOLVER_ALIASES_H_ */
+#endif /* ROCSOLVER_ALIASES_H */

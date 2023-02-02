@@ -233,10 +233,7 @@ set(auxiliaries
   common/rocsolver_logger.cpp
 )
 
-prepend_path(".." rocsolver_headers_public relative_rocsolver_headers_public)
-
 add_library(rocsolver
-  ${relative_rocsolver_headers_public}
   ${auxiliaries}
   ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
