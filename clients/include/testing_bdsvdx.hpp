@@ -280,7 +280,7 @@ void bdsvdx_getError(const rocblas_handle handle,
             err = 0;
             for(int j = 0; j < hInfoRes[0][0]; j++)
             {
-                EXPECT_EQ(hIfailRes[0][j], 0) << "where j = " << j;
+                EXPECT_NE(hIfailRes[0][j], 0) << "where j = " << j;
                 if(hIfailRes[0][j] == 0)
                     err++;
             }

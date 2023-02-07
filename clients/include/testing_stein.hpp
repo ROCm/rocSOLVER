@@ -274,7 +274,7 @@ void stein_getError(const rocblas_handle handle,
         err = 0;
         for(int j = 0; j < hInfo[0][0]; j++)
         {
-            EXPECT_EQ(hIfailRes[0][j], 0) << "j = " << j;
+            EXPECT_NE(hIfailRes[0][j], 0) << "j = " << j;
             if(hIfailRes[0][j] == 0)
                 err++;
         }
