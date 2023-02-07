@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -71,7 +71,7 @@ void lauum_initData(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th>
+template <typename T, typename Td, typename Th, bool COMPLEX = rocblas_is_complex<T>>
 void lauum_getError(const rocblas_handle handle,
                     const rocblas_fill uplo,
                     const rocblas_int n,
@@ -90,7 +90,21 @@ void lauum_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    cpu_lauum<T>(uplo, n, hA[0], lda);
+    // CPU lauum is returning incorrect values in the complex case
+    if(COMPLEX)
+    {
+        host_strided_batch_vector<T> hB(hA.n(), hA.inc(), hA.stride(), hA.batch_count());
+        hB.copy_from(hA);
+
+        rocblas_side side = uplo == rocblas_fill_upper ? rocblas_side_right : rocblas_side_left;
+        cpu_trmm<T>(side, uplo, rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
+                    n, 1, hB[0], lda, hB[0], lda);
+        cpu_lacpy<T>(uplo, n, n, hB[0], lda, hA[0], lda);
+    }
+    else
+    {
+        cpu_lauum<T>(uplo, n, hA[0], lda);
+    }
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
@@ -280,7 +294,7 @@ void testing_lauum(Arguments& argus)
             else
                 rocsolver_bench_output(gpu_time_used);
         }
-}
+    }
 
     // ensure all arguments were consumed
     argus.validate_consumed();

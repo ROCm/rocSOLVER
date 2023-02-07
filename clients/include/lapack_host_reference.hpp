@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #pragma once
@@ -338,6 +338,15 @@ void cpu_gelqf(rocblas_int m, rocblas_int n, T* A, rocblas_int lda, T* ipiv, T* 
 
 template <typename T>
 void cpu_lacgv(rocblas_int n, T* x, rocblas_int incx);
+
+template <typename T>
+void cpu_lacpy(rocblas_fill uplo,
+               rocblas_int n,
+               rocblas_int m,
+               T* A,
+               rocblas_int lda,
+               T* B,
+               rocblas_int ldb);
 
 template <typename T>
 void cpu_laswp(rocblas_int n,

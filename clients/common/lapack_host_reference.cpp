@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2023 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #include <rocblas/rocblas.h>
@@ -904,6 +904,21 @@ void zgelqf_(int* m,
 
 void clacgv_(int* n, rocblas_float_complex* x, int* incx);
 void zlacgv_(int* n, rocblas_double_complex* x, int* incx);
+
+void clacpy_(char* uplo,
+             int* n,
+             int* m,
+             rocblas_float_complex* A,
+             int* lda,
+             rocblas_float_complex* B,
+             int* ldb);
+void zlacpy_(char* uplo,
+             int* n,
+             int* m,
+             rocblas_double_complex* A,
+             int* lda,
+             rocblas_double_complex* B,
+             int* ldb);
 
 void slaswp_(int* n, float* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
 void dlaswp_(int* n, double* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
@@ -2500,6 +2515,33 @@ template <>
 void cpu_lacgv<rocblas_double_complex>(rocblas_int n, rocblas_double_complex* x, rocblas_int incx)
 {
     zlacgv_(&n, x, &incx);
+}
+
+// lacpy
+template <>
+void cpu_lacpy<rocblas_float_complex>(rocblas_fill uplo,
+                                      rocblas_int n,
+                                      rocblas_int m,
+                                      rocblas_float_complex* A,
+                                      rocblas_int lda,
+                                      rocblas_float_complex* B,
+                                      rocblas_int ldb)
+{
+    char uploC = rocblas2char_fill(uplo);
+    clacpy_(&uploC, &n, &m, A, &lda, B, &ldb);
+}
+
+template <>
+void cpu_lacpy<rocblas_double_complex>(rocblas_fill uplo,
+                                       rocblas_int n,
+                                       rocblas_int m,
+                                       rocblas_double_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_double_complex* B,
+                                       rocblas_int ldb)
+{
+    char uploC = rocblas2char_fill(uplo);
+    zlacpy_(&uploC, &n, &m, A, &lda, B, &ldb);
 }
 
 // laswp
