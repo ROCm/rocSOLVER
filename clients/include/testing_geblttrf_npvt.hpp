@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -280,11 +280,13 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     {
         if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
         {
+            EXPECT_GT(hInfoRes[b][0], 0) << "where b = " << b;
             if(hInfoRes[b][0] <= 0)
                 err++;
         }
         else
         {
+            EXPECT_EQ(hInfoRes[b][0], 0) << "where b = " << b;
             if(hInfoRes[b][0] != 0)
                 err++;
         }

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -245,13 +245,14 @@ void bdsqr_getError(const rocblas_handle handle,
     if(nc > 0)
         CHECK_HIP_ERROR(hC.transfer_from(dC));
 
-    // Check info for non-covergence
+    // Check info for non-convergence
     *max_err = 0;
+    EXPECT_EQ(hInfo[0][0], hInfoRes[0][0]);
     if(hInfo[0][0] != hInfoRes[0][0])
         *max_err = 1;
 
     // (We expect the used input matrices to always converge. Testing
-    // implicitely the equivalent non-converged matrix is very complicated and it boils
+    // implicitly the equivalent non-converged matrix is very complicated and it boils
     // down to essentially run the algorithm again and until convergence is achieved).
 
     // error is ||hD - hDRes||
@@ -270,7 +271,7 @@ void bdsqr_getError(const rocblas_handle handle,
 
         if(uplo == rocblas_fill_upper)
         {
-            // check singular vectors implicitely (A'*u_i = s_i*v_i)
+            // check singular vectors implicitly (A'*u_i = s_i*v_i)
             for(rocblas_int i = 0; i < nv; ++i)
             {
                 for(rocblas_int j = 0; j < n; ++j)
@@ -286,7 +287,7 @@ void bdsqr_getError(const rocblas_handle handle,
         }
         else
         {
-            // check singular vectors implicitely (A*v_i = s_i*u_i)
+            // check singular vectors implicitly (A*v_i = s_i*u_i)
             for(rocblas_int i = 0; i < nv; ++i)
             {
                 for(rocblas_int j = 0; j < n; ++j)
