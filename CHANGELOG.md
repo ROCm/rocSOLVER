@@ -5,10 +5,14 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ## (Unreleased) rocSOLVER
 ### Added
 ### Optimized
+- Improved the performance of BDSQR and GESVD
+
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
+- BDSQR and GESVD should no longer hang when the input contains `NaN` or `Inf`
+
 ### Known Issues
 ### Security
 
