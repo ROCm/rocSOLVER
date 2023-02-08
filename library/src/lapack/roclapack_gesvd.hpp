@@ -144,7 +144,7 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
                                    size_t* size_Abyx_norms_tmptr,
                                    size_t* size_Abyx_norms_trfact_X,
                                    size_t* size_diag_tmptr_Y,
-                                   size_t* size_tau,
+                                   size_t* size_tau_splits,
                                    size_t* size_tempArrayT,
                                    size_t* size_tempArrayC,
                                    size_t* size_workArr)
@@ -157,7 +157,7 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
         *size_Abyx_norms_tmptr = 0;
         *size_Abyx_norms_trfact_X = 0;
         *size_diag_tmptr_Y = 0;
-        *size_tau = 0;
+        *size_tau_splits = 0;
         *size_tempArrayT = 0;
         *size_tempArrayC = 0;
         *size_workArr = 0;
@@ -207,10 +207,6 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     else
         *size_workArr = 0;
 
-    // size of array tau to store householder scalars on intermediate
-    // orthonormal/unitary matrices
-    *size_tau = 2 * sizeof(T) * min(m, n) * batch_count;
-
     // size of arrays to store temporary copies
     *size_tempArrayT
         = (fast_thinSVD || (thinSVD && leadvO && othervN)) ? sizeof(T) * k * k * batch_count : 0;
@@ -226,7 +222,11 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
                                                   &x[0], &y[0]);
 
     // workspace required for the SVD of the bidiagonal form
-    rocsolver_bdsqr_getMemorySize<S>(k, nv, nu, 0, batch_count, &w[1]);
+    rocsolver_bdsqr_getMemorySize<S>(k, nv, nu, 0, batch_count, size_tau_splits, &w[1]);
+
+    // size of array tau to store householder scalars on intermediate
+    // orthonormal/unitary matrices
+    *size_tau_splits = max(*size_tau_splits, 2 * sizeof(T) * min(m, n) * batch_count);
 
     // extra requirements for QR/LQ factorization
     if(thinSVD)
@@ -331,7 +331,7 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         T* Abyx_norms_tmptr,
                                         T* Abyx_norms_trfact_X,
                                         T* diag_tmptr_Y,
-                                        T* tau,
+                                        T* tau_splits,
                                         T* tempArrayT,
                                         T* tempArrayC,
                                         T** workArr)
@@ -487,9 +487,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             nv = rightvN ? 0 : k;
 
             //*** STAGE 1: Row (or column) compression ***//
-            local_geqrlq_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, tau, k,
-                                                    batch_count, scalars, work_workArr,
-                                                    Abyx_norms_trfact_X, diag_tmptr_Y, workArr, row);
+            local_geqrlq_template<BATCHED, STRIDED>(
+                handle, m, n, A, shiftA, lda, strideA, tau_splits, k, batch_count, scalars,
+                work_workArr, Abyx_norms_trfact_X, diag_tmptr_Y, workArr, row);
 
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             // N/A
@@ -501,28 +501,29 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                     lda, strideA, uplo);
 
             rocsolver_gebrd_template<BATCHED, STRIDED>(
-                handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
-                (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX, diag_tmptr_Y,
-                shiftY, ldy, strideY, batch_count, scalars, work_workArr, Abyx_norms_tmptr);
+                handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau_splits, k,
+                (tau_splits + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
+                diag_tmptr_Y, shiftY, ldy, strideY, batch_count, scalars, work_workArr,
+                Abyx_norms_tmptr);
 
             //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
             if(!othervN)
                 rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-                    handle, storev_other, k, k, k, A, shiftA, lda, strideA, (tau + offset_other), k,
-                    batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X,
-                    workArr);
+                    handle, storev_other, k, k, k, A, shiftA, lda, strideA,
+                    (tau_splits + offset_other), k, batch_count, scalars, (T*)work_workArr,
+                    Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
             if(row)
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, A, shiftA, lda, strideA, U, shiftU, ldu,
                                             strideU, (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr);
+                                            (rocblas_int*)tau_splits, (TT*)work_workArr);
             else
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, V, shiftV, ldv, strideV, A, shiftA, lda,
                                             strideA, (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr);
+                                            (rocblas_int*)tau_splits, (TT*)work_workArr);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(othervS || othervA)
@@ -542,9 +543,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             nv = rightvN ? 0 : k;
 
             //*** STAGE 1: Row (or column) compression ***//
-            local_geqrlq_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, tau, k,
-                                                    batch_count, scalars, work_workArr,
-                                                    Abyx_norms_trfact_X, diag_tmptr_Y, workArr, row);
+            local_geqrlq_template<BATCHED, STRIDED>(
+                handle, m, n, A, shiftA, lda, strideA, tau_splits, k, batch_count, scalars,
+                work_workArr, Abyx_norms_trfact_X, diag_tmptr_Y, workArr, row);
 
             if(leadvA)
                 // copy factorization to U or V when needed
@@ -560,11 +561,11 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             if(leadvA)
                 local_orgqrlq_ungqrlq_template<false, STRIDED>(
-                    handle, kk, kk, k, UV, shiftUV, lduv, strideUV, tau, k, batch_count, scalars,
-                    (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
+                    handle, kk, kk, k, UV, shiftUV, lduv, strideUV, tau_splits, k, batch_count,
+                    scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
             else
                 local_orgqrlq_ungqrlq_template<BATCHED, STRIDED>(
-                    handle, m, n, k, A, shiftA, lda, strideA, tau, k, batch_count, scalars,
+                    handle, m, n, k, A, shiftA, lda, strideA, tau_splits, k, batch_count, scalars,
                     (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
 
             //*** STAGE 3: Bidiagonalization ***//
@@ -574,9 +575,10 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                     shiftT, ldt, strideT, uplo);
 
             rocsolver_gebrd_template<false, STRIDED>(
-                handle, k, k, bufferT, shiftT, ldt, strideT, S, strideS, E, strideE, tau, k,
-                (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX, diag_tmptr_Y,
-                shiftY, ldy, strideY, batch_count, scalars, work_workArr, Abyx_norms_tmptr);
+                handle, k, k, bufferT, shiftT, ldt, strideT, S, strideS, E, strideE, tau_splits, k,
+                (tau_splits + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
+                diag_tmptr_Y, shiftY, ldy, strideY, batch_count, scalars, work_workArr,
+                Abyx_norms_tmptr);
 
             if(!othervN)
                 // copy results to generate non-lead vectors if required
@@ -587,15 +589,15 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
             // for lead-dimension vectors
             rocsolver_orgbr_ungbr_template<false, STRIDED>(
-                handle, storev_lead, k, k, k, bufferT, shiftT, ldt, strideT, (tau + offset_lead), k,
-                batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X,
-                workArr);
+                handle, storev_lead, k, k, k, bufferT, shiftT, ldt, strideT,
+                (tau_splits + offset_lead), k, batch_count, scalars, (T*)work_workArr,
+                Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
 
             // for the other-side vectors
             if(!othervN)
                 rocsolver_orgbr_ungbr_template<false, STRIDED>(
                     handle, storev_other, k, k, k, bufferC, shiftC, ldc, strideC,
-                    (tau + offset_other), k, batch_count, scalars, (T*)work_workArr,
+                    (tau_splits + offset_other), k, batch_count, scalars, (T*)work_workArr,
                     Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
@@ -603,12 +605,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, bufferC, shiftC, ldc, strideC, bufferT, shiftT,
                                             ldt, strideT, (T*)nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr);
+                                            (rocblas_int*)tau_splits, (TT*)work_workArr);
             else
                 rocsolver_bdsqr_template<T>(handle, rocblas_fill_upper, k, nv, nu, 0, S, strideS, E,
                                             strideE, bufferT, shiftT, ldt, strideT, bufferC, shiftC,
                                             ldc, strideC, (T*)nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr);
+                                            (rocblas_int*)tau_splits, (TT*)work_workArr);
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
             if(leadvO)
@@ -690,9 +692,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 testing. -See corresponding unit test for more details-) **/
 
             //*** STAGE 1: Row (or column) compression ***//
-            local_geqrlq_template<BATCHED, STRIDED>(handle, m, n, A, shiftA, lda, strideA, tau, k,
-                                                    batch_count, scalars, work_workArr,
-                                                    Abyx_norms_trfact_X, diag_tmptr_Y, workArr, row);
+            local_geqrlq_template<BATCHED, STRIDED>(
+                handle, m, n, A, shiftA, lda, strideA, tau_splits, k, batch_count, scalars,
+                work_workArr, Abyx_norms_trfact_X, diag_tmptr_Y, workArr, row);
 
             if(!leadvO)
                 // copy factorization to U or V when needed
@@ -710,16 +712,16 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             //*** STAGE 2: generate orthonormal/unitary matrix from row/column compression ***//
             if(leadvO)
                 local_orgqrlq_ungqrlq_template<BATCHED, STRIDED>(
-                    handle, m, n, k, A, shiftA, lda, strideA, tau, k, batch_count, scalars,
+                    handle, m, n, k, A, shiftA, lda, strideA, tau_splits, k, batch_count, scalars,
                     (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
             else if(leadvA)
                 local_orgqrlq_ungqrlq_template<false, STRIDED>(
-                    handle, kk, kk, k, UV, shiftUV, lduv, strideUV, tau, k, batch_count, scalars,
-                    (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
+                    handle, kk, kk, k, UV, shiftUV, lduv, strideUV, tau_splits, k, batch_count,
+                    scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
             else
                 local_orgqrlq_ungqrlq_template<false, STRIDED>(
-                    handle, m, n, k, UV, shiftUV, lduv, strideUV, tau, k, batch_count, scalars,
-                    (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
+                    handle, m, n, k, UV, shiftUV, lduv, strideUV, tau_splits, k, batch_count,
+                    scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr, row);
 
             //*** STAGE 3: Bidiagonalization ***//
             if(othervS || othervA || (leadvO && othervN))
@@ -730,8 +732,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         bufferT, shiftT, ldt, strideT, uplo);
 
                 rocsolver_gebrd_template<false, STRIDED>(
-                    handle, k, k, bufferT, shiftT, ldt, strideT, S, strideS, E, strideE, tau, k,
-                    (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
+                    handle, k, k, bufferT, shiftT, ldt, strideT, S, strideS, E, strideE, tau_splits,
+                    k, (tau_splits + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
                     diag_tmptr_Y, shiftY, ldy, strideY, batch_count, scalars, work_workArr,
                     Abyx_norms_tmptr);
 
@@ -745,8 +747,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                         shiftA, lda, strideA, uplo);
 
                 rocsolver_gebrd_template<BATCHED, STRIDED>(
-                    handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
-                    (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
+                    handle, k, k, A, shiftA, lda, strideA, S, strideS, E, strideE, tau_splits, k,
+                    (tau_splits + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
                     diag_tmptr_Y, shiftY, ldy, strideY, batch_count, scalars, work_workArr,
                     Abyx_norms_tmptr);
 
@@ -760,31 +762,31 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 if(leadvO)
                     rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
                         handle, storev_lead, side, trans, m, n, k, bufferT, shiftT, ldt, strideT,
-                        (tau + offset_lead), k, A, shiftA, lda, strideA, batch_count, scalars,
-                        Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
+                        (tau_splits + offset_lead), k, A, shiftA, lda, strideA, batch_count,
+                        scalars, Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
                 else
                     rocsolver_ormbr_unmbr_template<false, STRIDED>(
                         handle, storev_lead, side, trans, m, n, k, bufferT, shiftT, ldt, strideT,
-                        (tau + offset_lead), k, UV, shiftUV, lduv, strideUV, batch_count, scalars,
-                        Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
+                        (tau_splits + offset_lead), k, UV, shiftUV, lduv, strideUV, batch_count,
+                        scalars, Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
             }
             else
                 rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
                     handle, storev_lead, side, trans, m, n, k, A, shiftA, lda, strideA,
-                    (tau + offset_lead), k, UV, shiftUV, lduv, strideUV, batch_count, scalars,
-                    Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
+                    (tau_splits + offset_lead), k, UV, shiftUV, lduv, strideUV, batch_count,
+                    scalars, Abyx_norms_tmptr, diag_tmptr_Y, Abyx_norms_trfact_X, workArr);
 
             // for the other-side vectors
             if(othervS || othervA)
                 rocsolver_orgbr_ungbr_template<false, STRIDED>(
                     handle, storev_other, k, k, k, bufferT, shiftT, ldt, strideT,
-                    (tau + offset_other), k, batch_count, scalars, (T*)work_workArr,
+                    (tau_splits + offset_other), k, batch_count, scalars, (T*)work_workArr,
                     Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
             else if(othervO)
                 rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-                    handle, storev_other, k, k, k, A, shiftA, lda, strideA, (tau + offset_other), k,
-                    batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X,
-                    workArr);
+                    handle, storev_other, k, k, k, A, shiftA, lda, strideA,
+                    (tau_splits + offset_other), k, batch_count, scalars, (T*)work_workArr,
+                    Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
 
             //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
             uplo = rocblas_fill_upper;
@@ -793,21 +795,21 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                 rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                             shiftV, ldv, strideV, U, shiftU, ldu, strideU,
                                             (T*)nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr);
+                                            (rocblas_int*)tau_splits, (TT*)work_workArr);
             }
             else if(leftvO && !rightvO)
             {
                 rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                             shiftV, ldv, strideV, A, shiftA, lda, strideA,
                                             (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr);
+                                            (rocblas_int*)tau_splits, (TT*)work_workArr);
             }
             else
             {
                 rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, A,
                                             shiftA, lda, strideA, U, shiftU, ldu, strideU,
                                             (W) nullptr, 0, 1, 1, info, batch_count,
-                                            (TT*)work_workArr);
+                                            (rocblas_int*)tau_splits, (TT*)work_workArr);
             }
 
             //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
@@ -828,9 +830,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
         //*** STAGE 3: Bidiagonalization ***//
         rocsolver_gebrd_template<BATCHED, STRIDED>(
-            handle, m, n, A, shiftA, lda, strideA, S, strideS, E, strideE, tau, k,
-            (tau + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX, diag_tmptr_Y,
-            shiftY, ldy, strideY, batch_count, scalars, work_workArr, Abyx_norms_tmptr);
+            handle, m, n, A, shiftA, lda, strideA, S, strideS, E, strideE, tau_splits, k,
+            (tau_splits + k * batch_count), k, Abyx_norms_trfact_X, shiftX, ldx, strideX,
+            diag_tmptr_Y, shiftY, ldy, strideY, batch_count, scalars, work_workArr, Abyx_norms_tmptr);
 
         //*** STAGE 4: generate orthonormal/unitary matrices from bidiagonalization ***//
         if(leftvS || leftvA)
@@ -842,8 +844,9 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
                                     lda, strideA, U, shiftU, ldu, strideU);
 
             rocsolver_orgbr_ungbr_template<false, STRIDED>(
-                handle, rocblas_column_wise, m, mn, n, U, shiftU, ldu, strideU, tau, k, batch_count,
-                scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
+                handle, rocblas_column_wise, m, mn, n, U, shiftU, ldu, strideU, tau_splits, k,
+                batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X,
+                workArr);
         }
 
         if(rightvS || rightvA)
@@ -856,23 +859,24 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
             rocsolver_orgbr_ungbr_template<false, STRIDED>(
                 handle, rocblas_row_wise, mn, n, m, V, shiftV, ldv, strideV,
-                (tau + k * batch_count), k, batch_count, scalars, (T*)work_workArr,
+                (tau_splits + k * batch_count), k, batch_count, scalars, (T*)work_workArr,
                 Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
         }
 
         if(leftvO)
         {
             rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-                handle, rocblas_column_wise, m, k, n, A, shiftA, lda, strideA, tau, k, batch_count,
-                scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
+                handle, rocblas_column_wise, m, k, n, A, shiftA, lda, strideA, tau_splits, k,
+                batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X,
+                workArr);
         }
 
         if(rightvO)
         {
             rocsolver_orgbr_ungbr_template<BATCHED, STRIDED>(
-                handle, rocblas_row_wise, k, n, m, A, shiftA, lda, strideA, (tau + k * batch_count),
-                k, batch_count, scalars, (T*)work_workArr, Abyx_norms_tmptr, Abyx_norms_trfact_X,
-                workArr);
+                handle, rocblas_row_wise, k, n, m, A, shiftA, lda, strideA,
+                (tau_splits + k * batch_count), k, batch_count, scalars, (T*)work_workArr,
+                Abyx_norms_tmptr, Abyx_norms_trfact_X, workArr);
         }
 
         //*** STAGE 5: Compute singular values and vectors from the bidiagonal form ***//
@@ -880,21 +884,24 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
         {
             rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                         shiftV, ldv, strideV, U, shiftU, ldu, strideU, (T*)nullptr,
-                                        0, 1, 1, info, batch_count, (TT*)work_workArr);
+                                        0, 1, 1, info, batch_count, (rocblas_int*)tau_splits,
+                                        (TT*)work_workArr);
         }
 
         else if(leftvO && !rightvO)
         {
             rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, V,
                                         shiftV, ldv, strideV, A, shiftA, lda, strideA, (W) nullptr,
-                                        0, 1, 1, info, batch_count, (TT*)work_workArr);
+                                        0, 1, 1, info, batch_count, (rocblas_int*)tau_splits,
+                                        (TT*)work_workArr);
         }
 
         else
         {
             rocsolver_bdsqr_template<T>(handle, uplo, k, nv, nu, 0, S, strideS, E, strideE, A,
                                         shiftA, lda, strideA, U, shiftU, ldu, strideU, (W) nullptr,
-                                        0, 1, 1, info, batch_count, (TT*)work_workArr);
+                                        0, 1, 1, info, batch_count, (rocblas_int*)tau_splits,
+                                        (TT*)work_workArr);
         }
 
         //*** STAGE 6: update vectors with orthonormal/unitary matrices ***//
