@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
 # package_targets is used as a list of install target
@@ -233,10 +233,7 @@ set(auxiliaries
   common/rocsolver_logger.cpp
 )
 
-prepend_path(".." rocsolver_headers_public relative_rocsolver_headers_public)
-
 add_library(rocsolver
-  ${relative_rocsolver_headers_public}
   ${auxiliaries}
   ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
@@ -287,14 +284,14 @@ set_target_properties(rocsolver PROPERTIES
   CXX_VISIBILITY_PRESET "hidden"
   VISIBILITY_INLINES_HIDDEN ON
 )
-generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-export.h)
+generate_export_header(rocsolver EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsolver/internal/rocsolver-export.h)
 
 if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   rocm_wrap_header_file(
-    rocsolver-version.h rocsolver-export.h
+    internal/rocsolver-version.h internal/rocsolver-export.h
     GUARDS SYMLINK WRAPPER
     WRAPPER_LOCATIONS ${CMAKE_INSTALL_INCLUDEDIR} rocsolver/${CMAKE_INSTALL_INCLUDEDIR}
-    ORIGINAL_FILES ${PROJECT_BINARY_DIR}/include/rocsolver/rocsolver-version.h
+    ORIGINAL_FILES ${PROJECT_BINARY_DIR}/include/rocsolver/internal/rocsolver-version.h
   )
 endif( )
 

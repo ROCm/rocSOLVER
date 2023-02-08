@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -271,14 +271,20 @@ void syevdx_heevdx_inplace_getError(const rocblas_handle handle,
     // Check info for non-convergence
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
+    {
+        EXPECT_EQ(hinfo[b][0], hinfoRes[b][0]) << "where b = " << b;
         if(hinfo[b][0] != hinfoRes[b][0])
             *max_err += 1;
+    }
 
     // Check number of returned eigenvalues
     double err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
+    {
+        EXPECT_EQ(hNev[b][0], hNevRes[b][0]) << "where b = " << b;
         if(hNev[b][0] != hNevRes[b][0])
             err++;
+    }
     *max_err = err > *max_err ? err : *max_err;
 
     // (We expect the used input matrices to always converge. Testing

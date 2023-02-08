@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -250,16 +250,22 @@ void sytf2_sytrf_getError(const rocblas_handle handle,
         // also check pivoting (count the number of incorrect pivots)
         err = 0;
         for(rocblas_int i = 0; i < n; ++i)
+        {
+            EXPECT_EQ(hIpiv[b][i], hIpivRes[b][i]) << "where b = " << b << ", i = " << i;
             if(hIpiv[b][i] != hIpivRes[b][i])
                 err++;
+        }
         *max_err = err > *max_err ? err : *max_err;
     }
 
     // also check info
     err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
+    {
+        EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
             err++;
+    }
     *max_err += err;
 }
 

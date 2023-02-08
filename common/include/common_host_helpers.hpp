@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,16 @@
  *    library and rocSOLVER client code.
  * ===========================================================================
  */
+
+#define THROW_IF_HIP_ERROR(expr)                                                       \
+    do                                                                                 \
+    {                                                                                  \
+        hipError_t _status = (expr);                                                   \
+        if(_status != hipSuccess)                                                      \
+            throw std::runtime_error(fmt::format("{}:{}: [{}] {}", __FILE__, __LINE__, \
+                                                 hipGetErrorName(_status),             \
+                                                 hipGetErrorString(_status)));         \
+    } while(0)
 
 /* =============================================================================================== */
 /* Number properties functions.                                                                    */
@@ -162,7 +173,8 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_fill uplo = rocblas_fill_full)
 {
     std::vector<T> hA(lda * n);
-    hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    THROW_IF_HIP_ERROR(
+        hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost));
 
     print_to_stream<T>(os, name, m, n, hA.data(), lda, uplo);
 }
@@ -181,8 +193,8 @@ void print_device_matrix(std::ostream& os,
 {
     std::vector<T> hA(lda * n);
     T* AA[1];
-    hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
-    hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    THROW_IF_HIP_ERROR(hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost));
+    THROW_IF_HIP_ERROR(hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost));
 
     print_to_stream<T>(os, name, m, n, hA.data(), lda, uplo);
 }
@@ -200,7 +212,8 @@ void print_device_matrix(const std::string file,
 {
     std::ofstream os(file);
     std::vector<T> hA(lda * n);
-    hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    THROW_IF_HIP_ERROR(
+        hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost));
 
     print_to_stream<T>(os, "", m, n, hA.data(), lda, uplo);
 }
@@ -219,8 +232,8 @@ void print_device_matrix(const std::string file,
     std::ofstream os(file);
     std::vector<T> hA(lda * n);
     T* AA[1];
-    hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost);
-    hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost);
+    THROW_IF_HIP_ERROR(hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost));
+    THROW_IF_HIP_ERROR(hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost));
 
     print_to_stream<T>(os, "", m, n, hA.data(), lda, uplo);
 }

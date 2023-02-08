@@ -1,12 +1,13 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef _ROCLAPACK_FUNCTIONS_H
-#define _ROCLAPACK_FUNCTIONS_H
+#ifndef ROCSOLVER_FUNCTIONS_H
+#define ROCSOLVER_FUNCTIONS_H
+
+#include <rocblas/rocblas.h>
 
 #include "rocsolver-extra-types.h"
-#include <rocblas/rocblas.h>
 
 /*! \file
     \brief rocsolver_functions.h provides Lapack functionality for the ROCm platform.
@@ -23728,4 +23729,4 @@ ROCSOLVER_EXPORT rocblas_status
 }
 #endif
 
-#endif /* _ROCLAPACK_FUNCTIONS_H */
+#endif /* ROCSOLVER_FUNCTIONS_H */

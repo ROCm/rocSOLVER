@@ -267,13 +267,14 @@ void bdsqr_getError(const rocblas_handle handle,
     if(nc > 0)
         CHECK_HIP_ERROR(hC.transfer_from(dC));
 
-    // Check info for non-covergence
+    // Check info for non-convergence
     *max_err = 0;
+    EXPECT_EQ(hInfo[0][0], hInfoRes[0][0]);
     if(hInfo[0][0] != hInfoRes[0][0])
         *max_err = 1;
 
     // (We expect the used input matrices to always converge. Testing
-    // implicitely the equivalent non-converged matrix is very complicated and it boils
+    // implicitly the equivalent non-converged matrix is very complicated and it boils
     // down to essentially run the algorithm again and until convergence is achieved).
 
     // error is ||hD - hDRes||
