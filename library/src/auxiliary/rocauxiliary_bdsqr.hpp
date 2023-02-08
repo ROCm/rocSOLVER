@@ -370,13 +370,6 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
     {
         smin = work[0];
         thresh = work[1];
-        if(thresh < 0)
-        {
-            t2b = 1;
-            thresh = -thresh;
-        }
-        else
-            t2b = 0;
     }
 
     // main loop
@@ -386,7 +379,7 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
         if(tid == 0)
         {
             // read diagonal block endpoints
-            start = splits[2 * sid];
+            i = start = splits[2 * sid];
             k = splits[2 * sid + 1];
 
             // number of iterations (QR steps) applied to current block
@@ -401,54 +394,37 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
             {
                 applyqr = false;
 
-                // split the diagonal blocks
-                for(rocblas_int j = 0; j < k - start + 1; ++j)
+                // current block goes from i until k
+                // determine shift for the QR step
+                // (apply convergence test to find gaps)
+                if(std::abs(D[i]) >= std::abs(D[k]))
                 {
-                    i = k - j - 1;
-                    if(i >= start && std::abs(E[i]) < thresh)
-                    {
-                        E[i] = 0;
-                        break;
-                    }
+                    t2b = 1;
+                    sh = std::abs(D[i]);
                 }
-
-                // check if last singular value converged,
-                // if not, continue with the QR step
-                if(i == k - 1)
-                    k--;
                 else
                 {
-                    // last block goes from i+1 until k
-                    // determine shift for the QR step
-                    // (apply convergence test to find gaps)
-                    i++;
-                    if(std::abs(D[i]) >= std::abs(D[k]))
-                    {
-                        t2b = 1;
-                        sh = std::abs(D[i]);
-                    }
-                    else
-                    {
-                        t2b = 0;
-                        sh = std::abs(D[k]);
-                    }
-                    smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1); // shift
-                    smax = find_max_tridiag(i, k, D,
-                                            E); // estimate of the largest singular value in the block
+                    t2b = 0;
+                    sh = std::abs(D[k]);
+                }
 
-                    // check for gaps, if none then continue
-                    if(smin >= 0)
-                    {
-                        if(smin / smax <= minshift)
-                            smin = 0; // shift set to zero if less than accepted value
-                        else if(sh > 0)
-                        {
-                            if(smin * smin / sh / sh < eps)
-                                smin = 0; // shift set to zero if negligible
-                        }
+                // shift
+                smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1);
+                // estimate of the largest singular value in the block
+                smax = find_max_tridiag(i, k, D, E);
 
-                        applyqr = true;
+                // check for gaps, if none then continue
+                if(smin >= 0)
+                {
+                    if(smin / smax <= minshift)
+                        smin = 0; // shift set to zero if less than accepted value
+                    else if(sh > 0)
+                    {
+                        if(smin * smin / sh / sh < eps)
+                            smin = 0; // shift set to zero if negligible
                     }
+
+                    applyqr = true;
                 }
             }
             __syncthreads();
@@ -467,6 +443,26 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
                                     U + i * ldu, ldu, C + i, ldc, smin, rots + incW * i);
 
                 __syncthreads();
+            }
+
+            // update current block endpoints
+            if(tid == 0)
+            {
+                while(k - 1 >= start && std::abs(E[k - 1]) < thresh)
+                {
+                    E[k - 1] = 0;
+                    k--;
+                }
+
+                for(i = k - 1; i >= start; i--)
+                {
+                    if(std::abs(E[i]) < thresh)
+                    {
+                        E[i] = 0;
+                        break;
+                    }
+                }
+                i++;
             }
         }
 
@@ -617,7 +613,7 @@ ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
     S thresh = std::max(tol * smin / S(std::sqrt(n)), S(maxiter) * sfm);
 
     work[0] = smin;
-    work[1] = (t2b ? -thresh : thresh);
+    work[1] = thresh;
 
     // search for NaNs, Infs, and splits in the input
     for(rocblas_int i = 0; i < n - 1; i++)
