@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -203,6 +203,7 @@ void stebz_getError(const rocblas_handle handle,
               hIblock[0], hIsplit[0], work.data(), iwork.data(), hinfo[0]);
 
     // check info
+    EXPECT_EQ(hinfo[0][0], hinfoRes[0][0]);
     if(hinfo[0][0] != hinfoRes[0][0])
         *max_err = 1;
     else
@@ -211,10 +212,14 @@ void stebz_getError(const rocblas_handle handle,
     // check number of split blocks
     rocblas_int ns = hnsplit[0][0];
     *max_err += std::abs(ns - hnsplitRes[0][0]);
+    EXPECT_EQ(hnsplit[0][0], hnsplitRes[0][0]);
 
     // check split blocks limits
     for(int k = 0; k < ns; ++k)
+    {
         *max_err += std::abs(hIsplit[0][k] - hIsplitRes[0][k]);
+        EXPECT_EQ(hIsplit[0][k], hIsplitRes[0][k]) << "where k = " << k;
+    }
 
     // if finding eigenvalues succeded, check values
     if(hinfo[0][0] == 0)
@@ -222,6 +227,7 @@ void stebz_getError(const rocblas_handle handle,
         // check number of computed eigenvalues
         rocblas_int nn = hnev[0][0];
         *max_err += std::abs(nn - hnevRes[0][0]);
+        EXPECT_EQ(hnev[0][0], hnevRes[0][0]);
 
         // check block indices
         // (note: as very close eigenvalues could be considered to belong to different
@@ -231,8 +237,12 @@ void stebz_getError(const rocblas_handle handle,
         {
             int difb = std::abs(hIblock[0][k] - hIblockRes[0][k]);
             T difv = std::abs(hW[0][k] - hWRes[0][k]) / hW[0][k];
-            if(difb > 0 && difv > n * get_epsilon<T>())
-                *max_err += difb;
+            if(difv > n * get_epsilon<T>())
+            {
+                EXPECT_EQ(hIblock[0][k], hIblockRes[0][k]) << "where k = " << k;
+                if(difb > 0)
+                    *max_err += difb;
+            }
         }
 
         // error is ||hW - hWRes|| / ||hW||

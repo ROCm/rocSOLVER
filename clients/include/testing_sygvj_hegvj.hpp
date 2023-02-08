@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -331,18 +331,30 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
     // check info for non-convergence and/or positive-definiteness
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
+    {
+        EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
             *max_err += 1;
+    }
 
     // Also check validity of residual
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfoRes[b][0] == 0 && hResidualRes[b][0] < 0)
-            *max_err += 1;
+        if(hInfoRes[b][0] == 0)
+        {
+            EXPECT_GE(hResidualRes[b][0], 0) << "where b = " << b;
+            if(hResidualRes[b][0] < 0)
+                *max_err += 1;
+        }
 
     // Also check validity of sweeps
     for(rocblas_int b = 0; b < bc; ++b)
-        if(hInfoRes[b][0] == 0 && (hSweepsRes[b][0] < 0 || hSweepsRes[b][0] > max_sweeps))
-            *max_err += 1;
+        if(hInfoRes[b][0] == 0)
+        {
+            EXPECT_GE(hSweepsRes[b][0], 0) << "where b = " << b;
+            EXPECT_LE(hSweepsRes[b][0], max_sweeps) << "where b = " << b;
+            if(hSweepsRes[b][0] < 0 || hSweepsRes[b][0] > max_sweeps)
+                *max_err += 1;
+        }
 
     double err;
 
