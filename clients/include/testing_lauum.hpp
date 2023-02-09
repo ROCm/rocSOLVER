@@ -62,6 +62,11 @@ void lauum_initData(const rocblas_handle handle,
     if(CPU)
     {
         rocblas_init<T>(hA, true);
+        // LAPACK intends that lauum only be called on matrices with a real diagonal
+        for(int i = 0; i < n; i++)
+        {
+            hA[0][i + i * lda] = std::real(hA[0][i + i * lda]);
+        }
     }
 
     if(GPU)
@@ -90,21 +95,7 @@ void lauum_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
-    // CPU lauum is returning incorrect values in the complex case
-    if(COMPLEX)
-    {
-        host_strided_batch_vector<T> hB(hA.n(), hA.inc(), hA.stride(), hA.batch_count());
-        hB.copy_from(hA);
-
-        rocblas_side side = uplo == rocblas_fill_upper ? rocblas_side_right : rocblas_side_left;
-        cpu_trmm<T>(side, uplo, rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit, n,
-                    n, 1, hB[0], lda, hB[0], lda);
-        cpu_lacpy<T>(uplo, n, n, hB[0], lda, hA[0], lda);
-    }
-    else
-    {
-        cpu_lauum<T>(uplo, n, hA[0], lda);
-    }
+    cpu_lauum<T>(uplo, n, hA[0], lda);
 
     // error is ||hA - hAr|| / ||hA||
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
