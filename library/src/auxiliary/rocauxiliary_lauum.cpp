@@ -44,7 +44,7 @@ rocblas_status rocsolver_lauum_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_lauum_template<T>(handle, uplo, n, A, shiftA, lda, strideA, batch_count,
-                                       (U*)work);
+                                       (T*)work);
 }
 
 /*

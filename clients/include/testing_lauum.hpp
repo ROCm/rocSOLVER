@@ -76,7 +76,7 @@ void lauum_initData(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename Td, typename Th>
 void lauum_getError(const rocblas_handle handle,
                     const rocblas_fill uplo,
                     const rocblas_int n,
