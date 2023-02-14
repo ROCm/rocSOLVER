@@ -1071,25 +1071,26 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief LAUUM computes the product of a triangular matrix A with its transpose.
+    \brief LAUUM computes the product of the upper (or lower) triangular part U (or L) of a 
+    symmetric/Hemitian matrix A with its transpose.
 
     \details
-    If uplo indicates upper, then \f$AA^T\f$ is computed. If uplo indicates lower, then \f$A^TA\f$ is computed instead.
+    If uplo indicates upper, then \f$UU'\f$ is computed. If uplo indicates lower, then \f$L'L\f$ is computed instead.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
     uplo        rocblas_fill.\n
-                Specifies whether the matrix A is upper or lower triangular.
+                Specifies whether the upper or lower triangular part of A will be used.
                 If uplo indicates lower (or upper), then the upper (or lower)
-                part of A is not used.
+                part of A is not referenced.
     @param[in]
     n           rocblas_int. n >= 0.\n
-                The number of columns of the matrix A.
+                The number of columns and rows of the matrix A.
     @param[inout]
     A           pointer to type. Array on the GPU of dimension lda*n. \n
-                On entry, the matrix to which the product will be applied.
-                On exit, A with the upper (or lower) part overwritten with the result.
+                On entry, it contains the upper (or lower) part of the symmetric/Hermitian matrix.
+                On exit, the upper (or lower) part is overwritten with the result of U*U' (or L'*L).
     @param[in]
     lda         rocblas_int. lda >= n.\n
                 The leading dimension of the array A.
