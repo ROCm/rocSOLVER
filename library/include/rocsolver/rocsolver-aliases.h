@@ -14,6 +14,8 @@
 #ifndef ROCSOLVER_ALIASES_H
 #define ROCSOLVER_ALIASES_H
 
+#include "rocsolver-export.h"
+#include "rocsolver-extra-types.h"
 #include <rocblas/rocblas.h>
 
 #ifndef ROCSOLVER_DEPRECATED_X

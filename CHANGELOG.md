@@ -6,8 +6,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 ### Optimized
 ### Changed
-- Moved internal headers into a subdirectory.
-
 ### Deprecated
 ### Removed
 ### Fixed
