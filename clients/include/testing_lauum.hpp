@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -62,6 +62,11 @@ void lauum_initData(const rocblas_handle handle,
     if(CPU)
     {
         rocblas_init<T>(hA, true);
+        // LAPACK intends that lauum only be called on matrices with a real diagonal
+        for(int i = 0; i < n; i++)
+        {
+            hA[0][i + i * lda] = std::real(hA[0][i + i * lda]);
+        }
     }
 
     if(GPU)
@@ -288,4 +293,4 @@ void testing_lauum(Arguments& argus)
 
 #define EXTERN_TESTING_LAUUM(...) extern template void testing_lauum<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_LAUUM, FOREACH_REAL_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_LAUUM, FOREACH_SCALAR_TYPE, APPLY_STAMP)

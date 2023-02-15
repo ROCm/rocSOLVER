@@ -38,7 +38,7 @@ LAPACK auxiliary functions
 
     :ref:`rocsolver_lacgv <lacgv>`, x, x, x, x
     :ref:`rocsolver_laswp <laswp>`, x, x, x, x
-    :ref:`rocsolver_lauum <lauum>`, x, x, ,
+    :ref:`rocsolver_lauum <lauum>`, x, x, x, x
 
 .. csv-table:: Householder reflections
     :header: "Function", "single", "double", "single complex", "double complex"

@@ -80,7 +80,6 @@ TEST_P(LAUUM, __double)
     run_tests<double>();
 }
 
-/*
 TEST_P(LAUUM, __float_complex)
 {
     run_tests<rocblas_float_complex>();
@@ -90,7 +89,6 @@ TEST_P(LAUUM, __double_complex)
 {
     run_tests<rocblas_double_complex>();
 }
-*/
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          LAUUM,

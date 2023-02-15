@@ -52,12 +52,12 @@ template <typename T, typename U>
 rocblas_status rocsolver_lauum_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
-                                        U* A,
+                                        U A,
                                         const rocblas_int shiftA,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
                                         const rocblas_int batch_count,
-                                        U* work)
+                                        T* work)
 {
     ROCSOLVER_ENTER("lauum", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
                     "strideA:", strideA, "bc:", batch_count);
@@ -82,9 +82,9 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
     T zero = 0;
 
     // put the triangular factor of interest in work
-    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW, uplo);
+    ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW);
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, A, shiftA, lda, strideA,
-                            work, 0, n, strideW, no_mask{}, uplo);
+                            (T*)work, 0, n, strideW, no_mask{}, uplo);
 
     rocblas_side side = (uplo == rocblas_fill_upper) ? rocblas_side_right : rocblas_side_left;
 
