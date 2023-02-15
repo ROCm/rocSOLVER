@@ -341,8 +341,8 @@ void cpu_lacgv(rocblas_int n, T* x, rocblas_int incx);
 
 template <typename T>
 void cpu_lacpy(rocblas_fill uplo,
-               rocblas_int n,
                rocblas_int m,
+               rocblas_int n,
                T* A,
                rocblas_int lda,
                T* B,

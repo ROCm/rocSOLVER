@@ -906,15 +906,15 @@ void clacgv_(int* n, rocblas_float_complex* x, int* incx);
 void zlacgv_(int* n, rocblas_double_complex* x, int* incx);
 
 void clacpy_(char* uplo,
-             int* n,
              int* m,
+             int* n,
              rocblas_float_complex* A,
              int* lda,
              rocblas_float_complex* B,
              int* ldb);
 void zlacpy_(char* uplo,
-             int* n,
              int* m,
+             int* n,
              rocblas_double_complex* A,
              int* lda,
              rocblas_double_complex* B,
@@ -2520,28 +2520,28 @@ void cpu_lacgv<rocblas_double_complex>(rocblas_int n, rocblas_double_complex* x,
 // lacpy
 template <>
 void cpu_lacpy<rocblas_float_complex>(rocblas_fill uplo,
-                                      rocblas_int n,
                                       rocblas_int m,
+                                      rocblas_int n,
                                       rocblas_float_complex* A,
                                       rocblas_int lda,
                                       rocblas_float_complex* B,
                                       rocblas_int ldb)
 {
     char uploC = rocblas2char_fill(uplo);
-    clacpy_(&uploC, &n, &m, A, &lda, B, &ldb);
+    clacpy_(&uploC, &m, &n, A, &lda, B, &ldb);
 }
 
 template <>
 void cpu_lacpy<rocblas_double_complex>(rocblas_fill uplo,
-                                       rocblas_int n,
                                        rocblas_int m,
+                                       rocblas_int n,
                                        rocblas_double_complex* A,
                                        rocblas_int lda,
                                        rocblas_double_complex* B,
                                        rocblas_int ldb)
 {
     char uploC = rocblas2char_fill(uplo);
-    zlacpy_(&uploC, &n, &m, A, &lda, B, &ldb);
+    zlacpy_(&uploC, &m, &n, A, &lda, B, &ldb);
 }
 
 // laswp
