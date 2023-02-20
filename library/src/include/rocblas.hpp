@@ -1196,7 +1196,7 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
         : std::is_same<T, float>::value ? ROCBLAS_SSYR2K_NB
         : std::is_same<T, double>::value ? ROCBLAS_DSYR2K_NB
         : std::is_same<T, rocblas_float_complex>::value ? ROCBLAS_CSYR2K_NB
-                                        : ROCBLAS_ ZSYR2K_NB;
+                                        : ROCBLAS_ZSYR2K_NB;
 
     return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
