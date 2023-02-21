@@ -1142,9 +1142,11 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 
     constexpr bool TWOK = true;
     constexpr bool HERK = false;
-    constexpr rocblas_int NB = BATCHED  ? ROCBLAS_SDSYR2K_BATCHED_NB
-        : std::is_same<T, float>::value ? ROCBLAS_SSYR2K_NB
-                                        : ROCBLAS_DCZSYR2K_NB;
+    constexpr rocblas_int NB = BATCHED                  ? ROCBLAS_SDSYR2K_BATCHED_NB
+        : std::is_same<T, float>::value                 ? ROCBLAS_SSYR2K_NB
+        : std::is_same<T, double>::value                ? ROCBLAS_DSYR2K_NB
+        : std::is_same<T, rocblas_float_complex>::value ? ROCBLAS_CSYR2K_NB
+                                                        : ROCBLAS_ZSYR2K_NB;
 
     return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
@@ -1190,9 +1192,11 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 
     constexpr bool TWOK = true;
     constexpr bool HERK = false;
-    constexpr rocblas_int NB = BATCHED  ? ROCBLAS_SDSYR2K_BATCHED_NB
-        : std::is_same<T, float>::value ? ROCBLAS_SSYR2K_NB
-                                        : ROCBLAS_DCZSYR2K_NB;
+    constexpr rocblas_int NB = BATCHED                  ? ROCBLAS_SDSYR2K_BATCHED_NB
+        : std::is_same<T, float>::value                 ? ROCBLAS_SSYR2K_NB
+        : std::is_same<T, double>::value                ? ROCBLAS_DSYR2K_NB
+        : std::is_same<T, rocblas_float_complex>::value ? ROCBLAS_CSYR2K_NB
+                                                        : ROCBLAS_ZSYR2K_NB;
 
     return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
@@ -1238,7 +1242,9 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 
     constexpr bool TWOK = true;
     constexpr bool HERK = true;
-    constexpr rocblas_int NB = BATCHED ? ROCBLAS_HER2K_BATCHED_NB : ROCBLAS_HER2K_NB;
+    constexpr rocblas_int NB = BATCHED                  ? ROCBLAS_HER2K_BATCHED_NB
+        : std::is_same<T, rocblas_float_complex>::value ? ROCBLAS_CHER2K_NB
+                                                        : ROCBLAS_ZHER2K_NB;
 
     return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
@@ -1286,7 +1292,9 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 
     constexpr bool TWOK = true;
     constexpr bool HERK = true;
-    constexpr rocblas_int NB = BATCHED ? ROCBLAS_HER2K_BATCHED_NB : ROCBLAS_HER2K_NB;
+    constexpr rocblas_int NB = BATCHED                  ? ROCBLAS_HER2K_BATCHED_NB
+        : std::is_same<T, rocblas_float_complex>::value ? ROCBLAS_CHER2K_NB
+                                                        : ROCBLAS_ZHER2K_NB;
 
     return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
         handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
