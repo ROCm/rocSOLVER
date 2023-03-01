@@ -11,5 +11,6 @@ rocSOLVER API
    api_auxiliaryfunc
    api_lapackfunc
    api_lapacklike
+   api_refact
    api_loggingfunc
 

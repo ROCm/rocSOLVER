@@ -3,9 +3,11 @@
 Types
 *******
 
-rocSOLVER uses types and enumerations defined by the rocBLAS API. For more information, see the
-`rocBLAS types <https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#rocblas-datatypes>`_
-documentation. Next we present additional types, only used in rocSOLVER, that extend the rocBLAS API.
+rocSOLVER uses most types and enumerations defined in rocBLAS for the general operation and
+dense matrix computations, and some defined in rocSPARSE for sparse matrix computations (direct solvers).
+For more information, see the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#rocblas-datatypes>`_ and
+`rocSPARSE types <https://rocsparse.readthedocs.io/en/master/usermanual.html#types>`_ documentation.
+Next we present additional types, only used in rocSOLVER, that extend the rocBLAS and rocSPARSE APIs.
 
 
 Additional types
@@ -58,3 +60,7 @@ rocblas_esort
 rocblas_layer_mode_flags
 ------------------------
 .. doxygentypedef:: rocblas_layer_mode_flags
+
+rocsparse_rfinfo
+------------------------
+.. doxygentypedef:: rocsparse_rfinfo
