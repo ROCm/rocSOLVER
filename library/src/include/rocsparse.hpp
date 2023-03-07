@@ -70,6 +70,37 @@ inline rocsparse_status rocsparseCall_csrilu0_analysis(rocsparse_handle sphandle
                                        solve, buffer);
 }
 
+// csrilu0
+inline rocsparse_status rocsparseCall_csrilu0(rocsparse_handle sphandle,
+                                              rocblas_int n,
+                                              rocblas_int nnz,
+                                              rocsparse_mat_descr descr,
+                                              float* val,
+                                              rocblas_int* ptr,
+                                              rocblas_int* ind,
+                                              rocsparse_mat_info info,
+                                              rocsparse_solve_policy solve,
+                                              void* buffer)
+{
+    return rocsparse_scsrilu0(sphandle, (rocsparse_int)n, (rocsparse_int)nnz, descr, val,
+                              (rocsparse_int*)ptr, (rocsparse_int*)ind, info, solve, buffer);
+}
+
+inline rocsparse_status rocsparseCall_csrilu0(rocsparse_handle sphandle,
+                                              rocblas_int n,
+                                              rocblas_int nnz,
+                                              rocsparse_mat_descr descr,
+                                              double* val,
+                                              rocblas_int* ptr,
+                                              rocblas_int* ind,
+                                              rocsparse_mat_info info,
+                                              rocsparse_solve_policy solve,
+                                              void* buffer)
+{
+    return rocsparse_dcsrilu0(sphandle, (rocsparse_int)n, (rocsparse_int)nnz, descr, val,
+                              (rocsparse_int*)ptr, (rocsparse_int*)ind, info, solve, buffer);
+}
+
 // csrsv analysis
 inline rocsparse_status rocsparseCall_csrsv_analysis(rocsparse_handle sphandle,
                                                      rocsparse_operation trans,

@@ -375,14 +375,14 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
     rocblas_int nthreads = 1024;
     rocblas_int nblocks = 1; // special case use only a single block
 
-    ROCSOLVER_LAUNCH_KERNEL(rf_setupLUp_kernel<T>, dim3(nthreads), dim3(nblocks), 0, stream,
+    ROCSOLVER_LAUNCH_KERNEL(rf_setupLUp_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
                             n, ptrL, ptrU, ptrT);
 
     // Step 2: copy entries of indL, valL, indU, valU into indT, valT
     nthreads = 128;
     nblocks = (n + (nthreads - 1)) / nthreads;
 
-    ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nthreads), dim3(nblocks), 0, stream,
+    ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
                             n, n, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
 
     */

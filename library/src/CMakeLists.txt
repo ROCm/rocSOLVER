@@ -192,12 +192,14 @@ set(rocsolver_auxiliary_source
 )
 
 set(rocsolver_refact_source
-  # rfinfo create destroy
+  # rfinfo create, analysis, destroy
   refact/rfinfo.cpp
   refact/rocrefact_csrrf_analysis.cpp
   # re-factorization
   refact/rocrefact_csrrf_sumlu.cpp
   refact/rocrefact_csrrf_splitlu.cpp
+  refact/rocrefact_csrrf_refactlu.cpp
+  # direct solver
 )
 
 set(rocsolver_specialized_source
