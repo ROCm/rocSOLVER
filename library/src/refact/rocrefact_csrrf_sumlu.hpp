@@ -194,20 +194,17 @@ ROCSOLVER_KERNEL void rf_setupLUp_kernel(const rocblas_int nrow,
 }
 
 template <typename T>
-ROCSOLVER_KERNEL void rf_sumLU_kernel(rocblas_int const nrow,
-                                       rocblas_int const ncol,
-
-                                       rocblas_int const* const Lp,
-                                       rocblas_int const* const Li,
-                                       T const* const Lx,
-
-                                       rocblas_int const* const Up,
-                                       rocblas_int const* const Ui,
-                                       T const* const Ux,
-
-                                       rocblas_int* const LUp,
-                                       rocblas_int* const LUi,
-                                       T* const LUx)
+ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int nrow,
+                                       const rocblas_int ncol,
+                                       rocblas_int* Lp,
+                                       rocblas_int* Li,
+                                       T* Lx,
+                                       rocblas_int* Up,
+                                       rocblas_int* Ui,
+                                       T* Ux,
+                                       rocblas_int* LUp,
+                                       rocblas_int* LUi,
+                                       T* LUx)
 {
     rocblas_int const nnzL = Lp[nrow] - Lp[0];
     rocblas_int const nnzU = Up[nrow] - Up[0];
@@ -341,7 +338,8 @@ rocblas_status rocsolver_csrrf_sumlu_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(!ptrL || !ptrU || !ptrT || (nnzL && (!indL || !valL)) || (nnzU && (!indU || !valU)))
+    if(!ptrL || !ptrU || !ptrT || (nnzL && (!indL || !valL)) || (nnzU && (!indU || !valU))
+       || (nnzL * nnzU && (!indT || !valT)))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

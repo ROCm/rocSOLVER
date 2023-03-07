@@ -195,7 +195,9 @@ set(rocsolver_refact_source
   # rfinfo create destroy
   refact/rfinfo.cpp
   refact/rocrefact_csrrf_analysis.cpp
+  # re-factorization
   refact/rocrefact_csrrf_sumlu.cpp
+  refact/rocrefact_csrrf_splitlu.cpp
 )
 
 set(rocsolver_specialized_source
