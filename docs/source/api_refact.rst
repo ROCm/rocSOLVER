@@ -52,10 +52,6 @@ rocsolver_rfinfo_destroy()
 
 rocsolver_csrrf_analysis()
 --------------------------------------
-.. doxygenfunction:: rocsolver_zcsrrf_analysis
-   :outline:
-.. doxygenfunction:: rocsolver_ccsrrf_analysis
-   :outline:
 .. doxygenfunction:: rocsolver_dcsrrf_analysis
    :outline:
 .. doxygenfunction:: rocsolver_scsrrf_analysis
@@ -75,10 +71,6 @@ Triangular re-factorization
 
 rocsolver_<type>csrrf_sumlu()
 ----------------------------------
-.. doxygenfunction:: rocsolver_zcsrrf_sumlu
-   :outline:
-.. doxygenfunction:: rocsolver_ccsrrf_sumlu
-   :outline:
 .. doxygenfunction:: rocsolver_dcsrrf_sumlu
    :outline:
 .. doxygenfunction:: rocsolver_scsrrf_sumlu
@@ -88,10 +80,6 @@ rocsolver_<type>csrrf_sumlu()
 
 rocsolver_<type>csrrf_splitlu()
 ------------------------------------
-.. doxygenfunction:: rocsolver_zcsrrf_splitlu
-   :outline:
-.. doxygenfunction:: rocsolver_ccsrrf_splitlu
-   :outline:
 .. doxygenfunction:: rocsolver_dcsrrf_splitlu
    :outline:
 .. doxygenfunction:: rocsolver_scsrrf_splitlu
@@ -101,10 +89,6 @@ rocsolver_<type>csrrf_splitlu()
 
 rocsolver_<type>csrrf_refactlu()
 ------------------------------------
-.. doxygenfunction:: rocsolver_zcsrrf_refactlu
-   :outline:
-.. doxygenfunction:: rocsolver_ccsrrf_refactlu
-   :outline:
 .. doxygenfunction:: rocsolver_dcsrrf_refactlu
    :outline:
 .. doxygenfunction:: rocsolver_scsrrf_refactlu
@@ -126,10 +110,6 @@ Direct sparse solvers
 
 rocsolver_<type>csrrf_solve()
 ----------------------------------
-.. doxygenfunction:: rocsolver_zcsrrf_solve
-   :outline:
-.. doxygenfunction:: rocsolver_ccsrrf_solve
-   :outline:
 .. doxygenfunction:: rocsolver_dcsrrf_solve
    :outline:
 .. doxygenfunction:: rocsolver_scsrrf_solve

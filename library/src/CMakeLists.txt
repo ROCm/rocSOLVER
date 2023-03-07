@@ -191,6 +191,12 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_lauum.cpp
 )
 
+set(rocsolver_refact_source
+  # rfinfo create destroy
+  refact/rfinfo.cpp
+  refact/rocrefact_csrrf_analysis.cpp
+)
+
 set(rocsolver_specialized_source
   # trsm
   specialized/roclapack_trsm_specialized_kernels_s.cpp
@@ -237,6 +243,7 @@ add_library(rocsolver
   ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
+  ${rocsolver_refact_source}
 )
 
 add_library(roc::rocsolver ALIAS rocsolver)

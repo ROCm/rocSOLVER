@@ -225,11 +225,11 @@ Re-factorization and direct solvers
 .. csv-table:: Triangular re-factorization
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_csrrf_sumlu <rfsumlu>`, x, x, x, x
-    :ref:`rocsolver_csrrf_splitlu <rfsplitlu>`, x, x, x, x
-    :ref:`rocsolver_csrrf_refactlu <rfrefactlu>`, x, x, x, x
+    :ref:`rocsolver_csrrf_sumlu <rfsumlu>`, x, x, ,
+    :ref:`rocsolver_csrrf_splitlu <rfsplitlu>`, x, x, ,
+    :ref:`rocsolver_csrrf_refactlu <rfrefactlu>`, x, x, ,
 
 .. csv-table:: Direct solvers
     :header: "Function", "single", "double", "single complex", "double complex"
 
-    :ref:`rocsolver_csrrf_solve <rfsolve>`, x, x, x, x
+    :ref:`rocsolver_csrrf_solve <rfsolve>`, x, x, ,

@@ -61,6 +61,6 @@ rocblas_layer_mode_flags
 ------------------------
 .. doxygentypedef:: rocblas_layer_mode_flags
 
-rocsparse_rfinfo
+rocsolver_rfinfo
 ------------------------
-.. doxygentypedef:: rocsparse_rfinfo
+.. doxygentypedef:: rocsolver_rfinfo
