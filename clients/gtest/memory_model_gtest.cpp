@@ -275,7 +275,7 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_owned)
     // 4. pass user owned workspace (2MB)
     void* W;
     size_t sw = 2000000;
-    hipMalloc(&W, sw);
+    ASSERT_EQ(hipMalloc(&W, sw), hipSuccess);
     ASSERT_EQ(rocblas_set_workspace(handle, W, sw), rocblas_status_success);
 
     // 5. memory should now be user managed
@@ -315,9 +315,9 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_owned)
     EXPECT_EQ(size, 2000000);
 
     // 14. pass larger user owned workspace
-    hipFree(W);
+    ASSERT_EQ(hipFree(W), hipSuccess);
     sw = 100000000;
-    hipMalloc(&W, sw);
+    ASSERT_EQ(hipMalloc(&W, sw), hipSuccess);
     ASSERT_EQ(rocblas_set_workspace(handle, W, sw), rocblas_status_success);
 
     // 15. 100MB should be reserved
@@ -333,6 +333,6 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_owned)
     EXPECT_EQ(size, 100000000);
 
     // 18. destroy handle
-    hipFree(W);
+    ASSERT_EQ(hipFree(W), hipSuccess);
     EXPECT_EQ(rocblas_destroy_handle(handle), rocblas_status_success);
 }

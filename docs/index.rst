@@ -16,13 +16,3 @@ LAPACK users. The :doc:`Library Design Guide <design_index>` describes rocSOLVER
 users and developers who want to further understand or extend the library. Finally, the
 :doc:`rocSOLVER API <api_index>` provides a list of currently implemented routines, as well as
 descriptions of their functionality and parameters.
-
-.. toctree::
-   :maxdepth: 1
-   :numbered: 3
-
-   userguide_index
-   design_index
-   api_index
-   attributions
-

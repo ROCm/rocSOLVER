@@ -8,6 +8,7 @@ Other Lapack-like routines provided by rocSOLVER. These are divided into the fol
 * :ref:`liketriangular`. Based on Gaussian elimination.
 * :ref:`likelinears`. Based on triangular factorizations.
 * :ref:`likeeigens`. Eigenproblems for symmetric matrices.
+* :ref:`likesvds`. Singular values and related problems for general matrices.
 
 .. note::
     Throughout the APIs' descriptions, we use the following notations:
@@ -95,6 +96,38 @@ rocsolver_<type>getrf_npvt_strided_batched()
 .. doxygenfunction:: rocsolver_dgetrf_npvt_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_sgetrf_npvt_strided_batched
+
+.. _geblttrf_npvt:
+
+rocsolver_<type>geblttrf_npvt()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrf_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrf_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrf_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrf_npvt
+
+rocsolver_<type>geblttrf_npvt_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrf_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrf_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrf_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrf_npvt_batched
+
+rocsolver_<type>geblttrf_npvt_strided_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrf_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrf_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrf_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrf_npvt_strided_batched
 
 
 
@@ -203,6 +236,38 @@ rocsolver_<type>getri_npvt_outofplace_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_sgetri_npvt_outofplace_strided_batched
 
+.. _geblttrs_npvt:
+
+rocsolver_<type>geblttrs_npvt()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrs_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrs_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrs_npvt
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrs_npvt
+
+rocsolver_<type>geblttrs_npvt_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrs_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrs_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrs_npvt_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrs_npvt_batched
+
+rocsolver_<type>geblttrs_npvt_strided_batched()
+--------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeblttrs_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgeblttrs_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgeblttrs_npvt_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgeblttrs_npvt_strided_batched
+
 
 
 .. _likeeigens:
@@ -293,4 +358,47 @@ rocsolver_<type>hegvj_strided_batched()
 .. doxygenfunction:: rocsolver_zhegvj_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_chegvj_strided_batched
+
+
+
+.. _likesvds:
+
+Singular value decomposition
+================================
+
+.. contents:: List of Lapack-like SVD related functions
+   :local:
+   :backlinks: top
+
+.. _gesvdj:
+
+rocsolver_<type>gesvdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesvdj
+   :outline:
+.. doxygenfunction:: rocsolver_cgesvdj
+   :outline:
+.. doxygenfunction:: rocsolver_dgesvdj
+   :outline:
+.. doxygenfunction:: rocsolver_sgesvdj
+
+rocsolver_<type>gesvdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesvdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgesvdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgesvdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgesvdj_batched
+
+rocsolver_<type>gesvdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgesvdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cgesvdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_dgesvdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_sgesvdj_strided_batched
 

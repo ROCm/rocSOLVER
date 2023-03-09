@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <chrono>
@@ -23,7 +23,14 @@ double get_time_us_no_sync()
  */
 double get_time_us()
 {
-    hipDeviceSynchronize();
+    hipError_t status = hipDeviceSynchronize();
+#ifdef ROCSOLVER_LIBRARY
+    if(status != hipSuccess)
+        fmt::print(std::cerr, "{}: [{}] {}\n", __PRETTY_FUNCTION__, hipGetErrorName(status),
+                   hipGetErrorString(status));
+#else
+    THROW_IF_HIP_ERROR(status);
+#endif
     return get_time_us_no_sync();
 }
 
@@ -31,6 +38,13 @@ double get_time_us()
  */
 double get_time_us_sync(hipStream_t stream)
 {
-    hipStreamSynchronize(stream);
+    hipError_t status = hipStreamSynchronize(stream);
+#ifdef ROCSOLVER_LIBRARY
+    if(status != hipSuccess)
+        fmt::print(std::cerr, "{}: [{}] {}\n", __PRETTY_FUNCTION__, hipGetErrorName(status),
+                   hipGetErrorString(status));
+#else
+    THROW_IF_HIP_ERROR(status);
+#endif
     return get_time_us_no_sync();
 }

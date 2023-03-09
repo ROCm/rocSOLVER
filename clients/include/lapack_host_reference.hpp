@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #pragma once
@@ -340,6 +340,15 @@ template <typename T>
 void cpu_lacgv(rocblas_int n, T* x, rocblas_int incx);
 
 template <typename T>
+void cpu_lacpy(rocblas_fill uplo,
+               rocblas_int m,
+               rocblas_int n,
+               T* A,
+               rocblas_int lda,
+               T* B,
+               rocblas_int ldb);
+
+template <typename T>
 void cpu_laswp(rocblas_int n,
                T* A,
                rocblas_int lda,
@@ -462,6 +471,9 @@ void cpu_ormlq_unmlq(rocblas_side side,
                      rocblas_int sizeW);
 
 template <typename T>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, T* A, rocblas_int lda);
+
+template <typename T>
 void cpu_orm2l_unm2l(rocblas_side side,
                      rocblas_operation trans,
                      rocblas_int m,
@@ -560,7 +572,7 @@ void cpu_gesvd(rocblas_svect leftv,
                rocblas_int ldv,
                T* work,
                rocblas_int lwork,
-               W* E,
+               W* rwork,
                rocblas_int* info);
 
 template <typename T>

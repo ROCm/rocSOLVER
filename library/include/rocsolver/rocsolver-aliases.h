@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 //
@@ -11,8 +11,8 @@
 //
 //
 
-#ifndef ROCSOLVER_ALIASES_H_
-#define ROCSOLVER_ALIASES_H_
+#ifndef ROCSOLVER_ALIASES_H
+#define ROCSOLVER_ALIASES_H
 
 #include "rocsolver-export.h"
 #include "rocsolver-extra-types.h"
@@ -186,4 +186,4 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_get_matrix(rocsolver_int rows,
 
 #undef ROCSOLVER_DEPRECATED_X
 
-#endif /* ROCSOLVER_ALIASES_H_ */
+#endif /* ROCSOLVER_ALIASES_H */

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -12,6 +12,8 @@
 #include "testing_bdsqr.hpp"
 #include "testing_bdsvdx.hpp"
 #include "testing_gebd2_gebrd.hpp"
+#include "testing_geblttrf_npvt.hpp"
+#include "testing_geblttrs_npvt.hpp"
 #include "testing_gelq2_gelqf.hpp"
 #include "testing_gels.hpp"
 #include "testing_geql2_geqlf.hpp"
@@ -19,6 +21,7 @@
 #include "testing_gerq2_gerqf.hpp"
 #include "testing_gesv.hpp"
 #include "testing_gesvd.hpp"
+#include "testing_gesvdj.hpp"
 #include "testing_gesvdx.hpp"
 #include "testing_getf2_getrf.hpp"
 #include "testing_getf2_getrf_npvt.hpp"
@@ -36,6 +39,7 @@
 #include "testing_laswp.hpp"
 #include "testing_lasyf.hpp"
 #include "testing_latrd.hpp"
+#include "testing_lauum.hpp"
 #include "testing_orgbr_ungbr.hpp"
 #include "testing_orglx_unglx.hpp"
 #include "testing_orgtr_ungtr.hpp"
@@ -99,6 +103,7 @@ class rocsolver_dispatcher
             {"stedc", testing_stedc<T>},
             {"stein", testing_stein<T>},
             {"lasyf", testing_lasyf<T>},
+            {"lauum", testing_lauum<T>},
             // potrf
             {"potf2", testing_potf2_potrf<false, false, 0, T>},
             {"potf2_batched", testing_potf2_potrf<true, true, 0, T>},
@@ -173,6 +178,10 @@ class rocsolver_dispatcher
             {"gesvd", testing_gesvd<false, false, T>},
             {"gesvd_batched", testing_gesvd<true, true, T>},
             {"gesvd_strided_batched", testing_gesvd<false, true, T>},
+            // gesvdj
+            {"gesvdj", testing_gesvdj<false, false, T>},
+            {"gesvdj_batched", testing_gesvdj<true, true, T>},
+            {"gesvdj_strided_batched", testing_gesvdj<false, true, T>},
             // gesvdx
             {"gesvdx", testing_gesvdx<false, false, T>},
             {"gesvdx_batched", testing_gesvdx<true, true, T>},
@@ -215,6 +224,14 @@ class rocsolver_dispatcher
             {"sytrf", testing_sytf2_sytrf<false, false, 1, T>},
             {"sytrf_batched", testing_sytf2_sytrf<true, true, 1, T>},
             {"sytrf_strided_batched", testing_sytf2_sytrf<false, true, 1, T>},
+            // geblttrf_npvt
+            {"geblttrf_npvt", testing_geblttrf_npvt<false, false, T>},
+            {"geblttrf_npvt_batched", testing_geblttrf_npvt<true, true, T>},
+            {"geblttrf_npvt_strided_batched", testing_geblttrf_npvt<false, true, T>},
+            // geblttrs_npvt
+            {"geblttrs_npvt", testing_geblttrs_npvt<false, false, T>},
+            {"geblttrs_npvt_batched", testing_geblttrs_npvt<true, true, T>},
+            {"geblttrs_npvt_strided_batched", testing_geblttrs_npvt<false, true, T>},
         };
 
         // Grab function from the map and execute

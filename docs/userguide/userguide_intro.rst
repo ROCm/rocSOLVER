@@ -38,6 +38,7 @@ LAPACK auxiliary functions
 
     :ref:`rocsolver_lacgv <lacgv>`, x, x, x, x
     :ref:`rocsolver_laswp <laswp>`, x, x, x, x
+    :ref:`rocsolver_lauum <lauum>`, x, x, x, x
 
 .. csv-table:: Householder reflections
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -194,6 +195,7 @@ LAPACK-like functions
 
     :ref:`rocsolver_getf2_npvt <getf2_npvt>`, x, x, x, x
     :ref:`rocsolver_getrf_npvt <getrf_npvt>`, x, x, x, x
+    :ref:`rocsolver_geblttrf_npvt <geblttrf_npvt>`, x, x, x, x
 
 .. csv-table:: Linear-systems solvers
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -201,6 +203,7 @@ LAPACK-like functions
     :ref:`rocsolver_getri_npvt <getri_npvt>`, x, x, x, x
     :ref:`rocsolver_getri_outofplace <getri_outofplace>`, x, x, x, x
     :ref:`rocsolver_getri_npvt_outofplace <getri_npvt_outofplace>`, x, x, x, x
+    :ref:`rocsolver_geblttrs_npvt <geblttrs_npvt>`, x, x, x, x
 
 .. csv-table:: Symmetric eigensolvers
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -209,5 +212,10 @@ LAPACK-like functions
     :ref:`rocsolver_sygvj <sygvj>`, x, x, ,
     :ref:`rocsolver_heevj <heevj>`, , , x, x
     :ref:`rocsolver_hegvj <hegvj>`, , , x, x
+
+.. csv-table:: Singular value decomposition
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_gesvdj <gesvdj>`, x, x, x, x
 
 

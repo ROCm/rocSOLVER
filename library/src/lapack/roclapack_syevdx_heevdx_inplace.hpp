@@ -267,9 +267,14 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
     // copy nev from device to host
     if(h_nev)
     {
-        hipMemcpyAsync(h_nev, d_nev, sizeof(rocblas_int) * batch_count, hipMemcpyDeviceToHost,
-                       stream);
-        hipStreamSynchronize(stream);
+        hipError_t status = hipMemcpyAsync(h_nev, d_nev, sizeof(rocblas_int) * batch_count,
+                                           hipMemcpyDeviceToHost, stream);
+        if(status != hipSuccess)
+            return get_rocblas_status_for_hip_status(status);
+
+        status = hipStreamSynchronize(stream);
+        if(status != hipSuccess)
+            return get_rocblas_status_for_hip_status(status);
     }
 
     return rocblas_status_success;

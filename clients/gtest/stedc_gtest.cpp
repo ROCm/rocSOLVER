@@ -36,7 +36,7 @@ const vector<vector<int>> matrix_size_range = {
     {35, 40}};
 
 // for daily_lapack tests
-const vector<vector<int>> large_matrix_size_range = {{192, 192}, {256, 270}, {300, 300}};
+const vector<vector<int>> large_matrix_size_range = {{192, 192}, {250, 250}, {256, 270}, {300, 300}};
 
 Arguments stedc_setup_arguments(stedc_tuple tup)
 {

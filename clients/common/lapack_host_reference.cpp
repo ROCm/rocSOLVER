@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2023 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #include <rocblas/rocblas.h>
@@ -905,10 +905,30 @@ void zgelqf_(int* m,
 void clacgv_(int* n, rocblas_float_complex* x, int* incx);
 void zlacgv_(int* n, rocblas_double_complex* x, int* incx);
 
+void clacpy_(char* uplo,
+             int* m,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             rocblas_float_complex* B,
+             int* ldb);
+void zlacpy_(char* uplo,
+             int* m,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             rocblas_double_complex* B,
+             int* ldb);
+
 void slaswp_(int* n, float* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
 void dlaswp_(int* n, double* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
 void claswp_(int* n, rocblas_float_complex* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
 void zlaswp_(int* n, rocblas_double_complex* A, int* lda, int* k1, int* k2, int* ipiv, int* inc);
+
+void slauum_(char* uplo, int* n, float* A, int* lda, int* info);
+void dlauum_(char* uplo, int* n, double* A, int* lda, int* info);
+void clauum_(char* uplo, int* n, rocblas_float_complex* A, int* lda, int* info);
+void zlauum_(char* uplo, int* n, rocblas_double_complex* A, int* lda, int* info);
 
 void sorg2r_(int* m, int* n, int* k, float* A, int* lda, float* ipiv, float* work, int* info);
 void dorg2r_(int* m, int* n, int* k, double* A, int* lda, double* ipiv, double* work, int* info);
@@ -2497,6 +2517,33 @@ void cpu_lacgv<rocblas_double_complex>(rocblas_int n, rocblas_double_complex* x,
     zlacgv_(&n, x, &incx);
 }
 
+// lacpy
+template <>
+void cpu_lacpy<rocblas_float_complex>(rocblas_fill uplo,
+                                      rocblas_int m,
+                                      rocblas_int n,
+                                      rocblas_float_complex* A,
+                                      rocblas_int lda,
+                                      rocblas_float_complex* B,
+                                      rocblas_int ldb)
+{
+    char uploC = rocblas2char_fill(uplo);
+    clacpy_(&uploC, &m, &n, A, &lda, B, &ldb);
+}
+
+template <>
+void cpu_lacpy<rocblas_double_complex>(rocblas_fill uplo,
+                                       rocblas_int m,
+                                       rocblas_int n,
+                                       rocblas_double_complex* A,
+                                       rocblas_int lda,
+                                       rocblas_double_complex* B,
+                                       rocblas_int ldb)
+{
+    char uploC = rocblas2char_fill(uplo);
+    zlacpy_(&uploC, &m, &n, A, &lda, B, &ldb);
+}
+
 // laswp
 
 template <>
@@ -2807,6 +2854,39 @@ void cpu_larfb<rocblas_double_complex>(rocblas_side sideR,
     zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
 }
 
+// lauum
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, float* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    slauum_(&uplo, &n, A, &lda, &info);
+}
+
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, double* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    dlauum_(&uplo, &n, A, &lda, &info);
+}
+
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, rocblas_float_complex* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    clauum_(&uplo, &n, A, &lda, &info);
+}
+
+template <>
+void cpu_lauum(rocblas_fill uploR, rocblas_int n, rocblas_double_complex* A, rocblas_int lda)
+{
+    rocblas_int info;
+    char uplo = rocblas2char_fill(uploR);
+    zlauum_(&uplo, &n, A, &lda, &info);
+}
+
 // bdsqr
 template <>
 void cpu_bdsqr(rocblas_fill uplo,
@@ -2907,12 +2987,12 @@ void cpu_gesvd(rocblas_svect leftv,
                rocblas_int ldv,
                float* work,
                rocblas_int lwork,
-               float* E,
+               float* rwork,
                rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    sgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, E, &lwork, info);
+    sgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, info);
 }
 
 template <>
@@ -2929,12 +3009,12 @@ void cpu_gesvd(rocblas_svect leftv,
                rocblas_int ldv,
                double* work,
                rocblas_int lwork,
-               double* E,
+               double* rwork,
                rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    dgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, E, &lwork, info);
+    dgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, info);
 }
 
 template <>
@@ -2951,12 +3031,12 @@ void cpu_gesvd(rocblas_svect leftv,
                rocblas_int ldv,
                rocblas_float_complex* work,
                rocblas_int lwork,
-               float* E,
+               float* rwork,
                rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    cgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info);
+    cgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, rwork, info);
 }
 
 template <>
@@ -2973,12 +3053,12 @@ void cpu_gesvd(rocblas_svect leftv,
                rocblas_int ldv,
                rocblas_double_complex* work,
                rocblas_int lwork,
-               double* E,
+               double* rwork,
                rocblas_int* info)
 {
     char jobu = rocblas2char_svect(leftv);
     char jobv = rocblas2char_svect(rightv);
-    zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, E, info);
+    zgesvd_(&jobu, &jobv, &m, &n, A, &lda, S, U, &ldu, V, &ldv, work, &lwork, rwork, info);
 }
 
 // gesvdx

@@ -52,6 +52,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_larfb.cpp
     common/testing_latrd.cpp
     common/testing_labrd.cpp
+    common/testing_lauum.cpp
     common/testing_bdsqr.cpp
     common/testing_bdsvdx.cpp
     common/testing_steqr.cpp
@@ -71,6 +72,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_getrs.cpp
     common/testing_gesv.cpp
     common/testing_gesvd.cpp
+    common/testing_gesvdj.cpp
     common/testing_gesvdx.cpp
     common/testing_trtri.cpp
     common/testing_getri.cpp
@@ -103,6 +105,8 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_sygvj_hegvj.cpp
     common/testing_sygvx_hegvx.cpp
     common/testing_lacgv.cpp
+    common/testing_geblttrf_npvt.cpp
+    common/testing_geblttrs_npvt.cpp
   )
   set(common_source_files
     common/lapack_host_reference.cpp

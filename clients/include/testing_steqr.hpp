@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -191,6 +191,7 @@ void steqr_getError(const rocblas_handle handle,
     cpu_steqr(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), hInfo[0]);
 
     // check info
+    EXPECT_EQ(hInfo[0][0], hInfoRes[0][0]);
     if(hInfo[0][0] != hInfoRes[0][0])
         *max_err = 1;
     else
