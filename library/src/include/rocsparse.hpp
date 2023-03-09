@@ -95,6 +95,35 @@ inline rocsparse_status rocsparseCall_csrilu0(rocsparse_handle sphandle,
     return rocsparse_dcsrilu0(sphandle, n, nnz, descr, val, ptr, ind, info, solve, buffer);
 }
 
+// csrsv buffer
+inline rocsparse_status rocsparseCall_csrsv_buffer_size(rocsparse_handle sphandle,
+                                                        rocsparse_operation trans,
+                                                        rocblas_int n,
+                                                        rocblas_int nnz,
+                                                        rocsparse_mat_descr descr,
+                                                        float* val,
+                                                        rocblas_int* ptr,
+                                                        rocblas_int* ind,
+                                                        rocsparse_mat_info info,
+                                                        size_t* size)
+{
+    return rocsparse_scsrsv_buffer_size(sphandle, trans, n, nnz, descr, val, ptr, ind, info, size);
+}
+
+inline rocsparse_status rocsparseCall_csrsv_buffer_size(rocsparse_handle sphandle,
+                                                        rocsparse_operation trans,
+                                                        rocblas_int n,
+                                                        rocblas_int nnz,
+                                                        rocsparse_mat_descr descr,
+                                                        double* val,
+                                                        rocblas_int* ptr,
+                                                        rocblas_int* ind,
+                                                        rocsparse_mat_info info,
+                                                        size_t* size)
+{
+    return rocsparse_dcsrsv_buffer_size(sphandle, trans, n, nnz, descr, val, ptr, ind, info, size);
+}
+
 // csrsv analysis
 inline rocsparse_status rocsparseCall_csrsv_analysis(rocsparse_handle sphandle,
                                                      rocsparse_operation trans,
@@ -128,4 +157,43 @@ inline rocsparse_status rocsparseCall_csrsv_analysis(rocsparse_handle sphandle,
 {
     return rocsparse_dcsrsv_analysis(sphandle, trans, n, nnz, descr, val, ptr, ind, info, analysis,
                                      solve, buffer);
+}
+
+//csrsv solve
+inline rocsparse_status rocsparseCall_csrsv_solve(rocsparse_handle sphandle,
+                                                  rocsparse_operation trans,
+                                                  rocblas_int n,
+                                                  rocblas_int nnz,
+                                                  float* alpha,
+                                                  rocsparse_mat_descr descr,
+                                                  float* val,
+                                                  rocblas_int* ptr,
+                                                  rocblas_int* ind,
+                                                  rocsparse_mat_info info,
+                                                  float* B,
+                                                  float* X,
+                                                  rocsparse_solve_policy solve,
+                                                  void* buffer)
+{
+    return rocsparse_scsrsv_solve(sphandle, trans, n, nnz, alpha, descr, val, ptr, ind, info, B, X,
+                                  solve, buffer);
+}
+
+inline rocsparse_status rocsparseCall_csrsv_solve(rocsparse_handle sphandle,
+                                                  rocsparse_operation trans,
+                                                  rocblas_int n,
+                                                  rocblas_int nnz,
+                                                  double* alpha,
+                                                  rocsparse_mat_descr descr,
+                                                  double* val,
+                                                  rocblas_int* ptr,
+                                                  rocblas_int* ind,
+                                                  rocsparse_mat_info info,
+                                                  double* B,
+                                                  double* X,
+                                                  rocsparse_solve_policy solve,
+                                                  void* buffer)
+{
+    return rocsparse_dcsrsv_solve(sphandle, trans, n, nnz, alpha, descr, val, ptr, ind, info, B, X,
+                                  solve, buffer);
 }

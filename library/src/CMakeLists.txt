@@ -201,6 +201,7 @@ set(rocsolver_refact_source
   refact/rocrefact_csrrf_splitlu.cpp
   refact/rocrefact_csrrf_refactlu.cpp
   # direct solver
+  refact/rocrefact_csrrf_solve.cpp
 )
 
 set(rocsolver_specialized_source
