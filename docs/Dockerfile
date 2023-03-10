@@ -2,4 +2,4 @@ FROM readthedocs/build:latest
 
 USER root:root
 RUN apt-get install -qq doxygen
-RUN pip3 install breathe sphinx sphinx_rtd_theme
+RUN pip3 install breathe sphinx m2r2 sphinx_rtd_theme
