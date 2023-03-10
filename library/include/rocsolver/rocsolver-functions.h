@@ -357,10 +357,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    direct      #rocblas_direct.\n
+    direct      #rocblas_direct_.\n
                 Specifies the direction in which the Householder matrices are applied.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev_.\n
                 Specifies how the Householder vectors are stored in matrix V.
     @param[in]
     n           rocblas_int. n >= 0.\n
@@ -565,10 +565,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
     trans       rocblas_operation.\n
                 Specifies whether the block reflector or its transpose/conjugate transpose is to be applied.
     @param[in]
-    direct      #rocblas_direct.\n
+    direct      #rocblas_direct_.\n
                 Specifies the direction in which the Householder matrices are to be applied to generate H.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev_.\n
                 Specifies how the Householder vectors are stored in matrix V.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -1828,7 +1828,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungql(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev_.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -1910,7 +1910,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorgbr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev_.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -3204,7 +3204,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev_.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     side        rocblas_side.\n
@@ -3318,7 +3318,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    storev      #rocblas_storev.\n
+    storev      #rocblas_storev_.\n
                 Specifies whether to work column-wise or row-wise.
     @param[in]
     side        rocblas_side.\n
@@ -3790,7 +3790,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsterf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies how the eigenvectors are computed.
     @param[in]
     n           rocblas_int. n >= 0.\n
@@ -3883,7 +3883,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies how the eigenvectors are computed.
     @param[in]
     n           rocblas_int. n >= 0.\n
@@ -3965,10 +3965,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
-    eorder      #rocblas_eorder.\n
+    eorder      #rocblas_eorder_.\n
                 Specifies whether the computed eigenvalues will be ordered by their position in the
                 entire spectrum, or grouped by independent diagonal (split off) blocks.
     @param[in]
@@ -4211,11 +4211,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
     uplo        rocblas_fill.\n
                 Specifies whether B is upper or lower bidiagonal.
     @param[in]
-    svect       #rocblas_svect.\n
+    svect       #rocblas_svect_.\n
                 Specifies how the singular vectors are computed. Only rocblas_svect_none and
                 rocblas_svect_singular are accepted.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange_.\n
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
     n           rocblas_int. n >= 0.\n
@@ -11215,7 +11215,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of V'.
 
-    left_svect and right_svect are #rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect_ enums that can take the
     following values:
 
     - rocblas_svect_all: the entire matrix U (or V') is computed,
@@ -11243,10 +11243,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -11291,7 +11291,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
                 are in S; those that converged correspond to a subset of the singular values
                 of A (not necessarily ordered).
     @param[in]
-    fast_alg    #rocblas_workmode. \n
+    fast_alg    #rocblas_workmode_. \n
                 If set to rocblas_outofplace, the function will execute the
                 fast thin-SVD version of the algorithm when possible.
     @param[out]
@@ -11387,7 +11387,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of \f$V_j'\f$.
 
-    left_svect and right_svect are #rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect_ enums that can take the
     following values:
 
     - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
@@ -11416,10 +11416,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -11482,7 +11482,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                 Stride from the start of one vector E_j to the next one E_(j+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[in]
-    fast_alg    #rocblas_workmode. \n
+    fast_alg    #rocblas_workmode_. \n
                 If set to rocblas_outofplace, the function will execute the fast thin-SVD version
                 of the algorithm when possible.
     @param[out]
@@ -11601,7 +11601,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of \f$V_j'\f$.
 
-    left_svect and right_svect are #rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect_ enums that can take the
     following values:
 
     - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
@@ -11630,10 +11630,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies how the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies how the right singular vectors are computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -11700,7 +11700,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                 There is no restriction for the value of strideE.
                 Normal use case is strideE >= min(m,n)-1.
     @param[in]
-    fast_alg    #rocblas_workmode. \n
+    fast_alg    #rocblas_workmode_. \n
                 If set to rocblas_outofplace, the function will execute the fast thin-SVD version
                 of the algorithm when possible.
     @param[out]
@@ -11822,7 +11822,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of V'.
 
-    left_svect and right_svect are #rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect_ enums that can take the
     following values:
 
     - rocblas_svect_all: the entire matrix U (or V') is computed,
@@ -11842,11 +11842,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies how the left singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies how the right singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
@@ -11996,7 +11996,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of \f$V_j'\f$.
 
-    left_svect and right_svect are #rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect_ enums that can take the
     following values:
 
     - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
@@ -12017,11 +12017,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies how the left singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies how the right singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
@@ -12206,7 +12206,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of \f$V_j'\f$.
 
-    left_svect and right_svect are #rocblas_svect enums that can take the
+    left_svect and right_svect are #rocblas_svect_ enums that can take the
     following values:
 
     - rocblas_svect_all: the entire matrix \f$U_j\f$ (or \f$V_j'\f$) is computed,
@@ -12227,11 +12227,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies how the left singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies how the right singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
@@ -12426,7 +12426,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of V'.
 
-    left_svect and right_svect are #rocblas_svect enums that, for this function, can take the
+    left_svect and right_svect are #rocblas_svect_ enums that, for this function, can take the
     following values:
 
     - rocblas_svect_singular: the singular vectors (first min(m,n)
@@ -12437,13 +12437,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies if the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies if the right singular vectors are computed.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange_.\n
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -12618,7 +12618,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of \f$V_j'\f$.
 
-    left_svect and right_svect are #rocblas_svect enums that, for this function, can take the
+    left_svect and right_svect are #rocblas_svect_ enums that, for this function, can take the
     following values:
 
     - rocblas_svect_singular: the singular vectors (first min(m,n)
@@ -12629,13 +12629,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies if the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies if the right singular vectors are computed.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange_.\n
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -12849,7 +12849,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     computed, this function returns the transpose (or transpose conjugate) of the
     right singular vectors, i.e. the rows of \f$V_j'\f$.
 
-    left_svect and right_svect are #rocblas_svect enums that, for this function, can take the
+    left_svect and right_svect are #rocblas_svect_ enums that, for this function, can take the
     following values:
 
     - rocblas_svect_singular: the singular vectors (first min(m,n)
@@ -12860,13 +12860,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect_.\n
                 Specifies if the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect_.\n
                 Specifies if the right singular vectors are computed.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange_.\n
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
     m           rocblas_int. m >= 0.\n
@@ -14336,7 +14336,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo        rocblas_fill.\n
@@ -14425,7 +14425,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo        rocblas_fill.\n
@@ -14515,7 +14515,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -14610,7 +14610,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -14705,7 +14705,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -14812,7 +14812,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygs2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -14919,7 +14919,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegs2_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo        rocblas_fill.\n
@@ -15008,7 +15008,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
     uplo        rocblas_fill.\n
@@ -15098,7 +15098,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -15193,7 +15193,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -15288,7 +15288,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -15395,7 +15395,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygst_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
     uplo        rocblas_fill.\n
@@ -15468,7 +15468,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegst_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -15534,7 +15534,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -15601,7 +15601,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -15685,7 +15685,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -15769,7 +15769,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -15859,7 +15859,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyev_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -15950,7 +15950,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheev_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16020,7 +16020,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16091,7 +16091,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16179,7 +16179,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16267,7 +16267,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16361,7 +16361,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16469,12 +16469,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort_.\n
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16569,12 +16569,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort_.\n
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16669,12 +16669,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort_.\n
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16780,12 +16780,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort_.\n
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -16891,12 +16891,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort_.\n
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -17008,12 +17008,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    esort       #rocblas_esort.\n
+    esort       #rocblas_esort_.\n
                 Specifies the order of the returned eigenvalues. If esort is
                 rocblas_esort_ascending, then the eigenvalues are sorted and returned in ascending order.
                 If esort is rocblas_esort_none, then the order of the returned eigenvalues is unspecified.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -17111,12 +17111,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -17235,12 +17235,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -17359,12 +17359,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -17500,12 +17500,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -17641,12 +17641,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -17794,12 +17794,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevx_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -17965,10 +17965,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevx_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18073,10 +18073,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18181,10 +18181,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18306,10 +18306,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18431,10 +18431,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18568,10 +18568,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygv_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18705,10 +18705,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegv_strided_batched(rocblas_handle h
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18815,10 +18815,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -18925,10 +18925,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19052,10 +19052,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19179,10 +19179,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19318,10 +19318,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19462,10 +19462,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19587,10 +19587,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19712,10 +19712,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19848,10 +19848,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -19984,10 +19984,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -20132,10 +20132,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
@@ -20279,15 +20279,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvj_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -20444,15 +20444,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblem.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -20609,15 +20609,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -20791,15 +20791,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -20973,15 +20973,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n
@@ -21173,15 +21173,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvx_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    itype       #rocblas_eform.\n
+    itype       #rocblas_eform_.\n
                 Specifies the form of the generalized eigenproblems.
     @param[in]
-    evect       #rocblas_evect.\n
+    evect       #rocblas_evect_.\n
                 Specifies whether the eigenvectors are to be computed.
                 If evect is rocblas_evect_original, then the eigenvectors are computed.
                 rocblas_evect_tridiagonal is not supported.
     @param[in]
-    erange      #rocblas_erange.\n
+    erange      #rocblas_erange_.\n
                 Specifies the type of range or interval of the eigenvalues to be computed.
     @param[in]
     uplo        rocblas_fill.\n

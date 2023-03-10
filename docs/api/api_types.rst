@@ -17,43 +17,43 @@ Additional types
 
 rocblas_direct
 ---------------
-.. doxygenenum:: rocblas_direct
+.. doxygenenum:: rocblas_direct_
 
 rocblas_storev
 ---------------
-.. doxygenenum:: rocblas_storev
+.. doxygenenum:: rocblas_storev_
 
 rocblas_svect
 ---------------
-.. doxygenenum:: rocblas_svect
+.. doxygenenum:: rocblas_svect_
 
 rocblas_srange
 ---------------
-.. doxygenenum:: rocblas_srange
+.. doxygenenum:: rocblas_srange_
 
 rocblas_evect
 ---------------
-.. doxygenenum:: rocblas_evect
+.. doxygenenum:: rocblas_evect_
 
 rocblas_workmode
 ------------------
-.. doxygenenum:: rocblas_workmode
+.. doxygenenum:: rocblas_workmode_
 
 rocblas_eform
 ---------------
-.. doxygenenum:: rocblas_eform
+.. doxygenenum:: rocblas_eform_
 
 rocblas_erange
 ---------------
-.. doxygenenum:: rocblas_erange
+.. doxygenenum:: rocblas_erange_
 
 rocblas_eorder
 ---------------
-.. doxygenenum:: rocblas_eorder
+.. doxygenenum:: rocblas_eorder_
 
 rocblas_esort
 ---------------
-.. doxygenenum:: rocblas_esort
+.. doxygenenum:: rocblas_esort_
 
 rocblas_layer_mode_flags
 ------------------------
