@@ -10,9 +10,9 @@ The information contained herein is for informational purposes only, and is subj
 
 **Contents**
 
-rocSOLVER's documentation consists of three main chapters. The :doc:`User Guide <userguide_index>`
+rocSOLVER's documentation consists of three main chapters. The :doc:`User Guide <userguide/userguide_index>`
 is the starting point for new users of the library and a basic reference for current rocSOLVER or
-LAPACK users. The :doc:`Library Design Guide <design_index>` describes rocSOLVER for advanced
+LAPACK users. The :doc:`Library Design Guide <design/design_index>` describes rocSOLVER for advanced
 users and developers who want to further understand or extend the library. Finally, the
-:doc:`rocSOLVER API <api_index>` provides a list of currently implemented routines, as well as
+:doc:`rocSOLVER API <api/api_index>` provides a list of currently implemented routines, as well as
 descriptions of their functionality and parameters.
