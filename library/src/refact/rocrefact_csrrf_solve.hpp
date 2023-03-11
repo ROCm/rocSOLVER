@@ -45,23 +45,30 @@ rocblas_status rocsolver_csrrf_solve_argCheck(rocblas_handle handle,
 
 template <typename T, typename U>
 void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
+                                         const rocblas_int nrhs,
                                          const rocblas_int nnzT,
                                          rocblas_int* ptrT,
                                          rocblas_int* indT,
                                          U valT,
                                          rocsolver_rfinfo rfinfo,
-                                         size_t* size_work)
+                                         const rocblas_int ldb,
+                                         size_t* size_work,
+                                         size_t* size_temp)
 {
     // if quick return, no need of workspace
     if(n == 0)
     {
         *size_work = 0;
+        *size_temp = 0;
         return;
     }
 
-    // requirements for incomplete factorization
+    // requirements for csrsv_solve
     rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, rocsparse_operation_none, n, nnzT,
                                     rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT, size_work);
+
+    // temp storage for solution vector
+    *size_temp = sizeof(T) * ldb * nrhs;
 }
 
 template <typename T, typename U>
@@ -77,7 +84,8 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
                                               rocsolver_rfinfo rfinfo,
                                               U B,
                                               const rocblas_int ldb,
-                                              void* work)
+                                              void* work,
+                                              T* temp)
 {
     ROCSOLVER_ENTER("csrrf_solve", "n:", n, "nrhs:", nrhs, "nnzT:", nnzT, "ldb:", ldb);
 
@@ -90,7 +98,20 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
 
     /* TODO:
 
-
+    // ---- main loop (rocsparse does not support multiple rhs) ----
+    // -------------------------------------------------------------
+    // For each right-hand-side brhs:
+    // solve A * x = brhs
+    //   P A Q * (inv(Q) x) = P brhs
+    //
+    //   (LU) xhat = bhat,  xhat = inv(Q) x, or Q xhat = x,
+    //                      bhat = P brhs
+    // -------------------------------------------------------------
+    for(int irhs = 0; irhs < nrhs; irhs++)
+    {
+        rf_pqrlusolve(handle, n, nnzT, pivP, pivQ, Rs, ptrT, indT, valT,
+                        B + ldb * irhs, temp + ldb * irhs);
+    }
 
     */
 

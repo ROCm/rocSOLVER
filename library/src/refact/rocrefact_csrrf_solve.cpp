@@ -35,25 +35,27 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size for temp buffer in solve calls
-    size_t size_work;
+    size_t size_work, size_temp;
 
-    rocsolver_csrrf_solve_getMemorySize<T>(n, nnzT, ptrT, indT, valT, rfinfo, &size_work);
+    rocsolver_csrrf_solve_getMemorySize<T>(n, nrhs, nnzT, ptrT, indT, valT, rfinfo, ldb, &size_work,
+                                           &size_temp);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work);
+        return rocblas_set_optimal_device_memory_size(handle, size_work, size_temp);
 
     // memory workspace allocation
-    void* work;
-    rocblas_device_malloc mem(handle, size_work);
+    void *work, *temp;
+    rocblas_device_malloc mem(handle, size_work, size_temp);
 
     if(!mem)
         return rocblas_status_memory_error;
 
     work = mem[0];
+    temp = mem[1];
 
     // execution
     return rocsolver_csrrf_solve_template<T>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                             rfinfo, B, ldb, work);
+                                             rfinfo, B, ldb, work, (T*)temp);
 }
 
 /*
