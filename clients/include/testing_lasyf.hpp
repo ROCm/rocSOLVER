@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -201,25 +201,33 @@ void lasyf_getError(const rocblas_handle handle,
     if(uplo == rocblas_fill_upper)
     {
         for(rocblas_int i = n - hKBRes[0][0]; i < n; ++i)
+        {
+            EXPECT_EQ(hIpiv[0][i], hIpivRes[0][i]) << "where i = " << i;
             if(hIpiv[0][i] != hIpivRes[0][i])
                 err++;
+        }
     }
     else
     {
         for(rocblas_int i = 0; i < hKBRes[0][0]; ++i)
+        {
+            EXPECT_EQ(hIpiv[0][i], hIpivRes[0][i]) << "where i = " << i;
             if(hIpiv[0][i] != hIpivRes[0][i])
                 err++;
+        }
     }
     *max_err = err > *max_err ? err : *max_err;
 
     // also check kb
     err = 0;
+    EXPECT_EQ(hKB[0][0], hKBRes[0][0]);
     if(hKB[0][0] != hKBRes[0][0])
         err++;
     *max_err += err;
 
     // also check info
     err = 0;
+    EXPECT_EQ(hInfo[0][0], hInfoRes[0][0]);
     if(hInfo[0][0] != hInfoRes[0][0])
         err++;
     *max_err += err;

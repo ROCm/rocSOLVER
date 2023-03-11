@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -103,6 +103,7 @@ class rocsolver_dispatcher
             {"stedc", testing_stedc<T>},
             {"stein", testing_stein<T>},
             {"lasyf", testing_lasyf<T>},
+            {"lauum", testing_lauum<T>},
             // potrf
             {"potf2", testing_potf2_potrf<false, false, 0, T>},
             {"potf2_batched", testing_potf2_potrf<true, true, 0, T>},
@@ -252,7 +253,6 @@ class rocsolver_dispatcher
             {"sterf", testing_sterf<T>},
             {"stebz", testing_stebz<T>},
             {"bdsvdx", testing_bdsvdx<T>},
-            {"lauum", testing_lauum<T>},
             // orgxx
             {"org2r", testing_orgxr_ungxr<T, 0>},
             {"orgqr", testing_orgxr_ungxr<T, 1>},

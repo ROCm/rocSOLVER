@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -102,6 +102,24 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
 #define CHECK_DEVICE_ALLOCATION CHECK_HIP_ERROR
 
 #define EXPECT_ROCBLAS_STATUS rocblas_expect_status
+
+// The info provided to EXPECT macros is used in rocsolver-test, but
+// in rocsolver-bench, the information is just discarded.
+struct rocsolver_info_discarder
+{
+    template <typename T>
+    rocsolver_info_discarder& operator<<(T&&)
+    {
+        return *this;
+    }
+};
+
+#define EXPECT_EQ(v1, v2) rocsolver_info_discarder()
+#define EXPECT_NE(v1, v2) rocsolver_info_discarder()
+#define EXPECT_LT(v1, v2) rocsolver_info_discarder()
+#define EXPECT_LE(v1, v2) rocsolver_info_discarder()
+#define EXPECT_GT(v1, v2) rocsolver_info_discarder()
+#define EXPECT_GE(v1, v2) rocsolver_info_discarder()
 
 #endif // ROCSOLVER_CLIENTS_TEST
 
