@@ -248,7 +248,6 @@ add_library(rocsolver
   ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
-  ${rocsolver_refact_source}
 )
 
 add_library(roc::rocsolver ALIAS rocsolver)
@@ -262,6 +261,11 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
+
+if(ROCSOLVER_SPARSE_API)
+  target_sources(rocsolver PRIVATE ${rocsolver_refact_source})
+  target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+endif()
 
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
