@@ -5,7 +5,6 @@
 #ifndef ROCSOLVER_EXTRA_TYPES_H
 #define ROCSOLVER_EXTRA_TYPES_H
 
-//#include <rocsparse.h>
 #include <stdint.h>
 
 /*! \brief Used to specify the logging layer mode using a bitwise combination
@@ -122,9 +121,13 @@ typedef enum rocblas_srange_
     rocblas_srange_index = 263, /**< The \f$il\f$-th through \f$iu\f$-th singular values will be found.*/
 } rocblas_srange;
 
-/*! \brief Structure containing matrix descriptors and meta data required to interact with rocSPARSE
- *when using the rocSOLVER re-factorization functionality. It needs to be initialized with
- *\ref rocsolver_rfinfo_create, and destroyed with \ref rocsolver_rfinfo_destroy.
+/*! \brief Forward-declaration of opaque struct containing data used for the re-factorization interfaces.
+ ********************************************************************************/
+struct rocsolver_rfinfo_;
+
+/*! \brief A handle to a structure containing matrix descriptors and metadata required to interact
+ *with rocSPARSE when using the rocSOLVER re-factorization functionality. It needs to be initialized
+ *with \ref rocsolver_rfinfo_create and destroyed with \ref rocsolver_rfinfo_destroy.
  ********************************************************************************/
 typedef struct rocsolver_rfinfo_* rocsolver_rfinfo;
 
