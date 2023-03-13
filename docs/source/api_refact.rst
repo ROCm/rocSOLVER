@@ -36,16 +36,16 @@ Initialization and meta data
 
 .. _rfinfocreate:
 
-rocsolver_rfinfo_create()
+rocsolver_create_rfinfo()
 ---------------------------------------
-.. doxygenfunction:: rocsolver_rfinfo_create
+.. doxygenfunction:: rocsolver_create_rfinfo
 
 
 .. _rfinfodestroy:
 
-rocsolver_rfinfo_destroy()
+rocsolver_destroy_rfinfo()
 ---------------------------------------
-.. doxygenfunction:: rocsolver_rfinfo_destroy
+.. doxygenfunction:: rocsolver_destroy_rfinfo
 
 
 .. _rfanalysis:

@@ -23743,7 +23743,7 @@ ROCSOLVER_EXPORT rocblas_status
  * ===========================================================================
  */
 
-/*! \brief RFINFO_CREATE initializes the structure rfinfo, required by the re-factorization functions
+/*! \brief CREATE_RFINFO initializes the structure rfinfo, required by the re-factorization functions
     \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE",
     that contains the meta data and descriptors of the involved matrices.
 
@@ -23755,10 +23755,10 @@ ROCSOLVER_EXPORT rocblas_status
     handle      rocblas_handle.\n
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_rfinfo_create(rocsolver_rfinfo* rfinfo,
+ROCSOLVER_EXPORT rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo,
                                                         rocblas_handle handle);
 
-/*! \brief RFINFO_DESTROY destroys the structure rfinfo used by the re-factorization functions
+/*! \brief DESTROY_RFINFO destroys the structure rfinfo used by the re-factorization functions
     \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
 
     \details
@@ -23767,7 +23767,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_rfinfo_create(rocsolver_rfinfo* rfinfo
                 The rfinfo struct to be destroyed.
     ********************************************************************/
 
-ROCSOLVER_EXPORT rocblas_status rocsolver_rfinfo_destroy(rocsolver_rfinfo rfinfo);
+ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo);
 
 /*! @{
     \brief CSRRF_SUMLU bundles the factors \f$L\f$ and \f$U\f$, associated with the LU factorization

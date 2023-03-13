@@ -4,7 +4,7 @@
 
 #include "rfinfo.hpp"
 
-extern "C" rocblas_status rocsolver_rfinfo_create(rocsolver_rfinfo* rfinfo, rocblas_handle handle)
+extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocblas_handle handle)
 {
     if(!handle)
         return rocblas_status_invalid_handle;
@@ -17,7 +17,7 @@ extern "C" rocblas_status rocsolver_rfinfo_create(rocsolver_rfinfo* rfinfo, rocb
     return rocblas_status_success;
 }
 
-extern "C" rocblas_status rocsolver_rfinfo_destroy(rocsolver_rfinfo rfinfo)
+extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 {
     if(!rfinfo)
         return rocblas_status_invalid_pointer;

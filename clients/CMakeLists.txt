@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
 project(rocsolver-clients LANGUAGES C CXX)
@@ -107,6 +107,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_lacgv.cpp
     common/testing_geblttrf_npvt.cpp
     common/testing_geblttrs_npvt.cpp
+    common/testing_csrrf_analysis.cpp
   )
   set(common_source_files
     common/lapack_host_reference.cpp

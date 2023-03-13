@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
 find_package(GTest REQUIRED)
@@ -84,6 +84,11 @@ set(rocauxiliary_test_source
   lauum_gtest.cpp
 )
 
+set(rocrefact_test_source
+  # rfinfo analysis
+  csrrf_analysis_gtest.cpp
+)
+
 set(others_test_source
   # unified memory model
   managed_malloc_gtest.cpp
@@ -102,6 +107,7 @@ set(rocsolver_test_source
 add_executable(rocsolver-test
   ${roclapack_test_source}
   ${rocauxiliary_test_source}
+  ${rocrefact_test_source}
   ${others_test_source}
   ${rocsolver_test_source}
 )
