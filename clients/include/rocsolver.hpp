@@ -9286,35 +9286,35 @@ inline rocblas_status rocsolver_csrrf_refactlu(rocblas_handle handle,
 /********************************************************/
 
 /********************* CSRRF_SOLVE ************************/
-rocblas_status rocsolver_csrrf_solve(rocblas_handle handle,
-                                     rocblas_int n,
-                                     rocblas_int nrhs,
-                                     rocblas_int nnzT,
-                                     rocblas_int* ptrT,
-                                     rocblas_int* indT,
-                                     float* valT,
-                                     rocblas_int* pivP,
-                                     rocblas_int* pivQ,
-                                     rocsolver_rfinfo rfinfo,
-                                     float* B,
-                                     rocblas_int ldb)
+inline rocblas_status rocsolver_csrrf_solve(rocblas_handle handle,
+                                            rocblas_int n,
+                                            rocblas_int nrhs,
+                                            rocblas_int nnzT,
+                                            rocblas_int* ptrT,
+                                            rocblas_int* indT,
+                                            float* valT,
+                                            rocblas_int* pivP,
+                                            rocblas_int* pivQ,
+                                            rocsolver_rfinfo rfinfo,
+                                            float* B,
+                                            rocblas_int ldb)
 {
     return rocsolver_scsrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, rfinfo, B,
                                   ldb);
 }
 
-rocblas_status rocsolver_csrrf_solve(rocblas_handle handle,
-                                     rocblas_int n,
-                                     rocblas_int nrhs,
-                                     rocblas_int nnzT,
-                                     rocblas_int* ptrT,
-                                     rocblas_int* indT,
-                                     double* valT,
-                                     rocblas_int* pivP,
-                                     rocblas_int* pivQ,
-                                     rocsolver_rfinfo rfinfo,
-                                     double* B,
-                                     rocblas_int ldb)
+inline rocblas_status rocsolver_csrrf_solve(rocblas_handle handle,
+                                            rocblas_int n,
+                                            rocblas_int nrhs,
+                                            rocblas_int nnzT,
+                                            rocblas_int* ptrT,
+                                            rocblas_int* indT,
+                                            double* valT,
+                                            rocblas_int* pivP,
+                                            rocblas_int* pivQ,
+                                            rocsolver_rfinfo rfinfo,
+                                            double* B,
+                                            rocblas_int ldb)
 {
     return rocsolver_dcsrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, rfinfo, B,
                                   ldb);

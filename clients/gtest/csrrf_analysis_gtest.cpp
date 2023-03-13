@@ -18,9 +18,9 @@ typedef std::tuple<int, int> csrrf_analysis_tuple;
 // for checkin_lapack tests
 const vector<int> n_range = {
     // quick return
-    0
-        // invalid
-        - 1,
+    0,
+    // invalid
+    -1,
     // normal (valid) samples
     20,
     50,
@@ -29,9 +29,9 @@ const vector<int> n_range = {
 };
 const vector<int> nnz_range = {
     // matrix zero
-    0
-        // invalid
-        - 1,
+    0,
+    // invalid
+    -1,
     // normal (valid) samples
     20,
     40,
@@ -47,6 +47,7 @@ const vector<int> large_n_range = {
     300,
 };
 const vector<int> large_nnz_range = {
+    // normal (valid) samples
     150,
     250,
 };

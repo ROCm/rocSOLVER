@@ -281,24 +281,24 @@ void testing_csrrf_analysis(Arguments& argus)
     // determine valid test case
     if(n > 0)
     {
-        if(n <= 20)
+        if(n <= 35)
             n = 20;
-        else if(n <= 50)
+        else if(n <= 75)
             n = 50;
-        else if(n <= 100)
+        else if(n <= 200)
             n = 100;
         else
             n = 300;
     }
     if(nnzM > 0)
     {
-        if(nnzM <= 20)
+        if(nnzM <= 30)
             nnzM = 20;
-        else if(nnzM <= 40)
+        else if(nnzM <= 55)
             nnzM = 40;
-        else if(nnzM <= 75)
+        else if(nnzM <= 110)
             nnzM = 75;
-        else if(nnzM <= 150)
+        else if(nnzM <= 200)
             nnzM = 150;
         else
             nnzM = 250;
