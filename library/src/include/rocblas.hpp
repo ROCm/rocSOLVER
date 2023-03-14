@@ -11,7 +11,6 @@
 #include "lib_device_helpers.hpp"
 #include "lib_host_helpers.hpp"
 #include "rocblas/internal/rocblas-exported-proto.hpp"
-#include "rocblas/internal/rocblas_block_sizes.h"
 #include "rocblas/internal/rocblas_device_malloc.hpp"
 #include "rocsolver_logger.hpp"
 

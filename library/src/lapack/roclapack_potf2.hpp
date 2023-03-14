@@ -95,6 +95,8 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n,
     *size_scalars = sizeof(T) * 3;
 
     // size of workspace
+    // TODO: replace with rocBLAS call
+    constexpr int ROCBLAS_DOT_NB = 512;
     *size_work = sizeof(T) * ((n - 1) / ROCBLAS_DOT_NB + 2) * batch_count;
 
     // size of array to store pivots
