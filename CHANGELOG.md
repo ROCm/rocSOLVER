@@ -8,8 +8,6 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Improved the performance of BDSQR and GESVD
 
 ### Changed
-- Moved internal headers into a subdirectory.
-
 ### Deprecated
 ### Removed
 ### Fixed

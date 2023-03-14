@@ -1065,11 +1065,14 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    constexpr rocblas_int NB = BATCHED ? ROCBLAS_SDSYRK_BATCHED_NB : ROCBLAS_SDZSYRK_NB;
-
-    return rocblas_internal_syrk_template<NB, BATCHED, T>(
-        handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
-        strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+    if constexpr(BATCHED)
+        return rocblas_internal_syrk_batched_template(
+            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
+            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_syrk_template(
+            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
+            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
 
 // herk
@@ -1097,13 +1100,14 @@ rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    constexpr rocblas_int NB = BATCHED                  ? ROCBLAS_HERK_BATCHED_NB
-        : std::is_same<T, rocblas_float_complex>::value ? ROCBLAS_CHERK_NB
-                                                        : ROCBLAS_ZHERK_NB;
-
-    return rocblas_internal_herk_template<NB, BATCHED, T>(
-        handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA, lda,
-        strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+    if constexpr(BATCHED)
+        return rocblas_internal_herk_batched_template(
+            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
+            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_herk_template(
+            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
+            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
 }
 
 // syr2k
@@ -1140,16 +1144,16 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
                   "lda:", lda, "shiftB:", offsetB, "ldb:", ldb, "shiftC:", offsetC, "ldc:", ldc,
                   "bc:", batch_count);
 
-    constexpr bool TWOK = true;
-    constexpr bool HERK = false;
-    constexpr rocblas_int NB = BATCHED  ? ROCBLAS_SDSYR2K_BATCHED_NB
-        : std::is_same<T, float>::value ? ROCBLAS_SSYR2K_NB
-                                        : ROCBLAS_DCZSYR2K_NB;
-
-    return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
-        handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
-        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C, offsetC,
-        ldc, strideC, batch_count);
+    if constexpr(BATCHED)
+        return rocblas_internal_syr2k_batched_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C,
+            offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_syr2k_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<T>(beta), C,
+            offsetC, ldc, strideC, batch_count);
 }
 
 // syr2k overload
@@ -1188,16 +1192,16 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB,
                             batch_count);
 
-    constexpr bool TWOK = true;
-    constexpr bool HERK = false;
-    constexpr rocblas_int NB = BATCHED  ? ROCBLAS_SDSYR2K_BATCHED_NB
-        : std::is_same<T, float>::value ? ROCBLAS_SSYR2K_NB
-                                        : ROCBLAS_DCZSYR2K_NB;
-
-    return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
-        handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
-        strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<T>(beta), C,
-        offsetC, ldc, strideC, batch_count);
+    if constexpr(BATCHED)
+        return rocblas_internal_syr2k_batched_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<T>(beta), C,
+            offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_syr2k_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<T>(beta), C,
+            offsetC, ldc, strideC, batch_count);
 }
 
 // her2k
@@ -1236,14 +1240,16 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
 
     using S = decltype(std::real(T{}));
 
-    constexpr bool TWOK = true;
-    constexpr bool HERK = true;
-    constexpr rocblas_int NB = BATCHED ? ROCBLAS_HER2K_BATCHED_NB : ROCBLAS_HER2K_NB;
-
-    return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
-        handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
-        strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<S>(beta), C, offsetC,
-        ldc, strideC, batch_count);
+    if constexpr(BATCHED)
+        return rocblas_internal_her2k_batched_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<S>(beta), C,
+            offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_her2k_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(B), offsetB, ldb, strideB, cast2constType<S>(beta), C,
+            offsetC, ldc, strideC, batch_count);
 }
 
 // her2k overload
@@ -1284,14 +1290,16 @@ rocblas_status rocblasCall_syr2k_her2k(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, strideB,
                             batch_count);
 
-    constexpr bool TWOK = true;
-    constexpr bool HERK = true;
-    constexpr rocblas_int NB = BATCHED ? ROCBLAS_HER2K_BATCHED_NB : ROCBLAS_HER2K_NB;
-
-    return rocblas_internal_syr2k_her2k_template<NB, BATCHED, TWOK, HERK>(
-        handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
-        strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<S>(beta), C,
-        offsetC, ldc, strideC, batch_count);
+    if constexpr(BATCHED)
+        return rocblas_internal_her2k_batched_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<S>(beta), C,
+            offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_her2k_template(
+            handle, uplo, trans, n, k, cast2constType<T>(alpha), cast2constType<T>(A), offsetA, lda,
+            strideA, cast2constType<T>(work), offsetB, ldb, strideB, cast2constType<S>(beta), C,
+            offsetC, ldc, strideC, batch_count);
 }
 
 // symv/hemv memory sizes
