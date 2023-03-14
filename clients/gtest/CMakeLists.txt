@@ -89,6 +89,7 @@ set(rocrefact_test_source
   csrrf_analysis_gtest.cpp
   # lu refactorization
   csrrf_sumlu_gtest.cpp
+  csrrf_splitlu_gtest.cpp
 )
 
 set(others_test_source

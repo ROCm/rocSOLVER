@@ -371,6 +371,7 @@ void testing_csrrf_analysis(Arguments& argus)
     host_strided_batch_vector<T> hvalT(size_valT, 1, size_valT, 1);
     host_strided_batch_vector<rocblas_int> hpivP(size_pivP, 1, size_pivP, 1);
     host_strided_batch_vector<rocblas_int> hpivQ(size_pivQ, 1, size_pivQ, 1);
+
     device_strided_batch_vector<rocblas_int> dptrM(size_ptrM, 1, size_ptrM, 1);
     device_strided_batch_vector<rocblas_int> dindM(size_indM, 1, size_indM, 1);
     device_strided_batch_vector<T> dvalM(size_valM, 1, size_valM, 1);

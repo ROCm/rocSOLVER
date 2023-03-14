@@ -27,7 +27,6 @@ void csrrf_sumlu_checkBadArgs(rocblas_handle handle,
                               rocblas_int* indT,
                               T valT)
 {
-    printf("bad args \n\n");
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_sumlu(nullptr, n, nnzL, ptrL, indL, valL, nnzU, ptrU,
                                                 indU, valU, ptrT, indT, valT),
@@ -83,7 +82,6 @@ void testing_csrrf_sumlu_bad_arg()
     rocblas_int n = 1;
     rocblas_int nnzL = 1;
     rocblas_int nnzU = 1;
-    printf("with n = %d, nnzL = %d, and nnzU = %d ===> ", n, nnzL, nnzU);
 
     // memory allocations
     device_strided_batch_vector<rocblas_int> ptrL(1, 1, 1, 1);
@@ -174,7 +172,6 @@ void csrrf_sumlu_getError(rocblas_handle handle,
                           Th& hvalTres,
                           double* max_err)
 {
-    printf("get error \n\n");
     // input data initialization
     csrrf_sumlu_initData<true, true, T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU, dindU,
                                         dvalU, hptrL, hindL, hvalL, hptrU, hindU, hvalU, hptrT,
@@ -236,7 +233,6 @@ void csrrf_sumlu_getPerfData(rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    printf("perf data \n\n");
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
     csrrf_sumlu_initData<true, false, T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU, dindU,
@@ -333,7 +329,6 @@ void testing_csrrf_sumlu(Arguments& argus)
         }
     }
     rocblas_int nnzT = nnzL + nnzU - n;
-    printf("with n = %d, nnzL = %d, and nnzU = %d ===> ", n, nnzL, nnzU);
 
     // check non-supported values
     // N/A
@@ -342,7 +337,6 @@ void testing_csrrf_sumlu(Arguments& argus)
     bool invalid_size = (n < 0 || nnzL < 0 || nnzU < 0);
     if(invalid_size)
     {
-        printf("invalid size \n\n");
         EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_sumlu(handle, n, nnzL, (rocblas_int*)nullptr,
                                                     (rocblas_int*)nullptr, (T*)nullptr, nnzU,
                                                     (rocblas_int*)nullptr, (rocblas_int*)nullptr,
@@ -412,6 +406,7 @@ void testing_csrrf_sumlu(Arguments& argus)
     host_strided_batch_vector<rocblas_int> hptrTres(size_ptrTres, 1, size_ptrTres, 1);
     host_strided_batch_vector<rocblas_int> hindTres(size_indTres, 1, size_indTres, 1);
     host_strided_batch_vector<T> hvalTres(size_valTres, 1, size_valTres, 1);
+
     device_strided_batch_vector<rocblas_int> dptrL(size_ptrL, 1, size_ptrL, 1);
     device_strided_batch_vector<rocblas_int> dindL(size_indL, 1, size_indL, 1);
     device_strided_batch_vector<T> dvalL(size_valL, 1, size_valL, 1);
@@ -440,7 +435,6 @@ void testing_csrrf_sumlu(Arguments& argus)
     // check quick return
     if(n == 0)
     {
-        printf("quick return \n\n");
         EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_sumlu(handle, n, nnzL, dptrL.data(), dindL.data(),
                                                     dvalL.data(), nnzU, dptrU.data(), dindU.data(),
                                                     dvalU.data(), dptrT.data(), dindT.data(),

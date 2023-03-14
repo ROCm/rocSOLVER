@@ -175,7 +175,7 @@ rocblas_status rocsolver_csrrf_splitlu_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(!ptrL || !ptrU || !ptrT || (nnzT && (!indT || !valT || !indU || !valU || !indL || valL)))
+    if(!ptrL || !ptrU || !ptrT || (nnzT && (!indT || !valT || !indU || !valU || !indL || !valL)))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
