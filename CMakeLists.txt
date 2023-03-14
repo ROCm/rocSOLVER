@@ -111,7 +111,6 @@ cmake_dependent_option(BUILD_CLIENTS_EXTRA_TESTS "Build extra tests" OFF BUILD_T
 option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
-option(ROCSOLVER_SPARSE_API "Build rocSOLVER sparse solvers" ON)
 
 cmake_dependent_option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY
   "Build with file/folder reorg backward compatibility enabled" ON "NOT WIN32" OFF)
@@ -153,7 +152,8 @@ find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
 
-if(ROCSOLVER_SPARSE_API)
+option(ROCSOLVER_WITH_SPARSE "Build rocSOLVER sparse re-factorization and solvers" ON)
+if(ROCSOLVER_WITH_SPARSE)
   find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
   get_imported_target_location(location roc::rocsparse)
   message(STATUS "Found rocSPARSE: ${location}")

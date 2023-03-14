@@ -263,9 +263,11 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
-if(ROCSOLVER_SPARSE_API)
+if(ROCSOLVER_WITH_SPARSE)
   target_sources(rocsolver PRIVATE ${rocsolver_refact_source})
   target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+else()
+  target_sources(rocsolver PRIVATE refact/rocrefact_no_rocsparse.cpp)
 endif()
 
 if(ROCSOLVER_EMBED_FMT)
