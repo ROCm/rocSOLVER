@@ -278,7 +278,7 @@ void testing_csrrf_analysis(Arguments& argus)
     rocblas_int nnzM = argus.get<rocblas_int>("nnzM");
     rocblas_int hot_calls = argus.iters;
 
-    // determine valid test case
+    // determine existing test case
     if(n > 0)
     {
         if(n <= 35)
@@ -411,14 +411,14 @@ void testing_csrrf_analysis(Arguments& argus)
     // check computations
     if(argus.unit_check || argus.norm_check)
         csrrf_analysis_getError<T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT, dvalT,
-                                   dpivP, dpivQ, rfinfo, hptrM, hindM, dvalM, hptrT, hindT, dvalT,
+                                   dpivP, dpivQ, rfinfo, hptrM, hindM, hvalM, hptrT, hindT, hvalT,
                                    hpivP, hpivQ, &max_error);
 
     // collect performance data
     if(argus.timing)
         csrrf_analysis_getPerfData<T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT,
-                                      dvalT, dpivP, dpivQ, rfinfo, hptrM, hindM, dvalM, hptrT,
-                                      hindT, dvalT, hpivP, hpivQ, &gpu_time_used, &cpu_time_used,
+                                      dvalT, dpivP, dpivQ, rfinfo, hptrM, hindM, hvalM, hptrT,
+                                      hindT, hvalT, hpivP, hpivQ, &gpu_time_used, &cpu_time_used,
                                       hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
@@ -462,4 +462,4 @@ void testing_csrrf_analysis(Arguments& argus)
 #define EXTERN_TESTING_CSRRF_ANALYSIS(...) \
     extern template void testing_csrrf_analysis<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_CSRRF_ANALYSIS, FOREACH_SCALAR_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_CSRRF_ANALYSIS, FOREACH_REAL_TYPE, APPLY_STAMP)

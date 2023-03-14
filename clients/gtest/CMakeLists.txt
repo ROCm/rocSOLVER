@@ -87,6 +87,8 @@ set(rocauxiliary_test_source
 set(rocrefact_test_source
   # rfinfo analysis
   csrrf_analysis_gtest.cpp
+  # lu refactorization
+  csrrf_sumlu_gtest.cpp
 )
 
 set(others_test_source

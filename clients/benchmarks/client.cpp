@@ -329,6 +329,27 @@ try
             "                           The benchmark client will use the available case closest to the input value.\n"
             "                           ")
 
+        ("nnzL",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix L.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
+        ("nnzU",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix U.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
+        ("nnzT",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix T.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
         // bdsqr options
         ("nc",
          value<rocblas_int>()->default_value(0),

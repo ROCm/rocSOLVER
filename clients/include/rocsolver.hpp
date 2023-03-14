@@ -9134,7 +9134,7 @@ inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                      pivP, pivQ, rfinfo);
 }
 
-inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
+/*inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                                rocblas_int n,
                                                rocblas_int nnzM,
                                                rocblas_int* ptrM,
@@ -9148,9 +9148,8 @@ inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                                rocblas_int* pivQ,
                                                rocsolver_rfinfo rfinfo)
 {
-    //return rocsolver_ccsrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT, indT,
-    //                                            valT, pivP, pivQ, rfinfo);
-    return rocblas_status_success;
+    return rocsolver_ccsrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT, indT,
+                                                valT, pivP, pivQ, rfinfo);
 }
 
 inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
@@ -9167,10 +9166,9 @@ inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                                rocblas_int* pivQ,
                                                rocsolver_rfinfo rfinfo)
 {
-    //return rocsolver_zcsrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
-    //                                             indT, valT, pivP, pivQ, rfinfo);
-    return rocblas_status_success;
-}
+    return rocsolver_zcsrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
+                                                 indT, valT, pivP, pivQ, rfinfo);
+}*/
 /********************************************************/
 
 /********************* CSRRF_SUMLU ************************/
@@ -9209,6 +9207,42 @@ inline rocblas_status rocsolver_csrrf_sumlu(rocblas_handle handle,
     return rocsolver_dcsrrf_sumlu(handle, n, nnzL, ptrL, indL, valL, nnzU, ptrU, indU, valU, ptrT,
                                   indT, valT);
 }
+
+/*inline rocblas_status rocsolver_csrrf_sumlu(rocblas_handle handle,
+                                            rocblas_int n,
+                                            rocblas_int nnzL,
+                                            rocblas_int* ptrL,
+                                            rocblas_int* indL,
+                                            rocblas_float_complex* valL,
+                                            rocblas_int nnzU,
+                                            rocblas_int* ptrU,
+                                            rocblas_int* indU,
+                                            rocblas_float_complex* valU,
+                                            rocblas_int* ptrT,
+                                            rocblas_int* indT,
+                                            rocblas_float_complex* valT)
+{
+    return rocsolver_ccsrrf_sumlu(handle, n, nnzL, ptrL, indL, valL, nnzU, ptrU, indU, valU, ptrT,
+                                  indT, valT);
+}
+
+inline rocblas_status rocsolver_csrrf_sumlu(rocblas_handle handle,
+                                            rocblas_int n,
+                                            rocblas_int nnzL,
+                                            rocblas_int* ptrL,
+                                            rocblas_int* indL,
+                                            rocblas_double_complex* valL,
+                                            rocblas_int nnzU,
+                                            rocblas_int* ptrU,
+                                            rocblas_int* indU,
+                                            rocblas_double_complex* valU,
+                                            rocblas_int* ptrT,
+                                            rocblas_int* indT,
+                                            rocblas_double_complex* valT)
+{
+    return rocsolver_zcsrrf_sumlu(handle, n, nnzL, ptrL, indL, valL, nnzU, ptrU, indU, valU, ptrT,
+                                  indT, valT);
+}*/
 /********************************************************/
 
 /********************* CSRRF_SPLITLU ************************/
