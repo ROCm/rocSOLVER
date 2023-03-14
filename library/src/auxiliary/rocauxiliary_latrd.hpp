@@ -205,7 +205,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                 cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, j, ldw),
                                 1, strideW, batch_count, workArr);
 
-            rocblasCall_scal<T>(handle, n - j - 1, (tau + j), strideP, W,
+            rocblasCall_scal<false, T>(handle, n - j - 1, (tau + j), strideP, W,
                                 shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count);
 
             rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j + 1, j, ldw), 1,
@@ -297,7 +297,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                 cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(0, jw, ldw), 1,
                                 strideW, batch_count, workArr);
 
-            rocblasCall_scal<T>(handle, j, (tau + j - 1), strideP, W, shiftW + idx2D(0, jw, ldw), 1,
+            rocblasCall_scal<false, T>(handle, j, (tau + j - 1), strideP, W, shiftW + idx2D(0, jw, ldw), 1,
                                 strideW, batch_count);
 
             rocblasCall_dot<COMPLEX, T>(handle, j, W, shiftW + idx2D(0, jw, ldw), 1, strideW, A,

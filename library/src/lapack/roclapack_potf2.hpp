@@ -131,7 +131,7 @@ rocblas_status rocsolver_potf2_potrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <bool BATCHED, typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -205,7 +205,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                     rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA,
                                                 batch_count);
 
-                rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A, shiftA + idx2D(j, j + 1, lda),
+                rocblasCall_scal<BATCHED, T>(handle, n - j - 1, pivots, 1, A, shiftA + idx2D(j, j + 1, lda),
                                     lda, strideA, batch_count);
             }
         }
@@ -240,7 +240,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                     rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda,
                                                 strideA, batch_count);
 
-                rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A, shiftA + idx2D(j + 1, j, lda),
+                rocblasCall_scal<BATCHED, T>(handle, n - j - 1, pivots, 1, A, shiftA + idx2D(j + 1, j, lda),
                                     1, strideA, batch_count);
             }
         }
