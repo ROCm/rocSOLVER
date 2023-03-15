@@ -71,7 +71,11 @@ class CSRRF_ANALYSIS : public ::TestWithParam<csrrf_analysis_tuple>
 {
 protected:
     CSRRF_ANALYSIS() {}
-    virtual void SetUp() {}
+    virtual void SetUp()
+    {
+        if(rocsolver_create_rfinfo(nullptr, nullptr) == rocblas_status_not_implemented)
+            GTEST_SKIP() << "Sparse functionality is not enabled";
+    }
     virtual void TearDown() {}
 
     template <typename T>
