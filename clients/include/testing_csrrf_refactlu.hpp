@@ -434,7 +434,9 @@ void testing_csrrf_refactlu(Arguments& argus)
                                       hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
-    // N/A
+    // using n * machine precision for tolerance
+    if(argus.unit_check)
+        ROCSOLVER_TEST_CHECK(T, max_error, n);
 
     // output results for rocsolver-bench
     if(argus.timing)

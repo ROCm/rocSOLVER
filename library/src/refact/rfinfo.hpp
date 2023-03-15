@@ -21,9 +21,7 @@ struct rocsolver_rfinfo_
     // constructor
     rocsolver_rfinfo_(rocblas_handle handle)
     {
-        /* TODO:
-
-        // create sparse handle
+        /*        // create sparse handle
         rocsparse_handle sphandle;
         rocsparse_create_handle(&sphandle);
 
@@ -52,24 +50,18 @@ struct rocsolver_rfinfo_
         // create info holders
         rocsparse_create_mat_info(&infoL);
         rocsparse_create_mat_info(&infoU);
-        rocsparse_create_mat_info(&infoT);
-
-        */
+        rocsparse_create_mat_info(&infoT);*/
     }
 
     // destructor
     ~rocsolver_rfinfo_()
     {
-        /* TODO:
-
-        rocsparse_destroy_handle(sphandle);
+        /*        rocsparse_destroy_handle(sphandle);
         rocsparse_destroy_mat_descr(descrL);
         rocsparse_destroy_mat_descr(descrU);
         rocsparse_destroy_mat_descr(descrT);
         rocsparse_destroy_mat_info(infoL);
         rocsparse_destroy_mat_info(infoU);
-        rocsparse_destroy_mat_info(infoT);
-
-        */
+        rocsparse_destroy_mat_info(infoT);*/
     }
 };

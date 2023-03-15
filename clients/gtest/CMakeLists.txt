@@ -92,6 +92,7 @@ set(rocrefact_test_source
   csrrf_splitlu_gtest.cpp
   csrrf_refactlu_gtest.cpp
   # sparse solver
+  csrrf_solve_gtest.cpp
 )
 
 set(others_test_source

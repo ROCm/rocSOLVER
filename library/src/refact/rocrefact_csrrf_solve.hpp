@@ -56,7 +56,7 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
                                          size_t* size_temp)
 {
     // if quick return, no need of workspace
-    if(n == 0)
+    if(n == 0 || nrhs == 0)
     {
         *size_work = 0;
         *size_temp = 0;
@@ -64,8 +64,9 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
     }
 
     // requirements for csrsv_solve
-    rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, rocsparse_operation_none, n, nnzT,
-                                    rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT, size_work);
+    //    rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, rocsparse_operation_none, n, nnzT,
+    //                                    rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT, size_work);
+    *size_work = 100;
 
     // temp storage for solution vector
     *size_temp = sizeof(T) * ldb * nrhs;
@@ -90,7 +91,7 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
     ROCSOLVER_ENTER("csrrf_solve", "n:", n, "nrhs:", nrhs, "nnzT:", nnzT, "ldb:", ldb);
 
     // quick return
-    if(n == 0)
+    if(n == 0 || nrhs == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
