@@ -7,4 +7,4 @@ License & Attributions
 .. toctree::
    :maxdepth: 5
 
-.. mdinclude:: ../../LICENSE.md
+.. mdinclude:: ../LICENSE.md
