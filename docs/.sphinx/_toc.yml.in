@@ -7,4 +7,3 @@ subtrees:
     - file: design/design_index
     - file: userguide/userguide_index
     - file: api/api_index
-    - file: attributions
