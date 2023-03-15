@@ -12,6 +12,7 @@
 #include "testing_bdsqr.hpp"
 #include "testing_bdsvdx.hpp"
 #include "testing_csrrf_analysis.hpp"
+#include "testing_csrrf_refactlu.hpp"
 #include "testing_csrrf_splitlu.hpp"
 #include "testing_csrrf_sumlu.hpp"
 #include "testing_gebd2_gebrd.hpp"
@@ -324,6 +325,7 @@ class rocsolver_dispatcher
             {"csrrf_analysis", testing_csrrf_analysis<T>},
             {"csrrf_sumlu", testing_csrrf_sumlu<T>},
             {"csrrf_splitlu", testing_csrrf_splitlu<T>},
+            {"csrrf_refactlu", testing_csrrf_refactlu<T>},
         };
 
         // Grab function from the map and execute

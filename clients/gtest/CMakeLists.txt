@@ -90,6 +90,8 @@ set(rocrefact_test_source
   # lu refactorization
   csrrf_sumlu_gtest.cpp
   csrrf_splitlu_gtest.cpp
+  csrrf_refactlu_gtest.cpp
+  # sparse solver
 )
 
 set(others_test_source
