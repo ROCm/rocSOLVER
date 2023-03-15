@@ -63,8 +63,9 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
 
     // requirements for solve with L and U, and for incomplete factorization
     // (buffer size is the same for all routines if the sparsity pattern does not change)
-    rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
-                                      rfinfo->infoT, size_work);
+    //    rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
+    //                                      rfinfo->infoT, size_work);
+    *size_work = 100;
 }
 
 template <typename T, typename U>
