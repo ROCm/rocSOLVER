@@ -44,7 +44,7 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
     size_t size_workArr;
     // extra requirements for calling LARFG
     size_t size_work, size_norms;
-    rocsolver_latrd_getMemorySize<false, T>(n, k, batch_count, &size_scalars, &size_work,
+    rocsolver_latrd_getMemorySize<BATCHED, T>(n, k, batch_count, &size_scalars, &size_work,
                                             &size_norms, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
@@ -66,7 +66,8 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_latrd_template<T>(handle, uplo, n, k, A, shiftA, lda, strideA, E, strideE, tau,
+    constexpr bool BATCHED = false;
+    return rocsolver_latrd_template<BATCHED, T>(handle, uplo, n, k, A, shiftA, lda, strideA, E, strideE, tau,
                                        strideP, W, shiftW, ldw, strideW, batch_count, (T*)scalars,
                                        (T*)work, (T*)norms, (T**)workArr);
 }
@@ -118,7 +119,7 @@ rocblas_status rocsolver_clatrd(rocblas_handle handle,
                                 rocblas_float_complex* W,
                                 const rocblas_int ldw)
 {
-    return rocsolver_latrd_impl<rocblas_float_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+    return rocsolver_latrd_impl< rocblas_float_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
 }
 
 rocblas_status rocsolver_zlatrd(rocblas_handle handle,

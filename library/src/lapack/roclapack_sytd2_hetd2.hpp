@@ -184,7 +184,7 @@ rocblas_status rocsolver_sytd2_hetd2_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
@@ -236,7 +236,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
         for(rocblas_int j = 0; j < n - 1; ++j)
         {
             // 1. generate Householder reflector to annihilate A(j+2:n-1,j)
-            rocsolver_larfg_template<T>(handle, n - 1 - j, A, shiftA + idx2D(j + 1, j, lda), A,
+            rocsolver_larfg_template<BATCHED, T>(handle, n - 1 - j, A, shiftA + idx2D(j + 1, j, lda), A,
                                         shiftA + idx2D(min(j + 2, n - 1), j, lda), 1, strideA,
                                         tmptau, stridet, batch_count, work, norms);
 
@@ -284,7 +284,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
         for(rocblas_int j = n - 1; j > 0; --j)
         {
             // 1. generate Householder reflector to annihilate A(0:j-2,j)
-            rocsolver_larfg_template<T>(handle, j, A, shiftA + idx2D(j - 1, j, lda), A,
+            rocsolver_larfg_template<BATCHED, T>(handle, j, A, shiftA + idx2D(j - 1, j, lda), A,
                                         shiftA + idx2D(0, j, lda), 1, strideA, tmptau, 1,
                                         batch_count, work, norms);
 

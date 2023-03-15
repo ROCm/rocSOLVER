@@ -63,7 +63,7 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_getf2_template<true, T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP,
+    return rocsolver_getf2_template<false, true, T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP,
                                              strideP, info, batch_count, (T*)scalars, (T*)pivotval,
                                              (rocblas_int*)pivotidx, pivot);
 }

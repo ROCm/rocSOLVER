@@ -95,7 +95,7 @@ rocblas_status rocsolver_org2r_orgqr_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U>
+template <bool BATCHED, typename T, typename U>
 rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle,
                                               const rocblas_int m,
                                               const rocblas_int n,
@@ -149,7 +149,7 @@ rocblas_status rocsolver_org2r_ung2r_template(rocblas_handle handle,
 
         // update i-th column -corresponding to H(i)-
         if(j < m - 1)
-            rocblasCall_scal<false, T>(handle, m - j - 1, ipiv + j, strideP, A,
+            rocblasCall_scal<BATCHED>(handle, m - j - 1, ipiv + j, strideP, A,
                                 shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count);
     }
 

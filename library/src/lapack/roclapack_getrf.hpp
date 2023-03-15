@@ -471,7 +471,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         jb = min(nn - k, blk); // number of columns/pivots in the inner block
 
         // factorize inner panel block
-        rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
+        rocsolver_getf2_template<BATCHED, STRIDED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
                                                lda, strideA, ipiv, shiftP + k, strideP, info,
                                                batch_count, scalars, pivotval, pivotidx, pivot,
                                                offset + k, permut_idx, stridePI);
@@ -658,7 +658,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int blk = getrf_get_blksize<ISBATCHED, T>(dim, pivot);
 
     if(blk == 0)
-        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
+        return rocsolver_getf2_template<BATCHED, STRIDED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
                                                       shiftP, strideP, info, batch_count, scalars,
                                                       pivotval, pivotidx, pivot);
 

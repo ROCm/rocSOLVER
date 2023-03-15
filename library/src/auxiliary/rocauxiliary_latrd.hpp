@@ -86,7 +86,7 @@ rocblas_status rocsolver_latrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const rocblas_int n,
@@ -131,6 +131,9 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
     blocks = (n - 1) / BS1 + 1;
     dim3 grid_n(blocks, batch_count);
 
+    // scal is used against W, don't need batched variation
+    constexpr bool SCAL_BATCHED = false;
+
     if(uplo == rocblas_fill_lower)
     {
         // reduce the first k columns of A
@@ -167,7 +170,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                             batch_count);
 
             // generate Householder reflector to work on column j
-            rocsolver_larfg_template(handle, n - j - 1, A, shiftA + idx2D(j + 1, j, lda), A,
+            rocsolver_larfg_template<BATCHED>(handle, n - j - 1, A, shiftA + idx2D(j + 1, j, lda), A,
                                      shiftA + idx2D(min(j + 2, n - 1), j, lda), 1, strideA,
                                      (tau + j), strideP, batch_count, work, norms);
 
@@ -205,7 +208,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                 cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, j, ldw),
                                 1, strideW, batch_count, workArr);
 
-            rocblasCall_scal<false, T>(handle, n - j - 1, (tau + j), strideP, W,
+            rocblasCall_scal<SCAL_BATCHED>(handle, n - j - 1, (tau + j), strideP, W,
                                 shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count);
 
             rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j + 1, j, ldw), 1,
@@ -259,7 +262,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                             lda, strideA, batch_count);
 
             // generate Householder reflector to work on column j
-            rocsolver_larfg_template(handle, j, A, shiftA + idx2D(j - 1, j, lda), A,
+            rocsolver_larfg_template<BATCHED>(handle, j, A, shiftA + idx2D(j - 1, j, lda), A,
                                      shiftA + idx2D(0, j, lda), 1, strideA, (tau + j - 1), strideP,
                                      batch_count, work, norms);
 
@@ -297,7 +300,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
                                 cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(0, jw, ldw), 1,
                                 strideW, batch_count, workArr);
 
-            rocblasCall_scal<false, T>(handle, j, (tau + j - 1), strideP, W, shiftW + idx2D(0, jw, ldw), 1,
+            rocblasCall_scal<SCAL_BATCHED>(handle, j, (tau + j - 1), strideP, W, shiftW + idx2D(0, jw, ldw), 1,
                                 strideW, batch_count);
 
             rocblasCall_dot<COMPLEX, T>(handle, j, W, shiftW + idx2D(0, jw, ldw), 1, strideW, A,

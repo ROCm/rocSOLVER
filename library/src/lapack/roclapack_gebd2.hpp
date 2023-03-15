@@ -74,7 +74,7 @@ rocblas_status rocsolver_gebd2_gebrd_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <bool BATCHED, typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -112,7 +112,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
         for(rocblas_int j = 0; j < n; j++)
         {
             // generate Householder reflector H(j)
-            rocsolver_larfg_template(handle, m - j, A, shiftA + idx2D(j, j, lda), A,
+            rocsolver_larfg_template<BATCHED>(handle, m - j, A, shiftA + idx2D(j, j, lda), A,
                                      shiftA + idx2D(min(j + 1, m - 1), j, lda), 1, strideA,
                                      (tauq + j), strideQ, batch_count, (T*)work_workArr, Abyx_norms);
 
@@ -149,7 +149,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                                 lda, strideA, batch_count);
 
                 // generate Householder reflector G(j)
-                rocsolver_larfg_template(handle, n - j - 1, A, shiftA + idx2D(j, j + 1, lda), A,
+                rocsolver_larfg_template<BATCHED>(handle, n - j - 1, A, shiftA + idx2D(j, j + 1, lda), A,
                                          shiftA + idx2D(j, min(j + 2, n - 1), lda), lda, strideA,
                                          (taup + j), strideP, batch_count, (T*)work_workArr,
                                          Abyx_norms);
@@ -193,7 +193,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                             strideA, batch_count);
 
             // generate Householder reflector G(j)
-            rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
+            rocsolver_larfg_template<BATCHED>(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
                                      shiftA + idx2D(j, min(j + 1, n - 1), lda), lda, strideA,
                                      (taup + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
@@ -222,7 +222,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
             if(j < m - 1)
             {
                 // generate Householder reflector H(j)
-                rocsolver_larfg_template(handle, m - j - 1, A, shiftA + idx2D(j + 1, j, lda), A,
+                rocsolver_larfg_template<BATCHED>(handle, m - j - 1, A, shiftA + idx2D(j + 1, j, lda), A,
                                          shiftA + idx2D(min(j + 2, m - 1), j, lda), 1, strideA,
                                          (tauq + j), strideQ, batch_count, (T*)work_workArr,
                                          Abyx_norms);

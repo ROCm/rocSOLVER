@@ -60,7 +60,8 @@ rocblas_status rocsolver_gelq2_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_gelq2_template<T>(handle, m, n, A, shiftA, lda, strideA, ipiv, stridep,
+    constexpr bool BATCHED = false;
+    return rocsolver_gelq2_template<BATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv, stridep,
                                        batch_count, (T*)scalars, work_workArr, (T*)Abyx_norms,
                                        (T*)diag);
 }

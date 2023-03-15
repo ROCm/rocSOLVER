@@ -516,7 +516,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool ISBATCHED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -573,6 +573,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 #ifdef OPTIMAL
     if(m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N)
     {
+        constexpr bool ISBATCHED = BATCHED || STRIDED;
         int spker = select_spkernel<ISBATCHED, T>(m, n, pivot);
 
         // Use specialized kernels for small matrices
@@ -634,7 +635,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         if(sger_thds_x == 1)
         {
             // Scale J'th column
-            rocblasCall_scal<false, T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
+            rocblasCall_scal<BATCHED>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
                                 strideA, batch_count);
 
             // update trailing submatrix

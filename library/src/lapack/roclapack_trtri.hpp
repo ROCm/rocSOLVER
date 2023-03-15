@@ -192,7 +192,7 @@ rocblas_status rocsolver_trtri_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U>
+template <bool BATCHED, typename T, typename U>
 void trti2(rocblas_handle handle,
            const rocblas_fill uplo,
            const rocblas_diagonal diag,
@@ -236,7 +236,7 @@ void trti2(rocblas_handle handle,
                                 strideA, A, shiftA + idx2D(0, j, lda), 1, strideA, work, stdw,
                                 batch_count);
 
-            rocblasCall_scal<false, T>(handle, j, alphas + j, stdw, A, shiftA + idx2D(0, j, lda), 1,
+            rocblasCall_scal<BATCHED>(handle, j, alphas + j, stdw, A, shiftA + idx2D(0, j, lda), 1,
                                 strideA, batch_count);
         }
     }
@@ -248,7 +248,7 @@ void trti2(rocblas_handle handle,
                                 shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
                                 shiftA + idx2D(j + 1, j, lda), 1, strideA, work, stdw, batch_count);
 
-            rocblasCall_scal<false, T>(handle, n - j - 1, alphas + j, stdw, A,
+            rocblasCall_scal<BATCHED>(handle, n - j - 1, alphas + j, stdw, A,
                                 shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count);
         }
     }
@@ -341,7 +341,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     else if(blk == 1)
     {
         // use the unblocked algorithm
-        trti2<T>(handle, uplo, diag, n, A, shiftA, lda, strideA, batch_count, (T*)work1, (T*)work3);
+        trti2<BATCHED, T>(handle, uplo, diag, n, A, shiftA, lda, strideA, batch_count, (T*)work1, (T*)work3);
     }
 
     else
@@ -363,7 +363,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
                     A, shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(0, j, lda), lda,
                     strideA, batch_count, optim_mem, work1, work2, work3, work4);
 
-                trti2<T>(handle, uplo, diag, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                trti2<BATCHED, T>(handle, uplo, diag, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                          batch_count, (T*)work1, (T*)work3);
             }
         }
@@ -387,7 +387,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
                                              batch_count, optim_mem, work1, work2, work3, work4);
 
                 // inverse of current diagonal block
-                trti2<T>(handle, uplo, diag, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                trti2<BATCHED, T>(handle, uplo, diag, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                          batch_count, (T*)work1, (T*)work3);
             }
         }

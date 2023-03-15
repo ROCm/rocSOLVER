@@ -58,7 +58,8 @@ rocblas_status rocsolver_org2l_ung2l_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_org2l_ung2l_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
+    constexpr bool BATCHED = false;
+    return rocsolver_org2l_ung2l_template<BATCHED, T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv, strideP,
                                              batch_count, (T*)scalars, (T*)Abyx, (T**)workArr);
 }
 
