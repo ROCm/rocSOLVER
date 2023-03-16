@@ -34,7 +34,7 @@ rocblas_status rocblasCall_axpy(rocblas_handle handle,
                                 rocblas_int batch_count)
 {
     // TODO: How to get alpha for trace logging
-    //ROCBLAS_ENTER("axpy", "n:", n, "shiftX:", shiftx, "incx:", incx, "shiftY:", shifty, "incy:", incy, "bc:", batch_count);
+    ROCBLAS_ENTER("axpy", "n:", n, "shiftX:", shiftx, "incx:", incx, "shiftY:", shifty, "incy:", incy, "bc:", batch_count);
 
     return rocblas_internal_axpy_template(
         handle, n, alpha, stride_alpha, x, shiftx, incx,
@@ -58,7 +58,7 @@ rocblas_status rocblasCall_axpy(rocblas_handle handle,
                                 rocblas_int batch_count)
 {
     // TODO: How to get alpha for trace logging
-    //ROCBLAS_ENTER("axpy", "n:", n, "shiftX:", shiftx, "incx:", incx, "shiftY:", shifty, "incy:", incy, "bc:", batch_count);
+    ROCBLAS_ENTER("axpy", "n:", n, "shiftX:", shiftx, "incx:", incx, "shiftY:", shifty, "incy:", incy, "bc:", batch_count);
 
     return rocblas_internal_axpy_batched_template(
         handle, n, alpha, stride_alpha, x, shiftx, incx,
