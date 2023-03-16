@@ -55,7 +55,7 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_potf2_template<false, T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count,
+    return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count,
                                        (T*)scalars, (T*)work, (T*)pivots);
 }
 

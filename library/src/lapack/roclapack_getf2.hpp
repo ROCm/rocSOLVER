@@ -634,7 +634,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         if(sger_thds_x == 1)
         {
             // Scale J'th column
-            rocblasCall_scal<false, T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
+            rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
                                 strideA, batch_count);
 
             // update trailing submatrix

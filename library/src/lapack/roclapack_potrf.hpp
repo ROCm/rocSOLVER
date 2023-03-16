@@ -135,7 +135,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     // algorithm
     rocblas_int nb = POTRF_BLOCKSIZE;
     if(n <= POTRF_POTF2_SWITCHSIZE)
-        return rocsolver_potf2_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, info,
+        return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
                                            batch_count, scalars, (T*)work1, pivots);
 
     // constants for rocblas functions calls
@@ -157,7 +157,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             // Factor diagonal and subdiagonal blocks
             jb = min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
-            rocsolver_potf2_template<BATCHED, T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
+            rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
 
             // test for non-positive-definiteness.
@@ -189,7 +189,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             // Factor diagonal and subdiagonal blocks
             jb = min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
-            rocsolver_potf2_template<BATCHED, T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
+            rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
 
             // test for non-positive-definiteness.
@@ -217,7 +217,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     // factor last block
     if(j < n)
     {
-        rocsolver_potf2_template<BATCHED, T>(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
+        rocsolver_potf2_template<T>(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
                                     iinfo, batch_count, scalars, (T*)work1, pivots);
         ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j,
                                 batch_count);

@@ -236,7 +236,7 @@ void trti2(rocblas_handle handle,
                                 strideA, A, shiftA + idx2D(0, j, lda), 1, strideA, work, stdw,
                                 batch_count);
 
-            rocblasCall_scal<false, T>(handle, j, alphas + j, stdw, A, shiftA + idx2D(0, j, lda), 1,
+            rocblasCall_scal<T>(handle, j, alphas + j, stdw, A, shiftA + idx2D(0, j, lda), 1,
                                 strideA, batch_count);
         }
     }
@@ -248,7 +248,7 @@ void trti2(rocblas_handle handle,
                                 shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
                                 shiftA + idx2D(j + 1, j, lda), 1, strideA, work, stdw, batch_count);
 
-            rocblasCall_scal<false, T>(handle, n - j - 1, alphas + j, stdw, A,
+            rocblasCall_scal<T>(handle, n - j - 1, alphas + j, stdw, A,
                                 shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count);
         }
     }
@@ -328,7 +328,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     if(blk == 0)
     {
         // simply use rocblas_trtri
-        rocblasCall_trtri<BATCHED, T>(handle, uplo, diag, n, A, shiftA, lda, strideA,
+        rocblasCall_trtri<BATCHED, STRIDED, T>(handle, uplo, diag, n, A, shiftA, lda, strideA,
                                                tmpcopy, 0, ldw, strideW, batch_count, (T*)work1,
                                                (T**)work2, workArr);
 

@@ -200,7 +200,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     cast2constType<T>(scalars), 0, A, shiftA + idx2D(0, j + 1, lda), lda, strideA,
                     Y, shiftY + idx2D(0, j, ldy), 1, strideY, cast2constType<T>(scalars + 2), 0, Y,
                     shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_scal<false, T>(handle, n - j - 1, (tauq + j), strideQ, Y,
+                rocblasCall_scal<T>(handle, n - j - 1, (tauq + j), strideQ, Y,
                                     shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count);
 
                 // update row j of A
@@ -273,7 +273,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     shiftX + idx2D(j + 1, 0, ldx), ldx, strideX, X, shiftX + idx2D(0, j, ldx), 1,
                     strideX, cast2constType<T>(scalars + 2), 0, X, shiftX + idx2D(j + 1, j, ldx), 1,
                     strideX, batch_count, (T**)work_workArr);
-                rocblasCall_scal<false, T>(handle, m - j - 1, (taup + j), strideP, X,
+                rocblasCall_scal<T>(handle, m - j - 1, (taup + j), strideP, X,
                                     shiftX + idx2D(j + 1, j, ldx), 1, strideX, batch_count);
 
                 if(COMPLEX)
@@ -357,7 +357,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     shiftX + idx2D(j + 1, 0, ldx), ldx, strideX, X, shiftX + idx2D(0, j, ldx), 1,
                     strideX, cast2constType<T>(scalars + 2), 0, X, shiftX + idx2D(j + 1, j, ldx), 1,
                     strideX, batch_count, (T**)work_workArr);
-                rocblasCall_scal<false, T>(handle, m - j - 1, (taup + j), strideP, X,
+                rocblasCall_scal<T>(handle, m - j - 1, (taup + j), strideP, X,
                                     shiftX + idx2D(j + 1, j, ldx), 1, strideX, batch_count);
 
                 if(COMPLEX)
@@ -428,7 +428,7 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     cast2constType<T>(scalars), 0, A, shiftA + idx2D(0, j + 1, lda), lda, strideA,
                     Y, shiftY + idx2D(0, j, ldy), 1, strideY, cast2constType<T>(scalars + 2), 0, Y,
                     shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count, (T**)work_workArr);
-                rocblasCall_scal<false, T>(handle, n - j - 1, (tauq + j), strideQ, Y,
+                rocblasCall_scal<T>(handle, n - j - 1, (tauq + j), strideQ, Y,
                                     shiftY + idx2D(j + 1, j, ldy), 1, strideY, batch_count);
             }
             else

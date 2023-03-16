@@ -145,7 +145,7 @@ rocblas_status rocsolver_org2l_ung2l_template(rocblas_handle handle,
                                 jj, A, shiftA, lda, strideA, ipiv + j, strideP);
 
         // update i-th column -corresponding to H(i)-
-        rocblasCall_scal<false, T>(handle, m - n + jj, ipiv + j, strideP, A, shiftA + idx2D(0, jj, lda), 1,
+        rocblasCall_scal<T>(handle, m - n + jj, ipiv + j, strideP, A, shiftA + idx2D(0, jj, lda), 1,
                             strideA, batch_count);
     }
 
