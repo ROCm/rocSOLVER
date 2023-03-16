@@ -273,7 +273,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                   "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
                   "bc:", batch_count);
 
-    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
+    return rocblas_internal_gemv_template(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(A), offseta, lda, strideA,
                                              cast2constType<T>(x), offsetx, incx, stridex, beta,
                                              stride_beta, y, offsety, incy, stridey, batch_count);
@@ -316,7 +316,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, strideA,
                             batch_count);
 
-    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
+    return rocblas_internal_gemv_template(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(work), offseta, lda, strideA,
                                              cast2constType<T>(x), offsetx, incx, stridex, beta,
                                              stride_beta, y, offsety, incy, stridey, batch_count);
@@ -359,7 +359,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
                             batch_count);
 
-    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
+    return rocblas_internal_gemv_template(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(A), offseta, lda, strideA,
                                              cast2constType<T>(work), offsetx, incx, stridex, beta,
                                              stride_beta, y, offsety, incy, stridey, batch_count);
@@ -402,7 +402,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
                             batch_count);
 
-    return rocblas_internal_gemv_template<T>(
+    return rocblas_internal_gemv_template(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A), offseta, lda, strideA,
         cast2constType<T>(x), offsetx, incx, stridex, beta, stride_beta, cast2constPointer<T>(work),
         offsety, incy, stridey, batch_count);
@@ -447,7 +447,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
                             stridey, batch_count);
 
-    return rocblas_internal_gemv_template<T>(
+    return rocblas_internal_gemv_template(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A), offseta, lda, strideA,
         cast2constType<T>(work), offsetx, incx, stridex, beta, stride_beta,
         cast2constPointer<T>(work + batch_count), offsety, incy, stridey, batch_count);
@@ -492,7 +492,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
                             stridey, batch_count);
 
-    return rocblas_internal_gemv_template<T>(
+    return rocblas_internal_gemv_template(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(work), offseta, lda, strideA,
         cast2constType<T>(x), offsetx, incx, stridex, beta, stride_beta,
         cast2constPointer<T>(work + batch_count), offsety, incy, stridey, batch_count);
