@@ -361,11 +361,10 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                 A, shiftA + idx2D(0, j + jb, lda), lda, strideA, tmpcopy, j + jb, ldw, strideW,
                 &one, A, shiftA + idx2D(0, j, lda), lda, strideA, batch_count, workArr);
 
-        rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower,
-                                     rocblas_operation_none, rocblas_diagonal_unit, n, jb, &one,
-                                     tmpcopy, j, ldw, strideW, A, shiftA + idx2D(0, j, lda), lda,
-                                     strideA, batch_count, optim_mem, work1, work2, work3, work4,
-                                     workArr);
+        rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower, rocblas_operation_none,
+                         rocblas_diagonal_unit, n, jb, &one, tmpcopy, j, ldw, strideW, A,
+                         shiftA + idx2D(0, j, lda), lda, strideA, batch_count, optim_mem, work1,
+                         work2, work3, work4, workArr);
     }
 
     // apply pivoting (column interchanges)

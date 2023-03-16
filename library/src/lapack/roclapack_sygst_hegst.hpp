@@ -244,10 +244,10 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
             {
                 rocblas_int kb = min(n - k, nb);
 
-                rocblasCall_trmm(
-                    handle, rocblas_side_left, uplo, rocblas_operation_none,
-                    rocblas_diagonal_non_unit, k, kb, &t_one, 0, B, shiftB, ldb, strideB, A,
-                    shiftA + idx2D(0, k, lda), lda, strideA, batch_count, (T**)workArr_temp_arr);
+                rocblasCall_trmm(handle, rocblas_side_left, uplo, rocblas_operation_none,
+                                 rocblas_diagonal_non_unit, k, kb, &t_one, 0, B, shiftB, ldb,
+                                 strideB, A, shiftA + idx2D(0, k, lda), lda, strideA, batch_count,
+                                 (T**)workArr_temp_arr);
 
                 rocblasCall_symm_hemm<BATCHED, T>(
                     handle, rocblas_side_right, uplo, k, kb, &t_half, A, shiftA + idx2D(k, k, lda),
@@ -264,11 +264,11 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                     lda, strideA, B, shiftB + idx2D(0, k, ldb), ldb, strideB, &t_one, A,
                     shiftA + idx2D(0, k, lda), lda, strideA, batch_count);
 
-                rocblasCall_trmm(
-                    handle, rocblas_side_right, uplo, rocblas_operation_conjugate_transpose,
-                    rocblas_diagonal_non_unit, k, kb, &t_one, 0, B, shiftB + idx2D(k, k, ldb), ldb,
-                    strideB, A, shiftA + idx2D(0, k, lda), lda, strideA, batch_count,
-                    (T**)workArr_temp_arr);
+                rocblasCall_trmm(handle, rocblas_side_right, uplo,
+                                 rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
+                                 k, kb, &t_one, 0, B, shiftB + idx2D(k, k, ldb), ldb, strideB, A,
+                                 shiftA + idx2D(0, k, lda), lda, strideA, batch_count,
+                                 (T**)workArr_temp_arr);
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
@@ -283,10 +283,10 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
             {
                 rocblas_int kb = min(n - k, nb);
 
-                rocblasCall_trmm(
-                    handle, rocblas_side_right, uplo, rocblas_operation_none,
-                    rocblas_diagonal_non_unit, kb, k, &t_one, 0, B, shiftB, ldb, strideB, A,
-                    shiftA + idx2D(k, 0, lda), lda, strideA, batch_count, (T**)workArr_temp_arr);
+                rocblasCall_trmm(handle, rocblas_side_right, uplo, rocblas_operation_none,
+                                 rocblas_diagonal_non_unit, kb, k, &t_one, 0, B, shiftB, ldb,
+                                 strideB, A, shiftA + idx2D(k, 0, lda), lda, strideA, batch_count,
+                                 (T**)workArr_temp_arr);
 
                 rocblasCall_symm_hemm<BATCHED, T>(
                     handle, rocblas_side_left, uplo, kb, k, &t_half, A, shiftA + idx2D(k, k, lda),
@@ -303,11 +303,11 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
                     lda, strideA, B, shiftB + idx2D(k, 0, ldb), ldb, strideB, &t_one, A,
                     shiftA + idx2D(k, 0, lda), lda, strideA, batch_count);
 
-                rocblasCall_trmm(
-                    handle, rocblas_side_left, uplo, rocblas_operation_conjugate_transpose,
-                    rocblas_diagonal_non_unit, kb, k, &t_one, 0, B, shiftB + idx2D(k, k, ldb), ldb,
-                    strideB, A, shiftA + idx2D(k, 0, lda), lda, strideA, batch_count,
-                    (T**)workArr_temp_arr);
+                rocblasCall_trmm(handle, rocblas_side_left, uplo,
+                                 rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
+                                 kb, k, &t_one, 0, B, shiftB + idx2D(k, k, ldb), ldb, strideB, A,
+                                 shiftA + idx2D(k, 0, lda), lda, strideA, batch_count,
+                                 (T**)workArr_temp_arr);
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
