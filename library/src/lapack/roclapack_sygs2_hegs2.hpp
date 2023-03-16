@@ -263,7 +263,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                                     shiftB + idx2D(k, k + 1, ldb), ldb, strideB,
                                                     batch_count);
 
-                    rocblasCall_trsv<BATCHED, T>(handle, uplo, rocblas_operation_conjugate_transpose,
+                    rocblasCall_trsv(handle, uplo, rocblas_operation_conjugate_transpose,
                                                  rocblas_diagonal_non_unit, n - k - 1, B,
                                                  shiftB + idx2D(k + 1, k + 1, ldb), ldb, strideB, A,
                                                  shiftA + idx2D(k, k + 1, lda), lda, strideA,
@@ -304,7 +304,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                         shiftB + idx2D(k + 1, k, ldb), 1, strideB, A,
                                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
-                    rocblasCall_trsv<BATCHED, T>(handle, uplo, rocblas_operation_none,
+                    rocblasCall_trsv(handle, uplo, rocblas_operation_none,
                                                  rocblas_diagonal_non_unit, n - k - 1, B,
                                                  shiftB + idx2D(k + 1, k + 1, ldb), ldb, strideB, A,
                                                  shiftA + idx2D(k + 1, k, lda), 1, strideA,

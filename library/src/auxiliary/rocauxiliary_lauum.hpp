@@ -89,7 +89,7 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
     rocblas_side side = (uplo == rocblas_fill_upper) ? rocblas_side_right : rocblas_side_left;
 
     // work = work * A' or work = A' * work
-    rocblasCall_trmm<false, true, T>(handle, side, uplo, rocblas_operation_conjugate_transpose,
+    rocblasCall_trmm(handle, side, uplo, rocblas_operation_conjugate_transpose,
                                      rocblas_diagonal_non_unit, n, n, &one, 0, A, shiftA, lda,
                                      strideA, work, 0, n, strideW, batch_count);
 

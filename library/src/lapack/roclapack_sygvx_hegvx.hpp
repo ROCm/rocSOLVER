@@ -313,7 +313,7 @@ rocblas_status rocsolver_sygvx_hegvx_template(rocblas_handle handle,
             rocblas_operation trans
                 = (uplo == rocblas_fill_upper ? rocblas_operation_conjugate_transpose
                                               : rocblas_operation_none);
-            rocblasCall_trmm<BATCHED, STRIDED, T>(handle, rocblas_side_left, uplo, trans,
+            rocblasCall_trmm(handle, rocblas_side_left, uplo, trans,
                                                   rocblas_diagonal_non_unit, n, h_nev, &one, 0, B,
                                                   shiftB, ldb, strideB, Z, shiftZ, ldz, strideZ,
                                                   batch_count, (T**)work7_workArr);

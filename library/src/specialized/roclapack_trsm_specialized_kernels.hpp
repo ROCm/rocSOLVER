@@ -802,7 +802,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
 
     if(blk == 0)
     {
-        rocblasCall_trsm<BATCHED, T>(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A,
+        rocblasCall_trsm(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A,
                                      shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                      optim_mem, work1, work2, work3, work4);
         return;
@@ -1054,7 +1054,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
 
     if(blk == 0)
     {
-        rocblasCall_trsm<BATCHED, T>(handle, side, rocblas_fill_upper, trans, diag, m, n, &one, A,
+        rocblasCall_trsm(handle, side, rocblas_fill_upper, trans, diag, m, n, &one, A,
                                      shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                      optim_mem, work1, work2, work3, work4);
         return;
