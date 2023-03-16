@@ -96,7 +96,7 @@ rocblas_status rocsolver_orgqr_ungqr_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked variant of the algorithm
     if(k <= xxGQx_xxGQx2_SWITCHSIZE)
-        return rocsolver_org2r_ung2r_template<BATCHED, T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv,
+        return rocsolver_org2r_ung2r_template<T>(handle, m, n, k, A, shiftA, lda, strideA, ipiv,
                                                  strideP, batch_count, scalars, Abyx_tmptr, workArr);
 
     rocblas_int ldw = xxGQx_BLOCKSIZE;
@@ -120,7 +120,7 @@ rocblas_status rocsolver_orgqr_ungqr_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32), 0,
                                 stream, kk, n - kk, A, shiftA + idx2D(0, kk, lda), lda, strideA);
 
-        rocsolver_org2r_ung2r_template<BATCHED, T>(handle, m - kk, n - kk, k - kk, A,
+        rocsolver_org2r_ung2r_template<T>(handle, m - kk, n - kk, k - kk, A,
                                           shiftA + idx2D(kk, kk, lda), lda, strideA, (ipiv + kk),
                                           strideP, batch_count, scalars, Abyx_tmptr, workArr);
     }
@@ -153,7 +153,7 @@ rocblas_status rocsolver_orgqr_ungqr_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocksx, blocksy, batch_count), dim3(32, 32),
                                     0, stream, j, jb, A, shiftA + idx2D(0, j, lda), lda, strideA);
         }
-        rocsolver_org2r_ung2r_template<BATCHED, T>(handle, m - j, jb, jb, A, shiftA + idx2D(j, j, lda), lda,
+        rocsolver_org2r_ung2r_template<T>(handle, m - j, jb, jb, A, shiftA + idx2D(j, j, lda), lda,
                                           strideA, (ipiv + j), strideP, batch_count, scalars,
                                           Abyx_tmptr, workArr);
 

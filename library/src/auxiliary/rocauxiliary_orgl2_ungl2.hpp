@@ -96,7 +96,7 @@ rocblas_status rocsolver_orgl2_orglq_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle,
                                               const rocblas_int m,
                                               const rocblas_int n,
@@ -160,7 +160,7 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle,
 
         // update i-th row -corresponding to H(i)-
         if(j < n - 1)
-            rocblasCall_scal<BATCHED>(handle, n - j - 1, ipiv + j, strideP, A,
+            rocblasCall_scal<false, T>(handle, n - j - 1, ipiv + j, strideP, A,
                                 shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count);
 
         if(COMPLEX)

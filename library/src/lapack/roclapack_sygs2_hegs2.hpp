@@ -232,7 +232,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
 
                 if(k < n - 1)
                 {
-                    rocblasCall_scal<BATCHED>(handle, n - k - 1, (T*)store_wcs, strideS, A,
+                    rocblasCall_scal<BATCHED, T>(handle, n - k - 1, (T*)store_wcs, strideS, A,
                                         shiftA + idx2D(k, k + 1, lda), lda, strideA, batch_count);
 
                     if(COMPLEX)
@@ -288,7 +288,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
 
                 if(k < n - 1)
                 {
-                    rocblasCall_scal<BATCHED>(handle, n - k - 1, (T*)store_wcs, strideS, A,
+                    rocblasCall_scal<BATCHED, T>(handle, n - k - 1, (T*)store_wcs, strideS, A,
                                         shiftA + idx2D(k + 1, k, lda), 1, strideA, batch_count);
 
                     rocblasCall_axpy<BATCHED, T>(handle, n - k - 1, ((T*)store_wcs) + 1, strideS, B,
@@ -344,7 +344,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                                     shiftB + idx2D(0, k, ldb), 1, strideB, A,
                                     shiftA + idx2D(0, k, lda), 1, strideA, batch_count);
 
-                rocblasCall_scal<BATCHED>(handle, k, (T*)store_wcs, strideS, A, shiftA + idx2D(0, k, lda),
+                rocblasCall_scal<BATCHED, T>(handle, k, (T*)store_wcs, strideS, A, shiftA + idx2D(0, k, lda),
                                     1, strideA, batch_count);
 
                 // Set A[k, k]
@@ -391,7 +391,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
                     rocsolver_lacgv_template<T>(handle, k, B, shiftB + idx2D(k, 0, ldb), ldb,
                                                 strideB, batch_count);
 
-                rocblasCall_scal<BATCHED>(handle, k, (T*)store_wcs, strideS, A, shiftA + idx2D(k, 0, lda),
+                rocblasCall_scal<BATCHED, T>(handle, k, (T*)store_wcs, strideS, A, shiftA + idx2D(k, 0, lda),
                                     lda, strideA, batch_count);
 
                 if(COMPLEX)

@@ -72,9 +72,9 @@ rocblas_status rocblasCall_iamax(rocblas_handle handle,
 template <bool BATCHED, typename T, typename U>
 rocblas_status rocblasCall_scal(rocblas_handle handle,
                                 rocblas_int n,
-                                T alpha,
+                                const U* alpha,
                                 rocblas_stride stridea,
-                                U x,
+                                T* x,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
@@ -83,12 +83,26 @@ rocblas_status rocblasCall_scal(rocblas_handle handle,
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    if constexpr(BATCHED)
-        return rocblas_internal_scal_batched_template(handle, n, alpha, stridea, x, offsetx,
+    return rocblas_internal_scal_template(handle, n, alpha, stridea, x, offsetx,
                                                             incx, stridex, batch_count);
-    else
-        return rocblas_internal_scal_template(handle, n, alpha, stridea, x, offsetx,
-                                                                incx, stridex, batch_count);
+}
+
+template <bool BATCHED, typename T, typename U>
+rocblas_status rocblasCall_scal(rocblas_handle handle,
+                                rocblas_int n,
+                                const U* alpha,
+                                rocblas_stride stridea,
+                                T* const* x,
+                                rocblas_stride offsetx,
+                                rocblas_int incx,
+                                rocblas_stride stridex,
+                                rocblas_int batch_count)
+{
+    // TODO: How to get alpha for trace logging
+    ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
+
+    return rocblas_internal_scal_batched_template(handle, n, alpha, stridea, x, offsetx,
+                                                            incx, stridex, batch_count);
 }
 
 // dot

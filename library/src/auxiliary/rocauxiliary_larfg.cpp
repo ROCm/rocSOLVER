@@ -52,8 +52,7 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
     norms = mem[1];
 
     // execution
-    constexpr bool BATCHED = false;
-    return rocsolver_larfg_template<BATCHED, T>(handle, n, alpha, shifta, x, shiftx, incx, stridex, tau,
+    return rocsolver_larfg_template<T>(handle, n, alpha, shifta, x, shiftx, incx, stridex, tau,
                                        strideP, batch_count, (T*)work, (T*)norms);
 }
 

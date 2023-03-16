@@ -118,7 +118,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
     // if the matrix is too small, use the unblocked variant of the algorithm
     if(n <= kk)
-        return rocsolver_sytd2_hetd2_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+        return rocsolver_sytd2_hetd2_template(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
                                               E, strideE, tau, strideP, batch_count, scalars, work,
                                               norms, tmptau_W, workArr);
 
@@ -144,7 +144,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
         while(j < n - kk)
         {
             // reduce columns j:j+k-1
-            rocsolver_latrd_template<BATCHED, T>(handle, uplo, n - j, k, A, shiftA + idx2D(j, j, lda), lda,
+            rocsolver_latrd_template<T>(handle, uplo, n - j, k, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, (E + j), strideE, (tau + j), strideP, tmptau_W, 0,
                                         ldw, strideW, batch_count, scalars, work, norms, workArr);
 
@@ -160,7 +160,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
         }
 
         // reduce last columns of A
-        rocsolver_sytd2_hetd2_template<BATCHED, T>(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda,
+        rocsolver_sytd2_hetd2_template<T>(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda,
                                           strideA, (D + j), strideD, (E + j), strideE, (tau + j),
                                           strideP, batch_count, scalars, work, norms, tmptau_W,
                                           workArr);
@@ -176,7 +176,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
         while(j >= upkk)
         {
             // reduce columns j:j+k-1
-            rocsolver_latrd_template<BATCHED, T>(handle, uplo, j + k, k, A, shiftA, lda, strideA, E, strideE,
+            rocsolver_latrd_template<T>(handle, uplo, j + k, k, A, shiftA, lda, strideA, E, strideE,
                                         tau, strideP, tmptau_W, 0, ldw, strideW, batch_count,
                                         scalars, work, norms, workArr);
 
@@ -190,7 +190,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
         }
 
         // reduce first columns of A
-        rocsolver_sytd2_hetd2_template<BATCHED, T>(handle, uplo, upkk, A, shiftA, lda, strideA, D, strideD,
+        rocsolver_sytd2_hetd2_template<T>(handle, uplo, upkk, A, shiftA, lda, strideA, D, strideD,
                                           E, strideE, tau, strideP, batch_count, scalars, work,
                                           norms, tmptau_W, workArr);
     }

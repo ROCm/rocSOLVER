@@ -68,8 +68,7 @@ rocblas_status rocsolver_sytd2_hetd2_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    constexpr bool BATCHED = false;
-    return rocsolver_sytd2_hetd2_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
+    return rocsolver_sytd2_hetd2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD,
                                              E, strideE, tau, strideP, batch_count, (T*)scalars,
                                              (T*)work, (T*)norms, (T*)tmptau, (T**)workArr);
 }

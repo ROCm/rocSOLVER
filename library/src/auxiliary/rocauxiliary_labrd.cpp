@@ -74,8 +74,7 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    constexpr bool BATCHED = false;
-    return rocsolver_labrd_template<BATCHED, T>(handle, m, n, k, A, shiftA, lda, strideA, D, strideD, E,
+    return rocsolver_labrd_template<T>(handle, m, n, k, A, shiftA, lda, strideA, D, strideD, E,
                                        strideE, tauq, strideQ, taup, strideP, X, shiftX, ldx,
                                        strideX, Y, shiftY, ldy, strideY, batch_count, (T*)scalars,
                                        work_workArr, (T*)norms);

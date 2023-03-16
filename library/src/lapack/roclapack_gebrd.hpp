@@ -115,7 +115,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked variant of the algorithm
     if(m <= k || n <= k)
-        return rocsolver_gebd2_template<BATCHED, T>(handle, m, n, A, shiftA, lda, strideA, D, strideD, E,
+        return rocsolver_gebd2_template<T>(handle, m, n, A, shiftA, lda, strideA, D, strideD, E,
                                            strideE, tauq, strideQ, taup, strideP, batch_count,
                                            scalars, work_workArr, Abyx_norms);
 
@@ -128,7 +128,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
     {
         // Reduce block to bidiagonal form
         jb = min(dim - j, nb); // number of rows and columns in the block
-        rocsolver_labrd_template<BATCHED, T>(handle, m - j, n - j, jb, A, shiftA + idx2D(j, j, lda), lda,
+        rocsolver_labrd_template<T>(handle, m - j, n - j, jb, A, shiftA + idx2D(j, j, lda), lda,
                                     strideA, D + j, strideD, E + j, strideE, tauq + j, strideQ,
                                     taup + j, strideP, X, shiftX, ldx, strideX, Y, shiftY, ldy,
                                     strideY, batch_count, scalars, work_workArr, Abyx_norms);
@@ -171,7 +171,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
 
     // factor last block
     if(j < dim)
-        rocsolver_gebd2_template<BATCHED, T>(handle, m - j, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
+        rocsolver_gebd2_template<T>(handle, m - j, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
                                     D + j, strideD, E + j, strideE, tauq + j, strideQ, taup + j,
                                     strideP, batch_count, scalars, work_workArr, Abyx_norms);
 

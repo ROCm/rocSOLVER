@@ -76,7 +76,7 @@ rocblas_status rocsolver_gelq2_gelqf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
                                         const rocblas_int m,
                                         const rocblas_int n,
@@ -111,7 +111,7 @@ rocblas_status rocsolver_gelq2_template(rocblas_handle handle,
                                         batch_count);
 
         // generate Householder reflector to work on row j
-        rocsolver_larfg_template<BATCHED>(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
+        rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
                                  shiftA + idx2D(j, min(j + 1, n - 1), lda), lda, strideA,
                                  (ipiv + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
