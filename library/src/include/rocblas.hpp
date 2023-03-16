@@ -224,7 +224,7 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
                             batch_count);
 
     if constexpr(CONJ)
-        return rocblas_internal_dot_batched_template(handle, n, cast2constType<T>(work), offsetx,
+        return rocblas_internal_dotc_batched_template(handle, n, cast2constType<T>(work), offsetx,
                                                      incx, stridex, y, offsety, incy, stridey,
                                                      batch_count, results, workspace);
     else
