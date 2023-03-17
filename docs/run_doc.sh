@@ -11,4 +11,3 @@ bash run_doxygen.sh
 # Build sphinx docs
 make clean
 make SPHINXOPTS='-W --keep-going' html
-make SPHINXOPTS='-W --keep-going' latexpdf
