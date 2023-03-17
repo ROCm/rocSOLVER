@@ -442,7 +442,7 @@ printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m
 # #################################################
 # ensure a clean build environment
 if [[ "${build_docs}" == true ]]; then
-  rm -rf -- "${build_dir}/docs"
+  rm -rf -- "${build_dir}/html"
 elif [[ "${build_type}" == Release ]]; then
   rm -rf -- "${build_dir}/release"
 elif [[ "${build_type}" == RelWithDebInfo ]]; then
