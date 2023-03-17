@@ -513,16 +513,13 @@ if [[ "${build_docs}" == true ]]; then
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && /home/docs/rocsolver/docs/run_doc.sh'
   docker build -t rocsolver:docs -f "$main/docs/Dockerfile" "$main/docs"
   docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
-  docker cp "$container_name:/home/docs/rocsolver/docs/build" "$main/docs/"
-  docker cp "$container_name:/home/docs/rocsolver/docs/docBin" "$main/docs/"
-  mkdir -p "$build_dir/docs"
-  ln -sr "$main/docs/docBin" "$build_dir/docs/doxygen"
-  ln -sr "$main/docs/build" "$build_dir/docs/sphinx"
+  docker cp "$container_name:/home/docs/rocsolver/build/html" "$main/build/html"
+  docker cp "$container_name:/home/docs/rocsolver/build/latex" "$main/build/latex"
   absolute_build_dir=$(make_absolute_path "$build_dir")
   set +x
   echo 'Documentation Built:'
-  echo "HTML: file://$absolute_build_dir/docs/sphinx/html/index.html"
-  echo "PDF:  file://$absolute_build_dir/docs/sphinx/latex/rocSOLVER.pdf"
+  echo "HTML: file://$absolute_build_dir/docs/html/index.html"
+  echo "PDF:  file://$absolute_build_dir/docs/latex/rocSOLVER.pdf"
   exit
 fi
 
