@@ -3,3 +3,4 @@
 rocSOLVER User Guide
 #############################
 
+.. tableofcontents::

@@ -4,3 +4,4 @@
 rocSOLVER API
 ########################################
 
+.. tableofcontents::
