@@ -36,15 +36,17 @@ rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size for temp buffer in refactlu calls
-    size_t size_work;
+    size_t size_work = 0;
 
+  rocblas_status istat = rocblas_status_success;
+  try {
     rocsolver_csrrf_refactlu_getMemorySize<T>(n, nnzT, ptrT, indT, valT, rfinfo, &size_work);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work);
 
     // memory workspace allocation
-    void* work;
+    void* work = nullptr;
     rocblas_device_malloc mem(handle, size_work);
 
     if(!mem)
@@ -53,8 +55,20 @@ rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
     work = mem[0];
 
     // execution
-    return rocsolver_csrrf_refactlu_template<T>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
+    istat =  rocsolver_csrrf_refactlu_template<T>(handle, 
+                                                n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
                                                 valT, pivP, pivQ, rfinfo, work);
+   }
+   catch( std::bad_alloc &e )
+   {
+     istat = rocblas_status_memory_error;
+   }
+   catch( ... )
+   {
+     istat =  rocblas_status_internal_error;
+   };
+
+   return( istat );
 }
 
 /*

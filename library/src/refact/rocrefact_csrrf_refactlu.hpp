@@ -11,7 +11,6 @@
 
 #define ADD_PAQ_MAX_THDS 256
 
-/*
 // -------------------------------------------------
 // function to perform search in array
 // -------------------------------------------------
@@ -20,6 +19,7 @@
 //
 // return the index value of matching position
 // ---------------------------------------
+static 
 __device__ rocblas_int rf_search(const rocblas_int len, const rocblas_int* const arr, const rocblas_int key)
 {
     rocblas_int constexpr small_len = 8;
@@ -54,7 +54,7 @@ __device__ rocblas_int rf_search(const rocblas_int len, const rocblas_int* const
         }
         else
         {
-            rocblas_int const mid = (lo + hi) / 2;
+            rocblas_int const mid = lo + ((hi - lo)/2);
             bool const is_found = (arr[mid] == key);
             if(is_found)
             {
@@ -132,8 +132,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(ADD_PAQ_MAX_THDS)
         for(rocblas_int k = 0; k < (nz_LU - 1); k++)
         {
             rocblas_int const k_lu = kstart_LU + k;
-            rocblas_int kcol = LUi[k_lu];
-            rocblas_int kcol_next = LUi[k_lu + 1];
+            rocblas_int const kcol = LUi[k_lu];
+            rocblas_int const kcol_next = LUi[k_lu + 1];
             bool const is_sorted = (kcol < kcol_next);
             assert(is_sorted);
         }
@@ -168,7 +168,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(ADD_PAQ_MAX_THDS)
         }
     }
 }
-*/
 
 template <typename T>
 rocblas_status rocsolver_csrrf_refactlu_argCheck(rocblas_handle handle,
@@ -223,8 +222,9 @@ void rocsolver_csrrf_refactlu_getMemorySize(const rocblas_int n,
     }
 
     // requirements for incomplete factorization
-    rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
-                                      rfinfo->infoT, size_work);
+    THROW_IF_ROCSPARSE_ERROR( 
+      rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
+                                       rfinfo->infoT, size_work)  );
 }
 
 template <typename T, typename U>
@@ -250,25 +250,30 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
+    CHECK_ROCBLAS( 
+       rocblas_get_stream(handle, &stream),
+       rocblas_status_internal_error );
 
-    /* TODO:
 
     rocblas_int nthreads = ADD_PAQ_MAX_THDS;
     rocblas_int nblocks = (n + (nthreads - 1)) / nthreads;
 
+    // ---------------------------------------------------------------------
     // copy P*A*Q into T
     // Note: the sparsity pattern of A is a subset of T, and since the re-orderings
     // P and Q are applied, the incomplete factorization of P*A*Q (factorization without fill-in),
     // yields the complete factorization of A.
+    // ---------------------------------------------------------------------
+
     ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
                             n, n, pivP, pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
 
     // perform incomplete factorization of T
-    rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
-                            rfinfo->infoT, rocsparse_solve_policy_auto, work);
+    CHECK_ROCSPARSE( 
+      rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
+                            rfinfo->infoT, rocsparse_solve_policy_auto, work),
+      rocblas_status_internal_error );
 
-    */
 
     return rocblas_status_success;
 }

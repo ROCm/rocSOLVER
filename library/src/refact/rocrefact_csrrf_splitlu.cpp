@@ -35,7 +35,7 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size to store number of non-zeros per row
-    size_t size_work;
+    size_t size_work = 0;
 
     rocsolver_csrrf_splitlu_getMemorySize<T>(n, &size_work);
 
@@ -43,7 +43,7 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
         return rocblas_set_optimal_device_memory_size(handle, size_work);
 
     // memory workspace allocation
-    void* work;
+    void* work = nullptr;
     rocblas_device_malloc mem(handle, size_work);
 
     if(!mem)

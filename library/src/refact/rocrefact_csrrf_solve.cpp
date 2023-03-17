@@ -29,14 +29,17 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
     if(st != rocblas_status_continue)
         return st;
 
-    // TODO: add bacthed versions
+    // TODO: add batched versions
     // working with unshifted arrays
     // normal (non-batched non-strided) execution
 
     // memory workspace sizes:
     // size for temp buffer in solve calls
-    size_t size_work, size_temp;
+    size_t size_work = 0; 
+    size_t size_temp = 0;
 
+    rocblas_status istat = rocblas_status_success;
+    try {
     rocsolver_csrrf_solve_getMemorySize<T>(n, nrhs, nnzT, ptrT, indT, valT, rfinfo, ldb, &size_work,
                                            &size_temp);
 
@@ -44,7 +47,8 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
         return rocblas_set_optimal_device_memory_size(handle, size_work, size_temp);
 
     // memory workspace allocation
-    void *work, *temp;
+    void *work = nullptr; 
+    void *temp = nullptr;
     rocblas_device_malloc mem(handle, size_work, size_temp);
 
     if(!mem)
@@ -54,8 +58,19 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
     temp = mem[1];
 
     // execution
-    return rocsolver_csrrf_solve_template<T>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                             rfinfo, B, ldb, work, (T*)temp);
+    istat =  rocsolver_csrrf_solve_template<T>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
+                                             rfinfo, B, ldb, work, static_cast<T*>(temp) );
+    }
+    catch( std::bad_alloc &e) 
+    {
+    istat = rocblas_status_memory_error;
+    }
+    catch( ... )
+    {
+    istat = rocblas_status_internal_error;
+    };
+
+    return( istat );
 }
 
 /*

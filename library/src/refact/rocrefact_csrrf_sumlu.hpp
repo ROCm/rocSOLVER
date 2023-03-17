@@ -8,7 +8,7 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
-/*
+
 // ----------------------------------------------------
 // device (serial) code to perform shell sort by a single thread
 // key is  iarr[]
@@ -62,7 +62,9 @@ ROCSOLVER_KERNEL void rf_setupLUp_kernel(const rocblas_int nrow,
     // ---------------------------------------------
     // just use a single thread block for simplicity
     // ---------------------------------------------
-    bool const is_root = (blockIdx.x == 0);
+    bool const is_root = (blockIdx.x == 0) &&
+                         (blockIdx.y == 0) &&
+                         (blockIdx.z == 0);
     if(!is_root)
     {
         return;
@@ -216,6 +218,7 @@ ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int nrow,
     rocblas_int const irow_start = threadIdx.x + blockIdx.x * blockDim.x;
     rocblas_int const irow_inc = blockDim.x * gridDim.x;
 
+
     for(rocblas_int irow = irow_start; irow < nrow; irow += irow_inc)
     {
         rocblas_int const kstart_L = Lp[irow];
@@ -307,7 +310,6 @@ ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int nrow,
 
     __syncthreads();
 }
-*/
 
 template <typename T>
 rocblas_status rocsolver_csrrf_sumlu_argCheck(rocblas_handle handle,
@@ -328,6 +330,9 @@ rocblas_status rocsolver_csrrf_sumlu_argCheck(rocblas_handle handle,
 
     // 1. invalid/non-supported values
     // N/A
+    if (handle == nullptr) {
+      return rocblas_status_invalid_handle;
+      };
 
     // 2. invalid size
     if(n < 0 || nnzL < 0 || nnzU < 0)
@@ -367,9 +372,9 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
+    ROCBLAS_CHECK( rocblas_get_stream(handle, &stream), 
+                   rocblas_status_internal_error );
 
-    /* TODO:
 
     // Step 1: setup row pointer ptrT
     rocblas_int nthreads = 1024;
@@ -382,10 +387,11 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
     nthreads = 128;
     nblocks = (n + (nthreads - 1)) / nthreads;
 
+    { rocblas_int nrow = n;
+      rocblas_int ncol = n;
     ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
-                            n, n, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
+                            nrow, ncol, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
 
-    */
 
     return rocblas_status_success;
 }

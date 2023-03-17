@@ -30,6 +30,8 @@ rocblas_status rocsolver_csrrf_sumlu_impl(rocblas_handle handle,
     if(st != rocblas_status_continue)
         return st;
 
+  rocblas_status istat = rocblas_status_success;
+  try {
     // TODO: add bacthed versions
     // working with unshifted arrays
     // normal (non-batched non-strided) execution
@@ -39,8 +41,14 @@ rocblas_status rocsolver_csrrf_sumlu_impl(rocblas_handle handle,
         return rocblas_status_size_unchanged;
 
     // execution
-    return rocsolver_csrrf_sumlu_template<T>(handle, n, nnzL, ptrL, indL, valL, nnzU, ptrU, indU,
+    istat =  rocsolver_csrrf_sumlu_template<T>(handle, n, nnzL, ptrL, indL, valL, nnzU, ptrU, indU,
                                              valU, ptrT, indT, valT);
+   }
+   catch(...) {
+    istat = rocblas_status_internal_error;
+    };
+ 
+   return( istat );
 }
 
 /*
