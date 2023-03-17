@@ -70,6 +70,8 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
     // requirements for solve with L and U, and for incomplete factorization
     // (buffer size is the same for all routines if the sparsity pattern does not change)
     size_t csrilu0_buffer_size = 0;
+    size_t csrsv_L_buffer_size = 0;
+    size_t csrsv_U_buffer_size = 0;
     size_t csrsv_buffer_size = 0;
 
     THROW_IF_ROCSPARSE_ERROR(
@@ -77,19 +79,33 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
                                           rfinfo->infoT, &csrilu0_buffer_size) );
                  
 
-    rocsparse_operation trans = rocsparse_operation_none;
+    rocsparse_operation const trans = rocsparse_operation_none;
 
     THROW_IF_ROCSPARSE_ERROR(
     rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, 
                                     trans,
                                     n,
                                     nnzT,
+                                    rfinfo->descrL,
                                     valT,
                                     ptrT,
                                     indT,
-                                    rfinfo->info->infoT,
-                                    &csrsv_buffer_size)  );
+                                    rfinfo->infoL,
+                                    &csrsv_L_buffer_size)  );
            
+    THROW_IF_ROCSPARSE_ERROR(
+    rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, 
+                                    trans,
+                                    n,
+                                    nnzT,
+                                    rfinfo->descrU,
+                                    valT,
+                                    ptrT,
+                                    indT,
+                                    rfinfo->infoU,
+                                    &csrsv_U_buffer_size)  );
+
+    csrsv_buffer_size = std::max(csrsv_L_buffer_size, csrsv_U_buffer_size );
 
     *size_work = std::max( csrilu0_buffer_size, csrsv_buffer_size );
       
@@ -119,9 +135,12 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
 
     
 
-    rocsparse_operation trans = rocsparse_operation_none;
-    rocsparse_solve_policy solve = rocsparse_solve_policy_auto;
-    rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
+    rocsparse_operation const trans = rocsparse_operation_none;
+    // rocsparse_solve_policy solve = rocsparse_solve_policy_auto;
+    // rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
+
+    rocsparse_solve_policy const solve = rfinfo->solve_policy;
+    rocsparse_analysis_policy const analysis = rfinfo->analysis_policy;
 
    try {
 

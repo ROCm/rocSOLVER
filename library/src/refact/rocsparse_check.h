@@ -79,4 +79,8 @@
 
 #endif
 
+#define IDEBUG 1
+#define TRACE() { if (IDEBUG >= 1) {printf("%s(%d)\n",__FILE__,__LINE__); fflush(stdout); }; }
+
+
 #endif
