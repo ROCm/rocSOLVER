@@ -518,8 +518,8 @@ if [[ "${build_docs}" == true ]]; then
   absolute_build_dir=$(make_absolute_path "$build_dir")
   set +x
   echo 'Documentation Built:'
-  echo "HTML: file://$absolute_build_dir/docs/html/index.html"
-  echo "PDF:  file://$absolute_build_dir/docs/latex/rocSOLVER.pdf"
+  echo "HTML: file://$absolute_build_dir/html/index.html"
+  echo "PDF:  file://$absolute_build_dir/latex/rocSOLVER.pdf"
   exit
 fi
 
