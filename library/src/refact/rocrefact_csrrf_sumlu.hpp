@@ -8,6 +8,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
+#include "rocblas_check.h"
+
 
 // ----------------------------------------------------
 // device (serial) code to perform shell sort by a single thread
@@ -392,6 +394,7 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
                             nrow, ncol, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
 
+    };
 
     return rocblas_status_success;
 }

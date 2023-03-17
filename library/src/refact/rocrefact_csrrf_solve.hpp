@@ -9,6 +9,9 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
+#include "rocblas_check.h"
+#include "rocsparse_check.h"
+
 #ifdef NDEBUG
 #define RF_ASSERT( tcond )
 #else
@@ -154,13 +157,7 @@ static void
     int const nthreads = 128;
     int const nblocks = (n + (nthreads - 1)) / nthreads;
 
-    // rf_gather_kernel<<<dim3(nblocks), dim3(nthreads), 0, streamId>>>(n, P, src, dest);
-    ROCSOLVER_LAUNCH_KERNEL( rf_gather_kernel<Iint,T>,
-                             dim3(nblocks),
-                             dim3(nthreads),
-                             0,
-                             streamId,
-                             n, P, src, dest );
+     rf_gather_kernel<<<dim3(nblocks), dim3(nthreads), 0, streamId>>>(n, P, src, dest);
                              
 }
 
@@ -170,7 +167,7 @@ static void
 
 
 template <typename Iint, typename Ilong, typename T>
-rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
+rocblas_status rf_lusolve(rocsolver_rfinfo  rfinfo,
                              Iint const n,
                              Ilong const nnz,
                              Ilong* const d_LUp,
@@ -181,6 +178,7 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
                              void* work)
 {
 
+    Ilong const nnzLU = nnz;
     {
         bool isok = (rfinfo != nullptr);
         if(!isok)
@@ -199,7 +197,7 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
         bool const isok_arg = (d_LUp != nullptr) && (d_LUi != nullptr) && (d_LUx != nullptr)
             && (d_b != nullptr) && (d_Temp != nullptr) && (work != nullptr);
 
-        if (!isok_arg) {
+        if (!isok_arg) 
         {
             return( rocblas_status_invalid_pointer); 
         };
@@ -238,8 +236,8 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
         // (2)   solve U x = y,   U non-unit diagonal
         // -------------------------------------------
 
-        rocblas_int nnzL = nnzT;
-        rocblas_int nnzU = nnzT;
+        rocblas_int nnzL = nnzLU;
+        rocblas_int nnzU = nnzLU;
 
 
         TRACE();
@@ -252,8 +250,8 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
                    nnzL,
                    descrL,
                    d_LUx,
-                   d_LUp
-                   d_LUx,
+                   d_LUp,
+                   d_LUi,
                    infoL,
                    analysis_policy,
                    solve_policy, 
@@ -269,8 +267,8 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
                    nnzU,
                    descrU,
                    d_LUx,
-                   d_LUp
-                   d_LUx,
+                   d_LUp,
+                   d_LUi,
                    infoU,
                    analysis_policy,
                    solve_policy, 
@@ -291,7 +289,7 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
                                    n,
                                    nnzL,
                                    &alpha,
-                                   descL,
+                                   descrL,
                                    d_LUx,
                                    d_LUp,
                                    d_LUi,
@@ -318,7 +316,7 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
                                    n,
                                    nnzU,
                                    &alpha,
-                                   descU,
+                                   descrU,
                                    d_LUx,
                                    d_LUp,
                                    d_LUi,
@@ -338,15 +336,15 @@ rocsolverStatus_t rf_lusolve(rocsolver_rfinfo  rfinfo,
     }
     catch(const std::bad_alloc& e)
     {
-        istat_return = ROCSOLVER_STATUS_ALLOC_FAILED;
+        istat_return = rocblas_status_memory_error;
     }
     catch(const std::runtime_error& e)
     {
-        istat_return = ROCSOLVER_STATUS_EXECUTION_FAILED;
+        istat_return = rocblas_status_internal_error;
     }
     catch(...)
     {
-        istat_return = ROCSOLVER_STATUS_INTERNAL_ERROR;
+        istat_return = rocblas_status_internal_error;
     };
 
 
@@ -503,7 +501,7 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    CHECK_ROCBLAS( 
+    ROCBLAS_CHECK( 
        rocblas_get_stream(handle, &stream),
        rocblas_status_internal_error );
 
@@ -521,7 +519,7 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
     for(int irhs = 0; irhs < nrhs; irhs++)
     {
         THROW_IF_ROCBLAS_ERROR( 
-        rf_pqrlusolve(handle, n, nnzT, pivP, pivQ,  ptrT, indT, valT,
+        rf_pqrlusolve(rfinfo, n, nnzT, pivP, pivQ,  ptrT, indT, valT,
                         B + ldb * irhs, temp + ldb * irhs, work) );
     }
 

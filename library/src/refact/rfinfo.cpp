@@ -35,7 +35,7 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 
    try 
    {
-    rfinfo.destroy();
+    (*rfinfo).destroy();
 
     delete rfinfo;
     rfinfo = nullptr;

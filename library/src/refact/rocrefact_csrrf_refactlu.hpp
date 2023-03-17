@@ -9,6 +9,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
+#include "rocsparse_check.h"
+
 #define ADD_PAQ_MAX_THDS 256
 
 // -------------------------------------------------
@@ -250,8 +252,8 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    CHECK_ROCBLAS( 
-       rocblas_get_stream(handle, &stream),
+    ROCSPARSE_CHECK( 
+       rocsparse_get_stream(rfinfo->sphandle, &stream),
        rocblas_status_internal_error );
 
 
@@ -269,7 +271,7 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
                             n, n, pivP, pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
 
     // perform incomplete factorization of T
-    CHECK_ROCSPARSE( 
+    ROCSPARSE_CHECK( 
       rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
                             rfinfo->infoT, rocsparse_solve_policy_auto, work),
       rocblas_status_internal_error );

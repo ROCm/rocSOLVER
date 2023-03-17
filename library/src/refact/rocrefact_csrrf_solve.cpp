@@ -59,7 +59,7 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
 
     // execution
     istat =  rocsolver_csrrf_solve_template<T>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                             rfinfo, B, ldb, work, static_cast<T*>(temp), work );
+                                             rfinfo, B, ldb, work, static_cast<T*>(temp) );
     }
     catch( std::bad_alloc &e) 
     {

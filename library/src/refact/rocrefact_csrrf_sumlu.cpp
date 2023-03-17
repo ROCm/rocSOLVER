@@ -44,6 +44,9 @@ rocblas_status rocsolver_csrrf_sumlu_impl(rocblas_handle handle,
     istat =  rocsolver_csrrf_sumlu_template<T>(handle, n, nnzL, ptrL, indL, valL, nnzU, ptrU, indU,
                                              valU, ptrT, indT, valT);
    }
+   catch( std::bad_alloc &e ) {
+    istat = rocblas_status_memory_error;
+    }
    catch(...) {
     istat = rocblas_status_internal_error;
     };

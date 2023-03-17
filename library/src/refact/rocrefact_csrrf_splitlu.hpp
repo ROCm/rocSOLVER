@@ -8,6 +8,9 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
+#include "rocblas_check.h"
+#include "rocsparse_check.h"
+
 template <typename T>
 ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
                                         const rocblas_int nnzM,
@@ -32,6 +35,7 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
                                (blockIdx.y == 0) &&
                                (blockIdx.z == 0);
     if (!is_root_block) { return; };
+
     
     rocblas_int* const nzLp = work;
     rocblas_int* const nzUp = work + n;
@@ -43,9 +47,10 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 
 
     rocblas_int const nthreads = blockDim.x;
-    rocblas_int const my_thread = threadId.x;
+    rocblas_int const my_thread = threadIdx.x;
     rocblas_int const i_start = my_thread;
     rocblas_int const i_inc = nthreads ;
+    bool const is_root_thread = (my_thread == 0);
 
     for(int i = i_start; i < n; i += i_inc)
     {
@@ -61,8 +66,8 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     rocblas_int nnzL = 0;
     rocblas_int nnzU = 0;
     rocblas_int constexpr MAX_THREADS = 1024;
-    __shared__ isum_nnzL[ MAX_THREADS ];
-    __shared__ isum_nnzU[ MAX_THREADS ];
+    __shared__ rocblas_int isum_nnzL[ MAX_THREADS ];
+    __shared__ rocblas_int isum_nnzU[ MAX_THREADS ];
 
     for(rocblas_int ithread=0; ithread < nthreads; ithread++) 
     {
@@ -92,8 +97,8 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
         }; // end for irow
     }; // end for ithread
 
-    isum_nnzL[ ithread ] = nnzL;
-    isum_nnzU[ ithread ] = nnzU;
+    isum_nnzL[ my_thread ] = nnzL;
+    isum_nnzU[ my_thread ] = nnzU;
 
     
 
@@ -117,6 +122,7 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     // prefix sum scan to setup Lp and Up
     // ------------------------------------
    
+
     if (is_root_thread) {
       
       rocblas_int ipos = 0;
@@ -132,8 +138,8 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     __syncthreads();
 
 
-    rocblas_int iL = isum_nnzL[ mythread ];
-    rocblas_int iU = isum_nnzU[ mythread ];
+    rocblas_int iL = isum_nnzL[ my_thread ];
+    rocblas_int iU = isum_nnzU[ my_thread ];
 
     for(rocblas_int irow = irow_start; irow < irow_end; irow++)
     {

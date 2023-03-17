@@ -9,6 +9,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
+#include "rocsparse_check.h"
+
 template <typename T>
 rocblas_status rocsolver_csrrf_analysis_argCheck(rocblas_handle handle,
                                                  const rocblas_int n,

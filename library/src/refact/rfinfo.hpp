@@ -113,3 +113,4 @@ struct rocsolver_rfinfo_
         infoT = nullptr;
     }
 };
+typedef struct rocsolver_rfinfo_ *rocsolver_rfinfo;
