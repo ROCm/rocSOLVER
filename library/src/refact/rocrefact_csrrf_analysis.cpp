@@ -38,36 +38,37 @@ rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
     // size for temp buffer in analysis calls
     size_t size_work = 0;
 
-   rocblas_status istat = rocblas_status_success;
-   try {
+    rocblas_status istat = rocblas_status_success;
+    try
+    {
+        rocsolver_csrrf_analysis_getMemorySize<T>(n, nnzT, ptrT, indT, valT, rfinfo, &size_work);
 
-    rocsolver_csrrf_analysis_getMemorySize<T>(n, nnzT, ptrT, indT, valT, rfinfo, &size_work);
+        if(rocblas_is_device_memory_size_query(handle))
+            return rocblas_set_optimal_device_memory_size(handle, size_work);
 
-    if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work);
+        // memory workspace allocation
+        void* work = nullptr;
+        rocblas_device_malloc mem(handle, size_work);
 
-    // memory workspace allocation
-    void* work = nullptr;
-    rocblas_device_malloc mem(handle, size_work);
+        if(!mem)
+            return rocblas_status_memory_error;
 
-    if(!mem)
-        return rocblas_status_memory_error;
+        work = mem[0];
 
-    work = mem[0];
-
-    // execution
-    istat =  rocsolver_csrrf_analysis_template<T>(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT, indT,
-                                                valT, pivP, pivQ, rfinfo, work);
-   }
-   catch(std::bad_alloc &e) {
-       istat = rocblas_status_memory_error;
-       }
-   catch(...) {
-    istat = rocblas_status_internal_error;
+        // execution
+        istat = rocsolver_csrrf_analysis_template<T>(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
+                                                     indT, valT, pivP, pivQ, rfinfo, work);
+    }
+    catch(std::bad_alloc& e)
+    {
+        istat = rocblas_status_memory_error;
+    }
+    catch(...)
+    {
+        istat = rocblas_status_internal_error;
     };
 
-
-    return( istat );
+    return (istat);
 }
 
 /*

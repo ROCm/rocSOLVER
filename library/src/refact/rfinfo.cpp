@@ -17,12 +17,14 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     try
     {
         *rfinfo = new rocsolver_rfinfo_(handle);
-    } catch (const std::bad_alloc&) {
+    }
+    catch(const std::bad_alloc&)
+    {
         return rocblas_status_memory_error;
     }
-    catch( ... )
+    catch(...)
     {
-    return rocblas_status_internal_error;
+        return rocblas_status_internal_error;
     };
 
     return rocblas_status_success;
@@ -33,20 +35,21 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
     if(rfinfo == nullptr)
         return rocblas_status_invalid_pointer;
 
-   try 
-   {
-    (*rfinfo).destroy();
+    try
+    {
+        (*rfinfo).destroy();
 
-    delete rfinfo;
-    rfinfo = nullptr;
+        delete rfinfo;
+        rfinfo = nullptr;
     }
-   catch( std::bad_alloc& e) {
-     return rocblas_status_memory_error;
-     }
-   catch( ... )  {
-     return rocblas_status_internal_error;
-     };
-
+    catch(std::bad_alloc& e)
+    {
+        return rocblas_status_memory_error;
+    }
+    catch(...)
+    {
+        return rocblas_status_internal_error;
+    };
 
     return rocblas_status_success;
 }

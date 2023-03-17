@@ -25,18 +25,15 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
                                         T* Ux,
                                         rocblas_int* work)
 {
-    
-
-
     // ---------------------------------
     // use a single block for simplicity
     // ---------------------------------
-    bool const is_root_block = (blockIdx.x == 0) &&
-                               (blockIdx.y == 0) &&
-                               (blockIdx.z == 0);
-    if (!is_root_block) { return; };
+    bool const is_root_block = (blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0);
+    if(!is_root_block)
+    {
+        return;
+    };
 
-    
     rocblas_int* const nzLp = work;
     rocblas_int* const nzUp = work + n;
 
@@ -44,12 +41,10 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     // 1st pass to determine number of non-zeros per row
     // -------------------------------------------------
 
-
-
     rocblas_int const nthreads = blockDim.x;
     rocblas_int const my_thread = threadIdx.x;
     rocblas_int const i_start = my_thread;
-    rocblas_int const i_inc = nthreads ;
+    rocblas_int const i_inc = nthreads;
     bool const is_root_thread = (my_thread == 0);
 
     for(int i = i_start; i < n; i += i_inc)
@@ -59,87 +54,85 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     };
     __syncthreads();
 
-    rocblas_int const nb = (n + (nthreads-1))/nthreads;
+    rocblas_int const nb = (n + (nthreads - 1)) / nthreads;
     rocblas_int const irow_start = my_thread * nb;
-    rocblas_int const irow_end = min( n, irow_start + nb );
+    rocblas_int const irow_end = min(n, irow_start + nb);
 
     rocblas_int nnzL = 0;
     rocblas_int nnzU = 0;
     rocblas_int constexpr MAX_THREADS = 1024;
-    __shared__ rocblas_int isum_nnzL[ MAX_THREADS ];
-    __shared__ rocblas_int isum_nnzU[ MAX_THREADS ];
+    __shared__ rocblas_int isum_nnzL[MAX_THREADS];
+    __shared__ rocblas_int isum_nnzU[MAX_THREADS];
 
-    for(rocblas_int ithread=0; ithread < nthreads; ithread++) 
+    for(rocblas_int ithread = 0; ithread < nthreads; ithread++)
     {
-      for(rocblas_int irow=irow_start; irow < irow_end; irow++) {
-
-        rocblas_int const istart = Mp[irow];
-        rocblas_int const iend = Mp[irow + 1];
-        rocblas_int const nz = (iend - istart);
-
-        rocblas_int nzU = 0;
-        for(int k = istart; k < iend; k++)
+        for(rocblas_int irow = irow_start; irow < irow_end; irow++)
         {
-            rocblas_int const kcol = Mi[k];
-            bool const is_upper = (irow <= kcol);
-            if(is_upper)
+            rocblas_int const istart = Mp[irow];
+            rocblas_int const iend = Mp[irow + 1];
+            rocblas_int const nz = (iend - istart);
+
+            rocblas_int nzU = 0;
+            for(int k = istart; k < iend; k++)
             {
-                nzU++;
+                rocblas_int const kcol = Mi[k];
+                bool const is_upper = (irow <= kcol);
+                if(is_upper)
+                {
+                    nzU++;
+                }
             }
-        }
-        int const nzL = nz - nzU;
+            int const nzL = nz - nzU;
 
-        nzLp[irow] = (nzL + 1); // add 1 for unit diagonal
-        nzUp[irow] = nzU;
+            nzLp[irow] = (nzL + 1); // add 1 for unit diagonal
+            nzUp[irow] = nzU;
 
-        nnzL += (nzL + 1);
-        nnzU += nzU;
+            nnzL += (nzL + 1);
+            nnzU += nzU;
         }; // end for irow
     }; // end for ithread
 
-    isum_nnzL[ my_thread ] = nnzL;
-    isum_nnzU[ my_thread ] = nnzU;
-
-    
+    isum_nnzL[my_thread] = nnzL;
+    isum_nnzU[my_thread] = nnzU;
 
     __syncthreads();
 
     nnzL = 0;
     nnzU = 0;
-    if (is_root_thread) {
-      for(rocblas_int ithread=0; ithread < nthreads; ithread++) {
-        nnzL += isum_nnzL[ ithread ];
-        nnzU += isum_nnzU[ ithread ];
-       };
+    if(is_root_thread)
+    {
+        for(rocblas_int ithread = 0; ithread < nthreads; ithread++)
+        {
+            nnzL += isum_nnzL[ithread];
+            nnzU += isum_nnzU[ithread];
+        };
 
-      Up[n] = nnzU;
-      Lp[n] = nnzL;
-      };
+        Up[n] = nnzU;
+        Lp[n] = nnzL;
+    };
 
     __syncthreads();
 
     // ------------------------------------
     // prefix sum scan to setup Lp and Up
     // ------------------------------------
-   
 
-    if (is_root_thread) {
-      
-      rocblas_int ipos = 0;
-      
-      for(rocblas_int ithread=0; ithread < nthreads; ithread++) {
-         rocblas_int const nz = isum_nnzL[ ithread ];
-         isum_nnzL[ ithread ] = ipos;
-         ipos += nz;
-         };
+    if(is_root_thread)
+    {
+        rocblas_int ipos = 0;
 
-      };
-       
+        for(rocblas_int ithread = 0; ithread < nthreads; ithread++)
+        {
+            rocblas_int const nz = isum_nnzL[ithread];
+            isum_nnzL[ithread] = ipos;
+            ipos += nz;
+        };
+    };
+
     __syncthreads();
 
-
-    rocblas_int iL = isum_nnzL[ my_thread ];
-    rocblas_int iU = isum_nnzU[ my_thread ];
+    rocblas_int iL = isum_nnzL[my_thread];
+    rocblas_int iU = isum_nnzU[my_thread];
 
     for(rocblas_int irow = irow_start; irow < irow_end; irow++)
     {
@@ -153,13 +146,9 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     }
     __syncthreads();
 
-
-
     // ---------------------------------------------------
     // second pass to populate  Li[], Lx[], Ui[], Ux[]
     // ---------------------------------------------------
-
-
 
     // -----------------------------------------------
     // reuse array nzLp[] as pointers into  Lx[], Li[]
@@ -178,7 +167,7 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 
     T const one = 1;
 
-    for(rocblas_int i=i_start; i < n; i += i_inc )
+    for(rocblas_int i = i_start; i < n; i += i_inc)
     {
         rocblas_int const irow = i;
         rocblas_int const istart = Mp[irow];
@@ -213,8 +202,8 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     // ------------------------
     // set unit diagonal entry in L
     // ------------------------
- 
-    for(rocblas_int i=i_start; i < n; i += i_inc) 
+
+    for(rocblas_int i = i_start; i < n; i += i_inc)
     {
         rocblas_int const irow = i;
         rocblas_int const kend = Lp[irow + 1];
@@ -257,9 +246,10 @@ rocblas_status rocsolver_csrrf_splitlu_argCheck(rocblas_handle handle,
 
     // 1. invalid/non-supported values
     // N/A
-    if (handle == nullptr) {
-       return rocblas_status_invalid_handle;
-       };
+    if(handle == nullptr)
+    {
+        return rocblas_status_invalid_handle;
+    };
 
     // 2. invalid size
     if(n < 0 || nnzT < 0)
@@ -298,16 +288,12 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    ROCBLAS_CHECK( 
-       rocblas_get_stream(handle, &stream),
-       rocblas_status_internal_error);
-
+    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
 
     rocblas_int const nthreads = 1024;
     rocblas_int const nblocks = 1;
-    ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
-                            n, nnzT, ptrT, indT, valT, ptrL, indL, valL, ptrU, indU, valU, work);
-
+    ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n, nnzT,
+                            ptrT, indT, valT, ptrL, indL, valL, ptrU, indU, valU, work);
 
     return rocblas_status_success;
 }

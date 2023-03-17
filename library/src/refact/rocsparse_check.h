@@ -26,8 +26,8 @@
 #ifndef ROCSPARSE_CHECK_H
 #define ROCSPARSE_CHECK_H
 
-#include <stdexcept>
 #include <exception>
+#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -80,7 +80,13 @@
 #endif
 
 #define IDEBUG 1
-#define TRACE() { if (IDEBUG >= 1) {printf("%s(%d)\n",__FILE__,__LINE__); fflush(stdout); }; }
-
+#define TRACE()                                     \
+    {                                               \
+        if(IDEBUG >= 1)                             \
+        {                                           \
+            printf("%s(%d)\n", __FILE__, __LINE__); \
+            fflush(stdout);                         \
+        };                                          \
+    }
 
 #endif

@@ -26,8 +26,8 @@
 #ifndef ROCBLAS_CHECK_H
 #define ROCBLAS_CHECK_H
 
-#include <stdexcept>
 #include <exception>
+#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 

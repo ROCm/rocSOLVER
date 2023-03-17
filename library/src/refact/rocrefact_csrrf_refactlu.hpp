@@ -21,8 +21,9 @@
 //
 // return the index value of matching position
 // ---------------------------------------
-static 
-__device__ rocblas_int rf_search(const rocblas_int len, const rocblas_int* const arr, const rocblas_int key)
+static __device__ rocblas_int rf_search(const rocblas_int len,
+                                        const rocblas_int* const arr,
+                                        const rocblas_int key)
 {
     rocblas_int constexpr small_len = 8;
     rocblas_int ipos = len;
@@ -56,7 +57,7 @@ __device__ rocblas_int rf_search(const rocblas_int len, const rocblas_int* const
         }
         else
         {
-            rocblas_int const mid = lo + ((hi - lo)/2);
+            rocblas_int const mid = lo + ((hi - lo) / 2);
             bool const is_found = (arr[mid] == key);
             if(is_found)
             {
@@ -76,7 +77,6 @@ __device__ rocblas_int rf_search(const rocblas_int len, const rocblas_int* const
     return (ipos);
 }
 
-
 // -------------------------------------------
 // Compute B = beta * B + alpha * (P * A * Q') as
 // (1) B = beta * B
@@ -87,19 +87,18 @@ __device__ rocblas_int rf_search(const rocblas_int len, const rocblas_int* const
 // in increasing sorted order
 // -------------------------------------------
 template <typename T>
-ROCSOLVER_KERNEL void __launch_bounds__(ADD_PAQ_MAX_THDS)
-    rf_add_PAQ_kernel(const rocblas_int nrow,
-                        const rocblas_int ncol,
-                        rocblas_int* P_new2old,
-                        rocblas_int* Q_old2new,
-                        const T alpha,
-                        rocblas_int* Ap,
-                        rocblas_int* Ai,
-                        T* Ax,
-                        const T beta,
-                        rocblas_int* LUp,
-                        rocblas_int* LUi,
-                        T* LUx)
+ROCSOLVER_KERNEL void __launch_bounds__(ADD_PAQ_MAX_THDS) rf_add_PAQ_kernel(const rocblas_int nrow,
+                                                                            const rocblas_int ncol,
+                                                                            rocblas_int* P_new2old,
+                                                                            rocblas_int* Q_old2new,
+                                                                            const T alpha,
+                                                                            rocblas_int* Ap,
+                                                                            rocblas_int* Ai,
+                                                                            T* Ax,
+                                                                            const T beta,
+                                                                            rocblas_int* LUp,
+                                                                            rocblas_int* LUi,
+                                                                            T* LUx)
 {
     T const zero = 0;
     bool const is_beta_zero = (beta == zero);
@@ -224,9 +223,8 @@ void rocsolver_csrrf_refactlu_getMemorySize(const rocblas_int n,
     }
 
     // requirements for incomplete factorization
-    THROW_IF_ROCSPARSE_ERROR( 
-      rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
-                                       rfinfo->infoT, size_work)  );
+    THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrilu0_buffer_size(
+        rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT, size_work));
 }
 
 template <typename T, typename U>
@@ -252,10 +250,7 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    ROCSPARSE_CHECK( 
-       rocsparse_get_stream(rfinfo->sphandle, &stream),
-       rocblas_status_internal_error );
-
+    ROCSPARSE_CHECK(rocsparse_get_stream(rfinfo->sphandle, &stream), rocblas_status_internal_error);
 
     rocblas_int nthreads = ADD_PAQ_MAX_THDS;
     rocblas_int nblocks = (n + (nthreads - 1)) / nthreads;
@@ -267,15 +262,13 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     // yields the complete factorization of A.
     // ---------------------------------------------------------------------
 
-    ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
-                            n, n, pivP, pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
+    ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n, n,
+                            pivP, pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
 
     // perform incomplete factorization of T
-    ROCSPARSE_CHECK( 
-      rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
-                            rfinfo->infoT, rocsparse_solve_policy_auto, work),
-      rocblas_status_internal_error );
-
+    ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
+                                          indT, rfinfo->infoT, rocsparse_solve_policy_auto, work),
+                    rocblas_status_internal_error);
 
     return rocblas_status_success;
 }

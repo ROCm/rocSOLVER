@@ -30,12 +30,14 @@ rocblas_status rocsolver_csrrf_analysis_argCheck(rocblas_handle handle,
 
     // 1. invalid/non-supported values
     // N/A
-    if (handle == nullptr) {
+    if(handle == nullptr)
+    {
         return rocblas_status_invalid_handle;
-        };
-    if (rfinfo == nullptr) {
+    };
+    if(rfinfo == nullptr)
+    {
         return rocblas_status_invalid_pointer;
-        };
+    };
 
     // 2. invalid size
     if(n < 0 || nnzM < 0 || nnzT < 0)
@@ -76,41 +78,23 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
     size_t csrsv_U_buffer_size = 0;
     size_t csrsv_buffer_size = 0;
 
-    THROW_IF_ROCSPARSE_ERROR(
-    rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
-                                          rfinfo->infoT, &csrilu0_buffer_size) );
-                 
+    THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT,
+                                                               rfinfo->descrT, valT, ptrT, indT,
+                                                               rfinfo->infoT, &csrilu0_buffer_size));
 
     rocsparse_operation const trans = rocsparse_operation_none;
 
-    THROW_IF_ROCSPARSE_ERROR(
-    rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, 
-                                    trans,
-                                    n,
-                                    nnzT,
-                                    rfinfo->descrL,
-                                    valT,
-                                    ptrT,
-                                    indT,
-                                    rfinfo->infoL,
-                                    &csrsv_L_buffer_size)  );
-           
-    THROW_IF_ROCSPARSE_ERROR(
-    rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, 
-                                    trans,
-                                    n,
-                                    nnzT,
-                                    rfinfo->descrU,
-                                    valT,
-                                    ptrT,
-                                    indT,
-                                    rfinfo->infoU,
-                                    &csrsv_U_buffer_size)  );
+    THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, trans, n, nnzT,
+                                                             rfinfo->descrL, valT, ptrT, indT,
+                                                             rfinfo->infoL, &csrsv_L_buffer_size));
 
-    csrsv_buffer_size = std::max(csrsv_L_buffer_size, csrsv_U_buffer_size );
+    THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsv_buffer_size(rfinfo->sphandle, trans, n, nnzT,
+                                                             rfinfo->descrU, valT, ptrT, indT,
+                                                             rfinfo->infoU, &csrsv_U_buffer_size));
 
-    *size_work = std::max( csrilu0_buffer_size, csrsv_buffer_size );
-      
+    csrsv_buffer_size = std::max(csrsv_L_buffer_size, csrsv_U_buffer_size);
+
+    *size_work = std::max(csrilu0_buffer_size, csrsv_buffer_size);
 }
 
 template <typename T, typename U>
@@ -135,8 +119,6 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
     if(n == 0)
         return rocblas_status_success;
 
-    
-
     rocsparse_operation const trans = rocsparse_operation_none;
     // rocsparse_solve_policy solve = rocsparse_solve_policy_auto;
     // rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
@@ -144,28 +126,27 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
     rocsparse_solve_policy const solve = rfinfo->solve_policy;
     rocsparse_analysis_policy const analysis = rfinfo->analysis_policy;
 
-   try {
+    try
+    {
+        // analysis for incomplete factorization
+        THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrilu0_analysis(
+            rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT,
+            rocsparse_analysis_policy_force, solve, work));
 
-    // analysis for incomplete factorization
-    THROW_IF_ROCSPARSE_ERROR(
-    rocsparseCall_csrilu0_analysis(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
-                                    rfinfo->infoT, rocsparse_analysis_policy_force, solve, work) );
+        // analysis for solve with L
+        THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsv_analysis(rfinfo->sphandle, trans, n, nnzT,
+                                                              rfinfo->descrL, valT, ptrT, indT,
+                                                              rfinfo->infoL, analysis, solve, work));
 
-    // analysis for solve with L
-    THROW_IF_ROCSPARSE_ERROR(
-    rocsparseCall_csrsv_analysis(rfinfo->sphandle, trans, n, nnzT, rfinfo->descrL, valT, ptrT, indT,
-                                    rfinfo->infoL, analysis, solve, work) );
-
-    // analysis for solve with U
-    THROW_IF_ROCSPARSE_ERROR(
-    rocsparseCall_csrsv_analysis(rfinfo->sphandle, trans, n, nnzT, rfinfo->descrU, valT, ptrT, indT,
-                                    rfinfo->infoU, analysis, solve, work) );
+        // analysis for solve with U
+        THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsv_analysis(rfinfo->sphandle, trans, n, nnzT,
+                                                              rfinfo->descrU, valT, ptrT, indT,
+                                                              rfinfo->infoU, analysis, solve, work));
     }
-   catch( ... )
-   {  
-    return rocblas_status_internal_error;
-   };
-
+    catch(...)
+    {
+        return rocblas_status_internal_error;
+    };
 
     return rocblas_status_success;
 }

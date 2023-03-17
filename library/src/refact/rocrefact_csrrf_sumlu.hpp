@@ -10,7 +10,6 @@
 
 #include "rocblas_check.h"
 
-
 // ----------------------------------------------------
 // device (serial) code to perform shell sort by a single thread
 // key is  iarr[]
@@ -56,17 +55,13 @@ static __device__ void rf_shellsort(rocblas_int* iarr, T* darr, rocblas_int num)
 }
 
 template <typename T>
-ROCSOLVER_KERNEL void rf_setupLUp_kernel(const rocblas_int nrow,
-                                         rocblas_int* Lp,
-                                         rocblas_int* Up,
-                                         rocblas_int* LUp)
+ROCSOLVER_KERNEL void
+    rf_setupLUp_kernel(const rocblas_int nrow, rocblas_int* Lp, rocblas_int* Up, rocblas_int* LUp)
 {
     // ---------------------------------------------
     // just use a single thread block for simplicity
     // ---------------------------------------------
-    bool const is_root = (blockIdx.x == 0) &&
-                         (blockIdx.y == 0) &&
-                         (blockIdx.z == 0);
+    bool const is_root = (blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0);
     if(!is_root)
     {
         return;
@@ -199,16 +194,16 @@ ROCSOLVER_KERNEL void rf_setupLUp_kernel(const rocblas_int nrow,
 
 template <typename T>
 ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int nrow,
-                                       const rocblas_int ncol,
-                                       rocblas_int* Lp,
-                                       rocblas_int* Li,
-                                       T* Lx,
-                                       rocblas_int* Up,
-                                       rocblas_int* Ui,
-                                       T* Ux,
-                                       rocblas_int* LUp,
-                                       rocblas_int* LUi,
-                                       T* LUx)
+                                      const rocblas_int ncol,
+                                      rocblas_int* Lp,
+                                      rocblas_int* Li,
+                                      T* Lx,
+                                      rocblas_int* Up,
+                                      rocblas_int* Ui,
+                                      T* Ux,
+                                      rocblas_int* LUp,
+                                      rocblas_int* LUi,
+                                      T* LUx)
 {
     rocblas_int const nnzL = Lp[nrow] - Lp[0];
     rocblas_int const nnzU = Up[nrow] - Up[0];
@@ -219,7 +214,6 @@ ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int nrow,
 
     rocblas_int const irow_start = threadIdx.x + blockIdx.x * blockDim.x;
     rocblas_int const irow_inc = blockDim.x * gridDim.x;
-
 
     for(rocblas_int irow = irow_start; irow < nrow; irow += irow_inc)
     {
@@ -332,9 +326,10 @@ rocblas_status rocsolver_csrrf_sumlu_argCheck(rocblas_handle handle,
 
     // 1. invalid/non-supported values
     // N/A
-    if (handle == nullptr) {
-      return rocblas_status_invalid_handle;
-      };
+    if(handle == nullptr)
+    {
+        return rocblas_status_invalid_handle;
+    };
 
     // 2. invalid size
     if(n < 0 || nnzL < 0 || nnzU < 0)
@@ -374,26 +369,24 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    ROCBLAS_CHECK( rocblas_get_stream(handle, &stream), 
-                   rocblas_status_internal_error );
-
+    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
 
     // Step 1: setup row pointer ptrT
     rocblas_int nthreads = 1024;
     rocblas_int nblocks = 1; // special case use only a single block
 
-    ROCSOLVER_LAUNCH_KERNEL(rf_setupLUp_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
-                            n, ptrL, ptrU, ptrT);
+    ROCSOLVER_LAUNCH_KERNEL(rf_setupLUp_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n,
+                            ptrL, ptrU, ptrT);
 
     // Step 2: copy entries of indL, valL, indU, valU into indT, valT
     nthreads = 128;
     nblocks = (n + (nthreads - 1)) / nthreads;
 
-    { rocblas_int nrow = n;
-      rocblas_int ncol = n;
-    ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
-                            nrow, ncol, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
-
+    {
+        rocblas_int nrow = n;
+        rocblas_int ncol = n;
+        ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, nrow,
+                                ncol, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
     };
 
     return rocblas_status_success;

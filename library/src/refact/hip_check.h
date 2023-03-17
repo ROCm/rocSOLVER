@@ -26,8 +26,8 @@
 #ifndef HIP_CHECK_H
 #define HIP_CHECK_H
 
-#include <stdexcept>
 #include <exception>
+#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 
