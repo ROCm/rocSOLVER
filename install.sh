@@ -81,6 +81,7 @@ Options:
                               (Default build type is Release)
 
   --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
+
   --rm-legacy-include-dir     Remove legacy include dir Packaging added for file/folder reorg backward compatibility.
 EOF
 }

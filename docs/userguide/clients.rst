@@ -17,9 +17,6 @@ If the ``-DBUILD_CLIENTS_TESTS=ON`` flag, the ``-DBUILD_CLIENTS_BENCHMARKS=ON`` 
 be located in the directory ``<rocsolverDIR>/build/clients/staging``. See the :ref:`Building and installation
 section <userguide_install>` of the User Guide for more information on building the library and its clients.
 
-.. toctree::
-   :maxdepth: 4
-
 .. contents:: Table of contents
    :local:
    :backlinks: top

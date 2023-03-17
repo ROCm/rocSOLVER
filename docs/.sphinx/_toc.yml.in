@@ -4,6 +4,6 @@ root: index
 subtrees:
   - numbered: False
     entries:
-    - file: design/design_index
-    - file: userguide/userguide_index
-    - file: api/api_index
+    - file: design/index
+    - file: userguide/index
+    - file: api/index
