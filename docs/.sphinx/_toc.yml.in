@@ -5,5 +5,27 @@ subtrees:
   - numbered: False
     entries:
     - file: design/index
+      subtrees:
+      - entries:
+        - file: design/intro
+        - file: design/batch
+        - file: design/tuning
+        - file: design/contribute
     - file: userguide/index
+      subtrees:
+      - entries:
+        - file: userguide/intro
+        - file: userguide/install
+        - file: userguide/examples
+        - file: userguide/memory
+        - file: userguide/logging
+        - file: userguide/clients
     - file: api/index
+      subtrees:
+      - entries:
+        - file: api/types
+        - file: api/auxiliary
+        - file: api/lapack
+        - file: api/lapacklike
+        - file: api/logging
+        - file: api/deprecated
