@@ -57,10 +57,10 @@ Arguments csrrf_sumlu_setup_arguments(csrrf_sumlu_tuple tup)
     Arguments arg;
 
     arg.set<rocblas_int>("n", n);
-    // note: the clients will take nnzA = nnzU + nnzL - n
-    // and determine the test case with n and nnzA.
     arg.set<rocblas_int>("nnzU", nnz);
     arg.set<rocblas_int>("nnzL", n);
+    // note: the clients will take nnzA = nnzU + nnzL - n
+    // and determine the test case with n and nnzA.
 
     arg.timing = 0;
 

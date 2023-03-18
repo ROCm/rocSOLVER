@@ -400,7 +400,7 @@ void testing_csrrf_sumlu(Arguments& argus)
         }
     }
 
-    // read actual nnzL and nnzU; set corresponding nnzT
+    // read/set actual nnzL, nnzU and nnzT
     std::string testcase;
     if(!mat_zero && n > 0)
     {
