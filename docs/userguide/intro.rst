@@ -3,9 +3,6 @@
 Introduction
 *************
 
-.. toctree::
-   :maxdepth: 4
-
 .. contents:: Table of contents
    :local:
    :backlinks: top
