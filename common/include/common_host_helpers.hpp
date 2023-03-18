@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -355,4 +355,113 @@ void print_host_matrix(std::ostream& os,
     s += '\n';
     os << s;
     os.flush();
+}
+
+/**** Read martrix and/or values from file **********/
+// integers:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        rocblas_int* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    rocblas_int v;
+
+    if(mat == NULL)
+    {
+        printf("\nError: Could not open file %s with test data...\n", filename);
+        return;
+    }
+
+    for(rocblas_int j = 0; j < n; ++j)
+    {
+        for(rocblas_int i = 0; i < m; ++i)
+        {
+            fscanf(mat, "%d", &v);
+            A[i + j * lda] = v;
+        }
+    }
+
+    fclose(mat);
+}
+inline void read_last(const std::string filenameS, rocblas_int* A)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    rocblas_int v;
+
+    if(mat == NULL)
+    {
+        printf("\nError: Could not open file %s with test data...\n", filename);
+        return;
+    }
+
+    while(fscanf(mat, "%d", &v) == 1)
+        ;
+
+    *A = v;
+}
+
+// singles:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        float* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    float v;
+
+    if(mat == NULL)
+    {
+        printf("\nError: Could not open file %s with test data...\n", filename);
+        return;
+    }
+
+    for(rocblas_int j = 0; j < n; ++j)
+    {
+        for(rocblas_int i = 0; i < m; ++i)
+        {
+            fscanf(mat, "%g", &v);
+            A[i + j * lda] = v;
+        }
+    }
+
+    fclose(mat);
+}
+
+// doubles:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        double* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    double v;
+
+    if(mat == NULL)
+    {
+        printf("\nError: Could not open file %s with test data...\n", filename);
+        return;
+    }
+
+    for(rocblas_int j = 0; j < n; ++j)
+    {
+        for(rocblas_int i = 0; i < m; ++i)
+        {
+            fscanf(mat, "%lg", &v);
+            A[i + j * lda] = v;
+        }
+    }
+
+    fclose(mat);
 }

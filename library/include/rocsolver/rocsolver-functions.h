@@ -1070,7 +1070,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
 //! @}
 
 /*! @{
-    \brief LAUUM computes the product of the upper (or lower) triangular part U (or L) of a 
+    \brief LAUUM computes the product of the upper (or lower) triangular part U (or L) of a
     symmetric/Hemitian matrix A with its transpose.
 
     \details
@@ -23784,7 +23784,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo
     n           rocblas_int. n >= 0.\n
                 The number of rows (and columns) of matrix A.
     @param[in]
-    nnzL        rocblas_int. nnzL >= 0.\n
+    nnzL        rocblas_int. nnzL >= n.\n
                 The number of non-zero elements in L.
     @param[in]
     ptrL        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
