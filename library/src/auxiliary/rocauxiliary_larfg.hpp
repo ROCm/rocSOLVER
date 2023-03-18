@@ -112,6 +112,8 @@ void rocsolver_larfg_getMemorySize(const rocblas_int n,
     *size_norms = sizeof(T) * batch_count;
 
     // size of re-usable workspace
+    // TODO: replace with rocBLAS call
+    constexpr int ROCBLAS_DOT_NB = 512;
     *size_work = n > 2 ? (n - 2) / ROCBLAS_DOT_NB + 2 : 1;
     *size_work *= sizeof(T) * batch_count;
 }

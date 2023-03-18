@@ -288,10 +288,9 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
             rocblas_operation trans
                 = (uplo == rocblas_fill_upper ? rocblas_operation_conjugate_transpose
                                               : rocblas_operation_none);
-            rocblasCall_trmm<BATCHED, STRIDED, T>(handle, rocblas_side_left, uplo, trans,
-                                                  rocblas_diagonal_non_unit, n, temp_nev, &one, 0,
-                                                  B, shiftB, ldb, strideB, A, shiftA, lda, strideA,
-                                                  batch_count, (T**)work7_workArr);
+            rocblasCall_trmm(handle, rocblas_side_left, uplo, trans, rocblas_diagonal_non_unit, n,
+                             temp_nev, &one, 0, B, shiftB, ldb, strideB, A, shiftA, lda, strideA,
+                             batch_count, (T**)work7_workArr);
         }
     }
 

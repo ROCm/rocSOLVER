@@ -89,9 +89,9 @@ rocblas_status rocsolver_lauum_template(rocblas_handle handle,
     rocblas_side side = (uplo == rocblas_fill_upper) ? rocblas_side_right : rocblas_side_left;
 
     // work = work * A' or work = A' * work
-    rocblasCall_trmm<false, true, T>(handle, side, uplo, rocblas_operation_conjugate_transpose,
-                                     rocblas_diagonal_non_unit, n, n, &one, 0, A, shiftA, lda,
-                                     strideA, work, 0, n, strideW, batch_count);
+    rocblasCall_trmm(handle, side, uplo, rocblas_operation_conjugate_transpose,
+                     rocblas_diagonal_non_unit, n, n, &one, 0, A, shiftA, lda, strideA, work, 0, n,
+                     strideW, batch_count);
 
     // copy the new factor into the relevant triangle of A leaving the rest untouched
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid, threads, 0, stream, n, n, work, 0, n, strideW, A,
