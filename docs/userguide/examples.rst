@@ -9,9 +9,6 @@ will become link-time and run-time dependencies for the user application.
 
 Next, some examples are used to illustrate the basic use of rocSOLVER API and rocSOLVER batched API.
 
-.. toctree::
-   :maxdepth: 4
-
 .. contents:: Table of contents
    :local:
    :backlinks: top

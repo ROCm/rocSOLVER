@@ -11,9 +11,6 @@ and profile logging.
 
 Note that performance will degrade when logging is enabled.
 
-.. toctree::
-   :maxdepth: 4
-
 .. contents:: Table of contents
    :local:
    :backlinks: top

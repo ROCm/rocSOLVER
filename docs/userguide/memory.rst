@@ -23,9 +23,6 @@ There are four schemes for device memory management:
 * User-owned: The user manually allocates device memory and calls a rocBLAS helper function to use it
   as the workspace.
 
-.. toctree::
-   :maxdepth: 4
-
 .. contents:: Table of contents
    :local:
    :backlinks: top

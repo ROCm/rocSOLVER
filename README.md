@@ -8,6 +8,18 @@ functionality on the [ROCm platform][2].
 For a detailed description of the rocSOLVER library, its implemented routines,
 the installation process and user guide, see the [rocSOLVER documentation][3].
 
+### How to build documentation
+
+Please follow the instructions below to build the documentation.
+
+```
+cd docs
+
+pip3 install -r .sphinx/requirements.txt
+
+python3 -m sphinx -T -E -b html -d _build/doctrees -D language=en . _build/html
+```
+
 ## Building rocSOLVER
 
 To download the rocSOLVER source code, clone this repository with the command:
