@@ -81,6 +81,8 @@ Options:
                               (Default build type is Release)
 
   --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
+
+  --rm-legacy-include-dir     Remove legacy include dir Packaging added for file/folder reorg backward compatibility.
 EOF
 }
 
@@ -446,7 +448,7 @@ printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m
 # #################################################
 # ensure a clean build environment
 if [[ "${build_docs}" == true ]]; then
-  rm -rf -- "${build_dir}/docs"
+  rm -rf -- "${build_dir}/html"
 elif [[ "${build_type}" == Release ]]; then
   rm -rf -- "${build_dir}/release"
 elif [[ "${build_type}" == RelWithDebInfo ]]; then
@@ -510,16 +512,11 @@ if [[ "${build_docs}" == true ]]; then
   docs_build_command='cp -r /mnt/rocsolver /home/docs/ && /home/docs/rocsolver/docs/run_doc.sh'
   docker build -t rocsolver:docs -f "$main/docs/Dockerfile" "$main/docs"
   docker run -v "$main:/mnt/rocsolver:ro" --name "$container_name" rocsolver:docs /bin/sh -c "$docs_build_command"
-  docker cp "$container_name:/home/docs/rocsolver/docs/build" "$main/docs/"
-  docker cp "$container_name:/home/docs/rocsolver/docs/docBin" "$main/docs/"
-  mkdir -p "$build_dir/docs"
-  ln -sr "$main/docs/docBin" "$build_dir/docs/doxygen"
-  ln -sr "$main/docs/build" "$build_dir/docs/sphinx"
+  docker cp "$container_name:/home/docs/rocsolver/build/html" "$main/build/html"
   absolute_build_dir=$(make_absolute_path "$build_dir")
   set +x
   echo 'Documentation Built:'
-  echo "HTML: file://$absolute_build_dir/docs/sphinx/html/index.html"
-  echo "PDF:  file://$absolute_build_dir/docs/sphinx/latex/rocSOLVER.pdf"
+  echo "HTML: file://$absolute_build_dir/html/index.html"
   exit
 fi
 
