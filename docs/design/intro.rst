@@ -1,11 +1,7 @@
-.. _batch_label:
 
 *****************
-Batched rocSOLVER
+Introduction
 *****************
-
-.. toctree::
-   :maxdepth: 4
 
 .. contents:: Table of contents
    :local:
@@ -13,4 +9,3 @@ Batched rocSOLVER
 
 
 More to come later...
-
