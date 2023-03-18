@@ -64,8 +64,6 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     __shared__ rocblas_int isum_nnzL[MAX_THREADS];
     __shared__ rocblas_int isum_nnzU[MAX_THREADS];
 
-    for(rocblas_int ithread = 0; ithread < nthreads; ithread++)
-    {
         for(rocblas_int irow = irow_start; irow < irow_end; irow++)
         {
             rocblas_int const istart = Mp[irow];
@@ -90,7 +88,6 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
             nnzL += (nzL + 1);
             nnzU += nzU;
         }; // end for irow
-    }; // end for ithread
 
     isum_nnzL[my_thread] = nnzL;
     isum_nnzU[my_thread] = nnzU;
@@ -119,14 +116,22 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 
     if(is_root_thread)
     {
-        rocblas_int ipos = 0;
+        rocblas_int iposL = 0;
+        rocblas_int iposU = 0;
 
         for(rocblas_int ithread = 0; ithread < nthreads; ithread++)
         {
-            rocblas_int const nz = isum_nnzL[ithread];
-            isum_nnzL[ithread] = ipos;
-            ipos += nz;
+            rocblas_int const nzL = isum_nnzL[ithread];
+            rocblas_int const nzU = isum_nnzU[ithread];
+
+            isum_nnzL[ithread] = iposL;
+            isum_nnzU[ithread] = iposU;
+
+            iposL += nzL;
+            iposU += nzU;
         };
+
+        
     };
 
     __syncthreads();
