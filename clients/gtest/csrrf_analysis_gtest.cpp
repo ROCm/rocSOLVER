@@ -26,8 +26,6 @@ const vector<int> n_range = {
     50,
 };
 const vector<int> nnz_range = {
-    // matrix zero
-    0,
     // invalid
     -1,
     // normal (valid) samples
@@ -60,7 +58,8 @@ Arguments csrrf_analysis_setup_arguments(csrrf_analysis_tuple tup)
     arg.set<rocblas_int>("nnzM", nnz);
     arg.set<rocblas_int>("nnzT", nnz);
     // note: the clients will determine the test case with n and nnzM.
-    // nnzT = nnz is passed as it does not have a default value.
+    // nnzT = nnz is passed because it does not have a default value in the
+    // bench client (for future purposes).
 
     arg.timing = 0;
 

@@ -24,32 +24,27 @@ const vector<int> n_range = {
     // normal (valid) samples
     20,
     50,
-    100,
-    300,
 };
 const vector<int> nnz_range = {
-    // matrix zero
-    0,
     // invalid
     -1,
     // normal (valid) samples
-    20,
-    40,
-    75,
+    60,
+    100,
+    140,
 };
 
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
-    20,
-    50,
     100,
-    300,
+    250,
 };
 const vector<int> large_nnz_range = {
     // normal (valid) samples
-    150,
-    250,
+    300,
+    500,
+    700,
 };
 
 Arguments csrrf_refactlu_setup_arguments(csrrf_refactlu_tuple tup)
@@ -61,6 +56,10 @@ Arguments csrrf_refactlu_setup_arguments(csrrf_refactlu_tuple tup)
 
     arg.set<rocblas_int>("n", n);
     arg.set<rocblas_int>("nnzA", nnz);
+    arg.set<rocblas_int>("nnzT", nnz);
+    // note: the clients will determine the test case with n and nnzM.
+    // nnzT = nnz is passed because it does not have a default value in the
+    // bench client (for future purposes).
 
     arg.timing = 0;
 

@@ -199,6 +199,8 @@ rocblas_status rocsolver_csrrf_refactlu_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
+    if(rfinfo == nullptr)
+        return rocblas_status_invalid_pointer;
     if(!rfinfo || !ptrA || !ptrT || (n && (!pivP || !pivQ)) || (nnzA && (!indA || !valA))
        || (nnzT && (!indT || !valT)))
         return rocblas_status_invalid_pointer;
@@ -250,7 +252,7 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    ROCSPARSE_CHECK(rocsparse_get_stream(rfinfo->sphandle, &stream), rocblas_status_internal_error);
+    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
 
     rocblas_int nthreads = ADD_PAQ_MAX_THDS;
     rocblas_int nblocks = (n + (nthreads - 1)) / nthreads;
@@ -261,7 +263,6 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     // P and Q are applied, the incomplete factorization of P*A*Q (factorization without fill-in),
     // yields the complete factorization of A.
     // ---------------------------------------------------------------------
-
     ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n, n,
                             pivP, pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
 
