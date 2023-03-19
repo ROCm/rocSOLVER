@@ -68,7 +68,10 @@ void csrrf_sumlu_checkBadArgs(rocblas_handle handle,
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    // N/A
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_sumlu(handle, n, n, ptrL, indL, valL, 0, ptrU,
+                                                (rocblas_int*)nullptr, (T) nullptr, ptrT,
+                                                (rocblas_int*)nullptr, (T) nullptr),
+                          rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     // N/A

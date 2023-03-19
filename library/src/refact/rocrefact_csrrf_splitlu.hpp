@@ -215,10 +215,12 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 }
 
 template <typename T>
-void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n, size_t* size_work)
+void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
+                                           const rocblas_int nnzT,
+                                           size_t* size_work)
 {
     // if quick return, no need of workspace
-    if(n == 0)
+    if(n == 0 || nnzT == 0)
     {
         *size_work = 0;
         return;
