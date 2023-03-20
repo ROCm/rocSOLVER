@@ -332,7 +332,7 @@ rocblas_status rocsolver_csrrf_sumlu_argCheck(rocblas_handle handle,
     };
 
     // 2. invalid size
-    if(n < 0 || nnzL < 0 || nnzU < 0)
+    if(n < 0 || nnzL < n || nnzU < 0)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -341,7 +341,7 @@ rocblas_status rocsolver_csrrf_sumlu_argCheck(rocblas_handle handle,
 
     // 3. invalid pointers
     if(!ptrL || !ptrU || !ptrT || (nnzL && (!indL || !valL)) || (nnzU && (!indU || !valU))
-       || (nnzL * nnzU && (!indT || !valT)))
+       || ((nnzL + nnzU - n > 0) && (!indT || !valT)))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -371,6 +371,18 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
     hipStream_t stream;
     ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
 
+    // quick return with matrix zero
+    if(nnzL - n + nnzU == 0)
+    {
+        // set ptrT = 0
+        rocblas_int blocks = n / BS1 + 1;
+        dim3 grid(blocks, 1, 1);
+        dim3 threads(BS1, 1, 1);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, ptrT, n + 1, 0);
+
+        return rocblas_status_success;
+    }
+
     // Step 1: setup row pointer ptrT
     rocblas_int nthreads = 1024;
     rocblas_int nblocks = 1; // special case use only a single block
@@ -382,12 +394,10 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
     nthreads = 128;
     nblocks = (n + (nthreads - 1)) / nthreads;
 
-    {
-        rocblas_int nrow = n;
-        rocblas_int ncol = n;
-        ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, nrow,
+    rocblas_int nrow = n;
+    rocblas_int ncol = n;
+    ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, nrow,
                                 ncol, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
-    };
 
     return rocblas_status_success;
 }

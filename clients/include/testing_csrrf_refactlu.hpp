@@ -140,14 +140,48 @@ void csrrf_refactlu_initData(rocblas_handle handle,
                              Uh& hindT,
                              Th& hvalT,
                              Uh& hpivP,
-                             Uh& hpivQ)
+                             Uh& hpivQ,
+                             const std::string testcase)
 {
     if(CPU)
     {
+        std::string file;
+
+        // read-in A
+        file = fmt::format("{}ptrA", testcase);
+        read_matrix(file, 1, n + 1, hptrA.data(), 1);
+        file = fmt::format("{}indA", testcase);
+        read_matrix(file, 1, nnzA, hindA.data(), 1);
+        file = fmt::format("{}valA", testcase);
+        read_matrix(file, 1, nnzA, hvalA.data(), 1);
+
+        // read-in T
+        file = fmt::format("{}ptrT", testcase);
+        read_matrix(file, 1, n + 1, hptrT.data(), 1);
+        file = fmt::format("{}indT", testcase);
+        read_matrix(file, 1, nnzT, hindT.data(), 1);
+        file = fmt::format("{}valT", testcase);
+        read_matrix(file, 1, nnzT, hvalT.data(), 1);
+
+        // read-in P
+        file = fmt::format("{}P", testcase);
+        read_matrix(file, 1, n, hpivP.data(), 1);
+
+        // read-in Q
+        file = fmt::format("{}Q", testcase);
+        read_matrix(file, 1, n, hpivQ.data(), 1);
     }
 
     if(GPU)
     {
+        CHECK_HIP_ERROR(dptrA.transfer_from(hptrA));
+        CHECK_HIP_ERROR(dindA.transfer_from(hindA));
+        CHECK_HIP_ERROR(dvalA.transfer_from(hvalA));
+        CHECK_HIP_ERROR(dptrT.transfer_from(hptrT));
+        CHECK_HIP_ERROR(dindT.transfer_from(hindT));
+        CHECK_HIP_ERROR(dvalT.transfer_from(hvalT));
+        CHECK_HIP_ERROR(dpivP.transfer_from(hpivP));
+        CHECK_HIP_ERROR(dpivQ.transfer_from(hpivQ));
     }
 }
 
@@ -174,15 +208,20 @@ void csrrf_refactlu_getError(rocblas_handle handle,
                              Uh& hpivP,
                              Uh& hpivQ,
                              Th& hvalTres,
-                             double* max_err)
+                             double* max_err,
+                             const std::string testcase)
 {
     // input data initialization
     csrrf_refactlu_initData<true, true, T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT, dindT,
                                            dvalT, dpivP, dpivQ, hptrA, hindA, hvalA, hptrT, hindT,
-                                           hvalT, hpivP, hpivQ);
+                                           hvalT, hpivP, hpivQ, testcase);
 
     // execute computations
     // GPU lapack
+    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(handle, n, nnzA, dptrA.data(), dindA.data(),
+                                                 dvalA.data(), nnzT, dptrT.data(), dindT.data(),
+                                                 dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
+
     CHECK_ROCBLAS_ERROR(rocsolver_csrrf_refactlu(handle, n, nnzA, dptrA.data(), dindA.data(),
                                                  dvalA.data(), nnzT, dptrT.data(), dindT.data(),
                                                  dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
@@ -190,8 +229,7 @@ void csrrf_refactlu_getError(rocblas_handle handle,
     CHECK_HIP_ERROR(hvalTres.transfer_from(dvalT));
 
     // compare computed results with original result
-    *max_err = 0;
-    //    *max_err = norm_error('F', 1, nnzT, 1, hvalT[0], hvalTres[0]);
+    *max_err = norm_error('F', 1, nnzT, 1, hvalT[0], hvalTres[0]);
 }
 
 template <typename T, typename Td, typename Ud, typename Th, typename Uh>
@@ -221,20 +259,21 @@ void csrrf_refactlu_getPerfData(rocblas_handle handle,
                                 const rocblas_int hot_calls,
                                 const int profile,
                                 const bool profile_kernels,
-                                const bool perf)
+                                const bool perf,
+                                const std::string testcase)
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
     csrrf_refactlu_initData<true, false, T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT,
                                             dindT, dvalT, dpivP, dpivQ, hptrA, hindA, hvalA, hptrT,
-                                            hindT, hvalT, hpivP, hpivQ);
+                                            hindT, hvalT, hpivP, hpivQ, testcase);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         csrrf_refactlu_initData<false, true, T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT,
                                                 dindT, dvalT, dpivP, dpivQ, hptrA, hindA, hvalA,
-                                                hptrT, hindT, hvalT, hpivP, hpivQ);
+                                                hptrT, hindT, hvalT, hpivP, hpivQ, testcase);
 
         CHECK_ROCBLAS_ERROR(rocsolver_csrrf_refactlu(
             handle, n, nnzA, dptrA.data(), dindA.data(), dvalA.data(), nnzT, dptrT.data(),
@@ -260,7 +299,7 @@ void csrrf_refactlu_getPerfData(rocblas_handle handle,
     {
         csrrf_refactlu_initData<false, true, T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT,
                                                 dindT, dvalT, dpivP, dpivQ, hptrA, hindA, hvalA,
-                                                hptrT, hindT, hvalT, hpivP, hpivQ);
+                                                hptrT, hindT, hvalT, hpivP, hpivQ, testcase);
 
         start = get_time_us_sync(stream);
         rocsolver_csrrf_refactlu(handle, n, nnzA, dptrA.data(), dindA.data(), dvalA.data(), nnzT,
@@ -279,43 +318,8 @@ void testing_csrrf_refactlu(Arguments& argus)
     rocsolver_local_rfinfo rfinfo(handle);
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int nnzA = argus.get<rocblas_int>("nnzA");
-    rocblas_int nnzT = argus.get<rocblas_int>("nnzT", nnzA);
+    rocblas_int nnzT = argus.get<rocblas_int>("nnzT");
     rocblas_int hot_calls = argus.iters;
-
-    // determine existing test case
-    if(n > 0)
-    {
-        if(n <= 35)
-            n = 20;
-        else if(n <= 75)
-            n = 50;
-        else if(n <= 200)
-            n = 100;
-        else
-            n = 300;
-    }
-    if(nnzA > 0)
-    {
-        if(nnzA <= 30)
-            nnzA = 20;
-        else if(nnzA <= 55)
-            nnzA = 40;
-        else if(nnzA <= 110)
-            nnzA = 75;
-        else if(nnzA <= 200)
-            nnzA = 150;
-        else
-            nnzA = 250;
-    }
-
-    // read nnzT
-    if(nnzT >= 0)
-    {
-        if(n > 0 && nnzA > 0)
-        {
-            std::string testcase = fmt::format("case_{}_{}/", n, nnzA);
-        }
-    }
 
     // check non-supported values
     // N/A
@@ -334,6 +338,47 @@ void testing_csrrf_refactlu(Arguments& argus)
             rocsolver_bench_inform(inform_invalid_size);
 
         return;
+    }
+
+    // determine existing test case
+    if(n > 0)
+    {
+        if(n <= 35)
+            n = 20;
+        else if(n <= 75)
+            n = 50;
+        else if(n <= 175)
+            n = 100;
+        else
+            n = 250;
+    }
+
+    if(n <= 50) // small case
+    {
+        if(nnzA <= 80)
+            nnzA = 60;
+        else if(nnzA <= 120)
+            nnzA = 100;
+        else
+            nnzA = 140;
+    }
+    else // large case
+    {
+        if(nnzA <= 400)
+            nnzA = 300;
+        else if(nnzA <= 600)
+            nnzA = 500;
+        else
+            nnzA = 700;
+    }
+
+    // read/set corresponding nnzT
+    std::string testcase;
+    if(n > 0)
+    {
+        testcase = fmt::format("{}/mat_{}_{}/", SPARSEDATA_DIR, n, nnzA);
+        std::string file = fmt::format("{}ptrT", testcase);
+        read_last(file, &nnzT);
     }
 
     // memory size query if necessary
@@ -424,14 +469,14 @@ void testing_csrrf_refactlu(Arguments& argus)
     if(argus.unit_check || argus.norm_check)
         csrrf_refactlu_getError<T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT, dindT, dvalT,
                                    dpivP, dpivQ, rfinfo, hptrA, hindA, hvalA, hptrT, hindT, hvalT,
-                                   hpivP, hpivQ, hvalTres, &max_error);
+                                   hpivP, hpivQ, hvalTres, &max_error, testcase);
 
     // collect performance data
     if(argus.timing)
         csrrf_refactlu_getPerfData<T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT, dindT,
-                                      dvalT, dpivP, dpivQ, rfinfo, hptrA, hindA, hvalA, hptrT,
-                                      hindT, hvalT, hpivP, hpivQ, &gpu_time_used, &cpu_time_used,
-                                      hot_calls, argus.profile, argus.profile_kernels, argus.perf);
+                                      dvalT, dpivP, dpivQ, rfinfo, hptrA, hindA, hvalA, hptrT, hindT,
+                                      hvalT, hpivP, hpivQ, &gpu_time_used, &cpu_time_used, hot_calls,
+                                      argus.profile, argus.profile_kernels, argus.perf, testcase);
 
     // validate results for rocsolver-test
     // using n * machine precision for tolerance

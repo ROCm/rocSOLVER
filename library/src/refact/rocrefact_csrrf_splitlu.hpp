@@ -220,10 +220,12 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 }
 
 template <typename T>
-void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n, size_t* size_work)
+void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
+                                           const rocblas_int nnzT,
+                                           size_t* size_work)
 {
     // if quick return, no need of workspace
-    if(n == 0)
+    if(n == 0 || nnzT == 0)
     {
         *size_work = 0;
         return;
@@ -265,7 +267,8 @@ rocblas_status rocsolver_csrrf_splitlu_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(!ptrL || !ptrU || !ptrT || (nnzT && (!indT || !valT || !indU || !valU || !indL || !valL)))
+    if(!ptrL || !ptrU || !ptrT || (nnzT && (!indT || !valT || !indU || !valU))
+       || ((n || nnzT) && (!indL || !valL)))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -294,6 +297,21 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
 
     hipStream_t stream;
     ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
+
+    // quick return with matrix zero
+    if(nnzT == 0)
+    {
+        // set ptrU = 0
+        rocblas_int blocks = n / BS1 + 1;
+        dim3 grid(blocks, 1, 1);
+        dim3 threads(BS1, 1, 1);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, ptrU, n + 1, 0);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, ptrL, n + 1, 0, 1);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, indL, n, 0, 1);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, valL, n, 1);
+
+        return rocblas_status_success;
+    }
 
     rocblas_int const nthreads = 1024;
     rocblas_int const nblocks = 1;

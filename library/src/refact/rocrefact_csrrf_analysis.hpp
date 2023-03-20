@@ -30,14 +30,6 @@ rocblas_status rocsolver_csrrf_analysis_argCheck(rocblas_handle handle,
 
     // 1. invalid/non-supported values
     // N/A
-    if(handle == nullptr)
-    {
-        return rocblas_status_invalid_handle;
-    };
-    if(rfinfo == nullptr)
-    {
-        return rocblas_status_invalid_pointer;
-    };
 
     // 2. invalid size
     if(n < 0 || nnzM < 0 || nnzT < 0)
@@ -48,6 +40,8 @@ rocblas_status rocsolver_csrrf_analysis_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
+    if(rfinfo == nullptr)
+        return rocblas_status_invalid_pointer;
     if(!rfinfo || !ptrM || !ptrT || (n && (!pivP || !pivQ)) || (nnzM && (!indM || !valM))
        || (nnzT && (!indT || !valT)))
         return rocblas_status_invalid_pointer;
