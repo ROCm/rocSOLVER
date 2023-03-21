@@ -38,34 +38,36 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
     size_t size_work = 0;
 
     rocblas_status istat = rocblas_status_success;
-    try {
+    try
+    {
+        rocsolver_csrrf_splitlu_getMemorySize<T>(n, nnzT, &size_work);
 
-    rocsolver_csrrf_splitlu_getMemorySize<T>(n, nnzT, &size_work);
+        if(rocblas_is_device_memory_size_query(handle))
+            return rocblas_set_optimal_device_memory_size(handle, size_work);
 
-    if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work);
+        // memory workspace allocation
+        void* work = nullptr;
+        rocblas_device_malloc mem(handle, size_work);
 
-    // memory workspace allocation
-    void* work = nullptr;
-    rocblas_device_malloc mem(handle, size_work);
+        if(!mem)
+            return rocblas_status_memory_error;
 
-    if(!mem)
-        return rocblas_status_memory_error;
+        work = mem[0];
 
-    work = mem[0];
-
-    // execution
-    istat =  rocsolver_csrrf_splitlu_template<T>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
-                                               ptrU, indU, valU, (rocblas_int*)work);
+        // execution
+        istat = rocsolver_csrrf_splitlu_template<T>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL,
+                                                    valL, ptrU, indU, valU, (rocblas_int*)work);
     }
-    catch( std::bad_alloc &e) {
-	    istat = rocblas_status_memory_error;
+    catch(std::bad_alloc& e)
+    {
+        istat = rocblas_status_memory_error;
     }
-    catch(...) {
-	    istat = rocblas_status_internal_error;
+    catch(...)
+    {
+        istat = rocblas_status_internal_error;
     };
 
-    return( istat );
+    return (istat);
 }
 
 /*

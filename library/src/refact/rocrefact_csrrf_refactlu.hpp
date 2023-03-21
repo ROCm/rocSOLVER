@@ -77,6 +77,28 @@ static __device__ rocblas_int rf_search(const rocblas_int len,
     return (ipos);
 }
 
+// ------------------------------------------------------------
+// Compute the inverse permutation inv_ipivQ[] from ipivQ
+// ------------------------------------------------------------
+
+template <typename I>
+ROCSOLVER_KERNEL
+    __launch_bounds__(ADD_PAQ_MAX_THDS) void rf_ipvec_kernel(I const n,
+                                                             I const* const ipivQ, /* input */
+                                                             I* const inv_ipivQ /* output */
+    )
+{
+    I const i_start = threadIdx.x + blockIdx.x * blockDim.x;
+    I const i_inc = blockDim.x * gridDim.x;
+
+    for(I i = i_start; i < n; i += i_inc)
+    {
+        I const inew = i;
+        I const iold = ipivQ[inew];
+        inv_ipivQ[iold] = inew;
+    };
+}
+
 // -------------------------------------------
 // Compute B = beta * B + alpha * (P * A * Q') as
 // (1) B = beta * B
@@ -153,14 +175,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(ADD_PAQ_MAX_THDS) rf_add_PAQ_kernel(cons
 
             rocblas_int const len = nz_LU;
             rocblas_int ipos = len;
-            {
-                rocblas_int const* const arr = &(LUi[kstart_LU]);
-                rocblas_int const key = jcol;
+            rocblas_int const key = jcol;
+            rocblas_int const* const arr = &(LUi[kstart_LU]);
 
-                ipos = rf_search(len, arr, key);
-                bool const is_found = (0 <= ipos) && (ipos < len) && (arr[ipos] == key);
-                assert(is_found);
-            }
+            ipos = rf_search(len, arr, key);
+            bool const is_found = (0 <= ipos) && (ipos < len) && (arr[ipos] == key);
+            assert(is_found);
 
             rocblas_int const k_lu = kstart_LU + ipos;
 
@@ -227,6 +247,11 @@ void rocsolver_csrrf_refactlu_getMemorySize(const rocblas_int n,
     // requirements for incomplete factorization
     THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrilu0_buffer_size(
         rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT, size_work));
+
+    // -------------------------------------------------------------
+    // need at least size n integers to generate inverse permutation inv_pivQ
+    // -------------------------------------------------------------
+    *size_work = std::max(*size_work, sizeof(rocblas_int) * n);
 }
 
 template <typename T, typename U>
@@ -257,6 +282,10 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     rocblas_int nthreads = ADD_PAQ_MAX_THDS;
     rocblas_int nblocks = (n + (nthreads - 1)) / nthreads;
 
+    rocblas_int* inv_pivQ = static_cast<rocblas_int*>(work);
+    ROCSOLVER_LAUNCH_KERNEL(rf_ipvec_kernel<rocblas_int>, dim3(nblocks), dim3(nthreads), 0, stream,
+                            n, pivQ, inv_pivQ);
+
     // ---------------------------------------------------------------------
     // copy P*A*Q into T
     // Note: the sparsity pattern of A is a subset of T, and since the re-orderings
@@ -264,7 +293,7 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     // yields the complete factorization of A.
     // ---------------------------------------------------------------------
     ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n, n,
-                            pivP, pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
+                            pivP, inv_pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
 
     // perform incomplete factorization of T
     ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,

@@ -397,7 +397,7 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
     rocblas_int nrow = n;
     rocblas_int ncol = n;
     ROCSOLVER_LAUNCH_KERNEL(rf_sumLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, nrow,
-                                ncol, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
+                            ncol, ptrL, indL, valL, ptrU, indU, valU, ptrT, indT, valT);
 
     return rocblas_status_success;
 }
