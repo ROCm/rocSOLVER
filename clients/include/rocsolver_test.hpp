@@ -14,7 +14,8 @@
 #include <fmt/ranges.h>
 
 // Location of the sparse data directory for the re-factorization tests
-#define SPARSEDATA_DIR "/home/jcarzu/Development/rocSOLVER/sparse/clients/sparsedata"
+// #define SPARSEDATA_DIR "/home/jcarzu/Development/rocSOLVER/sparse/clients/sparsedata"
+#define SPARSEDATA_DIR "../../../../clients/sparsedata"
 
 // If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
 // reallocate workspace
