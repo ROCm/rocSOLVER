@@ -24019,7 +24019,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
 
     This function supposes that the LU factors \f$L_M\f$ and \f$U_M\f$ are passed in a bundle
     matrix \f$T=(L_M-I)+U_M\f$ as returned by \ref rocsolver_scsrrf_sumlu "CSRRF_SUMLU",
-    and that rfinfo has been initialized by \ref rocsolver_rfinfo_create "RFINFO_CREATE".
+    and that rfinfo has been initialized by \ref rocsolver_create_rfinfo "RFINFO_CREATE".
 
     @param[in]
     handle      rocblas_handle.\n
