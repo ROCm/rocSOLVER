@@ -20,7 +20,7 @@ unset(ENV{ROCM_BUILD_ID})
 
 # Disable ROCMClang detection to make CMake v3.21 work the same as CMake v3.20 and earlier.
 # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/6533
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.22.0 AND CMAKE_VERSION VERSION_LESS 3.21.3)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21.0 AND CMAKE_VERSION VERSION_LESS 3.21.3)
   set(__skip_rocmclang ON)
 endif()
 message(STATUS "Using CMake ${CMAKE_VERSION}")
@@ -191,7 +191,7 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
 endif()
 
 # Package-specific CPACK vars
-rocm_package_add_dependencies(DEPENDS "rocblas >= 2.48" "rocblas < 2.49")
+rocm_package_add_dependencies(DEPENDS "rocblas >= 3.0" "rocblas < 3.1")
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")

@@ -1,5 +1,6 @@
 FROM readthedocs/build:latest
 
 USER root:root
-RUN apt-get install -qq doxygen
-RUN pip3 install breathe sphinx sphinx_rtd_theme
+COPY .sphinx/requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+RUN rm requirements.txt

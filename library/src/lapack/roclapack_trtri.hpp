@@ -328,9 +328,8 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     if(blk == 0)
     {
         // simply use rocblas_trtri
-        rocblasCall_trtri<BATCHED, STRIDED, T>(handle, uplo, diag, n, A, shiftA, lda, strideA,
-                                               tmpcopy, 0, ldw, strideW, batch_count, (T*)work1,
-                                               (T**)work2, workArr);
+        rocblasCall_trtri(handle, uplo, diag, n, A, shiftA, lda, strideA, tmpcopy, 0, ldw, strideW,
+                          batch_count, (T*)work1, (T**)work2, workArr);
 
         // copy result to A if info is zero
         ROCSOLVER_LAUNCH_KERNEL((copy_mat<T>), dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
@@ -354,14 +353,14 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
                 jb = min(n - j, blk);
 
                 // update current block column
-                rocblasCall_trmm<BATCHED, STRIDED, T>(
-                    handle, rocblas_side_left, uplo, rocblas_operation_none, diag, j, jb, &one, 0, A,
-                    shiftA, lda, strideA, A, shiftA + idx2D(0, j, lda), lda, strideA, batch_count);
+                rocblasCall_trmm(handle, rocblas_side_left, uplo, rocblas_operation_none, diag, j,
+                                 jb, &one, 0, A, shiftA, lda, strideA, A, shiftA + idx2D(0, j, lda),
+                                 lda, strideA, batch_count);
 
-                rocblasCall_trsm<BATCHED, T>(
-                    handle, rocblas_side_right, uplo, rocblas_operation_none, diag, j, jb, &minone,
-                    A, shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(0, j, lda), lda,
-                    strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                rocblasCall_trsm(handle, rocblas_side_right, uplo, rocblas_operation_none, diag, j,
+                                 jb, &minone, A, shiftA + idx2D(j, j, lda), lda, strideA, A,
+                                 shiftA + idx2D(0, j, lda), lda, strideA, batch_count, optim_mem,
+                                 work1, work2, work3, work4);
 
                 trti2<T>(handle, uplo, diag, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                          batch_count, (T*)work1, (T*)work3);
@@ -375,16 +374,15 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
                 jb = min(n - j, blk);
 
                 // update current block column
-                rocblasCall_trmm<BATCHED, STRIDED, T>(
-                    handle, rocblas_side_left, uplo, rocblas_operation_none, diag, n - j - jb, jb,
-                    &one, 0, A, shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, A,
-                    shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count);
+                rocblasCall_trmm(handle, rocblas_side_left, uplo, rocblas_operation_none, diag,
+                                 n - j - jb, jb, &one, 0, A, shiftA + idx2D(j + jb, j + jb, lda),
+                                 lda, strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA,
+                                 batch_count);
 
-                rocblasCall_trsm<BATCHED, T>(handle, rocblas_side_right, uplo,
-                                             rocblas_operation_none, diag, n - j - jb, jb, &minone,
-                                             A, shiftA + idx2D(j, j, lda), lda, strideA, A,
-                                             shiftA + idx2D(j + jb, j, lda), lda, strideA,
-                                             batch_count, optim_mem, work1, work2, work3, work4);
+                rocblasCall_trsm(handle, rocblas_side_right, uplo, rocblas_operation_none, diag,
+                                 n - j - jb, jb, &minone, A, shiftA + idx2D(j, j, lda), lda,
+                                 strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA,
+                                 batch_count, optim_mem, work1, work2, work3, work4);
 
                 // inverse of current diagonal block
                 trti2<T>(handle, uplo, diag, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
