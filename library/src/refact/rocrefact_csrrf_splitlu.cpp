@@ -37,6 +37,9 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
     // size to store number of non-zeros per row
     size_t size_work = 0;
 
+    rocblas_status istat = rocblas_status_success;
+    try {
+
     rocsolver_csrrf_splitlu_getMemorySize<T>(n, nnzT, &size_work);
 
     if(rocblas_is_device_memory_size_query(handle))
@@ -52,8 +55,17 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
     work = mem[0];
 
     // execution
-    return rocsolver_csrrf_splitlu_template<T>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
+    istat =  rocsolver_csrrf_splitlu_template<T>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
                                                ptrU, indU, valU, (rocblas_int*)work);
+    }
+    catch( std::bad_alloc &e) {
+	    istat = rocblas_status_memory_error;
+    }
+    catch(...) {
+	    istat = rocblas_status_internal_error;
+    };
+
+    return( istat );
 }
 
 /*
