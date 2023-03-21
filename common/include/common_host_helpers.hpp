@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -357,7 +358,7 @@ void print_host_matrix(std::ostream& os,
     os.flush();
 }
 
-/**** Read martrix and/or values from file **********/
+/**** Read matrix and/or values from file **********/
 // integers:
 inline void read_matrix(const std::string filenameS,
                         const rocblas_int m,
@@ -380,7 +381,8 @@ inline void read_matrix(const std::string filenameS,
     {
         for(rocblas_int i = 0; i < m; ++i)
         {
-            fscanf(mat, "%d", &v);
+            int read = fscanf(mat, "%d", &v);
+            assert(read == 1);
             A[i + j * lda] = v;
         }
     }
@@ -401,7 +403,9 @@ inline void read_last(const std::string filenameS, rocblas_int* A)
     }
 
     while(fscanf(mat, "%d", &v) == 1)
-        ;
+    {
+        // do nothing
+    }
 
     *A = v;
 }
@@ -428,7 +432,8 @@ inline void read_matrix(const std::string filenameS,
     {
         for(rocblas_int i = 0; i < m; ++i)
         {
-            fscanf(mat, "%g", &v);
+            int read = fscanf(mat, "%g", &v);
+            assert(read == 1);
             A[i + j * lda] = v;
         }
     }
@@ -458,7 +463,8 @@ inline void read_matrix(const std::string filenameS,
     {
         for(rocblas_int i = 0; i < m; ++i)
         {
-            fscanf(mat, "%lg", &v);
+            int read = fscanf(mat, "%lg", &v);
+            assert(read == 1);
             A[i + j * lda] = v;
         }
     }
