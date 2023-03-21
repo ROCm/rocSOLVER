@@ -1,7 +1,7 @@
 
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,29 +34,20 @@
 #include "rocsparse/rocsparse.h"
 
 #ifndef rocsparseGetErrorName
-#define rocsparseGetErrorName(istat)                                                                 \
-    (((istat) == rocsparse_status_success) ? "rocsparse_status_success"                              \
-                                           : ((istat) == rocsparse_status_invalid_handle)            \
-             ? "rocsparse_status_invalid_handle"                                                     \
-             : ((istat) == rocsparse_status_invalid_pointer)                                         \
-                 ? "rocsparse_status_invalid_pointer"                                                \
-                 : ((istat) == rocsparse_status_invalid_size)                                        \
-                     ? "rocsparse_status_invalid_size"                                               \
-                     : ((istat) == rocsparse_status_memory_error)                                    \
-                         ? "rocsparse_status_memory_error"                                           \
-                         : ((istat) == rocsparse_status_invalid_value)                               \
-                             ? "rocsparse_status_invalid_value"                                      \
-                             : ((istat) == rocsparse_status_arch_mismatch)                           \
-                                 ? "rocsparse_status_arch_mismatch"                                  \
-                                 : ((istat) == rocsparse_status_zero_pivot)                          \
-                                     ? "rocsparse_status_zero_pivot"                                 \
-                                     : ((istat) == rocsparse_status_not_initialized)                 \
-                                         ? "rocsparse_status_not_initialized"                        \
-                                         : ((istat) == rocsparse_status_type_mismatch)               \
-                                             ? "rocsparse_status_type_mismatch"                      \
-                                             : ((istat) == rocsparse_status_requires_sorted_storage) \
-                                                 ? "rocsparse_status_requires_sorted_storage"        \
-                                                 : "unknown status code")
+#define rocsparseGetErrorName(istat)                                                          \
+    (((istat) == rocsparse_status_success)               ? "rocsparse_status_success"         \
+         : ((istat) == rocsparse_status_invalid_handle)  ? "rocsparse_status_invalid_handle"  \
+         : ((istat) == rocsparse_status_invalid_pointer) ? "rocsparse_status_invalid_pointer" \
+         : ((istat) == rocsparse_status_invalid_size)    ? "rocsparse_status_invalid_size"    \
+         : ((istat) == rocsparse_status_memory_error)    ? "rocsparse_status_memory_error"    \
+         : ((istat) == rocsparse_status_invalid_value)   ? "rocsparse_status_invalid_value"   \
+         : ((istat) == rocsparse_status_arch_mismatch)   ? "rocsparse_status_arch_mismatch"   \
+         : ((istat) == rocsparse_status_zero_pivot)      ? "rocsparse_status_zero_pivot"      \
+         : ((istat) == rocsparse_status_not_initialized) ? "rocsparse_status_not_initialized" \
+         : ((istat) == rocsparse_status_type_mismatch)   ? "rocsparse_status_type_mismatch"   \
+         : ((istat) == rocsparse_status_requires_sorted_storage)                              \
+         ? "rocsparse_status_requires_sorted_storage"                                         \
+         : "unknown status code")
 #endif
 
 #ifndef ROCSPARSE_CHECK
@@ -88,7 +79,7 @@
 
 #endif
 
-#define IDEBUG 1
+#define IDEBUG 0
 #define TRACE()                                     \
     {                                               \
         if(IDEBUG >= 1)                             \
