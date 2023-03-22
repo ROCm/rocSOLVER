@@ -5,7 +5,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ## (Unreleased) rocSOLVER
 ### Added
 ### Optimized
-- Improved the performance of BDSQR and GESVD
+- Improved the performance of BDSQR and GESVD when singular vectors are requested
 
 ### Changed
 ### Deprecated
