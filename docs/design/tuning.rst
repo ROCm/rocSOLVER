@@ -23,9 +23,6 @@ These are not run-time arguments for the associated API functions. The library m
     developers tuning these values should proceed with caution. New values may (or may not)
     improve or worsen the performance of the associated functions.
 
-.. toctree::
-   :maxdepth: 4
-
 .. contents:: Table of contents
    :local:
    :backlinks: top
