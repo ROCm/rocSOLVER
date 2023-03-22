@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
@@ -35,11 +35,14 @@ const vector<vector<int>> size_range = {
     {1, 1, -1, 1},
     {1, 1, 1, -1},
     // normal (valid) samples
+    {1, 1, 1, 1},
     {15, 10, 10, 10},
     {20, 0, 0, 15},
-    {30, 30, 50, 0},
+    {20, 0, 15, 0},
+    {30, 50, 0, 0},
     {50, 60, 20, 0},
-    {70, 0, 0, 0}};
+    {70, 0, 0, 0},
+};
 
 const vector<vector<int>> opt_range = {
     // invalid
@@ -51,7 +54,8 @@ const vector<vector<int>> opt_range = {
     {1, 0, 0, 0},
     {0, 1, 0, 0},
     {0, 0, 1, 0},
-    {0, 0, 0, 1}};
+    {0, 0, 0, 1},
+};
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range
