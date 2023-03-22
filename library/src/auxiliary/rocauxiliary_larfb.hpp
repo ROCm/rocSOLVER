@@ -294,9 +294,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
 
     // compute: V1' * A1
     //   or    A1 * V1
-    rocblasCall_trmm<BATCHED, STRIDED, T>(handle, side, uploV, transp, rocblas_diagonal_unit, ldw,
-                                          order, &one, 0, V, offsetV1, ldv, strideV, tmptr, 0, ldw,
-                                          strideW, batch_count, workArr);
+    rocblasCall_trmm(handle, side, uploV, transp, rocblas_diagonal_unit, ldw, order, &one, 0, V,
+                     offsetV1, ldv, strideV, tmptr, 0, ldw, strideW, batch_count, workArr);
 
     // compute: V1' * A1 + V2' * A2
     //    or    A1 * V1 + A2 * V2
@@ -316,9 +315,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
 
     // compute: trans(T) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * trans(T)
-    rocblasCall_trmm<false, STRIDED, T>(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw,
-                                        order, &one, 0, F, shiftF, ldf, strideF, tmptr, 0, ldw,
-                                        strideW, batch_count, workArr);
+    rocblasCall_trmm(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw, order, &one, 0, F,
+                     shiftF, ldf, strideF, tmptr, 0, ldw, strideW, batch_count, workArr);
 
     // compute: A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'
@@ -343,9 +341,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
 
     // compute: V1 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * trans(T) * V1'
-    rocblasCall_trmm<BATCHED, STRIDED, T>(handle, side, uploV, transp, rocblas_diagonal_unit, ldw,
-                                          order, &one, 0, V, offsetV1, ldv, strideV, tmptr, 0, ldw,
-                                          strideW, batch_count, workArr);
+    rocblasCall_trmm(handle, side, uploV, transp, rocblas_diagonal_unit, ldw, order, &one, 0, V,
+                     offsetV1, ldv, strideV, tmptr, 0, ldw, strideW, batch_count, workArr);
 
     // compute: A1 - V1 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A1 - (A1 * V1 + A2 * V2) * trans(T) * V1'

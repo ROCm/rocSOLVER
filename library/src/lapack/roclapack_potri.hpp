@@ -134,9 +134,9 @@ rocblas_status rocsolver_potri_template(rocblas_handle handle,
 
     // compute inv(U) * inv(U)' or inv(L)' * inv(L) and store in tmpcopy
     rocblas_side side = (uplo == rocblas_fill_upper ? rocblas_side_right : rocblas_side_left);
-    rocblasCall_trmm<BATCHED, STRIDED, T>(handle, side, uplo, rocblas_operation_conjugate_transpose,
-                                          rocblas_diagonal_non_unit, n, n, &one, 0, A, shiftA, lda,
-                                          strideA, tmpcopy, 0, n, n * n, batch_count, workArr);
+    rocblasCall_trmm(handle, side, uplo, rocblas_operation_conjugate_transpose,
+                     rocblas_diagonal_non_unit, n, n, &one, 0, A, shiftA, lda, strideA, tmpcopy, 0,
+                     n, n * n, batch_count, workArr);
 
     // copy elements of tmpcopy into A in cases where info is zero
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count), dim3(32, 32), 0,

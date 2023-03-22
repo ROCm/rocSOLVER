@@ -8,9 +8,6 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
-#include "rocblas_check.h"
-#include "rocsparse_check.h"
-
 template <typename T>
 ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
                                         const rocblas_int nnzM,
@@ -25,300 +22,94 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
                                         T* Ux,
                                         rocblas_int* work)
 {
-    // ---------------------------------
-    // use a single block for simplicity
-    // ---------------------------------
-    bool const is_root_block = (blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0);
-    if(!is_root_block)
-    {
-        return;
-    };
+    rocblas_int tid = hipThreadIdx_x;
 
     rocblas_int* const nzLp = work;
     rocblas_int* const nzUp = work + n;
 
     // -------------------------------------------------
     // 1st pass to determine number of non-zeros per row
+    // and set up Lp and Up
     // -------------------------------------------------
+    rocblas_int i, j;
+    rocblas_int irow, icol, istart, iend;
+    __shared__ rocblas_int nnzL;
+    __shared__ rocblas_int nnzU;
 
-    rocblas_int const nthreads = blockDim.x;
-    rocblas_int const my_thread = threadIdx.x;
-    rocblas_int const i_start = my_thread;
-    rocblas_int const i_inc = nthreads;
-    bool const is_root_thread = (my_thread == 0);
-
-    __syncthreads();
-
-    for(rocblas_int i = i_start; i < n; i += i_inc)
+    for(irow = tid; irow < n; irow += hipBlockDim_x)
     {
-        nzLp[i] = 0;
-        nzUp[i] = 0;
-    };
-    __syncthreads();
+        istart = Mp[irow];
+        iend = Mp[irow + 1];
 
-    rocblas_int const nb = (n + (nthreads - 1)) / nthreads;
-    rocblas_int const irow_start = my_thread * nb;
-    rocblas_int const irow_end = min(n, irow_start + nb);
-
-    rocblas_int nnzL = 0;
-    rocblas_int nnzU = 0;
-
-    rocblas_int constexpr MAX_THREADS = 1024 * 2;
-    __shared__ rocblas_int isum_nnzL[MAX_THREADS];
-    __shared__ rocblas_int isum_nnzU[MAX_THREADS];
-
-    __syncthreads();
-
-    bool const isok = (0 <= my_thread) && (my_thread < MAX_THREADS) && (nthreads <= MAX_THREADS);
-    assert(isok);
-
-    isum_nnzL[my_thread] = 0;
-    isum_nnzU[my_thread] = 0;
-
-    __syncthreads();
-
-    for(rocblas_int irow = irow_start; irow < irow_end; irow++)
-    {
-        rocblas_int const istart = Mp[irow];
-        rocblas_int const iend = Mp[irow + 1];
-        rocblas_int const nz = (iend - istart);
-
-        rocblas_int nzU = 0;
-        for(rocblas_int k = istart; k < iend; k++)
+        for(i = istart; i < iend; i++)
         {
-            rocblas_int const kcol = Mi[k];
-            bool const is_upper = (irow <= kcol);
-            if(is_upper)
-            {
-                nzU++;
-            }
+            icol = Mi[i];
+            if(icol >= irow)
+                break;
         }
-        int const nzL = nz - nzU;
 
-        nzLp[irow] = (nzL + 1); // add 1 for unit diagonal
-        nzUp[irow] = nzU;
-
-        isum_nnzL[my_thread] += (nzL + 1);
-        isum_nnzU[my_thread] += nzU;
-    }; // end for irow
-
+        nzLp[irow] = i - istart + 1; // add 1 for unit diagonal
+        nzUp[irow] = iend - i;
+    }
     __syncthreads();
 
-    nnzL = 0;
-    nnzU = 0;
-
-    // -----------------------------------
-    // use a single thread for simplicity
-    // -----------------------------------
-    if(is_root_thread)
+    if(tid == 0)
     {
-        for(rocblas_int ithread = 0; ithread < nthreads; ithread++)
+        nnzL = 0;
+        nnzU = 0;
+
+        for(i = 0; i < n; i++)
         {
-            nnzL += isum_nnzL[ithread];
-            nnzU += isum_nnzU[ithread];
+            Lp[i] = nnzL;
+            Up[i] = nnzU;
+            nnzL += nzLp[i];
+            nnzU += nzUp[i];
         };
 
-        Up[n] = nnzU;
         Lp[n] = nnzL;
+        Up[n] = nnzU;
     };
-
     __syncthreads();
 
     // ------------------------------------
-    // prefix sum scan to setup Lp and Up
+    // 2nd pass to populate Li, Lx, Ui, Ux
     // ------------------------------------
-
-    if(is_root_thread)
+    for(irow = tid; irow < n; irow += hipBlockDim_x)
     {
-        rocblas_int iposL = 0;
-        rocblas_int iposU = 0;
+        istart = Mp[irow];
+        iend = Mp[irow + 1];
 
-        for(rocblas_int ithread = 0; ithread < nthreads; ithread++)
+        for(i = istart; i < iend; i++)
         {
-            rocblas_int const nzL = isum_nnzL[ithread];
-            rocblas_int const nzU = isum_nnzU[ithread];
-
-            isum_nnzL[ithread] = iposL;
-            isum_nnzU[ithread] = iposU;
-
-            iposL += nzL;
-            iposU += nzU;
-        };
-    };
-
-    __syncthreads();
-
-    // --------------------------------------------------------------
-    // isum_nnzL[ my_thread ] now contains value for Lp[ irow_start ]
-    // isum_nnzU[ my_thread ] now contains value for Up[ irow_start ]
-    // --------------------------------------------------------------
-
-    rocblas_int iL = isum_nnzL[my_thread];
-    rocblas_int iU = isum_nnzU[my_thread];
-
-    // ------------------------------------------------
-    // setup Lp[ irow ], irow=irow_start .. (irow_end-1)
-    // setup Up[ irow ], irow=irow_start .. (irow_end-1)
-    // ------------------------------------------------
-    __syncthreads();
-
-    for(rocblas_int irow = irow_start; irow < irow_end; irow++)
-    {
-        rocblas_int const nzL = nzLp[irow];
-        rocblas_int const nzU = nzUp[irow];
-        Lp[irow] = iL;
-        iL += nzL;
-
-        Up[irow] = iU;
-        iU += nzU;
-    }
-    __syncthreads();
-
-    // ---------------------------------------------------
-    // second pass to populate  Li[], Lx[], Ui[], Ux[]
-    // ---------------------------------------------------
-
-    // -----------------------------------------------
-    // reuse array nzLp[] as pointers into  Lx[], Li[]
-    // reuse array nzUp[] as pointers into  Ux[], Ui[]
-    // -----------------------------------------------
-
-    __syncthreads();
-
-    for(rocblas_int i = i_start; i < n; i += i_inc)
-    {
-        rocblas_int const irow = i;
-
-        nzLp[irow] = Lp[irow];
-        nzUp[irow] = Up[irow];
-    }
-
-    __syncthreads();
-
-    T const one = 1;
-
-    for(rocblas_int irow = irow_start; irow < irow_end; irow++)
-    {
-        rocblas_int const istart = Mp[irow];
-        rocblas_int const iend = Mp[irow + 1];
-
-        for(rocblas_int k = istart; k < iend; k++)
-        {
-            rocblas_int const kcol = Mi[k];
-            T const mij = Mx[k];
-            bool const is_upper = (irow <= kcol);
-            if(is_upper)
+            icol = Mi[i];
+            if(icol < irow)
             {
-                rocblas_int const ip = nzUp[irow];
-                nzUp[irow]++;
+                // element in L
+                j = Lp[irow] + (i - istart);
 
-                Ui[ip] = kcol;
-                Ux[ip] = mij;
+                Li[j] = icol;
+                Lx[j] = Mx[i];
             }
             else
             {
-                rocblas_int const ip = nzLp[irow];
-                nzLp[irow]++;
+                // element in U
+                j = Up[irow + 1] - (iend - i);
 
-                Li[ip] = kcol;
-                Lx[ip] = mij;
+                Ui[j] = icol;
+                Ux[j] = Mx[i];
             }
         }
-    };
+    }
 
-    __syncthreads();
-
-    // ------------------------
+    // -----------------------------
     // set unit diagonal entry in L
-    // ------------------------
-
-    for(rocblas_int irow = irow_start; irow < irow_end; irow++)
+    // -----------------------------
+    for(irow = tid; irow < n; irow += hipBlockDim_x)
     {
-        rocblas_int const kend = Lp[irow + 1];
-        rocblas_int const ip = kend - 1;
-        Li[ip] = irow;
-        Lx[ip] = one;
+        j = Lp[irow + 1] - 1;
+        Li[j] = irow;
+        Lx[j] = T(1);
     };
-    __syncthreads();
-
-    bool const perform_extra_check = true;
-    if(perform_extra_check)
-    {
-        // -----------------------------
-        // check upper triangular matrix
-        // -----------------------------
-        __syncthreads();
-
-        for(rocblas_int i = i_start; i < n; i += i_inc)
-        {
-            rocblas_int const irow = i;
-            rocblas_int istart = Up[irow];
-            rocblas_int iend = Up[irow + 1];
-
-            // -----------------------------------------
-            // check column indices are upper triangular
-            // -----------------------------------------
-            for(rocblas_int k = istart; k < iend; k++)
-            {
-                rocblas_int const kcol = Ui[k];
-                bool const is_upper = (irow <= kcol);
-                assert(is_upper);
-            };
-
-            // -------------------------------
-            // check column indices are sorted
-            // -------------------------------
-            for(rocblas_int k = istart; k < (iend - 1); k++)
-            {
-                rocblas_int const kcol_k = Ui[k];
-                rocblas_int const kcol_kp1 = Ui[k + 1];
-                bool const is_sorted = (kcol_k < kcol_kp1);
-                assert(is_sorted);
-            };
-        };
-
-        // -----------------------------
-        // check lower triangular matrix
-        // -----------------------------
-        __syncthreads();
-
-        for(rocblas_int i = i_start; i < n; i += i_inc)
-        {
-            rocblas_int const irow = i;
-            rocblas_int const istart = Lp[irow];
-            rocblas_int const iend = Lp[irow + 1];
-
-            // -----------------------------------------
-            // check column indices are lower triangular
-            // -----------------------------------------
-            for(rocblas_int k = istart; k < iend; k++)
-            {
-                rocblas_int const kcol = Li[k];
-                bool const is_lower = (irow >= kcol);
-                assert(is_lower);
-            };
-
-            // -----------------------------------------
-            // check column indices are sorted
-            // -----------------------------------------
-            for(rocblas_int k = istart; k < (iend - 1); k++)
-            {
-                rocblas_int const kcol_k = Li[k];
-                rocblas_int const kcol_kp1 = Li[k + 1];
-                bool const is_sorted = (kcol_k < kcol_kp1);
-                assert(is_sorted);
-            };
-
-            // -------------------
-            // check unit diagonal
-            // -------------------
-            rocblas_int const k = (iend - 1);
-            rocblas_int const kcol = Li[k];
-            bool const is_unit_diagonal = (kcol == irow) && (Lx[k] == one);
-            assert(is_unit_diagonal);
-        };
-
-    }; // end if (perform_extra_check)
 }
 
 template <typename T>
@@ -398,7 +189,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
+    rocblas_get_stream(handle, &stream);
 
     // quick return with matrix zero
     if(nnzT == 0)
@@ -415,7 +206,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    rocblas_int const nthreads = 1024;
+    rocblas_int const nthreads = BS1;
     rocblas_int const nblocks = 1;
     ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n, nnzT,
                             ptrT, indT, valT, ptrL, indL, valL, ptrU, indU, valU, work);
