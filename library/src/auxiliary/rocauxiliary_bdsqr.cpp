@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_bdsqr.hpp"
@@ -48,24 +48,25 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size of re-usable workspace
-    size_t size_work;
-    rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size_work);
+    size_t size_splits, size_work;
+    rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size_splits, &size_work);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_work);
+        return rocblas_set_optimal_device_memory_size(handle, size_splits, size_work);
 
     // memory workspace allocation
-    void* work;
-    rocblas_device_malloc mem(handle, size_work);
+    void *splits, *work;
+    rocblas_device_malloc mem(handle, size_splits, size_work);
     if(!mem)
         return rocblas_status_memory_error;
 
-    work = mem[0];
+    splits = mem[0];
+    work = mem[1];
 
     // execution
     return rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE, V,
-                                       shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
-                                       ldc, strideC, info, batch_count, (S*)work);
+                                       shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC, ldc,
+                                       strideC, info, batch_count, (rocblas_int*)splits, (S*)work);
 }
 
 /*

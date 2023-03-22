@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -103,6 +103,15 @@
     the trailing submatrix has no more than GEBRD_GEBD2_SWITCHSIZE rows or columns; at this point the last block,
     if any, will be reduced with the unblocked algorithm (GEBD2).*/
 #define GEBRD_GEBD2_SWITCHSIZE 64
+
+/******************************* bdsqr ****************************************
+*******************************************************************************/
+/*! \brief Determines the maximum number of split diagonal blocks that BDSQR can process in parallel.
+    Must be at least 1.
+
+    \details BDSQR will use BDSQR_SPLIT_GROUPS thread groups in order to process diagonal blocks
+    in parallel. */
+#define BDSQR_SPLIT_GROUPS 5
 
 /******************************* gesvd ****************************************
 *******************************************************************************/
