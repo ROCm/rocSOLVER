@@ -4,6 +4,15 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- LU refactorization for sparse matrices
+    - CSRRF_ANALYSIS
+    - CSRRF_SUMLU
+    - CSRRF_SPLITLU
+    - CSRRF_REFACTLU
+- Linear system solver for sparse matrices
+    - CSRRF_SOLVE
+- Added type `rocsolver_rfinfo` for use with sparse matrix routines
+
 ### Optimized
 ### Changed
 ### Deprecated
