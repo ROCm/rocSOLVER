@@ -110,6 +110,9 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
     csrsv_buffer_size = std::max(csrsv_L_buffer_size, csrsv_U_buffer_size);
 
     *size_work = std::max(csrilu0_buffer_size, csrsv_buffer_size);
+
+    // extra temporary array for inv_pivQ
+    *size_work = *size_work + sizeof(rocblas_int) * n;
 }
 
 // ---------------------
@@ -142,6 +145,41 @@ static void
     int const nblocks = (n + (nthreads - 1)) / nthreads;
 
     rf_gather_kernel<<<dim3(nblocks), dim3(nthreads), 0, streamId>>>(n, P, src, dest);
+}
+
+// ---------------------
+// scatter operation
+// dest[ P[i] ] = src[ i ]
+// ---------------------
+template <typename Iint, typename T>
+static __global__ void
+    rf_scatter_kernel(Iint const n, Iint const* const P, T const* const src, T* const dest)
+{
+    Iint const i_start = threadIdx.x + blockIdx.x * blockDim.x;
+    Iint const i_inc = blockDim.x * gridDim.x;
+
+    for(Iint i = i_start; i < n; i += i_inc)
+    {
+        Iint const ip = P[i];
+        bool const is_valid = (ip >= 0);
+        if(is_valid)
+        {
+            dest[ip] = src[i];
+        };
+    };
+}
+
+template <typename Iint, typename T>
+static void rf_scatter(hipStream_t streamId,
+                       Iint const n,
+                       Iint const* const P,
+                       T const* const src,
+                       T* const dest)
+{
+    int const nthreads = 128;
+    int const nblocks = (n + (nthreads - 1)) / nthreads;
+
+    rf_scatter_kernel<<<dim3(nblocks), dim3(nthreads), 0, streamId>>>(n, P, src, dest);
 }
 
 template <typename Iint, typename Ilong, typename T>
@@ -261,7 +299,7 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
                                     Iint const n,
                                     Ilong const nnzLU,
                                     Iint* const P_new2old,
-                                    Iint* const Q_old2new,
+                                    Iint* const Q_new2old,
                                     Ilong* const LUp,
                                     Iint* const LUi,
                                     T* const LUx, /* LUp,LUi,LUx  are in CSR format */
@@ -290,7 +328,7 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
         };
         bool const isok_arg = (LUp != nullptr) && (LUi != nullptr) && (LUx != nullptr)
             && (brhs != nullptr) && (Temp != nullptr) && (work != nullptr) && (P_new2old != nullptr)
-            && (Q_old2new != nullptr);
+            && (Q_new2old != nullptr);
         if(!isok_arg)
         {
             return (rocblas_status_invalid_pointer);
@@ -345,11 +383,9 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
 
         {
             // -------------------------------
-            // brhs[ Q_new2old[i] ] = bhat[i]
-            // or
-            // brhs[ i ] = bhat[ Q_old2new[i] ]
+            // brhs[ Q_new2old[i]  ] = bhat[i]
             // -------------------------------
-            rf_gather(stream, n, Q_old2new, d_bhat, d_brhs);
+            rf_scatter(stream, n, Q_new2old, d_bhat, d_brhs);
         }
     }
     catch(const std::bad_alloc& e)
