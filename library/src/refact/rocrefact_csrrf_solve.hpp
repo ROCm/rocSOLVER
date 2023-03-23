@@ -299,7 +299,7 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
                                     Iint const n,
                                     Ilong const nnzLU,
                                     Iint* const P_new2old,
-                                    Iint* const Q_new2old,
+                                    Iint* const pvtQ,
                                     Ilong* const LUp,
                                     Iint* const LUi,
                                     T* const LUx, /* LUp,LUi,LUx  are in CSR format */
@@ -328,7 +328,7 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
         };
         bool const isok_arg = (LUp != nullptr) && (LUi != nullptr) && (LUx != nullptr)
             && (brhs != nullptr) && (Temp != nullptr) && (work != nullptr) && (P_new2old != nullptr)
-            && (Q_new2old != nullptr);
+            && (pvtQ != nullptr);
         if(!isok_arg)
         {
             return (rocblas_status_invalid_pointer);
@@ -340,6 +340,10 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
             return (rocblas_status_success);
         };
     };
+
+    bool const pvtQ_is_Q_new2old = true;
+    Iint const* const Q_new2old = (pvtQ_is_Q_new2old) ? pvtQ : nullptr;
+    Iint const* const Q_old2new = (pvtQ_is_Q_new2old) ? nullptr : pvtQ;
 
     rocblas_status istat_return = rocblas_status_success;
     try
@@ -381,12 +385,20 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
             RF_ASSERT(isok_lusolve);
         };
 
+        if(pvtQ_is_Q_new2old)
         {
             // -------------------------------
             // brhs[ Q_new2old[i]  ] = bhat[i]
             // -------------------------------
             rf_scatter(stream, n, Q_new2old, d_bhat, d_brhs);
         }
+        else
+        {
+            // --------------------------------
+            // brhs[ i ] = bhat[ Q_old2new[i] ]
+            // --------------------------------
+            rf_gather(stream, n, Q_old2new, d_bhat, d_brhs);
+        };
     }
     catch(const std::bad_alloc& e)
     {
