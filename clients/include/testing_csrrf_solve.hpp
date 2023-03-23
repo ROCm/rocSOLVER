@@ -203,6 +203,10 @@ void csrrf_solve_getError(rocblas_handle handle,
 
     // execute computations
     // GPU lapack
+    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(handle, n, nnzT, dptrT.data(), dindT.data(),
+                                                 dvalT.data(), nnzT, dptrT.data(), dindT.data(),
+                                                 dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
+
     CHECK_ROCBLAS_ERROR(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, dptrT.data(), dindT.data(),
                                               dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo,
                                               dB.data(), ldb));
@@ -246,6 +250,10 @@ void csrrf_solve_getPerfData(rocblas_handle handle,
     csrrf_solve_initData<true, false, T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ,
                                          dB, ldb, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX,
                                          testcase, false);
+
+    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(handle, n, nnzT, dptrT.data(), dindT.data(),
+                                                 dvalT.data(), nnzT, dptrT.data(), dindT.data(),
+                                                 dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
