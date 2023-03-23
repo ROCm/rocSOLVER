@@ -268,6 +268,10 @@ void csrrf_refactlu_getPerfData(rocblas_handle handle,
                                             dindT, dvalT, dpivP, dpivQ, hptrA, hindA, hvalA, hptrT,
                                             hindT, hvalT, hpivP, hpivQ, testcase);
 
+    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(handle, n, nnzA, dptrA.data(), dindA.data(),
+                                                 dvalA.data(), nnzT, dptrT.data(), dindT.data(),
+                                                 dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
+
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
