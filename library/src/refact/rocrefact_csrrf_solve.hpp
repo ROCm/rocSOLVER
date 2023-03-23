@@ -214,19 +214,13 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
         rocblas_int nnzL = nnzLU;
         rocblas_int nnzU = nnzLU;
 
-        TRACE();
-
         THROW_IF_ROCSPARSE_ERROR(
             rocsparseCall_csrsv_analysis(sphandle, transL, n, nnzL, descrL, d_LUx, d_LUp, d_LUi,
                                          infoL, analysis_policy, solve_policy, buffer));
 
-        TRACE();
-
         THROW_IF_ROCSPARSE_ERROR(
             rocsparseCall_csrsv_analysis(sphandle, transU, n, nnzU, descrU, d_LUx, d_LUp, d_LUi,
                                          infoU, analysis_policy, solve_policy, buffer));
-
-        TRACE();
 
         // ----------------------
         // step (1) solve L y = b
@@ -242,13 +236,9 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
         // step (2) solve U x = y
         // ----------------------
 
-        TRACE();
-
         THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsv_solve(sphandle, transU, n, nnzU, &alpha,
                                                            descrU, d_LUx, d_LUp, d_LUi, infoU, d_y,
                                                            d_x, solve_policy, buffer));
-
-        TRACE();
     }
     catch(const std::bad_alloc& e)
     {
@@ -262,8 +252,6 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
     {
         istat_return = rocblas_status_internal_error;
     };
-
-    TRACE();
 
     return (istat_return);
 }
@@ -288,7 +276,7 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
     solve A * x = b
        P A Q * (inv(Q) x) = P b
        { (P A Q) } * (inv(Q) x) = (P b)
-       
+
        (LU) xhat = bhat,  xhat = inv(Q) x, or Q xhat = x,
                           bhat = (P b)
     -------------------------------------------------
@@ -325,8 +313,6 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
         T* const d_brhs = brhs;
         T* const d_bhat = Temp;
 
-        TRACE();
-
         {
             // ------------------------------
             // bhat[k] = brhs[ P_new2old[k] ]
@@ -334,8 +320,6 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
 
             rf_gather(stream, n, P_new2old, d_brhs, d_bhat);
         }
-
-        TRACE();
 
         // -----------------------------------------------
         // prepare to call triangular solvers rf_lusolve()
@@ -359,7 +343,6 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
             RF_ASSERT(isok_lusolve);
         };
 
-        TRACE();
         {
             // -------------------------------
             // brhs[ Q_new2old[i] ] = bhat[i]
@@ -368,8 +351,6 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
             // -------------------------------
             rf_gather(stream, n, Q_old2new, d_bhat, d_brhs);
         }
-
-        TRACE();
     }
     catch(const std::bad_alloc& e)
     {
@@ -379,8 +360,6 @@ static rocblas_status rf_pqrlusolve(rocsolver_rfinfo rfinfo,
     {
         istat_return = rocblas_status_internal_error;
     };
-
-    TRACE();
 
     return (istat_return);
 }
