@@ -3,7 +3,7 @@
  * ************************************************************************ */
 
 #include <cstdlib>
-#if __has_include(<filesystem>)
+#if __cpp_lib_filesystem
 #include <filesystem>
 namespace fs = std::filesystem;
 #else

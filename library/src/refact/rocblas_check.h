@@ -1,7 +1,7 @@
 
 /*! \file */
 /* ************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc. All rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,37 +34,23 @@
 #include "rocblas/rocblas.h"
 
 #ifndef rocblasGetErrorName
-#define rocblasGetErrorName(istat)                                                                 \
-    (((istat) == rocblas_status_success) ? "rocblas_status_success"                                \
-                                         : ((istat) == rocblas_status_invalid_handle)              \
-             ? "rocblas_status_invalid_handle"                                                     \
-             : ((istat) == rocblas_status_not_implemented)                                         \
-                 ? "rocblas_status_not_implemented"                                                \
-                 : ((istat) == rocblas_status_invalid_pointer)                                     \
-                     ? "rocblas_status_invalid_pointer"                                            \
-                     : ((istat) == rocblas_status_invalid_size)                                    \
-                         ? "rocblas_status_invalid_size"                                           \
-                         : ((istat) == rocblas_status_memory_error)                                \
-                             ? "rocblas_status_memory_error"                                       \
-                             : ((istat) == rocblas_status_internal_error)                          \
-                                 ? "rocblas_status_internal_error"                                 \
-                                 : ((istat) == rocblas_status_perf_degraded)                       \
-                                     ? "rocblas_status_perf_degraded"                              \
-                                     : ((istat) == rocblas_status_size_query_mismatch)             \
-                                         ? "rocblas_status_size_query_mismatch"                    \
-                                         : ((istat) == rocblas_status_size_increased)              \
-                                             ? "rocblas_status_size_increased"                     \
-                                             : ((istat) == rocblas_status_size_unchanged)          \
-                                                 ? "rocblas_status_size_unchanged"                 \
-                                                 : ((istat) == rocblas_status_invalid_value)       \
-                                                     ? "rocblas_status_invalid_value"              \
-                                                     : ((istat) == rocblas_status_continue)        \
-                                                         ? "rocblas_status_continue"               \
-                                                         : ((istat)                                \
-                                                            == rocblas_status_check_numerics_fail) \
-                                                             ? "rocblas_status_check_numerics_"    \
-                                                               "fail"                              \
-                                                             : "unknown status code")
+#define rocblasGetErrorName(istat)                                                                \
+    (((istat) == rocblas_status_success)                   ? "rocblas_status_success"             \
+         : ((istat) == rocblas_status_invalid_handle)      ? "rocblas_status_invalid_handle"      \
+         : ((istat) == rocblas_status_not_implemented)     ? "rocblas_status_not_implemented"     \
+         : ((istat) == rocblas_status_invalid_pointer)     ? "rocblas_status_invalid_pointer"     \
+         : ((istat) == rocblas_status_invalid_size)        ? "rocblas_status_invalid_size"        \
+         : ((istat) == rocblas_status_memory_error)        ? "rocblas_status_memory_error"        \
+         : ((istat) == rocblas_status_internal_error)      ? "rocblas_status_internal_error"      \
+         : ((istat) == rocblas_status_perf_degraded)       ? "rocblas_status_perf_degraded"       \
+         : ((istat) == rocblas_status_size_query_mismatch) ? "rocblas_status_size_query_mismatch" \
+         : ((istat) == rocblas_status_size_increased)      ? "rocblas_status_size_increased"      \
+         : ((istat) == rocblas_status_size_unchanged)      ? "rocblas_status_size_unchanged"      \
+         : ((istat) == rocblas_status_invalid_value)       ? "rocblas_status_invalid_value"       \
+         : ((istat) == rocblas_status_continue)            ? "rocblas_status_continue"            \
+         : ((istat) == rocblas_status_check_numerics_fail) ? "rocblas_status_check_numerics_"     \
+                                                             "fail"                               \
+                                                           : "unknown status code")
 #endif
 
 #ifndef ROCBLAS_CHECK
