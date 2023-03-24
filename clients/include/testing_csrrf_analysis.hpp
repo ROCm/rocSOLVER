@@ -27,9 +27,16 @@ void csrrf_analysis_checkBadArgs(rocblas_handle handle,
                                  rocblas_int* pivQ,
                                  rocsolver_rfinfo rfinfo)
 {
+    // TODO: later we can extend the test for the solver phase as well
+    // (it's not really needed as the analysis is executed before calling the solver
+    // in csrrf_solve test anyways)
+    rocblas_int ldb = n;
+    rocblas_int nrhs = 0;
+    T B = nullptr;
+
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(nullptr, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   indT, valT, pivP, pivQ, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(nullptr, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
+                                                   ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_handle);
 
     // values
@@ -39,48 +46,52 @@ void csrrf_analysis_checkBadArgs(rocblas_handle handle,
     // N/A
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, (rocblas_int*)nullptr, indM,
-                                                   valM, nnzT, ptrT, indT, valT, pivP, pivQ, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, (rocblas_int*)nullptr,
+                                                   indM, valM, nnzT, ptrT, indT, valT, pivP, pivQ,
+                                                   B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, (rocblas_int*)nullptr,
-                                                   valM, nnzT, ptrT, indT, valT, pivP, pivQ, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM,
+                                                   (rocblas_int*)nullptr, valM, nnzT, ptrT, indT,
+                                                   valT, pivP, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, indM, (T) nullptr, nnzT,
-                                                   ptrT, indT, valT, pivP, pivQ, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, (T) nullptr,
+                                                   nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT,
-                                                   (rocblas_int*)nullptr, indT, valT, pivP, pivQ,
-                                                   rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
+                                                   (rocblas_int*)nullptr, indT, valT, pivP, pivQ, B,
+                                                   ldb, rfinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   (rocblas_int*)nullptr, valT, pivP, pivQ, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
+                                                   ptrT, (rocblas_int*)nullptr, valT, pivP, pivQ, B,
+                                                   ldb, rfinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   indT, (T) nullptr, pivP, pivQ, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT,
+                                                   indT, (T) nullptr, pivP, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   indT, valT, (rocblas_int*)nullptr, pivQ, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
+                                                   ptrT, indT, valT, (rocblas_int*)nullptr, pivQ, B,
+                                                   ldb, rfinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   indT, valT, pivP, (rocblas_int*)nullptr, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   indT, valT, pivP, pivQ, nullptr),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
+                                                   ptrT, indT, valT, pivP, (rocblas_int*)nullptr, B,
+                                                   ldb, rfinfo),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, 0, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   indT, valT, (rocblas_int*)nullptr,
-                                                   (rocblas_int*)nullptr, rfinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, 0, nrhs, nnzM, ptrM, indM, valM, nnzT,
+                                                   ptrT, indT, valT, (rocblas_int*)nullptr,
+                                                   (rocblas_int*)nullptr, B, ldb, rfinfo),
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_csrrf_analysis(handle, 0, 0, ptrM, (rocblas_int*)nullptr, (T) nullptr, nnzT, ptrT,
-                                 indT, valT, (rocblas_int*)nullptr, (rocblas_int*)nullptr, rfinfo),
-        rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_csrrf_analysis(handle, 0, nnzM, ptrM, indM, valM, 0, ptrT, (rocblas_int*)nullptr,
-                                 (T) nullptr, (rocblas_int*)nullptr, (rocblas_int*)nullptr, rfinfo),
-        rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, 0, nrhs, 0, ptrM, (rocblas_int*)nullptr,
+                                                   (T) nullptr, nnzT, ptrT, indT, valT,
+                                                   (rocblas_int*)nullptr, (rocblas_int*)nullptr, B,
+                                                   ldb, rfinfo),
+                          rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, 0, nrhs, nnzM, ptrM, indM, valM, 0, ptrT,
+                                                   (rocblas_int*)nullptr, (T) nullptr,
+                                                   (rocblas_int*)nullptr, (rocblas_int*)nullptr, B,
+                                                   ldb, rfinfo),
+                          rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     // N/A
@@ -210,6 +221,13 @@ void csrrf_analysis_getError(rocblas_handle handle,
                              double* max_err,
                              const fs::path testcase)
 {
+    // TODO: later we can extend the test for the solver phase as well
+    // (it's not really needed as the analysis is executed before calling the solver
+    // in csrrf_solve test anyways)
+    rocblas_int ldb = n;
+    rocblas_int nrhs = 0;
+    T* B = nullptr;
+
     // input data initialization
     csrrf_analysis_initData<true, true, T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT,
                                            dvalT, dpivP, dpivQ, hptrM, hindM, hvalM, hptrT, hindT,
@@ -217,9 +235,9 @@ void csrrf_analysis_getError(rocblas_handle handle,
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(handle, n, nnzM, dptrM.data(), dindM.data(),
-                                                 dvalM.data(), nnzT, dptrT.data(), dindT.data(),
-                                                 dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
+    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
+        handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
+        dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), B, ldb, rfinfo));
 
     // No error to calculate...
     // (analysis phase is required by refact and solve, so its results are validated there)
@@ -256,6 +274,13 @@ void csrrf_analysis_getPerfData(rocblas_handle handle,
                                 const bool perf,
                                 const fs::path testcase)
 {
+    // TODO: later we can extend the test for the solver phase as well
+    // (it's not really needed as the analysis is executed before calling the solver
+    // in csrrf_solve test anyways)
+    rocblas_int ldb = n;
+    rocblas_int nrhs = 0;
+    T* B = nullptr;
+
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
     csrrf_analysis_initData<true, false, T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
@@ -270,8 +295,8 @@ void csrrf_analysis_getPerfData(rocblas_handle handle,
                                                 hptrT, hindT, hvalT, hpivP, hpivQ, testcase);
 
         CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
-            handle, n, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
-            dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
+            handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
+            dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), B, ldb, rfinfo));
     }
 
     // gpu-lapack performance
@@ -296,9 +321,9 @@ void csrrf_analysis_getPerfData(rocblas_handle handle,
                                                 hptrT, hindT, hvalT, hpivP, hpivQ, testcase);
 
         start = get_time_us_sync(stream);
-        rocsolver_csrrf_analysis(handle, n, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT,
-                                 dptrT.data(), dindT.data(), dvalT.data(), dpivP.data(),
-                                 dpivQ.data(), rfinfo);
+        rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(),
+                                 nnzT, dptrT.data(), dindT.data(), dvalT.data(), dpivP.data(),
+                                 dpivQ.data(), B, ldb, rfinfo);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -315,17 +340,25 @@ void testing_csrrf_analysis(Arguments& argus)
     rocblas_int nnzT = argus.get<rocblas_int>("nnzT");
     rocblas_int hot_calls = argus.iters;
 
+    // TODO: later we can extend the test for the solver phase as well
+    // (it's not really needed as the analysis is executed before calling the solver
+    // in csrrf_solve test anyways)
+    rocblas_int ldb = n;
+    rocblas_int nrhs = 0;
+    T* B = nullptr;
+
     // check non-supported values
     // N/A
 
     // check invalid sizes
-    bool invalid_size = (n < 0 || nnzM < 0 || nnzT < 0);
+    bool invalid_size = (n < 0 || nnzM < 0 || nnzT < 0 || nrhs < 0 || ldb < n);
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(
-                                  handle, n, nnzM, (rocblas_int*)nullptr, (rocblas_int*)nullptr,
-                                  (T*)nullptr, nnzT, (rocblas_int*)nullptr, (rocblas_int*)nullptr,
-                                  (T*)nullptr, (rocblas_int*)nullptr, (rocblas_int*)nullptr, rfinfo),
+        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, (rocblas_int*)nullptr,
+                                                       (rocblas_int*)nullptr, (T*)nullptr, nnzT,
+                                                       (rocblas_int*)nullptr, (rocblas_int*)nullptr,
+                                                       (T*)nullptr, (rocblas_int*)nullptr,
+                                                       (rocblas_int*)nullptr, B, ldb, rfinfo),
                               rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -380,9 +413,9 @@ void testing_csrrf_analysis(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_csrrf_analysis(
-            handle, n, nnzM, (rocblas_int*)nullptr, (rocblas_int*)nullptr, (T*)nullptr, nnzT,
+            handle, n, nrhs, nnzM, (rocblas_int*)nullptr, (rocblas_int*)nullptr, (T*)nullptr, nnzT,
             (rocblas_int*)nullptr, (rocblas_int*)nullptr, (T*)nullptr, (rocblas_int*)nullptr,
-            (rocblas_int*)nullptr, rfinfo));
+            (rocblas_int*)nullptr, B, ldb, rfinfo));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -443,10 +476,10 @@ void testing_csrrf_analysis(Arguments& argus)
     // check quick return
     if(n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nnzM, dptrM.data(), dindM.data(),
-                                                       dvalM.data(), nnzT, dptrT.data(),
-                                                       dindT.data(), dvalT.data(), dpivP.data(),
-                                                       dpivQ.data(), rfinfo),
+        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, dptrM.data(),
+                                                       dindM.data(), dvalM.data(), nnzT,
+                                                       dptrT.data(), dindT.data(), dvalT.data(),
+                                                       dpivP.data(), dpivQ.data(), B, ldb, rfinfo),
                               rocblas_status_success);
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);

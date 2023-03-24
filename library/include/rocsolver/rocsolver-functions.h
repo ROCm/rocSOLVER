@@ -24021,11 +24021,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
     matrix \f$T=(L_M-I)+U_M\f$ as returned by \ref rocsolver_scsrrf_sumlu "CSRRF_SUMLU",
     and that rfinfo has been initialized by \ref rocsolver_create_rfinfo "RFINFO_CREATE".
 
+    \note
+    If only a re-factorization will be executed (i.e. no solver phase), then nrhs can be set up to zero
+    and B could be null.
+
     @param[in]
     handle      rocblas_handle.\n
     @param[in]
     n           rocblas_int. n >= 0.\n
                 The number of rows (and columns) of matrix M.
+    @param[in]
+    nrhs        rocblas_int. nrhs >= 0.\n
+                The number of right-hand-sides (columns of matrix B). Set nrhs to zero when only the
+                re-factorization is needed.
     @param[in]
     nnzM        rocblas_int. nnzM >= 0.\n
                 The number of non-zero elements in M.
@@ -24062,6 +24070,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
     pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
                 Contains the pivot indices representing the permutation Q, i.e. the
                 order in which the columns of matrix M were re-arranged.
+    @param[in]
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+                The right hand side matrix B. It could be null if only the re-factorization is needed.
+    @param[in]
+    ldb         rocblas_int. ldb >= n.
+                The leading dimension of B.
     @param[out]
     rfinfo      rocsolver_rfinfo.\n
                 Structure that holds the meta data generated in the analysis phase.
@@ -24069,6 +24083,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_scsrrf_analysis(rocblas_handle handle,
                                                           const rocblas_int n,
+                                                          const rocblas_int nrhs,
                                                           const rocblas_int nnzM,
                                                           rocblas_int* ptrM,
                                                           rocblas_int* indM,
@@ -24079,10 +24094,13 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_scsrrf_analysis(rocblas_handle handle,
                                                           float* valT,
                                                           rocblas_int* pivP,
                                                           rocblas_int* pivQ,
+                                                          float* B,
+                                                          const rocblas_int ldb,
                                                           rocsolver_rfinfo rfinfo);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
                                                           const rocblas_int n,
+                                                          const rocblas_int nrhs,
                                                           const rocblas_int nnzM,
                                                           rocblas_int* ptrM,
                                                           rocblas_int* indM,
@@ -24093,6 +24111,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
                                                           double* valT,
                                                           rocblas_int* pivP,
                                                           rocblas_int* pivQ,
+                                                          double* B,
+                                                          const rocblas_int ldb,
                                                           rocsolver_rfinfo rfinfo);
 
 /*ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrrf_analysis(rocblas_handle handle,
@@ -24307,15 +24327,15 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_refactlu(rocblas_handle handle,
     pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
                 Contains the pivot indices representing the permutation Q, i.e. the
                 order in which the columns of matrix A were re-arranged.
-    @param[in]
-    rfinfo      rocsolver_rfinfo.\n
-                Structure that holds the meta data generated in the analysis phase.
     @param[inout]
     B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
                 On entry the right hand side matrix B. On exit, the solution matrix X.
     @param[in]
     ldb         rocblas_int. ldb >= n.\n
                 The leading dimension of B.
+    @param[in]
+    rfinfo      rocsolver_rfinfo.\n
+                Structure that holds the meta data generated in the analysis phase.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_scsrrf_solve(rocblas_handle handle,
@@ -24327,9 +24347,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_scsrrf_solve(rocblas_handle handle,
                                                        float* valT,
                                                        rocblas_int* pivP,
                                                        rocblas_int* pivQ,
-                                                       rocsolver_rfinfo rfinfo,
                                                        float* B,
-                                                       const rocblas_int ldb);
+                                                       const rocblas_int ldb,
+                                                       rocsolver_rfinfo rfinfo);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_solve(rocblas_handle handle,
                                                        const rocblas_int n,
@@ -24340,9 +24360,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_solve(rocblas_handle handle,
                                                        double* valT,
                                                        rocblas_int* pivP,
                                                        rocblas_int* pivQ,
-                                                       rocsolver_rfinfo rfinfo,
                                                        double* B,
-                                                       const rocblas_int ldb);
+                                                       const rocblas_int ldb,
+                                                       rocsolver_rfinfo rfinfo);
 
 /*ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrrf_solve(rocblas_handle handle,
                                                        const rocblas_int n,

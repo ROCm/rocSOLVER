@@ -375,9 +375,9 @@ inline void read_matrix(const std::string filenameS,
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
 
-    for(rocblas_int j = 0; j < n; ++j)
+    for(rocblas_int i = 0; i < m; ++i)
     {
-        for(rocblas_int i = 0; i < m; ++i)
+        for(rocblas_int j = 0; j < n; ++j)
         {
             int read = fscanf(mat, "%d", &v);
             assert(read == 1);
@@ -422,9 +422,9 @@ inline void read_matrix(const std::string filenameS,
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
 
-    for(rocblas_int j = 0; j < n; ++j)
+    for(rocblas_int i = 0; i < m; ++i)
     {
-        for(rocblas_int i = 0; i < m; ++i)
+        for(rocblas_int j = 0; j < n; ++j)
         {
             int read = fscanf(mat, "%g", &v);
             assert(read == 1);
@@ -451,9 +451,9 @@ inline void read_matrix(const std::string filenameS,
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
 
-    for(rocblas_int j = 0; j < n; ++j)
+    for(rocblas_int i = 0; i < m; ++i)
     {
-        for(rocblas_int i = 0; i < m; ++i)
+        for(rocblas_int j = 0; j < n; ++j)
         {
             int read = fscanf(mat, "%lg", &v);
             assert(read == 1);

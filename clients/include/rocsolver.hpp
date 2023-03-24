@@ -9100,6 +9100,7 @@ public:
 /******************** CSRRF_ANALYSIS ********************/
 inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                                rocblas_int n,
+                                               rocblas_int nrhs,
                                                rocblas_int nnzM,
                                                rocblas_int* ptrM,
                                                rocblas_int* indM,
@@ -9110,14 +9111,17 @@ inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                                float* valT,
                                                rocblas_int* pivP,
                                                rocblas_int* pivQ,
+                                               float* B,
+                                               rocblas_int ldb,
                                                rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_scsrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT, indT, valT,
-                                     pivP, pivQ, rfinfo);
+    return rocsolver_scsrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT, indT,
+                                     valT, pivP, pivQ, B, ldb, rfinfo);
 }
 
 inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                                rocblas_int n,
+                                               rocblas_int nrhs,
                                                rocblas_int nnzM,
                                                rocblas_int* ptrM,
                                                rocblas_int* indM,
@@ -9128,10 +9132,12 @@ inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
                                                double* valT,
                                                rocblas_int* pivP,
                                                rocblas_int* pivQ,
+                                               double* B,
+                                               rocblas_int ldb,
                                                rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_dcsrrf_analysis(handle, n, nnzM, ptrM, indM, valM, nnzT, ptrT, indT, valT,
-                                     pivP, pivQ, rfinfo);
+    return rocsolver_dcsrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT, indT,
+                                     valT, pivP, pivQ, B, ldb, rfinfo);
 }
 
 /*inline rocblas_status rocsolver_csrrf_analysis(rocblas_handle handle,
@@ -9329,12 +9335,12 @@ inline rocblas_status rocsolver_csrrf_solve(rocblas_handle handle,
                                             float* valT,
                                             rocblas_int* pivP,
                                             rocblas_int* pivQ,
-                                            rocsolver_rfinfo rfinfo,
                                             float* B,
-                                            rocblas_int ldb)
+                                            rocblas_int ldb,
+                                            rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_scsrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, rfinfo, B,
-                                  ldb);
+    return rocsolver_scsrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb,
+                                  rfinfo);
 }
 
 inline rocblas_status rocsolver_csrrf_solve(rocblas_handle handle,
@@ -9346,11 +9352,11 @@ inline rocblas_status rocsolver_csrrf_solve(rocblas_handle handle,
                                             double* valT,
                                             rocblas_int* pivP,
                                             rocblas_int* pivQ,
-                                            rocsolver_rfinfo rfinfo,
                                             double* B,
-                                            rocblas_int ldb)
+                                            rocblas_int ldb,
+                                            rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_dcsrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, rfinfo, B,
-                                  ldb);
+    return rocsolver_dcsrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb,
+                                  rfinfo);
 }
 /********************************************************/

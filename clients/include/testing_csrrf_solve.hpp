@@ -22,13 +22,13 @@ void csrrf_solve_checkBadArgs(rocblas_handle handle,
                               T valT,
                               rocblas_int* pivP,
                               rocblas_int* pivQ,
-                              rocsolver_rfinfo rfinfo,
                               T B,
-                              const rocblas_int ldb)
+                              const rocblas_int ldb,
+                              rocsolver_rfinfo rfinfo)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_csrrf_solve(nullptr, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, rfinfo, B, ldb),
+        rocsolver_csrrf_solve(nullptr, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo),
         rocblas_status_invalid_handle);
 
     // values
@@ -39,38 +39,38 @@ void csrrf_solve_checkBadArgs(rocblas_handle handle,
 
     // pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, (rocblas_int*)nullptr, indT,
-                                                valT, pivP, pivQ, rfinfo, B, ldb),
+                                                valT, pivP, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, (rocblas_int*)nullptr,
-                                                valT, pivP, pivQ, rfinfo, B, ldb),
+                                                valT, pivP, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, (T) nullptr,
-                                                pivP, pivQ, rfinfo, B, ldb),
+                                                pivP, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT,
-                                                (rocblas_int*)nullptr, pivQ, rfinfo, B, ldb),
+                                                (rocblas_int*)nullptr, pivQ, B, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP,
-                                                (rocblas_int*)nullptr, rfinfo, B, ldb),
+                                                (rocblas_int*)nullptr, B, ldb, rfinfo),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
+                                                (T) nullptr, ldb, rfinfo),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(
-        rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, nullptr, B, ldb),
+        rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb, nullptr),
         rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                                rfinfo, (T) nullptr, ldb),
-                          rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, 0, nrhs, nnzT, ptrT, indT, valT,
-                                                (rocblas_int*)nullptr, (rocblas_int*)nullptr,
-                                                rfinfo, B, ldb),
+                                                (rocblas_int*)nullptr, (rocblas_int*)nullptr, B,
+                                                ldb, rfinfo),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, 0, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                                rfinfo, (T) nullptr, ldb),
+                                                (T) nullptr, ldb, rfinfo),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, 0, 0, nnzT, ptrT, indT, valT,
                                                 (rocblas_int*)nullptr, (rocblas_int*)nullptr,
-                                                rfinfo, (T) nullptr, ldb),
+                                                (T) nullptr, ldb, rfinfo),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
@@ -104,7 +104,7 @@ void testing_csrrf_solve_bad_arg()
 
     // check bad arguments
     csrrf_solve_checkBadArgs(handle, n, nrhs, nnzT, ptrT.data(), indT.data(), valT.data(),
-                             pivP.data(), pivQ.data(), rfinfo, B.data(), ldb);
+                             pivP.data(), pivQ.data(), B.data(), ldb, rfinfo);
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
@@ -183,9 +183,9 @@ void csrrf_solve_getError(rocblas_handle handle,
                           Td& dvalT,
                           Ud& dpivP,
                           Ud& dpivQ,
-                          rocsolver_rfinfo rfinfo,
                           Td& dB,
                           const rocblas_int ldb,
+                          rocsolver_rfinfo rfinfo,
                           Uh& hptrT,
                           Uh& hindT,
                           Th& hvalT,
@@ -200,16 +200,15 @@ void csrrf_solve_getError(rocblas_handle handle,
     // input data initialization
     csrrf_solve_initData<true, true, T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, dB,
                                         ldb, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX, testcase);
-
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(handle, n, nnzT, dptrT.data(), dindT.data(),
-                                                 dvalT.data(), nnzT, dptrT.data(), dindT.data(),
-                                                 dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
+    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
+        handle, n, nrhs, nnzT, dptrT.data(), dindT.data(), dvalT.data(), nnzT, dptrT.data(),
+        dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), dB.data(), ldb, rfinfo));
 
     CHECK_ROCBLAS_ERROR(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, dptrT.data(), dindT.data(),
-                                              dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo,
-                                              dB.data(), ldb));
+                                              dvalT.data(), dpivP.data(), dpivQ.data(), dB.data(),
+                                              ldb, rfinfo));
 
     CHECK_HIP_ERROR(hXres.transfer_from(dB));
 
@@ -227,9 +226,9 @@ void csrrf_solve_getPerfData(rocblas_handle handle,
                              Td& dvalT,
                              Ud& dpivP,
                              Ud& dpivQ,
-                             rocsolver_rfinfo rfinfo,
                              Td& dB,
                              const rocblas_int ldb,
+                             rocsolver_rfinfo rfinfo,
                              Uh& hptrT,
                              Uh& hindT,
                              Th& hvalT,
@@ -251,9 +250,9 @@ void csrrf_solve_getPerfData(rocblas_handle handle,
                                          dB, ldb, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX,
                                          testcase, false);
 
-    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(handle, n, nnzT, dptrT.data(), dindT.data(),
-                                                 dvalT.data(), nnzT, dptrT.data(), dindT.data(),
-                                                 dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo));
+    CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
+        handle, n, nrhs, nnzT, dptrT.data(), dindT.data(), dvalT.data(), nnzT, dptrT.data(),
+        dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), dB.data(), ldb, rfinfo));
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
@@ -263,8 +262,8 @@ void csrrf_solve_getPerfData(rocblas_handle handle,
                                              hX, testcase, false);
 
         CHECK_ROCBLAS_ERROR(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, dptrT.data(), dindT.data(),
-                                                  dvalT.data(), dpivP.data(), dpivQ.data(), rfinfo,
-                                                  dB.data(), ldb));
+                                                  dvalT.data(), dpivP.data(), dpivQ.data(),
+                                                  dB.data(), ldb, rfinfo));
     }
 
     // gpu-lapack performance
@@ -290,7 +289,7 @@ void csrrf_solve_getPerfData(rocblas_handle handle,
 
         start = get_time_us_sync(stream);
         rocsolver_csrrf_solve(handle, n, nrhs, nnzT, dptrT.data(), dindT.data(), dvalT.data(),
-                              dpivP.data(), dpivQ.data(), rfinfo, dB.data(), ldb);
+                              dpivP.data(), dpivQ.data(), dB.data(), ldb, rfinfo);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -318,7 +317,7 @@ void testing_csrrf_solve(Arguments& argus)
         EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, (rocblas_int*)nullptr,
                                                     (rocblas_int*)nullptr, (T*)nullptr,
                                                     (rocblas_int*)nullptr, (rocblas_int*)nullptr,
-                                                    rfinfo, (T*)nullptr, ldb),
+                                                    (T*)nullptr, ldb, rfinfo),
                               rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -386,7 +385,7 @@ void testing_csrrf_solve(Arguments& argus)
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         CHECK_ALLOC_QUERY(rocsolver_csrrf_solve(
             handle, n, nrhs, nnzT, (rocblas_int*)nullptr, (rocblas_int*)nullptr, (T*)nullptr,
-            (rocblas_int*)nullptr, (rocblas_int*)nullptr, rfinfo, (T*)nullptr, ldb));
+            (rocblas_int*)nullptr, (rocblas_int*)nullptr, (T*)nullptr, ldb, rfinfo));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -446,7 +445,7 @@ void testing_csrrf_solve(Arguments& argus)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, dptrT.data(),
                                                     dindT.data(), dvalT.data(), dpivP.data(),
-                                                    dpivQ.data(), rfinfo, dB.data(), ldb),
+                                                    dpivQ.data(), dB.data(), ldb, rfinfo),
                               rocblas_status_success);
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);
@@ -456,14 +455,14 @@ void testing_csrrf_solve(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        csrrf_solve_getError<T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, rfinfo,
-                                dB, ldb, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX, hXres,
+        csrrf_solve_getError<T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, dB, ldb,
+                                rfinfo, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX, hXres,
                                 &max_error, testcase);
 
     // collect performance data
     if(argus.timing)
-        csrrf_solve_getPerfData<T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, rfinfo,
-                                   dB, ldb, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX,
+        csrrf_solve_getPerfData<T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, dB,
+                                   ldb, rfinfo, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX,
                                    &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
                                    argus.profile_kernels, argus.perf, testcase);
 

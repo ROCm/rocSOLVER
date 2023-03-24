@@ -14,9 +14,9 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
                                           U valT,
                                           rocblas_int* pivP,
                                           rocblas_int* pivQ,
-                                          rocsolver_rfinfo rfinfo,
                                           U B,
-                                          const rocblas_int ldb)
+                                          const rocblas_int ldb,
+                                          rocsolver_rfinfo rfinfo)
 {
     ROCSOLVER_ENTER_TOP("csrrf_solve", "-n", n, "--nrhs", nrhs, "--nnzT", nnzT, "--ldb", ldb);
 
@@ -25,7 +25,7 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
 
     // argument checking
     rocblas_status st = rocsolver_csrrf_solve_argCheck(handle, n, nrhs, nnzT, ptrT, indT, valT,
-                                                       pivP, pivQ, rfinfo, B, ldb);
+                                                       pivP, pivQ, B, ldb, rfinfo);
     if(st != rocblas_status_continue)
         return st;
 
@@ -41,7 +41,7 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
     rocblas_status istat = rocblas_status_success;
     try
     {
-        rocsolver_csrrf_solve_getMemorySize<T>(n, nrhs, nnzT, ptrT, indT, valT, rfinfo, ldb,
+        rocsolver_csrrf_solve_getMemorySize<T>(n, nrhs, nnzT, ptrT, indT, valT, B, ldb, rfinfo,
                                                &size_work, &size_temp);
 
         if(rocblas_is_device_memory_size_query(handle))
@@ -60,7 +60,7 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
 
         // execution
         istat = rocsolver_csrrf_solve_template<T>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP,
-                                                  pivQ, rfinfo, B, ldb, work, static_cast<T*>(temp));
+                                                  pivQ, B, ldb, rfinfo, work, static_cast<T*>(temp));
     }
     catch(std::bad_alloc& e)
     {
@@ -91,12 +91,12 @@ rocblas_status rocsolver_scsrrf_solve(rocblas_handle handle,
                                       float* valT,
                                       rocblas_int* pivP,
                                       rocblas_int* pivQ,
-                                      rocsolver_rfinfo rfinfo,
                                       float* B,
-                                      const rocblas_int ldb)
+                                      const rocblas_int ldb,
+                                      rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_csrrf_solve_impl<float>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                             rfinfo, B, ldb);
+    return rocsolver_csrrf_solve_impl<float>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ, B,
+                                             ldb, rfinfo);
 }
 
 rocblas_status rocsolver_dcsrrf_solve(rocblas_handle handle,
@@ -108,12 +108,12 @@ rocblas_status rocsolver_dcsrrf_solve(rocblas_handle handle,
                                       double* valT,
                                       rocblas_int* pivP,
                                       rocblas_int* pivQ,
-                                      rocsolver_rfinfo rfinfo,
                                       double* B,
-                                      const rocblas_int ldb)
+                                      const rocblas_int ldb,
+                                      rocsolver_rfinfo rfinfo)
 {
     return rocsolver_csrrf_solve_impl<double>(handle, n, nrhs, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                              rfinfo, B, ldb);
+                                              B, ldb, rfinfo);
 }
 
 } // extern C
