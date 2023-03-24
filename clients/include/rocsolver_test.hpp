@@ -9,13 +9,17 @@
 #include <ostream>
 #include <stdexcept>
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
+
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <fmt/ranges.h>
-
-// Location of the sparse data directory for the re-factorization tests
-// #define SPARSEDATA_DIR "/home/jcarzu/Development/rocSOLVER/sparse/clients/sparsedata"
-#define SPARSEDATA_DIR "../../../../clients/sparsedata"
 
 // If USE_ROCBLAS_REALLOC_ON_DEMAND is false, automatic reallocation is disable and we will manually
 // reallocate workspace
@@ -125,4 +129,16 @@ inline std::ostream& operator<<(std::ostream& os, rocblas_status x)
 inline std::ostream& operator<<(std::ostream& os, printable_char x)
 {
     return os << char(x);
+}
+
+// location of the sparse data directory for the re-factorization tests
+
+inline fs::path get_sparse_data_dir()
+{
+    fs::path option1(SPARSEDATA_DIR);
+    if(fs::exists(option1))
+        return option1.string();
+
+    fs::path option2(SPARSEDATA_INSTALLDIR);
+    return option2.string();
 }

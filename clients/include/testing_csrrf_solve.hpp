@@ -126,7 +126,7 @@ void csrrf_solve_initData(rocblas_handle handle,
                           Uh& hpivQ,
                           Th& hB,
                           Th& hX,
-                          const std::string testcase,
+                          const fs::path testcase,
                           bool test = true)
 {
     if(CPU)
@@ -134,30 +134,30 @@ void csrrf_solve_initData(rocblas_handle handle,
         std::string file;
 
         // read-in T
-        file = fmt::format("{}ptrT", testcase);
+        file = testcase / "ptrT";
         read_matrix(file, 1, n + 1, hptrT.data(), 1);
-        file = fmt::format("{}indT", testcase);
+        file = testcase / "indT";
         read_matrix(file, 1, nnzT, hindT.data(), 1);
-        file = fmt::format("{}valT", testcase);
+        file = testcase / "valT";
         read_matrix(file, 1, nnzT, hvalT.data(), 1);
 
         // read-in P
-        file = fmt::format("{}P", testcase);
+        file = testcase / "P";
         read_matrix(file, 1, n, hpivP.data(), 1);
 
         // read-in Q
-        file = fmt::format("{}Q", testcase);
+        file = testcase / "Q";
         read_matrix(file, 1, n, hpivQ.data(), 1);
 
         // read-in B
-        file = fmt::format("{}B_{}", testcase, nrhs);
+        file = testcase / fmt::format("B_{}", nrhs);
         read_matrix(file, n, nrhs, hB.data(), ldb);
 
         // get results (matrix X) if validation is required
         if(test)
         {
             // read-in X
-            file = fmt::format("{}X_{}", testcase, nrhs);
+            file = testcase / fmt::format("X_{}", nrhs);
             read_matrix(file, n, nrhs, hX.data(), ldb);
         }
     }
@@ -195,7 +195,7 @@ void csrrf_solve_getError(rocblas_handle handle,
                           Th& hX,
                           Th& hXres,
                           double* max_err,
-                          const std::string testcase)
+                          const fs::path testcase)
 {
     // input data initialization
     csrrf_solve_initData<true, true, T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, dB,
@@ -243,7 +243,7 @@ void csrrf_solve_getPerfData(rocblas_handle handle,
                              const int profile,
                              const bool profile_kernels,
                              const bool perf,
-                             const std::string testcase)
+                             const fs::path testcase)
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
@@ -361,11 +361,11 @@ void testing_csrrf_solve(Arguments& argus)
     }
 
     // read/set corresponding nnzT
-    std::string testcase;
+    fs::path testcase;
     if(n > 0)
     {
-        testcase = fmt::format("{}/mat_{}_{}/", SPARSEDATA_DIR, n, nnzA);
-        std::string file = fmt::format("{}ptrT", testcase);
+        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
+        fs::path file = testcase / "ptrT";
         read_last(file, &nnzT);
     }
 

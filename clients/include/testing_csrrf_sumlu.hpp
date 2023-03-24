@@ -132,7 +132,7 @@ void csrrf_sumlu_initData(rocblas_handle handle,
                           Uh& hptrT,
                           Uh& hindT,
                           Th& hvalT,
-                          const std::string testcase,
+                          const fs::path testcase,
                           bool test = true)
 {
     bool mat_zero = (nnzU + nnzL - n == 0);
@@ -145,30 +145,30 @@ void csrrf_sumlu_initData(rocblas_handle handle,
             std::string file;
 
             // read-in L
-            file = fmt::format("{}ptrL", testcase);
+            file = testcase / "ptrL";
             read_matrix(file, 1, n + 1, hptrL.data(), 1);
-            file = fmt::format("{}indL", testcase);
+            file = testcase / "indL";
             read_matrix(file, 1, nnzL, hindL.data(), 1);
-            file = fmt::format("{}valL", testcase);
+            file = testcase / "valL";
             read_matrix(file, 1, nnzL, hvalL.data(), 1);
 
             // read-in U
-            file = fmt::format("{}ptrU", testcase);
+            file = testcase / "ptrU";
             read_matrix(file, 1, n + 1, hptrU.data(), 1);
-            file = fmt::format("{}indU", testcase);
+            file = testcase / "indU";
             read_matrix(file, 1, nnzU, hindU.data(), 1);
-            file = fmt::format("{}valU", testcase);
+            file = testcase / "valU";
             read_matrix(file, 1, nnzU, hvalU.data(), 1);
 
             // get results (matrix T) if validation is required
             if(test)
             {
                 rocblas_int nnzT = nnzL + nnzU - n;
-                file = fmt::format("{}ptrT", testcase);
+                file = testcase / "ptrT";
                 read_matrix(file, 1, n + 1, hptrT.data(), 1);
-                file = fmt::format("{}indT", testcase);
+                file = testcase / "indT";
                 read_matrix(file, 1, nnzT, hindT.data(), 1);
-                file = fmt::format("{}valT", testcase);
+                file = testcase / "valT";
                 read_matrix(file, 1, nnzT, hvalT.data(), 1);
             }
         }
@@ -212,7 +212,7 @@ void csrrf_sumlu_getError(rocblas_handle handle,
                           Uh& hindTres,
                           Th& hvalTres,
                           double* max_err,
-                          const std::string testcase)
+                          const fs::path testcase)
 {
     // input data initialization
     csrrf_sumlu_initData<true, true, T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU, dindU,
@@ -286,7 +286,7 @@ void csrrf_sumlu_getPerfData(rocblas_handle handle,
                              const int profile,
                              const bool profile_kernels,
                              const bool perf,
-                             const std::string testcase)
+                             const fs::path testcase)
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
@@ -404,13 +404,13 @@ void testing_csrrf_sumlu(Arguments& argus)
     }
 
     // read/set actual nnzL, nnzU and nnzT
-    std::string testcase;
+    fs::path testcase;
     if(!mat_zero && n > 0)
     {
-        testcase = fmt::format("{}/mat_{}_{}/", SPARSEDATA_DIR, n, nnzA);
-        std::string file = fmt::format("{}ptrL", testcase);
+        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
+        fs::path file = testcase / "ptrL";
         read_last(file, &nnzL);
-        file = fmt::format("{}ptrU", testcase);
+        file = testcase / "ptrU";
         read_last(file, &nnzU);
     }
     rocblas_int nnzT = nnzL + nnzU - n;

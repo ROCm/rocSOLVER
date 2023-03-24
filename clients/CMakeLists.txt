@@ -39,6 +39,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   )
   target_link_libraries(clients-common INTERFACE
     ${LAPACK_LIBRARIES}
+    $<$<PLATFORM_ID:Linux>:stdc++fs>
     fmt::fmt
   )
   target_link_options(clients-common INTERFACE
@@ -122,6 +123,22 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
 
   prepend_path("${CMAKE_CURRENT_SOURCE_DIR}/" common_source_files common_source_paths)
   target_sources(clients-common INTERFACE ${common_source_paths})
+
+  # Copy and point to sparse test data
+  file(COPY
+    ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/
+    DESTINATION ${PROJECT_BINARY_DIR}/sparsedata/
+  )
+  install(DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/rocsolver/test
+    COMPONENT tests
+  )
+
+  target_compile_definitions(clients-common INTERFACE
+    -DSPARSEDATA_DIR="${PROJECT_BINARY_DIR}/sparsedata/"
+    -DSPARSEDATA_INSTALLDIR="${CMAKE_INSTALL_FULL_DATADIR}/rocsolver/test/"
+  )
 
   if(BUILD_CLIENTS_BENCHMARKS)
     add_subdirectory(benchmarks)
