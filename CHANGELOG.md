@@ -2,22 +2,16 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSOLVER
-### Added
+
+## (Unreleased) rocSOLVER 3.22.0 
 ### Optimized
 - Improved the performance of BDSQR and GESVD when singular vectors are requested
 
-### Changed
-### Deprecated
-### Removed
 ### Fixed
 - BDSQR and GESVD should no longer hang when the input contains `NaN` or `Inf`
 
-### Known Issues
-### Security
 
-
-## (Unreleased) rocSOLVER 3.21.0
+## rocSOLVER 3.21.0 for ROCm 5.5.0
 ### Added
 - SVD for general matrices using Jacobi algorithm:
     - GESVDJ (with batched and strided\_batched versions)
