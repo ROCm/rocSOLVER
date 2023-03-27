@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 4.13)
 
 # This has to be initialized before the project() command appears
 # Set the default build type to Release
@@ -64,7 +64,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.22.0")
+set(VERSION_STRING "3.23.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -184,7 +184,7 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
 endif()
 
 # Package-specific CPACK vars
-rocm_package_add_dependencies(DEPENDS "rocblas >= 3.0" "rocblas < 3.1")
+rocm_package_add_dependencies(DEPENDS "rocblas >= 4.0" "rocblas < 4.1")
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")
