@@ -2,7 +2,12 @@
  * Copyright (c) 2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#ifdef ROCSOLVER_WITH_ROCSPARSE
 #include "rocrefact_csrrf_analysis.hpp"
+#else
+#include "rocblas.hpp"
+#include "rocsolver/rocsolver.h"
+#endif
 
 template <typename T, typename U>
 rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
@@ -25,6 +30,7 @@ rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP("csrrf_analysis", "-n", n, "--nnzM", nnzM, "--nnzT", nnzT, "--nrhs", nrhs,
                         "--ldb", ldb);
 
+#ifdef ROCSOLVER_WITH_ROCSPARSE
     if(handle == nullptr)
         return rocblas_status_invalid_handle;
 
@@ -34,7 +40,7 @@ rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
     if(st != rocblas_status_continue)
         return st;
 
-    // TODO: add bacthed versions
+    // TODO: add batched versions
     // working with unshifted arrays
     // normal (non-batched non-strided) execution
 
@@ -42,39 +48,27 @@ rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
     // size for temp buffer in analysis calls
     size_t size_work = 0;
 
-    rocblas_status istat = rocblas_status_success;
-    try
-    {
-        rocsolver_csrrf_analysis_getMemorySize<T>(n, nrhs, nnzT, ptrT, indT, valT, B, ldb, rfinfo,
-                                                  &size_work);
+    rocsolver_csrrf_analysis_getMemorySize<T>(n, nrhs, nnzT, ptrT, indT, valT, B, ldb, rfinfo,
+                                              &size_work);
 
-        if(rocblas_is_device_memory_size_query(handle))
-            return rocblas_set_optimal_device_memory_size(handle, size_work);
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_set_optimal_device_memory_size(handle, size_work);
 
-        // memory workspace allocation
-        void* work = nullptr;
-        rocblas_device_malloc mem(handle, size_work);
+    // memory workspace allocation
+    void* work = nullptr;
+    rocblas_device_malloc mem(handle, size_work);
 
-        if(!mem)
-            return rocblas_status_memory_error;
+    if(!mem)
+        return rocblas_status_memory_error;
 
-        work = mem[0];
+    work = mem[0];
 
-        // execution
-        istat = rocsolver_csrrf_analysis_template<T>(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                     ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo,
-                                                     work);
-    }
-    catch(std::bad_alloc& e)
-    {
-        istat = rocblas_status_memory_error;
-    }
-    catch(...)
-    {
-        istat = rocblas_status_internal_error;
-    };
-
-    return (istat);
+    // execution
+    return rocsolver_csrrf_analysis_template<T>(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT,
+                                                indT, valT, pivP, pivQ, B, ldb, rfinfo, work);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 /*

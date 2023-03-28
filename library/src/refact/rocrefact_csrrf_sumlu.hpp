@@ -31,7 +31,7 @@ ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int n,
     rocblas_int irow, icol, istart, iend;
 
     for(irow = tid; irow <= n; irow += hipBlockDim_x)
-        LUp[irow] = Lp[irow] + Up[irow] - irow;
+        LUp[irow] = (Lp[irow] - irow) + Up[irow];
     __syncthreads();
 
     // ------------------------------
@@ -95,7 +95,7 @@ rocblas_status rocsolver_csrrf_sumlu_argCheck(rocblas_handle handle,
 
     // 3. invalid pointers
     if(!ptrL || !ptrU || !ptrT || (nnzL && (!indL || !valL)) || (nnzU && (!indU || !valU))
-       || ((nnzL + nnzU - n > 0) && (!indT || !valT)))
+       || ((nnzL > n || nnzU > 0) && (!indT || !valT)))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -123,10 +123,10 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    rocblas_get_stream(handle, &stream);
+    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream));
 
     // quick return with matrix zero
-    if(nnzL - n + nnzU == 0)
+    if(nnzL == n && nnzU == 0)
     {
         // set ptrT = 0
         rocblas_int blocks = n / BS1 + 1;

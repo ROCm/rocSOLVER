@@ -4,26 +4,10 @@
 
 #pragma once
 
-#include "rfinfo.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_rfinfo.hpp"
 #include "rocsparse.hpp"
-
-#include "rocblas_check.h"
-#include "rocsparse_check.h"
-
-#ifdef NDEBUG
-#define RF_ASSERT(tcond)
-#else
-#include <stdexcept>
-#define RF_ASSERT(tcond)                        \
-    {                                           \
-        if(!(tcond))                            \
-        {                                       \
-            throw std::runtime_error(__FILE__); \
-        }                                       \
-    }
-#endif
 
 /**************** Solver Kernels and methods *********************/
 // ---------------------
@@ -42,22 +26,22 @@ ROCSOLVER_KERNEL void rf_gather_kernel(const rocblas_int n,
     rocblas_int tid = hipThreadIdx_x;
 
     // execute permutations
-    for(rocblas_int i = tid; i < n; i += hipBlockDim_x)
+    for(size_t i = tid; i < n; i += hipBlockDim_x)
     {
         const rocblas_int ip = P[i];
         const bool is_valid = (0 <= ip) && (ip < n);
         if(is_valid)
         {
-            for(rocblas_int j = 0; j < nrhs; ++j)
+            for(size_t j = 0; j < nrhs; ++j)
                 temp[i + j * n] = src[ip + j * lds];
         }
     }
     __syncthreads();
 
     // overwrite results
-    for(rocblas_int i = tid; i < n; i += hipBlockDim_x)
+    for(size_t i = tid; i < n; i += hipBlockDim_x)
     {
-        for(rocblas_int j = 0; j < nrhs; ++j)
+        for(size_t j = 0; j < nrhs; ++j)
             src[i + j * lds] = temp[i + j * n];
     }
 }
@@ -78,22 +62,22 @@ ROCSOLVER_KERNEL void rf_scatter_kernel(const rocblas_int n,
     rocblas_int tid = hipThreadIdx_x;
 
     // execute permutations
-    for(rocblas_int i = tid; i < n; i += hipBlockDim_x)
+    for(size_t i = tid; i < n; i += hipBlockDim_x)
     {
         const rocblas_int ip = P[i];
         const bool is_valid = (0 <= ip) && (ip < n);
         if(is_valid)
         {
-            for(rocblas_int j = 0; j < nrhs; ++j)
+            for(size_t j = 0; j < nrhs; ++j)
                 temp[ip + j * n] = src[i + j * lds];
         }
     }
     __syncthreads();
 
     // overwrite results
-    for(rocblas_int i = tid; i < n; i += hipBlockDim_x)
+    for(size_t i = tid; i < n; i += hipBlockDim_x)
     {
-        for(rocblas_int j = 0; j < nrhs; ++j)
+        for(size_t j = 0; j < nrhs; ++j)
             src[i + j * lds] = temp[i + j * n];
     }
 }
@@ -116,50 +100,24 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
                           const rocblas_int ldb,
                           void* buffer)
 {
-    rocblas_status istat_return = rocblas_status_success;
+    T alpha = 1.0;
 
-    try
-    {
-        rocsparse_handle const sphandle = rfinfo->sphandle;
-        rocsparse_mat_descr const descrL = rfinfo->descrL;
-        rocsparse_mat_descr const descrU = rfinfo->descrU;
-        rocsparse_mat_info const infoL = rfinfo->infoL;
-        rocsparse_mat_info const infoU = rfinfo->infoU;
-        rocsparse_solve_policy const solve_policy = rfinfo->solve_policy;
-        rocsparse_operation const trans = rocsparse_operation_none;
-        rocblas_int nnzL = nnzLU;
-        rocblas_int nnzU = nnzLU;
-        T alpha = 1.0;
+    // ----------------------
+    // step (1) solve L * Y = B
+    // B <-- Y
+    // ----------------------
+    ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
+        rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
+        rfinfo->descrL, d_LUx, d_LUp, d_LUi, B, ldb, rfinfo->infoL, rfinfo->solve_policy, buffer));
+    // ----------------------
+    // step (2) solve U * X = Y
+    // B <-- X
+    // ----------------------
+    ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
+        rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
+        rfinfo->descrU, d_LUx, d_LUp, d_LUi, B, ldb, rfinfo->infoU, rfinfo->solve_policy, buffer));
 
-        // ----------------------
-        // step (1) solve L * Y = B
-        // B <-- Y
-        // ----------------------
-        THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsm_solve(sphandle, trans, trans, n, nrhs, nnzL,
-                                                           &alpha, descrL, d_LUx, d_LUp, d_LUi, B,
-                                                           ldb, infoL, solve_policy, buffer));
-        // ----------------------
-        // step (2) solve U * X = Y
-        // B <-- X
-        // ----------------------
-        THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsm_solve(sphandle, trans, trans, n, nrhs, nnzU,
-                                                           &alpha, descrU, d_LUx, d_LUp, d_LUi, B,
-                                                           ldb, infoU, solve_policy, buffer));
-    }
-    catch(const std::bad_alloc& e)
-    {
-        istat_return = rocblas_status_memory_error;
-    }
-    catch(const std::runtime_error& e)
-    {
-        istat_return = rocblas_status_internal_error;
-    }
-    catch(...)
-    {
-        istat_return = rocblas_status_internal_error;
-    };
-
-    return (istat_return);
+    return rocblas_status_success;
 }
 /************************************************************************/
 
@@ -231,17 +189,16 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
     size_t csrsm_L_buffer_size = 0;
     size_t csrsm_U_buffer_size = 0;
     T alpha = 1.0;
-    rocsparse_solve_policy const solve_policy = rfinfo->solve_policy;
 
-    rocsparse_operation const trans = rocsparse_operation_none;
+    rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
+                                    rocsparse_operation_none, n, nrhs, nnzT, &alpha, rfinfo->descrL,
+                                    valT, ptrT, indT, B, ldb, rfinfo->infoL, rfinfo->solve_policy,
+                                    &csrsm_L_buffer_size);
 
-    THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsm_buffer_size(
-        rfinfo->sphandle, trans, trans, n, nrhs, nnzT, &alpha, rfinfo->descrL, valT, ptrT, indT, B,
-        ldb, rfinfo->infoL, solve_policy, &csrsm_L_buffer_size));
-
-    THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrsm_buffer_size(
-        rfinfo->sphandle, trans, trans, n, nrhs, nnzT, &alpha, rfinfo->descrU, valT, ptrT, indT, B,
-        ldb, rfinfo->infoU, solve_policy, &csrsm_U_buffer_size));
+    rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
+                                    rocsparse_operation_none, n, nrhs, nnzT, &alpha, rfinfo->descrU,
+                                    valT, ptrT, indT, B, ldb, rfinfo->infoU, rfinfo->solve_policy,
+                                    &csrsm_U_buffer_size);
 
     *size_work = std::max(csrsm_L_buffer_size, csrsm_U_buffer_size);
 }
@@ -271,38 +228,27 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
+    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream));
 
-    rocblas_status istat = rocblas_status_success;
-    try
-    {
-        // -------------------------------------------------------------
-        // solve A * X = B
-        //   (P * A * Q) * (inv(Q) * X) = P * B
-        //
-        //   (L * U) * Xhat = Bhat,  Xhat = inv(Q) * X, or Q * Xhat = X,
-        //                      Bhat = P * B
-        // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    // solve A * X = B
+    //   (P * A * Q) * (inv(Q) * X) = P * B
+    //
+    //   (L * U) * Xhat = Bhat,  Xhat = inv(Q) * X, or Q * Xhat = X,
+    //                      Bhat = P * B
+    // -------------------------------------------------------------
 
-        // compute Bhat (reordering of B)
-        ROCSOLVER_LAUNCH_KERNEL(rf_gather_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivP,
-                                B, ldb, temp);
+    // compute Bhat (reordering of B)
+    ROCSOLVER_LAUNCH_KERNEL(rf_gather_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivP, B,
+                            ldb, temp);
 
-        // solve (L * U) * Xhat = Bhat
-        rocblas_status istat_lusolve;
-        istat_lusolve = rf_lusolve(rfinfo, n, nnzT, nrhs, ptrT, indT, valT, B, ldb, work);
-        bool isok_lusolve = (istat_lusolve == rocblas_status_success);
-        RF_ASSERT(isok_lusolve);
+    // solve (L * U) * Xhat = Bhat
+    ROCBLAS_CHECK(rf_lusolve(rfinfo, n, nnzT, nrhs, ptrT, indT, valT, B, ldb, work));
 
-        // Compute X (reordering of Xhat)
-        ROCSOLVER_LAUNCH_KERNEL(rf_scatter_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivQ,
-                                B, ldb, temp);
-    }
-    catch(...)
-    {
-        istat = rocblas_status_internal_error;
-    };
+    // Compute X (reordering of Xhat)
+    ROCSOLVER_LAUNCH_KERNEL(rf_scatter_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivQ, B,
+                            ldb, temp);
 
-    return istat;
+    return rocblas_status_success;
 }
 /**************************************************************************/

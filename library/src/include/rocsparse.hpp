@@ -3,8 +3,61 @@
  * ************************************************************************ */
 
 #pragma once
+#ifdef ROCSOLVER_WITH_ROCSPARSE
 
+#include <rocblas/rocblas.h>
 #include <rocsparse/rocsparse.h>
+
+constexpr auto rocsparse2string_status(rocsparse_status status)
+{
+    switch(status)
+    {
+    case rocsparse_status_success: return "rocsparse_status_success";
+    case rocsparse_status_invalid_handle: return "rocsparse_status_invalid_handle";
+    case rocsparse_status_not_implemented: return "rocsparse_status_not_implemented";
+    case rocsparse_status_invalid_pointer: return "rocsparse_status_invalid_pointer";
+    case rocsparse_status_invalid_size: return "rocsparse_status_invalid_size";
+    case rocsparse_status_memory_error: return "rocsparse_status_memory_error";
+    case rocsparse_status_internal_error: return "rocsparse_status_internal_error";
+    case rocsparse_status_invalid_value: return "rocsparse_status_invalid_value";
+    case rocsparse_status_arch_mismatch: return "rocsparse_status_arch_mismatch";
+    case rocsparse_status_zero_pivot: return "rocsparse_status_zero_pivot";
+    case rocsparse_status_not_initialized: return "rocsparse_status_not_initialized";
+    case rocsparse_status_type_mismatch: return "rocsparse_status_type_mismatch";
+    case rocsparse_status_thrown_exception: return "rocsparse_status_thrown_exception";
+    case rocsparse_status_requires_sorted_storage:
+        return "rocsparse_status_requires_sorted_storage";
+    }
+    return "invalid";
+}
+
+constexpr auto rocsparse2rocblas_status(rocsparse_status status)
+{
+    switch(status)
+    {
+    case rocsparse_status_success: return rocblas_status_success;
+    case rocsparse_status_invalid_handle: return rocblas_status_invalid_handle;
+    case rocsparse_status_not_implemented: return rocblas_status_not_implemented;
+    case rocsparse_status_invalid_pointer: return rocblas_status_invalid_pointer;
+    case rocsparse_status_invalid_size: return rocblas_status_invalid_size;
+    case rocsparse_status_memory_error: return rocblas_status_memory_error;
+    case rocsparse_status_invalid_value: return rocblas_status_invalid_value;
+    default: return rocblas_status_internal_error;
+    }
+}
+
+#define ROCSPARSE_CHECK(fcn)                          \
+    {                                                 \
+        rocsparse_status _status = (fcn);             \
+        if(_status != rocsparse_status_success)       \
+            return rocsparse2rocblas_status(_status); \
+    }
+#define THROW_IF_ROCSPARSE_ERROR(fcn)                \
+    {                                                \
+        rocsparse_status _status = (fcn);            \
+        if(_status != rocsparse_status_success)      \
+            throw rocsparse2rocblas_status(_status); \
+    }
 
 // csrilu0 buffer
 inline rocsparse_status rocsparseCall_csrilu0_buffer_size(rocsparse_handle sphandle,
@@ -225,3 +278,5 @@ inline rocsparse_status rocsparseCall_csrsm_solve(rocsparse_handle sphandle,
     return rocsparse_dcsrsm_solve(sphandle, transA, transB, n, nrhs, nnz, alpha, descr, val, ptr,
                                   ind, B, ldb, info, solve, buffer);
 }
+
+#endif

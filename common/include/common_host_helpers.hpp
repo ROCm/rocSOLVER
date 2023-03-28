@@ -358,7 +358,9 @@ void print_host_matrix(std::ostream& os,
     os.flush();
 }
 
-/**** Read matrix and/or values from file **********/
+/********* Helpers to read matrix and/or values from file **********/
+/*******************************************************************/
+
 // integers:
 inline void read_matrix(const std::string filenameS,
                         const rocblas_int m,

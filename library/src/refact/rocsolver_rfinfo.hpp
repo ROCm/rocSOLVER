@@ -6,11 +6,8 @@
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#ifdef ROCSOLVER_WITH_ROCSPARSE
 #include "rocsparse.hpp"
-
-#include "hip_check.h"
-#include "rocblas_check.h"
-#include "rocsparse_check.h"
 
 struct rocsolver_rfinfo_
 {
@@ -69,65 +66,67 @@ struct rocsolver_rfinfo_
         THROW_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&infoT));
     }
 
-    // acts like destructor but can throw exceptions
-    void destroy()
+    // acts like destructor but can return status
+    rocblas_status destroy()
     {
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_destroy_handle(sphandle));
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(descrL));
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(descrU));
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(descrT));
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(infoL));
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(infoU));
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(infoT));
-
+        ROCSPARSE_CHECK(rocsparse_destroy_handle(sphandle));
         sphandle = nullptr;
+        ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrL));
         descrL = nullptr;
+        ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrU));
         descrU = nullptr;
+        ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrT));
         descrT = nullptr;
+        ROCSPARSE_CHECK(rocsparse_destroy_mat_info(infoL));
         infoL = nullptr;
+        ROCSPARSE_CHECK(rocsparse_destroy_mat_info(infoU));
         infoU = nullptr;
+        ROCSPARSE_CHECK(rocsparse_destroy_mat_info(infoT));
         infoT = nullptr;
+
+        return rocblas_status_success;
     }
 
-    // destructor should not throw exceptions
+    // destructor
     ~rocsolver_rfinfo_()
     {
         if(sphandle != nullptr)
         {
             rocsparse_destroy_handle(sphandle);
+            sphandle = nullptr;
         };
         if(descrL != nullptr)
         {
             rocsparse_destroy_mat_descr(descrL);
+            descrL = nullptr;
         };
         if(descrU != nullptr)
         {
             rocsparse_destroy_mat_descr(descrU);
+            descrU = nullptr;
         };
         if(descrT != nullptr)
         {
             rocsparse_destroy_mat_descr(descrT);
+            descrT = nullptr;
         };
         if(infoL != nullptr)
         {
             rocsparse_destroy_mat_info(infoL);
+            infoL = nullptr;
         };
         if(infoU != nullptr)
         {
             rocsparse_destroy_mat_info(infoU);
+            infoU = nullptr;
         };
         if(infoT != nullptr)
         {
             rocsparse_destroy_mat_info(infoT);
+            infoT = nullptr;
         };
-
-        sphandle = nullptr;
-        descrL = nullptr;
-        descrU = nullptr;
-        descrT = nullptr;
-        infoL = nullptr;
-        infoU = nullptr;
-        infoT = nullptr;
     }
 };
 typedef struct rocsolver_rfinfo_* rocsolver_rfinfo;
+
+#endif

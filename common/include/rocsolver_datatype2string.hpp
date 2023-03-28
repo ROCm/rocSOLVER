@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -180,7 +180,6 @@ constexpr auto rocblas2char_esort(rocblas_esort value)
     return '\0';
 }
 
-// return precision string for rocblas_datatype
 constexpr auto rocblas2string_datatype(rocblas_datatype type)
 {
     switch(type)
@@ -379,15 +378,6 @@ constexpr rocblas_esort char2rocblas_esort(char value)
 }
 
 // clang-format off
-inline rocblas_initialization string2rocblas_initialization(const std::string& value)
-{
-    return
-        value == "rand_int"   ? rocblas_initialization_random_int :
-        value == "trig_float" ? rocblas_initialization_trig_float :
-        value == "hpl"        ? rocblas_initialization_hpl        :
-        static_cast<rocblas_initialization>(0);
-}
-
 inline rocblas_datatype string2rocblas_datatype(const std::string& value)
 {
     return
@@ -408,5 +398,14 @@ inline rocblas_datatype string2rocblas_datatype(const std::string& value)
         value == "u8_c"                  ? rocblas_datatype_u8_c  :
         value == "u32_c"                 ? rocblas_datatype_u32_c :
         rocblas_datatype_invalid;
+}
+
+inline rocblas_initialization string2rocblas_initialization(const std::string& value)
+{
+    return
+        value == "rand_int"   ? rocblas_initialization_random_int :
+        value == "trig_float" ? rocblas_initialization_trig_float :
+        value == "hpl"        ? rocblas_initialization_hpl        :
+        static_cast<rocblas_initialization>(0);
 }
 // clang-format on

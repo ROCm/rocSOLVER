@@ -4,99 +4,65 @@
 
 #pragma once
 
-#include "rfinfo.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_rfinfo.hpp"
 #include "rocsparse.hpp"
-
-#include "rocsparse_check.h"
-
-#define ADD_PAQ_MAX_THDS 256
 
 // -------------------------------------------------
 // function to perform search in array
 // -------------------------------------------------
-// search array  arr[0], ..., arr[ len-1]
+// search array ind[istart], ..., ind[iend-1]
 // for matching value "key"
 //
 // return the index value of matching position
 // ---------------------------------------
-static __device__ rocblas_int rf_search(const rocblas_int len,
-                                        const rocblas_int* const arr,
-                                        const rocblas_int key)
+template <typename T>
+__device__ rocblas_int rf_search(rocblas_int* ind, rocblas_int istart, rocblas_int iend, rocblas_int key)
 {
-    rocblas_int constexpr small_len = 8;
-    rocblas_int ipos = len;
-    if((len <= 0) || (arr == nullptr))
-    {
-        return (ipos = len);
-    }
-
     // -----------------
     // use binary search
     // -----------------
-    rocblas_int lo = 0;
-    rocblas_int hi = len;
-
-    for(int i = 0; i < 32; i++)
+    rocblas_int imid;
+    rocblas_int curr;
+    while(iend - istart > 10)
     {
-        rocblas_int const len_remain = hi - lo;
-        if(len_remain <= small_len)
-        {
-            // ------------------------
-            // use simple linear search
-            // ------------------------
-            for(int k = 0; k < len; k++)
-            {
-                bool const is_found = (arr[k] == key);
-                if(is_found)
-                {
-                    return (ipos = k);
-                }
-            }
-        }
-        else
-        {
-            rocblas_int const mid = lo + ((hi - lo) / 2);
-            bool const is_found = (arr[mid] == key);
-            if(is_found)
-            {
-                return (ipos = mid);
-            };
+        imid = istart + (iend - istart) / 2;
+        curr = ind[imid];
 
-            if(arr[mid] < key)
-            {
-                lo = mid + 1;
-            }
-            else
-            {
-                hi = mid;
-            }
-        }
+        if(curr == key)
+            return imid;
+        else if(curr > key)
+            iend = imid;
+        else
+            istart = imid + 1;
     }
-    return (ipos);
+
+    // ------------------------
+    // use simple linear search
+    // ------------------------
+    for(imid = istart; imid < iend; imid++)
+    {
+        if(ind[imid] == key)
+            return imid;
+    }
+
+    return -1;
 }
 
 // ------------------------------------------------------------
-// Compute the inverse permutation inv_ipivQ[] from ipivQ
+// Compute the inverse permutation inv_pivQ[] from pivQ
 // ------------------------------------------------------------
-
-template <typename I>
-ROCSOLVER_KERNEL
-    __launch_bounds__(ADD_PAQ_MAX_THDS) void rf_ipvec_kernel(I const n,
-                                                             I const* const ipivQ, /* input */
-                                                             I* const inv_ipivQ /* output */
-    )
+template <typename T>
+ROCSOLVER_KERNEL void rf_ipvec_kernel(rocblas_int n, rocblas_int* pivQ, rocblas_int* inv_pivQ)
 {
-    I const i_start = threadIdx.x + blockIdx.x * blockDim.x;
-    I const i_inc = blockDim.x * gridDim.x;
+    rocblas_int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-    for(I i = i_start; i < n; i += i_inc)
+    if(tid < n)
     {
-        I const inew = i;
-        I const iold = ipivQ[inew];
-        inv_ipivQ[iold] = inew;
-    };
+        rocblas_int iold = pivQ[tid];
+        inv_pivQ[iold] = tid;
+    }
 }
 
 // -------------------------------------------
@@ -109,83 +75,58 @@ ROCSOLVER_KERNEL
 // in increasing sorted order
 // -------------------------------------------
 template <typename T>
-ROCSOLVER_KERNEL void __launch_bounds__(ADD_PAQ_MAX_THDS) rf_add_PAQ_kernel(const rocblas_int nrow,
-                                                                            const rocblas_int ncol,
-                                                                            rocblas_int* P_new2old,
-                                                                            rocblas_int* Q_old2new,
-                                                                            const T alpha,
-                                                                            rocblas_int* Ap,
-                                                                            rocblas_int* Ai,
-                                                                            T* Ax,
-                                                                            const T beta,
-                                                                            rocblas_int* LUp,
-                                                                            rocblas_int* LUi,
-                                                                            T* LUx)
+ROCSOLVER_KERNEL void rf_add_PAQ_kernel(const rocblas_int n,
+                                        rocblas_int* pivP,
+                                        rocblas_int* inv_pivQ,
+                                        const T alpha,
+                                        rocblas_int* Ap,
+                                        rocblas_int* Ai,
+                                        T* Ax,
+                                        const T beta,
+                                        rocblas_int* LUp,
+                                        rocblas_int* LUi,
+                                        T* LUx)
 {
-    T const zero = 0;
-    bool const is_beta_zero = (beta == zero);
+    rocblas_int tix = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocblas_int tiy = hipThreadIdx_y;
 
     // -------------------------------------------
-    // If P_new2old, or Q_old2new is NULL, then treat as identity permutation
+    // If P or Q is NULL, then treat as identity permutation
     // -------------------------------------------
-    bool const has_P = (P_new2old != nullptr);
-    bool const has_Q = (Q_old2new != nullptr);
-    rocblas_int const irow_start = threadIdx.x + blockIdx.x * blockDim.x;
-    rocblas_int const irow_inc = blockDim.x * gridDim.x;
-
-    for(rocblas_int irow = irow_start; irow < nrow; irow += irow_inc)
+    if(tix < n)
     {
-        rocblas_int const kstart_LU = LUp[irow];
-        rocblas_int const kend_LU = LUp[irow + 1];
-        rocblas_int const nz_LU = kend_LU - kstart_LU;
+        rocblas_int irow = tix;
+        rocblas_int istart = LUp[irow];
+        rocblas_int iend = LUp[irow + 1];
+        rocblas_int i, icol;
 
-        // -------------------
-        // scale row by beta
-        // -------------------
-        for(rocblas_int k = 0; k < nz_LU; k++)
+        rocblas_int irow_old = (pivP ? pivP[irow] : irow);
+        rocblas_int istart_old = Ap[irow_old];
+        rocblas_int iend_old = Ap[irow_old + 1];
+        rocblas_int i_old, icol_old;
+
+        // ----------------
+        // scale B by beta
+        // ----------------
+        for(i = istart + tiy; i < iend; i += hipBlockDim_y)
         {
-            rocblas_int const k_lu = kstart_LU + k;
-            T const LUij = LUx[k_lu];
-            LUx[k_lu] = (is_beta_zero) ? zero : beta * LUij;
+            LUx[i] *= beta;
         }
+        __syncthreads();
 
-        // -------------------------------
-        // check column indices are sorted
-        // -------------------------------
-        for(rocblas_int k = 0; k < (nz_LU - 1); k++)
+        // ------------------------------
+        // scale A by alpha and add to B
+        // ------------------------------
+        for(i_old = istart_old + tiy; i_old < iend_old; i_old += hipBlockDim_y)
         {
-            rocblas_int const k_lu = kstart_LU + k;
-            rocblas_int const kcol = LUi[k_lu];
-            rocblas_int const kcol_next = LUi[k_lu + 1];
-            bool const is_sorted = (kcol < kcol_next);
-            assert(is_sorted);
-        }
+            icol_old = Ai[i_old];
+            icol = (inv_pivQ ? inv_pivQ[icol_old] : icol_old);
 
-        rocblas_int const irow_old = (has_P) ? P_new2old[irow] : irow;
-        rocblas_int const kstart_A = Ap[irow_old];
-        rocblas_int const kend_A = Ap[irow_old + 1];
-        rocblas_int const nz_A = kend_A - kstart_A;
-
-        for(rocblas_int k = 0; k < nz_A; k++)
-        {
-            rocblas_int const ka = kstart_A + k;
-
-            rocblas_int const jcol_old = Ai[ka];
-            rocblas_int const jcol = (has_Q) ? Q_old2new[jcol_old] : jcol_old;
-
-            rocblas_int const len = nz_LU;
-            rocblas_int ipos = len;
-            rocblas_int const key = jcol;
-            rocblas_int const* const arr = &(LUi[kstart_LU]);
-
-            ipos = rf_search(len, arr, key);
-            bool const is_found = (0 <= ipos) && (ipos < len) && (arr[ipos] == key);
-            assert(is_found);
-
-            rocblas_int const k_lu = kstart_LU + ipos;
-
-            T const aij = Ax[ka];
-            LUx[k_lu] += alpha * aij;
+            i = rf_search<T>(LUi, istart, iend, icol);
+            if(i != -1)
+            {
+                LUx[i] += alpha * Ax[i_old];
+            }
         }
     }
 }
@@ -245,12 +186,10 @@ void rocsolver_csrrf_refactlu_getMemorySize(const rocblas_int n,
     }
 
     // requirements for incomplete factorization
-    THROW_IF_ROCSPARSE_ERROR(rocsparseCall_csrilu0_buffer_size(
-        rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT, size_work));
+    rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
+                                      rfinfo->infoT, size_work);
 
-    // -------------------------------------------------------------
     // need at least size n integers to generate inverse permutation inv_pivQ
-    // -------------------------------------------------------------
     *size_work = std::max(*size_work, sizeof(rocblas_int) * n);
 }
 
@@ -277,14 +216,11 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     hipStream_t stream;
-    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream), rocblas_status_internal_error);
+    ROCBLAS_CHECK(rocblas_get_stream(handle, &stream));
 
-    rocblas_int nthreads = ADD_PAQ_MAX_THDS;
-    rocblas_int nblocks = (n + (nthreads - 1)) / nthreads;
-
-    rocblas_int* inv_pivQ = static_cast<rocblas_int*>(work);
-    ROCSOLVER_LAUNCH_KERNEL(rf_ipvec_kernel<rocblas_int>, dim3(nblocks), dim3(nthreads), 0, stream,
-                            n, pivQ, inv_pivQ);
+    rocblas_int nblocks = (n - 1) / BS2 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(rf_ipvec_kernel<T>, dim3(nblocks), dim3(BS2), 0, stream, n, pivQ,
+                            (rocblas_int*)work);
 
     // ---------------------------------------------------------------------
     // copy P*A*Q into T
@@ -292,13 +228,12 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     // P and Q are applied, the incomplete factorization of P*A*Q (factorization without fill-in),
     // yields the complete factorization of A.
     // ---------------------------------------------------------------------
-    ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n, n,
-                            pivP, inv_pivQ, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
+    ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
+                            pivP, (rocblas_int*)work, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
 
     // perform incomplete factorization of T
     ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
-                                          indT, rfinfo->infoT, rocsparse_solve_policy_auto, work),
-                    rocblas_status_internal_error);
+                                          indT, rfinfo->infoT, rocsparse_solve_policy_auto, work));
 
     return rocblas_status_success;
 }
