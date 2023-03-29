@@ -24,11 +24,10 @@ constexpr auto rocsparse2string_status(rocsparse_status status)
     case rocsparse_status_zero_pivot: return "rocsparse_status_zero_pivot";
     case rocsparse_status_not_initialized: return "rocsparse_status_not_initialized";
     case rocsparse_status_type_mismatch: return "rocsparse_status_type_mismatch";
-    case rocsparse_status_thrown_exception: return "rocsparse_status_thrown_exception";
     case rocsparse_status_requires_sorted_storage:
         return "rocsparse_status_requires_sorted_storage";
+    default: return "unknown";
     }
-    return "invalid";
 }
 
 constexpr auto rocsparse2rocblas_status(rocsparse_status status)

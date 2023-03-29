@@ -32,8 +32,8 @@ constexpr auto rocblas2string_status(rocblas_status status)
     case rocblas_status_invalid_value: return "rocblas_status_invalid_value";
     case rocblas_status_continue: return "rocblas_status_continue";
     case rocblas_status_check_numerics_fail: return "rocblas_status_check_numerics_fail";
+    default: return "unknown";
     }
-    return "invalid";
 }
 
 #define ROCBLAS_CHECK(fcn)                    \
