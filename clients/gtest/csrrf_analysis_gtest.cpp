@@ -12,7 +12,7 @@ using namespace std;
 
 typedef std::tuple<int, int> csrrf_analysis_tuple;
 
-// case when n = 0 and nnzM = 0 also execute the bad arguments test
+// case when n = 0 and nnz = 60 also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
@@ -82,7 +82,7 @@ protected:
     {
         Arguments arg = csrrf_analysis_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nnzM") == 0)
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nnzM") == 60)
             testing_csrrf_analysis_bad_arg<T>();
 
         testing_csrrf_analysis<T>(arg);

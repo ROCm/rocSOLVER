@@ -18,10 +18,7 @@ struct rocsolver_rfinfo_
     rocsparse_mat_info infoL = nullptr;
     rocsparse_mat_info infoU = nullptr;
     rocsparse_mat_info infoT = nullptr;
-
     rocsparse_solve_policy solve_policy = rocsparse_solve_policy_auto;
-
-    // rocsparse_analysis_policy analysis_policy = rocsparse_analysis_policy_force;
     rocsparse_analysis_policy analysis_policy = rocsparse_analysis_policy_reuse;
 
     // constructor
@@ -38,10 +35,9 @@ struct rocsolver_rfinfo_
         // ----------------------------------------------------------
         // TODO: check whether to use triangular type or general type
         // ----------------------------------------------------------
-        // rocsparse_matrix_type L_type = rocsparse_matrix_type_triangular;
-        // rocsparse_matrix_type U_type = rocsparse_matrix_type_triangular;
         rocsparse_matrix_type const L_type = rocsparse_matrix_type_general;
         rocsparse_matrix_type const U_type = rocsparse_matrix_type_general;
+        rocsparse_matrix_type const T_type = rocsparse_matrix_type_general;
 
         // create and set matrix descriptors
         THROW_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&descrL));
@@ -57,7 +53,7 @@ struct rocsolver_rfinfo_
         THROW_IF_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descrU, rocsparse_diag_type_non_unit));
 
         THROW_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&descrT));
-        THROW_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(descrT, rocsparse_matrix_type_general));
+        THROW_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(descrT, T_type));
         THROW_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrT, rocsparse_index_base_zero));
 
         // create info holders
@@ -94,37 +90,37 @@ struct rocsolver_rfinfo_
         {
             rocsparse_destroy_handle(sphandle);
             sphandle = nullptr;
-        };
+        }
         if(descrL != nullptr)
         {
             rocsparse_destroy_mat_descr(descrL);
             descrL = nullptr;
-        };
+        }
         if(descrU != nullptr)
         {
             rocsparse_destroy_mat_descr(descrU);
             descrU = nullptr;
-        };
+        }
         if(descrT != nullptr)
         {
             rocsparse_destroy_mat_descr(descrT);
             descrT = nullptr;
-        };
+        }
         if(infoL != nullptr)
         {
             rocsparse_destroy_mat_info(infoL);
             infoL = nullptr;
-        };
+        }
         if(infoU != nullptr)
         {
             rocsparse_destroy_mat_info(infoU);
             infoU = nullptr;
-        };
+        }
         if(infoT != nullptr)
         {
             rocsparse_destroy_mat_info(infoT);
             infoT = nullptr;
-        };
+        }
     }
 };
 typedef struct rocsolver_rfinfo_* rocsolver_rfinfo;
