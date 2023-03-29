@@ -23788,7 +23788,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo
                 The number of non-zero elements in L.
     @param[in]
     ptrL        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indL and valL.
+                It contains the positions of the beginning of each row in indL and valL.
                 The last element of ptrL is equal to nnzL.
     @param[in]
     indL        pointer to rocblas_int. Array on the GPU of dimension nnzL.\n
@@ -23798,11 +23798,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo
     valL        pointer to type. Array on the GPU of dimension nnzL.\n
                 The values of the non-zero elements of L.
     @param[in]
-    nnzU        rocblas_int. nnzL >= 0.\n
+    nnzU        rocblas_int. nnzU >= 0.\n
                 The number of non-zero elements in U.
     @param[in]
     ptrU        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indU and valU.
+                It contains the positions of the beginning of each row in indU and valU.
                 The last element of ptrU is equal to nnzU.
     @param[in]
     indU        pointer to rocblas_int. Array on the GPU of dimension nnzU.\n
@@ -23813,7 +23813,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo
                 The values of the non-zero elements of U.
     @param[out]
     ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indT and valT.
+                It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[out]
     indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
@@ -23887,7 +23887,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_sumlu(rocblas_handle handle,
 
     \details Factor \f$L\f$ is a sparse lower triangular matrix with unit diagonal elements, and
     \f$U\f$ is a sparse upper triangular matrix. Conceptually, on input, U is stored on the diagonal
-    an upper part of \f$T\f$, while the non diagonal elements of \f$L\f$ are stored on the strict
+    and upper part of \f$T\f$, while the non diagonal elements of \f$L\f$ are stored on the strictly
     lower part of \f$T\f$.
 
     @param[in]
@@ -23900,7 +23900,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_sumlu(rocblas_handle handle,
                 The number of non-zero elements in T.
     @param[in]
     ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indT and valT.
+                It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
     indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
@@ -23911,30 +23911,30 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_sumlu(rocblas_handle handle,
                 The values of the non-zero elements of T.
     @param[out]
     ptrL        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indL and valL.
+                It contains the positions of the beginning of each row in indL and valL.
                 The last element of ptrL is equal to nnzL.
     @param[out]
     indL        pointer to rocblas_int. Array on the GPU of dimension nnzL.\n
                 It contains the column indices of the non-zero elements of L. Indices are
                 sorted by row and by column within each row. (If nnzL is not known in advance,
-                the size of this array could be set to nnzT + n as upper bound).
+                the size of this array could be set to nnzT + n as an upper bound).
     @param[out]
     valL        pointer to type. Array on the GPU of dimension nnzL.\n
                 The values of the non-zero elements of L. (If nnzL is not known in advance,
-                the size of this array could be set to nnzT + n as upper bound).
+                the size of this array could be set to nnzT + n as an upper bound).
     @param[out]
     ptrU        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indU and valU.
+                It contains the positions of the beginning of each row in indU and valU.
                 The last element of ptrU is equal to nnzU.
     @param[out]
     indU        pointer to rocblas_int. Array on the GPU of dimension nnzU.\n
                 It contains the column indices of the non-zero elements of U. Indices are
                 sorted by row and by column within each row. (If nnzU is not known in advance,
-                the size of this array could be set to nnzT as upper bound).
+                the size of this array could be set to nnzT as an upper bound).
     @param[out]
     valU        pointer to type. Array on the GPU of dimension nnzU.\n
                 The values of the non-zero elements of U. (If nnzU is not known in advance,
-                the size of this array could be set to nnzT as upper bound).
+                the size of this array could be set to nnzT as an upper bound).
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_scsrrf_splitlu(rocblas_handle handle,
@@ -24003,7 +24003,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
     where \f$L_M\f$ is lower triangular with unit diagonal, \f$U_M\f$ is upper triangular, and \f$P\f$
     and \f$Q\f$ are permutation matrices associated with pivoting and re-ordering (to minimize
     fill-in), respectively. The meta data generated by this routine is collected in the output parameter
-    rfinfo. This information will allow the fast LU re-factorization of a any other sparse matrix \f$A\f$ as
+    rfinfo. This information will allow the fast LU re-factorization of another sparse matrix \f$A\f$ as
 
     \f[
         PAQ = L_AU_A
@@ -24022,8 +24022,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
     and that rfinfo has been initialized by \ref rocsolver_create_rfinfo "RFINFO_CREATE".
 
     \note
-    If only a re-factorization will be executed (i.e. no solver phase), then nrhs can be set up to zero
-    and B could be null.
+    If only a re-factorization will be executed (i.e. no solver phase), then nrhs can be set to zero
+    and B can be null.
 
     @param[in]
     handle      rocblas_handle.\n
@@ -24039,7 +24039,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
                 The number of non-zero elements in M.
     @param[in]
     ptrM        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indM and valM.
+                It contains the positions of the beginning of each row in indM and valM.
                 The last element of ptrM is equal to nnzM.
     @param[in]
     indM        pointer to rocblas_int. Array on the GPU of dimension nnzM.\n
@@ -24053,7 +24053,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
                 The number of non-zero elements in T.
     @param[in]
     ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indT and valT.
+                It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
     indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
@@ -24068,11 +24068,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
                 order in which the rows of matrix M were re-arranged.
     @param[in]
     pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
-                Contains the pivot indices representing the permutation Q, i.e. the
+                Contains the pivot indices representing the permutation matrix Q, i.e. the
                 order in which the columns of matrix M were re-arranged.
     @param[in]
     B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
-                The right hand side matrix B. It could be null if only the re-factorization is needed.
+                The right hand side matrix B. It can be null if only the re-factorization is needed.
     @param[in]
     ldb         rocblas_int. ldb >= n.
                 The leading dimension of B.
@@ -24146,7 +24146,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_analysis(rocblas_handle handle,
 
 /*! @{
     \brief CSRRF_REFACTLU performs a fast LU factorization of a sparse matrix \f$A\f$ based on the
-    information of the factorization of a previous matrix \f$M\f$ with the same sparsity pattern
+    information from the factorization of a previous matrix \f$M\f$ with the same sparsity pattern
     (re-factorization).
 
     \details Consider a sparse matrix \f$M\f$ previously factorized as
@@ -24180,7 +24180,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_analysis(rocblas_handle handle,
                 The number of non-zero elements in A.
     @param[in]
     ptrA        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indA and valA.
+                It contains the positions of the beginning of each row in indA and valA.
                 The last element of ptrM is equal to nnzA.
     @param[in]
     indA        pointer to rocblas_int. Array on the GPU of dimension nnzA.\n
@@ -24194,7 +24194,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_analysis(rocblas_handle handle,
                 The number of non-zero elements in T.
     @param[in]
     ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indT and valT.
+                It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
     indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
@@ -24210,7 +24210,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_analysis(rocblas_handle handle,
                 order in which the rows of matrix M were re-arranged.
     @param[in]
     pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
-                Contains the pivot indices representing the permutation Q, i.e. the
+                Contains the pivot indices representing the permutation matrix Q, i.e. the
                 order in which the columns of matrix M were re-arranged.
     @param[in]
     rfinfo      rocsolver_rfinfo.\n
@@ -24287,7 +24287,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_refactlu(rocblas_handle handle,
     where the sparse matrix \f$A\f$ is factorized as
 
     \f[
-        PAQ=L_AU_A
+        PAQ = L_AU_A
     \f]
 
     and \f$B\f$ is a dense matrix of right hand sides.
@@ -24310,7 +24310,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_refactlu(rocblas_handle handle,
                 The number of non-zero elements in T.
     @param[in]
     ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
-                It contains the positions of the begining of each row in indT and valT.
+                It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
     indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
@@ -24325,7 +24325,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_refactlu(rocblas_handle handle,
                 order in which the rows of matrix A were re-arranged.
     @param[in]
     pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
-                Contains the pivot indices representing the permutation Q, i.e. the
+                Contains the pivot indices representing the permutation matrix Q, i.e. the
                 order in which the columns of matrix A were re-arranged.
     @param[inout]
     B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
