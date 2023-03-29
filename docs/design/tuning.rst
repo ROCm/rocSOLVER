@@ -179,6 +179,20 @@ GEBRD_GEBD2_SWITCHSIZE
 
 
 
+bdsqr function
+==================
+
+The Singular Value Decomposition of a bidiagonal matrix could be sped up by splitting the matrix into diagonal blocks
+and processing those blocks in parallel.
+
+BDSQR_SPLIT_GROUPS
+-------------------
+.. doxygendefine:: BDSQR_SPLIT_GROUPS
+
+(As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
+
+
+
 gesvd function
 ==================
 
