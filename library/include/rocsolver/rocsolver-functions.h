@@ -24165,10 +24165,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_analysis(rocblas_handle handle,
 
     can be computed numerically without any symbolic or analysis phases.
 
-    This function supposes that the LU factors \f$L_M\f$ and \f$U_M\f$ are passed in a bundle
-    matrix \f$T=(L_M-I)+U_M\f$ as returned by \ref rocsolver_scsrrf_sumlu "CSRRF_SUMLU", and that
-    rfinfo has been updated, by function \ref rocsolver_scsrrf_analysis "CSRRF_ANALYSIS", after the
-    analysis phase of the previous matrix M and its initial factorization.
+    This function supposes that rfinfo has been updated, by function \ref rocsolver_scsrrf_analysis "CSRRF_ANALYSIS",
+    after the analysis phase of the previous matrix M and its initial factorization.
 
     @param[in]
     handle      rocblas_handle.\n
@@ -24200,10 +24198,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_analysis(rocblas_handle handle,
     indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
                 It contains the column indices of the non-zero elements of T. Indices are
                 sorted by row and by column within each row.
-    @param[inout]
+    @param[out]
     valT        pointer to type. Array on the GPU of dimension nnzT.\n
-                On entry, the values of the non-zero elements of T. On exit, the
-                values of the non-zero elements of the new bundle matrix (L_A - I) + U_A.
+                The values of the non-zero elements of the new bundle matrix (L_A - I) + U_A.
     @param[in]
     pivP        pointer to rocblas_int. Array on the GPU of dimension n.\n
                 Contains the pivot indices representing the permutation matrix P, i.e. the
