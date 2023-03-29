@@ -2,7 +2,8 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSOLVER
+
+## rocSOLVER 3.22.0 for ROCm 5.6.0
 ### Added
 - LU refactorization for sparse matrices
     - CSRRF_ANALYSIS
@@ -14,15 +15,13 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Added type `rocsolver_rfinfo` for use with sparse matrix routines
 
 ### Optimized
-### Changed
-### Deprecated
-### Removed
+- Improved the performance of BDSQR and GESVD when singular vectors are requested
+
 ### Fixed
-### Known Issues
-### Security
+- BDSQR and GESVD should no longer hang when the input contains `NaN` or `Inf`
 
 
-## (Unreleased) rocSOLVER 3.21.0
+## rocSOLVER 3.21.0 for ROCm 5.5.0
 ### Added
 - SVD for general matrices using Jacobi algorithm:
     - GESVDJ (with batched and strided\_batched versions)
