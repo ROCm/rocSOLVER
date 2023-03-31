@@ -246,9 +246,9 @@ void csrrf_solve_getPerfData(rocblas_handle handle,
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
-    csrrf_solve_initData<true, false, T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ,
-                                         dB, ldb, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX,
-                                         testcase, false);
+    csrrf_solve_initData<true, true, T>(handle, n, nrhs, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ,
+                                        dB, ldb, hptrT, hindT, hvalT, hpivP, hpivQ, hB, hX,
+                                        testcase, false);
 
     CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
         handle, n, nrhs, nnzT, dptrT.data(), dindT.data(), dvalT.data(), nnzT, dptrT.data(),

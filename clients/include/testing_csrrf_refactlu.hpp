@@ -264,9 +264,9 @@ void csrrf_refactlu_getPerfData(rocblas_handle handle,
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
-    csrrf_refactlu_initData<true, false, T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT,
-                                            dindT, dvalT, dpivP, dpivQ, hptrA, hindA, hvalA, hptrT,
-                                            hindT, hvalT, hpivP, hpivQ, testcase);
+    csrrf_refactlu_initData<true, true, T>(handle, n, nnzA, dptrA, dindA, dvalA, nnzT, dptrT, dindT,
+                                           dvalT, dpivP, dpivQ, hptrA, hindA, hvalA, hptrT, hindT,
+                                           hvalT, hpivP, hpivQ, testcase);
 
     CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
         handle, n, 0, nnzA, dptrA.data(), dindA.data(), dvalA.data(), nnzT, dptrT.data(),
