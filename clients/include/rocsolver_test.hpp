@@ -140,9 +140,11 @@ inline fs::path get_sparse_data_dir()
     if(const char* datadir = std::getenv("ROCSOLVER_TEST_DATA"))
         return fs::path{datadir};
 
-    // check relative to the current directory and relative to each parent
     fs::path p = fs::current_path();
     fs::path p_parent = p.parent_path();
+    fs::path installed = p.root_directory() / "opt" / "rocm" / "share" / "rocsolver" / "test";
+
+    // check relative to the current directory and relative to each parent
     while(p != p_parent)
     {
         fs::path candidate = p / "clients" / "sparsedata";
@@ -151,6 +153,10 @@ inline fs::path get_sparse_data_dir()
         p = p_parent;
         p_parent = p.parent_path();
     }
+
+    // check relative to default install path
+    if(fs::exists(installed))
+        return installed;
 
     return fs::current_path();
 }
