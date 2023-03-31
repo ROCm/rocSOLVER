@@ -9,7 +9,7 @@
 #include <ostream>
 #include <stdexcept>
 
-#if __cpp_lib_filesystem
+#if __has_include(<filesystem>)
 #include <filesystem>
 namespace fs = std::filesystem;
 #else
