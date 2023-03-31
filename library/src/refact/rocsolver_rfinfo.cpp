@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <stdlib.h>
+#include <new>
 
 #ifdef HAVE_ROCSPARSE
 #include "rocsolver_rfinfo.hpp"
@@ -42,7 +42,7 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
-    rocsolver_rfinfo_* impl = (rocsolver_rfinfo_*)malloc(sizeof(rocsolver_rfinfo_));
+    rocsolver_rfinfo_* impl = new(std::nothrow) rocsolver_rfinfo_{};
     if(!impl)
         return rocblas_status_memory_error;
 
@@ -119,7 +119,7 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrU));
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrL));
     ROCSPARSE_CHECK(rocsparse_destroy_handle(rfinfo->sphandle));
-    free(rfinfo);
+    delete rfinfo;
 
     return rocblas_status_success;
 #else
