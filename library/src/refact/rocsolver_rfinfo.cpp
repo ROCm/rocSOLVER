@@ -4,11 +4,12 @@
 
 #include <stdlib.h>
 
-#include "rocblas/rocblas.h"
-#include "rocsolver/rocsolver.h"
-#ifdef ROCSOLVER_WITH_ROCSPARSE
+#ifdef HAVE_ROCSPARSE
 #include "rocsolver_rfinfo.hpp"
 #endif
+
+#include "rocblas/rocblas.h"
+#include "rocsolver/rocsolver.h"
 
 #define GOTO_IF_ROCBLAS_ERROR(fcn, result, error_label) \
     do                                                  \
@@ -34,7 +35,7 @@
 
 extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocblas_handle handle)
 {
-#ifdef ROCSOLVER_WITH_ROCSPARSE
+#ifdef HAVE_ROCSPARSE
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -107,7 +108,7 @@ cleanup:
 
 extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 {
-#ifdef ROCSOLVER_WITH_ROCSPARSE
+#ifdef HAVE_ROCSPARSE
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 

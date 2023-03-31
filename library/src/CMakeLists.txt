@@ -267,6 +267,10 @@ target_link_libraries(rocsolver
 
 if(BUILD_WITH_SPARSE)
   target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+  set_source_files_properties(${rocsolver_refact_source}
+    PROPERTIES
+      COMPILE_DEFINITIONS HAVE_ROCSPARSE
+  )
 endif()
 
 if(ROCSOLVER_EMBED_FMT)

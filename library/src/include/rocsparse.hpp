@@ -3,7 +3,6 @@
  * ************************************************************************ */
 
 #pragma once
-#ifdef ROCSOLVER_WITH_ROCSPARSE
 
 #include <rocblas/rocblas.h>
 #include <rocsparse/rocsparse.h>
@@ -277,5 +276,3 @@ inline rocsparse_status rocsparseCall_csrsm_solve(rocsparse_handle sphandle,
     return rocsparse_dcsrsm_solve(sphandle, transA, transB, n, nrhs, nnz, alpha, descr, val, ptr,
                                   ind, B, ldb, info, solve, buffer);
 }
-
-#endif

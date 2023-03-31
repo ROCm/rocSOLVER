@@ -15,10 +15,6 @@ prepend_path("${CMAKE_CURRENT_SOURCE_DIR}/src/" source_files source_paths)
 target_sources(rocsolver-common INTERFACE ${source_paths})
 target_compile_definitions(rocsolver-common INTERFACE __HIP_HCC_COMPAT_MODE__=1)
 
-if(BUILD_WITH_SPARSE)
-  target_compile_definitions(rocsolver-common INTERFACE -DROCSOLVER_WITH_ROCSPARSE)
-endif()
-
 if(WIN32)
   target_compile_definitions(rocsolver-common INTERFACE
     WIN32_LEAN_AND_MEAN

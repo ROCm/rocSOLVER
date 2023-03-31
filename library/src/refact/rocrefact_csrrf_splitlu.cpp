@@ -2,12 +2,12 @@
  * Copyright (c) 2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifdef ROCSOLVER_WITH_ROCSPARSE
+#ifdef HAVE_ROCSPARSE
 #include "rocrefact_csrrf_splitlu.hpp"
-#else
+#endif
+
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
-#endif
 
 template <typename T, typename U>
 rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
@@ -25,7 +25,7 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
 {
     ROCSOLVER_ENTER_TOP("csrrf_splitlu", "-n", n, "--nnzT", nnzT);
 
-#ifdef ROCSOLVER_WITH_ROCSPARSE
+#ifdef HAVE_ROCSPARSE
     if(!handle)
         return rocblas_status_invalid_handle;
 
