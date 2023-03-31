@@ -23851,34 +23851,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_sumlu(rocblas_handle handle,
                                                        rocblas_int* ptrT,
                                                        rocblas_int* indT,
                                                        double* valT);
-
-/*ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrrf_sumlu(rocblas_handle handle,
-                                                       const rocblas_int n,
-                                                       const rocblas_int nnzL,
-                                                       rocblas_int* ptrL,
-                                                       rocblas_int* indL,
-                                                       rocblas_float_complex* valL,
-                                                       const rocblas_int nnzU,
-                                                       rocblas_int* ptrU,
-                                                       rocblas_int* indU,
-                                                       rocblas_float_complex* valU,
-                                                       rocblas_int* ptrT,
-                                                       rocblas_int* indT,
-                                                       rocblas_float_complex* valT);
-
-ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_sumlu(rocblas_handle handle,
-                                                       const rocblas_int n,
-                                                       const rocblas_int nnzL,
-                                                       rocblas_int* ptrL,
-                                                       rocblas_int* indL,
-                                                       rocblas_double_complex* valL,
-                                                       const rocblas_int nnzU,
-                                                       rocblas_int* ptrU,
-                                                       rocblas_int* indU,
-                                                       rocblas_double_complex* valU,
-                                                       rocblas_int* ptrT,
-                                                       rocblas_int* indT,
-                                                       rocblas_double_complex* valT);*/
 //! @}
 
 /*! @{
@@ -23962,32 +23934,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
                                                          rocblas_int* ptrU,
                                                          rocblas_int* indU,
                                                          double* valU);
-
-/*ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrrf_splitlu(rocblas_handle handle,
-                                                         const rocblas_int n,
-                                                         const rocblas_int nnzT,
-                                                         rocblas_int* ptrT,
-                                                         rocblas_int* indT,
-                                                         rocblas_float_complex* valT,
-                                                         rocblas_int* ptrL,
-                                                         rocblas_int* indL,
-                                                         rocblas_float_complex* valL,
-                                                         rocblas_int* ptrU,
-                                                         rocblas_int* indU,
-                                                         rocblas_float_complex* valU);
-
-ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_splitlu(rocblas_handle handle,
-                                                         const rocblas_int n,
-                                                         const rocblas_int nnzT,
-                                                         rocblas_int* ptrT,
-                                                         rocblas_int* indT,
-                                                         rocblas_double_complex* valT,
-                                                         rocblas_int* ptrL,
-                                                         rocblas_int* indL,
-                                                         rocblas_double_complex* valL,
-                                                         rocblas_int* ptrU,
-                                                         rocblas_int* indU,
-                                                         rocblas_double_complex* valU);*/
 //! @}
 
 /*! @{
@@ -24114,34 +24060,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
                                                           double* B,
                                                           const rocblas_int ldb,
                                                           rocsolver_rfinfo rfinfo);
-
-/*ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrrf_analysis(rocblas_handle handle,
-                                                          const rocblas_int n,
-                                                          const rocblas_int nnzM,
-                                                          rocblas_int* ptrM,
-                                                          rocblas_int* indM,
-                                                          rocblas_float_complex* valM,
-                                                          const rocblas_int nnzT,
-                                                          rocblas_int* ptrT,
-                                                          rocblas_int* indT,
-                                                          rocblas_float_complex* valT,
-                                                          rocblas_int* pivP,
-                                                          rocblas_int* pivQ,
-                                                          rocsolver_rfinfo rfinfo);
-
-ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_analysis(rocblas_handle handle,
-                                                          const rocblas_int n,
-                                                          const rocblas_int nnzM,
-                                                          rocblas_int* ptrM,
-                                                          rocblas_int* indM,
-                                                          rocblas_double_complex* valM,
-                                                          const rocblas_int nnzT,
-                                                          rocblas_int* ptrT,
-                                                          rocblas_int* indT,
-                                                          rocblas_double_complex* valT,
-                                                          rocblas_int* pivP,
-                                                          rocblas_int* pivQ,
-                                                          rocsolver_rfinfo rfinfo);*/
 //! @}
 
 /*! @{
@@ -24241,34 +24159,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
                                                           rocblas_int* pivP,
                                                           rocblas_int* pivQ,
                                                           rocsolver_rfinfo rfinfo);
-
-/*ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrrf_refactlu(rocblas_handle handle,
-                                                          const rocblas_int n,
-                                                          const rocblas_int nnzA,
-                                                          rocblas_int* ptrA,
-                                                          rocblas_int* indA,
-                                                          rocblas_float_complex* valA,
-                                                          const rocblas_int nnzT,
-                                                          rocblas_int* ptrT,
-                                                          rocblas_int* indT,
-                                                          rocblas_float_complex* valT,
-                                                          rocblas_int* pivP,
-                                                          rocblas_int* pivQ,
-                                                          rocsolver_rfinfo rfinfo);
-
-ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_refactlu(rocblas_handle handle,
-                                                          const rocblas_int n,
-                                                          const rocblas_int nnzA,
-                                                          rocblas_int* ptrA,
-                                                          rocblas_int* indA,
-                                                          rocblas_double_complex* valA,
-                                                          const rocblas_int nnzT,
-                                                          rocblas_int* ptrT,
-                                                          rocblas_int* indT,
-                                                          rocblas_double_complex* valT,
-                                                          rocblas_int* pivP,
-                                                          rocblas_int* pivQ,
-                                                          rocsolver_rfinfo rfinfo);*/
 //! @}
 
 /*! @{
@@ -24360,32 +24250,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_solve(rocblas_handle handle,
                                                        double* B,
                                                        const rocblas_int ldb,
                                                        rocsolver_rfinfo rfinfo);
-
-/*ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrrf_solve(rocblas_handle handle,
-                                                       const rocblas_int n,
-                                                       const rocblas_int nrhs,
-                                                       const rocblas_int nnzT,
-                                                       rocblas_int* ptrT,
-                                                       rocblas_int* indT,
-                                                       rocblas_float_complex* valT,
-                                                       rocblas_int* pivP,
-                                                       rocblas_int* pivQ,
-                                                       rocsolver_rfinfo rfinfo,
-                                                       rocblas_float_complex* B,
-                                                       const rocblas_int ldb);
-
-ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrrf_solve(rocblas_handle handle,
-                                                       const rocblas_int n,
-                                                       const rocblas_int nrhs,
-                                                       const rocblas_int nnzT,
-                                                       rocblas_int* ptrT,
-                                                       rocblas_int* indT,
-                                                       rocblas_double_complex* valT,
-                                                       rocblas_int* pivP,
-                                                       rocblas_int* pivQ,
-                                                       rocsolver_rfinfo rfinfo,
-                                                       rocblas_double_complex* B,
-                                                       const rocblas_int ldb);*/
 //! @}
 
 #ifdef __cplusplus
