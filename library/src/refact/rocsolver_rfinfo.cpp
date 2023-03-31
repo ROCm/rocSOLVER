@@ -93,6 +93,7 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     *rfinfo = impl;
     return rocblas_status_success;
 cleanup:
+    rocsparse_destroy_mat_info(impl->infoT);
     rocsparse_destroy_mat_info(impl->infoU);
     rocsparse_destroy_mat_info(impl->infoL);
     rocsparse_destroy_mat_descr(impl->descrT);
