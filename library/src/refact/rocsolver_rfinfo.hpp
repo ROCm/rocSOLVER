@@ -20,5 +20,3 @@ struct rocsolver_rfinfo_
     rocsparse_solve_policy solve_policy;
     rocsparse_analysis_policy analysis_policy;
 };
-
-typedef struct rocsolver_rfinfo_* rocsolver_rfinfo;

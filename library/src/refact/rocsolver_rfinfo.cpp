@@ -100,7 +100,7 @@ cleanup:
     rocsparse_destroy_mat_descr(impl->descrU);
     rocsparse_destroy_mat_descr(impl->descrL);
     rocsparse_destroy_handle(impl->sphandle);
-    free(impl);
+    delete impl;
     return result;
 #else
     return rocblas_status_not_implemented;
