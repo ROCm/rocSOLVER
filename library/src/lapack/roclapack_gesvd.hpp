@@ -621,12 +621,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
                 // update
                 if(row)
-                    rocblasCall_gemm<BATCHED, STRIDED>(
+                    rocblasCall_gemm(
                         handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one, A,
                         shiftA, lda, strideA, bufferT, shiftT, ldt, strideT, &zero, bufferC, shiftC,
                         ldc, strideC, batch_count, workArr);
                 else
-                    rocblasCall_gemm<BATCHED, STRIDED>(
+                    rocblasCall_gemm(
                         handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one,
                         bufferT, shiftT, ldt, strideT, A, shiftA, lda, strideA, &zero, bufferC,
                         shiftC, ldc, strideC, batch_count, workArr);
@@ -640,12 +640,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             {
                 // update
                 if(row)
-                    rocblasCall_gemm<BATCHED, STRIDED>(
+                    rocblasCall_gemm(
                         handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one, A,
                         shiftA, lda, strideA, bufferT, shiftT, ldt, strideT, &zero, UV, shiftUV,
                         lduv, strideUV, batch_count, workArr);
                 else
-                    rocblasCall_gemm<BATCHED, STRIDED>(
+                    rocblasCall_gemm(
                         handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one,
                         bufferT, shiftT, ldt, strideT, A, shiftA, lda, strideA, &zero, UV, shiftUV,
                         lduv, strideUV, batch_count, workArr);
@@ -660,12 +660,12 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             {
                 // update
                 if(row)
-                    rocblasCall_gemm<BATCHED, STRIDED>(
+                    rocblasCall_gemm(
                         handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one, UV,
                         shiftUV, lduv, strideUV, bufferT, shiftT, ldt, strideT, &zero, A, shiftA,
                         lda, strideA, batch_count, workArr);
                 else
-                    rocblasCall_gemm<BATCHED, STRIDED>(
+                    rocblasCall_gemm(
                         handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one,
                         bufferT, shiftT, ldt, strideT, UV, shiftUV, lduv, strideUV, &zero, A,
                         shiftA, lda, strideA, batch_count, workArr);

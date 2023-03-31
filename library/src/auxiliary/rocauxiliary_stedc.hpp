@@ -1433,7 +1433,7 @@ void local_gemm(rocblas_handle handle,
                             strideA, work, rocblas_fill_full);
 
     // temp = work*B
-    rocblasCall_gemm<BATCHED, STRIDED, S>(
+    rocblasCall_gemm(
         handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work, shiftT, ldt,
         strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT, batch_count, workArr);
 
@@ -1448,7 +1448,7 @@ void local_gemm(rocblas_handle handle,
                             strideA, work, rocblas_fill_full);
 
     // temp = work*B
-    rocblasCall_gemm<BATCHED, STRIDED, S>(
+    rocblasCall_gemm(
         handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work, shiftT, ldt,
         strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT, batch_count, workArr);
 

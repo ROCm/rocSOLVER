@@ -500,11 +500,11 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                 work3, work4);
 
             if(k + jb < mm)
-                rocblasCall_gemm(
+                rocblasCall_gemm<T>(
                     handle, rocblas_operation_none, rocblas_operation_none, mm - k - jb,
                     nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, lda), lda, strideA, A,
                     shiftA + idx2D(k, k + jb, lda), lda, strideA, &one, A,
-                    shiftA + idx2D(k + jb, k + jb, lda), lda, strideA, batch_count, nullptr);
+                    shiftA + idx2D(k + jb, k + jb, lda), lda, strideA, batch_count, (T**)nullptr);
             /** This would be the call to the internal gemm, leaving it
                     commented here until we are sure it won't be needed **/
             /*dimx = std::min({mm - k - jb, (4096 / jb) / 2, 32});
@@ -725,11 +725,11 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
             if(nextpiv < m)
             {
-                rocblasCall_gemm(
+                rocblasCall_gemm<T>(
                     handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone, A,
                     shiftA + idx2D(nextpiv, j, lda), lda, strideA, A,
                     shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,
-                    shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA, batch_count, nullptr);
+                    shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA, batch_count, (T**)nullptr);
                 /** This would be the call to the internal gemm, leaving it
                         commented here until we are sure it won't be needed **/
                 /*dimx = std::min({mm, (4096 / jb) / 2, 32});
