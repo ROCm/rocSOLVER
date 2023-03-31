@@ -302,12 +302,12 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     if(trap)
     {
         if(leftside)
-            rocblasCall_gemm<BATCHED, STRIDED, T>(handle, transp, rocblas_operation_none, ldw,
+            rocblasCall_gemm(handle, transp, rocblas_operation_none, ldw,
                                                   order, m - k, &one, V, offsetV2, ldv, strideV, A,
                                                   offsetA2, lda, strideA, &one, tmptr, 0, ldw,
                                                   strideW, batch_count, workArr);
         else
-            rocblasCall_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, transp, ldw,
+            rocblasCall_gemm(handle, rocblas_operation_none, transp, ldw,
                                                   order, n - k, &one, A, offsetA2, lda, strideA, V,
                                                   offsetV2, ldv, strideV, &one, tmptr, 0, ldw,
                                                   strideW, batch_count, workArr);
@@ -328,12 +328,12 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     if(trap)
     {
         if(leftside)
-            rocblasCall_gemm<BATCHED, STRIDED, T>(handle, transp, rocblas_operation_none, m - k,
+            rocblasCall_gemm(handle, transp, rocblas_operation_none, m - k,
                                                   order, ldw, &minone, V, offsetV2, ldv, strideV,
                                                   tmptr, 0, ldw, strideW, &one, A, offsetA2, lda,
                                                   strideA, batch_count, workArr);
         else
-            rocblasCall_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, transp, ldw,
+            rocblasCall_gemm(handle, rocblas_operation_none, transp, ldw,
                                                   n - k, order, &minone, tmptr, 0, ldw, strideW, V,
                                                   offsetV2, ldv, strideV, &one, A, offsetA2, lda,
                                                   strideA, batch_count, workArr);

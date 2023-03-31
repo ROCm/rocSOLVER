@@ -233,22 +233,22 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
                                                      batch_count, results, workspace);
 }
 
-// ger
-template <bool CONJ, typename T, typename U, typename V>
+// ger - non batched
+template <bool CONJ, typename T>
 rocblas_status rocblasCall_ger(rocblas_handle handle,
                                rocblas_int m,
                                rocblas_int n,
-                               U alpha,
+                               const T* alpha,
                                rocblas_stride stridea,
-                               V x,
+                               const T* x,
                                rocblas_stride offsetx,
                                rocblas_int incx,
                                rocblas_stride stridex,
-                               V y,
+                               const T* y,
                                rocblas_stride offsety,
                                rocblas_int incy,
                                rocblas_stride stridey,
-                               V A,
+                               T* A,
                                rocblas_stride offsetA,
                                rocblas_int lda,
                                rocblas_stride strideA,
@@ -259,27 +259,32 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
                   "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
 
-    return rocblas_internal_ger_template<CONJ, T>(
-        handle, m, n, alpha, stridea, cast2constType<T>(x), offsetx, incx, stridex,
-        cast2constType<T>(y), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    if constexpr(CONJ)
+        return rocblas_internal_gerc_template(
+            handle, m, n, alpha, stridea, cast2constType<T>(x), offsetx, incx, stridex,
+            cast2constType<T>(y), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    else
+        return rocblas_internal_ger_template(
+            handle, m, n, alpha, stridea, cast2constType<T>(x), offsetx, incx, stridex,
+            cast2constType<T>(y), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
 }
 
-// ger overload
-template <bool CONJ, typename T, typename U>
+// ger overload - batched with strided y
+template <bool CONJ, typename T>
 rocblas_status rocblasCall_ger(rocblas_handle handle,
                                rocblas_int m,
                                rocblas_int n,
-                               U alpha,
+                               const T* alpha,
                                rocblas_stride stridea,
-                               T* const x[],
+                               const T* const* x,
                                rocblas_stride offsetx,
                                rocblas_int incx,
                                rocblas_stride stridex,
-                               T* y,
+                               const T* y,
                                rocblas_stride offsety,
                                rocblas_int incy,
                                rocblas_stride stridey,
-                               T* const A[],
+                               T* const* A,
                                rocblas_stride offsetA,
                                rocblas_int lda,
                                rocblas_stride strideA,
@@ -297,27 +302,32 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
                             batch_count);
 
-    return rocblas_internal_ger_template<CONJ, T>(
-        handle, m, n, alpha, stridea, cast2constType<T>(x), offsetx, incx, stridex,
-        cast2constType<T>(work), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    if constexpr(CONJ)
+        return rocblas_internal_gerc_batched_template(
+            handle, m, n, alpha, stridea, cast2constType<T>(x), offsetx, incx, stridex,
+            cast2constType<T>(work), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    else
+        return rocblas_internal_ger_batched_template(
+            handle, m, n, alpha, stridea, cast2constType<T>(x), offsetx, incx, stridex,
+            cast2constType<T>(work), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
 }
 
-// ger overload
-template <bool CONJ, typename T, typename U>
+// ger overload - batched with strided x
+template <bool CONJ, typename T>
 rocblas_status rocblasCall_ger(rocblas_handle handle,
                                rocblas_int m,
                                rocblas_int n,
-                               U alpha,
+                               const T* alpha,
                                rocblas_stride stridea,
-                               T* x,
+                               const T* x,
                                rocblas_stride offsetx,
                                rocblas_int incx,
                                rocblas_stride stridex,
-                               T* const y[],
+                               const T* const* y,
                                rocblas_stride offsety,
                                rocblas_int incy,
                                rocblas_stride stridey,
-                               T* const A[],
+                               T* const* A,
                                rocblas_stride offsetA,
                                rocblas_int lda,
                                rocblas_stride strideA,
@@ -335,30 +345,35 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
                             batch_count);
 
-    return rocblas_internal_ger_template<CONJ, T>(
-        handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex,
-        cast2constType<T>(y), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    if constexpr(CONJ)
+        return rocblas_internal_gerc_batched_template(
+            handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex,
+            cast2constType<T>(y), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    else
+        return rocblas_internal_ger_batched_template(
+            handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex,
+            cast2constType<T>(y), offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
 }
 
-// gemv
-template <typename T, typename U, typename V>
+// gemv - non batched
+template <typename T>
 rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_operation transA,
                                 rocblas_int m,
                                 rocblas_int n,
-                                U alpha,
+                                const T* alpha,
                                 rocblas_stride stride_alpha,
-                                V A,
+                                const T* A,
                                 rocblas_stride offseta,
                                 rocblas_int lda,
                                 rocblas_stride strideA,
-                                V x,
+                                const T* x,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
-                                U beta,
+                                const T* beta,
                                 rocblas_stride stride_beta,
-                                V y,
+                                T* y,
                                 rocblas_stride offsety,
                                 rocblas_int incy,
                                 rocblas_stride stridey,
@@ -370,31 +385,31 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                   "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety, "incy:", incy,
                   "bc:", batch_count);
 
-    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
+    return rocblas_internal_gemv_template(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(A), offseta, lda, strideA,
                                              cast2constType<T>(x), offsetx, incx, stridex, beta,
                                              stride_beta, y, offsety, incy, stridey, batch_count);
 }
 
-// gemv overload
-template <typename T, typename U>
+// gemv overload - batched with strided A
+template <typename T>
 rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_operation transA,
                                 rocblas_int m,
                                 rocblas_int n,
-                                U alpha,
+                                const T* alpha,
                                 rocblas_stride stride_alpha,
-                                T* A,
+                                const T* A,
                                 rocblas_stride offseta,
                                 rocblas_int lda,
                                 rocblas_stride strideA,
-                                T* const x[],
+                                const T* const* x,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
-                                U beta,
+                                const T* beta,
                                 rocblas_stride stride_beta,
-                                T* const y[],
+                                T* const* y,
                                 rocblas_stride offsety,
                                 rocblas_int incy,
                                 rocblas_stride stridey,
@@ -413,31 +428,31 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, strideA,
                             batch_count);
 
-    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
+    return rocblas_internal_gemv_batched_template(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(work), offseta, lda, strideA,
                                              cast2constType<T>(x), offsetx, incx, stridex, beta,
                                              stride_beta, y, offsety, incy, stridey, batch_count);
 }
 
-// gemv overload
-template <typename T, typename U>
+// gemv overload - batched with strided x
+template <typename T>
 rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_operation transA,
                                 rocblas_int m,
                                 rocblas_int n,
-                                U alpha,
+                                const T* alpha,
                                 rocblas_stride stride_alpha,
-                                T* const A[],
+                                const T* const* A,
                                 rocblas_stride offseta,
                                 rocblas_int lda,
                                 rocblas_stride strideA,
-                                T* x,
+                                const T* x,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
-                                U beta,
+                                const T* beta,
                                 rocblas_stride stride_beta,
-                                T* const y[],
+                                T* const* y,
                                 rocblas_stride offsety,
                                 rocblas_int incy,
                                 rocblas_stride stridey,
@@ -456,29 +471,29 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
                             batch_count);
 
-    return rocblas_internal_gemv_template<T>(handle, transA, m, n, alpha, stride_alpha,
+    return rocblas_internal_gemv_batched_template(handle, transA, m, n, alpha, stride_alpha,
                                              cast2constType<T>(A), offseta, lda, strideA,
                                              cast2constType<T>(work), offsetx, incx, stridex, beta,
                                              stride_beta, y, offsety, incy, stridey, batch_count);
 }
 
-// gemv overload
+// gemv overload - batched with strided y
 template <typename T, typename U>
 rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_operation transA,
                                 rocblas_int m,
                                 rocblas_int n,
-                                U alpha,
+                                const T* alpha,
                                 rocblas_stride stride_alpha,
-                                T* const A[],
+                                const T* const* A,
                                 rocblas_stride offseta,
                                 rocblas_int lda,
                                 rocblas_stride strideA,
-                                T* const x[],
+                                const T* const* x,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
-                                U beta,
+                                const T* beta,
                                 rocblas_stride stride_beta,
                                 T* y,
                                 rocblas_stride offsety,
@@ -499,21 +514,21 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
                             batch_count);
 
-    return rocblas_internal_gemv_template<T>(
+    return rocblas_internal_gemv_batched_template(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A), offseta, lda, strideA,
         cast2constType<T>(x), offsetx, incx, stridex, beta, stride_beta, cast2constPointer<T>(work),
         offsety, incy, stridey, batch_count);
 }
 
-// gemv overload
-template <typename T, typename U>
+// gemv overload - batched with strided x and y
+template <typename T>
 rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_operation transA,
                                 rocblas_int m,
                                 rocblas_int n,
-                                U alpha,
+                                const T* alpha,
                                 rocblas_stride stride_alpha,
-                                T* const A[],
+                                const T* const* A,
                                 rocblas_stride offseta,
                                 rocblas_int lda,
                                 rocblas_stride strideA,
@@ -521,7 +536,7 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
-                                U beta,
+                                const T* beta,
                                 rocblas_stride stride_beta,
                                 T* y,
                                 rocblas_stride offsety,
@@ -544,29 +559,29 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
                             stridey, batch_count);
 
-    return rocblas_internal_gemv_template<T>(
+    return rocblas_internal_gemv_batched_template(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(A), offseta, lda, strideA,
         cast2constType<T>(work), offsetx, incx, stridex, beta, stride_beta,
         cast2constPointer<T>(work + batch_count), offsety, incy, stridey, batch_count);
 }
 
-// gemv overload
+// gemv overload - batched with strided A and y
 template <typename T, typename U>
 rocblas_status rocblasCall_gemv(rocblas_handle handle,
                                 rocblas_operation transA,
                                 rocblas_int m,
                                 rocblas_int n,
-                                U alpha,
+                                const T* alpha,
                                 rocblas_stride stride_alpha,
                                 T* A,
                                 rocblas_stride offseta,
                                 rocblas_int lda,
                                 rocblas_stride strideA,
-                                T* const x[],
+                                const T* const* x,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
-                                U beta,
+                                const T* beta,
                                 rocblas_stride stride_beta,
                                 T* y,
                                 rocblas_stride offsety,
@@ -589,24 +604,24 @@ rocblas_status rocblasCall_gemv(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, (work + batch_count), y,
                             stridey, batch_count);
 
-    return rocblas_internal_gemv_template<T>(
+    return rocblas_internal_gemv_batched_template(
         handle, transA, m, n, alpha, stride_alpha, cast2constType<T>(work), offseta, lda, strideA,
         cast2constType<T>(x), offsetx, incx, stridex, beta, stride_beta,
         cast2constPointer<T>(work + batch_count), offsety, incy, stridey, batch_count);
 }
 
 // trmv
-template <typename T, typename U>
+template <typename T>
 rocblas_status rocblasCall_trmv(rocblas_handle handle,
                                 rocblas_fill uplo,
                                 rocblas_operation transa,
                                 rocblas_diagonal diag,
                                 rocblas_int m,
-                                U a,
+                                const T* a,
                                 rocblas_stride offseta,
                                 rocblas_int lda,
                                 rocblas_stride stridea,
-                                U x,
+                                const T* x,
                                 rocblas_stride offsetx,
                                 rocblas_int incx,
                                 rocblas_stride stridex,
@@ -622,25 +637,51 @@ rocblas_status rocblasCall_trmv(rocblas_handle handle,
                                           stridew, batch_count);
 }
 
-// gemm
-template <bool BATCHED, bool STRIDED, typename T, typename U, typename V>
+template <typename T
+rocblas_status rocblasCall_trmv(rocblas_handle handle,
+                                rocblas_fill uplo,
+                                rocblas_operation transa,
+                                rocblas_diagonal diag,
+                                rocblas_int m,
+                                const T* const* a,
+                                rocblas_stride offseta,
+                                rocblas_int lda,
+                                rocblas_stride stridea,
+                                const T* const* x,
+                                rocblas_stride offsetx,
+                                rocblas_int incx,
+                                rocblas_stride stridex,
+                                T* const* w,
+                                rocblas_stride stridew,
+                                rocblas_int batch_count)
+{
+    ROCBLAS_ENTER("trmv", "trans:", transa, "diag:", diag, "m:", m, "shiftA:", offseta, "lda:", lda,
+                  "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
+
+    return rocblas_internal_trmv_batched_template(handle, uplo, transa, diag, m, cast2constType<T>(a),
+                                          offseta, lda, stridea, x, offsetx, incx, stridex, w,
+                                          stridew, batch_count);
+}
+
+// gemm - non batched
+template <typename T>
 rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_operation trans_a,
                                 rocblas_operation trans_b,
                                 rocblas_int m,
                                 rocblas_int n,
                                 rocblas_int k,
-                                U alpha,
-                                V A,
+                                const T* alpha,
+                                const T* A,
                                 rocblas_stride offset_a,
                                 rocblas_int ld_a,
                                 rocblas_stride stride_a,
-                                V B,
+                                const T* B,
                                 rocblas_stride offset_b,
                                 rocblas_int ld_b,
                                 rocblas_stride stride_b,
-                                U beta,
-                                V C,
+                                const T* beta,
+                                T* C,
                                 rocblas_stride offset_c,
                                 rocblas_int ld_c,
                                 rocblas_stride stride_c,
@@ -652,31 +693,31 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                   "shiftA:", offset_a, "lda:", ld_a, "shiftB:", offset_b, "ldb:", ld_b,
                   "shiftC:", offset_c, "ldc:", ld_c, "bc:", batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_template(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c, stride_c,
         batch_count);
 }
 
-// gemm overload
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+// gemm overload - batched with strided A
+template <typename T>
 rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_operation trans_a,
                                 rocblas_operation trans_b,
                                 rocblas_int m,
                                 rocblas_int n,
                                 rocblas_int k,
-                                U alpha,
+                                const T* alpha,
                                 T* A,
                                 rocblas_stride offset_a,
                                 rocblas_int ld_a,
                                 rocblas_stride stride_a,
-                                T* const B[],
+                                const T* const* B,
                                 rocblas_stride offset_b,
                                 rocblas_int ld_b,
                                 rocblas_stride stride_b,
-                                U beta,
-                                T* const C[],
+                                const T* beta,
+                                const T* const* C,
                                 rocblas_stride offset_c,
                                 rocblas_int ld_c,
                                 rocblas_stride stride_c,
@@ -695,22 +736,22 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, A, stride_a,
                             batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_batched_template(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c, stride_c,
         batch_count);
 }
 
-// gemm overload
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+// gemm overload - batched with strided B
+template <typename T>
 rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_operation trans_a,
                                 rocblas_operation trans_b,
                                 rocblas_int m,
                                 rocblas_int n,
                                 rocblas_int k,
-                                U alpha,
-                                T* const A[],
+                                const T* alpha,
+                                const T* const* A,
                                 rocblas_stride offset_a,
                                 rocblas_int ld_a,
                                 rocblas_stride stride_a,
@@ -719,7 +760,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_int ld_b,
                                 rocblas_stride stride_b,
                                 U beta,
-                                T* const C[],
+                                const T* const* C,
                                 rocblas_stride offset_c,
                                 rocblas_int ld_c,
                                 rocblas_stride stride_c,
@@ -738,30 +779,30 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, B, stride_b,
                             batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_batched_template(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(work), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c, stride_c,
         batch_count);
 }
 
-// gemm overload
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+// gemm overload - batched with strided C
+template <typename T>
 rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_operation trans_a,
                                 rocblas_operation trans_b,
                                 rocblas_int m,
                                 rocblas_int n,
                                 rocblas_int k,
-                                U alpha,
-                                T* const A[],
+                                const T* alpha,
+                                const T* const* A,
                                 rocblas_stride offset_a,
                                 rocblas_int ld_a,
                                 rocblas_stride stride_a,
-                                T* const B[],
+                                const T* const* B,
                                 rocblas_stride offset_b,
                                 rocblas_int ld_b,
                                 rocblas_stride stride_b,
-                                U beta,
+                                const T* beta,
                                 T* C,
                                 rocblas_stride offset_c,
                                 rocblas_int ld_c,
@@ -781,22 +822,22 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, C, stride_c,
                             batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_batched_template(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, cast2constPointer(work), offset_c,
         ld_c, stride_c, batch_count);
 }
 
-// gemm overload
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+// gemm overload - batched with strided B and C
+template <typename T>
 rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_operation trans_a,
                                 rocblas_operation trans_b,
                                 rocblas_int m,
                                 rocblas_int n,
                                 rocblas_int k,
-                                U alpha,
-                                T* const A[],
+                                const T* alpha,
+                                const T* const* A,
                                 rocblas_stride offset_a,
                                 rocblas_int ld_a,
                                 rocblas_stride stride_a,
@@ -804,7 +845,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_stride offset_b,
                                 rocblas_int ld_b,
                                 rocblas_stride stride_b,
-                                U beta,
+                                const T* beta,
                                 T* C,
                                 rocblas_stride offset_c,
                                 rocblas_int ld_c,
@@ -826,26 +867,26 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
                             stride_c, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_batched_template(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(A), offset_a, ld_a, stride_a,
         cast2constType<T>(work), offset_b, ld_b, stride_b, beta,
         cast2constPointer(work + batch_count), offset_c, ld_c, stride_c, batch_count);
 }
 
-// gemm overload
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+// gemm overload - batched with strided A and C
+template <typename T>
 rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_operation trans_a,
                                 rocblas_operation trans_b,
                                 rocblas_int m,
                                 rocblas_int n,
                                 rocblas_int k,
-                                U alpha,
+                                const T* alpha,
                                 T* A,
                                 rocblas_stride offset_a,
                                 rocblas_int ld_a,
                                 rocblas_stride stride_a,
-                                T* const B[],
+                                const T* const* B,
                                 rocblas_stride offset_b,
                                 rocblas_int ld_b,
                                 rocblas_stride stride_b,
@@ -871,21 +912,21 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, C,
                             stride_c, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_batched_template(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
         cast2constType<T>(B), offset_b, ld_b, stride_b, beta, cast2constPointer(work + batch_count),
         offset_c, ld_c, stride_c, batch_count);
 }
 
-// gemm overload
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+// gemm overload - batched with strided A and B
+template <typename T>
 rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_operation trans_a,
                                 rocblas_operation trans_b,
                                 rocblas_int m,
                                 rocblas_int n,
                                 rocblas_int k,
-                                U alpha,
+                                const T* alpha,
                                 T* A,
                                 rocblas_stride offset_a,
                                 rocblas_int ld_a,
@@ -894,8 +935,8 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
                                 rocblas_stride offset_b,
                                 rocblas_int ld_b,
                                 rocblas_stride stride_b,
-                                U beta,
-                                T* const C[],
+                                const T* beta,
+                                const T* const* C,
                                 rocblas_stride offset_c,
                                 rocblas_int ld_c,
                                 rocblas_stride stride_c,
@@ -916,7 +957,7 @@ rocblas_status rocblasCall_gemm(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work + batch_count, B,
                             stride_b, batch_count);
 
-    return rocblas_internal_gemm_template<BATCHED, T>(
+    return rocblas_internal_gemm_batched_template(
         handle, trans_a, trans_b, m, n, k, alpha, cast2constType<T>(work), offset_a, ld_a, stride_a,
         cast2constType<T>(work + batch_count), offset_b, ld_b, stride_b, beta, C, offset_c, ld_c,
         stride_c, batch_count);

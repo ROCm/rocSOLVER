@@ -500,7 +500,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                 work3, work4);
 
             if(k + jb < mm)
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, mm - k - jb,
                     nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, lda), lda, strideA, A,
                     shiftA + idx2D(k, k + jb, lda), lda, strideA, &one, A,
@@ -725,7 +725,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
             if(nextpiv < m)
             {
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone, A,
                     shiftA + idx2D(nextpiv, j, lda), lda, strideA, A,
                     shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,

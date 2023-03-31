@@ -838,7 +838,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 // update right hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, blk,
                     &minone, A, shiftA + idx2D(nextpiv, j, lda), lda, strideA, B,
                     shiftB + idx2D(j, 0, ldb), ldb, strideB, &one, B,
@@ -878,7 +878,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 // update right hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, trans, rocblas_operation_none, m - nextpiv, n, blk, &minone, A,
                     shiftA + idx2D(m - nextpiv, 0, lda), lda, strideA, B,
                     shiftB + idx2D(m - nextpiv, 0, ldb), ldb, strideB, &one, B,
@@ -931,7 +931,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 // update left hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, blk,
                     &minone, B, shiftB + idx2D(0, n - nextpiv, ldb), ldb, strideB, A,
                     shiftA + idx2D(n - nextpiv, 0, lda), lda, strideA, &one, B,
@@ -971,7 +971,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 // update left hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, trans, m, n - nextpiv, blk, &minone, B,
                     shiftB + idx2D(0, j, ldb), ldb, strideB, A, shiftA + idx2D(nextpiv, j, lda),
                     lda, strideA, &one, B, shiftB + idx2D(0, nextpiv, ldb), ldb, strideB,
@@ -1090,7 +1090,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 // update right hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, trans, rocblas_operation_none, m - nextpiv, n, blk, &minone, A,
                     shiftA + idx2D(j, nextpiv, lda), lda, strideA, B, shiftB + idx2D(j, 0, ldb),
                     ldb, strideB, &one, B, shiftB + idx2D(nextpiv, 0, ldb), ldb, strideB,
@@ -1130,7 +1130,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 // update right hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, blk,
                     &minone, A, shiftA + idx2D(0, m - nextpiv, lda), lda, strideA, B,
                     shiftB + idx2D(m - nextpiv, 0, ldb), ldb, strideB, &one, B,
@@ -1183,7 +1183,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 // update left hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, trans, m, n - nextpiv, blk, &minone, B,
                     shiftB + idx2D(0, n - nextpiv, ldb), ldb, strideB, A,
                     shiftA + idx2D(0, n - nextpiv, lda), lda, strideA, &one, B,
@@ -1223,7 +1223,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 // update left hand sides
-                rocblasCall_gemm<BATCHED, STRIDED, T>(
+                rocblasCall_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, blk,
                     &minone, B, shiftB + idx2D(0, j, ldb), ldb, strideB, A,
                     shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, B,
