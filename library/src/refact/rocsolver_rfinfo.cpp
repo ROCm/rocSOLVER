@@ -2,37 +2,98 @@
  * Copyright (c) 2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <new>
+#include <stdlib.h>
 
+#include "rocblas/rocblas.h"
+#include "rocsolver/rocsolver.h"
+#ifdef ROCSOLVER_WITH_ROCSPARSE
 #include "rocsolver_rfinfo.hpp"
+#endif
+
+#define GOTO_IF_ROCBLAS_ERROR(fcn, error_label) \
+    do                                          \
+    {                                           \
+        rocblas_status _status = (fcn);         \
+        if(_status != rocblas_status_success)   \
+            goto error_label;                   \
+    } while(0)
+
+#define GOTO_IF_ROCSPARSE_ERROR(fcn, error_label) \
+    do                                            \
+    {                                             \
+        rocsparse_status _status = (fcn);         \
+        if(_status != rocsparse_status_success)   \
+            goto error_label;                     \
+    } while(0)
 
 extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocblas_handle handle)
 {
 #ifdef ROCSOLVER_WITH_ROCSPARSE
-    if(handle == nullptr)
+    if(!handle)
         return rocblas_status_invalid_handle;
 
-    if(rfinfo == nullptr)
+    if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
-    try
-    {
-        *rfinfo = new rocsolver_rfinfo_(handle);
-    }
-    catch(const std::bad_alloc&)
-    {
+    rocsolver_rfinfo_* impl = (rocsolver_rfinfo_*)malloc(sizeof(rocsolver_rfinfo_));
+    if(!impl)
         return rocblas_status_memory_error;
-    }
-    catch(rocblas_status status)
-    {
-        return status;
-    }
-    catch(...)
-    {
-        return rocblas_status_internal_error;
-    }
 
+    rocblas_status result;
+
+    // create sparse handle
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_handle(&impl->sphandle), cleanup);
+
+    // use handle->stream to sphandle->stream
+    hipStream_t stream;
+    GOTO_IF_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream), cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_stream(impl->sphandle, stream), cleanup);
+
+    // create and set matrix descriptors
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrL), cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrL, rocsparse_matrix_type_general),
+                            cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrL, rocsparse_index_base_zero),
+                            cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(impl->descrL, rocsparse_fill_mode_lower),
+                            cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(impl->descrL, rocsparse_diag_type_unit),
+                            cleanup);
+
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrU), cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrU, rocsparse_matrix_type_general),
+                            cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrU, rocsparse_index_base_zero),
+                            cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(impl->descrU, rocsparse_fill_mode_upper),
+                            cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(impl->descrU, rocsparse_diag_type_non_unit),
+                            cleanup);
+
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrT), cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrT, rocsparse_matrix_type_general),
+                            cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrT, rocsparse_index_base_zero),
+                            cleanup);
+
+    // create info holders
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoL), cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoU), cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoT), cleanup);
+
+    impl->solve_policy = rocsparse_solve_policy_auto;
+    impl->analysis_policy = rocsparse_analysis_policy_reuse;
+    *rfinfo = impl;
     return rocblas_status_success;
+cleanup:
+    rocsparse_destroy_mat_info(impl->infoU);
+    rocsparse_destroy_mat_info(impl->infoL);
+    rocsparse_destroy_mat_descr(impl->descrT);
+    rocsparse_destroy_mat_descr(impl->descrU);
+    rocsparse_destroy_mat_descr(impl->descrL);
+    rocsparse_destroy_handle(impl->sphandle);
+    free(impl);
+    return result;
 #else
     return rocblas_status_not_implemented;
 #endif
@@ -41,13 +102,19 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
 extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 {
 #ifdef ROCSOLVER_WITH_ROCSPARSE
-    if(rfinfo == nullptr)
+    if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
-    rocblas_status status = (*rfinfo).destroy();
-    delete rfinfo;
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoT));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoU));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoL));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrT));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrU));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrL));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(rfinfo->sphandle));
+    free(rfinfo);
 
-    return status;
+    return rocblas_status_success;
 #else
     return rocblas_status_not_implemented;
 #endif
