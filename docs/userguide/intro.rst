@@ -23,7 +23,7 @@ Currently implemented functionality
 The rocSOLVER library is in the early stages of active development. New features are being
 continuously added, with new functionality documented at each `release of the ROCm platform <https://rocmdocs.amd.com/en/latest/Current_Release_Notes/Current-Release-Notes.html>`_.
 
-The following tables summarize the LAPACK functionality implemented for the different supported precisions in rocSOLVER's latest release.
+The following tables summarize the functionality implemented for the different supported precisions in rocSOLVER's latest release.
 All LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
 routines, please see the :ref:`rocSOLVER API <library_api>` document.
 
@@ -216,3 +216,17 @@ LAPACK-like functions
     :ref:`rocsolver_gesvdj <gesvdj>`, x, x, x, x
 
 
+Re-factorization and direct solvers
+----------------------------------------
+
+.. csv-table:: Triangular re-factorization
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_csrrf_sumlu <rfsumlu>`, x, x, ,
+    :ref:`rocsolver_csrrf_splitlu <rfsplitlu>`, x, x, ,
+    :ref:`rocsolver_csrrf_refactlu <rfrefactlu>`, x, x, ,
+
+.. csv-table:: Direct solvers
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_csrrf_solve <rfsolve>`, x, x, ,

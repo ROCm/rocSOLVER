@@ -14,7 +14,17 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Security
 
 
-## (Unreleased) rocSOLVER 3.22.0 
+## rocSOLVER 3.22.0 for ROCm 5.6.0
+### Added
+- LU refactorization for sparse matrices
+    - CSRRF_ANALYSIS
+    - CSRRF_SUMLU
+    - CSRRF_SPLITLU
+    - CSRRF_REFACTLU
+- Linear system solver for sparse matrices
+    - CSRRF_SOLVE
+- Added type `rocsolver_rfinfo` for use with sparse matrix routines
+
 ### Optimized
 - Improved the performance of BDSQR and GESVD when singular vectors are requested
 
