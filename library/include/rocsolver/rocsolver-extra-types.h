@@ -121,4 +121,14 @@ typedef enum rocblas_srange_
     rocblas_srange_index = 263, /**< The \f$il\f$-th through \f$iu\f$-th singular values will be found.*/
 } rocblas_srange;
 
+/*! \brief Forward-declaration of opaque struct containing data used for the re-factorization interfaces.
+ ********************************************************************************/
+struct rocsolver_rfinfo_;
+
+/*! \brief A handle to a structure containing matrix descriptors and metadata required to interact
+ *with rocSPARSE when using the rocSOLVER re-factorization functionality. It needs to be initialized
+ *with \ref rocsolver_create_rfinfo and destroyed with \ref rocsolver_destroy_rfinfo.
+ ********************************************************************************/
+typedef struct rocsolver_rfinfo_* rocsolver_rfinfo;
+
 #endif /* ROCSOLVER_EXTRA_TYPES_H */

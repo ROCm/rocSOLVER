@@ -11,6 +11,11 @@
 
 #include "testing_bdsqr.hpp"
 #include "testing_bdsvdx.hpp"
+#include "testing_csrrf_analysis.hpp"
+#include "testing_csrrf_refactlu.hpp"
+#include "testing_csrrf_solve.hpp"
+#include "testing_csrrf_splitlu.hpp"
+#include "testing_csrrf_sumlu.hpp"
 #include "testing_gebd2_gebrd.hpp"
 #include "testing_geblttrf_npvt.hpp"
 #include "testing_geblttrs_npvt.hpp"
@@ -317,6 +322,12 @@ class rocsolver_dispatcher
             {"sygvx", testing_sygvx_hegvx<false, false, T>},
             {"sygvx_batched", testing_sygvx_hegvx<true, true, T>},
             {"sygvx_strided_batched", testing_sygvx_hegvx<false, true, T>},
+            // refactorization
+            {"csrrf_analysis", testing_csrrf_analysis<T>},
+            {"csrrf_sumlu", testing_csrrf_sumlu<T>},
+            {"csrrf_splitlu", testing_csrrf_splitlu<T>},
+            {"csrrf_refactlu", testing_csrrf_refactlu<T>},
+            {"csrrf_solve", testing_csrrf_solve<T>},
         };
 
         // Grab function from the map and execute

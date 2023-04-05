@@ -1,13 +1,22 @@
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <ostream>
 #include <stdexcept>
+
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -121,4 +130,33 @@ inline std::ostream& operator<<(std::ostream& os, rocblas_status x)
 inline std::ostream& operator<<(std::ostream& os, printable_char x)
 {
     return os << char(x);
+}
+
+// location of the sparse data directory for the re-factorization tests
+
+inline fs::path get_sparse_data_dir()
+{
+    // first check an environment variable
+    if(const char* datadir = std::getenv("ROCSOLVER_TEST_DATA"))
+        return fs::path{datadir};
+
+    fs::path p = fs::current_path();
+    fs::path p_parent = p.parent_path();
+    fs::path installed = p.root_directory() / "opt" / "rocm" / "share" / "rocsolver" / "test";
+
+    // check relative to the current directory and relative to each parent
+    while(p != p_parent)
+    {
+        fs::path candidate = p / "clients" / "sparsedata";
+        if(fs::exists(candidate))
+            return candidate;
+        p = p_parent;
+        p_parent = p.parent_path();
+    }
+
+    // check relative to default install path
+    if(fs::exists(installed))
+        return installed;
+
+    return fs::current_path();
 }

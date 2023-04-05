@@ -104,6 +104,7 @@ endif()
 
 option(BUILD_LIBRARY "Build rocSOLVER library" ON)
 option_opposite(BUILD_LIBRARY SKIP_LIBRARY)
+option(BUILD_WITH_SPARSE "Build rocSOLVER sparse re-factorization and solvers" ON)
 option(BUILD_CLIENTS_TESTS "Build rocSOLVER test client" "${BUILD_TESTING}")
 option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmark client" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF)
@@ -151,6 +152,12 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
+
+if(BUILD_WITH_SPARSE)
+  find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
+  get_imported_target_location(location roc::rocsparse)
+  message(STATUS "Found rocSPARSE: ${location}")
+endif()
 
 add_subdirectory(common)
 

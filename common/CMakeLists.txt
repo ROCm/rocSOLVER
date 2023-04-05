@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+# Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
 add_library(rocsolver-common INTERFACE)
@@ -14,6 +14,7 @@ set(source_files
 prepend_path("${CMAKE_CURRENT_SOURCE_DIR}/src/" source_files source_paths)
 target_sources(rocsolver-common INTERFACE ${source_paths})
 target_compile_definitions(rocsolver-common INTERFACE __HIP_HCC_COMPAT_MODE__=1)
+
 if(WIN32)
   target_compile_definitions(rocsolver-common INTERFACE
     WIN32_LEAN_AND_MEAN
@@ -29,6 +30,7 @@ if(WIN32)
     -Wno-unused-command-line-argument
   )
 endif()
+
 if(WERROR)
   target_compile_options(rocsolver-common INTERFACE
     -Werror=vla
@@ -36,6 +38,7 @@ if(WERROR)
     -Werror=return-type
   )
 endif()
+
 if(BUILD_ADDRESS_SANITIZER)
   target_compile_options(rocsolver-common INTERFACE
     -fsanitize=address
@@ -47,6 +50,7 @@ if(BUILD_ADDRESS_SANITIZER)
     -fuse-ld=lld
   )
 endif()
+
 if(BUILD_CODE_COVERAGE)
   target_compile_options(rocsolver-common INTERFACE
     -fprofile-arcs
