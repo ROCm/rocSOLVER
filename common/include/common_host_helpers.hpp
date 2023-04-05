@@ -1,9 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -355,4 +356,112 @@ void print_host_matrix(std::ostream& os,
     s += '\n';
     os << s;
     os.flush();
+}
+
+/********* Helpers to read matrix and/or values from file **********/
+/*******************************************************************/
+
+// integers:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        rocblas_int* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    rocblas_int v;
+
+    if(mat == NULL)
+        throw std::invalid_argument(
+            fmt::format("Error: Could not open file {} with test data...", filename));
+
+    for(rocblas_int i = 0; i < m; ++i)
+    {
+        for(rocblas_int j = 0; j < n; ++j)
+        {
+            int read = fscanf(mat, "%d", &v);
+            assert(read == 1);
+            A[i + j * lda] = v;
+        }
+    }
+
+    fclose(mat);
+}
+inline void read_last(const std::string filenameS, rocblas_int* A)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    rocblas_int v;
+
+    if(mat == NULL)
+        throw std::invalid_argument(
+            fmt::format("Error: Could not open file {} with test data...", filename));
+
+    while(fscanf(mat, "%d", &v) == 1)
+    {
+        // do nothing
+    }
+
+    *A = v;
+}
+
+// singles:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        float* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    float v;
+
+    if(mat == NULL)
+        throw std::invalid_argument(
+            fmt::format("Error: Could not open file {} with test data...", filename));
+
+    for(rocblas_int i = 0; i < m; ++i)
+    {
+        for(rocblas_int j = 0; j < n; ++j)
+        {
+            int read = fscanf(mat, "%g", &v);
+            assert(read == 1);
+            A[i + j * lda] = v;
+        }
+    }
+
+    fclose(mat);
+}
+
+// doubles:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        double* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    FILE* mat;
+    mat = fopen(filename, "r");
+    double v;
+
+    if(mat == NULL)
+        throw std::invalid_argument(
+            fmt::format("Error: Could not open file {} with test data...", filename));
+
+    for(rocblas_int i = 0; i < m; ++i)
+    {
+        for(rocblas_int j = 0; j < n; ++j)
+        {
+            int read = fscanf(mat, "%lg", &v);
+            assert(read == 1);
+            A[i + j * lda] = v;
+        }
+    }
+
+    fclose(mat);
 }

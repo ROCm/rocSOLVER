@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2016-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2016-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <fmt/core.h>
@@ -312,6 +312,42 @@ try
          value<rocblas_stride>(),
             "Matrix/vector stride parameter.\n"
             "                           Stride for matrices/vectors Z.\n"
+            "                           ")
+
+        // refactorization size options
+        ("nnzM",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix M.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
+        ("nnzA",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix A.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
+        ("nnzL",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix L.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
+        ("nnzU",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix U.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
+        ("nnzT",
+         value<rocblas_int>(),
+            "The number of non-zero elements in sparse matrix T.\n"
+            "                           Currently only a few test cases can be generated.\n"
+            "                           The benchmark client will use the available case closest to the input value.\n"
             "                           ")
 
         // bdsqr options

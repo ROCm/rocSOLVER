@@ -23,10 +23,12 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
     }
 
     def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel, null, sameOrg)
+    def getRocSPARSE = auxiliary.getLibrary('rocSPARSE-internal',platform.jenkinsLabel, null, sameOrg)
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
                 ${getRocBLAS}
+                ${getRocSPARSE}
                 ${auxiliary.exitIfNotSuccess()}
                 ${centos}
                 ${project.paths.build_command} ${hipClang} ${debug} ${noOptimizations}

@@ -14,14 +14,16 @@ Prerequisites
 rocSOLVER requires a ROCm-enabled platform. For more information, see the
 `ROCm install guide <https://rocmdocs.amd.com/en/latest/Installation_Guide/Installation-Guide.html>`_.
 
-rocSOLVER also requires a compatible version of rocBLAS installed on the system.
-For more information, see the `rocBLAS install guide <https://rocblas.readthedocs.io/en/latest/Linux_Install_Guide.html#building-and-installing-rocblas>`_.
+rocSOLVER also requires compatible versions of rocBLAS and rocSPARSE installed on the system.
+For more information, see the `rocBLAS install guide <https://rocblas.readthedocs.io/en/latest/Linux_Install_Guide.html#building-and-installing-rocblas>`_
+and `rocSPARSE install guide <https://rocsparse.readthedocs.io/en/latest/usermanual.html#building-and-installing>`_.
 
-rocBLAS and rocSOLVER are both still under active development, and it is hard to define minimal
+rocBLAS, rocSPARSE, and rocSOLVER are still under active development, and it is hard to define minimal
 compatibility versions. For now, a good rule of thumb is to always use rocSOLVER together with the
-matching rocBLAS version. For example, if you want to install rocSOLVER from the ROCm 3.3 release, then
-be sure that the ROCm 3.3 version of rocBLAS is also installed; if you are building the rocSOLVER branch
-tip, then you will need to build and install the rocBLAS branch tip as well.
+matching rocBLAS and rocSPARSE version. For example, if you want to install rocSOLVER from the ROCm 5.6
+release, then be sure that the ROCm 5.6 versions of rocBLAS and rocSPARSE are also installed. If you are
+building the rocSOLVER branch tip, then you will need to build and install the rocBLAS and rocSPARSE branch
+tips as well.
 
 
 Installing from pre-built packages
@@ -75,7 +77,16 @@ This command builds rocSOLVER and puts the generated library files, such as head
 Other output files from the configuration and building process can also be found in the
 ``rocSOLVER/build`` and ``rocSOLVER/build/release`` directories. It is assumed that all
 external library dependencies have been installed. It also assumes that the rocBLAS library
-is located at ``/opt/rocm/rocblas``.
+is located at ``/opt/rocm/rocblas`` and that the rocSPARSE library is located at
+``/opt/rocm/rocsparse``.
+
+.. code-block:: bash
+
+    ./install.sh --no-sparse
+
+Use the ``--no-sparse`` to build rocSOLVER without rocSPARSE as a dependency. This will
+disable sparse functionality within rocSOLVER and will cause all relevant methods to
+return ``rocblas_status_not_implemented``.
 
 .. code-block:: bash
 
@@ -109,11 +120,10 @@ below.
 
     ./install.sh --rocblas_dir /alternative/rocblas/location
 
-Use ``--rocblas_dir`` to change where the
-build system will search for the rocBLAS library.
-In this case, for example, the installer
-will look for the rocBLAS library at
-``/alternative/rocblas/location``.
+Use ``--rocblas_dir`` to change where the build system will search for the rocBLAS
+library. In this case, for example, the installer will look for the rocBLAS library at
+``/alternative/rocblas/location``. Similarly, you may use ``--rocsparse_dir`` to specify
+an alternative location for the rocSPARSE library.
 
 .. code-block:: bash
 
@@ -201,9 +211,11 @@ how to install each dependency at the corresponding documentation sites:
 * `GoogleTest <https://github.com/google/googletest>`_
 * `fmt <https://github.com/fmtlib/fmt>`_
 
-Once all dependencies are installed (including ROCm and rocBLAS), rocSOLVER can be manually built using a combination of CMake and Make commands.
-Using CMake options can provide more flexibility in tailoring the building and installation process. Here we provide a list of examples
-of common use cases (see the CMake documentation for more information on CMake options).
+Once all dependencies are installed (including ROCm, rocBLAS, and rocSPARSE), rocSOLVER
+can be manually built using a combination of CMake and Make commands. Using CMake options
+can provide more flexibility in tailoring the building and installation process. Here we
+provide a list of examples of common use cases (see the CMake documentation for more
+information on CMake options).
 
 .. code-block:: bash
 
@@ -220,6 +232,14 @@ This is equivalent to ``./install.sh``.
     make install
 
 This is equivalent to ``./install.sh --lib_dir /home/user/rocsolverlib --build_dir buildoutput``.
+
+.. code-block:: bash
+
+    mkdir -p build/release && cd build/release
+    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_WITH_SPARSE=OFF ../..
+    make install
+
+This is equivalent to ``./install.sh --no-sparse``.
 
 .. code-block:: bash
 
