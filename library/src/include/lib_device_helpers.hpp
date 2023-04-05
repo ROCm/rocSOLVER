@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -336,12 +336,12 @@ ROCSOLVER_KERNEL void init_ident(const rocblas_int m,
 }
 
 template <typename T, typename U>
-ROCSOLVER_KERNEL void reset_info(T* info, const rocblas_int n, U val)
+ROCSOLVER_KERNEL void reset_info(T* info, const rocblas_int n, U val, rocblas_int incr = 0)
 {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(idx < n)
-        info[idx] = T(val);
+        info[idx] = T(val) + incr * idx;
 }
 
 template <typename T, typename S, typename U>

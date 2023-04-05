@@ -192,6 +192,18 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_lauum.cpp
 )
 
+set(rocsolver_refact_source
+  # rfinfo create, analysis, destroy
+  refact/rocsolver_rfinfo.cpp
+  refact/rocrefact_csrrf_analysis.cpp
+  # re-factorization
+  refact/rocrefact_csrrf_sumlu.cpp
+  refact/rocrefact_csrrf_splitlu.cpp
+  refact/rocrefact_csrrf_refactlu.cpp
+  # direct solver
+  refact/rocrefact_csrrf_solve.cpp
+)
+
 set(rocsolver_specialized_source
   # trsm
   specialized/roclapack_trsm_specialized_kernels_s.cpp
@@ -238,6 +250,7 @@ add_library(rocsolver
   ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
+  ${rocsolver_refact_source}
 )
 
 add_library(roc::rocsolver ALIAS rocsolver)
@@ -251,6 +264,14 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
+
+if(BUILD_WITH_SPARSE)
+  target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+  set_source_files_properties(${rocsolver_refact_source}
+    PROPERTIES
+      COMPILE_DEFINITIONS HAVE_ROCSPARSE
+  )
+endif()
 
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
