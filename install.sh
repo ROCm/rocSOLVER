@@ -35,6 +35,9 @@ Options:
   --rocsolver_dir <solverdir> Specify path to an existing rocSOLVER install directory.
                               (e.g. /src/rocSOLVER/build/release/rocsolver-install)
 
+  --rocsparse_dir <sparsedir> Specify path to an existing rocSPARSE install directory.
+                              (e.g. /src/rocSPARSE/build/release/rocsparse-install)
+
   --cleanup                   Pass this flag to remove intermediary build files after build and reduce disk usage
 
   -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
@@ -62,6 +65,8 @@ Options:
   -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
   -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
+
+  --no-sparse                 Pass this flag to remove rocSPARSE as a dependency and disable sparse methods.
 
   -a | --architecture         Set GPU architecture target, e.g. "gfx803;gfx900;gfx906;gfx908".
                               If you don't know the architecture of the GPU in your local machine, it can be
@@ -323,9 +328,11 @@ cleanup=false
 build_sanitizer=false
 build_codecoverage=false
 build_freorg_bkwdcomp=true
+build_with_sparse=true
 unset architecture
 unset rocblas_dir
 unset rocsolver_dir
+unset rocsparse_dir
 declare -a cmake_common_options
 declare -a cmake_client_options
 
@@ -336,7 +343,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,rocsparse_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -384,6 +391,9 @@ while true; do
     -n | --no-optimizations)
         optimal=false
         shift ;;
+    --no-sparse)
+        build_with_sparse=false
+        shift ;;
     --build_dir)
         build_dir=${2}
         shift 2;;
@@ -401,6 +411,9 @@ while true; do
         shift 2 ;;
     --rocsolver_dir)
         rocsolver_dir=${2}
+        shift 2 ;;
+    --rocsparse_dir)
+        rocsparse_dir=${2}
         shift 2 ;;
     -a|--architecture)
         architecture=${2}
@@ -457,6 +470,9 @@ if [[ -n "${rocblas_dir+x}" ]]; then
 fi
 if [[ -n "${rocsolver_dir+x}" ]]; then
   rocsolver_dir="$(make_absolute_path "${rocsolver_dir}")"
+fi
+if [[ -n "${rocsparse_dir+x}" ]]; then
+  rocsparse_dir="$(make_absolute_path "${rocsparse_dir}")"
 fi
 
 # Default cmake executable is called cmake
@@ -547,12 +563,20 @@ if [[ -n "${rocsolver_dir+x}" ]]; then
   cmake_common_options+=("-Drocsolver_DIR=${rocsolver_dir}/lib/cmake/rocsolver")
 fi
 
+if [[ -n "${rocsparse_dir+x}" ]]; then
+  cmake_common_options+=("-Drocsparse_DIR=${rocsparse_dir}/lib/cmake/rocsparse")
+fi
+
 if [[ "${static_lib}" == true ]]; then
   cmake_common_options+=('-DBUILD_SHARED_LIBS=OFF')
 fi
 
 if [[ "${optimal}" == false ]]; then
   cmake_common_options+=('-DOPTIMAL=OFF')
+fi
+
+if [[ "${build_with_sparse}" == false ]]; then
+  cmake_common_options+=('-DBUILD_WITH_SPARSE=OFF')
 fi
 
 if [[ -n "${architecture+x}" ]]; then

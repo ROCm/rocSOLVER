@@ -2,15 +2,8 @@
 # These comments will also be removed.
 root: index
 subtrees:
-  - numbered: False
+  - numbered: True
     entries:
-    - file: design/index
-      subtrees:
-      - entries:
-        - file: design/intro
-        - file: design/batch
-        - file: design/tuning
-        - file: design/contribute
     - file: userguide/index
       subtrees:
       - entries:
@@ -20,6 +13,13 @@ subtrees:
         - file: userguide/memory
         - file: userguide/logging
         - file: userguide/clients
+    - file: design/index
+      subtrees:
+      - entries:
+        - file: design/intro
+        - file: design/batch
+        - file: design/tuning
+        - file: design/contribute
     - file: api/index
       subtrees:
       - entries:
@@ -27,5 +27,6 @@ subtrees:
         - file: api/auxiliary
         - file: api/lapack
         - file: api/lapacklike
+        - file: api/refact
         - file: api/logging
         - file: api/deprecated
