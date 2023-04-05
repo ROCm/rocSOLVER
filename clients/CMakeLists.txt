@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
 project(rocsolver-clients LANGUAGES C CXX)
@@ -39,12 +39,15 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   )
   target_link_libraries(clients-common INTERFACE
     ${LAPACK_LIBRARIES}
+    $<$<PLATFORM_ID:Linux>:stdc++fs>
     fmt::fmt
   )
   target_link_options(clients-common INTERFACE
     ${LAPACK_LINKER_FLAGS}
   )
-  set(explicit_inst_files
+
+  set(rocauxiliary_inst_files
+  common/testing_lacgv.cpp
     common/testing_laswp.cpp
     common/testing_larfg.cpp
     common/testing_larf.cpp
@@ -59,6 +62,21 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_stedc.cpp
     common/testing_stein.cpp
     common/testing_lasyf.cpp
+    common/testing_sterf.cpp
+    common/testing_stebz.cpp
+    common/testing_orgxr_ungxr.cpp
+    common/testing_orgxl_ungxl.cpp
+    common/testing_orglx_unglx.cpp
+    common/testing_orgbr_ungbr.cpp
+    common/testing_orgtr_ungtr.cpp
+    common/testing_ormxr_unmxr.cpp
+    common/testing_ormxl_unmxl.cpp
+    common/testing_ormlx_unmlx.cpp
+    common/testing_ormbr_unmbr.cpp
+    common/testing_ormtr_unmtr.cpp
+  )
+
+  set(roclapack_inst_files
     common/testing_potf2_potrf.cpp
     common/testing_potrs.cpp
     common/testing_posv.cpp
@@ -82,18 +100,6 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_gels.cpp
     common/testing_gebd2_gebrd.cpp
     common/testing_sytf2_sytrf.cpp
-    common/testing_sterf.cpp
-    common/testing_stebz.cpp
-    common/testing_orgxr_ungxr.cpp
-    common/testing_orgxl_ungxl.cpp
-    common/testing_orglx_unglx.cpp
-    common/testing_orgbr_ungbr.cpp
-    common/testing_orgtr_ungtr.cpp
-    common/testing_ormxr_unmxr.cpp
-    common/testing_ormxl_unmxl.cpp
-    common/testing_ormlx_unmlx.cpp
-    common/testing_ormbr_unmbr.cpp
-    common/testing_ormtr_unmtr.cpp
     common/testing_sytxx_hetxx.cpp
     common/testing_sygsx_hegsx.cpp
     common/testing_syev_heev.cpp
@@ -104,19 +110,44 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_sygvd_hegvd.cpp
     common/testing_sygvj_hegvj.cpp
     common/testing_sygvx_hegvx.cpp
-    common/testing_lacgv.cpp
     common/testing_geblttrf_npvt.cpp
     common/testing_geblttrs_npvt.cpp
   )
+
+  set(rocrefact_inst_files
+    common/testing_csrrf_analysis.cpp
+    common/testing_csrrf_sumlu.cpp
+    common/testing_csrrf_splitlu.cpp
+    common/testing_csrrf_refactlu.cpp
+    common/testing_csrrf_solve.cpp
+  )
+
   set(common_source_files
     common/lapack_host_reference.cpp
     rocblascommon/clients_utility.cpp
     rocblascommon/program_options.cpp
-    ${explicit_inst_files}
+    ${rocauxiliary_inst_files}
+    ${roclapack_inst_files}
+    ${rocrefact_inst_files}
   )
 
   prepend_path("${CMAKE_CURRENT_SOURCE_DIR}/" common_source_files common_source_paths)
   target_sources(clients-common INTERFACE ${common_source_paths})
+
+  # Copy and point to sparse test data
+  file(COPY
+    ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/
+    DESTINATION ${PROJECT_BINARY_DIR}/sparsedata/
+  )
+  install(DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/rocsolver/test
+    COMPONENT tests
+  )
+
+  target_compile_definitions(clients-common INTERFACE
+    -DROCBLAS_NO_DEPRECATED_WARNINGS
+  )
 
   if(BUILD_CLIENTS_BENCHMARKS)
     add_subdirectory(benchmarks)
