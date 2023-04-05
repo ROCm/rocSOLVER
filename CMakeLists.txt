@@ -184,7 +184,7 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
 endif()
 
 # Package-specific CPACK vars
-rocm_package_add_dependencies(DEPENDS "rocblas >= 4.0" "rocblas < 4.1")
+rocm_package_add_dependencies(DEPENDS "rocblas >= 3.1" "rocblas < 4.0")
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")
