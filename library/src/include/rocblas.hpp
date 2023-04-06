@@ -1590,6 +1590,46 @@ rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
                                               offsety, incy, stridey, batch_count, work);
 }
 
+// symv/hemv batched
+template <typename T>
+rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_int n,
+                                     const T* alpha,
+                                     rocblas_stride stridea,
+                                     const T* const* A,
+                                     rocblas_stride offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     const T* const* x,
+                                     rocblas_stride offsetx,
+                                     rocblas_int incx,
+                                     rocblas_stride stridex,
+                                     const T* beta,
+                                     rocblas_stride strideb,
+                                     T* const* y,
+                                     rocblas_stride offsety,
+                                     rocblas_int incy,
+                                     rocblas_stride stridey,
+                                     rocblas_int batch_count,
+                                     T* work,
+                                     T** workArr)
+{
+    constexpr auto name = rocblas_is_complex<T> ? "hemv" : "symv";
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER(name, "uplo:", uplo, "n:", n, "shiftA:", offsetA, "lda:", lda, "shiftX:", offsetx,
+                  "incx:", incx, "shiftY:", offsety, "incy:", incy, "bc:", batch_count);
+
+    if constexpr(!rocblas_is_complex<T>)
+        return rocblas_internal_symv_batched_template(
+            handle, uplo, n, alpha, stridea, A, offsetA, lda, strideA, x, offsetx, incx, stridex,
+            beta, strideb, y, offsety, incy, stridey, batch_count, work);
+    else
+        return rocblas_internal_hemv_batched_template(
+            handle, uplo, n, alpha, stridea, A, offsetA, lda, strideA, x, offsetx, incx, stridex,
+            beta, strideb, y, offsety, incy, stridey, batch_count, work);
+}
+
 // symv/hemv overload - batched with strided y
 template <typename T>
 rocblas_status rocblasCall_symv_hemv(rocblas_handle handle,
