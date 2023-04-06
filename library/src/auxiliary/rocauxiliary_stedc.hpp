@@ -1380,9 +1380,9 @@ void local_gemm(rocblas_handle handle,
     S zero = 0.0;
 
     // temp = A*B
-    rocblasCall_gemm(
-        handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A, shiftA, lda,
-        strideA, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT, batch_count, workArr);
+    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A,
+                     shiftA, lda, strideA, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt,
+                     strideT, batch_count, workArr);
 
     // A = temp
     hipStream_t stream;
@@ -1433,9 +1433,9 @@ void local_gemm(rocblas_handle handle,
                             strideA, work, rocblas_fill_full);
 
     // temp = work*B
-    rocblasCall_gemm(
-        handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work, shiftT, ldt,
-        strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT, batch_count, workArr);
+    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+                     shiftT, ldt, strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt,
+                     strideT, batch_count, workArr);
 
     // real(A) = temp
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count),
@@ -1448,9 +1448,9 @@ void local_gemm(rocblas_handle handle,
                             strideA, work, rocblas_fill_full);
 
     // temp = work*B
-    rocblasCall_gemm(
-        handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work, shiftT, ldt,
-        strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT, batch_count, workArr);
+    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+                     shiftT, ldt, strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt,
+                     strideT, batch_count, workArr);
 
     // imag(A) = temp
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count),

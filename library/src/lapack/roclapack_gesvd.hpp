@@ -621,15 +621,13 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
 
                 // update
                 if(row)
-                    rocblasCall_gemm(
-                        handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one, A,
-                        shiftA, lda, strideA, bufferT, shiftT, ldt, strideT, &zero, bufferC, shiftC,
-                        ldc, strideC, batch_count, workArr);
+                    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n,
+                                     k, &one, A, shiftA, lda, strideA, bufferT, shiftT, ldt, strideT,
+                                     &zero, bufferC, shiftC, ldc, strideC, batch_count, workArr);
                 else
-                    rocblasCall_gemm(
-                        handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one,
-                        bufferT, shiftT, ldt, strideT, A, shiftA, lda, strideA, &zero, bufferC,
-                        shiftC, ldc, strideC, batch_count, workArr);
+                    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n,
+                                     k, &one, bufferT, shiftT, ldt, strideT, A, shiftA, lda, strideA,
+                                     &zero, bufferC, shiftC, ldc, strideC, batch_count, workArr);
 
                 // copy to overwrite A
                 ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),
@@ -640,15 +638,13 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             {
                 // update
                 if(row)
-                    rocblasCall_gemm(
-                        handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one, A,
-                        shiftA, lda, strideA, bufferT, shiftT, ldt, strideT, &zero, UV, shiftUV,
-                        lduv, strideUV, batch_count, workArr);
+                    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n,
+                                     k, &one, A, shiftA, lda, strideA, bufferT, shiftT, ldt, strideT,
+                                     &zero, UV, shiftUV, lduv, strideUV, batch_count, workArr);
                 else
-                    rocblasCall_gemm(
-                        handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one,
-                        bufferT, shiftT, ldt, strideT, A, shiftA, lda, strideA, &zero, UV, shiftUV,
-                        lduv, strideUV, batch_count, workArr);
+                    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n,
+                                     k, &one, bufferT, shiftT, ldt, strideT, A, shiftA, lda, strideA,
+                                     &zero, UV, shiftUV, lduv, strideUV, batch_count, workArr);
 
                 // overwrite A if required
                 if(othervO)
@@ -660,15 +656,13 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
             {
                 // update
                 if(row)
-                    rocblasCall_gemm(
-                        handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one, UV,
-                        shiftUV, lduv, strideUV, bufferT, shiftT, ldt, strideT, &zero, A, shiftA,
-                        lda, strideA, batch_count, workArr);
+                    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n,
+                                     k, &one, UV, shiftUV, lduv, strideUV, bufferT, shiftT, ldt,
+                                     strideT, &zero, A, shiftA, lda, strideA, batch_count, workArr);
                 else
-                    rocblasCall_gemm(
-                        handle, rocblas_operation_none, rocblas_operation_none, m, n, k, &one,
-                        bufferT, shiftT, ldt, strideT, UV, shiftUV, lduv, strideUV, &zero, A,
-                        shiftA, lda, strideA, batch_count, workArr);
+                    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n,
+                                     k, &one, bufferT, shiftT, ldt, strideT, UV, shiftUV, lduv,
+                                     strideUV, &zero, A, shiftA, lda, strideA, batch_count, workArr);
 
                 // copy back to U/V
                 ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks_m, blocks_n, batch_count),

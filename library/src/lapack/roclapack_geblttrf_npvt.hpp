@@ -174,10 +174,10 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
             0, C, shiftC + k * ldc * nb, ldc, strideC, batch_count, work1, work2, work3, work4,
             optim_mem, false);
 
-        rocblasCall_gemm<T>(
-            handle, rocblas_operation_none, rocblas_operation_none, nb, nb, nb, &minone, A,
-            shiftA + k * lda * nb, lda, strideA, C, shiftC + k * ldc * nb, ldc, strideC, &one, B,
-            shiftB + (k + 1) * ldb * nb, ldb, strideB, batch_count, nullptr);
+        rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, nb, nb, nb,
+                            &minone, A, shiftA + k * lda * nb, lda, strideA, C,
+                            shiftC + k * ldc * nb, ldc, strideC, &one, B,
+                            shiftB + (k + 1) * ldb * nb, ldb, strideB, batch_count, nullptr);
 
         rocsolver_getrf_template<BATCHED, STRIDED, T>(
             handle, nb, nb, B, shiftB + (k + 1) * ldb * nb, ldb, strideB, nullptr, 0, 0, iinfo2,

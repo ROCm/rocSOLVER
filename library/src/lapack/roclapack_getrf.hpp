@@ -725,11 +725,11 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
             if(nextpiv < m)
             {
-                rocblasCall_gemm<T>(
-                    handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone, A,
-                    shiftA + idx2D(nextpiv, j, lda), lda, strideA, A,
-                    shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,
-                    shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA, batch_count, (T**)nullptr);
+                rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, mm, nn,
+                                    jb, &minone, A, shiftA + idx2D(nextpiv, j, lda), lda, strideA,
+                                    A, shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,
+                                    shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA,
+                                    batch_count, (T**)nullptr);
                 /** This would be the call to the internal gemm, leaving it
                         commented here until we are sure it won't be needed **/
                 /*dimx = std::min({mm, (4096 / jb) / 2, 32});
