@@ -118,10 +118,10 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     for(rocblas_int k = 0; k < nblocks; k++)
     {
         if(k > 0)
-            rocblasCall_gemm<BATCHED, STRIDED, T>(
-                handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, A,
-                shiftA + (k - 1) * lda * nb, lda, strideA, X, shiftX + (k - 1) * ldx * nrhs, ldx,
-                strideX, &one, X, shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
+            rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs,
+                                nb, &minone, A, shiftA + (k - 1) * lda * nb, lda, strideA, X,
+                                shiftX + (k - 1) * ldx * nrhs, ldx, strideX, &one, X,
+                                shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
 
         rocsolver_getrs_template<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * ldb * nb, ldb, strideB,
@@ -132,10 +132,10 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     // backward solve
     for(rocblas_int k = nblocks - 2; k >= 0; k--)
     {
-        rocblasCall_gemm<BATCHED, STRIDED, T>(
-            handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, C,
-            shiftC + k * ldc * nb, ldc, strideC, X, shiftX + (k + 1) * ldx * nrhs, ldx, strideX,
-            &one, X, shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
+        rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb,
+                            &minone, C, shiftC + k * ldc * nb, ldc, strideC, X,
+                            shiftX + (k + 1) * ldx * nrhs, ldx, strideX, &one, X,
+                            shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
     }
 
     return rocblas_status_success;
