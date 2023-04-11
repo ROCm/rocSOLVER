@@ -152,11 +152,13 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
+set(rocsolver_pkgdeps "rocblas >= 3.1" "rocblas < 4.0")
 
 if(BUILD_WITH_SPARSE)
-  find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
+  find_package(rocsparse 2.2 REQUIRED CONFIG PATHS ${ROCM_PATH})
   get_imported_target_location(location roc::rocsparse)
   message(STATUS "Found rocSPARSE: ${location}")
+  list(APPEND rocsolver_pkgdeps "rocsparse >= 2.2" "rocsparse < 3.0")
 endif()
 
 add_subdirectory(common)
@@ -191,7 +193,7 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
 endif()
 
 # Package-specific CPACK vars
-rocm_package_add_dependencies(DEPENDS "rocblas >= 3.1" "rocblas < 4.0")
+rocm_package_add_dependencies(DEPENDS ${rocsolver_pkgdeps})
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")
