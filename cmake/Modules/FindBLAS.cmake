@@ -122,7 +122,6 @@ BLAS/LAPACK Vendors
   AMD Core Math Library
 
 ``AOCL``, ``AOCL_mt``
-  .. versionadded:: 3.26
   AMD Optimizing CPU Libraries
 
 ``Apple``, ``NAS``
