@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -83,12 +83,14 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         const rocblas_int nrhs,
                                         U A,
                                         const rocblas_int shiftA,
+                                        const rocblas_int inca,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
                                         const rocblas_int* ipiv,
                                         const rocblas_stride strideP,
                                         U B,
                                         const rocblas_int shiftB,
+                                        const rocblas_int incb,
                                         const rocblas_int ldb,
                                         const rocblas_stride strideB,
                                         const rocblas_int batch_count,
@@ -100,7 +102,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
                                         const bool pivot)
 {
     ROCSOLVER_ENTER("getrs", "trans:", trans, "n:", n, "nrhs:", nrhs, "shiftA:", shiftA,
-                    "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "bc:", batch_count);
+                    "inca:", inca, "lda:", lda, "shiftB:", shiftB, "incb:", incb, "ldb:", ldb,
+                    "bc:", batch_count);
 
     // quick return
     if(n == 0 || nrhs == 0 || batch_count == 0)
@@ -118,8 +121,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
     {
         // first apply row interchanges to the right hand sides
         if(pivot)
-            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
-                                        strideP, 1, batch_count);
+            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, incb, ldb, strideB, 1, n, ipiv, 0,
+                                        1, strideP, batch_count);
 
         // solve L*X = B, overwriting B with X
         rocsolver_trsm_lower<BATCHED, STRIDED, T>(
@@ -145,8 +148,8 @@ rocblas_status rocsolver_getrs_template(rocblas_handle handle,
 
         // then apply row interchanges to the solution vectors
         if(pivot)
-            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, ldb, strideB, 1, n, ipiv, 0,
-                                        strideP, -1, batch_count);
+            rocsolver_laswp_template<T>(handle, nrhs, B, shiftB, incb, ldb, strideB, 1, n, ipiv, 0,
+                                        -1, strideP, batch_count);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

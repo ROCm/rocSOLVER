@@ -1,5 +1,5 @@
 /************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -82,18 +82,22 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
                                                 const rocblas_int nrhs,
                                                 U A,
                                                 const rocblas_int shiftA,
+                                                const rocblas_int inca,
                                                 const rocblas_int lda,
                                                 const rocblas_stride strideA,
                                                 U B,
                                                 const rocblas_int shiftB,
+                                                const rocblas_int incb,
                                                 const rocblas_int ldb,
                                                 const rocblas_stride strideB,
                                                 U C,
                                                 const rocblas_int shiftC,
+                                                const rocblas_int incc,
                                                 const rocblas_int ldc,
                                                 const rocblas_stride strideC,
                                                 U X,
                                                 const rocblas_int shiftX,
+                                                const rocblas_int incx,
                                                 const rocblas_int ldx,
                                                 const rocblas_stride strideX,
                                                 const rocblas_int batch_count,
@@ -103,9 +107,10 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
                                                 void* work4,
                                                 bool optim_mem)
 {
-    ROCSOLVER_ENTER("geblttrs_npvt", "nb:", nb, "nblocks:", nblocks, "nrhs:", nrhs, "shiftA:", shiftA,
-                    "lda:", lda, "shiftB:", shiftB, "ldb:", ldb, "shiftC:", shiftC, "ldc:", ldc,
-                    "shiftX:", shiftX, "ldx:", ldx, "bc:", batch_count);
+    ROCSOLVER_ENTER("geblttrs_npvt", "nb:", nb, "nblocks:", nblocks, "nrhs:", nrhs,
+                    "shiftA:", shiftA, "inca:", inca, "lda:", lda, "shiftB:", shiftB, "incb:", incb,
+                    "ldb:", ldb, "shiftC:", shiftC, "incc:", incc, "ldc:", ldc, "shiftX:", shiftX,
+                    "incx:", incx, "ldx:", ldx, "bc:", batch_count);
 
     // quick return
     if(nb == 0 || nblocks == 0 || nrhs == 0 || batch_count == 0)
@@ -124,9 +129,9 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
                                 shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
 
         rocsolver_getrs_template<BATCHED, STRIDED, T>(
-            handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * ldb * nb, ldb, strideB,
-            nullptr, 0, X, shiftX + k * ldx * nrhs, ldx, strideX, batch_count, work1, work2, work3,
-            work4, optim_mem, false);
+            handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * ldb * nb, incb, ldb, strideB,
+            nullptr, 0, X, shiftX + k * ldx * nrhs, incx, ldx, strideX, batch_count, work1, work2,
+            work3, work4, optim_mem, false);
     }
 
     // backward solve

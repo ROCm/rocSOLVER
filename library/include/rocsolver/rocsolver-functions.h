@@ -190,8 +190,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
                 k_1 through k_1 + (k_2 - k_1)*abs(incx) of this vector are accessed.
                 Elements of ipiv are considered 1-based.
     @param[in]
-    incx        rocblas_int. incx != 0.\n
-                The distance between successive values of ipiv.  If incx
+    incp        rocblas_int. incp != 0.\n
+                The distance between successive values of ipiv.  If incp
                 is negative, the pivots are applied in reverse order.
     **************************************************************************/
 
@@ -202,7 +202,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_slaswp(rocblas_handle handle,
                                                  const rocblas_int k1,
                                                  const rocblas_int k2,
                                                  const rocblas_int* ipiv,
-                                                 const rocblas_int incx);
+                                                 const rocblas_int incp);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dlaswp(rocblas_handle handle,
                                                  const rocblas_int n,
@@ -211,7 +211,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dlaswp(rocblas_handle handle,
                                                  const rocblas_int k1,
                                                  const rocblas_int k2,
                                                  const rocblas_int* ipiv,
-                                                 const rocblas_int incx);
+                                                 const rocblas_int incp);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_claswp(rocblas_handle handle,
                                                  const rocblas_int n,
@@ -220,7 +220,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_claswp(rocblas_handle handle,
                                                  const rocblas_int k1,
                                                  const rocblas_int k2,
                                                  const rocblas_int* ipiv,
-                                                 const rocblas_int incx);
+                                                 const rocblas_int incp);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocblas_handle handle,
                                                  const rocblas_int n,
@@ -229,7 +229,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlaswp(rocblas_handle handle,
                                                  const rocblas_int k1,
                                                  const rocblas_int k2,
                                                  const rocblas_int* ipiv,
-                                                 const rocblas_int incx);
+                                                 const rocblas_int incp);
 //! @}
 
 /*! @{

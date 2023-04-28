@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -426,6 +426,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                              const rocblas_int n,
                              U A,
                              const rocblas_int r_shiftA,
+                             const rocblas_int inca,
                              const rocblas_int lda,
                              const rocblas_stride strideA,
                              rocblas_int* ipiv,
@@ -472,7 +473,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
         // factorize inner panel block
         rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
-                                               lda, strideA, ipiv, shiftP + k, strideP, info,
+                                               inca, lda, strideA, ipiv, shiftP + k, strideP, info,
                                                batch_count, scalars, pivotval, pivotidx, pivot,
                                                offset + k, permut_idx, stridePI);
         if(pivot)
@@ -611,6 +612,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         const rocblas_int n,
                                         U A,
                                         const rocblas_int shiftA,
+                                        const rocblas_int inca,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
                                         rocblas_int* ipiv,
@@ -630,8 +632,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
                                         const bool optim_mem,
                                         const bool pivot)
 {
-    ROCSOLVER_ENTER("getrf", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
-                    "bc:", batch_count);
+    ROCSOLVER_ENTER("getrf", "m:", m, "n:", n, "shiftA:", shiftA, "inca:", inca, "lda:", lda,
+                    "shiftP:", shiftP, "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)
@@ -658,9 +660,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_int blk = getrf_get_blksize<ISBATCHED, T>(dim, pivot);
 
     if(blk == 0)
-        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, lda, strideA, ipiv,
-                                                      shiftP, strideP, info, batch_count, scalars,
-                                                      pivotval, pivotidx, pivot);
+        return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, inca, lda, strideA,
+                                                      ipiv, shiftP, strideP, info, batch_count,
+                                                      scalars, pivotval, pivotidx, pivot);
 
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
@@ -691,16 +693,16 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         if(pivot || panel)
         {
             // factorize outer block panel
-            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, lda, strideA,
-                                               ipiv, shiftP + j, strideP, info, batch_count, pivot,
-                                               scalars, work1, work2, work3, work4, optim_mem,
-                                               pivotval, pivotidx, j, iipiv, m);
+            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, inca, lda,
+                                               strideA, ipiv, shiftP + j, strideP, info,
+                                               batch_count, pivot, scalars, work1, work2, work3,
+                                               work4, optim_mem, pivotval, pivotidx, j, iipiv, m);
         }
         else
         {
             // factorize only outer diagonal block
-            getrf_panelLU<BATCHED, STRIDED, T>(handle, jb, jb, n, A, shiftA + j, lda, strideA, ipiv,
-                                               shiftP + j, strideP, info, batch_count, pivot,
+            getrf_panelLU<BATCHED, STRIDED, T>(handle, jb, jb, n, A, shiftA + j, inca, lda, strideA,
+                                               ipiv, shiftP + j, strideP, info, batch_count, pivot,
                                                scalars, work1, work2, work3, work4, optim_mem,
                                                pivotval, pivotidx, j, iipiv, m);
 

@@ -5,7 +5,7 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  *
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -522,6 +522,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         const rocblas_int n,
                                         U A,
                                         const rocblas_int shiftA,
+                                        const rocblas_int inca,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
                                         rocblas_int* ipiv,
@@ -537,8 +538,8 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
                                         rocblas_int* permut_idx = nullptr,
                                         const rocblas_stride stridePI = 0)
 {
-    ROCSOLVER_ENTER("getf2", "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
-                    "bc:", batch_count);
+    ROCSOLVER_ENTER("getf2", "m:", m, "n:", n, "shiftA:", shiftA, "inca:", inca, "lda:", lda,
+                    "shiftP:", shiftP, "bc:", batch_count);
 
     // quick return if zero instances in batch
     if(batch_count == 0)
