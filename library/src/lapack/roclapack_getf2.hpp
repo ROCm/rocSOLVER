@@ -635,16 +635,16 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         if(sger_thds_x == 1)
         {
             // Scale J'th column
-            rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), 1,
+            rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), inca,
                                 strideA, batch_count);
 
             // update trailing submatrix
             if(j < dim - 1)
             {
-                rocblasCall_ger<false, T>(
-                    handle, mm, nn, scalars, 0, A, shiftA + idx2D(j + 1, j, lda), 1, strideA, A,
-                    shiftA + idx2D(j, j + 1, lda), lda, strideA, A,
-                    shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, batch_count, nullptr);
+                rocsolver_ger<false, T>(handle, mm, nn, scalars, 0, A, shiftA + idx2D(j + 1, j, lda),
+                                        inca, strideA, A, shiftA + idx2D(j, j + 1, lda), lda,
+                                        strideA, A, shiftA + idx2D(j + 1, j + 1, lda), inca, lda,
+                                        strideA, batch_count, nullptr);
             }
         }
 

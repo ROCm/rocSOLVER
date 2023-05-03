@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -761,10 +761,12 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                           const rocblas_int n,
                           U A,
                           const rocblas_int shiftA,
+                          const rocblas_int inca,
                           const rocblas_int lda,
                           const rocblas_stride strideA,
                           U B,
                           const rocblas_int shiftB,
+                          const rocblas_int incb,
                           const rocblas_int ldb,
                           const rocblas_stride strideB,
                           const rocblas_int batch_count,
@@ -1013,10 +1015,12 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                           const rocblas_int n,
                           U A,
                           const rocblas_int shiftA,
+                          const rocblas_int inca,
                           const rocblas_int lda,
                           const rocblas_stride strideA,
                           U B,
                           const rocblas_int shiftB,
+                          const rocblas_int incb,
                           const rocblas_int ldb,
                           const rocblas_stride strideB,
                           const rocblas_int batch_count,
@@ -1246,6 +1250,64 @@ void rocsolver_trsm_upper(rocblas_handle handle,
             FORWARD_SUBSTITUTIONS;
         }
     }
+}
+
+/*************************************************************
+    Non-interleaved wrappers
+*************************************************************/
+
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+inline void rocsolver_trsm_lower(rocblas_handle handle,
+                                 const rocblas_side side,
+                                 const rocblas_operation trans,
+                                 const rocblas_diagonal diag,
+                                 const rocblas_int m,
+                                 const rocblas_int n,
+                                 U A,
+                                 const rocblas_int shiftA,
+                                 const rocblas_int lda,
+                                 const rocblas_stride strideA,
+                                 U B,
+                                 const rocblas_int shiftB,
+                                 const rocblas_int ldb,
+                                 const rocblas_stride strideB,
+                                 const rocblas_int batch_count,
+                                 const bool optim_mem,
+                                 void* work1,
+                                 void* work2,
+                                 void* work3,
+                                 void* work4)
+{
+    rocsolver_trsm_lower<BATCHED, STRIDED, T>(handle, side, trans, diag, m, n, A, shiftA, 1, lda,
+                                              strideA, B, shiftB, 1, ldb, strideB, batch_count,
+                                              optim_mem, work1, work2, work3, work4);
+}
+
+template <bool BATCHED, bool STRIDED, typename T, typename U>
+inline void rocsolver_trsm_upper(rocblas_handle handle,
+                                 const rocblas_side side,
+                                 const rocblas_operation trans,
+                                 const rocblas_diagonal diag,
+                                 const rocblas_int m,
+                                 const rocblas_int n,
+                                 U A,
+                                 const rocblas_int shiftA,
+                                 const rocblas_int lda,
+                                 const rocblas_stride strideA,
+                                 U B,
+                                 const rocblas_int shiftB,
+                                 const rocblas_int ldb,
+                                 const rocblas_stride strideB,
+                                 const rocblas_int batch_count,
+                                 const bool optim_mem,
+                                 void* work1,
+                                 void* work2,
+                                 void* work3,
+                                 void* work4)
+{
+    rocsolver_trsm_upper<BATCHED, STRIDED, T>(handle, side, trans, diag, m, n, A, shiftA, 1, lda,
+                                              strideA, B, shiftB, 1, ldb, strideB, batch_count,
+                                              optim_mem, work1, work2, work3, work4);
 }
 
 /*************************************************************

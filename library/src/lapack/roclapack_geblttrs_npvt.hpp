@@ -7,6 +7,7 @@
 #include "rocblas.hpp"
 #include "roclapack_getrs.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_geblttrs_npvt_getMemorySize(const rocblas_int nb,
@@ -123,10 +124,11 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     for(rocblas_int k = 0; k < nblocks; k++)
     {
         if(k > 0)
-            rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs,
-                                nb, &minone, A, shiftA + (k - 1) * lda * nb, lda, strideA, X,
-                                shiftX + (k - 1) * ldx * nrhs, ldx, strideX, &one, X,
-                                shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
+            rocsolver_gemm<BATCHED, STRIDED, T>(
+                handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, A,
+                shiftA + (k - 1) * lda * nb, inca, lda, strideA, X, shiftX + (k - 1) * ldx * nrhs,
+                incx, ldx, strideX, &one, X, shiftX + k * ldx * nrhs, incx, ldx, strideX,
+                batch_count, nullptr);
 
         rocsolver_getrs_template<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * ldb * nb, incb, ldb, strideB,
@@ -137,10 +139,10 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     // backward solve
     for(rocblas_int k = nblocks - 2; k >= 0; k--)
     {
-        rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb,
-                            &minone, C, shiftC + k * ldc * nb, ldc, strideC, X,
-                            shiftX + (k + 1) * ldx * nrhs, ldx, strideX, &one, X,
-                            shiftX + k * ldx * nrhs, ldx, strideX, batch_count, nullptr);
+        rocsolver_gemm<BATCHED, STRIDED, T>(
+            handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, C,
+            shiftC + k * ldc * nb, incc, ldc, strideC, X, shiftX + (k + 1) * ldx * nrhs, incx, ldx,
+            strideX, &one, X, shiftX + k * ldx * nrhs, incx, ldx, strideX, batch_count, nullptr);
     }
 
     return rocblas_status_success;

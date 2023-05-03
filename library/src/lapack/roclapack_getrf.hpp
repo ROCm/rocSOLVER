@@ -496,16 +496,17 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
                 handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_unit, jb,
-                nn - k - jb, A, shiftA + idx2D(k, k, lda), lda, strideA, A,
-                shiftA + idx2D(k, k + jb, lda), lda, strideA, batch_count, optim_mem, work1, work2,
-                work3, work4);
+                nn - k - jb, A, shiftA + idx2D(k, k, lda), inca, lda, strideA, A,
+                shiftA + idx2D(k, k + jb, lda), inca, lda, strideA, batch_count, optim_mem, work1,
+                work2, work3, work4);
 
             if(k + jb < mm)
-                rocblasCall_gemm<T>(
+                rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, rocblas_operation_none, mm - k - jb,
-                    nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, lda), lda, strideA, A,
-                    shiftA + idx2D(k, k + jb, lda), lda, strideA, &one, A,
-                    shiftA + idx2D(k + jb, k + jb, lda), lda, strideA, batch_count, (T**)nullptr);
+                    nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, lda), inca, lda, strideA,
+                    A, shiftA + idx2D(k, k + jb, lda), inca, lda, strideA, &one, A,
+                    shiftA + idx2D(k + jb, k + jb, lda), inca, lda, strideA, batch_count,
+                    (T**)nullptr);
             /** This would be the call to the internal gemm, leaving it
                     commented here until we are sure it won't be needed **/
             /*dimx = std::min({mm - k - jb, (4096 / jb) / 2, 32});
@@ -709,9 +710,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
             // update remaining rows in outer panel
             rocsolver_trsm_upper<BATCHED, STRIDED, T>(
                 handle, rocblas_side_right, rocblas_operation_none, rocblas_diagonal_non_unit,
-                m - j - jb, jb, A, shiftA + idx2D(j, j, lda), lda, strideA, A,
-                shiftA + idx2D(jb + j, j, lda), lda, strideA, batch_count, optim_mem, work1, work2,
-                work3, work4);
+                m - j - jb, jb, A, shiftA + idx2D(j, j, lda), inca, lda, strideA, A,
+                shiftA + idx2D(jb + j, j, lda), inca, lda, strideA, batch_count, optim_mem, work1,
+                work2, work3, work4);
         }
 
         // update trailing matrix
@@ -722,29 +723,17 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
                 handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_unit, jb, nn, A,
-                shiftA + idx2D(j, j, lda), lda, strideA, A, shiftA + idx2D(j, nextpiv, lda), lda,
-                strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                shiftA + idx2D(j, j, lda), inca, lda, strideA, A, shiftA + idx2D(j, nextpiv, lda),
+                inca, lda, strideA, batch_count, optim_mem, work1, work2, work3, work4);
 
             if(nextpiv < m)
             {
-                rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, mm, nn,
-                                    jb, &minone, A, shiftA + idx2D(nextpiv, j, lda), lda, strideA,
-                                    A, shiftA + idx2D(j, nextpiv, lda), lda, strideA, &one, A,
-                                    shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA,
-                                    batch_count, (T**)nullptr);
-                /** This would be the call to the internal gemm, leaving it
-                        commented here until we are sure it won't be needed **/
-                /*dimx = std::min({mm, (4096 / jb) / 2, 32});
-                    dimy = std::min({nn, (4096 / jb) / 2, 32});
-                    blocks = (mm - 1) / dimx + 1;
-                    blocksy = (nn - 1) / dimy + 1;
-                    grid = dim3(blocks, blocksy, batch_count);
-                    threads = dim3(dimx, dimy, 1);
-                    lmemsize = jb * (dimx + dimy) * sizeof(T);
-                    hipLaunchKernelGGL(gemm_kernel<T>, grid, threads, lmemsize, stream, mm,
-                                       nn, jb, A, shiftA + idx2D(nextpiv, j, lda),
-                                       shiftA + idx2D(j, nextpiv, lda),
-                                       shiftA + idx2D(nextpiv, nextpiv, lda), lda, strideA);*/
+                rocsolver_gemm<BATCHED, STRIDED, T>(
+                    handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone, A,
+                    shiftA + idx2D(nextpiv, j, lda), inca, lda, strideA, A,
+                    shiftA + idx2D(j, nextpiv, lda), inca, lda, strideA, &one, A,
+                    shiftA + idx2D(nextpiv, nextpiv, lda), inca, lda, strideA, batch_count,
+                    (T**)nullptr);
             }
         }
     }

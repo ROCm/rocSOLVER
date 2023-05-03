@@ -8,6 +8,7 @@
 #include "roclapack_getrf.hpp"
 #include "roclapack_getrs.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T>
 ROCSOLVER_KERNEL void
@@ -177,10 +178,10 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
             nullptr, 0, C, shiftC + k * ldc * nb, incc, ldc, strideC, batch_count, work1, work2,
             work3, work4, optim_mem, false);
 
-        rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_none, nb, nb, nb,
-                            &minone, A, shiftA + k * lda * nb, lda, strideA, C,
-                            shiftC + k * ldc * nb, ldc, strideC, &one, B,
-                            shiftB + (k + 1) * ldb * nb, ldb, strideB, batch_count, nullptr);
+        rocsolver_gemm<BATCHED, STRIDED, T>(
+            handle, rocblas_operation_none, rocblas_operation_none, nb, nb, nb, &minone, A,
+            shiftA + k * lda * nb, inca, lda, strideA, C, shiftC + k * ldc * nb, incc, ldc, strideC,
+            &one, B, shiftB + (k + 1) * ldb * nb, incb, ldb, strideB, batch_count, nullptr);
 
         rocsolver_getrf_template<BATCHED, STRIDED, T>(
             handle, nb, nb, B, shiftB + (k + 1) * ldb * nb, incb, ldb, strideB, nullptr, 0, 0,

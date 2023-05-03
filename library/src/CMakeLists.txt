@@ -205,6 +205,16 @@ set(rocsolver_refact_source
 )
 
 set(rocsolver_specialized_source
+  # gemm
+  specialized/roclapack_gemm_specialized_kernels_s.cpp
+  specialized/roclapack_gemm_specialized_kernels_d.cpp
+  specialized/roclapack_gemm_specialized_kernels_c.cpp
+  specialized/roclapack_gemm_specialized_kernels_z.cpp
+  # ger
+  specialized/roclapack_ger_specialized_kernels_s.cpp
+  specialized/roclapack_ger_specialized_kernels_d.cpp
+  specialized/roclapack_ger_specialized_kernels_c.cpp
+  specialized/roclapack_ger_specialized_kernels_z.cpp
   # trsm
   specialized/roclapack_trsm_specialized_kernels_s.cpp
   specialized/roclapack_trsm_specialized_kernels_d.cpp
