@@ -1,9 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_geblttrf_npvt.hpp"
+#include "testing_geblttrf_npvt_interleaved.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -83,6 +84,30 @@ protected:
     }
 };
 
+class GEBLTTRF_NPVT_INTERLEAVED : public ::TestWithParam<geblttrf_tuple>
+{
+protected:
+    GEBLTTRF_NPVT_INTERLEAVED() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = geblttrf_setup_arguments(GetParam());
+
+        if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("nblocks") == 0)
+            testing_geblttrf_npvt_interleaved_bad_arg<T>();
+
+        arg.batch_count = 3;
+        if(arg.singular == 1)
+            testing_geblttrf_npvt_interleaved<T>(arg);
+
+        arg.singular = 0;
+        testing_geblttrf_npvt_interleaved<T>(arg);
+    }
+};
+
 // non-batch tests
 
 TEST_P(GEBLTTRF_NPVT, __float)
@@ -149,6 +174,32 @@ TEST_P(GEBLTTRF_NPVT, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+// interleaved_batched tests
+
+TEST_P(GEBLTTRF_NPVT_INTERLEAVED, interleaved_batched__float)
+{
+    run_tests<float>();
+}
+
+TEST_P(GEBLTTRF_NPVT_INTERLEAVED, interleaved_batched__double)
+{
+    run_tests<double>();
+}
+
+TEST_P(GEBLTTRF_NPVT_INTERLEAVED, interleaved_batched__float_complex)
+{
+    run_tests<rocblas_float_complex>();
+}
+
+TEST_P(GEBLTTRF_NPVT_INTERLEAVED, interleaved_batched__double_complex)
+{
+    run_tests<rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack, GEBLTTRF_NPVT, ValuesIn(large_matrix_size_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEBLTTRF_NPVT, ValuesIn(matrix_size_range));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GEBLTTRF_NPVT_INTERLEAVED, ValuesIn(large_matrix_size_range));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEBLTTRF_NPVT_INTERLEAVED, ValuesIn(matrix_size_range));

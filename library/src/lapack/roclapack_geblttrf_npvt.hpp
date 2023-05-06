@@ -90,7 +90,10 @@ rocblas_status rocsolver_geblttrf_npvt_argCheck(rocblas_handle handle,
                                                 T B,
                                                 T C,
                                                 rocblas_int* info,
-                                                const rocblas_int batch_count = 1)
+                                                const rocblas_int batch_count = 1,
+                                                const rocblas_int inca = 1,
+                                                const rocblas_int incb = 1,
+                                                const rocblas_int incc = 1)
 {
     // order is important for unit tests:
 
@@ -101,7 +104,13 @@ rocblas_status rocsolver_geblttrf_npvt_argCheck(rocblas_handle handle,
     };
 
     // 2. invalid size
-    if(nb < 0 || nblocks < 0 || lda < nb || ldb < nb || ldc < nb || batch_count < 0)
+    if(nb < 0 || nblocks < 0 || batch_count < 0)
+        return rocblas_status_invalid_size;
+    if(min(inca, lda) <= 0 || max(inca, lda) < nb)
+        return rocblas_status_invalid_size;
+    if(min(incb, ldb) <= 0 || max(incb, ldb) < nb)
+        return rocblas_status_invalid_size;
+    if(min(incc, ldc) <= 0 || max(incc, ldc) < nb)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
