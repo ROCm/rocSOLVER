@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -16,6 +16,34 @@
 /** thread-block size for calling the lasyf kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
 #define LASYF_MAX_THDS 256
+
+/** GEMM device function to compute C = alpha * A * B' + beta * C **/
+template <int MAX_THDS, typename T>
+__device__ void lasyf_gemm(const rocblas_int tid,
+                           const rocblas_int m,
+                           const rocblas_int n,
+                           const rocblas_int k,
+                           const T* alpha,
+                           T* A,
+                           const rocblas_int lda,
+                           T* B,
+                           const rocblas_int ldb,
+                           const T* beta,
+                           T* C,
+                           const rocblas_int ldc)
+{
+    // gemm function assuming B transpose
+    T temp;
+    for(int e = tid; e < m * n; e += MAX_THDS)
+    {
+        int i = e % m;
+        int j = e / m;
+        temp = 0;
+        for(int l = 0; l < k; l++)
+            temp += A[i + l * lda] * B[j + l * ldb];
+        C[i + j * ldc] = *alpha * temp + *beta * C[i + j * ldc];
+    }
+}
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void lasyf_device_upper(const rocblas_int tid,
@@ -224,8 +252,8 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
         for(i = j; i < j + jb; i++)
             gemv<MAX_THDS>(tid, i - j + 1, n - k - 1, &minone, A + j + (k + 1) * lda, lda,
                            W + i + (kw + 1) * ldw, ldw, &one, A + j + i * lda, 1);
-        gemm_btrans<MAX_THDS>(tid, j, jb, n - k - 1, &minone, A + (k + 1) * lda, lda,
-                              W + j + (kw + 1) * ldw, ldw, &one, A + j * lda, lda);
+        lasyf_gemm<MAX_THDS>(tid, j, jb, n - k - 1, &minone, A + (k + 1) * lda, lda,
+                             W + j + (kw + 1) * ldw, ldw, &one, A + j * lda, lda);
     }
     __syncthreads();
 
@@ -451,8 +479,8 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
             gemv<MAX_THDS>(tid, j + jb - i, k, &minone, A + i, lda, W + i, ldw, &one,
                            A + i + i * lda, 1);
         if(j + jb < n)
-            gemm_btrans<MAX_THDS>(tid, n - j - jb, jb, k, &minone, A + (j + jb), lda, W + j, ldw,
-                                  &one, A + (j + jb) + j * lda, lda);
+            lasyf_gemm<MAX_THDS>(tid, n - j - jb, jb, k, &minone, A + (j + jb), lda, W + j, ldw,
+                                 &one, A + (j + jb) + j * lda, lda);
     }
     __syncthreads();
 

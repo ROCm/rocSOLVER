@@ -43,17 +43,34 @@ const vector<vector<int>> large_matrix_size_range = {{32, 6, 10, 32, 32, 32, 32}
                                                      {32, 10, 20, 32, 40, 32, 40},
                                                      {32, 20, 20, 32, 32, 40, 32}};
 
-Arguments geblttrs_setup_arguments(geblttrs_tuple tup)
+Arguments geblttrs_setup_arguments(geblttrs_tuple tup, bool interleaved)
 {
     Arguments arg;
 
     arg.set<rocblas_int>("nb", tup[0]);
     arg.set<rocblas_int>("nblocks", tup[1]);
     arg.set<rocblas_int>("nrhs", tup[2]);
-    arg.set<rocblas_int>("lda", tup[3]);
-    arg.set<rocblas_int>("ldb", tup[4]);
-    arg.set<rocblas_int>("ldc", tup[5]);
-    arg.set<rocblas_int>("ldx", tup[6]);
+
+    if(!interleaved)
+    {
+        arg.set<rocblas_int>("lda", tup[3]);
+        arg.set<rocblas_int>("ldb", tup[4]);
+        arg.set<rocblas_int>("ldc", tup[5]);
+        arg.set<rocblas_int>("ldx", tup[6]);
+    }
+    else
+    {
+        // normal use case is covered by non-interleaved tests
+        arg.set<rocblas_int>("inca", tup[3]);
+        arg.set<rocblas_int>("incb", tup[4]);
+        arg.set<rocblas_int>("incc", tup[5]);
+        arg.set<rocblas_int>("incx", tup[6] - tup[0] + tup[2]);
+
+        arg.set<rocblas_int>("lda", 1);
+        arg.set<rocblas_int>("ldb", 1);
+        arg.set<rocblas_int>("ldc", 1);
+        arg.set<rocblas_int>("ldx", 1);
+    }
 
     // only testing standard use case/defaults for strides
 
@@ -72,7 +89,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = geblttrs_setup_arguments(GetParam());
+        Arguments arg = geblttrs_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("nblocks") == 0
            && arg.peek<rocblas_int>("nrhs") == 0)
@@ -93,7 +110,7 @@ protected:
     template <typename T>
     void run_tests()
     {
-        Arguments arg = geblttrs_setup_arguments(GetParam());
+        Arguments arg = geblttrs_setup_arguments(GetParam(), true);
 
         if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("nblocks") == 0
            && arg.peek<rocblas_int>("nrhs") == 0)

@@ -20,7 +20,7 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_laswp_argCheck(handle, n, lda, k1, k2, incp, A, ipiv);
+    rocblas_status st = rocsolver_laswp_argCheck(handle, n, lda, k1, k2, A, ipiv, incp);
     if(st != rocblas_status_continue)
         return st;
 

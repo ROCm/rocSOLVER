@@ -57,7 +57,9 @@ void rocsolver_getrs_getMemorySize(rocblas_operation trans,
                                    size_t* size_work2,
                                    size_t* size_work3,
                                    size_t* size_work4,
-                                   bool* optim_mem)
+                                   bool* optim_mem,
+                                   const rocblas_int inca = 1,
+                                   const rocblas_int incb = 1)
 {
     // if quick return, no workspace is needed
     if(n == 0 || nrhs == 0 || batch_count == 0)
@@ -73,7 +75,7 @@ void rocsolver_getrs_getMemorySize(rocblas_operation trans,
     // workspace required for calling TRSM
     rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, trans, n, nrhs, batch_count,
                                             size_work1, size_work2, size_work3, size_work4,
-                                            optim_mem);
+                                            optim_mem, inca, incb);
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>

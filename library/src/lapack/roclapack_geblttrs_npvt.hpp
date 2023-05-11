@@ -18,7 +18,9 @@ void rocsolver_geblttrs_npvt_getMemorySize(const rocblas_int nb,
                                            size_t* size_work2,
                                            size_t* size_work3,
                                            size_t* size_work4,
-                                           bool* optim_mem)
+                                           bool* optim_mem,
+                                           const rocblas_int incb = 1,
+                                           const rocblas_int incx = 1)
 {
     // if quick return, no need of workspace
     if(nb == 0 || nblocks == 0 || nrhs == 0 || batch_count == 0)
@@ -31,9 +33,9 @@ void rocsolver_geblttrs_npvt_getMemorySize(const rocblas_int nb,
     }
 
     // size requirements for getrs
-    rocsolver_getrs_getMemorySize<BATCHED, STRIDED, T>(rocblas_operation_none, nb, nrhs,
-                                                       batch_count, size_work1, size_work2,
-                                                       size_work3, size_work4, optim_mem);
+    rocsolver_getrs_getMemorySize<BATCHED, STRIDED, T>(rocblas_operation_none, nb, nrhs, batch_count,
+                                                       size_work1, size_work2, size_work3,
+                                                       size_work4, optim_mem, incb, incx);
 }
 
 template <typename T>
@@ -131,20 +133,25 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     T one = T(1);
     T minone = T(-1);
 
+    // block strides
+    rocblas_int bsa = max(inca, lda) * nb;
+    rocblas_int bsb = max(incb, ldb) * nb;
+    rocblas_int bsc = max(incc, ldc) * nb;
+    rocblas_int bsx = max(incx * nb, ldx * nrhs);
+
     // forward solve
     for(rocblas_int k = 0; k < nblocks; k++)
     {
         if(k > 0)
             rocsolver_gemm<BATCHED, STRIDED, T>(
                 handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, A,
-                shiftA + (k - 1) * lda * nb, inca, lda, strideA, X, shiftX + (k - 1) * ldx * nrhs,
-                incx, ldx, strideX, &one, X, shiftX + k * ldx * nrhs, incx, ldx, strideX,
-                batch_count, nullptr);
+                shiftA + (k - 1) * bsa, inca, lda, strideA, X, shiftX + (k - 1) * bsx, incx, ldx,
+                strideX, &one, X, shiftX + k * bsx, incx, ldx, strideX, batch_count, nullptr);
 
         rocsolver_getrs_template<BATCHED, STRIDED, T>(
-            handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * ldb * nb, incb, ldb, strideB,
-            nullptr, 0, X, shiftX + k * ldx * nrhs, incx, ldx, strideX, batch_count, work1, work2,
-            work3, work4, optim_mem, false);
+            handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * bsb, incb, ldb, strideB,
+            nullptr, 0, X, shiftX + k * bsx, incx, ldx, strideX, batch_count, work1, work2, work3,
+            work4, optim_mem, false);
     }
 
     // backward solve
@@ -152,8 +159,8 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     {
         rocsolver_gemm<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, rocblas_operation_none, nb, nrhs, nb, &minone, C,
-            shiftC + k * ldc * nb, incc, ldc, strideC, X, shiftX + (k + 1) * ldx * nrhs, incx, ldx,
-            strideX, &one, X, shiftX + k * ldx * nrhs, incx, ldx, strideX, batch_count, nullptr);
+            shiftC + k * bsc, incc, ldc, strideC, X, shiftX + (k + 1) * bsx, incx, ldx, strideX,
+            &one, X, shiftX + k * bsx, incx, ldx, strideX, batch_count, nullptr);
     }
 
     return rocblas_status_success;

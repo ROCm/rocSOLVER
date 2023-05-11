@@ -56,7 +56,7 @@ rocblas_status rocsolver_geblttrs_npvt_interleaved_batched_impl(rocblas_handle h
 
     rocsolver_geblttrs_npvt_getMemorySize<false, true, T>(nb, nblocks, nrhs, batch_count,
                                                           &size_work1, &size_work2, &size_work3,
-                                                          &size_work4, &optim_mem);
+                                                          &size_work4, &optim_mem, incb, incx);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,

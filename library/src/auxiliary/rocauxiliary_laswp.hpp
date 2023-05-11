@@ -18,6 +18,7 @@ template <typename T, typename U>
 ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
                                    U AA,
                                    const rocblas_int shiftA,
+                                   const rocblas_int inca,
                                    const rocblas_int lda,
                                    const rocblas_stride stride,
                                    const rocblas_int k1,
@@ -58,7 +59,7 @@ ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
 
             // will exchange rows i and exch if they are not the same
             if(exch != i)
-                swap(A[i - 1 + tid * lda], A[exch - 1 + tid * lda]);
+                swap(A[(i - 1) * inca + tid * lda], A[(exch - 1) * inca + tid * lda]);
         }
     }
 }
@@ -69,9 +70,10 @@ rocblas_status rocsolver_laswp_argCheck(rocblas_handle handle,
                                         const rocblas_int lda,
                                         const rocblas_int k1,
                                         const rocblas_int k2,
-                                        const rocblas_int incp,
                                         T A,
-                                        const rocblas_int* ipiv)
+                                        const rocblas_int* ipiv,
+                                        const rocblas_int incp = 1,
+                                        const rocblas_int inca = 1)
 {
     // order is important for unit tests:
 
@@ -79,7 +81,9 @@ rocblas_status rocsolver_laswp_argCheck(rocblas_handle handle,
     // N/A
 
     // 2. invalid size
-    if(n < 0 || lda < 1 || !incp || k1 < 1 || k2 < 1 || k2 < k1)
+    if(n < 0 || lda < 1 || k1 < 1 || k2 < 1 || k2 < k1)
+        return rocblas_status_invalid_size;
+    if(incp == 0 || inca < 0)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -123,7 +127,7 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    ROCSOLVER_LAUNCH_KERNEL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, lda,
+    ROCSOLVER_LAUNCH_KERNEL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, inca, lda,
                             strideA, k1, k2, ipiv, shiftP, incp, strideP);
 
     return rocblas_status_success;
