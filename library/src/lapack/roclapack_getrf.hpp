@@ -174,6 +174,7 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
                                           const rocblas_int blk,
                                           U AA,
                                           const rocblas_int shiftA,
+                                          const rocblas_int inca,
                                           const rocblas_int lda,
                                           const rocblas_stride strideA,
                                           rocblas_int* pividx,
@@ -200,12 +201,12 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
         // do permutations in parallel (each tx perform a row swap)
         rocblas_int idx1 = piv[tx];
         rocblas_int idx2 = piv[idx1];
-        temp[tx + ty * bdx] = A[idx1 + j * lda];
-        A[idx1 + j * lda] = A[idx2 + j * lda];
+        temp[tx + ty * bdx] = A[idx1 * inca + j * lda];
+        A[idx1 * inca + j * lda] = A[idx2 * inca + j * lda];
         __syncthreads();
 
         // copy temp results back to A
-        A[tx + j * lda] = temp[tx + ty * bdx];
+        A[tx * inca + j * lda] = temp[tx + ty * bdx];
     }
 }
 
@@ -458,7 +459,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
     // r_shiftA is the row where the panel-block starts,
     // the actual position of the panel-block in the matrix is:
-    rocblas_int shiftA = r_shiftA + idx2D(0, offset, lda);
+    rocblas_int shiftA = r_shiftA + idx2D(0, offset, inca, lda);
 
     rocblas_int blk = getrf_get_innerBlkSize<ISBATCHED, T>(mm, nn, pivot);
     rocblas_int jb;
@@ -472,7 +473,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         jb = min(nn - k, blk); // number of columns/pivots in the inner block
 
         // factorize inner panel block
-        rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, lda),
+        rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, inca, lda),
                                                inca, lda, strideA, ipiv, shiftP + k, strideP, info,
                                                batch_count, scalars, pivotval, pivotidx, pivot,
                                                offset + k, permut_idx, stridePI);
@@ -487,8 +488,8 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
             // swap rows
             ROCSOLVER_LAUNCH_KERNEL(getrf_row_permutate<T>, grid, threads, lmemsize, stream, n,
-                                    offset + k, jb, A, r_shiftA + k, lda, strideA, permut_idx,
-                                    stridePI);
+                                    offset + k, jb, A, r_shiftA + k * inca, inca, lda, strideA,
+                                    permut_idx, stridePI);
         }
 
         // update trailing sub-block
@@ -496,30 +497,17 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
                 handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_unit, jb,
-                nn - k - jb, A, shiftA + idx2D(k, k, lda), inca, lda, strideA, A,
-                shiftA + idx2D(k, k + jb, lda), inca, lda, strideA, batch_count, optim_mem, work1,
-                work2, work3, work4);
+                nn - k - jb, A, shiftA + idx2D(k, k, inca, lda), inca, lda, strideA, A,
+                shiftA + idx2D(k, k + jb, inca, lda), inca, lda, strideA, batch_count, optim_mem,
+                work1, work2, work3, work4);
 
             if(k + jb < mm)
                 rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, rocblas_operation_none, mm - k - jb,
-                    nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, lda), inca, lda, strideA,
-                    A, shiftA + idx2D(k, k + jb, lda), inca, lda, strideA, &one, A,
-                    shiftA + idx2D(k + jb, k + jb, lda), inca, lda, strideA, batch_count,
+                    nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, inca, lda), inca, lda,
+                    strideA, A, shiftA + idx2D(k, k + jb, inca, lda), inca, lda, strideA, &one, A,
+                    shiftA + idx2D(k + jb, k + jb, inca, lda), inca, lda, strideA, batch_count,
                     (T**)nullptr);
-            /** This would be the call to the internal gemm, leaving it
-                    commented here until we are sure it won't be needed **/
-            /*dimx = std::min({mm - k - jb, (4096 / jb) / 2, 32});
-                dimy = std::min({nn - k - jb, (4096 / jb) / 2, 32});
-                blocks = (mm - k - jb - 1) / dimx + 1;
-                blocksy = (nn - k - jb - 1) / dimy + 1;
-                grid = dim3(blocks, blocksy, batch_count);
-                threads = dim3(dimx, dimy, 1);
-                lmemsize = jb * (dimx + dimy) * sizeof(T);
-                hipLaunchKernelGGL(gemm_kernel<T>, grid, threads, lmemsize, stream, mm - k - jb,
-                                   nn - k - jb, jb, A, shiftA + idx2D(k + jb, k, lda),
-                                   shiftA + idx2D(k, k + jb, lda),
-                                   shiftA + idx2D(k + jb, k + jb, lda), lda, strideA);*/
         }
     }
 
@@ -541,7 +529,8 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    size_t* size_pivotidx,
                                    size_t* size_iipiv,
                                    size_t* size_iinfo,
-                                   bool* optim_mem)
+                                   bool* optim_mem,
+                                   const rocblas_int inca = 1)
 {
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
@@ -568,7 +557,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     {
         // requirements for one single GETF2
         rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, n, pivot, batch_count, size_scalars,
-                                                    size_pivotval, size_pivotidx);
+                                                    size_pivotval, size_pivotidx, false, inca);
         *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
@@ -582,23 +571,24 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     {
         // requirements for largest possible GETF2 for the sub blocks
         // (largest block panel dimension is 512)
-        rocsolver_getf2_getMemorySize<ISBATCHED, T>(
-            m, min(dim, 512), pivot, batch_count, size_scalars, size_pivotval, size_pivotidx, true);
+        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, min(dim, 512), pivot, batch_count,
+                                                    size_scalars, size_pivotval, size_pivotidx,
+                                                    true, inca);
 
         // extra workspace to store info about singularity and pivots of sub blocks
         *size_iinfo = sizeof(rocblas_int) * batch_count;
         *size_iipiv = pivot ? m * sizeof(rocblas_int) * batch_count : 0;
 
         // extra workspace for calling largest possible TRSM
-        rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, rocblas_operation_none,
-                                                min(dim, 512), n, batch_count, size_work1,
-                                                size_work2, size_work3, size_work4, optim_mem, true);
+        rocsolver_trsm_mem<BATCHED, STRIDED, T>(
+            rocblas_side_left, rocblas_operation_none, min(dim, 512), n, batch_count, size_work1,
+            size_work2, size_work3, size_work4, optim_mem, true, inca, inca);
         if(!pivot)
         {
             size_t w1, w2, w3, w4;
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, rocblas_operation_none, m,
                                                     min(dim, 512), batch_count, &w1, &w2, &w3, &w4,
-                                                    optim_mem, true);
+                                                    optim_mem, true, inca, inca);
             *size_work1 = std::max(*size_work1, w1);
             *size_work2 = std::max(*size_work2, w2);
             *size_work3 = std::max(*size_work3, w3);
@@ -694,25 +684,25 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         if(pivot || panel)
         {
             // factorize outer block panel
-            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j, inca, lda,
-                                               strideA, ipiv, shiftP + j, strideP, info,
+            getrf_panelLU<BATCHED, STRIDED, T>(handle, m - j, jb, n, A, shiftA + j * inca, inca,
+                                               lda, strideA, ipiv, shiftP + j, strideP, info,
                                                batch_count, pivot, scalars, work1, work2, work3,
                                                work4, optim_mem, pivotval, pivotidx, j, iipiv, m);
         }
         else
         {
             // factorize only outer diagonal block
-            getrf_panelLU<BATCHED, STRIDED, T>(handle, jb, jb, n, A, shiftA + j, inca, lda, strideA,
-                                               ipiv, shiftP + j, strideP, info, batch_count, pivot,
-                                               scalars, work1, work2, work3, work4, optim_mem,
-                                               pivotval, pivotidx, j, iipiv, m);
+            getrf_panelLU<BATCHED, STRIDED, T>(handle, jb, jb, n, A, shiftA + j * inca, inca, lda,
+                                               strideA, ipiv, shiftP + j, strideP, info,
+                                               batch_count, pivot, scalars, work1, work2, work3,
+                                               work4, optim_mem, pivotval, pivotidx, j, iipiv, m);
 
             // update remaining rows in outer panel
             rocsolver_trsm_upper<BATCHED, STRIDED, T>(
                 handle, rocblas_side_right, rocblas_operation_none, rocblas_diagonal_non_unit,
-                m - j - jb, jb, A, shiftA + idx2D(j, j, lda), inca, lda, strideA, A,
-                shiftA + idx2D(jb + j, j, lda), inca, lda, strideA, batch_count, optim_mem, work1,
-                work2, work3, work4);
+                m - j - jb, jb, A, shiftA + idx2D(j, j, inca, lda), inca, lda, strideA, A,
+                shiftA + idx2D(jb + j, j, inca, lda), inca, lda, strideA, batch_count, optim_mem,
+                work1, work2, work3, work4);
         }
 
         // update trailing matrix
@@ -723,16 +713,17 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
         {
             rocsolver_trsm_lower<BATCHED, STRIDED, T>(
                 handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_unit, jb, nn, A,
-                shiftA + idx2D(j, j, lda), inca, lda, strideA, A, shiftA + idx2D(j, nextpiv, lda),
-                inca, lda, strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                shiftA + idx2D(j, j, inca, lda), inca, lda, strideA, A,
+                shiftA + idx2D(j, nextpiv, inca, lda), inca, lda, strideA, batch_count, optim_mem,
+                work1, work2, work3, work4);
 
             if(nextpiv < m)
             {
                 rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone, A,
-                    shiftA + idx2D(nextpiv, j, lda), inca, lda, strideA, A,
-                    shiftA + idx2D(j, nextpiv, lda), inca, lda, strideA, &one, A,
-                    shiftA + idx2D(nextpiv, nextpiv, lda), inca, lda, strideA, batch_count,
+                    shiftA + idx2D(nextpiv, j, inca, lda), inca, lda, strideA, A,
+                    shiftA + idx2D(j, nextpiv, inca, lda), inca, lda, strideA, &one, A,
+                    shiftA + idx2D(nextpiv, nextpiv, inca, lda), inca, lda, strideA, batch_count,
                     (T**)nullptr);
             }
         }

@@ -42,15 +42,30 @@ const vector<vector<int>> large_matrix_size_range = {{32, 6, 32, 32, 32, 0},
                                                      {32, 10, 32, 40, 32, 0},
                                                      {32, 20, 32, 32, 40, 0}};
 
-Arguments geblttrf_setup_arguments(geblttrf_tuple tup)
+Arguments geblttrf_setup_arguments(geblttrf_tuple tup, bool interleaved)
 {
     Arguments arg;
 
     arg.set<rocblas_int>("nb", tup[0]);
     arg.set<rocblas_int>("nblocks", tup[1]);
-    arg.set<rocblas_int>("lda", tup[2]);
-    arg.set<rocblas_int>("ldb", tup[3]);
-    arg.set<rocblas_int>("ldc", tup[4]);
+
+    if(!interleaved)
+    {
+        arg.set<rocblas_int>("lda", tup[2]);
+        arg.set<rocblas_int>("ldb", tup[3]);
+        arg.set<rocblas_int>("ldc", tup[4]);
+    }
+    else
+    {
+        // normal use case is covered by non-interleaved tests
+        arg.set<rocblas_int>("inca", tup[2]);
+        arg.set<rocblas_int>("incb", tup[3]);
+        arg.set<rocblas_int>("incc", tup[4]);
+
+        arg.set<rocblas_int>("lda", 1);
+        arg.set<rocblas_int>("ldb", 1);
+        arg.set<rocblas_int>("ldc", 1);
+    }
 
     // only testing standard use case/defaults for strides
 
@@ -70,7 +85,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = geblttrf_setup_arguments(GetParam());
+        Arguments arg = geblttrf_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("nblocks") == 0)
             testing_geblttrf_npvt_bad_arg<BATCHED, STRIDED, T>();
@@ -94,7 +109,7 @@ protected:
     template <typename T>
     void run_tests()
     {
-        Arguments arg = geblttrf_setup_arguments(GetParam());
+        Arguments arg = geblttrf_setup_arguments(GetParam(), true);
 
         if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("nblocks") == 0)
             testing_geblttrf_npvt_interleaved_bad_arg<T>();

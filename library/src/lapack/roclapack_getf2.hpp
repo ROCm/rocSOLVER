@@ -43,6 +43,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
                                               const rocblas_int j,
                                               U AA,
                                               const rocblas_int shiftA,
+                                              const rocblas_int inca,
                                               const rocblas_int lda,
                                               const rocblas_stride strideA,
                                               rocblas_int* ipivA,
@@ -69,7 +70,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
         // swap rows
         rocblas_int exch = pivot_idx - 1;
         if(exch != j)
-            swap(A[j + tid * lda], A[exch + tid * lda]);
+            swap(A[j * inca + tid * lda], A[exch * inca + tid * lda]);
 
         if(tid == j)
         {
@@ -86,14 +87,14 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
             }
 
             // update info (check singularity)
-            if(A[j + j * lda] == 0)
+            if(A[j * inca + j * lda] == 0)
             {
                 pivot_val[id] = 1;
                 if(info[id] == 0)
                     info[id] = j + 1 + offset; // use Fortran 1-based indexing
             }
             else
-                pivot_val[id] = S(1) / A[j + j * lda];
+                pivot_val[id] = S(1) / A[j * inca + j * lda];
         }
     }
 }
@@ -103,6 +104,7 @@ template <typename T, typename U>
 ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
                                                    U AA,
                                                    const rocblas_int shiftA,
+                                                   const rocblas_int inca,
                                                    const rocblas_int lda,
                                                    const rocblas_stride strideA,
                                                    T* pivot_val,
@@ -117,14 +119,14 @@ ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
     T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
 
     // update info (check singularity)
-    if(A[j + j * lda] == 0)
+    if(A[j * inca + j * lda] == 0)
     {
         pivot_val[id] = 1;
         if(info[id] == 0)
             info[id] = j + 1 + offset; // use Fortran 1-based indexing
     }
     else
-        pivot_val[id] = S(1) / A[j + j * lda];
+        pivot_val[id] = S(1) / A[j * inca + j * lda];
 }
 
 /** This kernel executes an optimized reduction to find the index of the
@@ -133,6 +135,7 @@ template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_int m,
                                                                 U xx,
                                                                 const rocblas_int shiftx,
+                                                                const rocblas_int incx,
                                                                 const rocblas_stride stridex,
                                                                 rocblas_int* pivotidx)
 {
@@ -147,7 +150,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_in
     __shared__ S sval[IAMAX_THDS];
     __shared__ rocblas_int sidx[IAMAX_THDS];
 
-    iamax<IAMAX_THDS>(tid, m, x, 1, sval, sidx);
+    iamax<IAMAX_THDS>(tid, m, x, incx, sval, sidx);
 
     // write results back to global memory
     // (after the reduction, the maximum of the elements is in sval[0] and sidx[0])
@@ -447,7 +450,8 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
                                    size_t* size_scalars,
                                    size_t* size_pivotval,
                                    size_t* size_pivotidx,
-                                   bool inblocked = false)
+                                   bool inblocked = false,
+                                   const rocblas_int inca = 1)
 {
     // if quick return no workspace needed
     if(m == 0 || n == 0 || batch_count == 0)
@@ -459,7 +463,7 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     }
 
 #ifdef OPTIMAL
-    bool nomem = (m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N
+    bool nomem = (inca == 1 && m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N
                   && select_spkernel<ISBATCHED, T>(m, n, pivot) && !inblocked);
 
     // no workspace needed if using optimized kernel for small sizes
@@ -572,7 +576,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     }
 
 #ifdef OPTIMAL
-    if(m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N)
+    if(m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N && inca == 1)
     {
         int spker = select_spkernel<ISBATCHED, T>(m, n, pivot);
 
@@ -605,7 +609,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     dim3 threadsPivot((pivot ? singular_thds : 1), 1, 1);
     dim3 gridPivot(blocks, batch_count, 1);
     rocblas_int c, mm, nn;
-    rocblas_int sger_thds_x, sger_thds_y;
+    rocblas_int sger_thds_x = 1, sger_thds_y = 1024;
 
     for(rocblas_int j = 0; j < dim; ++j)
     {
@@ -613,38 +617,40 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         {
             // find pivot. Use Fortran 1-based indexing (to follow LAPACK)
             ROCSOLVER_LAUNCH_KERNEL((getf2_iamax<T>), gridMax, threadsMax, 0, stream, m - j, A,
-                                    shiftA + idx2D(j, j, lda), strideA, pivotidx);
+                                    shiftA + idx2D(j, j, inca, lda), inca, strideA, pivotidx);
 
             // adjust pivot indices, apply row interchanges and check singularity
             ROCSOLVER_LAUNCH_KERNEL(getf2_check_singularity<T>, gridPivot, threadsPivot, 0, stream,
-                                    n, j, A, shiftA, lda, strideA, ipiv, shiftP, strideP, pivotval,
-                                    pivotidx, info, offset, permut_idx, stridePI);
+                                    n, j, A, shiftA, inca, lda, strideA, ipiv, shiftP, strideP,
+                                    pivotval, pivotidx, info, offset, permut_idx, stridePI);
         }
         else
             // check singularity
             ROCSOLVER_LAUNCH_KERNEL(getf2_npvt_check_singularity<T>, gridPivot, threadsPivot, 0,
-                                    stream, j, A, shiftA, lda, strideA, pivotval, info, offset);
+                                    stream, j, A, shiftA, inca, lda, strideA, pivotval, info, offset);
 
         mm = m - j - 1;
         nn = n - j - 1;
 
         // get thread block size for matrix update
-        getf2_get_ger_blksize(mm, nn, &sger_thds_x, &sger_thds_y);
+        if(inca == 1)
+            getf2_get_ger_blksize(mm, nn, &sger_thds_x, &sger_thds_y);
 
         //if working with a general matrix or without optimizations:
         if(sger_thds_x == 1)
         {
             // Scale J'th column
-            rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, lda), inca,
-                                strideA, batch_count);
+            rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, inca, lda),
+                                inca, strideA, batch_count);
 
             // update trailing submatrix
             if(j < dim - 1)
             {
-                rocsolver_ger<false, T>(handle, mm, nn, scalars, 0, A, shiftA + idx2D(j + 1, j, lda),
-                                        inca, strideA, A, shiftA + idx2D(j, j + 1, lda), lda,
-                                        strideA, A, shiftA + idx2D(j + 1, j + 1, lda), inca, lda,
-                                        strideA, batch_count, nullptr);
+                rocsolver_ger<false, T>(handle, mm, nn, scalars, 0, A,
+                                        shiftA + idx2D(j + 1, j, inca, lda), inca, strideA, A,
+                                        shiftA + idx2D(j, j + 1, inca, lda), lda, strideA, A,
+                                        shiftA + idx2D(j + 1, j + 1, inca, lda), inca, lda, strideA,
+                                        batch_count, nullptr);
             }
         }
 
