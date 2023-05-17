@@ -131,34 +131,34 @@ void csrrf_solve_initData(rocblas_handle handle,
 {
     if(CPU)
     {
-        std::string file;
+        fs::path file;
 
         // read-in T
         file = testcase / "ptrT";
-        read_matrix(file, 1, n + 1, hptrT.data(), 1);
+        read_matrix(file.string(), 1, n + 1, hptrT.data(), 1);
         file = testcase / "indT";
-        read_matrix(file, 1, nnzT, hindT.data(), 1);
+        read_matrix(file.string(), 1, nnzT, hindT.data(), 1);
         file = testcase / "valT";
-        read_matrix(file, 1, nnzT, hvalT.data(), 1);
+        read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
 
         // read-in P
         file = testcase / "P";
-        read_matrix(file, 1, n, hpivP.data(), 1);
+        read_matrix(file.string(), 1, n, hpivP.data(), 1);
 
         // read-in Q
         file = testcase / "Q";
-        read_matrix(file, 1, n, hpivQ.data(), 1);
+        read_matrix(file.string(), 1, n, hpivQ.data(), 1);
 
         // read-in B
-        file = testcase / fmt::format("B_{}", nrhs);
-        read_matrix(file, n, nrhs, hB.data(), ldb);
+        file = testcase / fmt::format("B_{}", nrhs).c_str();
+        read_matrix(file.string(), n, nrhs, hB.data(), ldb);
 
         // get results (matrix X) if validation is required
         if(test)
         {
             // read-in X
-            file = testcase / fmt::format("X_{}", nrhs);
-            read_matrix(file, n, nrhs, hX.data(), ldb);
+            file = testcase / fmt::format("X_{}", nrhs).c_str();
+            read_matrix(file.string(), n, nrhs, hX.data(), ldb);
         }
     }
 
@@ -363,9 +363,9 @@ void testing_csrrf_solve(Arguments& argus)
     fs::path testcase;
     if(n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
+        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA).c_str();
         fs::path file = testcase / "ptrT";
-        read_last(file, &nnzT);
+        read_last(file.string(), &nnzT);
     }
 
     // determine existing right-hand-side
