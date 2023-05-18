@@ -54,20 +54,26 @@ Arguments geblttrf_setup_arguments(geblttrf_tuple tup, bool interleaved)
         arg.set<rocblas_int>("lda", tup[2]);
         arg.set<rocblas_int>("ldb", tup[3]);
         arg.set<rocblas_int>("ldc", tup[4]);
+
+        // only testing standard use case/defaults for strides
     }
     else
     {
         // normal use case is covered by non-interleaved tests
-        arg.set<rocblas_int>("inca", tup[2]);
-        arg.set<rocblas_int>("incb", tup[3]);
-        arg.set<rocblas_int>("incc", tup[4]);
+        rocblas_int bc = 3;
 
-        arg.set<rocblas_int>("lda", 1);
-        arg.set<rocblas_int>("ldb", 1);
-        arg.set<rocblas_int>("ldc", 1);
+        arg.set<rocblas_int>("inca", bc * tup[2]);
+        arg.set<rocblas_int>("incb", bc * tup[3]);
+        arg.set<rocblas_int>("incc", bc * tup[4]);
+
+        arg.set<rocblas_int>("lda", bc);
+        arg.set<rocblas_int>("ldb", bc);
+        arg.set<rocblas_int>("ldc", bc);
+
+        arg.set<rocblas_stride>("strideA", 1);
+        arg.set<rocblas_stride>("strideB", 1);
+        arg.set<rocblas_stride>("strideC", 1);
     }
-
-    // only testing standard use case/defaults for strides
 
     arg.timing = 0;
     arg.singular = tup[5];

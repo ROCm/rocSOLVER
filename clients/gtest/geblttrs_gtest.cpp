@@ -61,15 +61,22 @@ Arguments geblttrs_setup_arguments(geblttrs_tuple tup, bool interleaved)
     else
     {
         // normal use case is covered by non-interleaved tests
-        arg.set<rocblas_int>("inca", tup[3]);
-        arg.set<rocblas_int>("incb", tup[4]);
-        arg.set<rocblas_int>("incc", tup[5]);
-        arg.set<rocblas_int>("incx", tup[6] - tup[0] + tup[2]);
+        rocblas_int bc = 3;
 
-        arg.set<rocblas_int>("lda", 1);
-        arg.set<rocblas_int>("ldb", 1);
-        arg.set<rocblas_int>("ldc", 1);
-        arg.set<rocblas_int>("ldx", 1);
+        arg.set<rocblas_int>("inca", bc * tup[3]);
+        arg.set<rocblas_int>("incb", bc * tup[4]);
+        arg.set<rocblas_int>("incc", bc * tup[5]);
+        arg.set<rocblas_int>("incx", bc * (tup[6] - tup[0] + tup[2]));
+
+        arg.set<rocblas_int>("lda", bc);
+        arg.set<rocblas_int>("ldb", bc);
+        arg.set<rocblas_int>("ldc", bc);
+        arg.set<rocblas_int>("ldx", bc);
+
+        arg.set<rocblas_stride>("strideA", 1);
+        arg.set<rocblas_stride>("strideB", 1);
+        arg.set<rocblas_stride>("strideC", 1);
+        arg.set<rocblas_stride>("strideX", 1);
     }
 
     // only testing standard use case/defaults for strides
