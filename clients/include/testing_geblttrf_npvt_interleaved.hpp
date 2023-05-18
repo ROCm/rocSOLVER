@@ -501,9 +501,10 @@ void testing_geblttrf_npvt_interleaved(Arguments& argus)
     size_t size_CRes = (argus.unit_check || argus.norm_check) ? size_C : 0;
 
     // check invalid sizes
-    bool invalid_size = (nb < 0 || nblocks < 0 || min(inca, lda) <= 0 || max(inca, lda) < nb
-                         || min(incb, ldb) <= 0 || max(incb, ldb) < nb || min(incc, ldc) <= 0
-                         || max(incc, ldc) < nb || bc < 0);
+    bool invalid_a = ((inca < 1 || lda < inca * nb) && (inca < lda * nb || lda < 1));
+    bool invalid_b = ((incc < 1 || ldc < incc * nb) && (incb < ldb * nb || ldb < 1));
+    bool invalid_c = ((incc < 1 || ldc < incc * nb) && (incc < ldc * nb || ldc < 1));
+    bool invalid_size = (nb < 0 || nblocks < 0 || bc < 0 || invalid_a || invalid_b || invalid_c);
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_geblttrf_npvt_interleaved(handle, nb, nblocks, (T*)nullptr,

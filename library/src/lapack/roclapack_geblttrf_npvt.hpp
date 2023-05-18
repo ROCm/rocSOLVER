@@ -108,11 +108,11 @@ rocblas_status rocsolver_geblttrf_npvt_argCheck(rocblas_handle handle,
     // 2. invalid size
     if(nb < 0 || nblocks < 0 || batch_count < 0)
         return rocblas_status_invalid_size;
-    if(min(inca, lda) <= 0 || max(inca, lda) < nb)
+    if((inca < 1 || lda < inca * nb) && (inca < lda * nb || lda < 1))
         return rocblas_status_invalid_size;
-    if(min(incb, ldb) <= 0 || max(incb, ldb) < nb)
+    if((incb < 1 || ldb < incb * nb) && (incb < ldb * nb || ldb < 1))
         return rocblas_status_invalid_size;
-    if(min(incc, ldc) <= 0 || max(incc, ldc) < nb)
+    if((incc < 1 || ldc < incc * nb) && (incc < ldc * nb || ldc < 1))
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size

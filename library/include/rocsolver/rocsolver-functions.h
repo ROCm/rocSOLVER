@@ -23352,13 +23352,13 @@ ROCSOLVER_EXPORT rocblas_status
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
                 Contains the blocks A_{ji} arranged one after the other.
     @param[in]
-    inca        rocblas_int. inca > 0.\n
+    inca        rocblas_int. inca > 0 if inca < lda; inca >= lda * nb otherwise.\n
                 Stride from the start of one row of A_{ji} to the next. Normal use case is
-                inca = 1. At least one of inca or lda must be >= nb.
+                inca = 1.
     @param[in]
-    lda         rocblas_int. lda > 0.\n
+    lda         rocblas_int. lda >= inca * nb if inca < lda; lda > 0 otherwise.\n
                 Stride from the start of one column of A_{ji} to the next. Normal use case is
-                lda >= nb. At least one of inca or lda must be >= nb.
+                lda >= inca * nb.
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one block A_{ji} to the same block in the next batch
@@ -23371,13 +23371,13 @@ ROCSOLVER_EXPORT rocblas_status
                 On exit it is overwritten by blocks L_{ji} in factorized form as returned by
                 \ref rocsolver_sgetrf_npvt "GETRF_NPVT"
     @param[in]
-    incb        rocblas_int. incb > 0.\n
+    incb        rocblas_int. incb > 0 if incb < ldb; incb >= ldb * nb otherwise.\n
                 Stride from the start of one row of B_{ji} to the next. Normal use case is
-                incb = 1. At least one of incb or ldb must be >= nb.
+                incb = 1.
     @param[in]
-    ldb         rocblas_int. ldb > 0.\n
+    ldb         rocblas_int. ldb >= incb * nb if incb < ldb; ldb > 0 otherwise.\n
                 Stride from the start of one column of B_{ji} to the next. Normal use case is
-                ldb >= nb. At least one of incb or ldb must be >= nb.
+                ldb >= incb * nb.
     @param[in]
     strideB     rocblas_stride.\n
                 Stride from the start of one block B_{ji} to the same block in the next batch
@@ -23389,13 +23389,13 @@ ROCSOLVER_EXPORT rocblas_status
                 On entry, contains the blocks C_{ji} arranged one after the other.
                 On exit it is overwritten by blocks U_{ji}.
     @param[in]
-    incc        rocblas_int. incc > 0.\n
+    incc        rocblas_int. incc > 0 if incc < ldc; incc >= ldc * nb otherwise.\n
                 Stride from the start of one row of C_{ji} to the next. Normal use case is
-                incc = 1. At least one of incc or ldc must be >= nb.
+                incc = 1.
     @param[in]
-    ldc         rocblas_int. ldc > 0.\n
+    ldc         rocblas_int. ldc >= incc * nb if incc < ldc; ldc > 0 otherwise.\n
                 Stride from the start of one column of C_{ji} to the next. Normal use case is
-                ldc >= nb. At least one of incc or ldc must be >= nb.
+                ldc >= incc * nb.
     @param[in]
     strideC     rocblas_stride.\n
                 Stride from the start of one block B_{ji} to the same block in the next batch
@@ -23966,13 +23966,13 @@ ROCSOLVER_EXPORT rocblas_status
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
                 Contains the blocks A_{ji} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    inca        rocblas_int. inca > 0.\n
+    inca        rocblas_int. inca > 0 if inca < lda; inca >= lda * nb otherwise.\n
                 Stride from the start of one row of A_{ji} to the next. Normal use case is
-                inca = 1. At least one of inca or lda must be >= nb.
+                inca = 1.
     @param[in]
-    lda         rocblas_int. lda > 0.\n
+    lda         rocblas_int. lda >= inca * nb if inca < lda; lda > 0 otherwise.\n
                 Stride from the start of one column of A_{ji} to the next. Normal use case is
-                lda >= nb. At least one of inca or lda must be >= nb.
+                lda >= inca * nb.
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one block A_{ji} to the same block in the next batch
@@ -23983,13 +23983,13 @@ ROCSOLVER_EXPORT rocblas_status
     B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
                 Contains the blocks B_{ji} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    incb        rocblas_int. incb > 0.\n
+    incb        rocblas_int. incb > 0 if incb < ldb; incb >= ldb * nb otherwise.\n
                 Stride from the start of one row of B_{ji} to the next. Normal use case is
-                incb = 1. At least one of incb or ldb must be >= nb.
+                incb = 1.
     @param[in]
-    ldb         rocblas_int. ldb > 0.\n
+    ldb         rocblas_int. ldb >= incb * nb if incb < ldb; ldb > 0 otherwise.\n
                 Stride from the start of one column of B_{ji} to the next. Normal use case is
-                ldb >= nb. At least one of incb or ldb must be >= nb.
+                ldb >= incb * nb.
     @param[in]
     strideB     rocblas_stride.\n
                 Stride from the start of one block B_{ji} to the same block in the next batch
@@ -24000,13 +24000,13 @@ ROCSOLVER_EXPORT rocblas_status
     C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
                 Contains the blocks C_{ji} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    incc        rocblas_int. incc > 0.\n
+    incc        rocblas_int. incc > 0 if incc < ldc; incc >= ldc * nb otherwise.\n
                 Stride from the start of one row of C_{ji} to the next. Normal use case is
-                incc = 1. At least one of incc or ldc must be >= nb.
+                incc = 1.
     @param[in]
-    ldc         rocblas_int. ldc > 0.\n
+    ldc         rocblas_int. ldc >= incc * nb if incc < ldc; ldc > 0 otherwise.\n
                 Stride from the start of one column of C_{ji} to the next. Normal use case is
-                ldc >= nb. At least one of incc or ldc must be >= nb.
+                ldc >= incc * nb.
     @param[in]
     strideC     rocblas_stride.\n
                 Stride from the start of one block C_{ji} to the same block in the next batch
@@ -24018,13 +24018,13 @@ ROCSOLVER_EXPORT rocblas_status
                 On entry, X contains the right-hand-side blocks R_{ji}. It is overwritten by solution
                 vectors X_{ji} on exit.
     @param[in]
-    incx        rocblas_int. incx > 0.\n
+    incx        rocblas_int. incx > 0 if incx < ldx; incx >= ldx * nrhs otherwise.\n
                 Stride from the start of one row of X_{ji} to the next. Normal use case is
-                incx = 1. At least one of incx >= nrhs or ldx >= nb.
+                incx = 1.
     @param[in]
-    ldx         rocblas_int. ldx > 0.\n
+    ldx         rocblas_int. ldx >= incx * nb if incx < ldx; ldx > 0 otherwise.\n
                 Stride from the start of one column of X_{ji} to the next. Normal use case is
-                ldx >= nb. At least one of incx >= nrhs or ldx >= nb.
+                ldx >= incx * nb.
     @param[in]
     strideX     rocblas_stride.\n
                 Stride from the start of one block X_{ji} to the same block in the next batch
