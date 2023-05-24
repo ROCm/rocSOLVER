@@ -63,15 +63,15 @@ Arguments geblttrs_setup_arguments(geblttrs_tuple tup, bool interleaved)
         // normal use case is covered by non-interleaved tests
         rocblas_int bc = 3;
 
-        arg.set<rocblas_int>("inca", bc * tup[3]);
-        arg.set<rocblas_int>("incb", bc * tup[4]);
-        arg.set<rocblas_int>("incc", bc * tup[5]);
-        arg.set<rocblas_int>("incx", bc * (tup[6] - tup[0] + tup[2]));
+        arg.set<rocblas_int>("inca", bc);
+        arg.set<rocblas_int>("incb", bc);
+        arg.set<rocblas_int>("incc", bc);
+        arg.set<rocblas_int>("incx", bc);
 
-        arg.set<rocblas_int>("lda", bc);
-        arg.set<rocblas_int>("ldb", bc);
-        arg.set<rocblas_int>("ldc", bc);
-        arg.set<rocblas_int>("ldx", bc);
+        arg.set<rocblas_int>("lda", bc * tup[3]);
+        arg.set<rocblas_int>("ldb", bc * tup[4]);
+        arg.set<rocblas_int>("ldc", bc * tup[5]);
+        arg.set<rocblas_int>("ldx", bc * tup[6]);
 
         arg.set<rocblas_stride>("strideA", 1);
         arg.set<rocblas_stride>("strideB", 1);

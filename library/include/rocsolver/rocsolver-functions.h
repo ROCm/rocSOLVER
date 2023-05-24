@@ -23352,56 +23352,56 @@ ROCSOLVER_EXPORT rocblas_status
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
                 Contains the blocks A_{ji} arranged one after the other.
     @param[in]
-    inca        rocblas_int. inca > 0 if inca < lda; inca >= lda * nb otherwise.\n
-                Stride from the start of one row of A_{ji} to the next. Normal use case is
-                inca = 1.
+    inca        rocblas_int. inca > 0.\n
+                Stride from the start of one row of A_{ji} to the next. Normal use cases are
+                inca = 1 (strided batched case) or inca = batch_count (interleaved batched case).
     @param[in]
-    lda         rocblas_int. lda >= inca * nb if inca < lda; lda > 0 otherwise.\n
-                Stride from the start of one column of A_{ji} to the next. Normal use case is
-                lda >= inca * nb.
+    lda         rocblas_int. lda >= inca * nb.\n
+                Specifies the leading dimension of blocks A_{ji}, i.e. the stride from the start
+                of one column of A_{ji} to the next.
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one block A_{ji} to the same block in the next batch
                 instance A_{(j+1)i}.
-                There is no restriction for the value of strideA. Normal use case is strideA >=
-                max(inca,lda)*nb*nblocks.
+                There is no restriction for the value of strideA. Normal use cases are strideA >=
+                lda*nb*nblocks (strided batched case) or strideA = 1 (interleaved batched case).
     @param[inout]
     B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
                 On entry, contains the blocks B_{ji} arranged one after the other.
                 On exit it is overwritten by blocks L_{ji} in factorized form as returned by
                 \ref rocsolver_sgetrf_npvt "GETRF_NPVT"
     @param[in]
-    incb        rocblas_int. incb > 0 if incb < ldb; incb >= ldb * nb otherwise.\n
-                Stride from the start of one row of B_{ji} to the next. Normal use case is
-                incb = 1.
+    incb        rocblas_int. incb > 0.\n
+                Stride from the start of one row of B_{ji} to the next. Normal use cases are
+                incb = 1 (strided batched case) or incb = batch_count (interleaved batched case).
     @param[in]
-    ldb         rocblas_int. ldb >= incb * nb if incb < ldb; ldb > 0 otherwise.\n
-                Stride from the start of one column of B_{ji} to the next. Normal use case is
-                ldb >= incb * nb.
+    ldb         rocblas_int. ldb >= incb * nb.\n
+                Specifies the leading dimension of blocks B_{ji}, i.e. the stride from the start
+                of one column of B_{ji} to the next.
     @param[in]
     strideB     rocblas_stride.\n
                 Stride from the start of one block B_{ji} to the same block in the next batch
                 instance B_{(j+1)i}.
-                There is no restriction for the value of strideB. Normal use case is strideB >=
-                max(incb,ldb)*nb*nblocks.
+                There is no restriction for the value of strideB. Normal use cases are strideB >=
+                ldb*nb*nblocks (strided batched case) or strideB = 1 (interleaved batched case).
     @param[inout]
     C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
                 On entry, contains the blocks C_{ji} arranged one after the other.
                 On exit it is overwritten by blocks U_{ji}.
     @param[in]
-    incc        rocblas_int. incc > 0 if incc < ldc; incc >= ldc * nb otherwise.\n
-                Stride from the start of one row of C_{ji} to the next. Normal use case is
-                incc = 1.
+    incc        rocblas_int. incc > 0.\n
+                Stride from the start of one row of C_{ji} to the next. Normal use cases are
+                incc = 1 (strided batched case) or incc = batch_count (interleaved batched case).
     @param[in]
-    ldc         rocblas_int. ldc >= incc * nb if incc < ldc; ldc > 0 otherwise.\n
-                Stride from the start of one column of C_{ji} to the next. Normal use case is
-                ldc >= incc * nb.
+    ldc         rocblas_int. ldc >= incc * nb.\n
+                Specifies the leading dimension of blocks C_{ji}, i.e. the stride from the start
+                of one column of C_{ji} to the next.
     @param[in]
     strideC     rocblas_stride.\n
                 Stride from the start of one block B_{ji} to the same block in the next batch
                 instance B_{(j+1)i}.
-                There is no restriction for the value of strideC. Normal use case is strideC >=
-                max(incc,ldc)*nb*nblocks.
+                There is no restriction for the value of strideC. Normal use cases are strideC >=
+                ldc*nb*nblocks (strided batched case) or strideC = 1 (interleaved batched case).
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit for factorization of j-th batch instance.
@@ -23966,71 +23966,71 @@ ROCSOLVER_EXPORT rocblas_status
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
                 Contains the blocks A_{ji} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    inca        rocblas_int. inca > 0 if inca < lda; inca >= lda * nb otherwise.\n
-                Stride from the start of one row of A_{ji} to the next. Normal use case is
-                inca = 1.
+    inca        rocblas_int. inca > 0.\n
+                Stride from the start of one row of A_{ji} to the next. Normal use cases are
+                inca = 1 (strided batched case) or inca = batch_count (interleaved batched case).
     @param[in]
-    lda         rocblas_int. lda >= inca * nb if inca < lda; lda > 0 otherwise.\n
-                Stride from the start of one column of A_{ji} to the next. Normal use case is
-                lda >= inca * nb.
+    lda         rocblas_int. lda >= inca * nb.\n
+                Specifies the leading dimension of blocks A_{ji}, i.e. the stride from the start
+                of one column of A_{ji} to the next.
     @param[in]
     strideA     rocblas_stride.\n
                 Stride from the start of one block A_{ji} to the same block in the next batch
                 instance A_{(j+1)i}.
-                There is no restriction for the value of strideA. Normal use case is strideA >=
-                max(inca,lda)*nb*nblocks
+                There is no restriction for the value of strideA. Normal use cases are strideA >=
+                lda*nb*nblocks (strided batched case) or strideA = 1 (interleaved batched case).
     @param[in]
     B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
                 Contains the blocks B_{ji} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    incb        rocblas_int. incb > 0 if incb < ldb; incb >= ldb * nb otherwise.\n
-                Stride from the start of one row of B_{ji} to the next. Normal use case is
-                incb = 1.
+    incb        rocblas_int. incb > 0.\n
+                Stride from the start of one row of B_{ji} to the next. Normal use cases are
+                incb = 1 (strided batched case) or incb = batch_count (interleaved batched case).
     @param[in]
-    ldb         rocblas_int. ldb >= incb * nb if incb < ldb; ldb > 0 otherwise.\n
-                Stride from the start of one column of B_{ji} to the next. Normal use case is
-                ldb >= incb * nb.
+    ldb         rocblas_int. ldb >= incb * nb.\n
+                Specifies the leading dimension of blocks B_{ji}, i.e. the stride from the start
+                of one column of B_{ji} to the next.
     @param[in]
     strideB     rocblas_stride.\n
                 Stride from the start of one block B_{ji} to the same block in the next batch
                 instance B_{(j+1)i}.
-                There is no restriction for the value of strideB. Normal use case is strideB >=
-                max(incb,ldb)*nb*nblocks
+                There is no restriction for the value of strideB. Normal use cases are strideB >=
+                ldb*nb*nblocks (strided batched case) or strideB = 1 (interleaved batched case).
     @param[in]
     C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
                 Contains the blocks C_{ji} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    incc        rocblas_int. incc > 0 if incc < ldc; incc >= ldc * nb otherwise.\n
-                Stride from the start of one row of C_{ji} to the next. Normal use case is
-                incc = 1.
+    incc        rocblas_int. incc > 0.\n
+                Stride from the start of one row of C_{ji} to the next. Normal use cases are
+                incc = 1 (strided batched case) or incc = batch_count (interleaved batched case).
     @param[in]
-    ldc         rocblas_int. ldc >= incc * nb if incc < ldc; ldc > 0 otherwise.\n
-                Stride from the start of one column of C_{ji} to the next. Normal use case is
-                ldc >= incc * nb.
+    ldc         rocblas_int. ldc >= incc * nb.\n
+                Specifies the leading dimension of blocks C_{ji}, i.e. the stride from the start
+                of one column of C_{ji} to the next.
     @param[in]
     strideC     rocblas_stride.\n
                 Stride from the start of one block C_{ji} to the same block in the next batch
                 instance C_{(j+1)i}.
-                There is no restriction for the value of strideC. Normal use case is strideC >=
-                max(incc,ldc)*nb*nblocks
+                There is no restriction for the value of strideC. Normal use cases are strideC >=
+                ldc*nb*nblocks (strided batched case) or strideC = 1 (interleaved batched case).
     @param[inout]
     X           pointer to type. Array on the GPU (the size depends on the value of strideX).\n
                 On entry, X contains the right-hand-side blocks R_{ji}. It is overwritten by solution
                 vectors X_{ji} on exit.
     @param[in]
-    incx        rocblas_int. incx > 0 if incx < ldx; incx >= ldx * nrhs otherwise.\n
-                Stride from the start of one row of X_{ji} to the next. Normal use case is
-                incx = 1.
+    incx        rocblas_int. incx > 0.\n
+                Stride from the start of one row of X_{ji} to the next. Normal use cases are
+                incx = 1 (strided batched case) or incx = batch_count (interleaved batched case).
     @param[in]
-    ldx         rocblas_int. ldx >= incx * nb if incx < ldx; ldx > 0 otherwise.\n
-                Stride from the start of one column of X_{ji} to the next. Normal use case is
-                ldx >= incx * nb.
+    ldx         rocblas_int. ldx >= incx * nb.\n
+                Specifies the leading dimension of blocks X_{ji}, i.e. the stride from the start
+                of one column of X_{ji} to the next.
     @param[in]
     strideX     rocblas_stride.\n
                 Stride from the start of one block X_{ji} to the same block in the next batch
                 instance X_{(j+1)i}.
-                There is no restriction for the value of strideX. Normal use case is strideX >=
-                max(incx*nb,ldx*nrhs)*nblocks
+                There is no restriction for the value of strideX. Normal use cases are strideX >=
+                ldx*nrhs*nblocks (strided batched case) or strideX = 1 (interleaved batched case).
     @param[in]
     batch_count rocblas_int. batch_count >= 0.\n
                 Number of matrices in the batch.

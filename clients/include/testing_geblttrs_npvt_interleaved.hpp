@@ -191,17 +191,17 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
                     {
                         if(i == j)
                             M[i + j * n + k * (n + 1) * nb]
-                                = B[i * incb + j * ldb + k * max(incb, ldb) * nb] + 400;
+                                = B[i * incb + j * ldb + k * ldb * nb] + 400;
                         else
                             M[i + j * n + k * (n + 1) * nb]
-                                = B[i * incb + j * ldb + k * max(incb, ldb) * nb] - 4;
+                                = B[i * incb + j * ldb + k * ldb * nb] - 4;
 
                         if(k < nblocks - 1)
                         {
                             M[(i + nb) + j * n + k * (n + 1) * nb]
-                                = A[i * inca + j * lda + k * max(inca, lda) * nb] - 4;
+                                = A[i * inca + j * lda + k * lda * nb] - 4;
                             M[i + (j + nb) * n + k * (n + 1) * nb]
-                                = C[i * incc + j * ldc + k * max(incc, ldc) * nb] - 4;
+                                = C[i * incc + j * ldc + k * ldc * nb] - 4;
                         }
                     }
                 }
@@ -211,8 +211,7 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
             for(rocblas_int k = 0; k < nblocks; k++)
                 for(rocblas_int i = 0; i < nb; i++)
                     for(rocblas_int j = 0; j < nrhs; j++)
-                        XX[i + j * n + k * nb]
-                            = X[i * incx + j * ldx + k * max(incx * nb, ldx * nrhs)];
+                        XX[i + j * n + k * nb] = X[i * incx + j * ldx + k * ldx * nrhs];
 
             // generate the full matrix of right-hand-side vectors XB by computing M * XX
             cpu_gemm(rocblas_operation_none, rocblas_operation_none, n, nrhs, n, T(1), M.data(), n,
@@ -222,8 +221,7 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
             for(rocblas_int k = 0; k < nblocks; k++)
                 for(rocblas_int i = 0; i < nb; i++)
                     for(rocblas_int j = 0; j < nrhs; j++)
-                        RHS[i * incx + j * ldx + k * max(incx * nb, ldx * nrhs)]
-                            = XB[i + j * n + k * nb];
+                        RHS[i * incx + j * ldx + k * ldx * nrhs] = XB[i + j * n + k * nb];
 
             // factorize M
             cpu_getrf(nb, nb, M.data(), n, ipiv.data(), &info);
@@ -246,14 +244,13 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
                 {
                     for(rocblas_int j = 0; j < nb; j++)
                     {
-                        B[i * incb + j * ldb + k * max(incb, ldb) * nb]
-                            = M[i + j * n + k * (n + 1) * nb];
+                        B[i * incb + j * ldb + k * ldb * nb] = M[i + j * n + k * (n + 1) * nb];
 
                         if(k < nblocks - 1)
                         {
-                            A[i * inca + j * lda + k * max(inca, lda) * nb]
+                            A[i * inca + j * lda + k * lda * nb]
                                 = M[(i + nb) + j * n + k * (n + 1) * nb];
-                            C[i * incc + j * ldc + k * max(incc, ldc) * nb]
+                            C[i * incc + j * ldc + k * ldc * nb]
                                 = M[i + (j + nb) * n + k * (n + 1) * nb];
                         }
                     }
@@ -333,9 +330,9 @@ void geblttrs_npvt_interleaved_getError(const rocblas_handle handle,
                 for(rocblas_int j = 0; j < nrhs; j++)
                 {
                     Xtmp[i + j * nb + k * nb * nrhs]
-                        = hX[0][i * incx + j * ldx + k * max(incx * nb, ldx * nrhs) + b * stX];
+                        = hX[0][i * incx + j * ldx + k * ldx * nrhs + b * stX];
                     XtmpRes[i + j * nb + k * nb * nrhs]
-                        = hXRes[0][i * incx + j * ldx + k * max(incx * nb, ldx * nrhs) + b * stX];
+                        = hXRes[0][i * incx + j * ldx + k * ldx * nrhs + b * stX];
                 }
             }
         }
@@ -448,10 +445,10 @@ void testing_geblttrs_npvt_interleaved(Arguments& argus)
     rocblas_int ldb = argus.get<rocblas_int>("ldb", nb);
     rocblas_int ldc = argus.get<rocblas_int>("ldc", nb);
     rocblas_int ldx = argus.get<rocblas_int>("ldx", nb);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", max(inca, lda) * nb * nblocks);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", max(incb, ldb) * nb * nblocks);
-    rocblas_stride stC = argus.get<rocblas_stride>("strideC", max(incc, ldc) * nb * nblocks);
-    rocblas_stride stX = argus.get<rocblas_stride>("strideX", max(incx * nb, ldx * nrhs) * nblocks);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * nb * nblocks);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nb * nblocks);
+    rocblas_stride stC = argus.get<rocblas_stride>("strideC", ldc * nb * nblocks);
+    rocblas_stride stX = argus.get<rocblas_stride>("strideX", ldx * nrhs * nblocks);
 
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
@@ -463,19 +460,19 @@ void testing_geblttrs_npvt_interleaved(Arguments& argus)
 
     // determine sizes
     rocblas_int n = nb * nblocks;
-    size_t size_A = max(max(size_t(inca) * n, size_t(lda) * n), stA) * bc;
-    size_t size_B = max(max(size_t(incb) * n, size_t(ldb) * n), stB) * bc;
-    size_t size_C = max(max(size_t(incc) * n, size_t(ldc) * n), stC) * bc;
-    size_t size_X = max(max(size_t(incx) * n, size_t(ldx) * nrhs * nblocks), stX) * bc;
+    size_t size_A = max(size_t(lda) * n, stA) * bc;
+    size_t size_B = max(size_t(ldb) * n, stB) * bc;
+    size_t size_C = max(size_t(ldc) * n, stC) * bc;
+    size_t size_X = max(size_t(ldx) * nrhs * nblocks, stX) * bc;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_XRes = size_X;
 
     // check invalid sizes
-    bool invalid_a = ((inca < 1 || lda < inca * nb) && (inca < lda * nb || lda < 1));
-    bool invalid_b = ((incc < 1 || ldc < incc * nb) && (incb < ldb * nb || ldb < 1));
-    bool invalid_c = ((incc < 1 || ldc < incc * nb) && (incc < ldc * nb || ldc < 1));
-    bool invalid_x = ((incx < 1 || ldx < incx * nb) && (incx < ldx * nrhs || ldx < 1));
+    bool invalid_a = (inca < 1 || lda < inca * nb);
+    bool invalid_b = (incc < 1 || ldc < incc * nb);
+    bool invalid_c = (incc < 1 || ldc < incc * nb);
+    bool invalid_x = (incx < 1 || ldx < incx * nb);
     bool invalid_size = (nb < 0 || nblocks < 0 || nrhs < 0 || bc < 0 || invalid_a || invalid_b
                          || invalid_c || invalid_x);
     if(invalid_size)

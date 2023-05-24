@@ -108,11 +108,11 @@ rocblas_status rocsolver_geblttrf_npvt_argCheck(rocblas_handle handle,
     // 2. invalid size
     if(nb < 0 || nblocks < 0 || batch_count < 0)
         return rocblas_status_invalid_size;
-    if((inca < 1 || lda < inca * nb) && (inca < lda * nb || lda < 1))
+    if(inca < 1 || lda < inca * nb)
         return rocblas_status_invalid_size;
-    if((incb < 1 || ldb < incb * nb) && (incb < ldb * nb || ldb < 1))
+    if(incb < 1 || ldb < incb * nb)
         return rocblas_status_invalid_size;
-    if((incc < 1 || ldc < incc * nb) && (incc < ldc * nb || ldc < 1))
+    if(incc < 1 || ldc < incc * nb)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -179,9 +179,9 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
     T minone = T(-1);
 
     // block strides
-    rocblas_int bsa = max(inca, lda) * nb;
-    rocblas_int bsb = max(incb, ldb) * nb;
-    rocblas_int bsc = max(incc, ldc) * nb;
+    rocblas_int bsa = lda * nb;
+    rocblas_int bsb = ldb * nb;
+    rocblas_int bsc = ldc * nb;
 
     rocsolver_getrf_template<BATCHED, STRIDED, T>(
         handle, nb, nb, B, shiftB, incb, ldb, strideB, nullptr, 0, 0, info, batch_count, scalars,

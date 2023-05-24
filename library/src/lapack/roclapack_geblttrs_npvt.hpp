@@ -68,13 +68,13 @@ rocblas_status rocsolver_geblttrs_npvt_argCheck(rocblas_handle handle,
     // 2. invalid size
     if(nb < 0 || nblocks < 0 || nrhs < 0 || batch_count < 0)
         return rocblas_status_invalid_size;
-    if((inca < 1 || lda < inca * nb) && (inca < lda * nb || lda < 1))
+    if(inca < 1 || lda < inca * nb)
         return rocblas_status_invalid_size;
-    if((incb < 1 || ldb < incb * nb) && (incb < ldb * nb || ldb < 1))
+    if(incb < 1 || ldb < incb * nb)
         return rocblas_status_invalid_size;
-    if((incc < 1 || ldc < incc * nb) && (incc < ldc * nb || ldc < 1))
+    if(incc < 1 || ldc < incc * nb)
         return rocblas_status_invalid_size;
-    if((incx < 1 || ldx < incx * nb) && (incx < ldx * nrhs || ldx < 1))
+    if(incx < 1 || ldx < incx * nb)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -134,10 +134,10 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
     T minone = T(-1);
 
     // block strides
-    rocblas_int bsa = max(inca, lda) * nb;
-    rocblas_int bsb = max(incb, ldb) * nb;
-    rocblas_int bsc = max(incc, ldc) * nb;
-    rocblas_int bsx = max(incx * nb, ldx * nrhs);
+    rocblas_int bsa = lda * nb;
+    rocblas_int bsb = ldb * nb;
+    rocblas_int bsc = ldc * nb;
+    rocblas_int bsx = ldx * nrhs;
 
     // forward solve
     for(rocblas_int k = 0; k < nblocks; k++)
