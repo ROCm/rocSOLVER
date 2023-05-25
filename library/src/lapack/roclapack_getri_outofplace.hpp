@@ -1,5 +1,5 @@
 /************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -120,8 +120,8 @@ rocblas_status rocsolver_getri_outofplace_template(rocblas_handle handle,
 
     // compute inverse
     rocsolver_getrs_template<BATCHED, STRIDED, T>(
-        handle, rocblas_operation_none, n, n, A, shiftA, lda, strideA, ipiv, strideP, C, shiftC,
-        ldc, strideC, batch_count, work1, work2, work3, work4, optim_mem, pivot);
+        handle, rocblas_operation_none, n, n, A, shiftA, 1, lda, strideA, ipiv, strideP, C, shiftC,
+        1, ldc, strideC, batch_count, work1, work2, work3, work4, optim_mem, pivot);
 
     return rocblas_status_success;
 }

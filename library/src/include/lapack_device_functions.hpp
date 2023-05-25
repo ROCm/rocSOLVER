@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -211,87 +211,6 @@ __device__ void trsm_kernel_right_lower(const rocblas_diagonal diag,
             b[i + j * ldb] = ajj * bij;
         }
         __syncthreads();
-    }
-}
-
-/** GEMV device function to compute y = alpha * A * x + beta * y **/
-template <int MAX_THDS, typename T>
-__device__ void gemv(const rocblas_int tid,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     const T* alpha,
-                     T* A,
-                     const rocblas_int lda,
-                     T* x,
-                     const rocblas_int incx,
-                     const T* beta,
-                     T* y,
-                     const rocblas_int incy)
-{
-    // gemv function assuming no transpose
-    T temp;
-    for(int i = tid; i < m; i += MAX_THDS)
-    {
-        temp = 0;
-        for(int j = 0; j < n; j++)
-            temp += A[i + j * lda] * x[j * incx];
-        y[i * incy] = *alpha * temp + *beta * y[i * incy];
-    }
-}
-
-/** GEMM device function to compute C = alpha * A * B + beta * C **/
-template <int MAX_THDS, typename T>
-__device__ void gemm(const rocblas_int tid,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     const rocblas_int k,
-                     const T* alpha,
-                     T* A,
-                     const rocblas_int lda,
-                     T* B,
-                     const rocblas_int ldb,
-                     const T* beta,
-                     T* C,
-                     const rocblas_int ldc)
-{
-    // gemm function assuming no transpose
-    T temp;
-    for(int e = tid; e < m * n; e += MAX_THDS)
-    {
-        int i = e % m;
-        int j = e / m;
-        temp = 0;
-        for(int l = 0; l < k; l++)
-            temp += A[i + l * lda] * B[l + j * ldb];
-        C[i + j * ldc] = *alpha * temp + *beta * C[i + j * ldc];
-    }
-}
-
-/** GEMM device function to compute C = alpha * A * B' + beta * C **/
-template <int MAX_THDS, typename T>
-__device__ void gemm_btrans(const rocblas_int tid,
-                            const rocblas_int m,
-                            const rocblas_int n,
-                            const rocblas_int k,
-                            const T* alpha,
-                            T* A,
-                            const rocblas_int lda,
-                            T* B,
-                            const rocblas_int ldb,
-                            const T* beta,
-                            T* C,
-                            const rocblas_int ldc)
-{
-    // gemm function assuming B transpose
-    T temp;
-    for(int e = tid; e < m * n; e += MAX_THDS)
-    {
-        int i = e % m;
-        int j = e / m;
-        temp = 0;
-        for(int l = 0; l < k; l++)
-            temp += A[i + l * lda] * B[j + l * ldb];
-        C[i + j * ldc] = *alpha * temp + *beta * C[i + j * ldc];
     }
 }
 
@@ -1030,68 +949,5 @@ ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
 
         // axpy
         y[i * incy] = a[0] * x[i * incx] + y[i * incy];
-    }
-}
-
-/** Optimized kernel that executes a simple gemm A = BC
-    where A, B and C are sub blocks of the same matrix MM with
-    leading dimension ldim and stride. A, B and C are
-    located in MM by their respective shifts.
-
-    Call this kernel with 'batch_count' groups in z, and enough
-    groups in x and y to cover all the 'm' rows and 'n' columns of C.
-    Size of shared memory per group should be:
-    lmemsize = k * (hipBlockDim_x + hipBlockDim_y) * sizeof(T); **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void gemm_kernel(const rocblas_int m,
-                                  const rocblas_int n,
-                                  const rocblas_int k,
-                                  U MM,
-                                  const rocblas_int shiftA,
-                                  const rocblas_int shiftB,
-                                  const rocblas_int shiftC,
-                                  const rocblas_int ldim,
-                                  const rocblas_stride stride)
-{
-    // indices
-    int id = hipBlockIdx_z;
-    int tx = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int bdx = hipBlockDim_x;
-    int bdy = hipBlockDim_y;
-    int i = hipBlockIdx_x * bdx + tx;
-    int j = hipBlockIdx_y * bdy + ty;
-
-    // batch instance
-    T* A = load_ptr_batch(MM, id, shiftA, stride);
-    T* B = load_ptr_batch(MM, id, shiftB, stride);
-    T* C = load_ptr_batch(MM, id, shiftC, stride);
-
-    // shared mem setup
-    extern __shared__ double lmem[];
-    T* a = reinterpret_cast<T*>(lmem);
-    T* b = a + k * bdx;
-    T c;
-
-    // local row and column of the shared arrays
-    a += tx * k;
-    b += ty * k;
-
-    // read A and B into shared mem
-    for(int kk = ty; kk < k; kk += bdy)
-        a[kk] = i < m ? A[i + kk * ldim] : 0;
-    for(int kk = tx; kk < k; kk += bdx)
-        b[kk] = j < n ? B[kk + j * ldim] : 0;
-    __syncthreads();
-
-    if(i < m && j < n)
-    {
-        // update c
-        c = C[i + j * ldim];
-        for(int kk = 0; kk < k; ++kk)
-            c -= a[kk] * b[kk];
-
-        // write back to global memory
-        C[i + j * ldim] = c;
     }
 }
