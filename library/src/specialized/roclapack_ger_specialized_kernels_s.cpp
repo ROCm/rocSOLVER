@@ -9,6 +9,4 @@
 *************************************************************/
 
 INSTANTIATE_GER(false, float, float*);
-INSTANTIATE_GER(true, float, float*);
 INSTANTIATE_GER(false, float, float* const*);
-INSTANTIATE_GER(true, float, float* const*);
