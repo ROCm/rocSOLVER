@@ -214,31 +214,6 @@ __device__ void trsm_kernel_right_lower(const rocblas_diagonal diag,
     }
 }
 
-/** GEMV device function to compute y = alpha * A * x + beta * y **/
-template <int MAX_THDS, typename T>
-__device__ void gemv(const rocblas_int tid,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     const T* alpha,
-                     T* A,
-                     const rocblas_int lda,
-                     T* x,
-                     const rocblas_int incx,
-                     const T* beta,
-                     T* y,
-                     const rocblas_int incy)
-{
-    // gemv function assuming no transpose
-    T temp;
-    for(int i = tid; i < m; i += MAX_THDS)
-    {
-        temp = 0;
-        for(int j = 0; j < n; j++)
-            temp += A[i + j * lda] * x[j * incx];
-        y[i * incy] = *alpha * temp + *beta * y[i * incy];
-    }
-}
-
 /** LARTG device function computes the sine (s) and cosine (c) values
     to create a givens rotation such that:
     [  c s ]' * [ f ] = [ r ]
