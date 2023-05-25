@@ -9,6 +9,4 @@
 *************************************************************/
 
 INSTANTIATE_GER(false, double, double*);
-INSTANTIATE_GER(true, double, double*);
 INSTANTIATE_GER(false, double, double* const*);
-INSTANTIATE_GER(true, double, double* const*);
