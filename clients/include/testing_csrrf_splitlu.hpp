@@ -427,7 +427,7 @@ void testing_csrrf_splitlu(Arguments& argus)
     rocblas_int nnzL = n;
     if(!mat_zero && n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA).c_str();
+        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
         fs::path file = testcase / "ptrL";
         read_last(file.string(), &nnzL);
         file = testcase / "ptrU";

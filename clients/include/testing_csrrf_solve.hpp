@@ -150,14 +150,14 @@ void csrrf_solve_initData(rocblas_handle handle,
         read_matrix(file.string(), 1, n, hpivQ.data(), 1);
 
         // read-in B
-        file = testcase / fmt::format("B_{}", nrhs).c_str();
+        file = testcase / fs::path(fmt::format("B_{}", nrhs));
         read_matrix(file.string(), n, nrhs, hB.data(), ldb);
 
         // get results (matrix X) if validation is required
         if(test)
         {
             // read-in X
-            file = testcase / fmt::format("X_{}", nrhs).c_str();
+            file = testcase / fs::path(fmt::format("X_{}", nrhs));
             read_matrix(file.string(), n, nrhs, hX.data(), ldb);
         }
     }
@@ -363,7 +363,7 @@ void testing_csrrf_solve(Arguments& argus)
     fs::path testcase;
     if(n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA).c_str();
+        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
         fs::path file = testcase / "ptrT";
         read_last(file.string(), &nnzT);
     }

@@ -403,7 +403,7 @@ void testing_csrrf_analysis(Arguments& argus)
     fs::path testcase;
     if(n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzM).c_str();
+        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzM));
         fs::path file = testcase / "ptrT";
         read_last(file.string(), &nnzT);
     }

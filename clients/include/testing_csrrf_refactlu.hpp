@@ -380,7 +380,7 @@ void testing_csrrf_refactlu(Arguments& argus)
     fs::path testcase;
     if(n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA).c_str();
+        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
         fs::path file = testcase / "ptrT";
         read_last(file.string(), &nnzT);
     }

@@ -407,7 +407,7 @@ void testing_csrrf_sumlu(Arguments& argus)
     fs::path testcase;
     if(!mat_zero && n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA).c_str();
+        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
         fs::path file = testcase / "ptrL";
         read_last(file.string(), &nnzL);
         file = testcase / "ptrU";
