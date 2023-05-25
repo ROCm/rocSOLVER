@@ -129,7 +129,7 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_trace)
         "rocSOLVER Version: .*",
         "rocBLAS Version: .*",
         ".*ENTER rocsolver_dgetrf_strided_batched trace tree.*",
-        ".*getrf.*m: 25, n: 25, shiftA: 0, lda: 25, shiftP: 0, bc: 3.*",
+        ".*getrf.*m: 25, n: 25, shiftA: 0, inca: 1, lda: 25, shiftP: 0, bc: 3.*",
         ".*EXIT rocsolver_dgetrf_strided_batched trace tree.*",
         "\\s*",
     };
@@ -285,7 +285,7 @@ TEST_F(checkin_misc_LOGGING, rocsolver_log_restore_defaults_resets_max_levels)
         "rocSOLVER Version: .*",
         "rocBLAS Version: .*",
         ".*ENTER rocsolver_dgetrf_strided_batched trace tree.*",
-        ".*getrf.*m: 25, n: 25, shiftA: 0, lda: 25, shiftP: 0, bc: 3.*",
+        ".*getrf.*m: 25, n: 25, shiftA: 0, inca: 1, lda: 25, shiftP: 0, bc: 3.*",
         ".*EXIT rocsolver_dgetrf_strided_batched trace tree.*",
         "\\s*",
     };
@@ -309,8 +309,8 @@ TEST_F(checkin_misc_LOGGING, rocblas_layer_mode_log_trace_tree)
         "rocSOLVER Version: .*",
         "rocBLAS Version: .*",
         ".*ENTER rocsolver_dgetrf_strided_batched trace tree.*",
-        ".*getrf.*m: 25, n: 25, shiftA: 0, lda: 25, shiftP: 0, bc: 3.*",
-        "    .*getf2.*m: 25, n: 25, shiftA: 0, lda: 25, shiftP: 0, bc: 3.*",
+        ".*getrf.*m: 25, n: 25, shiftA: 0, inca: 1, lda: 25, shiftP: 0, bc: 3.*",
+        "    .*getf2.*m: 25, n: 25, shiftA: 0, inca: 1, lda: 25, shiftP: 0, bc: 3.*",
         ".*EXIT rocsolver_dgetrf_strided_batched trace tree.*",
         "\\s*",
     };

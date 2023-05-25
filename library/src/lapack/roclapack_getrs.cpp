@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getrs.hpp"
@@ -31,6 +31,8 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
     rocblas_int shiftB = 0;
 
     // normal (non-batched non-strided) execution
+    rocblas_int inca = 1;
+    rocblas_int incb = 1;
     rocblas_stride strideA = 0;
     rocblas_stride strideB = 0;
     rocblas_stride strideP = 0;
@@ -61,8 +63,8 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_getrs_template<false, false, T>(
-        handle, trans, n, nrhs, A, shiftA, lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB,
-        batch_count, work1, work2, work3, work4, optim_mem, true);
+        handle, trans, n, nrhs, A, shiftA, inca, lda, strideA, ipiv, strideP, B, shiftB, incb, ldb,
+        strideB, batch_count, work1, work2, work3, work4, optim_mem, true);
 }
 
 /*

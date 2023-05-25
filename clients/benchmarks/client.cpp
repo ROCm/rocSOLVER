@@ -173,6 +173,31 @@ try
             "                           Typically, the number of columns of a matrix on the right-hand side of a problem.\n"
             "                           ")
 
+        // increment options
+        ("inca",
+         value<rocblas_int>()->default_value(1),
+            "Matrix/vector increment parameter.\n"
+            "                           Increment between values in matrices A.\n"
+            "                           ")
+
+        ("incb",
+         value<rocblas_int>()->default_value(1),
+            "Matrix/vector increment parameter.\n"
+            "                           Increment between values in matrices B.\n"
+            "                           ")
+
+        ("incc",
+         value<rocblas_int>()->default_value(1),
+            "Matrix/vector increment parameter.\n"
+            "                           Increment between values in matrices C.\n"
+            "                           ")
+
+        ("incx",
+         value<rocblas_int>()->default_value(1),
+            "Matrix/vector increment parameter.\n"
+            "                           Increment between values in matrices/vectors X.\n"
+            "                           ")
+
         // leading dimension options
         ("lda",
          value<rocblas_int>(),
@@ -522,11 +547,6 @@ try
          value<char>()->default_value('O'),
             "O = out-of-place, I = in-place.\n"
             "                           Enables out-of-place computations.\n"
-            "                           ")
-
-        ("incx",
-         value<rocblas_int>()->default_value(1),
-            "Increment between values in vector x.\n"
             "                           ")
 
         ("itype",

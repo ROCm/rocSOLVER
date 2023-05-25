@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_geblttrs_npvt.hpp"
@@ -36,7 +36,11 @@ rocblas_status rocsolver_geblttrs_npvt_impl(rocblas_handle handle,
     rocblas_int shiftC = 0;
     rocblas_int shiftX = 0;
 
-    // normal execution
+    // normal (non-batched non-strided) execution
+    rocblas_int inca = 1;
+    rocblas_int incb = 1;
+    rocblas_int incc = 1;
+    rocblas_int incx = 1;
     rocblas_stride strideA = 0;
     rocblas_stride strideB = 0;
     rocblas_stride strideC = 0;
@@ -69,8 +73,9 @@ rocblas_status rocsolver_geblttrs_npvt_impl(rocblas_handle handle,
 
     // Execution
     return rocsolver_geblttrs_npvt_template<false, false, T>(
-        handle, nb, nblocks, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, C, shiftC, ldc,
-        strideC, X, shiftX, ldx, strideX, batch_count, work1, work2, work3, work4, optim_mem);
+        handle, nb, nblocks, nrhs, A, shiftA, inca, lda, strideA, B, shiftB, incb, ldb, strideB, C,
+        shiftC, incc, ldc, strideC, X, shiftX, incx, ldx, strideX, batch_count, work1, work2, work3,
+        work4, optim_mem);
 }
 
 /*

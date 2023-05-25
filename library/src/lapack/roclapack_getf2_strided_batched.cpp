@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getf2.hpp"
@@ -36,6 +36,9 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
     rocblas_int shiftA = 0;
     rocblas_int shiftP = 0;
 
+    // strided batched execution
+    rocblas_int inca = 1;
+
     // memory workspace sizes:
     // size for constants in rocblas calls
     size_t size_scalars;
@@ -63,9 +66,9 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_getf2_template<true, T>(handle, m, n, A, shiftA, lda, strideA, ipiv, shiftP,
-                                             strideP, info, batch_count, (T*)scalars, (T*)pivotval,
-                                             (rocblas_int*)pivotidx, pivot);
+    return rocsolver_getf2_template<true, T>(handle, m, n, A, shiftA, inca, lda, strideA, ipiv,
+                                             shiftP, strideP, info, batch_count, (T*)scalars,
+                                             (T*)pivotval, (rocblas_int*)pivotidx, pivot);
 }
 
 /*

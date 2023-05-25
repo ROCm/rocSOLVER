@@ -1,9 +1,10 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
 #include "testing_geblttrs_npvt.hpp"
+#include "testing_geblttrs_npvt_interleaved.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -42,17 +43,41 @@ const vector<vector<int>> large_matrix_size_range = {{32, 6, 10, 32, 32, 32, 32}
                                                      {32, 10, 20, 32, 40, 32, 40},
                                                      {32, 20, 20, 32, 32, 40, 32}};
 
-Arguments geblttrs_setup_arguments(geblttrs_tuple tup)
+Arguments geblttrs_setup_arguments(geblttrs_tuple tup, bool interleaved)
 {
     Arguments arg;
 
     arg.set<rocblas_int>("nb", tup[0]);
     arg.set<rocblas_int>("nblocks", tup[1]);
     arg.set<rocblas_int>("nrhs", tup[2]);
-    arg.set<rocblas_int>("lda", tup[3]);
-    arg.set<rocblas_int>("ldb", tup[4]);
-    arg.set<rocblas_int>("ldc", tup[5]);
-    arg.set<rocblas_int>("ldx", tup[6]);
+
+    if(!interleaved)
+    {
+        arg.set<rocblas_int>("lda", tup[3]);
+        arg.set<rocblas_int>("ldb", tup[4]);
+        arg.set<rocblas_int>("ldc", tup[5]);
+        arg.set<rocblas_int>("ldx", tup[6]);
+    }
+    else
+    {
+        // normal use case is covered by non-interleaved tests
+        rocblas_int bc = 3;
+
+        arg.set<rocblas_int>("inca", bc);
+        arg.set<rocblas_int>("incb", bc);
+        arg.set<rocblas_int>("incc", bc);
+        arg.set<rocblas_int>("incx", bc);
+
+        arg.set<rocblas_int>("lda", bc * tup[3]);
+        arg.set<rocblas_int>("ldb", bc * tup[4]);
+        arg.set<rocblas_int>("ldc", bc * tup[5]);
+        arg.set<rocblas_int>("ldx", bc * tup[6]);
+
+        arg.set<rocblas_stride>("strideA", 1);
+        arg.set<rocblas_stride>("strideB", 1);
+        arg.set<rocblas_stride>("strideC", 1);
+        arg.set<rocblas_stride>("strideX", 1);
+    }
 
     // only testing standard use case/defaults for strides
 
@@ -71,7 +96,7 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = geblttrs_setup_arguments(GetParam());
+        Arguments arg = geblttrs_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("nblocks") == 0
            && arg.peek<rocblas_int>("nrhs") == 0)
@@ -79,6 +104,27 @@ protected:
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         testing_geblttrs_npvt<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class GEBLTTRS_NPVT_INTERLEAVED : public ::TestWithParam<geblttrs_tuple>
+{
+protected:
+    GEBLTTRS_NPVT_INTERLEAVED() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+
+    template <typename T>
+    void run_tests()
+    {
+        Arguments arg = geblttrs_setup_arguments(GetParam(), true);
+
+        if(arg.peek<rocblas_int>("nb") == 0 && arg.peek<rocblas_int>("nblocks") == 0
+           && arg.peek<rocblas_int>("nrhs") == 0)
+            testing_geblttrs_npvt_interleaved_bad_arg<T>();
+
+        arg.batch_count = 3;
+        testing_geblttrs_npvt_interleaved<T>(arg);
     }
 };
 
@@ -148,6 +194,32 @@ TEST_P(GEBLTTRS_NPVT, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+// strided_batched tests
+
+TEST_P(GEBLTTRS_NPVT_INTERLEAVED, interleaved_batched__float)
+{
+    run_tests<float>();
+}
+
+TEST_P(GEBLTTRS_NPVT_INTERLEAVED, interleaved_batched__double)
+{
+    run_tests<double>();
+}
+
+TEST_P(GEBLTTRS_NPVT_INTERLEAVED, interleaved_batched__float_complex)
+{
+    run_tests<rocblas_float_complex>();
+}
+
+TEST_P(GEBLTTRS_NPVT_INTERLEAVED, interleaved_batched__double_complex)
+{
+    run_tests<rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack, GEBLTTRS_NPVT, ValuesIn(large_matrix_size_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEBLTTRS_NPVT, ValuesIn(matrix_size_range));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack, GEBLTTRS_NPVT_INTERLEAVED, ValuesIn(large_matrix_size_range));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, GEBLTTRS_NPVT_INTERLEAVED, ValuesIn(matrix_size_range));

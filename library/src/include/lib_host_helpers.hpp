@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -21,6 +21,11 @@
 inline size_t idx2D(const size_t i, const size_t j, const size_t lda)
 {
     return j * lda + i;
+}
+
+inline size_t idx2D(const size_t i, const size_t j, const size_t inca, const size_t lda)
+{
+    return j * lda + i * inca;
 }
 
 template <typename T>
