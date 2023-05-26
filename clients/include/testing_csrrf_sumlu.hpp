@@ -142,34 +142,34 @@ void csrrf_sumlu_initData(rocblas_handle handle,
     {
         if(CPU)
         {
-            std::string file;
+            fs::path file;
 
             // read-in L
             file = testcase / "ptrL";
-            read_matrix(file, 1, n + 1, hptrL.data(), 1);
+            read_matrix(file.string(), 1, n + 1, hptrL.data(), 1);
             file = testcase / "indL";
-            read_matrix(file, 1, nnzL, hindL.data(), 1);
+            read_matrix(file.string(), 1, nnzL, hindL.data(), 1);
             file = testcase / "valL";
-            read_matrix(file, 1, nnzL, hvalL.data(), 1);
+            read_matrix(file.string(), 1, nnzL, hvalL.data(), 1);
 
             // read-in U
             file = testcase / "ptrU";
-            read_matrix(file, 1, n + 1, hptrU.data(), 1);
+            read_matrix(file.string(), 1, n + 1, hptrU.data(), 1);
             file = testcase / "indU";
-            read_matrix(file, 1, nnzU, hindU.data(), 1);
+            read_matrix(file.string(), 1, nnzU, hindU.data(), 1);
             file = testcase / "valU";
-            read_matrix(file, 1, nnzU, hvalU.data(), 1);
+            read_matrix(file.string(), 1, nnzU, hvalU.data(), 1);
 
             // get results (matrix T) if validation is required
             if(test)
             {
                 rocblas_int nnzT = nnzL + nnzU - n;
                 file = testcase / "ptrT";
-                read_matrix(file, 1, n + 1, hptrT.data(), 1);
+                read_matrix(file.string(), 1, n + 1, hptrT.data(), 1);
                 file = testcase / "indT";
-                read_matrix(file, 1, nnzT, hindT.data(), 1);
+                read_matrix(file.string(), 1, nnzT, hindT.data(), 1);
                 file = testcase / "valT";
-                read_matrix(file, 1, nnzT, hvalT.data(), 1);
+                read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
             }
         }
 
@@ -407,11 +407,11 @@ void testing_csrrf_sumlu(Arguments& argus)
     fs::path testcase;
     if(!mat_zero && n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
+        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
         fs::path file = testcase / "ptrL";
-        read_last(file, &nnzL);
+        read_last(file.string(), &nnzL);
         file = testcase / "ptrU";
-        read_last(file, &nnzU);
+        read_last(file.string(), &nnzU);
     }
     rocblas_int nnzT = nnzL + nnzU - n;
 
