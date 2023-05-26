@@ -145,31 +145,31 @@ void csrrf_refactlu_initData(rocblas_handle handle,
 {
     if(CPU)
     {
-        std::string file;
+        fs::path file;
 
         // read-in A
         file = testcase / "ptrA";
-        read_matrix(file, 1, n + 1, hptrA.data(), 1);
+        read_matrix(file.string(), 1, n + 1, hptrA.data(), 1);
         file = testcase / "indA";
-        read_matrix(file, 1, nnzA, hindA.data(), 1);
+        read_matrix(file.string(), 1, nnzA, hindA.data(), 1);
         file = testcase / "valA";
-        read_matrix(file, 1, nnzA, hvalA.data(), 1);
+        read_matrix(file.string(), 1, nnzA, hvalA.data(), 1);
 
         // read-in T
         file = testcase / "ptrT";
-        read_matrix(file, 1, n + 1, hptrT.data(), 1);
+        read_matrix(file.string(), 1, n + 1, hptrT.data(), 1);
         file = testcase / "indT";
-        read_matrix(file, 1, nnzT, hindT.data(), 1);
+        read_matrix(file.string(), 1, nnzT, hindT.data(), 1);
         file = testcase / "valT";
-        read_matrix(file, 1, nnzT, hvalT.data(), 1);
+        read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
 
         // read-in P
         file = testcase / "P";
-        read_matrix(file, 1, n, hpivP.data(), 1);
+        read_matrix(file.string(), 1, n, hpivP.data(), 1);
 
         // read-in Q
         file = testcase / "Q";
-        read_matrix(file, 1, n, hpivQ.data(), 1);
+        read_matrix(file.string(), 1, n, hpivQ.data(), 1);
     }
 
     if(GPU)
@@ -380,9 +380,9 @@ void testing_csrrf_refactlu(Arguments& argus)
     fs::path testcase;
     if(n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
+        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
         fs::path file = testcase / "ptrT";
-        read_last(file, &nnzT);
+        read_last(file.string(), &nnzT);
     }
 
     // memory size query if necessary
