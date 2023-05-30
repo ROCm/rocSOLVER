@@ -171,7 +171,7 @@ inline fs::path get_sparse_data_dir()
         return installed;
 
     fmt::print(
-        stderr, "Warning: default sparse data directories ({}, {}) not found, defaulting to current working directory.",
+        stderr, "Warning: default sparse data directories ({}, {}) not found, defaulting to current working directory.\n",
         exe_relative, installed);
 
     return fs::current_path();
