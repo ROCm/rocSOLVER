@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -12,6 +12,21 @@
 #include <vector>
 
 #include "rocblas_test.hpp"
+
+#ifdef WIN32
+#define strcasecmp(A, B) _stricmp(A, B)
+
+#ifdef __cpp_lib_filesystem
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
+
+#else
+#include <fcntl.h>
+#endif
 
 /*!\file
  * \brief provide common utilities
@@ -26,6 +41,9 @@ static constexpr char LIMITED_MEMORY_STRING[]
 // compared.
 static constexpr char LIMITED_MEMORY_STRING_GTEST[]
     = "Succeeded\nError: Attempting to allocate more memory than available.";
+
+// Return the path to the client executable, for finding test matrices on filesystem
+std::string rocsolver_exepath();
 
 /* ============================================================================================
  */
