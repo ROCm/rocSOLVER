@@ -12,6 +12,20 @@
 #include "clients_utility.hpp"
 #include "rocblas_random.hpp"
 
+#ifdef _WIN32
+
+#ifdef __cpp_lib_filesystem
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
+
+#else
+#include <fcntl.h>
+#endif
+
 // Random number generator
 // Note: We do not use random_device to initialize the RNG, because we want
 // repeatability in case of test failure. TODO: Add seed as an optional CLI
@@ -28,7 +42,7 @@ thread_local rocblas_rng_t rocblas_rng = get_seed();
 // Return the path to the currently running executable
 std::string rocsolver_exepath()
 {
-#ifdef WIN32
+#ifdef _WIN32
 
     std::vector<TCHAR> result(MAX_PATH + 1);
     DWORD length = 0;

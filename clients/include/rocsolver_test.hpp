@@ -143,14 +143,7 @@ inline fs::path get_sparse_data_dir()
     fs::path p = fs::current_path();
     fs::path p_parent = p.parent_path();
     fs::path installed = p.root_directory() / "opt" / "rocm" / "share" / "rocsolver" / "test";
-    fs::path exe_relative = rocsolver_exepath() + "../" + "share/" + "rocsolver/" + "test/";
-    try
-    {
-        exe_relative = fs::canonical(exe_relative);
-    }
-    catch(const std::exception& ex)
-    {
-    }
+    fs::path exe_relative = fs::path(rocsolver_exepath()) / ".." / "share" / "rocsolver" / "test";
 
     // check relative to the current directory and relative to each parent
     while(p != p_parent)
