@@ -14,6 +14,8 @@
 
 #ifdef _WIN32
 
+#include <libloaderapi.h>
+
 #ifdef __cpp_lib_filesystem
 #include <filesystem>
 namespace fs = std::filesystem;
