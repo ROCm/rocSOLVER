@@ -143,6 +143,7 @@ inline fs::path get_sparse_data_dir()
     fs::path p = fs::current_path();
     fs::path p_parent = p.parent_path();
     fs::path installed = p.root_directory() / "opt" / "rocm" / "share" / "rocsolver" / "test";
+    fs::path exe_relative = fs::path(rocsolver_exepath()) / ".." / "share" / "rocsolver" / "test";
 
     // check relative to the current directory and relative to each parent
     while(p != p_parent)
@@ -154,9 +155,17 @@ inline fs::path get_sparse_data_dir()
         p_parent = p.parent_path();
     }
 
+    // check relative to the running executable
+    if(fs::exists(exe_relative))
+        return exe_relative;
+
     // check relative to default install path
     if(fs::exists(installed))
         return installed;
+
+    fmt::print(
+        stderr, "Warning: default sparse data directories ({}, {}) not found, defaulting to current working directory.\n",
+        exe_relative, installed);
 
     return fs::current_path();
 }

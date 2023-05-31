@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -26,6 +26,9 @@ static constexpr char LIMITED_MEMORY_STRING[]
 // compared.
 static constexpr char LIMITED_MEMORY_STRING_GTEST[]
     = "Succeeded\nError: Attempting to allocate more memory than available.";
+
+// Return the path to the client executable, for finding test matrices on filesystem
+std::string rocsolver_exepath();
 
 /* ============================================================================================
  */
