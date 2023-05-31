@@ -14,7 +14,8 @@
 
 #ifdef _WIN32
 
-#include <libloaderapi.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 #if __has_include(<filesystem>)
 #include <filesystem>
