@@ -2,7 +2,7 @@
 # Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
 # ########################################################################
 
-cmake_minimum_required(VERSION 4.03)
+cmake_minimum_required(VERSION 3.13)
 
 # This has to be initialized before the project() command appears
 # Set the default build type to Release
