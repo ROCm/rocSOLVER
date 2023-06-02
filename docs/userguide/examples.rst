@@ -37,16 +37,17 @@ QR factorization of a batch of matrices
 
 One of the advantages of using GPUs is the ability to execute in parallel many operations of the same type but on different data sets.
 Based on this idea, rocSOLVER and rocBLAS provide a `batch` version of most of their routines. These batch versions allow the user to execute
-the same operation on a set of different matrices and/or vectors with a single library call. For more details on the approach to batch
-functionality followed in rocSOLVER, see :ref:`batch_label`.
+the same operation on a set of different matrices and/or vectors with a single library call.
 
 Strided_batched version
 ---------------------------
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
-The matrices must be stored in contiguous memory locations on the GPU, and are accessed by a pointer to the first matrix and a
+The matrices must be stored in contiguous memory locations on the GPU and, in this example, are accessed by a pointer to the first matrix and a
 stride value that gives the separation between one matrix and the next.
-For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf_strided_batched() <geqrf_strided_batched>`.
+For a full description of the used rocSOLVER routine, see the API documentation of :ref:`rocsolver_dgeqrf_strided_batched() <geqrf_strided_batched>`.
+For more details on the approach to batch
+functionality and the strided_batched routines in rocSOLVER, see :ref:`here <strided_batched_routines>`.
 
 .. literalinclude:: ../../clients/samples/example_strided_batched.c
     :language: c
@@ -55,8 +56,10 @@ Batched version
 ---------------------------
 
 The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
-The matrices do not need to be in contiguous memory locations on the GPU, and will be accessed by an array of pointers.
-For a full description of the used rocSOLVER routine, see the API documentation here: :ref:`rocsolver_dgeqrf_batched <geqrf_batched>`.
+In this case, the matrices do not need to be in contiguous memory locations on the GPU, and will be accessed by an array of pointers.
+For a full description of the used rocSOLVER routine, see the API documentation of :ref:`rocsolver_dgeqrf_batched <geqrf_batched>`.
+For more details on the approach to batch
+functionality and the batched routines in rocSOLVER, see :ref:`here <batched_routines>`.
 
 .. literalinclude:: ../../clients/samples/example_batched.c
     :language: c
