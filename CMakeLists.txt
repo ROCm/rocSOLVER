@@ -149,7 +149,7 @@ set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;${
 # Find HIP dependencies
 find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 
-find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
+find_package(rocblas 3.1 REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
 set(rocsolver_pkgdeps "rocblas >= 4.0" "rocblas < 4.1")
