@@ -170,13 +170,14 @@ rocblas_status rocsolver_csrrf_refactlu_argCheck(rocblas_handle handle,
 }
 
 template <typename T, typename U>
-void rocsolver_csrrf_refactlu_getMemorySize(const rocblas_int n,
+void rocsolver_csrrf_refact_getMemorySize(const rocblas_int n,
                                             const rocblas_int nnzT,
                                             rocblas_int* ptrT,
                                             rocblas_int* indT,
                                             U valT,
                                             rocsolver_rfinfo rfinfo,
-                                            size_t* size_work)
+                                            size_t* size_work,
+                                            bool use_lu = true)
 {
     // if quick return, no need of workspace
     if(n == 0)
@@ -185,16 +186,62 @@ void rocsolver_csrrf_refactlu_getMemorySize(const rocblas_int n,
         return;
     }
 
+   
     // requirements for incomplete factorization
-    rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
+    if (use_lu) {
+      rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
                                       rfinfo->infoT, size_work);
+      }
+    else {
+      rocsparseCall_csric0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT,
+                                      rfinfo->infoT, size_work);
+      };
+      
 
     // need at least size n integers to generate inverse permutation inv_pivQ
     *size_work = std::max(*size_work, sizeof(rocblas_int) * n);
 }
 
+
+
 template <typename T, typename U>
-rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
+void rocsolver_csrrf_refactlu_getMemorySize(const rocblas_int n,
+                                            const rocblas_int nnzT,
+                                            rocblas_int* ptrT,
+                                            rocblas_int* indT,
+                                            U valT,
+                                            rocsolver_rfinfo rfinfo,
+                                            size_t* size_work)
+{
+   bool const use_lu = true;
+   rocsolver_csrrf_refact_getMemorySize<T,U>(n, nnzT, ptrT, indT, valT, rfinfo, size_work, use_lu );
+
+}
+
+
+template <typename T, typename U>
+void rocsolver_csrrf_refactchol_getMemorySize(const rocblas_int n,
+                                            const rocblas_int nnzT,
+                                            rocblas_int* ptrT,
+                                            rocblas_int* indT,
+                                            U valT,
+                                            rocsolver_rfinfo rfinfo,
+                                            size_t* size_work)
+{
+   bool const use_lu = false;
+   rocsolver_csrrf_refact_getMemorySize<T,U>(n, nnzT, ptrT, indT, valT, rfinfo, size_work, use_lu );
+
+}
+
+
+
+
+
+
+
+
+template <typename T, typename U>
+rocblas_status rocsolver_csrrf_refact_template(rocblas_handle handle,
                                                  const rocblas_int n,
                                                  const rocblas_int nnzA,
                                                  rocblas_int* ptrA,
@@ -207,7 +254,8 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
                                                  rocblas_int* pivP,
                                                  rocblas_int* pivQ,
                                                  rocsolver_rfinfo rfinfo,
-                                                 void* work)
+                                                 void* work,
+                                                 bool use_lu = true)
 {
     ROCSOLVER_ENTER("csrrf_refactlu", "n:", n, "nnzA:", nnzA, "nnzT:", nnzT);
 
@@ -232,8 +280,68 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
                             pivP, (rocblas_int*)work, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
 
     // perform incomplete factorization of T
-    ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
+
+    if (use_lu) {
+      ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
                                           indT, rfinfo->infoT, rocsparse_solve_policy_auto, work));
+      }
+    else {
+
+      ROCSPARSE_CHECK(rocsparseCall_csric0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
+                                          indT, rfinfo->infoT, rocsparse_solve_policy_auto, work));
+     };
 
     return rocblas_status_success;
+}
+
+
+
+template <typename T, typename U>
+rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nnzA,
+                                                 rocblas_int* ptrA,
+                                                 rocblas_int* indA,
+                                                 U valA,
+                                                 const rocblas_int nnzT,
+                                                 rocblas_int* ptrT,
+                                                 rocblas_int* indT,
+                                                 U valT,
+                                                 rocblas_int* pivP,
+                                                 rocblas_int* pivQ,
+                                                 rocsolver_rfinfo rfinfo,
+                                                 void* work
+                                                 )
+{
+    bool const use_lu = true;
+    return(
+      rocsolver_csrrf_refact_template<T,U>(
+            handle, n, nnzA, ptrA, indA, valA,   nnzT,ptrT,indT,valT,  pivP,pivQ,rfinfo,work, use_lu )
+      );
+}
+
+
+
+template <typename T, typename U>
+rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
+                                                 const rocblas_int n,
+                                                 const rocblas_int nnzA,
+                                                 rocblas_int* ptrA,
+                                                 rocblas_int* indA,
+                                                 U valA,
+                                                 const rocblas_int nnzT,
+                                                 rocblas_int* ptrT,
+                                                 rocblas_int* indT,
+                                                 U valT,
+                                                 rocblas_int* pivP,
+                                                 rocblas_int* pivQ,
+                                                 rocsolver_rfinfo rfinfo,
+                                                 void* work
+                                                 )
+{
+    bool const use_lu = false;
+    return(
+      rocsolver_csrrf_refact_template<T,U>(
+            handle, n, nnzA, ptrA, indA, valA,   nnzT,ptrT,indT,valT,  pivP,pivQ,rfinfo,work, use_lu )
+      );
 }
