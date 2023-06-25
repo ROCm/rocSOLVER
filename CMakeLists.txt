@@ -149,10 +149,17 @@ set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;${
 # Find HIP dependencies
 find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 
-find_package(rocblas 3.1 REQUIRED CONFIG PATHS ${ROCM_PATH})
-get_imported_target_location(location roc::rocblas)
-message(STATUS "Found rocBLAS: ${location}")
-set(rocsolver_pkgdeps "rocblas >= 4.0" "rocblas < 5.0")
+find_package(rocblas 4.0 CONFIG PATHS ${ROCM_PATH})
+if(rocblas_FOUND)
+  get_imported_target_location(location roc::rocblas)
+  message(STATUS "Found rocBLAS: ${location}")
+  set(rocsolver_pkgdeps "rocblas >= 4.0" "rocblas < 5.0")
+else()
+  find_package(rocblas 3.1 REQUIRED CONFIG PATHS ${ROCM_PATH})
+  get_imported_target_location(location roc::rocblas)
+  message(STATUS "Found rocBLAS: ${location}")
+  set(rocsolver_pkgdeps "rocblas >= 3.1" "rocblas < 4.0")
+endif()
 
 if(BUILD_WITH_SPARSE)
   find_package(rocsparse 2.2 REQUIRED CONFIG PATHS ${ROCM_PATH})
