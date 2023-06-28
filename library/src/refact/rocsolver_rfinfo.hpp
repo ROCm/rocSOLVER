@@ -19,4 +19,6 @@ struct rocsolver_rfinfo_
     rocsparse_mat_info infoT;
     rocsparse_solve_policy solve_policy;
     rocsparse_analysis_policy analysis_policy;
+
+    rocsparse_int position;
 };
