@@ -139,11 +139,25 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1101
       gfx1102
   )
+  set(AMDGPU_TARGETS_INIT
+    gfx803
+    gfx900
+    gfx906:xnack-
+    gfx908:xnack-
+    gfx1010
+    gfx1030
+    ${OPTIONAL_AMDGPU_TARGETS}
+  )
+  # The library would be too large to link (>2 GiB) if it were built for all architectures with
+  # address sanitizer enabled.
+  if(BUILD_ADDRESS_SANITIZER)
+     list(REMOVE_ITEM AMDGPU_TARGETS_INIT gfx803 gfx906:xnack- gfx908:xnack- gfx90a:xnack- gfx1010)
+  endif()
 endif()
 
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
-set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
+set(AMDGPU_TARGETS "${AMDGPU_TARGETS_INIT}"
   CACHE STRING "List of specific machine types for library to target")
 
 # Find HIP dependencies
