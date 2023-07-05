@@ -87,6 +87,11 @@ ROCSOLVER_KERNEL void rf_scatter_kernel(const rocblas_int n,
 // Solve A * X = (L*U) * X = B as
 // (1)   solve L * Y = B,   L unit diagonal lower triangular
 // (2)   solve U * X = Y,   U non-unit diagonal upper triangular
+//
+// If A = L*L'
+// Solve A * X = (L*L') * X = B as
+// (1)   solve L * Y = B,   L non-unit diagonal lower triangular
+// (2)   solve L' * X = Y,  L' non-unit diagonal upper triangular
 // -------------------------------------------
 template <typename T>
 rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
@@ -98,24 +103,52 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
                           T* d_LUx,
                           T* B,
                           const rocblas_int ldb,
-                          void* buffer)
+                          void* buffer,
+                          bool use_lu = true)
 {
     T alpha = 1.0;
+    rocsparse_operation trans_A = rocsparse_operation_none;
+    rocsparse_operation trans_B = rocsparse_operation_none;
 
-    // ----------------------
-    // step (1) solve L * Y = B
-    // B <-- Y
-    // ----------------------
-    ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
-        rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
-        rfinfo->descrL, d_LUx, d_LUp, d_LUi, B, ldb, rfinfo->infoL, rfinfo->solve_policy, buffer));
-    // ----------------------
-    // step (2) solve U * X = Y
-    // B <-- X
-    // ----------------------
-    ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
-        rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
-        rfinfo->descrU, d_LUx, d_LUp, d_LUi, B, ldb, rfinfo->infoU, rfinfo->solve_policy, buffer));
+    if(use_lu)
+    {
+        // ----------------------
+        // step (1) solve L * Y = B
+        // B <-- Y
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
+            rfinfo->sphandle, trans_A = rocsparse_operation_none,
+            trans_B = rocsparse_operation_none, n, nrhs, nnzLU, &alpha, rfinfo->descrL, d_LUx,
+            d_LUp, d_LUi, B, ldb, rfinfo->infoL, rfinfo->solve_policy, buffer));
+        // ----------------------
+        // step (2) solve U * X = Y
+        // B <-- X
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
+            rfinfo->sphandle, trans_A = rocsparse_operation_none,
+            trans_B = rocsparse_operation_none, n, nrhs, nnzLU, &alpha, rfinfo->descrU, d_LUx,
+            d_LUp, d_LUi, B, ldb, rfinfo->infoU, rfinfo->solve_policy, buffer));
+    }
+    else
+    {
+        ROCSPARSE_CHECK(rocsparse_set_mat_diag_type(impl->descrL, rocsparse_diag_type_non_unit));
+        // ----------------------
+        // step (1) solve L * Y = B
+        // B <-- Y
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
+            rfinfo->sphandle, trans_A = rocsparse_operation_none,
+            trans_B = rocsparse_operation_none, n, nrhs, nnzLU, &alpha, rfinfo->descrL, d_LUx,
+            d_LUp, d_LUi, B, ldb, rfinfo->infoL, rfinfo->solve_policy, buffer));
+        // ----------------------
+        // step (2) solve L' * X = Y
+        // B <-- X
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
+            rfinfo->sphandle, trans_A = rocsparse_operation_transpose,
+            trans_B = rocsparse_operation_none, n, nrhs, nnzLU, &alpha, rfinfo->descrL, d_LUx,
+            d_LUp, d_LUi, B, ldb, rfinfo->infoLt, rfinfo->solve_policy, buffer));
+    };
 
     return rocblas_status_success;
 }
@@ -185,7 +218,8 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
     *size_temp = sizeof(T) * n * nrhs;
 
     // requirements for solve with L and U
-    // (buffer size is the same for all routines if the sparsity pattern does not change)
+    // (buffer size is the same for all routines if the sparsity pattern does not
+    // change)
     size_t csrsm_L_buffer_size = 0;
     size_t csrsm_U_buffer_size = 0;
     T alpha = 1.0;

@@ -57,7 +57,11 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_stream(impl->sphandle, stream), result, cleanup);
 
     // create and set matrix descriptors
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrL), result, cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(impl->descrL)), result, cleanup);
+    impl->use_lu = true;
+    impl->position = -1;
+
+    // setup descrL
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrL, rocsparse_matrix_type_general),
                             result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrL, rocsparse_index_base_zero),
@@ -67,6 +71,7 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(impl->descrL, rocsparse_diag_type_unit),
                             result, cleanup);
 
+    // setup descrU
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrU), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrU, rocsparse_matrix_type_general),
                             result, cleanup);
@@ -77,6 +82,7 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(impl->descrU, rocsparse_diag_type_non_unit),
                             result, cleanup);
 
+    // setup descrT
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrT), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrT, rocsparse_matrix_type_general),
                             result, cleanup);
@@ -85,6 +91,7 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
 
     // create info holders
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoL), result, cleanup);
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoLt), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoU), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoT), result, cleanup);
 

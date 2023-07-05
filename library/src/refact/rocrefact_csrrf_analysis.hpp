@@ -70,7 +70,8 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
     }
 
     // requirements for solve with L and U, and for incomplete factorization
-    // (buffer size is the same for all routines if the sparsity pattern does not change)
+    // (buffer size is the same for all routines if the sparsity pattern does not
+    // change)
     size_t csrilu0_buffer_size = 0;
     size_t csrsm_L_buffer_size = 0;
     size_t csrsm_U_buffer_size = 0;
@@ -83,10 +84,21 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
     {
         T alpha = 1.0;
 
+        // ----------------------------------------------
+        // Cholesky will perform solve  using L z = b, then L' x = z
+        // ----------------------------------------------
+        size_t csrsm_Lt_buffer_size = 0;
+        rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_transpose,
+                                        rocsparse_operation_none, n, nrhs, nnzT, &alpha,
+                                        rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoLt,
+                                        rfinfo->solve_policy, &csrsm_Lt_buffer_size);
+
         rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
                                         rocsparse_operation_none, n, nrhs, nnzT, &alpha,
                                         rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoL,
                                         rfinfo->solve_policy, &csrsm_L_buffer_size);
+
+        csrsm_L_buffer_size = std::max(csrsm_L_buffer_size, csrsm_Lt_buffer_size);
 
         rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
                                         rocsparse_operation_none, n, nrhs, nnzT, &alpha,
@@ -116,7 +128,8 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
                                                  U B,
                                                  const rocblas_int ldb,
                                                  rocsolver_rfinfo rfinfo,
-                                                 void* work)
+                                                 void* work,
+                                                 bool use_lu = true)
 {
     ROCSOLVER_ENTER("csrrf_analysis", "n:", n, "nnzM:", nnzM, "nnzT:", nnzT, "nrhs:", nrhs,
                     "ldb:", ldb);
@@ -125,26 +138,49 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
     if(n == 0)
         return rocblas_status_success;
 
-    // analysis for incomplete factorization
-    ROCSPARSE_CHECK(rocsparseCall_csrilu0_analysis(
-        rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT,
-        rocsparse_analysis_policy_force, rfinfo->solve_policy, work));
+    if(use_lu)
+    {
+        // analysis for incomplete LU factorization
+        ROCSPARSE_CHECK(rocsparseCall_csrilu0_analysis(
+            rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT,
+            rocsparse_analysis_policy_force, rfinfo->solve_policy, work));
+    }
+    else
+    {
+        // analysis for incomplete Cholesky factorization
+        ROCSPARSE_CHECK(rocsparseCall_csric0_analysis(
+            rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT,
+            rocsparse_analysis_policy_force, rfinfo->solve_policy, work));
+    };
 
     if(nrhs > 0)
     {
         T alpha = 1.0;
+        rocsparse_operation trans_A = rocsparse_operation_none;
+        rocsparse_operation trans_B = rocsparse_operation_none;
 
         // analysis for solve with L
         ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(
-            rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzT,
-            &alpha, rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoL,
-            rfinfo->analysis_policy, rfinfo->solve_policy, work));
+            rfinfo->sphandle, trans_A = rocsparse_operation_none,
+            trans_B = rocsparse_operation_none, n, nrhs, nnzT, &alpha, rfinfo->descrL, valT, ptrT,
+            indT, B, ldb, rfinfo->infoL, rfinfo->analysis_policy, rfinfo->solve_policy, work));
 
-        // analysis for solve with U
-        ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(
-            rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzT,
-            &alpha, rfinfo->descrU, valT, ptrT, indT, B, ldb, rfinfo->infoU,
-            rfinfo->analysis_policy, rfinfo->solve_policy, work));
+        if(use_lu)
+        {
+            // analysis for solve with U
+            ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(
+                rfinfo->sphandle, trans_A = rocsparse_operation_none,
+                trans_B = rocsparse_operation_none, n, nrhs, nnzT, &alpha, rfinfo->descrU, valT, ptrT,
+                indT, B, ldb, rfinfo->infoU, rfinfo->analysis_policy, rfinfo->solve_policy, work));
+        }
+        else
+        {
+            // analysis for solve with L'
+            ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(
+                rfinfo->sphandle, trans_A = rocsparse_operation_transpose,
+                trans_B = rocsparse_operation_none, n, nrhs, nnzT, &alpha, rfinfo->descrL, valT, ptrT,
+                indT, B, ldb, rfinfo->infoLt, rfinfo->analysis_policy, rfinfo->solve_policy, work));
+        };
     }
 
     return rocblas_status_success;

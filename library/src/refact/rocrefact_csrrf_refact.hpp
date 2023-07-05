@@ -200,9 +200,9 @@ rocblas_status rocsolver_csrrf_refact_template(rocblas_handle handle,
 
     // ---------------------------------------------------------------------
     // copy P*A*Q into T
-    // Note: the sparsity pattern of A is a subset of T, and since the re-orderings
-    // P and Q are applied, the incomplete factorization of P*A*Q (factorization without fill-in),
-    // yields the complete factorization of A.
+    // Note: the sparsity pattern of A is a subset of T, and since the
+    // re-orderings P and Q are applied, the incomplete factorization of P*A*Q
+    // (factorization without fill-in), yields the complete factorization of A.
     // ---------------------------------------------------------------------
     ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
                             pivP, (rocblas_int*)work, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
