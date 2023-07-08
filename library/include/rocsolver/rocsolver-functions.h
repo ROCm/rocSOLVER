@@ -23744,7 +23744,9 @@ ROCSOLVER_EXPORT rocblas_status
  */
 
 /*! \brief CREATE_RFINFO initializes the structure rfinfo, required by the re-factorization functions
-    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE",
+    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU", 
+    \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL"
+    and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE",
     that contains the meta data and descriptors of the involved matrices.
 
     \details
@@ -23759,7 +23761,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo
                                                         rocblas_handle handle);
 
 /*! \brief DESTROY_RFINFO destroys the structure rfinfo used by the re-factorization functions
-    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
+    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU",
+    \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL",
+    and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
 
     \details
     @param[in]
@@ -23938,12 +23942,14 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
 
 /*! @{
     \brief CSRRF_ANALYSIS performs the analysis phase required by the re-factorization functions
-    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE"
+    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU",
+    \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL",
+     and \ref rocsolver_scsrrf_solve "CSRRF_SOLVE"
 
     \details Consider a sparse matrix \f$M\f$ previously factorized as
 
     \f[
-        PMQ = L_MU_M
+        PMQ = L_M U_M
     \f]
 
     where \f$L_M\f$ is lower triangular with unit diagonal, \f$U_M\f$ is upper triangular, and \f$P\f$
@@ -23952,7 +23958,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
     rfinfo. This information will allow the fast LU re-factorization of another sparse matrix \f$A\f$ as
 
     \f[
-        PAQ = L_AU_A
+        PAQ = L_A U_A
     \f]
 
     and, eventually, the computation of the solution vector \f$X\f$ of any linear system of the form
@@ -24070,7 +24076,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
     \details Consider a sparse matrix \f$M\f$ previously factorized as
 
     \f[
-        PMQ = L_MU_M
+        PMQ = L_M U_M
     \f]
 
     where \f$L_M\f$ is lower triangular with unit diagonal, \f$U_M\f$ is upper triangular, and \f$P\f$
@@ -24078,7 +24084,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
     fill-in), respectively. If \f$A\f$ has the same sparsity pattern as \f$M\f$, then the re-factorization
 
     \f[
-        PAQ = L_AU_A
+        PAQ = L_A U_A
     \f]
 
     can be computed numerically without any symbolic or analysis phases.
@@ -24162,6 +24168,104 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
 //! @}
 
 /*! @{
+    \brief CSRRF_REFACTCHOL performs a fast Cholesky factorization of a sparse matrix \f$A\f$ based on the
+    information from the factorization of a previous matrix \f$M\f$ with the same sparsity pattern
+    (re-factorization).
+
+    \details Consider a sparse matrix \f$M\f$ previously factorized as
+
+    \f[
+        PMQ = L_M L_M'
+    \f]
+
+    where \f$L_M\f$ is lower triangular with unit diagonal, \f$L_M'\f$ is upper triangular, and \f$P\f$
+    and \f$Q\f$ are permutation matrices associated with pivoting and re-ordering (to minimize
+    fill-in), respectively. If \f$A\f$ has the same sparsity pattern as \f$M\f$, then the re-factorization
+
+    \f[
+        PAQ = L_A L_A'
+    \f]
+
+    can be computed numerically without any symbolic or analysis phases.
+
+    This function supposes that rfinfo has been updated, by function \ref rocsolver_scsrrf_analysis "CSRRF_ANALYSIS",
+    after the analysis phase of the previous matrix M and its initial factorization.
+
+    @param[in]
+    handle      rocblas_handle.\n
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                The number of rows (and columns) of matrix A.
+    @param[in]
+    nnzA        rocblas_int. nnzA >= 0.\n
+                The number of non-zero elements in A.
+    @param[in]
+    ptrA        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+                It contains the positions of the beginning of each row in indA and valA.
+                The last element of ptrM is equal to nnzA.
+    @param[in]
+    indA        pointer to rocblas_int. Array on the GPU of dimension nnzA.\n
+                It contains the column indices of the non-zero elements of M. Indices are
+                sorted by row and by column within each row.
+    @param[in]
+    valA        pointer to type. Array on the GPU of dimension nnzA.\n
+                The values of the non-zero elements of A.
+    @param[in]
+    nnzT        rocblas_int. nnzT >= 0.\n
+                The number of non-zero elements in T.
+    @param[in]
+    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+                It contains the positions of the beginning of each row in indT and valT.
+                The last element of ptrT is equal to nnzT.
+    @param[in]
+    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
+                It contains the column indices of the non-zero elements of T. Indices are
+                sorted by row and by column within each row.
+    @param[out]
+    valT        pointer to type. Array on the GPU of dimension nnzT.\n
+                The values of the non-zero elements of the new bundle matrix (L_A - I) + U_A.
+    @param[in]
+    pivP        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                Contains the pivot indices representing the permutation matrix P, i.e. the
+                order in which the rows of matrix M were re-arranged.
+    @param[in]
+    pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
+                Contains the pivot indices representing the permutation matrix Q, i.e. the
+                order in which the columns of matrix M were re-arranged.
+    @param[in]
+    rfinfo      rocsolver_rfinfo.\n
+                Structure that holds the meta data generated in the analysis phase.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_scsrrf_refactchol(rocblas_handle handle,
+                                                          const rocblas_int n,
+                                                          const rocblas_int nnzA,
+                                                          rocblas_int* ptrA,
+                                                          rocblas_int* indA,
+                                                          float* valA,
+                                                          const rocblas_int nnzT,
+                                                          rocblas_int* ptrT,
+                                                          rocblas_int* indT,
+                                                          float* valT,
+                                                          rocblas_int* pivP,
+                                                          rocblas_int* pivQ,
+                                                          rocsolver_rfinfo rfinfo);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_refactchol(rocblas_handle handle,
+                                                          const rocblas_int n,
+                                                          const rocblas_int nnzA,
+                                                          rocblas_int* ptrA,
+                                                          rocblas_int* indA,
+                                                          double* valA,
+                                                          const rocblas_int nnzT,
+                                                          rocblas_int* ptrT,
+                                                          rocblas_int* indT,
+                                                          double* valT,
+                                                          rocblas_int* pivP,
+                                                          rocblas_int* pivQ,
+                                                          rocsolver_rfinfo rfinfo);
+//! @}
+/*! @{
     \brief CSRRF_SOLVE solves a linear system with sparse coefficient matrix \f$A\f$ in its
     factorized form.
 
@@ -24174,7 +24278,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
     where the sparse matrix \f$A\f$ is factorized as
 
     \f[
-        PAQ = L_AU_A
+        PAQ = L_A U_A
     \f]
 
     and \f$B\f$ is a dense matrix of right hand sides.
