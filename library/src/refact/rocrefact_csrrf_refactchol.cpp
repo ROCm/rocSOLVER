@@ -25,6 +25,7 @@ rocblas_status rocsolver_csrrf_refactchol_impl(rocblas_handle handle,
                                                rocsolver_rfinfo rfinfo)
 {
     bool const use_lu = false;
+    rfinfo->use_lu = use_lu;
     return (rocsolver_csrrf_refact_impl<T, U>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
                                               valT, pivP, pivQ, rfinfo, use_lu));
 }

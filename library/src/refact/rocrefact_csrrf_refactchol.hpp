@@ -26,27 +26,8 @@ rocblas_status rocsolver_csrrf_refactchol_argCheck(rocblas_handle handle,
                                                    rocblas_int* pivQ,
                                                    rocsolver_rfinfo rfinfo)
 {
-    // order is important for unit tests:
-
-    // 1. invalid/non-supported values
-    // N/A
-
-    // 2. invalid size
-    if(n < 0 || nnzA < 0 || nnzT < 0)
-        return rocblas_status_invalid_size;
-
-    // skip pointer check if querying memory size
-    if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_status_continue;
-
-    // 3. invalid pointers
-    if(rfinfo == nullptr)
-        return rocblas_status_invalid_pointer;
-    if(!rfinfo || !ptrA || !ptrT || (n && (!pivP || !pivQ)) || (nnzA && (!indA || !valA))
-       || (nnzT && (!indT || !valT)))
-        return rocblas_status_invalid_pointer;
-
-    return rocblas_status_continue;
+    return (rocsolver_csrrf_refact_argCheck(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
+                                            valT, pivP, pivQ, rfinfo));
 }
 
 template <typename T, typename U>
@@ -58,8 +39,7 @@ void rocsolver_csrrf_refactchol_getMemorySize(const rocblas_int n,
                                               rocsolver_rfinfo rfinfo,
                                               size_t* size_work)
 {
-    bool const use_lu = false;
-    rocsolver_csrrf_refact_getMemorySize<T, U>(n, nnzT, ptrT, indT, valT, rfinfo, size_work, use_lu);
+    rocsolver_csrrf_refact_getMemorySize<T, U>(n, nnzT, ptrT, indT, valT, rfinfo, size_work);
 }
 
 template <typename T, typename U>
@@ -79,7 +59,7 @@ rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
                                                    void* work)
 {
     bool const use_lu = false;
-    handle->use_lu = use_lu;
+    rfinfo->use_lu = use_lu;
     return (rocsolver_csrrf_refact_template<T, U>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
                                                   indT, valT, pivP, pivQ, rfinfo, work, use_lu));
 }

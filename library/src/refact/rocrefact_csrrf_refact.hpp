@@ -139,8 +139,7 @@ void rocsolver_csrrf_refact_getMemorySize(const rocblas_int n,
                                           rocblas_int* indT,
                                           U valT,
                                           rocsolver_rfinfo rfinfo,
-                                          size_t* size_work,
-                                          bool use_lu = true)
+                                          size_t* size_work)
 {
     *size_work = 0;
 
@@ -152,15 +151,19 @@ void rocsolver_csrrf_refact_getMemorySize(const rocblas_int n,
     }
 
     // requirements for incomplete factorization
-    if(use_lu)
+
     {
+        size_t csrilu0_buffer_size = 0;
         rocsparseCall_csrilu0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
-                                          indT, rfinfo->infoT, size_work);
+                                          indT, rfinfo->infoT, &csrilu0_buffer_size);
+        *size_work = std::max(*size_work, csrilu0_buffer_size);
     }
-    else
+
     {
-        rocsparseCall_csric0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
-                                         indT, rfinfo->infoT, size_work);
+        size_t csric0_buffer_size = 0;
+        rocsparseCall_csric0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrTchol, valT, ptrT,
+                                         indT, rfinfo->infoTchol, &csric0_buffer_size);
+        *size_work = std::max(*size_work, csric0_buffer_size);
     };
 
     // need at least size n integers to generate inverse permutation inv_pivQ
@@ -182,7 +185,7 @@ rocblas_status rocsolver_csrrf_refact_template(rocblas_handle handle,
                                                rocblas_int* pivQ,
                                                rocsolver_rfinfo rfinfo,
                                                void* work,
-                                               bool use_lu = true)
+                                               bool use_lu)
 {
     ROCSOLVER_ENTER(use_lu ? "csrrf_refactlu" : "csrrf_refactchol", "n:", n, "nnzA:", nnzA,
                     "nnzT:", nnzT);
@@ -210,23 +213,64 @@ rocblas_status rocsolver_csrrf_refact_template(rocblas_handle handle,
     // perform incomplete factorization of T
 
     rocsparse_int position = -1;
+    rocsparse_status istat = rocsparse_status_success;
     if(use_lu)
     {
         ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
                                               indT, rfinfo->infoT, rocsparse_solve_policy_auto, work));
 
-        ROCSPARSE_CHECK(rocsparse_csrilu0_zero_pivot(rfinfo->sphandle, rfinfo->infoT, &position));
+        istat = rocsparse_csrilu0_zero_pivot(rfinfo->sphandle, rfinfo->infoT, &position);
     }
     else
     {
-        ROCSPARSE_CHECK(rocsparseCall_csric0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
-                                             indT, rfinfo->infoT, rocsparse_solve_policy_auto, work));
+        ROCSPARSE_CHECK(rocsparseCall_csric0(rfinfo->sphandle, n, nnzT, rfinfo->descrTchol, valT,
+                                             ptrT, indT, rfinfo->infoTchol,
+                                             rocsparse_solve_policy_auto, work));
 
-        ROCSPARSE_CHECK(rocsparse_csric0_zero_pivot(rfinfo->sphandle, rfinfo->infoT, &position));
+        istat = rocsparse_csric0_zero_pivot(rfinfo->sphandle, rfinfo->infoTchol, &position);
     };
+
     rfinfo->position = position;
 
     return rocblas_status_success;
+}
+
+template <typename T>
+rocblas_status rocsolver_csrrf_refact_argCheck(rocblas_handle handle,
+                                               const rocblas_int n,
+                                               const rocblas_int nnzA,
+                                               rocblas_int* ptrA,
+                                               rocblas_int* indA,
+                                               T valA,
+                                               const rocblas_int nnzT,
+                                               rocblas_int* ptrT,
+                                               rocblas_int* indT,
+                                               T valT,
+                                               rocblas_int* pivP,
+                                               rocblas_int* pivQ,
+                                               rocsolver_rfinfo rfinfo)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    // N/A
+
+    // 2. invalid size
+    if(n < 0 || nnzA < 0 || nnzT < 0)
+        return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
+
+    // 3. invalid pointers
+    if(rfinfo == nullptr)
+        return rocblas_status_invalid_pointer;
+    if(!rfinfo || !ptrA || !ptrT || (n && (!pivP || !pivQ)) || (nnzA && (!indA || !valA))
+       || (nnzT && (!indT || !valT)))
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
 }
 
 template <typename T, typename U>
@@ -253,8 +297,8 @@ rocblas_status rocsolver_csrrf_refact_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_csrrf_refactlu_argCheck(handle, n, nnzA, ptrA, indA, valA, nnzT,
-                                                          ptrT, indT, valT, pivP, pivQ, rfinfo);
+    rocblas_status st = rocsolver_csrrf_refact_argCheck(handle, n, nnzA, ptrA, indA, valA, nnzT,
+                                                        ptrT, indT, valT, pivP, pivQ, rfinfo);
     if(st != rocblas_status_continue)
         return st;
 
@@ -266,7 +310,7 @@ rocblas_status rocsolver_csrrf_refact_impl(rocblas_handle handle,
     // size for temp buffer in refactlu calls
     size_t size_work = 0;
 
-    rocsolver_csrrf_refact_getMemorySize(n, nnzT, ptrT, indT, valT, rfinfo, &size_work, use_lu);
+    rocsolver_csrrf_refact_getMemorySize<T, U>(n, nnzT, ptrT, indT, valT, rfinfo, &size_work);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work);
