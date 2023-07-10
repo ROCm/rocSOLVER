@@ -12,24 +12,30 @@ struct rocsolver_rfinfo_
 {
     rocsparse_handle sphandle;
 
+    // ------------------------
+    // used in LU factorization
+    // ------------------------
+    rocsparse_mat_descr descrT;
     rocsparse_mat_descr descrL;
     rocsparse_mat_descr descrU;
-    rocsparse_mat_descr descrT;
+
+    rocsparse_mat_info infoT;
     rocsparse_mat_info infoL;
     rocsparse_mat_info infoU;
-    rocsparse_mat_info infoT;
-    rocsparse_solve_policy solve_policy;
-    rocsparse_analysis_policy analysis_policy;
-
-    rocsparse_int position;
 
     // -------------------------------
     // used in  Cholesky factorization
     // -------------------------------
     rocsparse_mat_descr descrTchol;
     rocsparse_mat_descr descrLchol;
+
+    rocsparse_mat_info infoTchol;
     rocsparse_mat_info infoLchol;
     rocsparse_mat_info infoLtchol;
-    rocsparse_mat_info infoTchol;
+
+    rocsparse_solve_policy solve_policy;
+    rocsparse_analysis_policy analysis_policy;
+
+    rocsparse_int position;
     bool use_lu;
 };
