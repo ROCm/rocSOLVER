@@ -67,10 +67,10 @@ Arguments csrrf_refactchol_setup_arguments(csrrf_refactchol_tuple tup)
     return arg;
 }
 
-class CSRRF_REFACTLU : public ::TestWithParam<csrrf_refactchol_tuple>
+class CSRRF_REFACTCHOL : public ::TestWithParam<csrrf_refactchol_tuple>
 {
 protected:
-    CSRRF_REFACTLU() {}
+    CSRRF_REFACTCHOL() {}
     virtual void SetUp()
     {
         if(rocsolver_create_rfinfo(nullptr, nullptr) == rocblas_status_not_implemented)
@@ -92,30 +92,30 @@ protected:
 
 // non-batch tests
 
-TEST_P(CSRRF_REFACTLU, __float)
+TEST_P(CSRRF_REFACTCHOL, __float)
 {
     run_tests<float>();
 }
 
-TEST_P(CSRRF_REFACTLU, __double)
+TEST_P(CSRRF_REFACTCHOL, __double)
 {
     run_tests<double>();
 }
 
-/*TEST_P(CSRRF_REFACTLU, __float_complex)
+/*TEST_P(CSRRF_REFACTCHOL, __float_complex)
 {
     run_tests<rocblas_float_complex>();
 }
 
-TEST_P(CSRRF_REFACTLU, __double_complex)
+TEST_P(CSRRF_REFACTCHOL, __double_complex)
 {
     run_tests<rocblas_double_complex>();
 }*/
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         CSRRF_REFACTLU,
+                         CSRRF_REFACTCHOL,
                          Combine(ValuesIn(large_n_range), ValuesIn(large_nnz_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-                         CSRRF_REFACTLU,
+                         CSRRF_REFACTCHOL,
                          Combine(ValuesIn(n_range), ValuesIn(nnz_range)));
