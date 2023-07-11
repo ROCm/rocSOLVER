@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_geblttrf_npvt.hpp"
@@ -37,6 +37,11 @@ rocblas_status rocsolver_geblttrf_npvt_strided_batched_impl(rocblas_handle handl
     rocblas_int shiftA = 0;
     rocblas_int shiftB = 0;
     rocblas_int shiftC = 0;
+
+    // strided batched execution
+    rocblas_int inca = 1;
+    rocblas_int incb = 1;
+    rocblas_int incc = 1;
 
     // memory workspace sizes:
     // requirements for calling GETRF/GETRS
@@ -78,10 +83,10 @@ rocblas_status rocsolver_geblttrf_npvt_strided_batched_impl(rocblas_handle handl
 
     // Execution
     return rocsolver_geblttrf_npvt_template<false, true, T>(
-        handle, nb, nblocks, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, C, shiftC, ldc,
-        strideC, info, batch_count, (T*)scalars, work1, work2, work3, work4, (T*)pivotval,
-        (rocblas_int*)pivotidx, (rocblas_int*)iipiv, (rocblas_int*)iinfo1, (rocblas_int*)iinfo2,
-        optim_mem);
+        handle, nb, nblocks, A, shiftA, inca, lda, strideA, B, shiftB, incb, ldb, strideB, C,
+        shiftC, incc, ldc, strideC, info, batch_count, (T*)scalars, work1, work2, work3, work4,
+        (T*)pivotval, (rocblas_int*)pivotidx, (rocblas_int*)iipiv, (rocblas_int*)iinfo1,
+        (rocblas_int*)iinfo2, optim_mem);
 }
 
 /*

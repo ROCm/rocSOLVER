@@ -101,6 +101,7 @@ void print_to_stream(std::ostream& os,
                      const rocblas_int m,
                      const rocblas_int n,
                      T* A,
+                     const rocblas_int inca,
                      const rocblas_int lda,
                      const rocblas_fill uplo)
 {
@@ -118,7 +119,7 @@ void print_to_stream(std::ostream& os,
                 s += "    ";
             for(int j = 0; j < n; j++)
             {
-                s += fmt::format("{}", A[j * lda + i]);
+                s += fmt::format("{}", A[j * lda + i * inca]);
                 if(j < n - 1)
                     s += ", ";
             }
@@ -137,16 +138,16 @@ void print_to_stream(std::ostream& os,
                 if(uplo == rocblas_fill_upper)
                 {
                     if(i < j)
-                        s += fmt::format("{}", A[j * lda + i]);
+                        s += fmt::format("{}", A[j * lda + i * inca]);
                     else
-                        s += fmt::format("{}", A[i * lda + j]);
+                        s += fmt::format("{}", A[i * lda + j * inca]);
                 }
                 else
                 {
                     if(i > j)
-                        s += fmt::format("{}", A[j * lda + i]);
+                        s += fmt::format("{}", A[j * lda + i * inca]);
                     else
-                        s += fmt::format("{}", A[i * lda + j]);
+                        s += fmt::format("{}", A[i * lda + j * inca]);
                 }
 
                 if(j < n - 1)
@@ -171,13 +172,16 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0,
-                         const rocblas_fill uplo = rocblas_fill_full)
+                         const rocblas_fill uplo = rocblas_fill_full,
+                         const rocblas_int inca = 1)
 {
-    std::vector<T> hA(lda * n);
-    THROW_IF_HIP_ERROR(
-        hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost));
+    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
 
-    print_to_stream<T>(os, name, m, n, hA.data(), lda, uplo);
+    std::vector<T> hA(to_read);
+    THROW_IF_HIP_ERROR(
+        hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * to_read, hipMemcpyDeviceToHost));
+
+    print_to_stream<T>(os, name, m, n, hA.data(), inca, lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the GPU to screen*/
@@ -190,14 +194,17 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0,
-                         const rocblas_fill uplo = rocblas_fill_full)
+                         const rocblas_fill uplo = rocblas_fill_full,
+                         const rocblas_int inca = 1)
 {
-    std::vector<T> hA(lda * n);
+    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+
+    std::vector<T> hA(to_read);
     T* AA[1];
     THROW_IF_HIP_ERROR(hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost));
-    THROW_IF_HIP_ERROR(hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost));
+    THROW_IF_HIP_ERROR(hipMemcpy(hA.data(), AA[0], sizeof(T) * to_read, hipMemcpyDeviceToHost));
 
-    print_to_stream<T>(os, name, m, n, hA.data(), lda, uplo);
+    print_to_stream<T>(os, name, m, n, hA.data(), inca, lda, uplo);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the GPU to file*/
@@ -209,14 +216,17 @@ void print_device_matrix(const std::string file,
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0,
-                         const rocblas_fill uplo = rocblas_fill_full)
+                         const rocblas_fill uplo = rocblas_fill_full,
+                         const rocblas_int inca = 1)
 {
-    std::ofstream os(file);
-    std::vector<T> hA(lda * n);
-    THROW_IF_HIP_ERROR(
-        hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * lda * n, hipMemcpyDeviceToHost));
+    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
 
-    print_to_stream<T>(os, "", m, n, hA.data(), lda, uplo);
+    std::ofstream os(file);
+    std::vector<T> hA(to_read);
+    THROW_IF_HIP_ERROR(
+        hipMemcpy(hA.data(), A + idx * stride, sizeof(T) * to_read, hipMemcpyDeviceToHost));
+
+    print_to_stream<T>(os, "", m, n, hA.data(), inca, lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the GPU to file*/
@@ -228,15 +238,18 @@ void print_device_matrix(const std::string file,
                          const rocblas_int lda,
                          const rocblas_stride stride = 1,
                          const rocblas_int idx = 0,
-                         const rocblas_fill uplo = rocblas_fill_full)
+                         const rocblas_fill uplo = rocblas_fill_full,
+                         const rocblas_int inca = 1)
 {
+    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+
     std::ofstream os(file);
-    std::vector<T> hA(lda * n);
+    std::vector<T> hA(to_read);
     T* AA[1];
     THROW_IF_HIP_ERROR(hipMemcpy(AA, A + idx, sizeof(T*), hipMemcpyDeviceToHost));
-    THROW_IF_HIP_ERROR(hipMemcpy(hA.data(), AA[0], sizeof(T) * lda * n, hipMemcpyDeviceToHost));
+    THROW_IF_HIP_ERROR(hipMemcpy(hA.data(), AA[0], sizeof(T) * to_read, hipMemcpyDeviceToHost));
 
-    print_to_stream<T>(os, "", m, n, hA.data(), lda, uplo);
+    print_to_stream<T>(os, "", m, n, hA.data(), inca, lda, uplo);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the CPU to screen*/
@@ -249,9 +262,10 @@ void print_host_matrix(std::ostream& os,
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
                        const rocblas_int idx = 0,
-                       const rocblas_fill uplo = rocblas_fill_full)
+                       const rocblas_fill uplo = rocblas_fill_full,
+                       const rocblas_int inca = 1)
 {
-    print_to_stream<T>(os, name, m, n, A + idx * stride, lda, uplo);
+    print_to_stream<T>(os, name, m, n, A + idx * stride, inca, lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the CPU to screen*/
@@ -264,9 +278,10 @@ void print_host_matrix(std::ostream& os,
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
                        const rocblas_int idx = 0,
-                       const rocblas_fill uplo = rocblas_fill_full)
+                       const rocblas_fill uplo = rocblas_fill_full,
+                       const rocblas_int inca = 1)
 {
-    print_to_stream<T>(os, name, m, n, A[idx], lda, uplo);
+    print_to_stream<T>(os, name, m, n, A[idx], inca, lda, uplo);
 }
 
 /*! \brief Print data from a normal or strided_batched array on the CPU to file*/
@@ -278,10 +293,11 @@ void print_host_matrix(const std::string file,
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
                        const rocblas_int idx = 0,
-                       const rocblas_fill uplo = rocblas_fill_full)
+                       const rocblas_fill uplo = rocblas_fill_full,
+                       const rocblas_int inca = 1)
 {
     std::ofstream os(file);
-    print_to_stream<T>(os, "", m, n, A + idx * stride, lda, uplo);
+    print_to_stream<T>(os, "", m, n, A + idx * stride, inca, lda, uplo);
 }
 
 /*! \brief Print data from a batched array on the CPU to file*/
@@ -293,10 +309,11 @@ void print_host_matrix(const std::string file,
                        const rocblas_int lda,
                        const rocblas_stride stride = 1,
                        const rocblas_int idx = 0,
-                       const rocblas_fill uplo = rocblas_fill_full)
+                       const rocblas_fill uplo = rocblas_fill_full,
+                       const rocblas_int inca = 1)
 {
     std::ofstream os(file);
-    print_to_stream<T>(os, "", m, n, A[idx], lda, uplo);
+    print_to_stream<T>(os, "", m, n, A[idx], inca, lda, uplo);
 }
 
 /*! \brief  Debugging purpose, print out CPU and GPU result matrix */

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #pragma once
@@ -18,14 +18,15 @@ template <typename T, typename U>
 ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
                                    U AA,
                                    const rocblas_int shiftA,
+                                   const rocblas_int inca,
                                    const rocblas_int lda,
                                    const rocblas_stride stride,
                                    const rocblas_int k1,
                                    const rocblas_int k2,
                                    const rocblas_int* ipivA,
                                    const rocblas_int shiftP,
-                                   const rocblas_stride strideP,
-                                   rocblas_int incx)
+                                   rocblas_int incp,
+                                   const rocblas_stride strideP)
 {
     int id = hipBlockIdx_y;
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -38,12 +39,12 @@ ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
         T* A = load_ptr_batch(AA, id, shiftA, stride);
 
         rocblas_int start, end, inc;
-        if(incx < 0)
+        if(incp < 0)
         {
             start = k2;
             end = k1 - 1;
             inc = -1;
-            incx = -incx;
+            incp = -incp;
         }
         else
         {
@@ -54,11 +55,11 @@ ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
 
         for(rocblas_int i = start; i != end; i += inc)
         {
-            rocblas_int exch = ipiv[k1 + (i - k1) * incx - 1];
+            rocblas_int exch = ipiv[k1 + (i - k1) * incp - 1];
 
             // will exchange rows i and exch if they are not the same
             if(exch != i)
-                swap(A[i - 1 + tid * lda], A[exch - 1 + tid * lda]);
+                swap(A[(i - 1) * inca + tid * lda], A[(exch - 1) * inca + tid * lda]);
         }
     }
 }
@@ -69,9 +70,10 @@ rocblas_status rocsolver_laswp_argCheck(rocblas_handle handle,
                                         const rocblas_int lda,
                                         const rocblas_int k1,
                                         const rocblas_int k2,
-                                        const rocblas_int incx,
                                         T A,
-                                        const rocblas_int* ipiv)
+                                        const rocblas_int* ipiv,
+                                        const rocblas_int incp = 1,
+                                        const rocblas_int inca = 1)
 {
     // order is important for unit tests:
 
@@ -79,7 +81,9 @@ rocblas_status rocsolver_laswp_argCheck(rocblas_handle handle,
     // N/A
 
     // 2. invalid size
-    if(n < 0 || lda < 1 || !incx || k1 < 1 || k2 < 1 || k2 < k1)
+    if(n < 0 || lda < 1 || k1 < 1 || k2 < 1 || k2 < k1)
+        return rocblas_status_invalid_size;
+    if(incp == 0 || inca < 0)
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -98,18 +102,19 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
                                         const rocblas_int n,
                                         U A,
                                         const rocblas_int shiftA,
+                                        const rocblas_int inca,
                                         const rocblas_int lda,
                                         const rocblas_stride strideA,
                                         const rocblas_int k1,
                                         const rocblas_int k2,
                                         const rocblas_int* ipiv,
                                         const rocblas_int shiftP,
+                                        const rocblas_int incp,
                                         const rocblas_stride strideP,
-                                        rocblas_int incx,
                                         const rocblas_int batch_count)
 {
-    ROCSOLVER_ENTER("laswp", "n:", n, "shiftA:", shiftA, "lda:", lda, "k1:", k1, "k2:", k2,
-                    "shiftP:", shiftP, "bc:", batch_count);
+    ROCSOLVER_ENTER("laswp", "n:", n, "shiftA:", shiftA, "inca:", inca, "lda:", lda, "k1:", k1,
+                    "k2:", k2, "shiftP:", shiftP, "incp:", incp, "bc:", batch_count);
 
     // quick return
     if(n == 0 || batch_count == 0)
@@ -122,8 +127,8 @@ rocblas_status rocsolver_laswp_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    ROCSOLVER_LAUNCH_KERNEL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, lda,
-                            strideA, k1, k2, ipiv, shiftP, strideP, incx);
+    ROCSOLVER_LAUNCH_KERNEL(laswp_kernel<T>, gridPivot, threads, 0, stream, n, A, shiftA, inca, lda,
+                            strideA, k1, k2, ipiv, shiftP, incp, strideP);
 
     return rocblas_status_success;
 }

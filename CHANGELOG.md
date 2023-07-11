@@ -2,7 +2,6 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-
 ## (Unreleased) rocSOLVER
 ### Added
 ### Optimized
@@ -12,6 +11,14 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Fixed
 ### Known Issues
 ### Security
+
+
+## rocSOLVER 3.23.0 for ROCm 5.7.0
+### Added
+- LU factorization without pivoting for block tridiagonal matrices:
+    - GEBLTTRF_NPVT now supports interleaved\_batched format
+- Linear system solver without pivoting for block tridiagonal matrices:
+    - GEBLTTRS_NPVT now supports interleaved\_batched format
 
 
 ## rocSOLVER 3.22.0 for ROCm 5.6.0
@@ -39,7 +46,7 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - LU factorization without pivoting for block tridiagonal matrices:
     - GEBLTTRF_NPVT (with batched and strided\_batched versions)
 - Linear system solver without pivoting for block tridiagonal matrices:
-    - GEBLTTRS_NPVT (with batched and strided\_batched, versions)
+    - GEBLTTRS_NPVT (with batched and strided\_batched versions)
 - Product of triangular matrices
     - LAUUM
 - Added experimental hipGraph support for rocSOLVER functions
