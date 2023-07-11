@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -156,8 +156,8 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
 
     // compute LU factorization of A
     rocsolver_getrf_template<BATCHED, STRIDED, T>(
-        handle, n, n, A, shiftA, lda, strideA, ipiv, 0, strideP, info, batch_count, scalars, work1,
-        work2, work3, work4, pivotval, pivotidx, iipiv, iinfo, optim_mem, true);
+        handle, n, n, A, shiftA, 1, lda, strideA, ipiv, 0, strideP, info, batch_count, scalars,
+        work1, work2, work3, work4, pivotval, pivotidx, iipiv, iinfo, optim_mem, true);
 
     // save elements of B that will be overwritten by GETRS for cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),
@@ -166,8 +166,8 @@ rocblas_status rocsolver_gesv_template(rocblas_handle handle,
 
     // solve AX = B, overwriting B with X
     rocsolver_getrs_template<BATCHED, STRIDED, T>(
-        handle, rocblas_operation_none, n, nrhs, A, shiftA, lda, strideA, ipiv, strideP, B, shiftB,
-        ldb, strideB, batch_count, work1, work2, work3, work4, optim_mem, true);
+        handle, rocblas_operation_none, n, nrhs, A, shiftA, 1, lda, strideA, ipiv, strideP, B,
+        shiftB, 1, ldb, strideB, batch_count, work1, work2, work3, work4, optim_mem, true);
 
     // restore elements of B that were overwritten by GETRS in cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocksx, copyblocksy, batch_count), dim3(32, 32),

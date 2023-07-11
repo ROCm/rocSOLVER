@@ -35,6 +35,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_geblttrs_npvt.cpp
   lapack/roclapack_geblttrs_npvt_batched.cpp
   lapack/roclapack_geblttrs_npvt_strided_batched.cpp
+  lapack/roclapack_geblttrs_npvt_interleaved_batched.cpp
   # least squares solvers
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
@@ -62,6 +63,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_geblttrf_npvt.cpp
   lapack/roclapack_geblttrf_npvt_batched.cpp
   lapack/roclapack_geblttrf_npvt_strided_batched.cpp
+  lapack/roclapack_geblttrf_npvt_interleaved_batched.cpp
   # orthogonal factorizations
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
@@ -206,6 +208,16 @@ set(rocsolver_refact_source
 )
 
 set(rocsolver_specialized_source
+  # gemm
+  specialized/roclapack_gemm_specialized_kernels_s.cpp
+  specialized/roclapack_gemm_specialized_kernels_d.cpp
+  specialized/roclapack_gemm_specialized_kernels_c.cpp
+  specialized/roclapack_gemm_specialized_kernels_z.cpp
+  # ger
+  specialized/roclapack_ger_specialized_kernels_s.cpp
+  specialized/roclapack_ger_specialized_kernels_d.cpp
+  specialized/roclapack_ger_specialized_kernels_c.cpp
+  specialized/roclapack_ger_specialized_kernels_z.cpp
   # trsm
   specialized/roclapack_trsm_specialized_kernels_s.cpp
   specialized/roclapack_trsm_specialized_kernels_d.cpp

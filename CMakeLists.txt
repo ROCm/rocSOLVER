@@ -64,7 +64,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.23.0")
+set(VERSION_STRING "3.24.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -135,15 +135,32 @@ if(NOT DEFINED AMDGPU_TARGETS)
     TARGETS
       gfx90a:xnack-
       gfx90a:xnack+
+      gfx940
+      gfx941
+      gfx942
       gfx1100
       gfx1101
       gfx1102
   )
+  set(AMDGPU_TARGETS_INIT
+    gfx803
+    gfx900
+    gfx906:xnack-
+    gfx908:xnack-
+    gfx1010
+    gfx1030
+    ${OPTIONAL_AMDGPU_TARGETS}
+  )
+  # The library would be too large to link (>2 GiB) if it were built for all architectures with
+  # address sanitizer enabled.
+  if(BUILD_ADDRESS_SANITIZER)
+     list(REMOVE_ITEM AMDGPU_TARGETS_INIT gfx803 gfx906:xnack- gfx908:xnack- gfx90a:xnack- gfx1010)
+  endif()
 endif()
 
 # Set this before finding hip so that hip::device has the required arch flags
 # added as usage requirements on its interface
-set(AMDGPU_TARGETS "gfx803;gfx900;gfx906:xnack-;gfx908:xnack-;gfx1010;gfx1030;${OPTIONAL_AMDGPU_TARGETS}"
+set(AMDGPU_TARGETS "${AMDGPU_TARGETS_INIT}"
   CACHE STRING "List of specific machine types for library to target")
 
 # Find HIP dependencies
@@ -152,7 +169,7 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
-set(rocsolver_pkgdeps "rocblas >= 3.1" "rocblas < 4.0")
+set(rocsolver_pkgdeps "rocblas >= 4.0" "rocblas < 4.1")
 
 if(BUILD_WITH_SPARSE)
   find_package(rocsparse 2.2 REQUIRED CONFIG PATHS ${ROCM_PATH})

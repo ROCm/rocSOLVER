@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_getrs.hpp"
@@ -36,6 +36,10 @@ rocblas_status rocsolver_getrs_strided_batched_impl(rocblas_handle handle,
     rocblas_int shiftA = 0;
     rocblas_int shiftB = 0;
 
+    // strided batched execution
+    rocblas_int inca = 1;
+    rocblas_int incb = 1;
+
     // memory workspace sizes:
     // size of workspace (for calling TRSM)
     bool optim_mem;
@@ -61,8 +65,8 @@ rocblas_status rocsolver_getrs_strided_batched_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_getrs_template<false, true, T>(
-        handle, trans, n, nrhs, A, shiftA, lda, strideA, ipiv, strideP, B, shiftB, ldb, strideB,
-        batch_count, work1, work2, work3, work4, optim_mem, true);
+        handle, trans, n, nrhs, A, shiftA, inca, lda, strideA, ipiv, strideP, B, shiftB, incb, ldb,
+        strideB, batch_count, work1, work2, work3, work4, optim_mem, true);
 }
 
 /*
