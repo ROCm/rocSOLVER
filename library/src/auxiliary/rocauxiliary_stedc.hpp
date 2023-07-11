@@ -579,20 +579,38 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n)
 
     // return the max number of levels such that the sub-blocks are at least of size 8, and
     // there are no more than 256 sub-blocks
-    // (TODO: some tuning will be necessary to find the optimal number of sub-blocks
-    //  for a given matrix size)
-    if(n >= 2048)
+    if(n <= 32)
     {
-        levels = 8;
+        levels = 2;
     }
-    else if(n < 16)
+    else if(n <= 232)
     {
-        levels = 0;
+        levels = 4;
     }
     else
     {
-        levels = n / 8;
-        levels = floor(log(levels) / log(2));
+        if(n <= 1946)
+        {
+            if(n <= 1692)
+            {
+                if(n <= 295)
+                {
+                    levels = 5;
+                }
+                else
+                {
+                    levels = 7;
+                }
+            }
+            else
+            {
+                levels = 7;
+            }
+        }
+        else
+        {
+            levels = 8;
+        }
     }
 
     return levels;
