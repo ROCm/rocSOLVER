@@ -6,16 +6,21 @@
 #include "hipsolver/hipsolver.h"
 #include "hipsparse/hipsparse.h"
 
-__global__ void check_issym_kernel(const int m,
-                                   const int* csrRowPtrA,
-                                   const int* csrEndPtrA,
-                                   const int* csrColIndA,
-                                   int* d_issym)
+#ifndef ISSYM_NTHREADS
+#define ISSYM_NTHREADS 256
+#endif
+
+template <int waveSize>
+__global__ void __launch_bounds__(ISSYM_NTHREADS) check_issym_kernel(const int m,
+                                                                     const int* csrRowPtrA,
+                                                                     const int* csrEndPtrA,
+                                                                     const int* csrColIndA,
+                                                                     int* d_issym)
 {
     auto const tid = threadIdx.x + blockIdx.x * blockDim.x;
-    auto const iwave = tid / warpSize;
-    auto const nwave = (gridDim.x * blockDim.x) / warpSize;
-    auto const lid = tid % warpSize;
+    auto const iwave = tid / waveSize;
+    auto const nwave = (gridDim.x * blockDim.x) / waveSize;
+    auto const lid = tid % waveSize;
 
     // ----------------------------
     // assume *d_issym = 1 on entry
@@ -31,13 +36,16 @@ __global__ void check_issym_kernel(const int m,
             break;
         };
 
-        for(auto k = csrRowPtrA[irow] + lid; k < csrEndPtrA[irow]; k += warpSize)
+        for(auto k = csrRowPtrA[irow] + lid; k < csrRowPtrA[irow + 1]; k += waveSize)
         {
             auto const kcol = csrColIndA[k];
             // entry (irow, kcol)
 
             auto const krow = kcol;
             bool has_found = false;
+
+            // TODO: use binary search if csrColIndA is sorted
+
             for(auto j = csrRowPtrA[krow]; j < csrEndPtrA[krow]; j++)
             {
                 auto const jcol = csrColIndA[j];
@@ -116,10 +124,45 @@ hipsolverStatus_t hipsolverSpXcsrissym(
     };
 
     {
-        int const nthreads = 256;
+        int const nthreads = ISSYM_NTHREADS;
         int const nblocks = std::max(1, std::min(m / nthreads, 1024));
-        check_issym_kernel<<<dim3(nblocks), dim3(nthreads), 0, 0>>>(m, csrRowPtrA, csrEndPtrA,
-                                                                    csrColIndA, d_isymm);
+        int const avgnnz = std::max(1, nnzA / m);
+
+        if(avgnnz >= ISSYM_NTHREADS)
+        {
+            check_issym_kernel<ISSYM_NTHREADS><<<dim3(nblocks), dim3(nthreads), 0, 0>>>(
+                m, csrRowPtrA, csrEndPtrA, csrColIndA, d_isymm);
+        }
+        else if(avgnnz >= 128)
+        {
+            check_issym_kernel<128><<<dim3(nblocks), dim3(nthreads), 0, 0>>>(
+                m, csrRowPtrA, csrEndPtrA, csrColIndA, d_isymm);
+        }
+        else if(avgnnz >= 64)
+        {
+            check_issym_kernel<64><<<dim3(nblocks), dim3(nthreads), 0, 0>>>(
+                m, csrRowPtrA, csrEndPtrA, csrColIndA, d_isymm);
+        }
+        else if(avgnnz >= 32)
+        {
+            check_issym_kernel<32><<<dim3(nblocks), dim3(nthreads), 0, 0>>>(
+                m, csrRowPtrA, csrEndPtrA, csrColIndA, d_isymm);
+        }
+        else if(avgnnz >= 16)
+        {
+            check_issym_kernel<16><<<dim3(nblocks), dim3(nthreads), 0, 0>>>(
+                m, csrRowPtrA, csrEndPtrA, csrColIndA, d_isymm);
+        }
+        else if(avgnnz >= 8)
+        {
+            check_issym_kernel<8><<<dim3(nblocks), dim3(nthreads), 0, 0>>>(m, csrRowPtrA, csrEndPtrA,
+                                                                           csrColIndA, d_isymm);
+        }
+        else
+        {
+            check_issym_kernel<4><<<dim3(nblocks), dim3(nthreads), 0, 0>>>(m, csrRowPtrA, csrEndPtrA,
+                                                                           csrColIndA, d_isymm);
+        };
     }
 
     istat_hip = hipMemcpy(p_issym, d_issym, sizeof(int), hipMemcpyDeviceToHost);
