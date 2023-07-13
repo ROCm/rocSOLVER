@@ -26,9 +26,10 @@ hipsolverStatus_t hipsolverSpXcsrissymHost(
     // check arguments
     // ----------------
 
-    if (handle == nullptr) {
-      return( HIPSOLVER_STATUS_INVALID_VALUE );
-      };
+    if(handle == nullptr)
+    {
+        return (HIPSOLVER_STATUS_INVALID_VALUE);
+    };
 
     {
         bool const isok = (m >= 0) && (nnzA >= 0) && (csrRowPtrA != nullptr)
