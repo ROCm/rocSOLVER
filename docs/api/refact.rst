@@ -34,6 +34,7 @@ Initialization and meta data
    :local:
    :backlinks: top
 
+
 .. _rfinfocreate:
 
 rocsolver_create_rfinfo()
@@ -46,6 +47,13 @@ rocsolver_create_rfinfo()
 rocsolver_destroy_rfinfo()
 ---------------------------------------
 .. doxygenfunction:: rocsolver_destroy_rfinfo
+
+
+.. _rfinfoset:
+
+rocsolver_set_rfinfo_mode()
+---------------------------------------
+.. doxygenfunction:: rocsolver_set_rfinfo_mode
 
 
 .. _rfanalysis:
@@ -94,6 +102,13 @@ rocsolver_<type>csrrf_refactlu()
 .. doxygenfunction:: rocsolver_scsrrf_refactlu
 
 
+.. _rfrefactchol:
+
+rocsolver_<type>csrrf_refactchol()
+------------------------------------
+.. doxygenfunction:: rocsolver_dcsrrf_refactchol
+   :outline:
+.. doxygenfunction:: rocsolver_scsrrf_refactchol
 
 
 

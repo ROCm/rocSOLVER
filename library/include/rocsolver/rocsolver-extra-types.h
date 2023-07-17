@@ -131,4 +131,14 @@ struct rocsolver_rfinfo_;
  ********************************************************************************/
 typedef struct rocsolver_rfinfo_* rocsolver_rfinfo;
 
+
+/*! \brief Used to specify the mode of the rfinfo struct required by the re-factorization functionality.
+ ********************************************************************************/
+typedef enum rocsolver_rfinfo_mode_
+{
+    rocsolver_rfinfo_mode_general = 271, /**< To work with general sparse matrices. This is the default mode. */
+    rocsolver_rfinfo_mode_symmetric = 272, /**< To work with symmetric positive definite sparse matrices. */
+} rocsolver_rfinfo_mode;
+
+
 #endif /* ROCSOLVER_EXTRA_TYPES_H */
