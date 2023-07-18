@@ -40,7 +40,7 @@ rocblas_status rocsolver_csrrf_sumlu_impl(rocblas_handle handle,
     // working with unshifted arrays
     // normal (non-batched non-strided) execution
 
-    // this function does not requiere memory work space
+    // this function does not require memory work space
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_status_size_unchanged;
 

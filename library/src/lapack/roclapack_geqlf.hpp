@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -65,7 +65,7 @@ void rocsolver_geqlf_getMemorySize(const rocblas_int m,
         *size_work_workArr = max(w1, w2);
         *size_diag_tmptr = max(s1, s2);
 
-        // size of workArr is double to accomodate
+        // size of workArr is double to accommodate
         // LARFB's TRMM calls in the batched case
         if(BATCHED)
             *size_workArr *= 2;

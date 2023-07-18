@@ -48,7 +48,7 @@ Options:
   -i | --install              Pass this flag to generate and install library and client packages after build.
 
   -d | --dependencies         Pass this flag to also build and install external dependencies.
-                              Dependecies are to be installed in /usr/local. This should be done only once.
+                              Dependencies are to be installed in /usr/local. This should be done only once.
                               (this does not install rocBLAS nor ROCm software stack)
 
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.

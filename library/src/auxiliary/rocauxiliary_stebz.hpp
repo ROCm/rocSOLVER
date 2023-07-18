@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (c) 2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2022-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -444,7 +444,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
     // after each iteration, a thread that found a new interval will activate this flag
     __shared__ int sh_newi[IBISEC_THDS];
     // threads will share the newfound interval bounds and numbers of
-    // eigenvalues in these arryas:
+    // eigenvalues in these arrays:
     __shared__ T sh_inter[4 * IBISEC_THDS];
     __shared__ int sh_ninter[4 * IBISEC_THDS];
     // sh_nofi accumulates the new number of intervals, for next iteration, in the active block
@@ -718,7 +718,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
     } // (loop worked all independent split blocks)
 }
 
-/** This kernel synthetize the results from all the independent
+/** This kernel synthesize the results from all the independent
     split blocks of a given matrix **/
 template <typename T, typename U>
 ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
@@ -1038,7 +1038,7 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
                             shiftE, strideE, nev, nsplit, W, strideW, IB, strideIB, IS, strideIS,
                             info, work, pivmin, Esqr, bounds, inter, ninter, eps, sfmin);
 
-    // Finally, synthetize the results from all the split blocks
+    // Finally, synthesize the results from all the split blocks
     ROCSOLVER_LAUNCH_KERNEL(stebz_synthesis_kernel<T>, gridReset, threads, 0, stream, range, order, n,
                             ilow, iup, D, shiftD, strideD, nev, nsplit, W, strideW, IB, strideIB, IS,
                             strideIS, batch_count, work, pivmin, Esqr, bounds, inter, ninter, eps);

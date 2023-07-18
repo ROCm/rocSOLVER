@@ -34,7 +34,7 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
     rocblas_stride strideP = 0;
     rocblas_int batch_count = 1;
 
-    // this function does not requiere memory work space
+    // this function does not require memory work space
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_status_size_unchanged;
 

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "rocauxiliary_lacgv.hpp"
@@ -25,7 +25,7 @@ rocblas_status
     rocblas_stride stridex = 0;
     rocblas_int batch_count = 1;
 
-    // this function does not requiere memory work space
+    // this function does not require memory work space
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_status_size_unchanged;
 
