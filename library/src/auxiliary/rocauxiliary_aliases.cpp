@@ -81,5 +81,5 @@ rocsolver_status rocsolver_get_matrix(rocsolver_int rows,
     return rocblas_get_matrix(rows, cols, elem_size, a, lda, b, ldb);
 }
 
-#pragma GCC diagnostic pop // reenable deprecation warnings
+#pragma GCC diagnostic pop // re-enable deprecation warnings
 }
