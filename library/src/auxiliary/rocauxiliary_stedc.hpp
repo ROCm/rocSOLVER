@@ -744,9 +744,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
     rocblas_int nb = splits[n + 1];
     // size of split block
     rocblas_int bs;
-    // begining of split block
+    // beginning of split block
     rocblas_int p1;
-    // begining of sub-block
+    // beginning of sub-block
     rocblas_int p2;
     // number of sub-blocks
     rocblas_int blks;
@@ -817,7 +817,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
             }
             __syncthreads();
 
-            // find begining of sub-block and update D elements
+            // find beginning of sub-block and update D elements
             p2 = 0;
             for(int i = 0; i < tid; ++i)
                 p2 += ns[i];
@@ -1103,7 +1103,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                 __syncthreads();
 
                 // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
-                // This will allows to find initial intervals for eigenvalue guesses
+                // This will allow us to find initial intervals for eigenvalue guesses
                 rocblas_int tsz = 1 << (levs - 1 - k);
                 tsz = (bs - 1) / tsz + 1;
                 for(int i = 0; i < tsz; ++i)
@@ -1161,7 +1161,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                         tmpd[i + j * n] = tmpd[i];
                 }
 
-                // finaly copy over all diagonal elements in ev. ev will be overwritten by the
+                // finally copy over all diagonal elements in ev. ev will be overwritten by the
                 // new computed eigenvalues of the merged block
                 for(int i = iam; i < sz; i += bdm)
                     ev[i] = diag[i];
