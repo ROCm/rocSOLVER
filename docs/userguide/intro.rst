@@ -12,8 +12,8 @@ Library overview
 ==========================
 
 rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
-on top of `AMD's open source ROCm platform <https://rocmdocs.amd.com/en/latest/index.html>`_. rocSOLVER is implemented in the
-`HIP programming language <https://rocmdocs.amd.com/en/latest/Programming_Guides/Programming-Guides.html>`_ and optimized for AMD's
+on top of `AMD's open source ROCm platform <https://rocm.docs.amd.com/>`_. rocSOLVER is implemented in the
+`HIP programming language <https://rocm.docs.amd.com/projects/HIP/>`_ and optimized for AMD's
 latest discrete GPUs.
 
 
@@ -21,7 +21,7 @@ Currently implemented functionality
 ====================================
 
 The rocSOLVER library is in the early stages of active development. New features are being
-continuously added, with new functionality documented at each `release of the ROCm platform <https://rocmdocs.amd.com/en/latest/Current_Release_Notes/Current-Release-Notes.html>`_.
+continuously added, with new functionality documented at each `release of the ROCm platform <https://rocm.docs.amd.com/en/latest/release.html>`_.
 
 The following tables summarize the functionality implemented for the different supported precisions in rocSOLVER's latest release.
 All LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
