@@ -238,6 +238,8 @@ constexpr const char* rocblas_datatype_string(rocblas_datatype type)
     case rocblas_datatype_u32_c:   return "u32_c";
     case rocblas_datatype_bf16_r:  return "bf16_r";
     case rocblas_datatype_bf16_c:  return "bf16_c";
+    case rocblas_datatype_f8_r:    return "f8_r";
+    case rocblas_datatype_bf8_r:   return "bf8_r";
     case rocblas_datatype_invalid: return "invalid";
     }
     return "invalid";
@@ -265,6 +267,8 @@ constexpr size_t rocblas_sizeof_datatype(rocblas_datatype type)
     case rocblas_datatype_bf16_r:  return 2;
     case rocblas_datatype_bf16_c:  return 4;
     case rocblas_datatype_invalid: return 4;
+    case rocblas_datatype_f8_r:    return 1;
+    case rocblas_datatype_bf8_r:   return 1;
     }
     return 0;
 }

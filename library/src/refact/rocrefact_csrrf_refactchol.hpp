@@ -22,12 +22,11 @@ rocblas_status rocsolver_csrrf_refactchol_argCheck(rocblas_handle handle,
                                                    rocblas_int* ptrT,
                                                    rocblas_int* indT,
                                                    T valT,
-                                                   rocblas_int* pivP,
                                                    rocblas_int* pivQ,
                                                    rocsolver_rfinfo rfinfo)
 {
     return (rocsolver_csrrf_refact_argCheck(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
-                                            valT, pivP, pivQ, rfinfo));
+                                            valT, pivQ, rfinfo));
 }
 
 template <typename T, typename U>
@@ -53,13 +52,13 @@ rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
                                                    rocblas_int* ptrT,
                                                    rocblas_int* indT,
                                                    U valT,
-                                                   rocblas_int* pivP,
                                                    rocblas_int* pivQ,
                                                    rocsolver_rfinfo rfinfo,
                                                    void* work)
 {
     bool const use_lu = false;
     rfinfo->use_lu = use_lu;
+    rocblas_int* pivP = pivQ;
     return (rocsolver_csrrf_refact_template<T, U>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
                                                   indT, valT, pivP, pivQ, rfinfo, work, use_lu));
 }

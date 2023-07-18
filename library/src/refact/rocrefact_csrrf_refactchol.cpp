@@ -20,7 +20,6 @@ rocblas_status rocsolver_csrrf_refactchol_impl(rocblas_handle handle,
                                                rocblas_int* ptrT,
                                                rocblas_int* indT,
                                                U valT,
-                                               rocblas_int* pivP,
                                                rocblas_int* pivQ,
                                                rocsolver_rfinfo rfinfo)
 {
@@ -29,6 +28,8 @@ rocblas_status rocsolver_csrrf_refactchol_impl(rocblas_handle handle,
     {
         rfinfo->use_lu = use_lu;
     };
+
+    rocblas_int* pivP = pivQ;
     return (rocsolver_csrrf_refact_impl<T, U>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
                                               valT, pivP, pivQ, rfinfo, use_lu));
 }
@@ -51,12 +52,11 @@ rocblas_status rocsolver_scsrrf_refactchol(rocblas_handle handle,
                                            rocblas_int* ptrT,
                                            rocblas_int* indT,
                                            float* valT,
-                                           rocblas_int* pivP,
                                            rocblas_int* pivQ,
                                            rocsolver_rfinfo rfinfo)
 {
     return rocsolver_csrrf_refactchol_impl<float>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
-                                                  indT, valT, pivP, pivQ, rfinfo);
+                                                  indT, valT, pivQ, rfinfo);
 }
 
 rocblas_status rocsolver_dcsrrf_refactchol(rocblas_handle handle,
@@ -69,12 +69,11 @@ rocblas_status rocsolver_dcsrrf_refactchol(rocblas_handle handle,
                                            rocblas_int* ptrT,
                                            rocblas_int* indT,
                                            double* valT,
-                                           rocblas_int* pivP,
                                            rocblas_int* pivQ,
                                            rocsolver_rfinfo rfinfo)
 {
     return rocsolver_csrrf_refactchol_impl<double>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
-                                                   indT, valT, pivP, pivQ, rfinfo);
+                                                   indT, valT, pivQ, rfinfo);
 }
 
 } // extern C
