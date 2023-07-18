@@ -117,7 +117,7 @@ __device__ void seq_eval(const rocblas_int type,
 }
 
 /** SEQ_SOLVE solves secular equation at point k (i.e. computes kth eigenvalue that
-    is within an internal interval). We use rational interpolation and fixed weigths
+    is within an internal interval). We use rational interpolation and fixed weights
     method between the 2 poles of the interval.
     (TODO: In the future, we could consider using 3 poles for those cases that may need it
     to reduce the number of required iterations to converge. The performance improvements
@@ -189,7 +189,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         x = dk1 + tau; // initial guess
     }
 
-    // evaluate secualar eq and get input values to calculate step correction
+    // evaluate secular eq and get input values to calculate step correction
     seq_eval(0, kk, dd, D, z, pinv, (up ? dk : dk1), &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
     seq_eval(1, kk, dd, D, z, pinv, tau, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
     bb = z[kk];
@@ -246,7 +246,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         if(fx * eta >= 0)
             eta = -fx / fdx;
 
-        // now verify that applying the correction wont get the process out of bounds
+        // now verify that applying the correction won't get the process out of bounds
         // if that is the case, bisect the interval instead
         if(tau + eta > uppb || tau + eta < lowb)
         {
@@ -260,7 +260,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         tau += eta;
         x = (up ? dk : dk1) + tau;
 
-        // evaluate secualar eq and get input values to calculate step correction
+        // evaluate secular eq and get input values to calculate step correction
         oldfx = fx;
         seq_eval(1, kk, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
         bb = z[kk];
@@ -342,7 +342,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
             if(fx * eta >= 0)
                 eta = -fx / fdx;
 
-            // now verify that applying the correction wont get the process out of bounds
+            // now verify that applying the correction won't get the process out of bounds
             // if that is the case, bisect the interval instead
             if(tau + eta > uppb || tau + eta < lowb)
             {
@@ -356,7 +356,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
             tau += eta;
             x = (up ? dk : dk1) + tau;
 
-            // evaluate secualar eq and get input values to calculate step correction
+            // evaluate secular eq and get input values to calculate step correction
             oldfx = fx;
             seq_eval(1, kk, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
             bb = z[kk];
@@ -379,7 +379,7 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
 }
 
 /** SEQ_SOLVE_EXT solves secular equation at point n (i.e. computes last eigenvalue).
-    We use rational interpolation and fixed weigths method between the (n-1)th and nth poles.
+    We use rational interpolation and fixed weights method between the (n-1)th and nth poles.
     (TODO: In the future, we could consider using 3 poles for those cases that may need it
     to reduce the number of required iterations to converge. The performance improvements
     are expected to be marginal, though) **/
@@ -450,7 +450,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     }
     x = dk + tau; // initial guess
 
-    // evaluate secualar eq and get input values to calculate step correction
+    // evaluate secular eq and get input values to calculate step correction
     seq_eval(0, km1, dd, D, z, pinv, dk, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
     seq_eval(0, km1, dd, D, z, pinv, tau, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
 
@@ -492,7 +492,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         if(fx * eta > 0)
             eta = -fx / (gdx + hdx);
 
-        // now verify that applying the correction wont get the process out of bounds
+        // now verify that applying the correction won't get the process out of bounds
         // if that is the case, bisect the interval instead
         if(tau + eta > uppb || tau + eta < lowb)
         {
@@ -506,7 +506,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         tau += eta;
         x = dk + tau;
 
-        // evaluate secualar eq and get input values to calculate step correction
+        // evaluate secular eq and get input values to calculate step correction
         seq_eval(0, km1, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
 
         // calculate tolerance er for convergence test
@@ -544,7 +544,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             if(fx * eta > 0)
                 eta = -fx / (gdx + hdx);
 
-            // now verify that applying the correction wont get the process out of bounds
+            // now verify that applying the correction won't get the process out of bounds
             // if that is the case, bisect the interval instead
             if(tau + eta > uppb || tau + eta < lowb)
             {
@@ -558,7 +558,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             tau += eta;
             x = dk + tau;
 
-            // evaluate secualar eq and get input values to calculate step correction
+            // evaluate secular eq and get input values to calculate step correction
             seq_eval(0, km1, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
 
             // calculate tolerance er for convergence test
