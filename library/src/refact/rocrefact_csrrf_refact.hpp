@@ -9,47 +9,6 @@
 #include "rocsolver_rfinfo.hpp"
 #include "rocsparse.hpp"
 
-// -------------------------------------------------
-// function to perform search in array
-// -------------------------------------------------
-// search array ind[istart], ..., ind[iend-1]
-// for matching value "key"
-//
-// return the index value of matching position
-// ---------------------------------------
-template <typename Iint, typename Ilong>
-__device__ static Ilong rf_search(Iint* ind, Ilong istart, Ilong iend, Iint key)
-{
-    // -----------------
-    // use binary search
-    // -----------------
-
-    Ilong const small_size = 8;
-    while(iend - istart > small_size)
-    {
-        Ilong imid = istart + (iend - istart) / 2;
-        Iint curr = ind[imid];
-
-        if(curr == key)
-            return imid;
-        else if(curr > key)
-            iend = imid;
-        else
-            istart = imid + 1;
-    }
-
-// ------------------------
-// use simple linear search
-// ------------------------
-#pragma unroll 4
-    for(Ilong imid = istart; imid < iend; imid++)
-    {
-        if(ind[imid] == key)
-            return imid;
-    }
-
-    return -1;
-}
 
 // ------------------------------------------------------------
 // Compute the inverse permutation inv_pivQ[] from pivQ
@@ -90,6 +49,8 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
                                         rocblas_int* Bi,
                                         T* Bx)
 {
+#include "rf_search.hpp"
+
     // ------------------------------------------------------
     // Note: access to ONLY lower triangular part of matrix A
     // to update ONLY lower triangular part of matrix B
@@ -182,6 +143,8 @@ ROCSOLVER_KERNEL void rf_add_PAQ_kernel(const rocblas_int n,
                                         rocblas_int* LUi,
                                         T* LUx)
 {
+#include "rf_search.hpp"
+
     T const zero = static_cast<T>(0);
 
     rocblas_int const tix = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
