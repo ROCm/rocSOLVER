@@ -17,18 +17,18 @@
 //
 // return the index value of matching position
 // ---------------------------------------
-template <typename I>
-__device__ static rocblas_int rf_search(I* ind, I istart, I iend, I key)
+template <typename Iint, typename Ilong>
+__device__ static Ilong rf_search(Iint* ind, Ilong istart, Ilong iend, Iint key)
 {
     // -----------------
     // use binary search
     // -----------------
-    rocblas_int imid;
-    rocblas_int curr;
-    while(iend - istart > 10)
+
+    Ilong const small_size = 8;
+    while(iend - istart > small_size)
     {
-        imid = istart + (iend - istart) / 2;
-        curr = ind[imid];
+        Ilong imid = istart + (iend - istart) / 2;
+        Iint curr = ind[imid];
 
         if(curr == key)
             return imid;
@@ -38,10 +38,11 @@ __device__ static rocblas_int rf_search(I* ind, I istart, I iend, I key)
             istart = imid + 1;
     }
 
-    // ------------------------
-    // use simple linear search
-    // ------------------------
-    for(imid = istart; imid < iend; imid++)
+// ------------------------
+// use simple linear search
+// ------------------------
+#pragma unroll 4
+    for(Ilong imid = istart; imid < iend; imid++)
     {
         if(ind[imid] == key)
             return imid;
