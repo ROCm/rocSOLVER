@@ -43,6 +43,8 @@ hipsolverStatus_t hipsolverSpXcsrissymHost(
 
     int issym = 1;
 
+#include "rf_search.hpp"
+
 #pragma omp parallel for schedule(dynamic)
     for(int irow = 0; irow < m; irow++)
     {
@@ -64,15 +66,33 @@ hipsolverStatus_t hipsolverSpXcsrissymHost(
             // search entries in row "krow"
             // ----------------------------
             bool has_found = false;
-            for(int j = csrRowPtrA[krow]; j < csrEndPtrA[krow]; j++)
+            if(use_rf_search)
             {
-                int const jcol = csrColIndA[j];
-                int const jrow = jcol;
+                // -----------------------------------------
+                // use binary search if csrColIndA is sorted
+                // -----------------------------------------
 
-                has_found = (jrow == irow);
-                if(has_found)
+                auto const key = irow;
+                auto const jstart = csrRowPtrA[krow];
+                auto const jend = csrEndPtrA[krow];
+                auto const ipos = rf_search(csrColIndA, jstart, jend, key);
+                has_found = (ipos >= jstart);
+            }
+            else
+            {
+                // ------------------------------------
+                // use simpler but slower linear search
+                // ------------------------------------
+                for(int j = csrRowPtrA[krow]; j < csrEndPtrA[krow]; j++)
                 {
-                    break;
+                    int const jcol = csrColIndA[j];
+                    int const jrow = jcol;
+
+                    has_found = (jrow == irow);
+                    if(has_found)
+                    {
+                        break;
+                    };
                 };
             };
 

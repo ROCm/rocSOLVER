@@ -22,6 +22,8 @@ __global__ void __launch_bounds__(ISSYM_NTHREADS) check_issym_kernel(const int m
     auto const nwave = (gridDim.x * blockDim.x) / waveSize;
     auto const lid = tid % waveSize;
 
+#include "rf_search.hpp"
+
     // ----------------------------
     // assume *d_issym = 1 on entry
     // ----------------------------
@@ -44,17 +46,37 @@ __global__ void __launch_bounds__(ISSYM_NTHREADS) check_issym_kernel(const int m
             auto const krow = kcol;
             bool has_found = false;
 
-            // TODO: use binary search if csrColIndA is sorted
-
-            for(auto j = csrRowPtrA[krow]; j < csrEndPtrA[krow]; j++)
+            bool const use_rf_search = true;
+            if(use_rf_search)
             {
-                auto const jcol = csrColIndA[j];
+                // -----------------------------------------
+                // use binary search if csrColIndA is sorted
+                // -----------------------------------------
 
-                // entry (krow, jcol)
-                has_found = (irow == jcol);
-                if(has_found)
+                auto const key = irow;
+                auto const jstart = csrRowPtrA[krow];
+                auto const jend = csrEndPtrA[krow];
+                auto const ipos = rf_search(csrColIndA, jstart, jend, key);
+                has_found = (ipos >= jstart);
+            }
+            else
+            {
+                // ------------------------------------
+                // use simpler but slower linear search
+                // ------------------------------------
+
+                for(auto j = csrRowPtrA[krow]; j < csrEndPtrA[krow]; j++)
                 {
-                    break;
+                    auto const jcol = csrColIndA[j];
+
+                    // ---------------------------------------------------
+                    // is entry (krow, jcol) the transpose of  (irow,kcol) ?
+                    // ---------------------------------------------------
+                    has_found = (irow == jcol);
+                    if(has_found)
+                    {
+                        break;
+                    };
                 };
             };
 
