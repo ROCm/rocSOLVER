@@ -17,9 +17,8 @@
 //
 // return the index value of matching position
 // ---------------------------------------
-template <typename T>
-__device__ static rocblas_int
-    rf_search(rocblas_int* ind, rocblas_int istart, rocblas_int iend, rocblas_int key)
+template <typename I>
+__device__ static rocblas_int rf_search(I* ind, I istart, I iend, I key)
 {
     // -----------------
     // use binary search
@@ -67,6 +66,100 @@ ROCSOLVER_KERNEL void rf_ipvec_kernel(rocblas_int n, rocblas_int* pivQ, rocblas_
 }
 
 // -------------------------------------------
+// Compute B = beta * B + alpha * (Q * A * Q') as
+//
+// NOTE: access ONLY the  LOWER triangular part matrix A and matrix B
+//
+// (1) B = beta * B
+// (2) B += alpha * (Q * A * Q')
+// where sparsity pattern of reordered (Q * A * Q') is a proper subset
+// of sparsity pattern of B.
+// Further assume for each row, the column indices are
+// in increasing sorted order
+// -------------------------------------------
+template <typename T, unsigned int waveSize = 32>
+ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
+                                        rocblas_int* Qold2new,
+                                        const T alpha,
+                                        rocblas_int* Ap,
+                                        rocblas_int* Ai,
+                                        T* Ax,
+                                        const T beta,
+                                        rocblas_int* Bp,
+                                        rocblas_int* Bi,
+                                        T* Bx)
+{
+    // ------------------------------------------------------
+    // Note: access to ONLY lower triangular part of matrix A
+    // to update ONLY lower triangular part of matrix B
+    // ------------------------------------------------------
+    T const zero = static_cast<T>(0);
+
+    rocblas_int const tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocblas_int const nwave = hipGridDim_x * hipBlockDim_x / waveSize;
+    rocblas_int const iwave = tid / waveSize;
+    rocblas_int const lid = (tid % waveSize);
+
+    for(rocblas_int irow_old = iwave; irow_old < n; irow_old += nwave)
+    {
+        rocblas_int const istart_old = Ap[irow_old];
+        rocblas_int const iend_old = Ap[irow_old + 1];
+
+        for(rocblas_int i = istart_old + lid; i < iend_old; i += waveSize)
+        {
+            // ---------------------------------------------------
+            // Note: access only lower triangular part of matrix A
+            // ---------------------------------------------------
+
+            rocblas_int const jcol_old = Ai[i];
+            bool const is_strictly_upper_A = (irow_old < jcol_old);
+            if(is_strictly_upper_A)
+            {
+                break;
+            };
+
+            T aij = Ax[i];
+
+            // --------------------------------------------
+            // Note: access only lower triangular part of B
+            // --------------------------------------------
+
+            rocblas_int irow_new = Qold2new[irow_old];
+            rocblas_int jcol_new = Qold2new[jcol_old];
+            bool const is_strictly_upper_B = (irow_new < jcol_new);
+
+            if(is_strictly_upper_B)
+            {
+                // ------------------------------------------
+                // take the conj transpose to access ONLY
+                // the LOWER triangular part of B
+                // ------------------------------------------
+                aij = conj(aij);
+
+                // --------------------------
+                // swap( irow_new, jcol_new )
+                // --------------------------
+                rocblas_int const iswap = irow_new;
+                irow_new = jcol_new;
+                jcol_new = iswap;
+            };
+
+            // ----------------------------
+            // search for entry B(irow_new, jcol_new)
+            // ----------------------------
+            rocblas_int const istart_new = Bp[irow_new];
+            rocblas_int const iend_new = Bp[irow_new + 1];
+            rocblas_int const ipos = rf_search(Bi, istart_new, iend_new, jcol_new);
+            bool const is_found = (ipos >= istart_new);
+            if(is_found)
+            {
+                Bx[ipos] = (beta == zero) ? zero : beta * Bx[ipos];
+                Bx[ipos] += alpha * aij;
+            };
+        };
+    };
+}
+// -------------------------------------------
 // Compute B = beta * B + alpha * (P * A * Q') as
 // (1) B = beta * B
 // (2) B += alpha * (P * A * Q')
@@ -88,43 +181,50 @@ ROCSOLVER_KERNEL void rf_add_PAQ_kernel(const rocblas_int n,
                                         rocblas_int* LUi,
                                         T* LUx)
 {
-    rocblas_int tix = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    rocblas_int tiy = hipThreadIdx_y;
+    T const zero = static_cast<T>(0);
+
+    rocblas_int const tix = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocblas_int const tiy = hipThreadIdx_y;
 
     // -------------------------------------------
     // If P or Q is NULL, then treat as identity permutation
     // -------------------------------------------
     if(tix < n)
     {
-        rocblas_int irow = tix;
-        rocblas_int istart = LUp[irow];
-        rocblas_int iend = LUp[irow + 1];
-        rocblas_int i, icol;
+        rocblas_int const irow = tix;
+        rocblas_int const istart = LUp[irow];
+        rocblas_int const iend = LUp[irow + 1];
 
-        rocblas_int irow_old = (pivP ? pivP[irow] : irow);
-        rocblas_int istart_old = Ap[irow_old];
-        rocblas_int iend_old = Ap[irow_old + 1];
-        rocblas_int i_old, icol_old;
+        rocblas_int const irow_old = (pivP ? pivP[irow] : irow);
+        rocblas_int const istart_old = Ap[irow_old];
+        rocblas_int const iend_old = Ap[irow_old + 1];
 
         // ----------------
         // scale B by beta
         // ----------------
-        for(i = istart + tiy; i < iend; i += hipBlockDim_y)
+        for(rocblas_int i = istart + tiy; i < iend; i += hipBlockDim_y)
         {
-            LUx[i] *= beta;
+            if(beta == zero)
+            {
+                LUx[i] = zero;
+            }
+            else
+            {
+                LUx[i] *= beta;
+            };
         }
         __syncthreads();
 
         // ------------------------------
         // scale A by alpha and add to B
         // ------------------------------
-        for(i_old = istart_old + tiy; i_old < iend_old; i_old += hipBlockDim_y)
+        for(rocblas_int i_old = istart_old + tiy; i_old < iend_old; i_old += hipBlockDim_y)
         {
-            icol_old = Ai[i_old];
-            icol = (inv_pivQ ? inv_pivQ[icol_old] : icol_old);
+            rocblas_int const icol_old = Ai[i_old];
+            rocblas_int const icol = (inv_pivQ ? inv_pivQ[icol_old] : icol_old);
 
-            i = rf_search<T>(LUi, istart, iend, icol);
-            if(i != -1)
+            rocblas_int const i = rf_search(LUi, istart, iend, icol);
+            if(i >= istart)
             {
                 LUx[i] += alpha * Ax[i_old];
             }
@@ -201,14 +301,47 @@ rocblas_status rocsolver_csrrf_refact_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(rf_ipvec_kernel<T>, dim3(nblocks), dim3(BS2), 0, stream, n, pivQ,
                             (rocblas_int*)work);
 
-    // ---------------------------------------------------------------------
-    // copy P*A*Q into T
-    // Note: the sparsity pattern of A is a subset of T, and since the
-    // re-orderings P and Q are applied, the incomplete factorization of P*A*Q
-    // (factorization without fill-in), yields the complete factorization of A.
-    // ---------------------------------------------------------------------
-    ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
-                            pivP, (rocblas_int*)work, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
+    {
+        // --------------------------------------------------
+        // set valT[] to zero  before numerical factorization
+        // --------------------------------------------------
+        int const value = 0;
+        size_t const sizeBytes = sizeof(T) * nnzT;
+        hipError_t istat = hipMemsetAsync((void*)valT, value, sizeBytes, stream);
+        if(istat != hipSuccess)
+        {
+            return (rocblas_status_internal_error);
+        };
+    };
+
+    if(use_lu)
+    {
+        // ---------------------------------------------------------------------
+        // copy P*A*Q into T
+        // Note: the sparsity pattern of A is a subset of T, and since the
+        // re-orderings P and Q are applied, the incomplete factorization of P*A*Q
+        // (factorization without fill-in), yields the complete factorization of A.
+        // ---------------------------------------------------------------------
+        T const alpha = static_cast<T>(1);
+        T const beta = static_cast<T>(0);
+        ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream,
+                                n, pivP, (rocblas_int*)work, alpha, ptrA, indA, valA, beta, ptrT,
+                                indT, valT);
+    }
+    else
+    {
+        // --------------------------------------------------------------
+        // copy Q'*A*Q into T
+        //
+        // Note: assume A and T are symmetric and
+        //       ONLY the LOWER triangular parts of A, and T are touched
+        // --------------------------------------------------------------
+        rocblas_int* const Qold2new = pivQ;
+        T const alpha = static_cast<T>(1);
+        T const beta = static_cast<T>(0);
+        ROCSOLVER_LAUNCH_KERNEL(rf_add_QAQ_kernel<T>, dim3(nblocks), dim3(BS1), 0, stream, n,
+                                Qold2new, alpha, ptrA, indA, valA, beta, ptrT, indT, valT);
+    };
 
     // perform incomplete factorization of T
 
