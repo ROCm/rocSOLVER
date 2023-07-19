@@ -102,7 +102,7 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
             rfinfo->solve_policy, &csrsm_Lchol_buffer_size);
 
         rocsparseCall_csrsm_buffer_size(
-            rfinfo->sphandle, rocsparse_operation_transpose, rocsparse_operation_none, n, nrhs,
+            rfinfo->sphandle, rocsparse_operation_conjugate_transpose, rocsparse_operation_none, n, nrhs,
             nnzT, &alpha, rfinfo->descrLchol, valT, ptrT, indT, B, ldb, rfinfo->infoLtchol,
             rfinfo->solve_policy, &csrsm_Ltchol_buffer_size);
 

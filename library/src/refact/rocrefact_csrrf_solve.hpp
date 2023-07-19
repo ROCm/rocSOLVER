@@ -141,7 +141,7 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
         // step (2) solve L' * X = Y
         // B <-- X
         // ----------------------
-        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(rfinfo->sphandle, rocsparse_operation_transpose,
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(rfinfo->sphandle, rocsparse_operation_conjugate_transpose,
                                                   rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
                                                   rfinfo->descrLchol, d_LUx, d_LUp, d_LUi, B, ldb,
                                                   rfinfo->infoLtchol, rfinfo->solve_policy, buffer));
@@ -258,7 +258,7 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
         // solve L' x = z, use transpose(L)
         // --------------------------------
         rocsparseCall_csrsm_buffer_size(
-            rfinfo->sphandle, rocsparse_operation_transpose, rocsparse_operation_none, n, nrhs,
+            rfinfo->sphandle, rocsparse_operation_conjugate_transpose, rocsparse_operation_none, n, nrhs,
             nnzT, &alpha, rfinfo->descrLchol, valT, ptrT, indT, B, ldb, rfinfo->infoLtchol,
             rfinfo->solve_policy, &csrsm_Ltchol_buffer_size);
 
