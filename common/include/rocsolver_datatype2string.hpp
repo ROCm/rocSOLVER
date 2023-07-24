@@ -11,7 +11,6 @@
 #define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
     (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
 
-
 typedef enum rocblas_initialization_ : int
 {
     rocblas_initialization_random_int = 111,
