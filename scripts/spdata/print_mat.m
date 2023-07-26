@@ -6,7 +6,7 @@ function isok = print_mat(matname,A)
 
 %{
 -----------------------------------------------------------
-  This function prints into files ptr, ind and val the 
+  This function prints into files ptr, ind and val the
   arrays corresponding to the sparse matrix A.
 
   isok = print_mat(matname, A)
@@ -18,8 +18,8 @@ function isok = print_mat(matname,A)
   Outputs:
   isok        This will be -1 if any of the file operations failed
 
-  The resulting files 
-    
+  The resulting files
+
     ptr{matname}
     ind{matname}
     val{matname}
@@ -30,7 +30,7 @@ function isok = print_mat(matname,A)
   rocSOLVER library interface and could change or be removed
   without any notice)
 -----------------------------------------------------------
-%} 
+%}
 
 
 % -----------------------

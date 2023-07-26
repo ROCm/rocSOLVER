@@ -23,7 +23,7 @@ function isok = print_x( matname, X )
   rocSOLVER library interface and could change or be removed
   without any notice)
 -----------------------------------------------------------
-%} 
+%}
 
 
 [vec,msg] = fopen( matname , 'w');

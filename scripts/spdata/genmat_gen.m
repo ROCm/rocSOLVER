@@ -6,13 +6,13 @@ function genmat_gen(n,nz)
 
 %{
 -----------------------------------------------------------
-	This function generates all the files required for a 
+	This function generates all the files required for a
 	test case of the LU re-factorization functionality in rocSOLVER.
 
 	genmat_gen(n, nz)
 
 	Inputs:
-	n  			Size of the problem (number of row and columns 
+	n  			Size of the problem (number of row and columns
 				of the sparse matrix A)
 	nz  		Number of non-zero elements in A
 
@@ -31,7 +31,7 @@ function genmat_gen(n,nz)
 
 
 %---------------------------
-% generate random sparse matrix 
+% generate random sparse matrix
 % with nz non-zero elements
 %---------------------------
 per = nz / (n*n);

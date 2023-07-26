@@ -6,7 +6,7 @@ function isok = printall(modo,A,T,Q,L=0,U=0,P=0)
 
 %{
 -----------------------------------------------------------
-	This function prints into files all the involved 
+	This function prints into files all the involved
 	matrices and vectors of the LU factorization
 
 	P * A * Q = L * U,   T = L - I + U
@@ -17,7 +17,7 @@ function isok = printall(modo,A,T,Q,L=0,U=0,P=0)
 
 	otherwise.
 
-	Additionaly, it generates and prints matrix B and 
+	Additionaly, it generates and prints matrix B and
 	solution matrix X of the linear systems
 
 	A * X = B
@@ -28,7 +28,7 @@ function isok = printall(modo,A,T,Q,L=0,U=0,P=0)
 	printall("po", A, T, Q)
 
 	Inputs:
-	A, L, U, T 		The matrix A and its corresponding 
+	A, L, U, T 		The matrix A and its corresponding
 					triangular factors (sparse matrices)
 	P, Q			vectors with the indices corresponding
 					to the row and column re-orderings (these could be
@@ -68,7 +68,7 @@ if modo=="lu",
 	if (!isok),
   		error(sprintf('Error writting files for matrix L'));
 	end;
-	
+
 	isok = print_mat('U',U);
 	if (!isok),
   		error(sprintf('Error writting files for matrix U'));

@@ -23,7 +23,7 @@ function isok = print_vec( vecname, v )
   rocSOLVER library interface and could change or be removed
   without any notice)
 -----------------------------------------------------------
-%} 
+%}
 
 
 

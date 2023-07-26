@@ -5,9 +5,9 @@
 function A=cleanmat(B,toclean)
 
 %{
-------------------------------------------------------------- 
+-------------------------------------------------------------
 	This function makes zero 'toclean' non-zero
-	elements of B that are not in the diagonal. 
+	elements of B that are not in the diagonal.
 
 	A = cleanmat(B, toclean)
 

@@ -5,10 +5,10 @@
 function A=fixmat(B,diagval)
 
 %{
-------------------------------------------------------------- 
+-------------------------------------------------------------
 	This function sets all diagonal entries of B to 'diagval'
 	without changing the number of nonzero entries in the
-	corresponding columns of the matrix. 
+	corresponding columns of the matrix.
 
 	A = fixmat(B, diagval)
 
