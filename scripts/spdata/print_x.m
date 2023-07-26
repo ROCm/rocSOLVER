@@ -36,7 +36,7 @@ end;
 m = size(X,1);
 n = size(X,2);
 for i=1:m,
-  for j=1:n,
+  for j=1:n-1,
     istat = fprintf(vec,'%1.17g ',X(i,j));
     isok = (istat >= 0);
     if (!isok),
@@ -44,6 +44,14 @@ for i=1:m,
       return;
     end;
   end;
+
+  istat = fprintf(vec,'%1.17g',X(i,n));
+  isok = (istat >= 0);
+  if (!isok),
+    error(sprintf('print_x: fprintf returns istat=%d',istat));
+    return;
+  end;
+
   istat = fprintf(vec,'\n');
   isok = (istat >= 0);
   if (!isok),

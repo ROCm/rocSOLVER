@@ -103,7 +103,7 @@ cc = cc + sum(ii == nrows);
 if (cc != nnzA),
   sprintf('error calculating ptr');
 end;
-istat = fprintf(ptr,'%d ',cc);
+istat = fprintf(ptr,'%d',cc);
 isok = (istat >= 0);
 if (!isok),
   error(sprintf('print_mat: fprintf returns istat=%d',istat));
@@ -122,7 +122,7 @@ end;
 % print ind and val
 % ----------------------
 
-for i=1:nnzA,
+for i=1:nnzA-1,
   istat = fprintf(ind,'%d ',jj(i)-1);
   isok = (istat >= 0);
   if (!isok),
@@ -136,6 +136,20 @@ for i=1:nnzA,
     error(sprintf('print_mat: fprintf returns istat=%d',istat));
     return;
   end;
+end;
+
+istat = fprintf(ind,'%d',jj(nnzA)-1);
+isok = (istat >= 0);
+if (!isok),
+  error(sprintf('print_mat: fprintf returns istat=%d',istat));
+  return;
+end;
+
+istat = fprintf(val,'%1.17g',aij(nnzA));
+isok = (istat >= 0);
+if (!isok),
+  error(sprintf('print_mat: fprintf returns istat=%d',istat));
+  return;
 end;
 
 istat = fclose(ind);

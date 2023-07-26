@@ -35,13 +35,20 @@ if (!isok),
 end;
 
 n = max(size(v,1),size(v,2));
-for i=1:n,
+for i=1:n-1,
   istat = fprintf(vec,'%d ',v(i)-1);
   isok = (istat >= 0);
   if (!isok),
     error(sprintf('print_vec: fprintf returns istat=%d',istat));
     return;
   end;
+end;
+
+istat = fprintf(vec,'%d',v(n)-1);
+isok = (istat >= 0);
+if (!isok),
+  error(sprintf('print_vec: fprintf returns istat=%d',istat));
+  return;
 end;
 
 istat = fclose(vec);
