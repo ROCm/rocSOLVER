@@ -63,7 +63,7 @@ done
 
 # Do the formatting
 for file in "$@"; do
-    if echo "$file" | grep -Eq '\.c$|\.h$|\.hpp$|\.cpp$|\.cl$|\.in$|\.txt$|\.yaml$|\.sh$|\.py$|\.pl$|\.cmake$|\.md$|\.rst$|\.groovy$'; then
+    if echo "$file" | grep -Eq '\.c$|\.h$|\.hpp$|\.cpp$|\.cl$|\.in$|\.txt$|\.yaml$|\.sh$|\.py$|\.pl$|\.cmake$|\.md$|\.rst$|\.groovy$|\.m$'; then
         sed -i -e 's/[[:space:]]*$//' -- "$file" # Remove whitespace at end of lines
         sed -i -e '$a\' -- "$file" # Add missing newline to end of file
 
