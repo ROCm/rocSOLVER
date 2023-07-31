@@ -112,9 +112,9 @@ system environment, but here is a typical example:
 
 
 [1]: https://www.netlib.org/lapack/
-[2]: https://docs.amd.com
-[3]: https://rocsolver.readthedocs.io
-[4]: https://rocblas.readthedocs.io
+[2]: https://rocm.docs.amd.com/
+[3]: https://rocm.docs.amd.com/projects/rocSOLVER/
+[4]: https://rocm.docs.amd.com/projects/rocBLAS/
 [5]: clients/samples/
-[6]: https://rocsolver.readthedocs.io/en/latest/api_lapackfunc.html#rocsolver-type-geqrf
+[6]: https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/api/lapack.html#rocsolver-type-geqrf
 [7]: CONTRIBUTING.md
