@@ -112,6 +112,7 @@ cmake_dependent_option(BUILD_CLIENTS_EXTRA_TESTS "Build extra tests" OFF BUILD_T
 option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
+option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
 
 cmake_dependent_option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY
   "Build with file/folder reorg backward compatibility enabled" ON "NOT WIN32" OFF)
@@ -151,11 +152,6 @@ if(NOT DEFINED AMDGPU_TARGETS)
     gfx1030
     ${OPTIONAL_AMDGPU_TARGETS}
   )
-  # The library would be too large to link (>2 GiB) if it were built for all architectures with
-  # address sanitizer enabled.
-  if(BUILD_ADDRESS_SANITIZER)
-     list(REMOVE_ITEM AMDGPU_TARGETS_INIT gfx803 gfx906:xnack- gfx908:xnack- gfx90a:xnack- gfx1010)
-  endif()
 endif()
 
 # Set this before finding hip so that hip::device has the required arch flags

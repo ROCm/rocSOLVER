@@ -58,3 +58,10 @@ if(BUILD_CODE_COVERAGE)
   )
   target_link_options(rocsolver-common INTERFACE --coverage)
 endif()
+
+if(BUILD_COMPRESSED_DBG)
+  target_compile_options(rocsolver-common INTERFACE
+    "$<$<CONFIG:Debug>:-gz>"
+    "$<$<CONFIG:RelWithDebInfo>:-gz>"
+  )
+endif()
