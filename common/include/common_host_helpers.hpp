@@ -385,10 +385,19 @@ inline void read_matrix(const std::string filenameS,
                         rocblas_int* A,
                         const rocblas_int lda)
 {
+
     const char* filename = filenameS.c_str();
     FILE* mat;
     mat = fopen(filename, "r");
     rocblas_int v;
+
+    int const idebug = 1;
+    if (idebug >= 1) {
+       printf("filename=%s, m=%d, n=%d, lda=%d\n",
+               filename,    m,    n,    lda );
+       };
+
+
 
     if(mat == NULL)
         throw std::invalid_argument(
@@ -437,6 +446,12 @@ inline void read_matrix(const std::string filenameS,
     mat = fopen(filename, "r");
     float v;
 
+    int const idebug = 1;
+    if (idebug >= 1) {
+       printf("filename=%s, m=%d, n=%d, lda=%d\n",
+               filename,    m,    n,    lda );
+       };
+
     if(mat == NULL)
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
@@ -465,6 +480,12 @@ inline void read_matrix(const std::string filenameS,
     FILE* mat;
     mat = fopen(filename, "r");
     double v;
+
+    int const idebug = 1;
+    if (idebug >= 1) {
+       printf("filename=%s, m=%d, n=%d, lda=%d\n",
+               filename,    m,    n,    lda );
+       };
 
     if(mat == NULL)
         throw std::invalid_argument(
