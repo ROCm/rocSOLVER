@@ -21,7 +21,7 @@ fs::path get_sparse_data_dir()
 
     // check relative to the running executable
     fs::path exe_path = fs::path(rocsolver_exepath());
-    std::vector<fs::path> candidates = {"../share/rocsolver/test", "../../../../clients/sparsedata"};
+    std::vector<fs::path> candidates = {"../share/rocsolver/test", "sparsedata"};
     for(const fs::path& candidate : candidates)
     {
         fs::path exe_relative = fs::weakly_canonical(exe_path / candidate);

@@ -140,7 +140,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   # Copy and point to sparse test data
   file(COPY
     ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/
-    DESTINATION ${PROJECT_BINARY_DIR}/sparsedata/
+    DESTINATION ${PROJECT_BINARY_DIR}/staging/sparsedata/
   )
   install(DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/
