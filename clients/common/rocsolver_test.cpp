@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include <cstdlib>
+#include <system_error>
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
@@ -24,8 +25,9 @@ fs::path get_sparse_data_dir()
     std::vector<fs::path> candidates = {"../share/rocsolver/test", "sparsedata"};
     for(const fs::path& candidate : candidates)
     {
-        fs::path exe_relative = fs::weakly_canonical(exe_path / candidate);
-        if(fs::exists(exe_relative))
+        std::error_code ec;
+        fs::path exe_relative = fs::canonical(exe_path / candidate, ec);
+        if(!ec)
             return exe_relative;
         considered.push_back(exe_relative.string());
     }
