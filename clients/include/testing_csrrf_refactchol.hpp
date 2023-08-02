@@ -8,6 +8,7 @@
 #include "clientcommon.hpp"
 #include "lapack_host_reference.hpp"
 #include "norm.hpp"
+#include "csr_norm.hpp"
 #include "rocsolver.hpp"
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
@@ -211,7 +212,27 @@ void csrrf_refactchol_getError(rocblas_handle handle,
     CHECK_HIP_ERROR(hvalTres.transfer_from(dvalT));
 
     // compare computed results with original result
-    *max_err = norm_error('F', 1, nnzT, 1, hvalT[0], hvalTres[0]);
+    //*max_err = norm_error('F', 1, nnzT, 1, hvalT[0], hvalTres[0]);
+
+   {
+   char const norm_type = 'F';
+   char const uplo = 'L';
+   rocblas_int const nrow = n;
+   rocblas_int const ncol = n;
+
+   rocblas_int const * const Ap = hptrT[0];
+   rocblas_int const * const Ai = hindT[0];
+   T const * const Ax = hvalT[0];
+
+   rocblas_int const * const Bp = hptrT[0];
+   rocblas_int const * const Bi = hindT[0];
+   T const * const Bx = hvalTres[0];
+
+   *max_err = csr_norm_error(norm_type, uplo,
+                             nrow, ncol,
+                             Ap, Ai, Ax,
+                             Bp, Bi, Bx );
+   };
 }
 
 template <typename T, typename Td, typename Ud, typename Th, typename Uh>
