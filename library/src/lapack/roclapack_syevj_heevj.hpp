@@ -6,7 +6,7 @@
  * and
  * Hari & Kovac (2019). On the Convergence of Complex Jacobi Methods.
  *     Linear and Multilinear Algebra 69(3), p. 489-514.
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -19,37 +19,38 @@
 /************** Kernels and device functions for small size*******************/
 /*****************************************************************************/
 
-/** SYEVJ_SMALL_KERNEL applies the Jacobi eigenvalue algorithm to matrices of size
+/** SYEVJ_SMALL_KERNEL/RUN_SYEVJ applies the Jacobi eigenvalue algorithm to matrices of size
     n <= SYEVJ_BLOCKED_SWITCH. For each off-diagonal element A[i,j], a Jacobi rotation J is
     calculated so that (J'AJ)[i,j] = 0. J only affects rows i and j, and J' only affects
     columns i and j. Therefore, ceil(n / 2) rotations can be computed and applied
     in parallel, so long as the rotations do not conflict between threads. We use top/bottom pairs
     to obtain i's and j's that do not conflict, and cycle them to cover all off-diagonal indices.
 
-    Call this kernel with batch_count groups in z, and ceil(n / 2) threads in x and y. **/
-template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
-                                         const rocblas_evect evect,
-                                         const rocblas_fill uplo,
-                                         const rocblas_int n,
-                                         U AA,
-                                         const rocblas_int shiftA,
-                                         const rocblas_int lda,
-                                         const rocblas_stride strideA,
-                                         const S abstol,
-                                         const S eps,
-                                         S* residual,
-                                         const rocblas_int max_sweeps,
-                                         rocblas_int* n_sweeps,
-                                         S* WW,
-                                         const rocblas_stride strideW,
-                                         rocblas_int* info,
-                                         T* AcpyA)
+    Call the syevj_small_kernel with batch_count groups in z, and nn^2 threads in x, where
+	nn = n/2 if	n is even or nn = (n+1)/2 if n is odd.
+	Then the run_syevj function will be run by all threadsi organized in a ceil(n/2)-by-ceil(n/2) array. **/
+template <typename T, typename S>
+__device__ void run_syevj(const rocblas_int tix,
+                          const rocblas_int tiy,
+                          const rocblas_esort esort,
+                          const rocblas_evect evect,
+                          const rocblas_fill uplo,
+                          const rocblas_int n,
+                          T* A,
+                          const rocblas_int lda,
+                          const S abstol,
+                          const S eps,
+                          S* residual,
+                          const rocblas_int max_sweeps,
+                          rocblas_int* n_sweeps,
+                          S* W,
+                          rocblas_int* info,
+                          T* Acpy,
+                          S* cosines_res,
+                          T* sines_diag,
+                          rocblas_int* top,
+                          rocblas_int* bottom)
 {
-    rocblas_int tix = hipThreadIdx_x;
-    rocblas_int tiy = hipThreadIdx_y;
-    rocblas_int bid = hipBlockIdx_z;
-
     // local variables
     S c, mag, f, g, r, s;
     T s1, s2, aij, temp1, temp2;
@@ -59,18 +60,6 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
     rocblas_int sweeps = 0;
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
-
-    // array pointers
-    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
-    T* Acpy = AcpyA + bid * n * n;
-    S* W = WW + bid * strideW;
-
-    // shared memory
-    extern __shared__ double lmem[];
-    S* cosines_res = reinterpret_cast<S*>(lmem);
-    T* sines_diag = reinterpret_cast<T*>(cosines_res + half_n);
-    rocblas_int* top = reinterpret_cast<rocblas_int*>(sines_diag + half_n);
-    rocblas_int* bottom = top + half_n;
 
     // copy A to Acpy, set A to identity (if calculating eigenvectors), and calculate off-diagonal
     // squared Frobenius norm (first by column/row then sum)
@@ -289,16 +278,16 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
     // finalize outputs
     if(tix == 0)
     {
-        residual[bid] = sqrt(local_res);
+        residual[0] = sqrt(local_res);
         if(sweeps <= max_sweeps)
         {
-            n_sweeps[bid] = sweeps;
-            info[bid] = 0;
+            n_sweeps[0] = sweeps;
+            info[0] = 0;
         }
         else
         {
-            n_sweeps[bid] = max_sweeps;
-            info[bid] = 1;
+            n_sweeps[0] = max_sweeps;
+            info[0] = 1;
         }
     }
 
@@ -343,6 +332,54 @@ ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
             }
         }
     }
+}
+
+template <typename T, typename S, typename U>
+ROCSOLVER_KERNEL void syevj_small_kernel(const rocblas_esort esort,
+                                         const rocblas_evect evect,
+                                         const rocblas_fill uplo,
+                                         const rocblas_int n,
+                                         U AA,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         const S abstol,
+                                         const S eps,
+                                         S* residualA,
+                                         const rocblas_int max_sweeps,
+                                         rocblas_int* n_sweepsA,
+                                         S* WW,
+                                         const rocblas_stride strideW,
+                                         rocblas_int* infoA,
+                                         T* AcpyA)
+{
+    rocblas_int tid = hipThreadIdx_x;
+    rocblas_int bid = hipBlockIdx_z;
+    rocblas_int even_n = n + n % 2;
+    rocblas_int half_n = even_n / 2;
+
+    // array pointers
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    T* Acpy = AcpyA + bid * n * n;
+    S* W = WW + bid * strideW;
+    S* residual = residualA + bid;
+    rocblas_int* n_sweeps = n_sweepsA + bid;
+    rocblas_int* info = infoA + bid;
+
+    // shared memory
+    extern __shared__ double lmem[];
+    S* cosines_res = reinterpret_cast<S*>(lmem);
+    T* sines_diag = reinterpret_cast<T*>(cosines_res + half_n);
+    rocblas_int* top = reinterpret_cast<rocblas_int*>(sines_diag + half_n);
+    rocblas_int* bottom = top + half_n;
+
+    // re-arrange threads in 2D array
+    rocblas_int tix = tid / half_n;
+    rocblas_int tiy = tid % half_n;
+
+    // execute
+    run_syevj(tix, tiy, esort, evect, uplo, n, A, lda, abstol, eps, residual, max_sweeps, n_sweeps,
+              W, info, Acpy, cosines_res, sines_diag, top, bottom);
 }
 
 /************** Kernels and device functions for large size*******************/
@@ -1359,7 +1396,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         // *** USE SINGLE SMALL-SIZE KERNEL ***
 
         dim3 grid(1, 1, batch_count);
-        dim3 threads(half_n, half_n, 1);
+        dim3 threads(half_n * half_n, 1, 1);
         size_t lmemsize = (sizeof(S) + sizeof(T) + 2 * sizeof(rocblas_int)) * half_n;
 
         ROCSOLVER_LAUNCH_KERNEL(syevj_small_kernel<T>, grid, threads, lmemsize, stream, esort,
