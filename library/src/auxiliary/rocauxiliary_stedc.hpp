@@ -1660,7 +1660,10 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-/** STEDC templated function **/
+/** STEDC templated function
+	solver_mode = 1 solve the sub-blocks using classic QR iteration (default)
+	solver_mode = 2 solve the sub-blocks using Jacobi
+	solver_mode = 3 solve the sub-blocks using bisection and inverse iteration (To be implemented) **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         const rocblas_evect evect,
@@ -1751,7 +1754,11 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         // find max number of sub-blocks to consider during the divide phase
         rocblas_int maxblks = 1 << stedc_num_levels(n, solver_mode);
+
+		// size of shared mem
         size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks + sizeof(S) * STEDC_BDIM;
+        if(solver_mode == JACOBI)
+            lmemsize += (n + n % 2) * (sizeof(rocblas_int) + sizeof(S));
 
         // execute divide and conquer kernel with tempvect
         ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),
