@@ -573,29 +573,52 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
 /** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
-__host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n)
+__host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int solver_mode)
 {
     rocblas_int levels;
 
-    // return the max number of levels such that the sub-blocks are at least of size 8, and
-    // there are no more than 256 sub-blocks
-    if(n <= 32)
+    // (TODO: for now all methods use the same tuning. Specific blocks sizes for Jacobi and
+    //	Bisection should be tuned in the future)
+
+    // solver_mode = 3 uses Bisection tuning
+    //if(solver_mode == 3)
+    //{
+    //	TODO
+    //}
+
+    // solver_mode = 2 uses Jacobi tunning
+    //else if(solver_mode == 2)
+    //{
+    //	TODO
+    //}
+
+    // otherwise uses classic QR tuning
+    //else
     {
-        levels = 2;
-    }
-    else if(n <= 232)
-    {
-        levels = 4;
-    }
-    else
-    {
-        if(n <= 1946)
+        // return the max number of levels such that the sub-blocks are at least of size 8, and
+        // there are no more than 256 sub-blocks
+        if(n <= 32)
         {
-            if(n <= 1692)
+            levels = 2;
+        }
+        else if(n <= 232)
+        {
+            levels = 4;
+        }
+        else
+        {
+            if(n <= 1946)
             {
-                if(n <= 295)
+                if(n <= 1692)
                 {
-                    levels = 5;
+                    if(n <= 295)
+                    {
+                        levels = 5;
+                    }
+                    else
+                    {
+                        levels = 7;
+                    }
                 }
                 else
                 {
@@ -604,12 +627,8 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n)
             }
             else
             {
-                levels = 7;
+                levels = 8;
             }
-        }
-        else
-        {
-            levels = 8;
         }
     }
 
@@ -664,9 +683,8 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
     splits[n + 1] = nb; //also save the number of split blocks
 }
 
-/** STEDC_KERNEL implements the main loop of the DC algorithm
-    to compute the eigenvalues/eigenvectors of the symmetric tridiagonal
-    submatrices **/
+/** STEDC_KERNEL implements the main loop of the DC algorithm to compute the
+	eigenvalues/eigenvectors of the symmetric tridiagonal submatrices. **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                                                            S* DD,
@@ -685,7 +703,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
                                                            const S eps,
                                                            const S ssfmin,
                                                            const S ssfmax,
-                                                           const rocblas_int maxblks)
+                                                           const rocblas_int maxblks,
+                                                           int solver_mode)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -767,7 +786,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
         bs = p2 - p1;
 
         // determine ideal number of sub-blocks
-        levs = stedc_num_levels(bs);
+        levs = stedc_num_levels(bs, solver_mode);
         blks = 1 << levs;
 
         // if split block is too small, solve it with steqr
@@ -839,12 +858,28 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
             // 2. SOLVE PHASE
             /* ----------------------------------------------------------------- */
             // Solve the blks sub-blocks in parallel.
-            // (Until STEQR is parallelized, only the first thread associated
-            // to each sub-block do computations)
-            if(tidb == 0)
+            // solver_mode = 1 solve the sub-blocks using classic QR iteration
+            // solver_mode = 2 solve the sub-blocks using Jacobi
+            // solver_mode = 3 solve the sub-blocks using bisection and inverse iteration
+
+            if(solver_mode == 3)
             {
-                run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info, W + p2 * 2,
-                          30 * bs, eps, ssfmin, ssfmax, false);
+                //	TODO
+            }
+
+            else if(solver_mode == 2)
+            {
+            }
+
+            else
+            {
+                // (Until STEQR is parallelized, only the first thread associated
+                // to each sub-block do computations)
+                if(tidb == 0)
+                {
+                    run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info, W + p2 * 2,
+                              30 * bs, eps, ssfmin, ssfmax, false);
+                }
             }
             __syncthreads();
             /* ----------------------------------------------------------------- */
@@ -1590,7 +1625,10 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-/** STEDC templated function **/
+/** STEDC templated function
+	solver_mode = 1 solve the sub-blocks using classic QR iteration (default)
+	solver_mode = 2 solve the sub-blocks using Jacobi
+	solver_mode = 3 solve the sub-blocks using bisection and inverse iteration (To be implemented) **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         const rocblas_evect evect,
@@ -1612,7 +1650,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         S* tempgemm,
                                         S* tmpz,
                                         rocblas_int* splits,
-                                        S** workArr)
+                                        S** workArr,
+                                        int solver_mode = 1)
 {
     ROCSOLVER_ENTER("stedc", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
@@ -1646,6 +1685,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     }
 
     // if size is too small, use steqr
+    // (TODO: evaluate whether having specific min sizes for Jacobi or bisection would be useful)
     else if(n < STEDC_MIN_DC_SIZE)
     {
         rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
@@ -1679,14 +1719,14 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 0, stream, n, n, tempvect, 0, ldt, strideT);
 
         // find max number of sub-blocks to consider during the divide phase
-        rocblas_int maxblks = 1 << stedc_num_levels(n);
+        rocblas_int maxblks = 1 << stedc_num_levels(n, solver_mode);
         size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks + sizeof(S) * BDIM;
 
         // execute divide and conquer kernel with tempvect
         ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),
                                 dim3(BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE,
                                 strideE, tempvect, 0, ldt, strideT, info, (S*)work_stack, tmpz,
-                                tempgemm, splits, eps, ssfmin, ssfmax, maxblks);
+                                tempgemm, splits, eps, ssfmin, ssfmax, maxblks, solver_mode);
 
         // update eigenvectors C <- C*tempvect
         local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
