@@ -15,7 +15,12 @@ function [T,Q] = print_prob( A, dir_in )
 dir = '.';
 if (nargin >= 2),
   dir = dir_in;
-  [status,msg,msgid] = mkdir('.',dir);
+  is_absolute_dir = (dir(1) == '/');
+  if (is_absolute_dir),
+    [status,msg,msgid] = mkdir('',dir);
+  else
+    [status,msg,msgid] = mkdir('.',dir);
+  end;
   isok = (status == 1);
   if (~isok),
     error(sprintf('print_prob: mkdir for %s return msg=%s, msgid=%g', ...
