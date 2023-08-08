@@ -1583,7 +1583,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     }
 
     // if size is too small with classic solver
-    else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
+	else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         *size_tempvect = 0;
         *size_tempgemm = 0;
@@ -1598,11 +1598,16 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     {
         size_t s1, s2;
 
-        // requirements for classic solver of small independent blocks
-        if(solver_mode == BISECTION || solver_mode == JACOBI)
-            s1 = 0;
-        else
-            rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
+		// requirements for solver of small independent blocks
+        switch(solver_mode)
+        {
+        case BISECTION: s1 = 0; break;
+
+        case JACOBI: s1 = sizeof(S) * (n * n + 2) * batch_count; break;
+
+        case CLASSICQR:
+        default: rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
+        }
 
         // extra requirements for original eigenvectors of small independent blocks
         *size_tempvect = (n * n) * batch_count * sizeof(S);
@@ -1714,13 +1719,13 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
     // if no eigenvectors required with the classic solver, use sterf
     if(evect == rocblas_evect_none && solver_mode != JACOBI && solver_mode != BISECTION)
-    {
-        rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
+	{
+    	rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
                                     batch_count, (rocblas_int*)work_stack);
     }
 
     // if size is too small with classic solver, use steqr
-    else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
+	else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
                                     shiftC, ldc, strideC, info, batch_count, work_stack);

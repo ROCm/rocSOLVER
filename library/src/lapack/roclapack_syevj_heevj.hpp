@@ -357,16 +357,19 @@ __device__ void run_syevj(const rocblas_int dimx,
     }
 }
 
-__host__ __device__ inline void syevj_get_dims(rocblas_int n, rocblas_int* ddx, rocblas_int* ddy)
+__host__ __device__ inline void
+    syevj_get_dims(rocblas_int n, rocblas_int bdim, rocblas_int* ddx, rocblas_int* ddy)
 {
     // (TODO: Some tuning could be beneficial in the future.
     //	For now, we use a max of BDIM = ddx * ddy threads.
-    //	ddy is set to ceil(n/2) and ddx to min(BDIM/ddy, ceil(n/2)).
+    //	ddy is set to min(BDIM/4, ceil(n/2)) and ddx to min(BDIM/ddy, ceil(n/2)).
 
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
-    *ddy = half_n;
-    *ddx = min(SYEVJ_BDIM / half_n, half_n);
+    rocblas_int y = min(bdim / 4, half_n);
+    rocblas_int x = min(bdim / y, half_n);
+    *ddx = x;
+    *ddy = y;
 }
 
 template <typename T, typename S, typename U>
