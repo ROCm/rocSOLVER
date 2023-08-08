@@ -30,8 +30,7 @@ ROCSOLVER_KERNEL void rf_ipvec_kernel(rocblas_int n, rocblas_int* pivQ, rocblas_
 //
 // NOTE: access ONLY the  LOWER triangular part matrix A and matrix B
 //
-// (1) B = beta * B
-// (2) B += alpha * (Q * A * Q')
+// Compute B += alpha * (Q * A * Q')
 // where sparsity pattern of reordered (Q * A * Q') is a proper subset
 // of sparsity pattern of B.
 // Further assume for each row, the column indices are
@@ -44,7 +43,6 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
                                         rocblas_int* Ap,
                                         rocblas_int* Ai,
                                         T* Ax,
-                                        const T beta,
                                         rocblas_int* Bp,
                                         rocblas_int* Bi,
                                         T* Bx)
@@ -58,10 +56,13 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
     T const zero = static_cast<T>(0);
 
     rocblas_int const tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    rocblas_int const nwave = hipGridDim_x * hipBlockDim_x / waveSize;
+    rocblas_int const nwave = hipGridDim_x * (hipBlockDim_x / waveSize);
     rocblas_int const iwave = tid / waveSize;
     rocblas_int const lid = (tid % waveSize);
 
+    // ----------------------------------------------
+    // each row is processed by one "wave" of threads
+    // ----------------------------------------------
     for(rocblas_int irow_old = iwave; irow_old < n; irow_old += nwave)
     {
         rocblas_int const istart_old = Ap[irow_old];
@@ -112,10 +113,9 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
             rocblas_int const istart_new = Bp[irow_new];
             rocblas_int const iend_new = Bp[irow_new + 1];
             rocblas_int const ipos = rf_search(Bi, istart_new, iend_new, jcol_new);
-            bool const is_found = (ipos >= istart_new);
+            bool const is_found = (istart_new <= ipos) && (ipos < iend_new);
             if(is_found)
             {
-                Bx[ipos] = (beta == zero) ? zero : beta * Bx[ipos];
                 Bx[ipos] += alpha * aij;
             };
         };
@@ -302,9 +302,9 @@ rocblas_status rocsolver_csrrf_refact_template(rocblas_handle handle,
         // --------------------------------------------------------------
         rocblas_int* const Qold2new = pivQ;
         T const alpha = static_cast<T>(1);
-        T const beta = static_cast<T>(0);
-        ROCSOLVER_LAUNCH_KERNEL(rf_add_QAQ_kernel<T>, dim3(nblocks), dim3(BS1), 0, stream, n,
-                                Qold2new, alpha, ptrA, indA, valA, beta, ptrT, indT, valT);
+        ROCSOLVER_LAUNCH_KERNEL(rf_add_QAQ_kernel<T>, dim3(nblocks), dim3(BS2*BS2), 0, stream, n,
+                                Qold2new, alpha, ptrA, indA, valA, 
+                                                 ptrT, indT, valT);
     };
 
     // perform incomplete factorization of T
