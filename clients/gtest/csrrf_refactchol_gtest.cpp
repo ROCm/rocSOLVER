@@ -23,6 +23,7 @@ const vector<int> n_range = {
     // invalid
     -1,
     // normal (valid) samples
+    5,
     20,
     50,
 };
@@ -38,11 +39,13 @@ const vector<int> nnz_range = {
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
+    5,
     100,
     250,
 };
 const vector<int> large_nnz_range = {
     // normal (valid) samples
+    5,
     300,
     500,
     700,
