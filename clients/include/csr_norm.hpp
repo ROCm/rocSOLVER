@@ -77,9 +77,7 @@ double csr_norm_error(char const norm_type,
 
             bool const is_lower = (irow >= colA);
             bool const is_upper = (irow <= colA);
-
-            bool do_assign = (use_lower && is_lower) || (use_upper && is_upper) || use_full;
-
+            bool const do_assign = (use_lower && is_lower) || (use_upper && is_upper) || use_full;
             if(do_assign)
             {
                 v[colA] = Ax[k];
@@ -101,38 +99,50 @@ double csr_norm_error(char const norm_type,
         };
 
         // ----------------------
-        // evaluate norm of error
+        // evaluate norm of difference
         // ----------------------
         for(Ilong k = kstartA; k < kendA; k++)
         {
             Iint const colA = Ai[k];
 
-            double const vi = std::abs(v[colA]);
-            v[colA] = zero;
-            if(is_frobenius)
+            bool const is_lower = (irow >= colA);
+            bool const is_upper = (irow <= colA);
+            bool const do_assign = (use_lower && is_lower) || (use_upper && is_upper) || use_full;
+            if(do_assign)
             {
-                norm_err += vi * vi;
-            }
-            else
-            {
-                norm_err = std::max(norm_err, vi);
+                double const vi = std::abs(v[colA]);
+                v[colA] = zero;
+
+                if(is_frobenius)
+                {
+                    norm_err += vi * vi;
+                }
+                else
+                {
+                    norm_err = std::max(norm_err, vi);
+                };
             };
         };
 
         for(Ilong k = kstartB; k < kendB; k++)
         {
             Iint const colB = Bi[k];
-
-            double const vi = std::abs(v[colB]);
-            v[colB] = zero;
-
-            if(is_frobenius)
+            bool const is_lower = (irow >= colB);
+            bool const is_upper = (irow <= colB);
+            bool const do_assign = (use_lower && is_lower) || (use_upper && is_upper) || use_full;
+            if(do_assign)
             {
-                norm_err += vi * vi;
-            }
-            else
-            {
-                norm_err = std::max(norm_err, vi);
+                double const vi = std::abs(v[colB]);
+                v[colB] = zero;
+
+                if(is_frobenius)
+                {
+                    norm_err += vi * vi;
+                }
+                else
+                {
+                    norm_err = std::max(norm_err, vi);
+                };
             };
         };
     };
