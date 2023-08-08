@@ -347,7 +347,10 @@ void testing_csrrf_refactchol(Arguments& argus)
     // determine existing test case
     if(n > 0)
     {
-        if(n <= 35)
+        
+        if (n <= 10) 
+            n = 5;
+        else if(n <= 35)
             n = 20;
         else if(n <= 75)
             n = 50;
@@ -357,7 +360,11 @@ void testing_csrrf_refactchol(Arguments& argus)
             n = 250;
     }
 
-    if(n <= 50) // small case
+    if(n <= 5) // tiny case
+    {
+     nnzA = 5;
+    }
+    else if(n <= 50) // small case
     {
         if(nnzA <= 80)
             nnzA = 60;
@@ -380,9 +387,11 @@ void testing_csrrf_refactchol(Arguments& argus)
     fs::path testcase;
     if(n > 0)
     {
-        testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
-        fs::path file = testcase / "ptrT";
-        read_last(file, &nnzT);
+        testcase = get_sparse_data_dir() / fmt::format("posmat_{}_{}", n, nnzA);
+        fs::path fileA = testcase / "ptrA";
+        read_last(fileA.string(), &nnzA);
+        fs::path fileT = testcase / "ptrT";
+        read_last(fileT.string(), &nnzT);
     }
 
     // memory size query if necessary
