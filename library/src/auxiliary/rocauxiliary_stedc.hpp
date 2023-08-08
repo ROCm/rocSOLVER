@@ -581,16 +581,16 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
     //	Bisection should be tuned in the future)
 
     // solver_mode = 3 uses Bisection tuning
-    //if(solver_mode == 3)
-    //{
-    //	TODO
-    //}
+    if(solver_mode == 3)
+    {
+        //	TODO
+    }
 
     // solver_mode = 2 uses Jacobi tunning
-    //else if(solver_mode == 2)
-    //{
-    //	TODO
-    //}
+    else if(solver_mode == 2)
+    {
+        //	TODO
+    }
 
     // otherwise uses classic QR tuning
     //else
@@ -789,13 +789,29 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
         levs = stedc_num_levels(bs, solver_mode);
         blks = 1 << levs;
 
-        // if split block is too small, solve it with steqr
+        // if split block is too small
+        // solver_mode = 1 solve the split blocks using classic QR iteration
+        // solver_mode = 2 solve the split blocks using Jacobi
+        // solver_mode = 3 solve the split blocks using bisection and inverse iteration
         if(blks == 1)
         {
-            if(id == 0)
+            if(solver_mode == 3)
             {
-                run_steqr(bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc, info, W + p1 * 2, 30 * bs,
-                          eps, ssfmin, ssfmax, false);
+                // TODO
+            }
+
+            else if(solver_mode == 2)
+            {
+                // TODO
+            }
+
+            else
+            {
+                if(id == 0)
+                {
+                    run_steqr(bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc, info, W + p1 * 2, 30 * bs,
+                              eps, ssfmin, ssfmax, false);
+                }
             }
         }
 
@@ -869,6 +885,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
 
             else if(solver_mode == 2)
             {
+                //	TODO
             }
 
             else
@@ -1523,7 +1540,8 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
                                    size_t* size_tempgemm,
                                    size_t* size_tmpz,
                                    size_t* size_splits,
-                                   size_t* size_workArr)
+                                   size_t* size_workArr,
+                                   int solver_mode = 1)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
@@ -1539,26 +1557,44 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         return;
     }
 
-    // if no eigenvectors required, use sterf
+    // if no eigenvectors required
     if(evect == rocblas_evect_none)
     {
-        rocsolver_sterf_getMemorySize<S>(n, batch_count, size_work_stack);
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
         *size_splits = 0;
         *size_tmpz = 0;
+        if(solver_mode == 3)
+        {
+            // TODO
+        }
+        else if(solver_mode == 2)
+        {
+            // TODO
+        }
+        else
+            rocsolver_sterf_getMemorySize<S>(n, batch_count, size_work_stack);
     }
 
-    // if size is too small, use steqr
+    // if size is too small
     else if(n < STEDC_MIN_DC_SIZE)
     {
-        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
         *size_splits = 0;
         *size_tmpz = 0;
+        if(solver_mode == 3)
+        {
+            // TODO
+        }
+        else if(solver_mode == 2)
+        {
+            // TODO
+        }
+        else
+            rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
     }
 
     // otherwise use divide and conquer algorithm:
@@ -1566,8 +1602,17 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     {
         size_t s1, s2;
 
-        // requirements for steqr of small independent blocks
-        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
+        // requirements for solver of small independent blocks
+        if(solver_mode == 3)
+        {
+            // TODO
+        }
+        else if(solver_mode == 2)
+        {
+            // TODO
+        }
+        else
+            rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
 
         // extra requirements for original eigenvectors of small independent blocks
         *size_tempvect = (n * n) * batch_count * sizeof(S);
@@ -1677,19 +1722,41 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     if(n <= 1)
         return rocblas_status_success;
 
-    // if no eigenvectors required, use sterf
+    // if no eigenvectors required
     if(evect == rocblas_evect_none)
     {
-        rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
-                                    batch_count, (rocblas_int*)work_stack);
+        if(solver_mode == 3)
+        {
+            // TODO
+        }
+        else if(solver_mode == 2)
+        {
+            // TODO
+        }
+        else
+        {
+            rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
+                                        batch_count, (rocblas_int*)work_stack);
+        }
     }
 
     // if size is too small, use steqr
     // (TODO: evaluate whether having specific min sizes for Jacobi or bisection would be useful)
     else if(n < STEDC_MIN_DC_SIZE)
     {
-        rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
-                                    shiftC, ldc, strideC, info, batch_count, work_stack);
+        if(solver_mode == 3)
+        {
+            // TODO
+        }
+        else if(solver_mode == 2)
+        {
+            // TODO
+        }
+        else
+        {
+            rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
+                                        shiftC, ldc, strideC, info, batch_count, work_stack);
+        }
     }
 
     // otherwise use divide and conquer algorithm:
