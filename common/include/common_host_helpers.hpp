@@ -386,7 +386,7 @@ inline void read_matrix(const std::string filenameS,
                         const rocblas_int lda)
 {
     const char* filename = filenameS.c_str();
-    int const idebug = 1;
+    int const idebug = 0;
     if(idebug >= 1)
     {
         printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
@@ -459,7 +459,7 @@ inline void read_matrix(const std::string filenameS,
                         const rocblas_int lda)
 {
     const char* filename = filenameS.c_str();
-    int const idebug = 1;
+    int const idebug = 0;
     if(idebug >= 1)
     {
         printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
@@ -503,7 +503,7 @@ inline void read_matrix(const std::string filenameS,
                         const rocblas_int lda)
 {
     const char* filename = filenameS.c_str();
-    int const idebug = 1;
+    int const idebug = 0;
     if(idebug >= 1)
     {
         printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
