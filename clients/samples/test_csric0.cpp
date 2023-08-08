@@ -61,7 +61,7 @@ int main() {
   double h_x[] = {1.0, 2.0, 3.0, 4.0};
   double h_rhs[] = {0.0, 0.0, 0.0, 0.0};
 
-  int const idebug = 1;
+  int const idebug = 0;
 
   for (rocsparse_int i = 0; i < m; i++) {
     h_rhs[i] = 0;
