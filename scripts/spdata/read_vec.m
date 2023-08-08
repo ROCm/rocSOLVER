@@ -1,6 +1,11 @@
+% ********************************************************************
+% Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+% ********************************************************************
 function A = read_vec( filename )
+%
 % A = read_vec(  filename  )
-% read vector
+%
+% read a vector from file
 
 [fid,msg] = fopen(filename,'r');
 isok_fid = (fid >= 0);
@@ -51,3 +56,4 @@ end;
 
 
 
+end

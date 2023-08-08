@@ -1,7 +1,15 @@
+% ********************************************************************
+% Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+% ********************************************************************
+
 function[A] = read_csr( file_ptrA, file_indA, file_valA, dir_in )
 %
-%[A] = read_csr( file_ptrA, file_indA, file_valA  [, dir_in] )
+% [A] = read_csr( file_ptrA, file_indA, file_valA  [, dir_in] )
 %
+% read in matrix in Compressed Sparse Row (CSR) storage 
+% encoded in 3 files e.g.  'ptrA', 'indA', 'valA'
+%
+% returns  matlab sparse matrix 
 % 
 
 dir = './';
@@ -20,3 +28,4 @@ valA = read_vec(strcat(dir,file_valA) );
 
 A = csr2sparse( ptrA, indA, valA );
 
+end
