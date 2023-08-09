@@ -9,13 +9,14 @@
 
 #pragma once
 
+#include "lapack/roclapack_syevj_heevj.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocauxiliary_steqr.hpp"
 #include "rocauxiliary_sterf.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#define BDIM 512 // Number of threads per thread-block used in main stedc kernel
+#define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernel
 #define MAXITERS 50 // Max number of iterations for root finding method
 
 /** SEQ_EVAL evaluates the secular equation at a given point. It accumulates the
@@ -577,9 +578,6 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
 {
     rocblas_int levels;
 
-    // (TODO: for now all methods use the same tuning. Specific blocks sizes for Jacobi and
-    //	Bisection should be tuned in the future)
-
     // solver_mode = 3 uses Bisection tuning
     if(solver_mode == 3)
     {
@@ -593,7 +591,7 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
     }
 
     // otherwise uses classic QR tuning
-    //else
+    else
     {
         // return the max number of levels such that the sub-blocks are at least of size 8, and
         // there are no more than 256 sub-blocks
@@ -686,25 +684,25 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
 /** STEDC_KERNEL implements the main loop of the DC algorithm to compute the
 	eigenvalues/eigenvectors of the symmetric tridiagonal submatrices. **/
 template <typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
-                                                           S* DD,
-                                                           const rocblas_stride strideD,
-                                                           S* EE,
-                                                           const rocblas_stride strideE,
-                                                           S* CC,
-                                                           const rocblas_int shiftC,
-                                                           const rocblas_int ldc,
-                                                           const rocblas_stride strideC,
-                                                           rocblas_int* iinfo,
-                                                           S* WA,
-                                                           S* tmpzA,
-                                                           S* vecsA,
-                                                           rocblas_int* splitsA,
-                                                           const S eps,
-                                                           const S ssfmin,
-                                                           const S ssfmax,
-                                                           const rocblas_int maxblks,
-                                                           int solver_mode)
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_int n,
+                                                                 S* DD,
+                                                                 const rocblas_stride strideD,
+                                                                 S* EE,
+                                                                 const rocblas_stride strideE,
+                                                                 S* CC,
+                                                                 const rocblas_int shiftC,
+                                                                 const rocblas_int ldc,
+                                                                 const rocblas_stride strideC,
+                                                                 rocblas_int* iinfo,
+                                                                 S* WA,
+                                                                 S* tmpzA,
+                                                                 S* vecsA,
+                                                                 rocblas_int* splitsA,
+                                                                 const S eps,
+                                                                 const S ssfmin,
+                                                                 const S ssfmax,
+                                                                 const rocblas_int maxblks,
+                                                                 int solver_mode)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -820,7 +818,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BDIM) stedc_kernel(const rocblas_int n,
         {
             // arrange threads so that a group of bdim/blks threads works with each sub-block
             // tn is the number of threads associated to each sub-block
-            rocblas_int tn = BDIM / blks;
+            rocblas_int tn = STEDC_BDIM / blks;
             // tid indexes the sub-block
             tid = id / tn;
             // tidb indexes the threads in each sub-block
@@ -1557,44 +1555,26 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         return;
     }
 
-    // if no eigenvectors required
-    if(evect == rocblas_evect_none)
+    // if no eigenvectors required with classic solver
+    if(evect == rocblas_evect_none && solver_mode != 2 && solver_mode != 3)
     {
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
         *size_splits = 0;
         *size_tmpz = 0;
-        if(solver_mode == 3)
-        {
-            // TODO
-        }
-        else if(solver_mode == 2)
-        {
-            // TODO
-        }
-        else
-            rocsolver_sterf_getMemorySize<S>(n, batch_count, size_work_stack);
+        rocsolver_sterf_getMemorySize<S>(n, batch_count, size_work_stack);
     }
 
-    // if size is too small
-    else if(n < STEDC_MIN_DC_SIZE)
+    // if size is too small with classic solver
+    else if(n < STEDC_MIN_DC_SIZE && solver_mode != 2 && solver_mode != 3)
     {
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
         *size_splits = 0;
         *size_tmpz = 0;
-        if(solver_mode == 3)
-        {
-            // TODO
-        }
-        else if(solver_mode == 2)
-        {
-            // TODO
-        }
-        else
-            rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
+        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
     }
 
     // otherwise use divide and conquer algorithm:
@@ -1602,15 +1582,9 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     {
         size_t s1, s2;
 
-        // requirements for solver of small independent blocks
-        if(solver_mode == 3)
-        {
-            // TODO
-        }
-        else if(solver_mode == 2)
-        {
-            // TODO
-        }
+        // requirements for classic solver of small independent blocks
+        if(solver_mode == 3 || solver_mode == 2)
+            s1 = 0;
         else
             rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
 
@@ -1722,41 +1696,18 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     if(n <= 1)
         return rocblas_status_success;
 
-    // if no eigenvectors required
-    if(evect == rocblas_evect_none)
+    // if no eigenvectors required with the classic solver, use sterf
+    if(evect == rocblas_evect_none && solver_mode != 2 && solver_mode != 3)
     {
-        if(solver_mode == 3)
-        {
-            // TODO
-        }
-        else if(solver_mode == 2)
-        {
-            // TODO
-        }
-        else
-        {
-            rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
-                                        batch_count, (rocblas_int*)work_stack);
-        }
+        rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
+                                    batch_count, (rocblas_int*)work_stack);
     }
 
-    // if size is too small, use steqr
-    // (TODO: evaluate whether having specific min sizes for Jacobi or bisection would be useful)
-    else if(n < STEDC_MIN_DC_SIZE)
+    // if size is too small with classic solver, use steqr
+    else if(n < STEDC_MIN_DC_SIZE && solver_mode != 2 && solver_mode != 3)
     {
-        if(solver_mode == 3)
-        {
-            // TODO
-        }
-        else if(solver_mode == 2)
-        {
-            // TODO
-        }
-        else
-        {
-            rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
-                                        shiftC, ldc, strideC, info, batch_count, work_stack);
-        }
+        rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
+                                    shiftC, ldc, strideC, info, batch_count, work_stack);
     }
 
     // otherwise use divide and conquer algorithm:
@@ -1787,13 +1738,13 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         // find max number of sub-blocks to consider during the divide phase
         rocblas_int maxblks = 1 << stedc_num_levels(n, solver_mode);
-        size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks + sizeof(S) * BDIM;
+        size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks + sizeof(S) * STEDC_BDIM;
 
         // execute divide and conquer kernel with tempvect
         ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),
-                                dim3(BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE,
-                                strideE, tempvect, 0, ldt, strideT, info, (S*)work_stack, tmpz,
-                                tempgemm, splits, eps, ssfmin, ssfmax, maxblks, solver_mode);
+                                dim3(STEDC_BDIM), lmemsize, stream, n, D + shiftD, strideD,
+                                E + shiftE, strideE, tempvect, 0, ldt, strideT, info, (S*)work_stack,
+                                tmpz, tempgemm, splits, eps, ssfmin, ssfmax, maxblks, solver_mode);
 
         // update eigenvectors C <- C*tempvect
         local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,

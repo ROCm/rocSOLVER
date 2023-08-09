@@ -19,7 +19,7 @@
 /************** Kernels and device functions for small size*******************/
 /*****************************************************************************/
 
-#define BDIM 1024 // Max number of threads per thread-block used in syevj_small kernel
+#define SYEVJ_BDIM 1024 // Max number of threads per thread-block used in syevj_small kernel
 
 /** SYEVJ_SMALL_KERNEL/RUN_SYEVJ applies the Jacobi eigenvalue algorithm to matrices of size
     n <= SYEVJ_BLOCKED_SWITCH. For each off-diagonal element A[i,j], a Jacobi rotation J is
@@ -366,27 +366,27 @@ __host__ __device__ inline void syevj_get_dims(rocblas_int n, rocblas_int* ddx, 
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
     *ddy = half_n;
-    *ddx = min(BDIM / half_n, half_n);
+    *ddx = min(SYEVJ_BDIM / half_n, half_n);
 }
 
 template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(BDIM) syevj_small_kernel(const rocblas_esort esort,
-                                                                 const rocblas_evect evect,
-                                                                 const rocblas_fill uplo,
-                                                                 const rocblas_int n,
-                                                                 U AA,
-                                                                 const rocblas_int shiftA,
-                                                                 const rocblas_int lda,
-                                                                 const rocblas_stride strideA,
-                                                                 const S abstol,
-                                                                 const S eps,
-                                                                 S* residualA,
-                                                                 const rocblas_int max_sweeps,
-                                                                 rocblas_int* n_sweepsA,
-                                                                 S* WW,
-                                                                 const rocblas_stride strideW,
-                                                                 rocblas_int* infoA,
-                                                                 T* AcpyA)
+ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_BDIM) syevj_small_kernel(const rocblas_esort esort,
+                                                                       const rocblas_evect evect,
+                                                                       const rocblas_fill uplo,
+                                                                       const rocblas_int n,
+                                                                       U AA,
+                                                                       const rocblas_int shiftA,
+                                                                       const rocblas_int lda,
+                                                                       const rocblas_stride strideA,
+                                                                       const S abstol,
+                                                                       const S eps,
+                                                                       S* residualA,
+                                                                       const rocblas_int max_sweeps,
+                                                                       rocblas_int* n_sweepsA,
+                                                                       S* WW,
+                                                                       const rocblas_stride strideW,
+                                                                       rocblas_int* infoA,
+                                                                       T* AcpyA)
 {
     rocblas_int tid = hipThreadIdx_x;
     rocblas_int bid = hipBlockIdx_z;
