@@ -327,7 +327,7 @@ optimal=true
 cleanup=false
 build_sanitizer=false
 build_codecoverage=false
-build_freorg_bkwdcomp=true
+build_freorg_bkwdcomp=false
 build_with_sparse=true
 unset architecture
 unset rocblas_dir
