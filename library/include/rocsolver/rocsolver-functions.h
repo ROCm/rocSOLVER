@@ -16470,6 +16470,1042 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
 //! @}
 
 /*! @{
+    \brief SYEVDJ computes the eigenvalues and optionally the eigenvectors of a real symmetric
+    matrix A.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in ascending order.
+    The eigenvectors are computed using a divide-and-conquer approach depending on the value of evect.
+	The computed eigenvectors are orthonormal.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
+                the algorithm converged; otherwise the contents of A are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[out]
+    W           pointer to type. Array on the GPU of dimension n.\n
+                The eigenvalues of A in increasing order.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdj(rocblas_handle handle,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  float* A,
+                                                  const rocblas_int lda,
+                                                  float* W,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj(rocblas_handle handle,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  double* A,
+                                                  const rocblas_int lda,
+                                                  double* W,
+                                                  rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief HEEVDJ computes the eigenvalues and optionally the eigenvectors of a complex Hermitian
+    matrix A.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in ascending order.
+    The eigenvectors are computed using a divide-and-conquer approach depending on the value of evect.
+	The computed eigenvectors are orthonormal.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the Hermitian matrix A is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the eigenvectors of A if they were computed and
+                the algorithm converged; otherwise the contents of A are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[out]
+    W           pointer to real type. Array on the GPU of dimension n.\n
+                The eigenvalues of A in increasing order.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdj(rocblas_handle handle,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  rocblas_float_complex* A,
+                                                  const rocblas_int lda,
+                                                  float* W,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj(rocblas_handle handle,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  rocblas_double_complex* A,
+                                                  const rocblas_int lda,
+                                                  double* W,
+                                                  rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief SYEVDJ_BATCHED computes the eigenvalues and optionally the eigenvectors of a
+	batch of real symmetric matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in ascending order.
+    The eigenvectors are computed using a divide-and-conquer approach depending on the value of evect.
+	The computed eigenvectors are orthonormal.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdj_batched(rocblas_handle handle,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          float* const A[],
+                                                          const rocblas_int lda,
+                                                          float* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj_batched(rocblas_handle handle,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          double* const A[],
+                                                          const rocblas_int lda,
+                                                          double* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEEVDJ_BATCHED computes the eigenvalues and optionally the eigenvectors of a
+	batch of complex Hermitian matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in ascending order.
+    The eigenvectors are computed using a divide-and-conquer approach depending on the value of evect.
+	The computed eigenvectors are orthonormal.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the Hermitian matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdj_batched(rocblas_handle handle,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          rocblas_float_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          float* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj_batched(rocblas_handle handle,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          rocblas_double_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          double* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYEVDJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a
+	batch of real symmetric matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in ascending order.
+    The eigenvectors are computed using a divide-and-conquer approach depending on the value of evect.
+	The computed eigenvectors are orthonormal.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the symmetric matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+	@param[in]
+	strideA		rocblas_stride.\n
+				Stride from the start of one matrix A_j to the next one A_(j+1).
+				There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  float* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  float* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  double* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  double* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEEVDJ_STRIDED_BATCHED computes the eigenvalues and optionally the eigenvectors of a
+	batch of complex Hermitian matrices A_j.
+
+    \details
+    The eigenvalues are found using the iterative Jacobi algorithm and are returned in ascending order.
+    The eigenvectors are computed using a divide-and-conquer approach depending on the value of evect.
+	The computed eigenvectors are orthonormal.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower part of the Hermitian matrices A_j is stored.
+                If uplo indicates lower (or upper), then the upper (or lower) part of A_j
+                is not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrices A_j.
+    @param[inout]
+    A           Pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the eigenvectors of A_j if they were computed and
+                the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+	@param[in]
+	strideA		rocblas_stride.\n
+				Stride from the start of one matrix A_j to the next one A_(j+1).
+				There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues of A_j in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of matrices in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  rocblas_float_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  float* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  rocblas_double_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  double* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYGVDJ computes the eigenvalues and (optionally) eigenvectors of
+    a real generalized symmetric-definite eigenproblem.
+
+    \details
+    The problem solved by this function is either of the form
+
+    \f[
+        \begin{array}{cl}
+        A X = \lambda B X & \: \text{1st form,}\\
+        A B X = \lambda X & \: \text{2nd form, or}\\
+        B A X = \lambda X & \: \text{3rd form,}
+        \end{array}
+    \f]
+
+    depending on the value of itype. The eigenvalues are found using the iterative Jacobi algorithm,
+	and are returned in ascending order. The eigenvectors are computed using a divide-and-conquer algorithm,
+	depending on the value of evect.
+
+    When computed, the matrix Z of eigenvectors is normalized as follows:
+
+    \f[
+        \begin{array}{cl}
+        Z^T B Z=I & \: \text{if 1st or 2nd form, or}\\
+        Z^T B^{-1} Z=I & \: \text{if 3rd form.}
+        \end{array}
+    \f]
+
+	@param[in]
+    handle      rocblas_handle.
+	@param[in]
+	itype		#rocblas_eform.\n
+				Specifies the form of the generalized eigenproblem.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices A and B are stored.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A and B
+                are not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the normalized matrix Z of eigenvectors if they were computed
+				and the algorithm converged; otherwise the contents of A are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[inout]
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                On entry, the symmetric positive definite matrix B. On exit,
+				the triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of matrix B.
+    @param[out]
+    W           pointer to type. Array on the GPU of dimension n.\n
+                The eigenvalues in increasing order.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
+     			If info = n + i, the leading minor of order i of B is not positive definite.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdj(rocblas_handle handle,
+                                                  const rocblas_eform itype,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  float* A,
+                                                  const rocblas_int lda,
+                                                  float* B,
+                                                  const rocblas_int ldb,
+                                                  float* W,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj(rocblas_handle handle,
+                                                  const rocblas_eform itype,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  double* A,
+                                                  const rocblas_int lda,
+                                                  double* B,
+                                                  const rocblas_int ldb,
+                                                  double* W,
+                                                  rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief HEGVDJ computes the eigenvalues and (optionally) eigenvectors of
+    a complex generalized Hermitian-definite eigenproblem.
+
+    \details
+    The problem solved by this function is either of the form
+
+    \f[
+        \begin{array}{cl}
+        A X = \lambda B X & \: \text{1st form,}\\
+        A B X = \lambda X & \: \text{2nd form, or}\\
+        B A X = \lambda X & \: \text{3rd form,}
+        \end{array}
+    \f]
+
+    depending on the value of itype. The eigenvalues are found using the iterative Jacobi algorithm,
+	and are returned in ascending order. The eigenvectors are computed using a divide-and-conquer algorithm,
+	depending on the value of evect.
+
+    When computed, the matrix Z of eigenvectors is normalized as follows:
+
+    \f[
+        \begin{array}{cl}
+        Z^H B Z=I & \: \text{if 1st or 2nd form, or}\\
+        Z^H B^{-1} Z=I & \: \text{if 3rd form.}
+        \end{array}
+    \f]
+
+	@param[in]
+    handle      rocblas_handle.
+	@param[in]
+	itype		#rocblas_eform.\n
+				Specifies the form of the generalized eigenproblem.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices A and B are stored.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A and B
+                are not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A.
+    @param[inout]
+    A           pointer to type. Array on the GPU of dimension lda*n.\n
+                On entry, the matrix A. On exit, the normalized matrix Z of eigenvectors if they were computed
+				and the algorithm converged; otherwise the contents of A are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrix A.
+    @param[inout]
+    B           pointer to type. Array on the GPU of dimension ldb*n.\n
+                On entry, the Hermitian positive definite matrix B. On exit,
+				the triangular factor of B as returned by \ref rocsolver_spotrf "POTRF".
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of matrix B.
+    @param[out]
+    W           pointer to real type. Array on the GPU of dimension n.\n
+                The eigenvalues in increasing order.
+    @param[out]
+    info        pointer to a rocblas_int on the GPU.\n
+                If info = 0, successful exit. If info = 1, the algorithm did not converge.
+     			If info = n + i, the leading minor of order i of B is not positive definite.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdj(rocblas_handle handle,
+                                                  const rocblas_eform itype,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  rocblas_float_complex* A,
+                                                  const rocblas_int lda,
+                                                  rocblas_float_complex* B,
+                                                  const rocblas_int ldb,
+                                                  float* W,
+                                                  rocblas_int* info);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj(rocblas_handle handle,
+                                                  const rocblas_eform itype,
+                                                  const rocblas_evect evect,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  rocblas_double_complex* A,
+                                                  const rocblas_int lda,
+                                                  rocblas_double_complex* B,
+                                                  const rocblas_int ldb,
+                                                  double* W,
+                                                  rocblas_int* info);
+//! @}
+
+/*! @{
+    \brief SYGVDJ_BATCHED computes the eigenvalues and (optionally) eigenvectors of
+    batch of real generalized symmetric-definite eigenproblems.
+
+    \details
+    For each instance in the batch, the problem solved by this function is either of the form
+
+    \f[
+        \begin{array}{cl}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
+        \end{array}
+    \f]
+
+    depending on the value of itype. The eigenvalues are found using the iterative Jacobi algorithm,
+	and are returned in ascending order. The eigenvectors are computed using a divide-and-conquer algorithm,
+	depending on the value of evect.
+
+    When computed, the matrix Z_j of eigenvectors is normalized as follows:
+
+    \f[
+        \begin{array}{cl}
+        Z^T_j B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z^T_j B^{-1}_j Z_j=I & \: \text{if 3rd form.}
+        \end{array}
+    \f]
+
+	@param[in]
+    handle      rocblas_handle.
+	@param[in]
+	itype		#rocblas_eform.\n
+				Specifies the form of the generalized eigenproblems.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices A_j and B_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and B_j
+                are not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A_j.
+    @param[inout]
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the normalized matrices Z_j of eigenvectors if they were computed
+				and the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[inout]
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                On entry, the symmetric positive definite matrices B_j. On exit,
+				the triangular factor of B_j as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of matrices B_j.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
+     			If info[j] = n + i, the leading minor of order i of B_j is not positive definite.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of eigenproblems in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdj_batched(rocblas_handle handle,
+                                                          const rocblas_eform itype,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          float* const A[],
+                                                          const rocblas_int lda,
+                                                          float* const B[],
+                                                          const rocblas_int ldb,
+                                                          float* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj_batched(rocblas_handle handle,
+                                                          const rocblas_eform itype,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          double* const A[],
+                                                          const rocblas_int lda,
+                                                          double* const B[],
+                                                          const rocblas_int ldb,
+                                                          double* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief SYGVDJ_STRIDED_BATCHED computes the eigenvalues and (optionally) eigenvectors of
+    batch of real generalized symmetric-definite eigenproblems.
+
+    \details
+    For each instance in the batch, the problem solved by this function is either of the form
+
+    \f[
+        \begin{array}{cl}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
+        \end{array}
+    \f]
+
+    depending on the value of itype. The eigenvalues are found using the iterative Jacobi algorithm,
+	and are returned in ascending order. The eigenvectors are computed using a divide-and-conquer algorithm,
+	depending on the value of evect.
+
+    When computed, the matrix Z_j of eigenvectors is normalized as follows:
+
+    \f[
+        \begin{array}{cl}
+        Z^T_j B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z^T_j B^{-1}_j Z_j=I & \: \text{if 3rd form.}
+        \end{array}
+    \f]
+
+	@param[in]
+    handle      rocblas_handle.
+	@param[in]
+	itype		#rocblas_eform.\n
+				Specifies the form of the generalized eigenproblems.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices A_j and B_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and B_j
+                are not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A_j.
+    @param[inout]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the normalized matrices Z_j of eigenvectors if they were computed
+				and the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+	@param[in]
+	strideA		rocblas_stride.\n
+				Stride from the start of one matrix A_j to the next one A_(j+1).
+				There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
+    @param[inout]
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                On entry, the symmetric positive definite matrices B_j. On exit,
+				the triangular factor of B_j as returned by \ref rocsolver_spotrf_strided_batched "POTRF_STRIDED_BATCHED".
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of matrices B_j.
+	@param[in]
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
+    @param[out]
+    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
+     			If info[j] = n + i, the leading minor of order i of B_j is not positive definite.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of eigenproblems in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_eform itype,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  float* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  float* B,
+                                                                  const rocblas_int ldb,
+                                                                  const rocblas_stride strideB,
+                                                                  float* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_eform itype,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  double* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  double* B,
+                                                                  const rocblas_int ldb,
+                                                                  const rocblas_stride strideB,
+                                                                  double* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEGVDJ_BATCHED computes the eigenvalues and (optionally) eigenvectors of
+    batch of complex generalized Hermitian-definite eigenproblems.
+
+    \details
+    For each instance in the batch, the problem solved by this function is either of the form
+
+    \f[
+        \begin{array}{cl}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
+        \end{array}
+    \f]
+
+    depending on the value of itype. The eigenvalues are found using the iterative Jacobi algorithm,
+	and are returned in ascending order. The eigenvectors are computed using a divide-and-conquer algorithm,
+	depending on the value of evect.
+
+    When computed, the matrix Z_j of eigenvectors is normalized as follows:
+
+    \f[
+        \begin{array}{cl}
+        Z^H_j B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z^H_j B^{-1}_j Z_j=I & \: \text{if 3rd form.}
+        \end{array}
+    \f]
+
+	@param[in]
+    handle      rocblas_handle.
+	@param[in]
+	itype		#rocblas_eform.\n
+				Specifies the form of the generalized eigenproblems.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices A_j and B_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and B_j
+                are not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A_j.
+    @param[inout]
+    A           array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+                On entry, the matrices A_j. On exit, the normalized matrices Z_j of eigenvectors if they were computed
+				and the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+    @param[inout]
+    B           array of pointers to type. Each pointer points to an array on the GPU of dimension ldb*n.\n
+                On entry, the Hermitian positive definite matrices B_j. On exit,
+				the triangular factor of B_j as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of matrices B_j.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
+     			If info[j] = n + i, the leading minor of order i of B_j is not positive definite.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of eigenproblems in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdj_batched(rocblas_handle handle,
+                                                          const rocblas_eform itype,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          rocblas_float_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          rocblas_float_complex* const B[],
+                                                          const rocblas_int ldb,
+                                                          float* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj_batched(rocblas_handle handle,
+                                                          const rocblas_eform itype,
+                                                          const rocblas_evect evect,
+                                                          const rocblas_fill uplo,
+                                                          const rocblas_int n,
+                                                          rocblas_double_complex* const A[],
+                                                          const rocblas_int lda,
+                                                          rocblas_double_complex* const B[],
+                                                          const rocblas_int ldb,
+                                                          double* W,
+                                                          const rocblas_stride strideW,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+//! @}
+
+/*! @{
+    \brief HEGVDJ_STRIDED_BATCHED computes the eigenvalues and (optionally) eigenvectors of
+    batch of complex generalized Hermitian-definite eigenproblems.
+
+    \details
+    For each instance in the batch, the problem solved by this function is either of the form
+
+    \f[
+        \begin{array}{cl}
+        A_j X_j = \lambda B_j X_j & \: \text{1st form,}\\
+        A_j B_j X_j = \lambda X_j & \: \text{2nd form, or}\\
+        B_j A_j X_j = \lambda X_j & \: \text{3rd form,}
+        \end{array}
+    \f]
+
+    depending on the value of itype. The eigenvalues are found using the iterative Jacobi algorithm,
+	and are returned in ascending order. The eigenvectors are computed using a divide-and-conquer algorithm,
+	depending on the value of evect.
+
+    When computed, the matrix Z_j of eigenvectors is normalized as follows:
+
+    \f[
+        \begin{array}{cl}
+        Z^H_j B_j Z_j=I & \: \text{if 1st or 2nd form, or}\\
+        Z^H_j B^{-1}_j Z_j=I & \: \text{if 3rd form.}
+        \end{array}
+    \f]
+
+	@param[in]
+    handle      rocblas_handle.
+	@param[in]
+	itype		#rocblas_eform.\n
+				Specifies the form of the generalized eigenproblems.
+    @param[in]
+    evect       #rocblas_evect.\n
+                Specifies whether the eigenvectors are to be computed.
+                If evect is rocblas_evect_original, then the eigenvectors are computed.
+                rocblas_evect_tridiagonal is not supported.
+    @param[in]
+    uplo        rocblas_fill.\n
+                Specifies whether the upper or lower parts of the matrices A_j and B_j are stored.
+                If uplo indicates lower (or upper), then the upper (or lower) parts of A_j and B_j
+                are not used.
+    @param[in]
+    n           rocblas_int. n >= 0.\n
+                Number of rows and columns of matrix A_j.
+    @param[inout]
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+                On entry, the matrices A_j. On exit, the normalized matrices Z_j of eigenvectors if they were computed
+				and the algorithm converged; otherwise the contents of A_j are destroyed.
+    @param[in]
+    lda         rocblas_int. lda >= n.\n
+                Specifies the leading dimension of matrices A_j.
+	@param[in]
+	strideA		rocblas_stride.\n
+				Stride from the start of one matrix A_j to the next one A_(j+1).
+				There is no restriction for the value of strideA. Normal use is strideA >= lda*n.
+    @param[inout]
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+                On entry, the Hermitian positive definite matrices B_j. On exit,
+				the triangular factor of B_j as returned by \ref rocsolver_spotrf_batched "POTRF_BATCHED".
+    @param[in]
+    ldb         rocblas_int. ldb >= n.\n
+                Specifies the leading dimension of matrices B_j.
+	@param[in]
+    strideB     rocblas_stride.\n
+                Stride from the start of one matrix B_j to the next one B_(j+1).
+                There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
+    @param[out]
+    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+                The eigenvalues in increasing order.
+	@param[in]
+	strideW		rocblas_stride.\n
+				Stride from the start of one vector W_j to the next one W_(j+1).
+				There is no restriction for the value of strideW. Normal use is strideW >= n.
+    @param[out]
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+                If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
+     			If info[j] = n + i, the leading minor of order i of B_j is not positive definite.
+	@param[in]
+	batch_count	rocblas_int. batch_count >= 0.\n
+				Number of eigenproblems in the batch.
+    **************************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_eform itype,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  rocblas_float_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  rocblas_float_complex* B,
+                                                                  const rocblas_int ldb,
+                                                                  const rocblas_stride strideB,
+                                                                  float* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj_strided_batched(rocblas_handle handle,
+                                                                  const rocblas_eform itype,
+                                                                  const rocblas_evect evect,
+                                                                  const rocblas_fill uplo,
+                                                                  const rocblas_int n,
+                                                                  rocblas_double_complex* A,
+                                                                  const rocblas_int lda,
+                                                                  const rocblas_stride strideA,
+                                                                  rocblas_double_complex* B,
+                                                                  const rocblas_int ldb,
+                                                                  const rocblas_stride strideB,
+                                                                  double* W,
+                                                                  const rocblas_stride strideW,
+                                                                  rocblas_int* info,
+                                                                  const rocblas_int batch_count);
+//! @}
+
+/*! @{
     \brief SYEVJ computes the eigenvalues and optionally the eigenvectors of a real symmetric
     matrix A.
 
