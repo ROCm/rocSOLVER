@@ -45,7 +45,7 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
     }
 
     // if size too small or no vectors required
-    if(evect != rocblas_evect_original || n < SYEVDJ_MIN_DC_SIZE)
+    if(evect != rocblas_evect_original || n < 0) //SYEVDJ_MIN_DC_SIZE)
     {
         // space to store the residual
         *size_workE = sizeof(S) * batch_count;
@@ -95,7 +95,7 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
     // get max values
     *size_work1 = std::max({w11, w12, w13});
     *size_work2 = std::max({w21, w22, w23});
-    *size_work2 = std::max({w31, w32, w33});
+    *size_work3 = std::max({w31, w32, w33});
 
     // size of array of pointers to workspace
     if(BATCHED)
@@ -193,7 +193,7 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
 
     // TODO: Scale the matrix
 
-    if(evect != rocblas_evect_original || n < SYEVDJ_MIN_DC_SIZE)
+    if(evect != rocblas_evect_original || n < 0) //SYEVDJ_MIN_DC_SIZE)
     {
         // **** do not use D&C approach ****
 

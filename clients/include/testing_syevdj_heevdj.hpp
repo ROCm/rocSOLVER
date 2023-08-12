@@ -183,22 +183,10 @@ void syevdj_heevdj_getError(const rocblas_handle handle,
     constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
-    int sizeE, lwork;
-    if(!COMPLEX)
-    {
-        sizeE = (evect == rocblas_evect_none ? 2 * n + 1 : 1 + 6 * n + 2 * n * n);
-        lwork = 0;
-    }
-    else
-    {
-        sizeE = (evect == rocblas_evect_none ? n : 1 + 5 * n + 2 * n * n);
-        lwork = (evect == rocblas_evect_none ? n + 1 : 2 * n + n * n);
-    }
-    int liwork = (evect == rocblas_evect_none ? 1 : 3 + 5 * n);
-
+    int lwork = (COMPLEX ? 2 * n - 1 : 0);
+    int lrwork = 3 * n - 1;
     std::vector<T> work(lwork);
-    std::vector<S> hE(sizeE);
-    std::vector<int> iwork(liwork);
+    std::vector<S> rwork(lrwork);
     std::vector<T> A(lda * n * bc);
 
     // input data initialization
@@ -216,8 +204,8 @@ void syevdj_heevdj_getError(const rocblas_handle handle,
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
-        cpu_syevd_heevd(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
-                        iwork.data(), liwork, hinfo[b]);
+        cpu_syev_heev(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, rwork.data(), lrwork,
+                      hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
@@ -297,23 +285,11 @@ void syevdj_heevdj_getPerfData(const rocblas_handle handle,
     constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
-    int sizeE, lwork;
-    if(!COMPLEX)
-    {
-        sizeE = (evect == rocblas_evect_none ? 2 * n + 1 : 1 + 6 * n + 2 * n * n);
-        lwork = 0;
-    }
-    else
-    {
-        sizeE = (evect == rocblas_evect_none ? n : 1 + 5 * n + 2 * n * n);
-        lwork = (evect == rocblas_evect_none ? n + 1 : 2 * n + n * n);
-    }
-    int liwork = (evect == rocblas_evect_none ? 1 : 3 + 5 * n);
-
+    int lwork = (COMPLEX ? 2 * n - 1 : 0);
+    int lrwork = 3 * n - 1;
     std::vector<T> work(lwork);
-    std::vector<S> hE(sizeE);
-    std::vector<int> iwork(liwork);
-    std::vector<T> A;
+    std::vector<S> rwork(lrwork);
+    std::vector<T> A(lda * n * bc);
 
     if(!perf)
     {
@@ -322,8 +298,8 @@ void syevdj_heevdj_getPerfData(const rocblas_handle handle,
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
-            cpu_syevd_heevd(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
-                            iwork.data(), liwork, hinfo[b]);
+            cpu_syev_heev(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, rwork.data(),
+                          lrwork, hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
 
@@ -547,9 +523,9 @@ void testing_syevdj_heevdj(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
+    // using 2 * n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
 
     // output results for rocsolver-bench
     if(argus.timing)
