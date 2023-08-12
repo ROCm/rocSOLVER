@@ -303,16 +303,16 @@ __device__ void run_syevj(const rocblas_int dimx,
     // finalize outputs
     if(tix == 0)
     {
-        residual[0] = sqrt(local_res);
+        *residual = sqrt(local_res);
         if(sweeps <= max_sweeps)
         {
-            n_sweeps[0] = sweeps;
-            info[0] = 0;
+            *n_sweeps = sweeps;
+            *info = 0;
         }
         else
         {
-            n_sweeps[0] = max_sweeps;
-            info[0] = 1;
+            *n_sweeps = max_sweeps;
+            *info = 1;
         }
     }
 

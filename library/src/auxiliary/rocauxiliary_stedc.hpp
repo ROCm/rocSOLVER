@@ -18,6 +18,9 @@
 
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernel
 #define MAXITERS 50 // Max number of iterations for root finding method
+#define CLASSICQR 1 // used to specify classic QR iteration solver (default case)
+#define JACOBI 2 // used to specify Jacobi iteration solver
+#define BISECTION 3 // used to specify bisection and inverse iteration solver
 
 /** SEQ_EVAL evaluates the secular equation at a given point. It accumulates the
     corrections to the elements in D so that distance to poles are computed accurately **/
@@ -576,23 +579,20 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     i.e. number of sub-blocks = 2^levels **/
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int solver_mode)
 {
-    rocblas_int levels;
+    rocblas_int levels = 0;
 
-    // solver_mode = 3 uses Bisection tuning
-    if(solver_mode == 3)
+    switch(solver_mode)
     {
+    case BISECTION:
         //	TODO
-    }
+        break;
 
-    // solver_mode = 2 uses Jacobi tunning
-    else if(solver_mode == 2)
-    {
+    case JACOBI:
         //	TODO
-    }
+        break;
 
-    // otherwise uses classic QR tuning
-    else
-    {
+    case CLASSICQR:
+    default:
         // return the max number of levels such that the sub-blocks are at least of size 8, and
         // there are no more than 256 sub-blocks
         if(n <= 32)
@@ -788,23 +788,20 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
         blks = 1 << levs;
 
         // if split block is too small
-        // solver_mode = 1 solve the split blocks using classic QR iteration
-        // solver_mode = 2 solve the split blocks using Jacobi
-        // solver_mode = 3 solve the split blocks using bisection and inverse iteration
         if(blks == 1)
         {
-            if(solver_mode == 3)
+            switch(solver_mode)
             {
-                // TODO
-            }
+            case BISECTION:
+                //  TODO
+                break;
 
-            else if(solver_mode == 2)
-            {
-                // TODO
-            }
+            case JACOBI:
+                //  TODO
+                break;
 
-            else
-            {
+            case CLASSICQR:
+            default:
                 if(id == 0)
                 {
                     run_steqr(bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc, info, W + p1 * 2, 30 * bs,
@@ -872,22 +869,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
             // 2. SOLVE PHASE
             /* ----------------------------------------------------------------- */
             // Solve the blks sub-blocks in parallel.
-            // solver_mode = 1 solve the sub-blocks using classic QR iteration
-            // solver_mode = 2 solve the sub-blocks using Jacobi
-            // solver_mode = 3 solve the sub-blocks using bisection and inverse iteration
-
-            if(solver_mode == 3)
+            switch(solver_mode)
             {
-                //	TODO
-            }
+            case BISECTION:
+                //  TODO
+                break;
 
-            else if(solver_mode == 2)
-            {
-                //	TODO
-            }
+            case JACOBI:
+                //  TODO
+                break;
 
-            else
-            {
+            case CLASSICQR:
+            default:
                 // (Until STEQR is parallelized, only the first thread associated
                 // to each sub-block do computations)
                 if(tidb == 0)
