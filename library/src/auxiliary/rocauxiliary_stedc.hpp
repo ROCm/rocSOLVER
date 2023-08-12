@@ -1665,10 +1665,7 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-/** STEDC templated function
-	solver_mode = 1 solve the sub-blocks using classic QR iteration (default)
-	solver_mode = 2 solve the sub-blocks using Jacobi
-	solver_mode = 3 solve the sub-blocks using bisection and inverse iteration (To be implemented) **/
+/** STEDC templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         const rocblas_evect evect,
