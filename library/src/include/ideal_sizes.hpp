@@ -228,6 +228,14 @@
     if any, will be factorized with the unblocked algorithm (SYTF2).*/
 #define SYTRF_SYTF2_SWITCHSIZE 128
 
+/****************************** syevdj ******************************************
+*******************************************************************************/
+/*! \brief Determines the minimum size required for the Jacobi divide and conquer to be used.
+
+    \details If the size of the block is smaller than SYEVDJ_MIN_DC_SIZE,
+    the eigenvectors are computed with the normal Jacobi algorithm. */
+#define SYEVDJ_MIN_DC_SIZE 1600
+
 /**************************** getf2/getfr *************************************
 *******************************************************************************/
 #define GETF2_SPKER_MAX_M 1024 //always <= 1024

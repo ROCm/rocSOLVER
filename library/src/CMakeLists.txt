@@ -171,6 +171,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_sygvx_hegvx_batched.cpp
   lapack/roclapack_sygvx_hegvx_strided_batched.cpp
   lapack/roclapack_sygvdx_hegvdx_inplace.cpp
+  lapack/roclapack_syevdj_heevdj.cpp
 )
 
 set(rocsolver_auxiliary_source

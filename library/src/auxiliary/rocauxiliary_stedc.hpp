@@ -611,7 +611,7 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
         break;
 
     case JACOBI:
-        //	TODO
+        levels = 0;
         break;
 
     case CLASSICQR:
@@ -769,9 +769,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
 
     // temporary arrays in shared memory
     /* --------------------------------------------------- */
-    extern __shared__ rocblas_int lmem[];
+    extern __shared__ rocblas_int lsmem[];
     // shares the sub-blocks sizes
-    rocblas_int* ns = lmem;
+    rocblas_int* ns = lsmem;
     // shares the sub-blocks initial positions
     rocblas_int* ps = ns + maxblks;
     // used to store temp values during the different reductions
@@ -820,8 +820,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
                 break;
 
             case JACOBI:
-                //  TODO
-                break;
+                printf("VOY.../n/n");
+                //	            run_syevj(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
+                //							rocblas_fill_upper, bs, A, lda, abstol, eps, residual, max_sweeps,
+                //			              n_sweeps, W, info, Acpy, cosines_res, sines_diag, top, bottom);
+				break;
 
             case CLASSICQR:
             default:
