@@ -68,7 +68,6 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
     size_t w11 = 0, w12 = 0, w13 = 0;
     size_t w21 = 0, w22 = 0, w23 = 0;
     size_t w31 = 0, w32 = 0, w33 = 0;
-    ;
 
     // space for the superdiagonal of tridiag form
     *size_workE = sizeof(S) * n * batch_count;
@@ -84,9 +83,10 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
                                                     &unused);
 
     // extra requirements for computing eigenvalues and vectors (stedc)
-    int solver_mode = 1;
+    int solver_mode = CLASSICQR;
     rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
-                                                 &w22, &w32, size_work4, size_workSplits, &unused);
+                                                 &w22, &w32, size_work4, size_workSplits, &unused,
+                                                 solver_mode);
 
     // extra requirements for ormtr/unmtr
     rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
@@ -219,7 +219,7 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
         const rocblas_stride strideV = n * n;
 
         // solve with Jacobi solver
-        int solver_mode = 1;
+        int solver_mode = CLASSICQR;
         rocsolver_stedc_template<false, ISBATCHED, T>(
             handle, rocblas_evect_tridiagonal, n, D, 0, strideD, workE, 0, n, workVec, 0, ldv,
             strideV, info, batch_count, work1, (S*)work2, (S*)work3, (S*)work4, workSplits,

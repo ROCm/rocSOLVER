@@ -16501,7 +16501,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevd_strided_batched(rocblas_handle 
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrix A.
     @param[out]
-    W           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.\n
                 The eigenvalues of A in increasing order.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
@@ -16514,7 +16514,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdj(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   float* A,
                                                   const rocblas_int lda,
-                                                  float* W,
+                                                  float* D,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj(rocblas_handle handle,
@@ -16523,7 +16523,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   double* A,
                                                   const rocblas_int lda,
-                                                  double* W,
+                                                  double* D,
                                                   rocblas_int* info);
 //! @}
 
@@ -16559,7 +16559,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj(rocblas_handle handle,
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrix A.
     @param[out]
-    W           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.\n
                 The eigenvalues of A in increasing order.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
@@ -16572,7 +16572,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdj(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   rocblas_float_complex* A,
                                                   const rocblas_int lda,
-                                                  float* W,
+                                                  float* D,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj(rocblas_handle handle,
@@ -16581,7 +16581,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   rocblas_double_complex* A,
                                                   const rocblas_int lda,
-                                                  double* W,
+                                                  double* D,
                                                   rocblas_int* info);
 //! @}
 
@@ -16617,12 +16617,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj(rocblas_handle handle,
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues of A_j in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
@@ -16637,8 +16637,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdj_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           float* const A[],
                                                           const rocblas_int lda,
-                                                          float* W,
-                                                          const rocblas_stride strideW,
+                                                          float* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -16648,8 +16648,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           double* const A[],
                                                           const rocblas_int lda,
-                                                          double* W,
-                                                          const rocblas_stride strideW,
+                                                          double* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -16686,12 +16686,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj_batched(rocblas_handle handle,
     lda         rocblas_int. lda >= n.\n
                 Specifies the leading dimension of matrices A_j.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues of A_j in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
@@ -16706,8 +16706,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdj_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           rocblas_float_complex* const A[],
                                                           const rocblas_int lda,
-                                                          float* W,
-                                                          const rocblas_stride strideW,
+                                                          float* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -16717,8 +16717,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           rocblas_double_complex* const A[],
                                                           const rocblas_int lda,
-                                                          double* W,
-                                                          const rocblas_stride strideW,
+                                                          double* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -16759,12 +16759,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj_batched(rocblas_handle handle,
 				Stride from the start of one matrix A_j to the next one A_(j+1).
 				There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues of A_j in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideW. Normal use case is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
@@ -16780,8 +16780,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdj_strided_batched(rocblas_handle
                                                                   float* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  float* W,
-                                                                  const rocblas_stride strideW,
+                                                                  float* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -16792,8 +16792,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj_strided_batched(rocblas_handle
                                                                   double* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  double* W,
-                                                                  const rocblas_stride strideW,
+                                                                  double* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}
@@ -16834,12 +16834,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdj_strided_batched(rocblas_handle
 				Stride from the start of one matrix A_j to the next one A_(j+1).
 				There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues of A_j in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use case is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideD. Normal use case is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit for A_j. If info[j] = 1, the algorithm did not converge for A_j.
@@ -16855,8 +16855,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdj_strided_batched(rocblas_handle
                                                                   rocblas_float_complex* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  float* W,
-                                                                  const rocblas_stride strideW,
+                                                                  float* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -16867,8 +16867,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj_strided_batched(rocblas_handle
                                                                   rocblas_double_complex* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  double* W,
-                                                                  const rocblas_stride strideW,
+                                                                  double* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}
@@ -16934,7 +16934,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdj_strided_batched(rocblas_handle
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of matrix B.
     @param[out]
-    W           pointer to type. Array on the GPU of dimension n.\n
+    D           pointer to type. Array on the GPU of dimension n.\n
                 The eigenvalues in increasing order.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
@@ -16951,7 +16951,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdj(rocblas_handle handle,
                                                   const rocblas_int lda,
                                                   float* B,
                                                   const rocblas_int ldb,
-                                                  float* W,
+                                                  float* D,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj(rocblas_handle handle,
@@ -16963,7 +16963,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj(rocblas_handle handle,
                                                   const rocblas_int lda,
                                                   double* B,
                                                   const rocblas_int ldb,
-                                                  double* W,
+                                                  double* D,
                                                   rocblas_int* info);
 //! @}
 
@@ -17028,7 +17028,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj(rocblas_handle handle,
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of matrix B.
     @param[out]
-    W           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.\n
                 The eigenvalues in increasing order.
     @param[out]
     info        pointer to a rocblas_int on the GPU.\n
@@ -17045,7 +17045,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdj(rocblas_handle handle,
                                                   const rocblas_int lda,
                                                   rocblas_float_complex* B,
                                                   const rocblas_int ldb,
-                                                  float* W,
+                                                  float* D,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj(rocblas_handle handle,
@@ -17057,7 +17057,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj(rocblas_handle handle,
                                                   const rocblas_int lda,
                                                   rocblas_double_complex* B,
                                                   const rocblas_int ldb,
-                                                  double* W,
+                                                  double* D,
                                                   rocblas_int* info);
 //! @}
 
@@ -17122,12 +17122,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj(rocblas_handle handle,
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of matrices B_j.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideW. Normal use is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
@@ -17146,8 +17146,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdj_batched(rocblas_handle handle,
                                                           const rocblas_int lda,
                                                           float* const B[],
                                                           const rocblas_int ldb,
-                                                          float* W,
-                                                          const rocblas_stride strideW,
+                                                          float* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -17160,8 +17160,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj_batched(rocblas_handle handle,
                                                           const rocblas_int lda,
                                                           double* const B[],
                                                           const rocblas_int ldb,
-                                                          double* W,
-                                                          const rocblas_stride strideW,
+                                                          double* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -17235,12 +17235,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj_batched(rocblas_handle handle,
                 Stride from the start of one matrix B_j to the next one B_(j+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    W           pointer to type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideW. Normal use is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
@@ -17261,8 +17261,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdj_strided_batched(rocblas_handle
                                                                   float* B,
                                                                   const rocblas_int ldb,
                                                                   const rocblas_stride strideB,
-                                                                  float* W,
-                                                                  const rocblas_stride strideW,
+                                                                  float* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -17277,8 +17277,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj_strided_batched(rocblas_handle
                                                                   double* B,
                                                                   const rocblas_int ldb,
                                                                   const rocblas_stride strideB,
-                                                                  double* W,
-                                                                  const rocblas_stride strideW,
+                                                                  double* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}
@@ -17344,12 +17344,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdj_strided_batched(rocblas_handle
     ldb         rocblas_int. ldb >= n.\n
                 Specifies the leading dimension of matrices B_j.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
@@ -17368,8 +17368,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdj_batched(rocblas_handle handle,
                                                           const rocblas_int lda,
                                                           rocblas_float_complex* const B[],
                                                           const rocblas_int ldb,
-                                                          float* W,
-                                                          const rocblas_stride strideW,
+                                                          float* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -17382,8 +17382,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj_batched(rocblas_handle handle,
                                                           const rocblas_int lda,
                                                           rocblas_double_complex* const B[],
                                                           const rocblas_int ldb,
-                                                          double* W,
-                                                          const rocblas_stride strideW,
+                                                          double* D,
+                                                          const rocblas_stride strideD,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -17457,12 +17457,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj_batched(rocblas_handle handle,
                 Stride from the start of one matrix B_j to the next one B_(j+1).
                 There is no restriction for the value of strideB. Normal use is strideB >= ldb*n.
     @param[out]
-    W           pointer to real type. Array on the GPU (the size depends on the value of strideW).\n
+    D           pointer to real type. Array on the GPU (the size depends on the value of strideD).\n
                 The eigenvalues in increasing order.
 	@param[in]
-	strideW		rocblas_stride.\n
-				Stride from the start of one vector W_j to the next one W_(j+1).
-				There is no restriction for the value of strideW. Normal use is strideW >= n.
+	strideD		rocblas_stride.\n
+				Stride from the start of one vector D_j to the next one D_(j+1).
+				There is no restriction for the value of strideD. Normal use is strideD >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
                 If info[j] = 0, successful exit. If info[j] = 1, the algorithm did not converge for matrix A_j.
@@ -17483,8 +17483,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdj_strided_batched(rocblas_handle
                                                                   rocblas_float_complex* B,
                                                                   const rocblas_int ldb,
                                                                   const rocblas_stride strideB,
-                                                                  float* W,
-                                                                  const rocblas_stride strideW,
+                                                                  float* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -17499,8 +17499,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj_strided_batched(rocblas_handle
                                                                   rocblas_double_complex* B,
                                                                   const rocblas_int ldb,
                                                                   const rocblas_stride strideB,
-                                                                  double* W,
-                                                                  const rocblas_stride strideW,
+                                                                  double* D,
+                                                                  const rocblas_stride strideD,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}

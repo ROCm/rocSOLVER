@@ -610,9 +610,7 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
         //	TODO
         break;
 
-    case JACOBI:
-        levels = 0;
-        break;
+    case JACOBI: levels = 0; break;
 
     case CLASSICQR:
     default:
@@ -810,7 +808,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
         levs = stedc_num_levels(bs, solver_mode);
         blks = 1 << levs;
 
-        // if split block is too small
+        // ===== if split block is too small, solve directly =====
         if(blks == 1)
         {
             switch(solver_mode)
@@ -824,7 +822,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
                 //	            run_syevj(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
                 //							rocblas_fill_upper, bs, A, lda, abstol, eps, residual, max_sweeps,
                 //			              n_sweeps, W, info, Acpy, cosines_res, sines_diag, top, bottom);
-				break;
+                break;
 
             case CLASSICQR:
             default:

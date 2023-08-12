@@ -127,6 +127,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_sygsx_hegsx.cpp
     common/testing_syev_heev.cpp
     common/testing_syevd_heevd.cpp
+    common/testing_syevdj_heevdj.cpp
     common/testing_syevj_heevj.cpp
     common/testing_syevx_heevx.cpp
     common/testing_sygv_hegv.cpp
