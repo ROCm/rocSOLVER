@@ -1532,7 +1532,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
                                    size_t* size_tmpz,
                                    size_t* size_splits,
                                    size_t* size_workArr,
-                                   int solver_mode = 1)
+                                   int solver_mode = CLASSICQR)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
@@ -1549,7 +1549,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     }
 
     // if no eigenvectors required with classic solver
-    if(evect == rocblas_evect_none && solver_mode != 2 && solver_mode != 3)
+    if(evect == rocblas_evect_none && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         *size_tempvect = 0;
         *size_tempgemm = 0;
@@ -1560,7 +1560,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     }
 
     // if size is too small with classic solver
-    else if(n < STEDC_MIN_DC_SIZE && solver_mode != 2 && solver_mode != 3)
+    else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         *size_tempvect = 0;
         *size_tempgemm = 0;
@@ -1576,7 +1576,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         size_t s1, s2;
 
         // requirements for classic solver of small independent blocks
-        if(solver_mode == 3 || solver_mode == 2)
+        if(solver_mode == BISECTION || solver_mode == JACOBI)
             s1 = 0;
         else
             rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
@@ -1637,10 +1637,7 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-/** STEDC templated function
-	solver_mode = 1 solve the sub-blocks using classic QR iteration (default)
-	solver_mode = 2 solve the sub-blocks using Jacobi
-	solver_mode = 3 solve the sub-blocks using bisection and inverse iteration (To be implemented) **/
+/** STEDC templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         const rocblas_evect evect,
@@ -1663,7 +1660,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         S* tmpz,
                                         rocblas_int* splits,
                                         S** workArr,
-                                        int solver_mode = 1)
+                                        int solver_mode = CLASSICQR)
 {
     ROCSOLVER_ENTER("stedc", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
@@ -1690,14 +1687,14 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         return rocblas_status_success;
 
     // if no eigenvectors required with the classic solver, use sterf
-    if(evect == rocblas_evect_none && solver_mode != 2 && solver_mode != 3)
+    if(evect == rocblas_evect_none && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
                                     batch_count, (rocblas_int*)work_stack);
     }
 
     // if size is too small with classic solver, use steqr
-    else if(n < STEDC_MIN_DC_SIZE && solver_mode != 2 && solver_mode != 3)
+    else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
                                     shiftC, ldc, strideC, info, batch_count, work_stack);
