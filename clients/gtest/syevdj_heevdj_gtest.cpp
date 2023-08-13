@@ -109,7 +109,7 @@ TEST_P(HEEVDJ, __double_complex)
     run_tests<false, false, rocblas_double_complex>();
 }
 
-/*// batched tests
+// batched tests
 
 TEST_P(SYEVDJ, batched__float)
 {
@@ -151,7 +151,7 @@ TEST_P(HEEVDJ, strided_batched__float_complex)
 TEST_P(HEEVDJ, strided_batched__double_complex)
 {
     run_tests<false, true, rocblas_double_complex>();
-}*/
+}
 
 // daily_lapack tests normal execution with medium to large sizes
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

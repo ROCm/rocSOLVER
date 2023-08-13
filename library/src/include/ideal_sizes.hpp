@@ -234,7 +234,7 @@
 
     \details If the size of the block is smaller than SYEVDJ_MIN_DC_SIZE,
     the eigenvectors are computed with the normal Jacobi algorithm. */
-#define SYEVDJ_MIN_DC_SIZE 1600
+#define SYEVDJ_MIN_DC_SIZE 16
 
 /**************************** getf2/getfr *************************************
 *******************************************************************************/
