@@ -105,11 +105,11 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
     else
     {
         size_t csric0_buffer_size = 0;
-        size_t csrsm_Lchol_buffer_size = 0;
-        size_t csrsm_Ltchol_buffer_size = 0;
+        size_t csrsm_L_buffer_size = 0;
+        size_t csrsm_Lt_buffer_size = 0;
 
-        rocsparseCall_csric0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrTchol, valT, ptrT,
-                                         indT, rfinfo->infoTchol, &csric0_buffer_size);
+        rocsparseCall_csric0_buffer_size(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
+                                         indT, rfinfo->infoT, &csric0_buffer_size);
 
         if(nrhs > 0)
         {
@@ -119,19 +119,18 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
             // Cholesky will perform solve using L z = b, then L' x = z
             // ----------------------------------------------
 
-            rocsparseCall_csrsm_buffer_size(
-                rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzT,
-                &alpha, rfinfo->descrLchol, valT, ptrT, indT, B, ldb, rfinfo->infoLchol,
-                rfinfo->solve_policy, &csrsm_Lchol_buffer_size);
+            rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
+                                            rocsparse_operation_none, n, nrhs, nnzT, &alpha,
+                                            rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoL,
+                                            rfinfo->solve_policy, &csrsm_L_buffer_size);
 
-            rocsparseCall_csrsm_buffer_size(
-                rfinfo->sphandle, rocsparse_operation_conjugate_transpose, rocsparse_operation_none,
-                n, nrhs, nnzT, &alpha, rfinfo->descrLchol, valT, ptrT, indT, B, ldb,
-                rfinfo->infoLtchol, rfinfo->solve_policy, &csrsm_Ltchol_buffer_size);
+            rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_conjugate_transpose,
+                                            rocsparse_operation_none, n, nrhs, nnzT, &alpha,
+                                            rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoU,
+                                            rfinfo->solve_policy, &csrsm_Lt_buffer_size);
         }
 
-        *size_work
-            = std::max({csric0_buffer_size, csrsm_Lchol_buffer_size, csrsm_Ltchol_buffer_size});
+        *size_work = std::max({csric0_buffer_size, csrsm_L_buffer_size, csrsm_Lt_buffer_size});
     }
 }
 
@@ -172,7 +171,7 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
     {
         // analysis for incomplete Cholesky factorization
         ROCSPARSE_CHECK(rocsparseCall_csric0_analysis(
-            rfinfo->sphandle, n, nnzT, rfinfo->descrTchol, valT, ptrT, indT, rfinfo->infoTchol,
+            rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT, indT, rfinfo->infoT,
             rocsparse_analysis_policy_force, rfinfo->solve_policy, work));
     };
 
@@ -196,16 +195,16 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
         }
         else
         {
-            // analysis for solve with Lchol
+            // analysis for solve with L
             ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(
                 rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzT,
-                &alpha, rfinfo->descrLchol, valT, ptrT, indT, B, ldb, rfinfo->infoLchol,
+                &alpha, rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoL,
                 rfinfo->analysis_policy, rfinfo->solve_policy, work));
 
-            // analysis for solve with Ltchol
+            // analysis for solve with U = L^T
             ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(
                 rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzT,
-                &alpha, rfinfo->descrLchol, valT, ptrT, indT, B, ldb, rfinfo->infoLtchol,
+                &alpha, rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoU,
                 rfinfo->analysis_policy, rfinfo->solve_policy, work));
         };
     }

@@ -91,46 +91,16 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrT, rocsparse_index_base_zero),
                             result, cleanup);
 
-    // setup for Cholesky factorization
-
-    // setup descrTchol
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(impl->descrTchol)), result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrTchol, rocsparse_matrix_type_general),
-                            result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(
-        rocsparse_set_mat_index_base(impl->descrTchol, rocsparse_index_base_zero), result, cleanup);
-
-    // setup descrLchol
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(impl->descrLchol)), result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrLchol, rocsparse_matrix_type_general),
-                            result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(
-        rocsparse_set_mat_index_base(impl->descrLchol, rocsparse_index_base_zero), result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(impl->descrLchol, rocsparse_fill_mode_lower),
-                            result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(
-        rocsparse_set_mat_diag_type(impl->descrLchol, rocsparse_diag_type_non_unit), result, cleanup);
-
     // create info holders
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoL), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoU), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoT), result, cleanup);
-
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoTchol), result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoLchol), result, cleanup);
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&impl->infoLtchol), result, cleanup);
 
     impl->solve_policy = rocsparse_solve_policy_auto;
     impl->analysis_policy = rocsparse_analysis_policy_reuse;
     *rfinfo = impl;
     return rocblas_status_success;
 cleanup:
-    rocsparse_destroy_mat_info(impl->infoTchol);
-    rocsparse_destroy_mat_info(impl->infoLchol);
-    rocsparse_destroy_mat_info(impl->infoLtchol);
-    rocsparse_destroy_mat_descr(impl->descrTchol);
-    rocsparse_destroy_mat_descr(impl->descrLchol);
-
     rocsparse_destroy_mat_info(impl->infoT);
     rocsparse_destroy_mat_info(impl->infoU);
     rocsparse_destroy_mat_info(impl->infoL);
@@ -160,12 +130,6 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrU));
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrL));
 
-    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoTchol));
-    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoLchol));
-    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoLtchol));
-    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrLchol));
-    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrTchol));
-
     ROCSPARSE_CHECK(rocsparse_destroy_handle(rfinfo->sphandle));
     delete rfinfo;
 
@@ -189,6 +153,14 @@ extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
         return rocblas_status_internal_error;
 
     rfinfo->mode = mode;
+    if(mode == rocsolver_rfinfo_mode_general)
+    {
+        ROCSPARSE_CHECK(rocsparse_set_mat_diag_type(rfinfo->descrL, rocsparse_diag_type_unit));
+    }
+    else
+    {
+        ROCSPARSE_CHECK(rocsparse_set_mat_diag_type(rfinfo->descrL, rocsparse_diag_type_non_unit));
+    }
 
     return rocblas_status_success;
 #else
