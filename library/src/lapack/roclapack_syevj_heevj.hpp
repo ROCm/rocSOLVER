@@ -406,7 +406,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_BDIM) syevj_small_kernel(const roc
 
     // get dimensions of 2D thread array
     rocblas_int ddx, ddy;
-    syevj_get_dims(n, &ddx, &ddy);
+    syevj_get_dims(n, SYEVJ_BDIM, &ddx, &ddy);
 
     // shared memory
     extern __shared__ double lmem[];
@@ -1439,7 +1439,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         // (TODO: SYEVJ_BLOCKED_SWITCH may need re-tuning as it could be larger than 64 now).
 
         rocblas_int ddx, ddy;
-        syevj_get_dims(n, &ddx, &ddy);
+        syevj_get_dims(n, SYEVJ_BDIM, &ddx, &ddy);
         dim3 grid(1, 1, batch_count);
         dim3 threads(ddx * ddy, 1, 1);
         size_t lmemsize = (sizeof(S) + sizeof(T)) * ddx + 2 * sizeof(rocblas_int) * half_n;

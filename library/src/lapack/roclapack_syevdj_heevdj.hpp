@@ -83,7 +83,7 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
                                                     &unused);
 
     // extra requirements for computing eigenvalues and vectors (stedc)
-    int solver_mode = CLASSICQR;
+    int solver_mode = JACOBI;
     rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
                                                  &w22, &w32, size_work4, size_workSplits, &unused,
                                                  solver_mode);
@@ -199,7 +199,7 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
 
         rocsolver_syevj_heevj_template<BATCHED, STRIDED, T>(
             handle, rocblas_esort_ascending, evect, uplo, n, A, shiftA, lda, strideA, (S)0, workE,
-            10, workSplits, D, strideD, info, batch_count, workVec, workTau, (S*)work1,
+            20, workSplits, D, strideD, info, batch_count, workVec, workTau, (S*)work1,
             (rocblas_int*)work2, (rocblas_int*)work3, (rocblas_int*)work4);
     }
     else
@@ -208,7 +208,7 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
 
         // reduce A to tridiagonal form
         // (Note: a tridiag form is necessary to apply D&C. To solve the subblocks with Jacobi will
-        //	require copy them into a full matrix, however, given all the zeros above the super diagonal,
+        //	require copy D and E into a full tridiag matrix however, given all the zeros above the super diagonal,
         //	it is expected that the algorithm converges in fewer sweeps)
         rocsolver_sytrd_hetrd_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D,
                                                 strideD, workE, n, workTau, n, batch_count, scalars,
@@ -219,7 +219,7 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
         const rocblas_stride strideV = n * n;
 
         // solve with Jacobi solver
-        int solver_mode = CLASSICQR;
+        int solver_mode = JACOBI;
         rocsolver_stedc_template<false, ISBATCHED, T>(
             handle, rocblas_evect_tridiagonal, n, D, 0, strideD, workE, 0, n, workVec, 0, ldv,
             strideV, info, batch_count, work1, (S*)work2, (S*)work3, (S*)work4, workSplits,

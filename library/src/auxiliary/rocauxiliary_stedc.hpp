@@ -41,6 +41,7 @@
 
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernel
 #define MAXITERS 50 // Max number of iterations for root finding method
+#define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 #define CLASSICQR 1 // used to specify classic QR iteration solver (default case)
 #define JACOBI 2 // used to specify Jacobi iteration solver
 #define BISECTION 3 // used to specify bisection and inverse iteration solver
@@ -753,8 +754,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
     rocblas_int* idd = splits + n + 2;
     // container of permutations when solving the secular eqns
     rocblas_int* pers = idd + n;
-    // worksapce for STEQR
-    S* W = WA + bid * (2 * n);
     // the rank-1 modification vectors in the merges
     S* z = tmpzA + bid * (2 * n);
     // roots of secular equations
@@ -763,6 +762,20 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
     S* vecs = vecsA + bid * 2 * (n * n);
     // temp values during the merges
     S* temps = vecs + (n * n);
+
+    // worksapce for solvers
+    S* W;
+    switch(solver_mode)
+    {
+    case BISECTION:
+        //  TODO
+        break;
+
+    case JACOBI: W = WA + bid * (2 + n * n); break;
+
+    case CLASSICQR:
+    default: W = WA + bid * (2 * n);
+    }
     /* --------------------------------------------------- */
 
     // temporary arrays in shared memory
@@ -774,11 +787,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
     rocblas_int* ps = ns + maxblks;
     // used to store temp values during the different reductions
     S* inrms = reinterpret_cast<S*>(ps + maxblks);
+    // shared mem for jacobi solver if needed
+    S* sj;
+    if(solver_mode == JACOBI)
+        sj = inrms + STDEC_BDIM;
     /* --------------------------------------------------- */
 
     // local variables
     /* --------------------------------------------------- */
-    // total number of blocks
+    // total number of split blocks
     rocblas_int nb = splits[n + 1];
     // size of split block
     rocblas_int bs;
@@ -790,6 +807,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
     rocblas_int blks;
     // number of level of division
     rocblas_int levs;
+    // number of threads working in sub-block
+    rocblas_int tn;
     S p;
     /* --------------------------------------------------- */
 
@@ -818,11 +837,43 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
                 break;
 
             case JACOBI:
-                printf("VOY.../n/n");
-                //	            run_syevj(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
-                //							rocblas_fill_upper, bs, A, lda, abstol, eps, residual, max_sweeps,
-                //			              n_sweeps, W, info, Acpy, cosines_res, sines_diag, top, bottom);
+            {
+                // arrange threads so that a group of bdim/blks threads works with each sub-block
+                // tn is the number of threads associated to each sub-block
+                tn = STEDC_BDIM / blks;
+                // tid indexes the sub-block
+                tid = id / tn;
+                // tidb indexes the threads in each sub-block
+                tidb = id % tn;
+
+                // transform D and E into full upper tridiag matrix and copy to C
+                de2tridiag(bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc);
+
+                // set work space
+                S* W_Acpy = W;
+                S* W_residual = W_Acpy + n * n;
+                rocblas_int* W_n_sweeps = reinterpret_cast<rocblas_int*>(W_residual + 1);
+
+                // set shared mem
+                rocblas_int even_n = n + n % 2;
+                rocblas_int half_n = even_n / 2;
+                S* cosines_res = sj;
+                S* sines_diag = cosine_res + half_n;
+                rocblas_int* top = reinterpret_cast<rocblas_int*>(sines_diag + half_n);
+                rocblas_int* bottom = top + half_n;
+
+                // re-arrange threads in 2D array
+                rocblas_int ddx, ddy;
+                syevj_get_dims(n, tn, &ddx, &ddy);
+                rocblas_int tix = tidb / ddy;
+                rocblas_int tiy = tidb % ddy;
+
+                run_syevj(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
+                          rocblas_fill_upper, bs, C + p1 + p1 * ldc, ldc, 0, eps, W_residual,
+                          MAXSWEEPS, W_n_sweeps, D + p1, info, W_Acpy, cosines_res, sines_diag, top,
+                          bottom);
                 break;
+            }
 
             case CLASSICQR:
             default:
@@ -839,7 +890,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
         {
             // arrange threads so that a group of bdim/blks threads works with each sub-block
             // tn is the number of threads associated to each sub-block
-            rocblas_int tn = STEDC_BDIM / blks;
+            tn = STEDC_BDIM / blks;
             // tid indexes the sub-block
             tid = id / tn;
             // tidb indexes the threads in each sub-block
