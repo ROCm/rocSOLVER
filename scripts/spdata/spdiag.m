@@ -5,7 +5,7 @@ function A = spdiag( d, idiag )
 % A = spdiag( d, idiag )
 %
 % Generate a sparse matrix based on the diagonal
-% This is similar to "diag" but returns 
+% This is similar to "diag" but returns
 % a sparse matrix instead of a dense matrix
 
 n = length(d);

@@ -7,7 +7,7 @@ function isok = print_as_csr( A, name )
 % isok = print_as_csr( A, name )
 %
 % print sparse matrix A as
-% Compressed Sparse Row (CSR) sparse matrix storage format 
+% Compressed Sparse Row (CSR) sparse matrix storage format
 % with the pointers, column indices and numerical values split into 3 files
 %
 % For example,

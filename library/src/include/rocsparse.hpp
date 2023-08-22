@@ -71,9 +71,6 @@ inline rocsparse_status rocsparseCall_csrilu0_buffer_size(rocsparse_handle sphan
     return rocsparse_scsrilu0_buffer_size(sphandle, n, nnz, descr, val, ptr, ind, info, size);
 }
 
-
-
-
 inline rocsparse_status rocsparseCall_csrilu0_buffer_size(rocsparse_handle sphandle,
                                                           rocblas_int n,
                                                           rocblas_int nnz,
@@ -87,34 +84,29 @@ inline rocsparse_status rocsparseCall_csrilu0_buffer_size(rocsparse_handle sphan
     return rocsparse_dcsrilu0_buffer_size(sphandle, n, nnz, descr, val, ptr, ind, info, size);
 }
 
-
-
 // csric0 buffer
 inline rocsparse_status rocsparseCall_csric0_buffer_size(rocsparse_handle sphandle,
-                                                          rocblas_int n,
-                                                          rocblas_int nnz,
-                                                          rocsparse_mat_descr descr,
-                                                          float* val,
-                                                          rocblas_int* ptr,
-                                                          rocblas_int* ind,
-                                                          rocsparse_mat_info info,
-                                                          size_t* size)
+                                                         rocblas_int n,
+                                                         rocblas_int nnz,
+                                                         rocsparse_mat_descr descr,
+                                                         float* val,
+                                                         rocblas_int* ptr,
+                                                         rocblas_int* ind,
+                                                         rocsparse_mat_info info,
+                                                         size_t* size)
 {
     return rocsparse_scsric0_buffer_size(sphandle, n, nnz, descr, val, ptr, ind, info, size);
 }
 
-
-
-
 inline rocsparse_status rocsparseCall_csric0_buffer_size(rocsparse_handle sphandle,
-                                                          rocblas_int n,
-                                                          rocblas_int nnz,
-                                                          rocsparse_mat_descr descr,
-                                                          double* val,
-                                                          rocblas_int* ptr,
-                                                          rocblas_int* ind,
-                                                          rocsparse_mat_info info,
-                                                          size_t* size)
+                                                         rocblas_int n,
+                                                         rocblas_int nnz,
+                                                         rocsparse_mat_descr descr,
+                                                         double* val,
+                                                         rocblas_int* ptr,
+                                                         rocblas_int* ind,
+                                                         rocsparse_mat_info info,
+                                                         size_t* size)
 {
     return rocsparse_dcsric0_buffer_size(sphandle, n, nnz, descr, val, ptr, ind, info, size);
 }
@@ -152,38 +144,37 @@ inline rocsparse_status rocsparseCall_csrilu0_analysis(rocsparse_handle sphandle
                                        solve, buffer);
 }
 
-
 // csric0 analysis
 inline rocsparse_status rocsparseCall_csric0_analysis(rocsparse_handle sphandle,
-                                                       rocblas_int n,
-                                                       rocblas_int nnz,
-                                                       rocsparse_mat_descr descr,
-                                                       float* val,
-                                                       rocblas_int* ptr,
-                                                       rocblas_int* ind,
-                                                       rocsparse_mat_info info,
-                                                       rocsparse_analysis_policy analysis,
-                                                       rocsparse_solve_policy solve,
-                                                       void* buffer)
+                                                      rocblas_int n,
+                                                      rocblas_int nnz,
+                                                      rocsparse_mat_descr descr,
+                                                      float* val,
+                                                      rocblas_int* ptr,
+                                                      rocblas_int* ind,
+                                                      rocsparse_mat_info info,
+                                                      rocsparse_analysis_policy analysis,
+                                                      rocsparse_solve_policy solve,
+                                                      void* buffer)
 {
-    return rocsparse_scsric0_analysis(sphandle, n, nnz, descr, val, ptr, ind, info, analysis,
-                                       solve, buffer);
+    return rocsparse_scsric0_analysis(sphandle, n, nnz, descr, val, ptr, ind, info, analysis, solve,
+                                      buffer);
 }
 
 inline rocsparse_status rocsparseCall_csric0_analysis(rocsparse_handle sphandle,
-                                                       rocblas_int n,
-                                                       rocblas_int nnz,
-                                                       rocsparse_mat_descr descr,
-                                                       double* val,
-                                                       rocblas_int* ptr,
-                                                       rocblas_int* ind,
-                                                       rocsparse_mat_info info,
-                                                       rocsparse_analysis_policy analysis,
-                                                       rocsparse_solve_policy solve,
-                                                       void* buffer)
+                                                      rocblas_int n,
+                                                      rocblas_int nnz,
+                                                      rocsparse_mat_descr descr,
+                                                      double* val,
+                                                      rocblas_int* ptr,
+                                                      rocblas_int* ind,
+                                                      rocsparse_mat_info info,
+                                                      rocsparse_analysis_policy analysis,
+                                                      rocsparse_solve_policy solve,
+                                                      void* buffer)
 {
-    return rocsparse_dcsric0_analysis(sphandle, n, nnz, descr, val, ptr, ind, info, analysis,
-                                       solve, buffer);
+    return rocsparse_dcsric0_analysis(sphandle, n, nnz, descr, val, ptr, ind, info, analysis, solve,
+                                      buffer);
 }
 
 // csrilu0
@@ -215,32 +206,31 @@ inline rocsparse_status rocsparseCall_csrilu0(rocsparse_handle sphandle,
     return rocsparse_dcsrilu0(sphandle, n, nnz, descr, val, ptr, ind, info, solve, buffer);
 }
 
-
 // csric0
 inline rocsparse_status rocsparseCall_csric0(rocsparse_handle sphandle,
-                                              rocblas_int n,
-                                              rocblas_int nnz,
-                                              rocsparse_mat_descr descr,
-                                              float* val,
-                                              rocblas_int* ptr,
-                                              rocblas_int* ind,
-                                              rocsparse_mat_info info,
-                                              rocsparse_solve_policy solve,
-                                              void* buffer)
+                                             rocblas_int n,
+                                             rocblas_int nnz,
+                                             rocsparse_mat_descr descr,
+                                             float* val,
+                                             rocblas_int* ptr,
+                                             rocblas_int* ind,
+                                             rocsparse_mat_info info,
+                                             rocsparse_solve_policy solve,
+                                             void* buffer)
 {
     return rocsparse_scsric0(sphandle, n, nnz, descr, val, ptr, ind, info, solve, buffer);
 }
 
 inline rocsparse_status rocsparseCall_csric0(rocsparse_handle sphandle,
-                                              rocblas_int n,
-                                              rocblas_int nnz,
-                                              rocsparse_mat_descr descr,
-                                              double* val,
-                                              rocblas_int* ptr,
-                                              rocblas_int* ind,
-                                              rocsparse_mat_info info,
-                                              rocsparse_solve_policy solve,
-                                              void* buffer)
+                                             rocblas_int n,
+                                             rocblas_int nnz,
+                                             rocsparse_mat_descr descr,
+                                             double* val,
+                                             rocblas_int* ptr,
+                                             rocblas_int* ind,
+                                             rocsparse_mat_info info,
+                                             rocsparse_solve_policy solve,
+                                             void* buffer)
 {
     return rocsparse_dcsric0(sphandle, n, nnz, descr, val, ptr, ind, info, solve, buffer);
 }

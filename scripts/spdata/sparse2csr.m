@@ -1,8 +1,8 @@
 function [Ap, Ai, Ax] = sparse2csr(A, is_one_based_in)
 %
 % [Ap, Ai, Ax] = sparse2csr(A, [is_one_based])
-% 
-% convert matlab sparse matrix to 
+%
+% convert matlab sparse matrix to
 % Compressed sparse row format
 %
 is_one_based = 0;
@@ -66,7 +66,7 @@ for irow=1:nrow,
   istart = iend + 1;
  end;
 end;
-  
+
 
 if (is_zero_based),
   Ap = Ap-1;
