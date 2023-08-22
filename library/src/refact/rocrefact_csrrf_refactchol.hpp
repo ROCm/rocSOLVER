@@ -22,7 +22,7 @@
 // Further assume for each row, the column indices are
 // in increasing sorted order
 // -------------------------------------------
-template <typename T, unsigned int waveSize = 32>
+template <typename T>
 ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
                                         rocblas_int* Qold2new,
                                         const T alpha,
@@ -37,22 +37,20 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
     // Note: access to ONLY lower triangular part of matrix A
     // to update ONLY lower triangular part of matrix B
     // ------------------------------------------------------
-    T const zero = static_cast<T>(0);
 
-    rocblas_int const tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    rocblas_int const nwave = hipGridDim_x * (hipBlockDim_x / waveSize);
-    rocblas_int const iwave = tid / waveSize;
-    rocblas_int const lid = (tid % waveSize);
+    rocblas_int const tix = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocblas_int const tiy = hipThreadIdx_y;
 
     // ----------------------------------------------
     // each row is processed by one "wave" of threads
     // ----------------------------------------------
-    for(rocblas_int irow_old = iwave; irow_old < n; irow_old += nwave)
+    if(tix < n)
     {
+        rocblas_int const irow_old = tix;
         rocblas_int const istart_old = Ap[irow_old];
         rocblas_int const iend_old = Ap[irow_old + 1];
 
-        for(rocblas_int i = istart_old + lid; i < iend_old; i += waveSize)
+        for(rocblas_int i = istart_old + tiy; i < iend_old; i += hipBlockDim_y)
         {
             // ---------------------------------------------------
             // Note: access only lower triangular part of matrix A
@@ -63,7 +61,7 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
             if(is_strictly_upper_A)
             {
                 break;
-            };
+            }
 
             T aij = Ax[i];
 
@@ -89,7 +87,7 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
                 rocblas_int const iswap = irow_new;
                 irow_new = jcol_new;
                 jcol_new = iswap;
-            };
+            }
 
             // ----------------------------
             // search for entry B(irow_new, jcol_new)
@@ -101,9 +99,9 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
             if(is_found)
             {
                 Bx[ipos] += alpha * aij;
-            };
-        };
-    };
+            }
+        }
+    }
 }
 
 template <typename T>
@@ -211,7 +209,7 @@ rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
     // Note: assume A and T are symmetric and ONLY the LOWER triangular parts of A, and T are touched
     // --------------------------------------------------------------
     T const alpha = static_cast<T>(1);
-    ROCSOLVER_LAUNCH_KERNEL(rf_add_QAQ_kernel<T>, dim3(nblocks), dim3(BS2 * BS2), 0, stream, n,
+    ROCSOLVER_LAUNCH_KERNEL(rf_add_QAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
                             pivQ, alpha, ptrA, indA, valA, ptrT, indT, valT);
 
     // perform incomplete factorization of T
