@@ -14,6 +14,9 @@
 #include <rocblas/rocblas.h>
 #include <rocsolver/rocsolver.h>
 
+#define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
+    (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
+
 #pragma STDC CX_LIMITED_RANGE ON
 
 // half vectors
@@ -238,9 +241,11 @@ constexpr const char* rocblas_datatype_string(rocblas_datatype type)
     case rocblas_datatype_u32_c:   return "u32_c";
     case rocblas_datatype_bf16_r:  return "bf16_r";
     case rocblas_datatype_bf16_c:  return "bf16_c";
+    case rocblas_datatype_invalid: return "invalid";
+#if ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
     case rocblas_datatype_f8_r:    return "f8_r";
     case rocblas_datatype_bf8_r:   return "bf8_r";
-    case rocblas_datatype_invalid: return "invalid";
+#endif
     }
     return "invalid";
 }
@@ -267,8 +272,10 @@ constexpr size_t rocblas_sizeof_datatype(rocblas_datatype type)
     case rocblas_datatype_bf16_r:  return 2;
     case rocblas_datatype_bf16_c:  return 4;
     case rocblas_datatype_invalid: return 4;
+#if ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
     case rocblas_datatype_f8_r:    return 1;
     case rocblas_datatype_bf8_r:   return 1;
+#endif
     }
     return 0;
 }
@@ -285,6 +292,10 @@ template <> static constexpr auto rocblas_datatype_from_type<uint8_t>           
 template <> static constexpr auto rocblas_datatype_from_type<int32_t>                = rocblas_datatype_i32_r;
 template <> static constexpr auto rocblas_datatype_from_type<uint32_t>               = rocblas_datatype_u32_r;
 template <> static constexpr auto rocblas_datatype_from_type<rocblas_bfloat16>       = rocblas_datatype_bf16_r;
+#if ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+template <> static constexpr auto rocblas_datatype_from_type<rocblas_f8>             = rocblas_datatype_f8_r;
+template <> static constexpr auto rocblas_datatype_from_type<rocblas_bf8>            = rocblas_datatype_bf8_r;
+#endif
 
 // return precision string for data type
 template <typename> static constexpr char rocblas_precision_string                [] = "invalid";
@@ -304,6 +315,10 @@ template <> static constexpr char rocblas_precision_string<rocblas_i8_complex   
 template <> static constexpr char rocblas_precision_string<rocblas_u8_complex    >[] = "u8_c";
 template <> static constexpr char rocblas_precision_string<rocblas_i32_complex   >[] = "i32_c";
 template <> static constexpr char rocblas_precision_string<rocblas_u32_complex   >[] = "u32_c";
+#if ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+template <> static constexpr char rocblas_precision_string<rocblas_f8            >[] = "f8_r";
+template <> static constexpr char rocblas_precision_string<rocblas_bf8           >[] = "bf8_r";
+#endif
 #endif
 
 // clang-format on
@@ -426,3 +441,5 @@ catch(...)
 {
     return rocblas_status_internal_error;
 }
+
+#undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES

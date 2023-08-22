@@ -127,6 +127,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
 
   set(common_source_files
     common/lapack_host_reference.cpp
+    common/rocsolver_test.cpp
     rocblascommon/clients_utility.cpp
     rocblascommon/program_options.cpp
     ${rocauxiliary_inst_files}
@@ -140,7 +141,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   # Copy and point to sparse test data
   file(COPY
     ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/
-    DESTINATION ${PROJECT_BINARY_DIR}/sparsedata/
+    DESTINATION ${PROJECT_BINARY_DIR}/staging/sparsedata/
   )
   install(DIRECTORY
     ${CMAKE_CURRENT_SOURCE_DIR}/sparsedata/

@@ -8,6 +8,9 @@
 #include "rocsolver/rocsolver.h"
 #include <string>
 
+#define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
+    (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
+
 typedef enum rocblas_initialization_ : int
 {
     rocblas_initialization_random_int = 111,
@@ -200,9 +203,11 @@ constexpr auto rocblas2string_datatype(rocblas_datatype type)
     case rocblas_datatype_u32_c: return "u32_c";
     case rocblas_datatype_bf16_r: return "bf16_r";
     case rocblas_datatype_bf16_c: return "bf16_c";
+    case rocblas_datatype_invalid: return "invalid";
+#if ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
     case rocblas_datatype_f8_r: return "f8_r";
     case rocblas_datatype_bf8_r: return "bf8_r";
-    case rocblas_datatype_invalid: return "invalid";
+#endif
     }
     return "invalid";
 }
@@ -399,6 +404,10 @@ inline rocblas_datatype string2rocblas_datatype(const std::string& value)
         value == "u32_r"                 ? rocblas_datatype_u32_r :
         value == "u8_c"                  ? rocblas_datatype_u8_c  :
         value == "u32_c"                 ? rocblas_datatype_u32_c :
+#if ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+        value == "f8_r"                  ? rocblas_datatype_f8_r  :
+        value == "bf8_r"                 ? rocblas_datatype_bf8_r :
+#endif
         rocblas_datatype_invalid;
 }
 
@@ -411,3 +420,5 @@ inline rocblas_initialization string2rocblas_initialization(const std::string& v
         static_cast<rocblas_initialization>(0);
 }
 // clang-format on
+
+#undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
