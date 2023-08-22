@@ -56,8 +56,9 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_stream(impl->sphandle, stream), result, cleanup);
 
-    impl->use_lu = true;
-    impl->position = -1;
+    // setup mode
+    impl->mode = rocsolver_rfinfo_mode_general;
+    impl->analyzed = false;
 
     // create and set matrix descriptors
 
@@ -167,6 +168,27 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 
     ROCSPARSE_CHECK(rocsparse_destroy_handle(rfinfo->sphandle));
     delete rfinfo;
+
+    return rocblas_status_success;
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
+                                                    rocsolver_rfinfo_mode mode)
+{
+#ifdef HAVE_ROCSPARSE
+    if(!rfinfo)
+        return rocblas_status_invalid_pointer;
+
+    if(mode != rocsolver_rfinfo_mode_general && mode != rocsolver_rfinfo_mode_symmetric)
+        return rocblas_status_invalid_value;
+
+    if(rfinfo->analyzed)
+        return rocblas_status_internal_error;
+
+    rfinfo->mode = mode;
 
     return rocblas_status_success;
 #else

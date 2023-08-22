@@ -36,6 +36,6 @@ struct rocsolver_rfinfo_
     rocsparse_solve_policy solve_policy;
     rocsparse_analysis_policy analysis_policy;
 
-    rocsparse_int position;
-    bool use_lu;
+    rocsolver_rfinfo_mode mode;
+    bool analyzed;
 };

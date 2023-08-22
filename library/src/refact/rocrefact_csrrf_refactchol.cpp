@@ -23,15 +23,46 @@ rocblas_status rocsolver_csrrf_refactchol_impl(rocblas_handle handle,
                                                rocblas_int* pivQ,
                                                rocsolver_rfinfo rfinfo)
 {
-    bool const use_lu = false;
-    if(rfinfo != nullptr)
-    {
-        rfinfo->use_lu = use_lu;
-    };
+    ROCSOLVER_ENTER_TOP("csrrf_refactchol", "-n", n, "--nnzA", nnzA, "--nnzT", nnzT);
 
-    rocblas_int* pivP = pivQ;
-    return (rocsolver_csrrf_refact_impl<T, U>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
-                                              valT, pivP, pivQ, rfinfo, use_lu));
+#ifdef HAVE_ROCSPARSE
+    if(!handle)
+        return rocblas_status_invalid_handle;
+
+    // argument checking
+    rocblas_status st = rocsolver_csrrf_refactchol_argCheck(handle, n, nnzA, ptrA, indA, valA, nnzT,
+                                                            ptrT, indT, valT, pivQ, rfinfo);
+    if(st != rocblas_status_continue)
+        return st;
+
+    // TODO: add batched versions
+    // working with unshifted arrays
+    // normal (non-batched non-strided) execution
+
+    // memory workspace sizes:
+    // size for temp buffer in refactlu calls
+    size_t size_work = 0;
+
+    rocsolver_csrrf_refactchol_getMemorySize<T>(n, nnzT, ptrT, indT, valT, rfinfo, &size_work);
+
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_set_optimal_device_memory_size(handle, size_work);
+
+    // memory workspace allocation
+    void* work = nullptr;
+    rocblas_device_malloc mem(handle, size_work);
+
+    if(!mem)
+        return rocblas_status_memory_error;
+
+    work = mem[0];
+
+    // execution
+    return rocsolver_csrrf_refactchol_template<T>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
+                                                  indT, valT, pivQ, rfinfo, work);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 /*
