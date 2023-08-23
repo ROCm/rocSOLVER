@@ -24168,6 +24168,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo
     \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL", and
 	by the direct solver \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
 
+    This routine must be called before \ref rocsolver_scsrrf_analysis "CSRRF_ANALYSIS", and will return
+    rocblas_status_internal_error if called afterwards.
+
     \details
     @param[out]
     rfinfo      #rocsolver_rfinfo.\n
