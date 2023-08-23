@@ -390,7 +390,7 @@ inline void read_matrix(const std::string filenameS,
     if(idebug >= 1)
     {
         printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
-    };
+    }
 
     FILE* mat = fopen(filename, "r");
 
@@ -411,15 +411,11 @@ inline void read_matrix(const std::string filenameS,
         }
     }
 
+    if(fclose(mat) != 0)
     {
-        int const istat = fclose(mat);
-        bool const isok = (istat == 0);
-        if(!isok)
-        {
-            throw std::invalid_argument(
-                fmt::format("Error: Could not close file {} with test data...", filename));
-        };
-    };
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
 inline void read_last(const std::string filenameS, rocblas_int* A)
 {
@@ -440,15 +436,11 @@ inline void read_last(const std::string filenameS, rocblas_int* A)
 
     *A = v;
 
+    if(fclose(mat) != 0)
     {
-        int const istat = fclose(mat);
-        bool const isok = (istat == 0);
-        if(!isok)
-        {
-            throw std::invalid_argument(
-                fmt::format("Error: Could not close file {} with test data...", filename));
-        };
-    };
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
 
 // singles:
@@ -463,7 +455,7 @@ inline void read_matrix(const std::string filenameS,
     if(idebug >= 1)
     {
         printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
-    };
+    }
 
     FILE* mat = fopen(filename, "r");
 
@@ -484,15 +476,11 @@ inline void read_matrix(const std::string filenameS,
         }
     }
 
+    if(fclose(mat) != 0)
     {
-        int const istat = fclose(mat);
-        bool const isok = (istat == 0);
-        if(!isok)
-        {
-            throw std::invalid_argument(
-                fmt::format("Error: Could not close file {} with test data...", filename));
-        };
-    };
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
 
 // doubles:
@@ -507,7 +495,7 @@ inline void read_matrix(const std::string filenameS,
     if(idebug >= 1)
     {
         printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
-    };
+    }
     FILE* mat = fopen(filename, "r");
 
     if(mat == NULL)
@@ -527,13 +515,9 @@ inline void read_matrix(const std::string filenameS,
         }
     }
 
+    if(fclose(mat) != 0)
     {
-        int const istat = fclose(mat);
-        bool const isok = (istat == 0);
-        if(!isok)
-        {
-            throw std::invalid_argument(
-                fmt::format("Error: Could not close file {} with test data...", filename));
-        };
-    };
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
