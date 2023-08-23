@@ -152,7 +152,8 @@ void csrrf_analysis_initData(rocblas_handle handle,
                              Th& hvalT,
                              Uh& hpivP,
                              Uh& hpivQ,
-                             const fs::path testcase)
+                             const fs::path testcase,
+                             const rocsolver_rfinfo_mode mode)
 {
     if(CPU)
     {
@@ -175,8 +176,11 @@ void csrrf_analysis_initData(rocblas_handle handle,
         read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
 
         // read-in P
-        file = testcase / "P";
-        read_matrix(file.string(), 1, n, hpivP.data(), 1);
+        if(mode == rocsolver_rfinfo_mode_general)
+        {
+            file = testcase / "P";
+            read_matrix(file.string(), 1, n, hpivP.data(), 1);
+        }
 
         // read-in Q
         file = testcase / "Q";
@@ -191,7 +195,11 @@ void csrrf_analysis_initData(rocblas_handle handle,
         CHECK_HIP_ERROR(dptrT.transfer_from(hptrT));
         CHECK_HIP_ERROR(dindT.transfer_from(hindT));
         CHECK_HIP_ERROR(dvalT.transfer_from(hvalT));
-        CHECK_HIP_ERROR(dpivP.transfer_from(hpivP));
+
+        if(mode == rocsolver_rfinfo_mode_general)
+            CHECK_HIP_ERROR(dpivP.transfer_from(hpivP));
+        else
+            CHECK_HIP_ERROR(dpivP.transfer_from(hpivQ));
         CHECK_HIP_ERROR(dpivQ.transfer_from(hpivQ));
     }
 }
@@ -219,7 +227,8 @@ void csrrf_analysis_getError(rocblas_handle handle,
                              Uh& hpivP,
                              Uh& hpivQ,
                              double* max_err,
-                             const fs::path testcase)
+                             const fs::path testcase,
+                             const rocsolver_rfinfo_mode mode)
 {
     // TODO: later we can extend the test for the solver phase as well
     // (it's not really needed as the analysis is executed before calling the solver
@@ -231,13 +240,17 @@ void csrrf_analysis_getError(rocblas_handle handle,
     // input data initialization
     csrrf_analysis_initData<true, true, T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT,
                                            dvalT, dpivP, dpivQ, hptrM, hindM, hvalM, hptrT, hindT,
-                                           hvalT, hpivP, hpivQ, testcase);
+                                           hvalT, hpivP, hpivQ, testcase, mode);
 
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
         handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
         dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), B, ldb, rfinfo));
+
+    // ensure mode selection is now disabled
+    EXPECT_ROCBLAS_STATUS(rocsolver_set_rfinfo_mode(rfinfo, rocsolver_rfinfo_mode_general),
+                          rocblas_status_internal_error);
 
     // No error to calculate...
     // (analysis phase is required by refact and solve, so its results are validated there)
@@ -272,7 +285,8 @@ void csrrf_analysis_getPerfData(rocblas_handle handle,
                                 const int profile,
                                 const bool profile_kernels,
                                 const bool perf,
-                                const fs::path testcase)
+                                const fs::path testcase,
+                                const rocsolver_rfinfo_mode mode)
 {
     // TODO: later we can extend the test for the solver phase as well
     // (it's not really needed as the analysis is executed before calling the solver
@@ -285,14 +299,14 @@ void csrrf_analysis_getPerfData(rocblas_handle handle,
 
     csrrf_analysis_initData<true, false, T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
                                             dindT, dvalT, dpivP, dpivQ, hptrM, hindM, hvalM, hptrT,
-                                            hindT, hvalT, hpivP, hpivQ, testcase);
+                                            hindT, hvalT, hpivP, hpivQ, testcase, mode);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
         csrrf_analysis_initData<false, true, T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
                                                 dindT, dvalT, dpivP, dpivQ, hptrM, hindM, hvalM,
-                                                hptrT, hindT, hvalT, hpivP, hpivQ, testcase);
+                                                hptrT, hindT, hvalT, hpivP, hpivQ, testcase, mode);
 
         CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
             handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
@@ -318,7 +332,7 @@ void csrrf_analysis_getPerfData(rocblas_handle handle,
     {
         csrrf_analysis_initData<false, true, T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
                                                 dindT, dvalT, dpivP, dpivQ, hptrM, hindM, hvalM,
-                                                hptrT, hindT, hvalT, hpivP, hpivQ, testcase);
+                                                hptrT, hindT, hvalT, hpivP, hpivQ, testcase, mode);
 
         start = get_time_us_sync(stream);
         rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(),
@@ -338,7 +352,11 @@ void testing_csrrf_analysis(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int nnzM = argus.get<rocblas_int>("nnzM");
     rocblas_int nnzT = argus.get<rocblas_int>("nnzT");
+    char modeC = argus.get<char>("mode", '1');
     rocblas_int hot_calls = argus.iters;
+
+    rocsolver_rfinfo_mode mode = char2rocsolver_rfinfo_mode(modeC);
+    CHECK_ROCBLAS_ERROR(rocsolver_set_rfinfo_mode(rfinfo, mode));
 
     // TODO: later we can extend the test for the solver phase as well
     // (it's not really needed as the analysis is executed before calling the solver
@@ -403,7 +421,13 @@ void testing_csrrf_analysis(Arguments& argus)
     fs::path testcase;
     if(n > 0)
     {
-        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzM));
+        std::string matname;
+        if(mode == rocsolver_rfinfo_mode_general)
+            matname = fmt::format("mat_{}_{}", n, nnzM);
+        else
+            matname = fmt::format("posmat_{}_{}", n, nnzM);
+
+        testcase = get_sparse_data_dir() / fs::path(matname);
         fs::path file = testcase / "ptrT";
         read_last(file.string(), &nnzT);
     }
@@ -491,14 +515,14 @@ void testing_csrrf_analysis(Arguments& argus)
     if(argus.unit_check || argus.norm_check)
         csrrf_analysis_getError<T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT, dvalT,
                                    dpivP, dpivQ, rfinfo, hptrM, hindM, hvalM, hptrT, hindT, hvalT,
-                                   hpivP, hpivQ, &max_error, testcase);
+                                   hpivP, hpivQ, &max_error, testcase, mode);
 
     // collect performance data
     if(argus.timing)
-        csrrf_analysis_getPerfData<T>(handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT,
-                                      dvalT, dpivP, dpivQ, rfinfo, hptrM, hindM, hvalM, hptrT, hindT,
-                                      hvalT, hpivP, hpivQ, &gpu_time_used, &cpu_time_used, hot_calls,
-                                      argus.profile, argus.profile_kernels, argus.perf, testcase);
+        csrrf_analysis_getPerfData<T>(
+            handle, n, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, rfinfo,
+            hptrM, hindM, hvalM, hptrT, hindT, hvalT, hpivP, hpivQ, &gpu_time_used, &cpu_time_used,
+            hot_calls, argus.profile, argus.profile_kernels, argus.perf, testcase, mode);
 
     // validate results for rocsolver-test
     // N/A

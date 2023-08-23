@@ -10,7 +10,10 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<int, int> csrrf_analysis_tuple;
+typedef std::tuple<int, int, printable_char> csrrf_analysis_tuple;
+
+// if mode = 0, then the factorization is LU
+// if mode = 1, then the factorization is Cholesky
 
 // case when n = 0 and nnz = 60 also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -34,6 +37,11 @@ const vector<int> nnz_range = {
     140,
 };
 
+const vector<printable_char> mode_range = {
+    '1', // for LU
+    '2', // for Cholesky
+};
+
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
@@ -51,12 +59,14 @@ Arguments csrrf_analysis_setup_arguments(csrrf_analysis_tuple tup)
 {
     int n = std::get<0>(tup);
     int nnz = std::get<1>(tup);
+    char mode = std::get<2>(tup);
 
     Arguments arg;
 
     arg.set<rocblas_int>("n", n);
     arg.set<rocblas_int>("nnzM", nnz);
     arg.set<rocblas_int>("nnzT", nnz);
+    arg.set<char>("mode", mode);
     // note: the clients will determine the test case with n and nnzM.
     // nnzT = nnz is passed because it does not have a default value in the
     // bench client (for future purposes).
@@ -113,8 +123,10 @@ TEST_P(CSRRF_ANALYSIS, __double_complex)
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          CSRRF_ANALYSIS,
-                         Combine(ValuesIn(large_n_range), ValuesIn(large_nnz_range)));
+                         Combine(ValuesIn(large_n_range),
+                                 ValuesIn(large_nnz_range),
+                                 ValuesIn(mode_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          CSRRF_ANALYSIS,
-                         Combine(ValuesIn(n_range), ValuesIn(nnz_range)));
+                         Combine(ValuesIn(n_range), ValuesIn(nnz_range), ValuesIn(mode_range)));

@@ -203,8 +203,8 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
 
             // analysis for solve with U = L^T
             ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(
-                rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzT,
-                &alpha, rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoU,
+                rfinfo->sphandle, rocsparse_operation_conjugate_transpose, rocsparse_operation_none,
+                n, nrhs, nnzT, &alpha, rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoU,
                 rfinfo->analysis_policy, rfinfo->solve_policy, work));
         };
     }
