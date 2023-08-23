@@ -306,7 +306,7 @@ void testing_csrrf_refactchol(Arguments& argus)
     rocblas_int nnzT = argus.get<rocblas_int>("nnzT");
     rocblas_int hot_calls = argus.iters;
 
-    CHECK_ROCBLAS_ERROR(rocsolver_set_rfinfo_mode(rfinfo, rocsolver_rfinfo_mode_symmetric));
+    CHECK_ROCBLAS_ERROR(rocsolver_set_rfinfo_mode(rfinfo, rocsolver_rfinfo_mode_cholesky));
 
     // check non-supported values
     // N/A

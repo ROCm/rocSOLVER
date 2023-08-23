@@ -72,7 +72,7 @@ void rocsolver_csrrf_analysis_getMemorySize(const rocblas_int n,
     // requirements for solve with L and U, and for incomplete factorization
     // (buffer size is the same for all routines if the sparsity pattern does not
     // change)
-    if(rfinfo->mode == rocsolver_rfinfo_mode_general)
+    if(rfinfo->mode == rocsolver_rfinfo_mode_lu)
     {
         size_t csrilu0_buffer_size = 0;
         size_t csrsm_L_buffer_size = 0;
@@ -160,7 +160,7 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
     if(n == 0)
         return rocblas_status_success;
 
-    if(rfinfo->mode == rocsolver_rfinfo_mode_general)
+    if(rfinfo->mode == rocsolver_rfinfo_mode_lu)
     {
         // analysis for incomplete LU factorization
         ROCSPARSE_CHECK(rocsparseCall_csrilu0_analysis(
@@ -179,7 +179,7 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
     {
         T alpha = 1.0;
 
-        if(rfinfo->mode == rocsolver_rfinfo_mode_general)
+        if(rfinfo->mode == rocsolver_rfinfo_mode_lu)
         {
             // analysis for solve with L
             ROCSPARSE_CHECK(rocsparseCall_csrsm_analysis(

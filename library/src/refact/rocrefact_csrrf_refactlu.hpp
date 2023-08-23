@@ -162,7 +162,7 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
         return rocblas_status_success;
 
     // check state of rfinfo
-    if(!rfinfo->analyzed || rfinfo->mode != rocsolver_rfinfo_mode_general)
+    if(!rfinfo->analyzed || rfinfo->mode != rocsolver_rfinfo_mode_lu)
         return rocblas_status_internal_error;
 
     hipStream_t stream;

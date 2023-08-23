@@ -24177,7 +24177,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo
                 The rfinfo struct to be set up.
     @param[in]
     mode        #rocsolver_rfinfo_mode.\n
-				Use rocsolver_rfinfo_mode_symmetric when the Cholesky factorization is required.
+				Use rocsolver_rfinfo_mode_cholesky when the Cholesky factorization is required.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,

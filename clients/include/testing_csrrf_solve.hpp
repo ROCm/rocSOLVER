@@ -143,7 +143,7 @@ void csrrf_solve_initData(rocblas_handle handle,
         read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
 
         // read-in P
-        if(mode == rocsolver_rfinfo_mode_general)
+        if(mode == rocsolver_rfinfo_mode_lu)
         {
             file = testcase / "P";
             read_matrix(file.string(), 1, n, hpivP.data(), 1);
@@ -173,7 +173,7 @@ void csrrf_solve_initData(rocblas_handle handle,
         CHECK_HIP_ERROR(dvalT.transfer_from(hvalT));
         CHECK_HIP_ERROR(dB.transfer_from(hB));
 
-        if(mode == rocsolver_rfinfo_mode_general)
+        if(mode == rocsolver_rfinfo_mode_lu)
             CHECK_HIP_ERROR(dpivP.transfer_from(hpivP));
         else
             CHECK_HIP_ERROR(dpivP.transfer_from(hpivQ));
@@ -380,7 +380,7 @@ void testing_csrrf_solve(Arguments& argus)
     if(n > 0)
     {
         std::string matname;
-        if(mode == rocsolver_rfinfo_mode_general)
+        if(mode == rocsolver_rfinfo_mode_lu)
             matname = fmt::format("mat_{}_{}", n, nnzA);
         else
             matname = fmt::format("posmat_{}_{}", n, nnzA);

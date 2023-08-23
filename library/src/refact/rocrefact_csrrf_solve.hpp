@@ -108,7 +108,7 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
 {
     T alpha = 1.0;
 
-    if(mode == rocsolver_rfinfo_mode_general)
+    if(mode == rocsolver_rfinfo_mode_lu)
     {
         // ----------------------
         // step (1) solve L * Y = B
@@ -213,7 +213,7 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
     *size_temp = sizeof(T) * n * nrhs;
 
     T alpha = 1.0;
-    if(rfinfo->mode == rocsolver_rfinfo_mode_general)
+    if(rfinfo->mode == rocsolver_rfinfo_mode_lu)
     {
         // requirements for solve with L and U
         // (buffer size is the same for all routines if the sparsity pattern does not

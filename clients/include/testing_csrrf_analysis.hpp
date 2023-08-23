@@ -176,7 +176,7 @@ void csrrf_analysis_initData(rocblas_handle handle,
         read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
 
         // read-in P
-        if(mode == rocsolver_rfinfo_mode_general)
+        if(mode == rocsolver_rfinfo_mode_lu)
         {
             file = testcase / "P";
             read_matrix(file.string(), 1, n, hpivP.data(), 1);
@@ -196,7 +196,7 @@ void csrrf_analysis_initData(rocblas_handle handle,
         CHECK_HIP_ERROR(dindT.transfer_from(hindT));
         CHECK_HIP_ERROR(dvalT.transfer_from(hvalT));
 
-        if(mode == rocsolver_rfinfo_mode_general)
+        if(mode == rocsolver_rfinfo_mode_lu)
             CHECK_HIP_ERROR(dpivP.transfer_from(hpivP));
         else
             CHECK_HIP_ERROR(dpivP.transfer_from(hpivQ));
@@ -249,7 +249,7 @@ void csrrf_analysis_getError(rocblas_handle handle,
         dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), B, ldb, rfinfo));
 
     // ensure mode selection is now disabled
-    EXPECT_ROCBLAS_STATUS(rocsolver_set_rfinfo_mode(rfinfo, rocsolver_rfinfo_mode_general),
+    EXPECT_ROCBLAS_STATUS(rocsolver_set_rfinfo_mode(rfinfo, rocsolver_rfinfo_mode_lu),
                           rocblas_status_internal_error);
 
     // No error to calculate...
@@ -422,7 +422,7 @@ void testing_csrrf_analysis(Arguments& argus)
     if(n > 0)
     {
         std::string matname;
-        if(mode == rocsolver_rfinfo_mode_general)
+        if(mode == rocsolver_rfinfo_mode_lu)
             matname = fmt::format("mat_{}_{}", n, nnzM);
         else
             matname = fmt::format("posmat_{}_{}", n, nnzM);

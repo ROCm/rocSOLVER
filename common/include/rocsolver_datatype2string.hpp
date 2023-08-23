@@ -227,8 +227,8 @@ constexpr auto rocsolver2char_rfinfo_mode(rocsolver_rfinfo_mode value)
 {
     switch(value)
     {
-    case rocsolver_rfinfo_mode_general: return '1';
-    case rocsolver_rfinfo_mode_symmetric: return '2';
+    case rocsolver_rfinfo_mode_lu: return '1';
+    case rocsolver_rfinfo_mode_cholesky: return '2';
     }
     return '\0';
 }
@@ -435,8 +435,8 @@ constexpr rocsolver_rfinfo_mode char2rocsolver_rfinfo_mode(char value)
 {
     switch(value)
     {
-    case '1': return rocsolver_rfinfo_mode_general;
-    case '2': return rocsolver_rfinfo_mode_symmetric;
+    case '1': return rocsolver_rfinfo_mode_lu;
+    case '2': return rocsolver_rfinfo_mode_cholesky;
     default: return static_cast<rocsolver_rfinfo_mode>(0);
     }
 }
