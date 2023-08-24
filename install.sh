@@ -325,7 +325,6 @@ optimal=true
 cleanup=false
 build_sanitizer=false
 build_codecoverage=false
-build_freorg_bkwdcomp=false
 build_with_sparse=true
 unset architecture
 unset rocblas_dir
@@ -589,12 +588,6 @@ fi
 
 if [[ "${build_library}" == false ]]; then
   cmake_client_options+=('-DBUILD_LIBRARY=OFF')
-fi
-
-if [[ "${build_freorg_bkwdcomp}" == true ]]; then
-  cmake_common_options+=('-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=ON')
-else
-  cmake_common_options+=('-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF')
 fi
 
 rocm_rpath=""
