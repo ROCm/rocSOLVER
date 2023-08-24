@@ -86,8 +86,6 @@ Options:
                               (Default build type is Release)
 
   --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
-
-  --rm-legacy-include-dir     Remove legacy include dir Packaging added for file/folder reorg backward compatibility.
 EOF
 }
 
@@ -343,7 +341,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,rocsparse_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,rocsparse_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -432,9 +430,6 @@ while true; do
         shift ;;
     -k|--relwithdebinfo)
         build_type=RelWithDebInfo
-        shift ;;
-    --rm-legacy-include-dir)
-        build_freorg_bkwdcomp=false
         shift ;;
     --cmake-arg)
         cmake_common_options+=("${2}")
