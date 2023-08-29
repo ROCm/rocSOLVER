@@ -18,6 +18,7 @@ set(roclapack_test_source
   gels_gtest.cpp
   # triangular factorizations
   getf2_getrf_gtest.cpp
+  getrf_large_gtest.cpp
   potf2_potrf_gtest.cpp
   sytf2_sytrf_gtest.cpp
   geblttrf_gtest.cpp
