@@ -56,6 +56,13 @@ rocsolver_set_rfinfo_mode()
 .. doxygenfunction:: rocsolver_set_rfinfo_mode
 
 
+.. _rfinfoget:
+
+rocsolver_get_rfinfo_mode()
+---------------------------------------
+.. doxygenfunction:: rocsolver_get_rfinfo_mode
+
+
 .. _rfanalysis:
 
 rocsolver_csrrf_analysis()

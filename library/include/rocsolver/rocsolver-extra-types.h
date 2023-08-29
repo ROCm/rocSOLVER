@@ -136,9 +136,9 @@ typedef struct rocsolver_rfinfo_* rocsolver_rfinfo;
 typedef enum rocsolver_rfinfo_mode_
 {
     rocsolver_rfinfo_mode_lu
-    = 271, /**< To work with general sparse matrices. This is the default mode. */
+    = 271, /**< To work with LU factorization (for general sparse matrices). This is the default mode. */
     rocsolver_rfinfo_mode_cholesky
-    = 272, /**< To work with symmetric positive definite sparse matrices. */
+    = 272, /**< To work with Cholesky factorization (for symmetric positive definite sparse matrices). */
 } rocsolver_rfinfo_mode;
 
 #endif /* ROCSOLVER_EXTRA_TYPES_H */

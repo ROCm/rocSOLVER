@@ -67,4 +67,4 @@ rocsolver_rfinfo
 
 rocsolver_rfinfo_mode
 ------------------------
-.. doxygentypedef:: rocsolver_rfinfo_mode
+.. doxygenenum:: rocsolver_rfinfo_mode
