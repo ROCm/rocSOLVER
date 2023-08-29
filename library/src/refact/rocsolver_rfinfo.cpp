@@ -167,3 +167,21 @@ extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
     return rocblas_status_not_implemented;
 #endif
 }
+
+extern "C" rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
+                                                    rocsolver_rfinfo_mode* mode)
+{
+#ifdef HAVE_ROCSPARSE
+    if(!rfinfo)
+        return rocblas_status_invalid_pointer;
+
+    if(!mode)
+        return rocblas_status_invalid_pointer;
+
+    *mode = rfinfo->mode;
+
+    return rocblas_status_success;
+#else
+    return rocblas_status_not_implemented;
+#endif
+}

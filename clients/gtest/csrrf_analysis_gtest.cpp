@@ -12,8 +12,8 @@ using namespace std;
 
 typedef std::tuple<int, int, printable_char> csrrf_analysis_tuple;
 
-// if mode = 0, then the factorization is LU
-// if mode = 1, then the factorization is Cholesky
+// if mode = '1', then the factorization is LU
+// if mode = '2', then the factorization is Cholesky
 
 // case when n = 0 and nnz = 60 also execute the bad arguments test
 // (null handle, null pointers and invalid values)

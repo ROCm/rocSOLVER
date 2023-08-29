@@ -24135,38 +24135,6 @@ ROCSOLVER_EXPORT rocblas_status
  * ===========================================================================
  */
 
-/*! \brief SET_RFINFO_MODE sets the mode of the structure rfinfo required by the re-factorization functions
-    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL", and
-	by the direct solver \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
-
-    \details
-    @param[in]
-    rfinfo      #rocsolver_rfinfo.\n
-                The rfinfo struct to be set up.
-    @param[in]
-    mode        #rocsolver_rfinfo_mode.\n
-				Use rocsolver_rfinfo_mode_chol when the Cholesky factorization is required.
-    ********************************************************************/
-
-ROCSOLVER_EXPORT rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
-                                                          rocsolver_rfinfo_mode mode);
-
-/*! \brief GET_RFINFO_MODE gets the mode of the structure rfinfo required by the re-factorization functions
-    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL", and
-	by the direct solver \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
-
-    \details
-    @param[in]
-    rfinfo      #rocsolver_rfinfo.\n
-                The referenced rfinfo struct.
-    @param[out]
-    mode        #rocsolver_rfinfo_mode.\n
-				The queried mode.
-    ********************************************************************/
-
-ROCSOLVER_EXPORT rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
-                                                          rocsolver_rfinfo_mode* mode);
-
 /*! \brief CREATE_RFINFO initializes the structure rfinfo that contains the meta data and descriptors of the involved matrices
 	required by the re-factorization functions
     \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL", and
@@ -24194,6 +24162,38 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo);
+
+/*! \brief SET_RFINFO_MODE sets the mode of the structure rfinfo required by the re-factorization functions
+    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL", and
+	by the direct solver \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
+
+    \details
+    @param[in]
+    rfinfo      #rocsolver_rfinfo.\n
+                The rfinfo struct to be set up.
+    @param[in]
+    mode        #rocsolver_rfinfo_mode.\n
+				Use rocsolver_rfinfo_mode_cholesky when the Cholesky factorization is required.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
+                                                          rocsolver_rfinfo_mode mode);
+
+/*! \brief GET_RFINFO_MODE gets the mode of the structure rfinfo required by the re-factorization functions
+    \ref rocsolver_scsrrf_refactlu "CSRRF_REFACTLU" and \ref rocsolver_scsrrf_refactchol "CSRRF_REFACTCHOL", and
+	by the direct solver \ref rocsolver_scsrrf_solve "CSRRF_SOLVE".
+
+    \details
+    @param[in]
+    rfinfo      #rocsolver_rfinfo.\n
+                The referenced rfinfo struct.
+    @param[out]
+    mode        #rocsolver_rfinfo_mode.\n
+				The queried mode.
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
+                                                          rocsolver_rfinfo_mode* mode);
 
 /*! @{
     \brief CSRRF_SUMLU bundles the factors \f$L\f$ and \f$U\f$, associated with the LU factorization

@@ -16,8 +16,8 @@ typedef std::tuple<vector<int>, vector<int>, printable_char> csrrf_solve_tuple;
 
 // each nnz_range vector is {nnzT, nrhs}
 
-// if mode = 0, then the factorization is LU
-// if mode = 1, then the factorization is Cholesky
+// if mode = '1', then the factorization is LU
+// if mode = '2', then the factorization is Cholesky
 
 // case when n = 0 and nnz = 10 also execute the bad arguments test
 // (null handle, null pointers and invalid values)
