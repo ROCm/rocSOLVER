@@ -153,6 +153,7 @@ target_link_libraries(rocsolver-test PRIVATE
   $<$<PLATFORM_ID:Linux>:stdc++fs>
   $<$<PLATFORM_ID:Linux>:m>
   roc::rocsolver
+  roc::rocblas
 )
 
 # Turn on f16c intrinsics
