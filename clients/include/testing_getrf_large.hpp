@@ -232,11 +232,9 @@ void getrf_large_getError(const rocblas_handle handle,
     getrf_large_initData<true, true, T>(handle, n, nrhs, dB, ldb, stB, dIpiv, stP, dInfo, bc, hB,
                                         hIpiv, hInfo, singular);
     
-    //copy Matrix B into Matrix X.
-    CHECK_HIP_ERROR(hX.copy_from(hB));
 
     //copy from host to device memory for matrice X
-    CHECK_HIP_ERROR(dX.transfer_from(hX));  
+    CHECK_HIP_ERROR(dX.transfer_from(hB));  
 
 
     // execute computations
@@ -258,9 +256,9 @@ void getrf_large_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(dA.transfer_from(hA));
 
     // Calling the GEMM function
-    double alpha = 1., beta = 0.;
-    auto he = rocblas_dgemm(handle, rocblas_operation_none, rocblas_operation_none,
-                          n, nrhs, n, &alpha, dA, lda, dX, ldb, &beta, dB, ldx);
+    T alpha = 1., beta = 0.;
+    auto he = rocblas_gemm(STRIDED, handle, rocblas_operation_none, rocblas_operation_none,
+                          n, nrhs, n, &alpha, dA, lda, stA, dX, ldx, stX, &beta, dB, ldb, stB, bc);
     if (he != rocblas_status_success) //HIPBLAS_STATUS_SUCCESS)
     std::cout << "gemm failed" << std::endl;
 
@@ -533,12 +531,3 @@ void testing_getrf_large(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
-
-#define EXTERN_TESTING_GETRF_LARGE(...) \
-    extern template void testing_getrf_large<__VA_ARGS__>(Arguments&);
-
-INSTANTIATE(EXTERN_TESTING_GETRF_LARGE,
-            FOREACH_MATRIX_DATA_LAYOUT,
-            FOREACH_BLOCKED_VARIANT,
-            FOREACH_SCALAR_TYPE,
-            APPLY_STAMP)

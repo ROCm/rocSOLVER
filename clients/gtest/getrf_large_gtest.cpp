@@ -13,7 +13,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 // Passing ({n,lda,ldb},nrhs)
-typedef std::tuple<vector<int>, int> getrf_getrs_gemm_tuple;
+typedef std::tuple<vector<int>, int> getrf_large_tuple;
 
 // each matrix_size_range vector is a {N, lda, ldb}
 // if singular = 1, then the used matrix for the tests is singular
@@ -23,7 +23,7 @@ typedef std::tuple<vector<int>, int> getrf_getrs_gemm_tuple;
 // Since we are going to only be passing square matrix for MATRIX A
 // Matrix B and X will be getting their rows from the the column of X
 const vector<vector<int>> very_large_matrixA_size_range = {
-    {25000, 25000, 300},
+    {25000, 25000, 25000},
 };
 
 // Since this will be the column for both Matrix B and X.
@@ -33,7 +33,7 @@ const vector<int> very_large_nrhs = {
 
 
 // Only passing dimensions for Matrix A and B
-Arguments getrf_setup_arguments(getrf_getrs_gemm_tuple tup)
+Arguments getrf_large_setup_arguments(getrf_large_tuple tup)
 {   
     vector<int> matrix_sizeA = std::get<0>(tup);
     int nrhs = std::get<1>(tup);
@@ -50,63 +50,63 @@ Arguments getrf_setup_arguments(getrf_getrs_gemm_tuple tup)
     return arg;
 }
 
-template <bool BLOCKED>
-class GETF2_GETRF : public ::TestWithParam<getrf_getrs_gemm_tuple>
+class GETRF_LARGE : public ::TestWithParam<getrf_large_tuple>
 {
 protected:
-    GETF2_GETRF() {}
+    GETRF_LARGE() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = getrf_setup_arguments(GetParam());
+        Arguments arg = getrf_large_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
-            testing_getrf_large_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+        // if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
+        //     testing_getrf_large_bad_arg<BATCHED, STRIDED, true, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         if(arg.singular == 1)
-            testing_getrf_large<BATCHED, STRIDED, BLOCKED, T>(arg);
+            testing_getrf_large<BATCHED, STRIDED, true, T>(arg);
 
         arg.singular = 0;
-        testing_getrf_large<BATCHED, STRIDED, BLOCKED, T>(arg);
+        testing_getrf_large<BATCHED, STRIDED, true, T>(arg);
     }
 };
 
-template <bool BLOCKED>
-class GETF2_GETRF_NPVT : public ::TestWithParam<getrf_getrs_gemm_tuple>
+// Make changes to this for large matrices.
+
+class GETRF_LARGE_NPVT : public ::TestWithParam<getrf_large_tuple>
 {
 protected:
-    GETF2_GETRF_NPVT() {}
+    GETRF_LARGE_NPVT() {}
     virtual void SetUp() {}
     virtual void TearDown() {}
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = getrf_setup_arguments(GetParam());
+        Arguments arg = getrf_large_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
-            testing_getf2_getrf_npvt_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+            testing_getf2_getrf_npvt_bad_arg<BATCHED, STRIDED, true, T>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         if(arg.singular == 1)
-            testing_getf2_getrf_npvt<BATCHED, STRIDED, BLOCKED, T>(arg);
+            testing_getf2_getrf_npvt<BATCHED, STRIDED, true, T>(arg);
 
         arg.singular = 0;
-        testing_getf2_getrf_npvt<BATCHED, STRIDED, BLOCKED, T>(arg);
+        testing_getf2_getrf_npvt<BATCHED, STRIDED, true, T>(arg);
     }
 };
 
-class GETRF : public GETF2_GETRF<true>
-{
-};
+// class GETRF_LARGE : public GETF2_GETRF<true>
+// {
+// };
 
-class GETRF_NPVT : public GETF2_GETRF_NPVT<true>
-{
-};
+// class GETRF_LARGE_NPVT : public GETF2_GETRF_NPVT<true>
+// {
+// };
 
 // // non-batch tests
 // TEST_P(GETRF_NPVT, __float)
@@ -129,22 +129,22 @@ class GETRF_NPVT : public GETF2_GETRF_NPVT<true>
 //     run_tests<false, false, rocblas_double_complex>();
 // }
 
-TEST_P(GETRF, __float)
+TEST_P(GETRF_LARGE, __float)
 {
     run_tests<false, false, float>();
 }
 
-TEST_P(GETRF, __double)
+TEST_P(GETRF_LARGE, __double)
 {
     run_tests<false, false, double>();
 }
 
-TEST_P(GETRF, __float_complex)
+TEST_P(GETRF_LARGE, __float_complex)
 {
     run_tests<false, false, rocblas_float_complex>();
 }
 
-TEST_P(GETRF, __double_complex)
+TEST_P(GETRF_LARGE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -171,22 +171,22 @@ TEST_P(GETRF, __double_complex)
 //     run_tests<true, true, rocblas_double_complex>();
 // }
 
-TEST_P(GETRF, batched__float)
+TEST_P(GETRF_LARGE, batched__float)
 {
     run_tests<true, true, float>();
 }
 
-TEST_P(GETRF, batched__double)
+TEST_P(GETRF_LARGE, batched__double)
 {
     run_tests<true, true, double>();
 }
 
-TEST_P(GETRF, batched__float_complex)
+TEST_P(GETRF_LARGE, batched__float_complex)
 {
     run_tests<true, true, rocblas_float_complex>();
 }
 
-TEST_P(GETRF, batched__double_complex)
+TEST_P(GETRF_LARGE, batched__double_complex)
 {
     run_tests<true, true, rocblas_double_complex>();
 }
@@ -212,28 +212,28 @@ TEST_P(GETRF, batched__double_complex)
 // }
 
 
-TEST_P(GETRF, strided_batched__float)
+TEST_P(GETRF_LARGE, strided_batched__float)
 {
     run_tests<false, true, float>();
 }
 
-TEST_P(GETRF, strided_batched__double)
+TEST_P(GETRF_LARGE, strided_batched__double)
 {
     run_tests<false, true, double>();
 }
 
-TEST_P(GETRF, strided_batched__float_complex)
+TEST_P(GETRF_LARGE, strided_batched__float_complex)
 {
     run_tests<false, true, rocblas_float_complex>();
 }
 
-TEST_P(GETRF, strided_batched__double_complex)
+TEST_P(GETRF_LARGE, strided_batched__double_complex)
 {
     run_tests<false, true, rocblas_double_complex>();
 }
 
 
 INSTANTIATE_TEST_SUITE_P(weekly_lapack,
-                         GETRF,
+                         GETRF_LARGE,
                          Combine(ValuesIn(very_large_matrixA_size_range),ValuesIn(very_large_nrhs)));
 
