@@ -14,7 +14,7 @@
 
 /*
  * ===========================================================================
- *    testing_csrrf_workflow is a modified version of testing_csrrf_workflow
+ *    testing_csrrf_workflow is a modified version of testing_csrrf_analysis
  *    that tests invalid workflows for csrrf functions that need analysis
  *    to be performed first. checkBadArgs has been removed.
  * ===========================================================================
