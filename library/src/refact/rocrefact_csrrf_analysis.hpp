@@ -41,10 +41,10 @@ rocblas_status rocsolver_csrrf_analysis_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(rfinfo == nullptr)
+    if(!rfinfo || !ptrM || !ptrT || (nnzM && (!indM || !valM)) || (nnzT && (!indT || !valT))
+       || (n * nrhs && !B))
         return rocblas_status_invalid_pointer;
-    if(!rfinfo || !ptrM || !ptrT || (n && (!pivP || !pivQ)) || (nnzM && (!indM || !valM))
-       || (nnzT && (!indT || !valT)) || (n * nrhs && !B))
+    if(n && ((rfinfo->mode == rocsolver_rfinfo_mode_lu && !pivP) || !pivQ))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

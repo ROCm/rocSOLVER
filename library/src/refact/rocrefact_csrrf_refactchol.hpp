@@ -129,8 +129,6 @@ rocblas_status rocsolver_csrrf_refactchol_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(rfinfo == nullptr)
-        return rocblas_status_invalid_pointer;
     if(!rfinfo || !ptrA || !ptrT || (n && !pivQ) || (nnzA && (!indA || !valA))
        || (nnzT && (!indT || !valT)))
         return rocblas_status_invalid_pointer;

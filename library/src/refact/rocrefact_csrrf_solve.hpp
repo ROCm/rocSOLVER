@@ -181,7 +181,9 @@ rocblas_status rocsolver_csrrf_solve_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(!rfinfo || !ptrT || (n && (!pivP || !pivQ)) || (nnzT && (!indT || !valT)) || (nrhs * n && !B))
+    if(!rfinfo || !ptrT || (nnzT && (!indT || !valT)) || (nrhs * n && !B))
+        return rocblas_status_invalid_pointer;
+    if(n && ((rfinfo->mode == rocsolver_rfinfo_mode_lu && !pivP) || !pivQ))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -303,7 +305,8 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
     // -------------------------------------------------------------
 
     // compute Bhat (reordering of B)
-    ROCSOLVER_LAUNCH_KERNEL(rf_gather_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivP, B,
+    rocblas_int* pivot = (rfinfo->mode == rocsolver_rfinfo_mode_cholesky ? pivQ : pivP);
+    ROCSOLVER_LAUNCH_KERNEL(rf_gather_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivot, B,
                             ldb, temp);
 
     // solve (L * U) * Xhat = Bhat
