@@ -210,6 +210,7 @@ rocblas_status rocsolver_csrrf_analysis_template(rocblas_handle handle,
     }
 
     rfinfo->analyzed = true;
+    rfinfo->analyzed_mode = rfinfo->mode;
 
     return rocblas_status_success;
 }

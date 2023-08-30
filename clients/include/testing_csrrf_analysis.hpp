@@ -248,10 +248,6 @@ void csrrf_analysis_getError(rocblas_handle handle,
         handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
         dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), B, ldb, rfinfo));
 
-    // ensure mode selection is now disabled
-    EXPECT_ROCBLAS_STATUS(rocsolver_set_rfinfo_mode(rfinfo, rocsolver_rfinfo_mode_lu),
-                          rocblas_status_internal_error);
-
     // No error to calculate...
     // (analysis phase is required by refact and solve, so its results are validated there)
     *max_err = 0;

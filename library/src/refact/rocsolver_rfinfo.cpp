@@ -149,9 +149,6 @@ extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
     if(mode != rocsolver_rfinfo_mode_lu && mode != rocsolver_rfinfo_mode_cholesky)
         return rocblas_status_invalid_value;
 
-    if(rfinfo->analyzed)
-        return rocblas_status_internal_error;
-
     rfinfo->mode = mode;
     if(mode == rocsolver_rfinfo_mode_lu)
     {

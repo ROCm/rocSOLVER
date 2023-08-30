@@ -103,12 +103,11 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
                           T* d_LUx,
                           T* B,
                           const rocblas_int ldb,
-                          void* buffer,
-                          rocsolver_rfinfo_mode mode)
+                          void* buffer)
 {
     T alpha = 1.0;
 
-    if(mode == rocsolver_rfinfo_mode_lu)
+    if(rfinfo->mode == rocsolver_rfinfo_mode_lu)
     {
         // ----------------------
         // step (1) solve L * Y = B
@@ -289,7 +288,7 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
         return rocblas_status_success;
 
     // check state of rfinfo
-    if(!rfinfo->analyzed)
+    if(!rfinfo->analyzed || rfinfo->analyzed_mode != rfinfo->mode)
         return rocblas_status_internal_error;
 
     hipStream_t stream;
@@ -308,7 +307,7 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
                             ldb, temp);
 
     // solve (L * U) * Xhat = Bhat
-    ROCBLAS_CHECK(rf_lusolve(rfinfo, n, nnzT, nrhs, ptrT, indT, valT, B, ldb, work, rfinfo->mode));
+    ROCBLAS_CHECK(rf_lusolve(rfinfo, n, nnzT, nrhs, ptrT, indT, valT, B, ldb, work));
 
     // Compute X (reordering of Xhat)
     ROCSOLVER_LAUNCH_KERNEL(rf_scatter_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivQ, B,

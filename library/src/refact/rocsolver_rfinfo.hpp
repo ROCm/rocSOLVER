@@ -23,6 +23,6 @@ struct rocsolver_rfinfo_
     rocsparse_solve_policy solve_policy;
     rocsparse_analysis_policy analysis_policy;
 
-    rocsolver_rfinfo_mode mode;
+    rocsolver_rfinfo_mode mode, analyzed_mode;
     bool analyzed;
 };
