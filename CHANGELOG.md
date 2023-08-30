@@ -20,6 +20,13 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 - Linear system solver without pivoting for block tridiagonal matrices:
     - GEBLTTRS_NPVT now supports interleaved\_batched format
 
+### Fixed
+- Fixed stack overflow in sparse tests on Windows
+
+### Changed
+- Changed rocsolver-test sparse input data search paths to be relative to the test executable
+- Changed build scripts to default to compressed debug symbols in Debug builds
+
 
 ## rocSOLVER 3.22.0 for ROCm 5.6.0
 ### Added
