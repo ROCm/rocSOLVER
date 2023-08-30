@@ -317,7 +317,7 @@ void testing_csrrf_solve(Arguments& argus)
     rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
     rocblas_int nnzT = argus.get<rocblas_int>("nnzT");
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
-    char modeC = argus.get<char>("mode", '1');
+    char modeC = argus.get<char>("rfinfo_mode", '1');
     rocblas_int hot_calls = argus.iters;
 
     rocsolver_rfinfo_mode mode = char2rocsolver_rfinfo_mode(modeC);

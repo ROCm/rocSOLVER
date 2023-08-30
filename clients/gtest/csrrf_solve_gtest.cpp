@@ -79,7 +79,7 @@ Arguments csrrf_solve_setup_arguments(csrrf_solve_tuple tup)
     arg.set<rocblas_int>("ldb", n_v[1]);
     arg.set<rocblas_int>("nnzT", nnz_v[0]);
     arg.set<rocblas_int>("nrhs", nnz_v[1]);
-    arg.set<char>("mode", mode);
+    arg.set<char>("rfinfo_mode", mode);
 
     arg.timing = 0;
 

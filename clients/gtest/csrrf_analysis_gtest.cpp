@@ -66,7 +66,7 @@ Arguments csrrf_analysis_setup_arguments(csrrf_analysis_tuple tup)
     arg.set<rocblas_int>("n", n);
     arg.set<rocblas_int>("nnzM", nnz);
     arg.set<rocblas_int>("nnzT", nnz);
-    arg.set<char>("mode", mode);
+    arg.set<char>("rfinfo_mode", mode);
     // note: the clients will determine the test case with n and nnzM.
     // nnzT = nnz is passed because it does not have a default value in the
     // bench client (for future purposes).
