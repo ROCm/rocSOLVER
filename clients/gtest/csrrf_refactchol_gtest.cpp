@@ -1,8 +1,9 @@
+
 /* ************************************************************************
  * Copyright (c) 2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "testing_csrrf_analysis.hpp"
+#include "testing_csrrf_refactchol.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -10,10 +11,7 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<int, int, printable_char> csrrf_analysis_tuple;
-
-// if mode = '1', then the factorization is LU
-// if mode = '2', then the factorization is Cholesky
+typedef std::tuple<int, int> csrrf_refactchol_tuple;
 
 // case when n = 0 and nnz = 60 also execute the bad arguments test
 // (null handle, null pointers and invalid values)
@@ -37,11 +35,6 @@ const vector<int> nnz_range = {
     140,
 };
 
-const vector<printable_char> mode_range = {
-    '1', // for LU
-    '2', // for Cholesky
-};
-
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
@@ -55,18 +48,16 @@ const vector<int> large_nnz_range = {
     700,
 };
 
-Arguments csrrf_analysis_setup_arguments(csrrf_analysis_tuple tup)
+Arguments csrrf_refactchol_setup_arguments(csrrf_refactchol_tuple tup)
 {
     int n = std::get<0>(tup);
     int nnz = std::get<1>(tup);
-    char mode = std::get<2>(tup);
 
     Arguments arg;
 
     arg.set<rocblas_int>("n", n);
-    arg.set<rocblas_int>("nnzM", nnz);
+    arg.set<rocblas_int>("nnzA", nnz);
     arg.set<rocblas_int>("nnzT", nnz);
-    arg.set<char>("rfinfo_mode", mode);
     // note: the clients will determine the test case with n and nnzM.
     // nnzT = nnz is passed because it does not have a default value in the
     // bench client (for future purposes).
@@ -76,10 +67,10 @@ Arguments csrrf_analysis_setup_arguments(csrrf_analysis_tuple tup)
     return arg;
 }
 
-class CSRRF_ANALYSIS : public ::TestWithParam<csrrf_analysis_tuple>
+class CSRRF_REFACTCHOL : public ::TestWithParam<csrrf_refactchol_tuple>
 {
 protected:
-    CSRRF_ANALYSIS() {}
+    CSRRF_REFACTCHOL() {}
     virtual void SetUp()
     {
         if(rocsolver_create_rfinfo(nullptr, nullptr) == rocblas_status_not_implemented)
@@ -90,43 +81,41 @@ protected:
     template <typename T>
     void run_tests()
     {
-        Arguments arg = csrrf_analysis_setup_arguments(GetParam());
+        Arguments arg = csrrf_refactchol_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nnzM") == 60)
-            testing_csrrf_analysis_bad_arg<T>();
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nnzA") == 60)
+            testing_csrrf_refactchol_bad_arg<T>();
 
-        testing_csrrf_analysis<T>(arg);
+        testing_csrrf_refactchol<T>(arg);
     }
 };
 
 // non-batch tests
 
-TEST_P(CSRRF_ANALYSIS, __float)
+TEST_P(CSRRF_REFACTCHOL, __float)
 {
     run_tests<float>();
 }
 
-TEST_P(CSRRF_ANALYSIS, __double)
+TEST_P(CSRRF_REFACTCHOL, __double)
 {
     run_tests<double>();
 }
 
-/*TEST_P(CSRRF_ANALYSIS, __float_complex)
+/*TEST_P(CSRRF_REFACTCHOL, __float_complex)
 {
     run_tests<rocblas_float_complex>();
 }
 
-TEST_P(CSRRF_ANALYSIS, __double_complex)
+TEST_P(CSRRF_REFACTCHOL, __double_complex)
 {
     run_tests<rocblas_double_complex>();
 }*/
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         CSRRF_ANALYSIS,
-                         Combine(ValuesIn(large_n_range),
-                                 ValuesIn(large_nnz_range),
-                                 ValuesIn(mode_range)));
+                         CSRRF_REFACTCHOL,
+                         Combine(ValuesIn(large_n_range), ValuesIn(large_nnz_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-                         CSRRF_ANALYSIS,
-                         Combine(ValuesIn(n_range), ValuesIn(nnz_range), ValuesIn(mode_range)));
+                         CSRRF_REFACTCHOL,
+                         Combine(ValuesIn(n_range), ValuesIn(nnz_range)));

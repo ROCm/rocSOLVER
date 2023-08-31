@@ -64,3 +64,7 @@ rocblas_layer_mode_flags
 rocsolver_rfinfo
 ------------------------
 .. doxygentypedef:: rocsolver_rfinfo
+
+rocsolver_rfinfo_mode
+------------------------
+.. doxygenenum:: rocsolver_rfinfo_mode

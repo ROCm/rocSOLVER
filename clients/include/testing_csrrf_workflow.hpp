@@ -12,127 +12,16 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename T>
-void csrrf_analysis_checkBadArgs(rocblas_handle handle,
-                                 const rocblas_int n,
-                                 const rocblas_int nrhs,
-                                 const rocblas_int nnzM,
-                                 rocblas_int* ptrM,
-                                 rocblas_int* indM,
-                                 T valM,
-                                 const rocblas_int nnzT,
-                                 rocblas_int* ptrT,
-                                 rocblas_int* indT,
-                                 T valT,
-                                 rocblas_int* pivP,
-                                 rocblas_int* pivQ,
-                                 T B,
-                                 const rocblas_int ldb,
-                                 rocsolver_rfinfo rfinfo)
-{
-    // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(nullptr, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                   ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo),
-                          rocblas_status_invalid_handle);
-
-    // values
-    // N/A
-
-    // sizes (only check batch_count if applicable)
-    // N/A
-
-    // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, (rocblas_int*)nullptr,
-                                                   indM, valM, nnzT, ptrT, indT, valT, pivP, pivQ,
-                                                   B, ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM,
-                                                   (rocblas_int*)nullptr, valM, nnzT, ptrT, indT,
-                                                   valT, pivP, pivQ, B, ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, (T) nullptr,
-                                                   nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                   (rocblas_int*)nullptr, indT, valT, pivP, pivQ, B,
-                                                   ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                   ptrT, (rocblas_int*)nullptr, valT, pivP, pivQ, B,
-                                                   ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                   indT, (T) nullptr, pivP, pivQ, B, ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                   ptrT, indT, valT, (rocblas_int*)nullptr, pivQ, B,
-                                                   ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                   ptrT, indT, valT, pivP, (rocblas_int*)nullptr, B,
-                                                   ldb, rfinfo),
-                          rocblas_status_invalid_pointer);
-
-    // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, 0, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                   ptrT, indT, valT, (rocblas_int*)nullptr,
-                                                   (rocblas_int*)nullptr, B, ldb, rfinfo),
-                          rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, 0, nrhs, 0, ptrM, (rocblas_int*)nullptr,
-                                                   (T) nullptr, nnzT, ptrT, indT, valT,
-                                                   (rocblas_int*)nullptr, (rocblas_int*)nullptr, B,
-                                                   ldb, rfinfo),
-                          rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_analysis(handle, 0, nrhs, nnzM, ptrM, indM, valM, 0, ptrT,
-                                                   (rocblas_int*)nullptr, (T) nullptr,
-                                                   (rocblas_int*)nullptr, (rocblas_int*)nullptr, B,
-                                                   ldb, rfinfo),
-                          rocblas_status_success);
-
-    // quick return with zero batch_count if applicable
-    // N/A
-}
-
-template <typename T>
-void testing_csrrf_analysis_bad_arg()
-{
-    // safe arguments
-    rocblas_local_handle handle;
-    rocsolver_local_rfinfo rfinfo(handle);
-    rocblas_int n = 1;
-    rocblas_int nrhs = 1;
-    rocblas_int nnzM = 1;
-    rocblas_int nnzT = 1;
-    rocblas_int ldb = 1;
-
-    // memory allocations
-    device_strided_batch_vector<rocblas_int> ptrM(1, 1, 1, 1);
-    device_strided_batch_vector<rocblas_int> indM(1, 1, 1, 1);
-    device_strided_batch_vector<T> valM(1, 1, 1, 1);
-    device_strided_batch_vector<rocblas_int> ptrT(1, 1, 1, 1);
-    device_strided_batch_vector<rocblas_int> indT(1, 1, 1, 1);
-    device_strided_batch_vector<T> valT(1, 1, 1, 1);
-    device_strided_batch_vector<rocblas_int> pivP(1, 1, 1, 1);
-    device_strided_batch_vector<rocblas_int> pivQ(1, 1, 1, 1);
-    device_strided_batch_vector<T> B(1, 1, 1, 1);
-    CHECK_HIP_ERROR(ptrM.memcheck());
-    CHECK_HIP_ERROR(indM.memcheck());
-    CHECK_HIP_ERROR(valM.memcheck());
-    CHECK_HIP_ERROR(ptrT.memcheck());
-    CHECK_HIP_ERROR(indT.memcheck());
-    CHECK_HIP_ERROR(valT.memcheck());
-    CHECK_HIP_ERROR(pivP.memcheck());
-    CHECK_HIP_ERROR(pivQ.memcheck());
-    CHECK_HIP_ERROR(B.memcheck());
-
-    // check bad arguments
-    csrrf_analysis_checkBadArgs(handle, n, nrhs, nnzM, ptrM.data(), indM.data(), valM.data(), nnzT,
-                                ptrT.data(), indT.data(), valT.data(), pivP.data(), pivQ.data(),
-                                B.data(), ldb, rfinfo);
-}
+/*
+ * ===========================================================================
+ *    testing_csrrf_workflow is a modified version of testing_csrrf_analysis
+ *    that tests invalid workflows for csrrf functions that need analysis
+ *    to be performed first. checkBadArgs has been removed.
+ * ===========================================================================
+ */
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
-void csrrf_analysis_initData(rocblas_handle handle,
+void csrrf_workflow_initData(rocblas_handle handle,
                              const rocblas_int n,
                              const rocblas_int nrhs,
                              const rocblas_int nnzA,
@@ -191,11 +80,8 @@ void csrrf_analysis_initData(rocblas_handle handle,
         read_matrix(file.string(), 1, n, hpivQ.data(), 1);
 
         // read-in B
-        if(nrhs > 0)
-        {
-            file = testcase / fs::path(fmt::format("B_{}", nrhs));
-            read_matrix(file.string(), n, nrhs, hB.data(), ldb);
-        }
+        file = testcase / fs::path(fmt::format("B_{}", nrhs));
+        read_matrix(file.string(), n, nrhs, hB.data(), ldb);
     }
 
     if(GPU)
@@ -213,13 +99,12 @@ void csrrf_analysis_initData(rocblas_handle handle,
             CHECK_HIP_ERROR(dpivP.transfer_from(hpivQ));
         CHECK_HIP_ERROR(dpivQ.transfer_from(hpivQ));
 
-        if(nrhs > 0)
-            CHECK_HIP_ERROR(dB.transfer_from(hB));
+        CHECK_HIP_ERROR(dB.transfer_from(hB));
     }
 }
 
 template <typename T, typename Td, typename Ud, typename Th, typename Uh>
-void csrrf_analysis_getError(rocblas_handle handle,
+void csrrf_workflow_getError(rocblas_handle handle,
                              const rocblas_int n,
                              const rocblas_int nrhs,
                              const rocblas_int nnzM,
@@ -246,18 +131,58 @@ void csrrf_analysis_getError(rocblas_handle handle,
                              Th& hB,
                              double* max_err,
                              const fs::path testcase,
-                             const rocsolver_rfinfo_mode mode)
+                             const rocsolver_rfinfo_mode mode,
+                             const rocsolver_rfinfo_mode analysis_mode)
 {
     // input data initialization
-    csrrf_analysis_initData<true, true, T>(handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
-                                           dindT, dvalT, dpivP, dpivQ, dB, ldb, hptrM, hindM, hvalM,
-                                           hptrT, hindT, hvalT, hpivP, hpivQ, hB, testcase, mode);
+    csrrf_workflow_initData<true, true, T>(
+        handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, dB,
+        ldb, hptrM, hindM, hvalM, hptrT, hindT, hvalT, hpivP, hpivQ, hB, testcase, analysis_mode);
 
     // execute computations
     // GPU lapack
+
+    // cannot perform re-factorization or solve before analysis
+    if(mode == rocsolver_rfinfo_mode_lu)
+        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_refactlu(handle, n, nnzM, dptrM.data(), dindM.data(),
+                                                       dvalM.data(), nnzT, dptrT.data(),
+                                                       dindT.data(), dvalT.data(), dpivP.data(),
+                                                       dpivQ.data(), rfinfo),
+                              rocblas_status_internal_error);
+    else
+        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_refactchol(
+                                  handle, n, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT,
+                                  dptrT.data(), dindT.data(), dvalT.data(), dpivQ.data(), rfinfo),
+                              rocblas_status_internal_error);
+
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, dptrT.data(), dindT.data(),
+                                                dvalT.data(), dpivP.data(), dpivQ.data(), dB.data(),
+                                                ldb, rfinfo),
+                          rocblas_status_internal_error);
+
+    // perform analysis
     CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
         handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
         dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), dB.data(), ldb, rfinfo));
+
+    // cannot perform re-factorization or solve when mode doesn't match
+    if(mode == rocsolver_rfinfo_mode_lu)
+        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_refactlu(handle, n, nnzM, dptrM.data(), dindM.data(),
+                                                       dvalM.data(), nnzT, dptrT.data(),
+                                                       dindT.data(), dvalT.data(), dpivP.data(),
+                                                       dpivQ.data(), rfinfo),
+                              rocblas_status_internal_error);
+    else
+        EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_refactchol(
+                                  handle, n, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT,
+                                  dptrT.data(), dindT.data(), dvalT.data(), dpivQ.data(), rfinfo),
+                              rocblas_status_internal_error);
+
+    CHECK_ROCBLAS_ERROR(rocsolver_set_rfinfo_mode(rfinfo, mode));
+    EXPECT_ROCBLAS_STATUS(rocsolver_csrrf_solve(handle, n, nrhs, nnzT, dptrT.data(), dindT.data(),
+                                                dvalT.data(), dpivP.data(), dpivQ.data(), dB.data(),
+                                                ldb, rfinfo),
+                          rocblas_status_internal_error);
 
     // No error to calculate...
     // (analysis phase is required by refact and solve, so its results are validated there)
@@ -265,7 +190,7 @@ void csrrf_analysis_getError(rocblas_handle handle,
 }
 
 template <typename T, typename Td, typename Ud, typename Th, typename Uh>
-void csrrf_analysis_getPerfData(rocblas_handle handle,
+void csrrf_workflow_getPerfData(rocblas_handle handle,
                                 const rocblas_int n,
                                 const rocblas_int nrhs,
                                 const rocblas_int nnzM,
@@ -297,58 +222,15 @@ void csrrf_analysis_getPerfData(rocblas_handle handle,
                                 const bool profile_kernels,
                                 const bool perf,
                                 const fs::path testcase,
-                                const rocsolver_rfinfo_mode mode)
+                                const rocsolver_rfinfo_mode mode,
+                                const rocsolver_rfinfo_mode analysis_mode)
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
-
-    csrrf_analysis_initData<true, false, T>(handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
-                                            dindT, dvalT, dpivP, dpivQ, dB, ldb, hptrM, hindM, hvalM,
-                                            hptrT, hindT, hvalT, hpivP, hpivQ, hB, testcase, mode);
-
-    // cold calls
-    for(int iter = 0; iter < 2; iter++)
-    {
-        csrrf_analysis_initData<false, true, T>(
-            handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, dB,
-            ldb, hptrM, hindM, hvalM, hptrT, hindT, hvalT, hpivP, hpivQ, hB, testcase, mode);
-
-        CHECK_ROCBLAS_ERROR(rocsolver_csrrf_analysis(
-            handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(), nnzT, dptrT.data(),
-            dindT.data(), dvalT.data(), dpivP.data(), dpivQ.data(), dB.data(), ldb, rfinfo));
-    }
-
-    // gpu-lapack performance
-    hipStream_t stream;
-    CHECK_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream));
-    double start;
-
-    if(profile > 0)
-    {
-        if(profile_kernels)
-            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile
-                                         | rocblas_layer_mode_ex_log_kernel);
-        else
-            rocsolver_log_set_layer_mode(rocblas_layer_mode_log_profile);
-        rocsolver_log_set_max_levels(profile);
-    }
-
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
-    {
-        csrrf_analysis_initData<false, true, T>(
-            handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT, dvalT, dpivP, dpivQ, dB,
-            ldb, hptrM, hindM, hvalM, hptrT, hindT, hvalT, hpivP, hpivQ, hB, testcase, mode);
-
-        start = get_time_us_sync(stream);
-        rocsolver_csrrf_analysis(handle, n, nrhs, nnzM, dptrM.data(), dindM.data(), dvalM.data(),
-                                 nnzT, dptrT.data(), dindT.data(), dvalT.data(), dpivP.data(),
-                                 dpivQ.data(), dB.data(), ldb, rfinfo);
-        *gpu_time_used += get_time_us_sync(stream) - start;
-    }
-    *gpu_time_used /= hot_calls;
+    *gpu_time_used = nan(""); // no timing on gpu-lapack execution
 }
 
 template <typename T>
-void testing_csrrf_analysis(Arguments& argus)
+void testing_csrrf_workflow(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
@@ -358,11 +240,13 @@ void testing_csrrf_analysis(Arguments& argus)
     rocblas_int nnzM = argus.get<rocblas_int>("nnzM");
     rocblas_int nnzT = argus.get<rocblas_int>("nnzT");
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
-    char modeC = argus.get<char>("rfinfo_mode", '1');
+    char modeC = argus.get<char>("rfinfo_mode");
+    char analysis_modeC = argus.get<char>("analysis_mode");
     rocblas_int hot_calls = argus.iters;
 
     rocsolver_rfinfo_mode mode = char2rocsolver_rfinfo_mode(modeC);
-    CHECK_ROCBLAS_ERROR(rocsolver_set_rfinfo_mode(rfinfo, mode));
+    rocsolver_rfinfo_mode analysis_mode = char2rocsolver_rfinfo_mode(analysis_modeC);
+    CHECK_ROCBLAS_ERROR(rocsolver_set_rfinfo_mode(rfinfo, analysis_mode));
 
     // check non-supported values
     // N/A
@@ -421,7 +305,7 @@ void testing_csrrf_analysis(Arguments& argus)
     if(n > 0)
     {
         std::string matname;
-        if(mode == rocsolver_rfinfo_mode_lu)
+        if(analysis_mode == rocsolver_rfinfo_mode_lu)
             matname = fmt::format("mat_{}_{}", n, nnzM);
         else
             matname = fmt::format("posmat_{}_{}", n, nnzM);
@@ -528,17 +412,18 @@ void testing_csrrf_analysis(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        csrrf_analysis_getError<T>(handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT,
+        csrrf_workflow_getError<T>(handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT, dindT,
                                    dvalT, dpivP, dpivQ, dB, ldb, rfinfo, hptrM, hindM, hvalM, hptrT,
-                                   hindT, hvalT, hpivP, hpivQ, hB, &max_error, testcase, mode);
+                                   hindT, hvalT, hpivP, hpivQ, hB, &max_error, testcase, mode,
+                                   analysis_mode);
 
     // collect performance data
     if(argus.timing)
-        csrrf_analysis_getPerfData<T>(handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
+        csrrf_workflow_getPerfData<T>(handle, n, nrhs, nnzM, dptrM, dindM, dvalM, nnzT, dptrT,
                                       dindT, dvalT, dpivP, dpivQ, dB, ldb, rfinfo, hptrM, hindM,
                                       hvalM, hptrT, hindT, hvalT, hpivP, hpivQ, hB, &gpu_time_used,
-                                      &cpu_time_used, hot_calls, argus.profile,
-                                      argus.profile_kernels, argus.perf, testcase, mode);
+                                      &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels,
+                                      argus.perf, testcase, mode, analysis_mode);
 
     // validate results for rocsolver-test
     // N/A
@@ -577,8 +462,3 @@ void testing_csrrf_analysis(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
-
-#define EXTERN_TESTING_CSRRF_ANALYSIS(...) \
-    extern template void testing_csrrf_analysis<__VA_ARGS__>(Arguments&);
-
-INSTANTIATE(EXTERN_TESTING_CSRRF_ANALYSIS, FOREACH_REAL_TYPE, APPLY_STAMP)

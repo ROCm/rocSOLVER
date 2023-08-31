@@ -87,6 +87,11 @@ ROCSOLVER_KERNEL void rf_scatter_kernel(const rocblas_int n,
 // Solve A * X = (L*U) * X = B as
 // (1)   solve L * Y = B,   L unit diagonal lower triangular
 // (2)   solve U * X = Y,   U non-unit diagonal upper triangular
+//
+// If A = L*L'
+// Solve A * X = (L*L') * X = B as
+// (1)   solve L * Y = B,   L non-unit diagonal lower triangular
+// (2)   solve L' * X = Y,  L' non-unit diagonal upper triangular
 // -------------------------------------------
 template <typename T>
 rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
@@ -102,20 +107,44 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
 {
     T alpha = 1.0;
 
-    // ----------------------
-    // step (1) solve L * Y = B
-    // B <-- Y
-    // ----------------------
-    ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
-        rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
-        rfinfo->descrL, d_LUx, d_LUp, d_LUi, B, ldb, rfinfo->infoL, rfinfo->solve_policy, buffer));
-    // ----------------------
-    // step (2) solve U * X = Y
-    // B <-- X
-    // ----------------------
-    ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
-        rfinfo->sphandle, rocsparse_operation_none, rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
-        rfinfo->descrU, d_LUx, d_LUp, d_LUi, B, ldb, rfinfo->infoU, rfinfo->solve_policy, buffer));
+    if(rfinfo->mode == rocsolver_rfinfo_mode_lu)
+    {
+        // ----------------------
+        // step (1) solve L * Y = B
+        // B <-- Y
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(rfinfo->sphandle, rocsparse_operation_none,
+                                                  rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
+                                                  rfinfo->descrL, d_LUx, d_LUp, d_LUi, B, ldb,
+                                                  rfinfo->infoL, rfinfo->solve_policy, buffer));
+        // ----------------------
+        // step (2) solve U * X = Y
+        // B <-- X
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(rfinfo->sphandle, rocsparse_operation_none,
+                                                  rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
+                                                  rfinfo->descrU, d_LUx, d_LUp, d_LUi, B, ldb,
+                                                  rfinfo->infoU, rfinfo->solve_policy, buffer));
+    }
+    else
+    {
+        // ----------------------
+        // step (1) solve L * Y = B
+        // B <-- Y
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(rfinfo->sphandle, rocsparse_operation_none,
+                                                  rocsparse_operation_none, n, nrhs, nnzLU, &alpha,
+                                                  rfinfo->descrL, d_LUx, d_LUp, d_LUi, B, ldb,
+                                                  rfinfo->infoL, rfinfo->solve_policy, buffer));
+        // ----------------------
+        // step (2) solve L' * X = Y
+        // B <-- X
+        // ----------------------
+        ROCSPARSE_CHECK(rocsparseCall_csrsm_solve(
+            rfinfo->sphandle, rocsparse_operation_conjugate_transpose, rocsparse_operation_none, n,
+            nrhs, nnzLU, &alpha, rfinfo->descrL, d_LUx, d_LUp, d_LUi, B, ldb, rfinfo->infoU,
+            rfinfo->solve_policy, buffer));
+    };
 
     return rocblas_status_success;
 }
@@ -141,9 +170,7 @@ rocblas_status rocsolver_csrrf_solve_argCheck(rocblas_handle handle,
     // 1. invalid/non-supported values
     // N/A
     if(handle == nullptr)
-    {
         return rocblas_status_invalid_handle;
-    };
 
     // 2. invalid size
     if(n < 0 || nrhs < 0 || nnzT < 0 || ldb < n)
@@ -154,7 +181,9 @@ rocblas_status rocsolver_csrrf_solve_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(!rfinfo || !ptrT || (n && (!pivP || !pivQ)) || (nnzT && (!indT || !valT)) || (nrhs * n && !B))
+    if(!rfinfo || !ptrT || (nnzT && (!indT || !valT)) || (nrhs * n && !B))
+        return rocblas_status_invalid_pointer;
+    if(n && ((rfinfo->mode == rocsolver_rfinfo_mode_lu && !pivP) || !pivQ))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -184,23 +213,56 @@ void rocsolver_csrrf_solve_getMemorySize(const rocblas_int n,
     // temp storage for performing permutations
     *size_temp = sizeof(T) * n * nrhs;
 
-    // requirements for solve with L and U
-    // (buffer size is the same for all routines if the sparsity pattern does not change)
-    size_t csrsm_L_buffer_size = 0;
-    size_t csrsm_U_buffer_size = 0;
     T alpha = 1.0;
+    if(rfinfo->mode == rocsolver_rfinfo_mode_lu)
+    {
+        // requirements for solve with L and U
+        // (buffer size is the same for all routines if the sparsity pattern does not
+        // change)
+        size_t csrsm_L_buffer_size = 0;
+        size_t csrsm_U_buffer_size = 0;
 
-    rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
-                                    rocsparse_operation_none, n, nrhs, nnzT, &alpha, rfinfo->descrL,
-                                    valT, ptrT, indT, B, ldb, rfinfo->infoL, rfinfo->solve_policy,
-                                    &csrsm_L_buffer_size);
+        // ----------------------------------
+        // solve L z = b, L has unit diagonal
+        // ----------------------------------
+        rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
+                                        rocsparse_operation_none, n, nrhs, nnzT, &alpha,
+                                        rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoL,
+                                        rfinfo->solve_policy, &csrsm_L_buffer_size);
 
-    rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
-                                    rocsparse_operation_none, n, nrhs, nnzT, &alpha, rfinfo->descrU,
-                                    valT, ptrT, indT, B, ldb, rfinfo->infoU, rfinfo->solve_policy,
-                                    &csrsm_U_buffer_size);
+        // --------------------------------------
+        // solve U x = z, U has non-unit diagonal
+        // --------------------------------------
+        rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
+                                        rocsparse_operation_none, n, nrhs, nnzT, &alpha,
+                                        rfinfo->descrU, valT, ptrT, indT, B, ldb, rfinfo->infoU,
+                                        rfinfo->solve_policy, &csrsm_U_buffer_size);
 
-    *size_work = std::max(csrsm_L_buffer_size, csrsm_U_buffer_size);
+        *size_work = std::max(csrsm_L_buffer_size, csrsm_U_buffer_size);
+    }
+    else
+    {
+        size_t csrsm_L_buffer_size = 0;
+        size_t csrsm_Lt_buffer_size = 0;
+
+        // --------------------------------------
+        // solve L z = b, L has non-unit diagonal
+        // --------------------------------------
+        rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_none,
+                                        rocsparse_operation_none, n, nrhs, nnzT, &alpha,
+                                        rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoL,
+                                        rfinfo->solve_policy, &csrsm_L_buffer_size);
+
+        // --------------------------------
+        // solve L' x = z, use transpose(L)
+        // --------------------------------
+        rocsparseCall_csrsm_buffer_size(rfinfo->sphandle, rocsparse_operation_conjugate_transpose,
+                                        rocsparse_operation_none, n, nrhs, nnzT, &alpha,
+                                        rfinfo->descrL, valT, ptrT, indT, B, ldb, rfinfo->infoU,
+                                        rfinfo->solve_policy, &csrsm_Lt_buffer_size);
+
+        *size_work = std::max(csrsm_L_buffer_size, csrsm_Lt_buffer_size);
+    };
 }
 /****************************************************************************/
 
@@ -227,6 +289,10 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
     if(n == 0 || nrhs == 0)
         return rocblas_status_success;
 
+    // check state of rfinfo
+    if(!rfinfo->analyzed || rfinfo->analyzed_mode != rfinfo->mode)
+        return rocblas_status_internal_error;
+
     hipStream_t stream;
     ROCBLAS_CHECK(rocblas_get_stream(handle, &stream));
 
@@ -239,7 +305,8 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
     // -------------------------------------------------------------
 
     // compute Bhat (reordering of B)
-    ROCSOLVER_LAUNCH_KERNEL(rf_gather_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivP, B,
+    rocblas_int* pivot = (rfinfo->mode == rocsolver_rfinfo_mode_cholesky ? pivQ : pivP);
+    ROCSOLVER_LAUNCH_KERNEL(rf_gather_kernel<T>, dim3(1), dim3(BS1), 0, stream, n, nrhs, pivot, B,
                             ldb, temp);
 
     // solve (L * U) * Xhat = Bhat

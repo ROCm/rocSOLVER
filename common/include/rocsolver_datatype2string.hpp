@@ -223,6 +223,16 @@ constexpr auto rocblas2string_initialization(rocblas_initialization init)
     return "invalid";
 }
 
+constexpr auto rocsolver2char_rfinfo_mode(rocsolver_rfinfo_mode value)
+{
+    switch(value)
+    {
+    case rocsolver_rfinfo_mode_lu: return '1';
+    case rocsolver_rfinfo_mode_cholesky: return '2';
+    }
+    return '\0';
+}
+
 /* ============================================================================================
  */
 /*  Convert lapack char constants to rocblas type. */
@@ -420,5 +430,15 @@ inline rocblas_initialization string2rocblas_initialization(const std::string& v
         static_cast<rocblas_initialization>(0);
 }
 // clang-format on
+
+constexpr rocsolver_rfinfo_mode char2rocsolver_rfinfo_mode(char value)
+{
+    switch(value)
+    {
+    case '1': return rocsolver_rfinfo_mode_lu;
+    case '2': return rocsolver_rfinfo_mode_cholesky;
+    default: return static_cast<rocsolver_rfinfo_mode>(0);
+    }
+}
 
 #undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
