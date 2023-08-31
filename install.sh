@@ -48,7 +48,7 @@ Options:
   -i | --install              Pass this flag to generate and install library and client packages after build.
 
   -d | --dependencies         Pass this flag to also build and install external dependencies.
-                              Dependecies are to be installed in /usr/local. This should be done only once.
+                              Dependencies are to be installed in /usr/local. This should be done only once.
                               (this does not install rocBLAS nor ROCm software stack)
 
   -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
@@ -86,8 +86,6 @@ Options:
                               (Default build type is Release)
 
   --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
-
-  --rm-legacy-include-dir     Remove legacy include dir Packaging added for file/folder reorg backward compatibility.
 EOF
 }
 
@@ -327,7 +325,6 @@ optimal=true
 cleanup=false
 build_sanitizer=false
 build_codecoverage=false
-build_freorg_bkwdcomp=true
 build_with_sparse=true
 unset architecture
 unset rocblas_dir
@@ -343,7 +340,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,rocsparse_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg:,rm-legacy-include-dir --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,rocsparse_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -432,9 +429,6 @@ while true; do
         shift ;;
     -k|--relwithdebinfo)
         build_type=RelWithDebInfo
-        shift ;;
-    --rm-legacy-include-dir)
-        build_freorg_bkwdcomp=false
         shift ;;
     --cmake-arg)
         cmake_common_options+=("${2}")
@@ -594,12 +588,6 @@ fi
 
 if [[ "${build_library}" == false ]]; then
   cmake_client_options+=('-DBUILD_LIBRARY=OFF')
-fi
-
-if [[ "${build_freorg_bkwdcomp}" == true ]]; then
-  cmake_common_options+=('-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=ON')
-else
-  cmake_common_options+=('-DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF')
 fi
 
 rocm_rpath=""

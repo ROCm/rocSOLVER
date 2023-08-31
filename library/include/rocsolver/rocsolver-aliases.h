@@ -173,7 +173,7 @@ ROCSOLVER_EXPORT rocsolver_status rocsolver_get_matrix(rocsolver_int rows,
                                                        void* b,
                                                        rocsolver_int ldb);
 
-// reenable deprecation warnings
+// re-enable deprecation warnings
 #if defined(__GNUC__) // GCC or Clang
 #pragma GCC diagnostic pop
 #elif defined(_MSC_VER) // MSVC

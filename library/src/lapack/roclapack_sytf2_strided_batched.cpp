@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include "roclapack_sytf2.hpp"
@@ -31,7 +31,7 @@ rocblas_status rocsolver_sytf2_strided_batched_impl(rocblas_handle handle,
     // using unshifted arrays
     rocblas_int shiftA = 0;
 
-    // this function does not requiere memory work space
+    // this function does not require memory work space
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_status_size_unchanged;
 
