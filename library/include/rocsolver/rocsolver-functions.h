@@ -1068,6 +1068,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
                                                  rocblas_int* ipiv,
                                                  rocblas_int* info);
 //! @}
+
 /*! @{
     \brief LAUUM computes the product of the upper (or lower) triangular part U (or L) of a
     symmetric/Hemitian matrix A with its transpose.
@@ -1118,7 +1119,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlauum(rocblas_handle handle,
                                                  rocblas_double_complex* A,
                                                  const rocblas_int lda);
 //! @}
- bmn nm, m,mn
+
+
 /*! @{
     \brief ORG2R generates an m-by-n Matrix Q with orthonormal columns.
 
