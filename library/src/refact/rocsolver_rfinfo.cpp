@@ -79,8 +79,14 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCBLAS_ERROR(rocblas_get_stream(handle, &stream), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_stream(impl->sphandle, stream), result, cleanup);
 
+    // setup mode
+    impl->mode = rocsolver_rfinfo_mode_lu;
+    impl->analyzed = false;
+
     // create and set matrix descriptors
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrL), result, cleanup);
+
+    // setup descrL
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(impl->descrL)), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrL, rocsparse_matrix_type_general),
                             result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrL, rocsparse_index_base_zero),
@@ -90,7 +96,8 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(impl->descrL, rocsparse_diag_type_unit),
                             result, cleanup);
 
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrU), result, cleanup);
+    // setup descrU
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(impl->descrU)), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrU, rocsparse_matrix_type_general),
                             result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrU, rocsparse_index_base_zero),
@@ -100,7 +107,8 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(impl->descrU, rocsparse_diag_type_non_unit),
                             result, cleanup);
 
-    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&impl->descrT), result, cleanup);
+    // setup descrT
+    GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(impl->descrT)), result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_type(impl->descrT, rocsparse_matrix_type_general),
                             result, cleanup);
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(impl->descrT, rocsparse_index_base_zero),
@@ -122,7 +130,9 @@ cleanup:
     rocsparse_destroy_mat_descr(impl->descrT);
     rocsparse_destroy_mat_descr(impl->descrU);
     rocsparse_destroy_mat_descr(impl->descrL);
+
     rocsparse_destroy_handle(impl->sphandle);
+
     delete impl;
     return result;
 #else
@@ -142,8 +152,53 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrT));
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrU));
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrL));
+
     ROCSPARSE_CHECK(rocsparse_destroy_handle(rfinfo->sphandle));
     delete rfinfo;
+
+    return rocblas_status_success;
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
+                                                    rocsolver_rfinfo_mode mode)
+{
+#ifdef HAVE_ROCSPARSE
+    if(!rfinfo)
+        return rocblas_status_invalid_pointer;
+
+    if(mode != rocsolver_rfinfo_mode_lu && mode != rocsolver_rfinfo_mode_cholesky)
+        return rocblas_status_invalid_value;
+
+    rfinfo->mode = mode;
+    if(mode == rocsolver_rfinfo_mode_lu)
+    {
+        ROCSPARSE_CHECK(rocsparse_set_mat_diag_type(rfinfo->descrL, rocsparse_diag_type_unit));
+    }
+    else
+    {
+        ROCSPARSE_CHECK(rocsparse_set_mat_diag_type(rfinfo->descrL, rocsparse_diag_type_non_unit));
+    }
+
+    return rocblas_status_success;
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+extern "C" rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
+                                                    rocsolver_rfinfo_mode* mode)
+{
+#ifdef HAVE_ROCSPARSE
+    if(!rfinfo)
+        return rocblas_status_invalid_pointer;
+
+    if(!mode)
+        return rocblas_status_invalid_pointer;
+
+    *mode = rfinfo->mode;
 
     return rocblas_status_success;
 #else

@@ -404,8 +404,10 @@ void testing_csrrf_refactlu(Arguments& argus)
     if(n > 0)
     {
         testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
-        fs::path file = testcase / "ptrT";
-        read_last(file.string(), &nnzT);
+        fs::path fileA = testcase / "ptrA";
+        read_last(fileA.string(), &nnzA);
+        fs::path fileT = testcase / "ptrT";
+        read_last(fileT.string(), &nnzT);
     }
 
     // memory size query if necessary

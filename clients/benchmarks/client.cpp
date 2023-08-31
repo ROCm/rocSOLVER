@@ -362,7 +362,7 @@ try
             "                           Stride for matrices/vectors Z.\n"
             "                           ")
 
-        // refactorization size options
+        // refactorization options
         ("nnzM",
          value<rocblas_int>(),
             "The number of non-zero elements in sparse matrix M.\n"
@@ -396,6 +396,12 @@ try
             "The number of non-zero elements in sparse matrix T.\n"
             "                           Currently only a few test cases can be generated.\n"
             "                           The benchmark client will use the available case closest to the input value.\n"
+            "                           ")
+
+        ("rfinfo_mode",
+         value<char>(),
+            "Specifies the desired re-factorization algorithm.\n"
+            "                           1 = LU, 2 = Cholesky.\n"
             "                           ")
 
         // bdsqr options
@@ -647,6 +653,7 @@ try
     argus.validate_eorder("eorder");
     argus.validate_esort("esort");
     argus.validate_itype("itype");
+    argus.validate_rfinfo_mode("rfinfo_mode");
 
     // prepare logging infrastructure and ignore environment variables
     rocsolver_log_begin();

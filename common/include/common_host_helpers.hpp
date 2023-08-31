@@ -409,43 +409,61 @@ inline void read_matrix(const std::string filenameS,
                         const rocblas_int lda)
 {
     const char* filename = filenameS.c_str();
-    FILE* mat;
-    mat = fopen(filename, "r");
-    rocblas_int v;
+    int const idebug = 0;
+    if(idebug >= 1)
+    {
+        printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
+    }
+
+    FILE* mat = fopen(filename, "r");
 
     if(mat == NULL)
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
 
+    rewind(mat);
+
     for(rocblas_int i = 0; i < m; ++i)
     {
         for(rocblas_int j = 0; j < n; ++j)
         {
+            rocblas_int v;
             int read = fscanf(mat, "%d", &v);
             assert(read == 1);
             A[i + j * lda] = v;
         }
     }
 
-    fclose(mat);
+    if(fclose(mat) != 0)
+    {
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
 inline void read_last(const std::string filenameS, rocblas_int* A)
 {
     const char* filename = filenameS.c_str();
-    FILE* mat;
-    mat = fopen(filename, "r");
-    rocblas_int v;
+    FILE* mat = fopen(filename, "r");
 
     if(mat == NULL)
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
 
+    rewind(mat);
+
+    rocblas_int v;
     while(fscanf(mat, "%d", &v) == 1)
     {
         // do nothing
     }
 
     *A = v;
+
+    if(fclose(mat) != 0)
+    {
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
 
 // singles:
@@ -456,25 +474,36 @@ inline void read_matrix(const std::string filenameS,
                         const rocblas_int lda)
 {
     const char* filename = filenameS.c_str();
-    FILE* mat;
-    mat = fopen(filename, "r");
-    float v;
+    int const idebug = 0;
+    if(idebug >= 1)
+    {
+        printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
+    }
+
+    FILE* mat = fopen(filename, "r");
 
     if(mat == NULL)
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
 
+    rewind(mat);
+
     for(rocblas_int i = 0; i < m; ++i)
     {
         for(rocblas_int j = 0; j < n; ++j)
         {
+            float v;
             int read = fscanf(mat, "%g", &v);
             assert(read == 1);
             A[i + j * lda] = v;
         }
     }
 
-    fclose(mat);
+    if(fclose(mat) != 0)
+    {
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
 
 // doubles:
@@ -485,23 +514,33 @@ inline void read_matrix(const std::string filenameS,
                         const rocblas_int lda)
 {
     const char* filename = filenameS.c_str();
-    FILE* mat;
-    mat = fopen(filename, "r");
-    double v;
+    int const idebug = 0;
+    if(idebug >= 1)
+    {
+        printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
+    }
+    FILE* mat = fopen(filename, "r");
 
     if(mat == NULL)
         throw std::invalid_argument(
             fmt::format("Error: Could not open file {} with test data...", filename));
 
+    rewind(mat);
+
     for(rocblas_int i = 0; i < m; ++i)
     {
         for(rocblas_int j = 0; j < n; ++j)
         {
+            double v;
             int read = fscanf(mat, "%lg", &v);
             assert(read == 1);
             A[i + j * lda] = v;
         }
     }
 
-    fclose(mat);
+    if(fclose(mat) != 0)
+    {
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
 }
