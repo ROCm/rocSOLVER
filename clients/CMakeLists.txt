@@ -121,6 +121,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_csrrf_sumlu.cpp
     common/testing_csrrf_splitlu.cpp
     common/testing_csrrf_refactlu.cpp
+    common/testing_csrrf_refactchol.cpp
     common/testing_csrrf_solve.cpp
   )
 
