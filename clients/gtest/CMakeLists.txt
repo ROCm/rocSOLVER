@@ -101,7 +101,7 @@ set(others_test_source
   # unified memory model
   managed_malloc_gtest.cpp
   # rocblas memory model
-  # memory_model_gtest.cpp (TODO: Resolve test failures)
+  memory_model_gtest.cpp
   # rocsolver logging
   logging_gtest.cpp
   # helpers

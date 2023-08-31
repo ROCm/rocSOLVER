@@ -825,14 +825,16 @@ void rocsolver_trsm_lower(rocblas_handle handle,
         return;
     }
 
-    // TODO: Temporary workaround for gfx940 synchronization issue with rocBLAS
+    // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
     int device;
     hipGetDevice(&device);
     hipDeviceProp_t deviceProperties;
     hipGetDeviceProperties(&deviceProperties, device);
     std::string deviceFullString(deviceProperties.gcnArchName);
     std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
-    bool do_sync = (deviceString.find("gfx940") != std::string::npos);
+    bool do_sync = (deviceString.find("gfx940") != std::string::npos
+                    || deviceString.find("gfx941") != std::string::npos
+                    || deviceString.find("gfx942") != std::string::npos);
 
     // ****** MAIN LOOP ***********
     if(isleft)
@@ -1106,14 +1108,16 @@ void rocsolver_trsm_upper(rocblas_handle handle,
         return;
     }
 
-    // TODO: Temporary workaround for gfx940 synchronization issue with rocBLAS
+    // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
     int device;
     hipGetDevice(&device);
     hipDeviceProp_t deviceProperties;
     hipGetDeviceProperties(&deviceProperties, device);
     std::string deviceFullString(deviceProperties.gcnArchName);
     std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
-    bool do_sync = (deviceString.find("gfx940") != std::string::npos);
+    bool do_sync = (deviceString.find("gfx940") != std::string::npos
+                    || deviceString.find("gfx941") != std::string::npos
+                    || deviceString.find("gfx942") != std::string::npos);
 
     // ****** MAIN LOOP ***********
     if(isleft)
