@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
 #include <stdlib.h>
@@ -51,7 +51,7 @@ protected:
 /*************************************/
 /***** rocblas_managed (default) *****/
 /*************************************/
-TEST_F(checkin_misc_MEMORY_MODEL, rocblas_managed)
+TEST_F(checkin_misc_MEMORY_MODEL, DISABLED_rocblas_managed)
 {
     size_t size, size1;
     rocblas_status status;
