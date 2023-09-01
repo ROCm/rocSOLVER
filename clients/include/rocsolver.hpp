@@ -9626,6 +9626,40 @@ inline rocblas_status rocsolver_csrrf_splitlu(rocblas_handle handle,
 }
 /********************************************************/
 
+/********************* CSRRF_REFACTCHOL ************************/
+inline rocblas_status rocsolver_csrrf_refactchol(rocblas_handle handle,
+                                                 rocblas_int n,
+                                                 rocblas_int nnzA,
+                                                 rocblas_int* ptrA,
+                                                 rocblas_int* indA,
+                                                 float* valA,
+                                                 rocblas_int nnzT,
+                                                 rocblas_int* ptrT,
+                                                 rocblas_int* indT,
+                                                 float* valT,
+                                                 rocblas_int* pivQ,
+                                                 rocsolver_rfinfo rfinfo)
+{
+    return rocsolver_scsrrf_refactchol(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT, valT,
+                                       pivQ, rfinfo);
+}
+
+inline rocblas_status rocsolver_csrrf_refactchol(rocblas_handle handle,
+                                                 rocblas_int n,
+                                                 rocblas_int nnzA,
+                                                 rocblas_int* ptrA,
+                                                 rocblas_int* indA,
+                                                 double* valA,
+                                                 rocblas_int nnzT,
+                                                 rocblas_int* ptrT,
+                                                 rocblas_int* indT,
+                                                 double* valT,
+                                                 rocblas_int* pivQ,
+                                                 rocsolver_rfinfo rfinfo)
+{
+    return rocsolver_dcsrrf_refactchol(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT, valT,
+                                       pivQ, rfinfo);
+}
 /********************* CSRRF_REFACTLU ************************/
 inline rocblas_status rocsolver_csrrf_refactlu(rocblas_handle handle,
                                                rocblas_int n,

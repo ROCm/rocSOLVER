@@ -4,8 +4,14 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 ## (Unreleased) rocSOLVER
 ### Added
+- Cholesky refactorization for sparse matrices
+    - CSRRF_REFACTCHOL
+- Added `rocsolver_rfinfo_mode` and the ability to specify the desired refactorization routine (see `rocsolver_set_rfinfo_mode`).
+
 ### Optimized
 ### Changed
+- CSRRF_ANALYSIS and CSRRF_SOLVE now support sparse Cholesky factorization
+
 ### Deprecated
 ### Removed
 ### Fixed
@@ -19,6 +25,13 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
     - GEBLTTRF_NPVT now supports interleaved\_batched format
 - Linear system solver without pivoting for block tridiagonal matrices:
     - GEBLTTRS_NPVT now supports interleaved\_batched format
+
+### Fixed
+- Fixed stack overflow in sparse tests on Windows
+
+### Changed
+- Changed rocsolver-test sparse input data search paths to be relative to the test executable
+- Changed build scripts to default to compressed debug symbols in Debug builds
 
 
 ## rocSOLVER 3.22.0 for ROCm 5.6.0

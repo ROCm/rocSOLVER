@@ -202,6 +202,7 @@ set(rocsolver_refact_source
   refact/rocrefact_csrrf_sumlu.cpp
   refact/rocrefact_csrrf_splitlu.cpp
   refact/rocrefact_csrrf_refactlu.cpp
+  refact/rocrefact_csrrf_refactchol.cpp
   # direct solver
   refact/rocrefact_csrrf_solve.cpp
 )
