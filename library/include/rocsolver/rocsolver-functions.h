@@ -1079,19 +1079,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether the upper or lower triangular part of A will be used.
                 If uplo indicates lower (or upper), then the upper (or lower)
                 part of A is not referenced.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns and rows of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n. \n
+    A           pointer to type. Array on the GPU of dimension lda*n. 
                 On entry, it contains the upper (or lower) part of the symmetric/Hermitian matrix.
                 On exit, the upper (or lower) part is overwritten with the result of U*U' (or L'*L).
     @param[in]
-    lda         rocblas_int. lda >= n.\n
+    lda         rocblas_int. lda >= n.
                 The leading dimension of the array A.
     **************************************************************************/
 
@@ -4209,49 +4209,49 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    uplo        rocblas_fill.\n
+    uplo        rocblas_fill.
                 Specifies whether B is upper or lower bidiagonal.
     @param[in]
-    svect       #rocblas_svect.\n
+    svect       #rocblas_svect.
                 Specifies how the singular vectors are computed. Only rocblas_svect_none and
                 rocblas_svect_singular are accepted.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange.
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The order of the bidiagonal matrix B.
     @param[in]
-    D           pointer to real type. Array on the GPU of dimension n.\n
+    D           pointer to real type. Array on the GPU of dimension n.
                 The diagonal elements of the bidiagonal matrix.
     @param[in]
-    E           pointer to real type. Array on the GPU of dimension n-1.\n
+    E           pointer to real type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of the bidiagonal matrix.
     @param[in]
-    vl          real type. 0 <= vl < vu.\n
+    vl          real type. 0 <= vl < vu.
                 The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
-    vu          real type. 0 <= vl < vu.\n
+    vu          real type. 0 <= vl < vu.
                 The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of B or the singular values within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to a rocblas_int on the GPU. \n
+    nsv         pointer to a rocblas_int on the GPU. 
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = n.
                 If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= n.
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension n.\n
+    S           pointer to real type. Array on the GPU of dimension n.
                 The first nsv elements contain the computed singular values in descending order.
     @param[out]
-    Z           pointer to real type. Array on the GPU of dimension ldz*nsv.\n
+    Z           pointer to real type. Array on the GPU of dimension ldz*nsv.
                 If info = 0, the first nsv columns contain the computed singular vectors corresponding to the
                 singular values in S. The first n rows of Z contain the matrix U, and the next n rows contain
                 the matrix V. Not referenced if svect is rocblas_svect_none.
@@ -4259,16 +4259,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                 The user should ensure that Z is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[in]
-    ldz         rocblas_int. ldz >= 2*n if svect is rocblas_svect_singular; ldz >= 1 otherwise.\n
+    ldz         rocblas_int. ldz >= 2*n if svect is rocblas_svect_singular; ldz >= 1 otherwise.
                 Specifies the leading dimension of Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.\n
+    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
                 If info = 0, the first nsv elements of ifail are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge, as returned by \ref rocsolver_sstein "STEIN".
                 Not referenced if svect is rocblas_svect_none.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, i eigenvectors did not converge in \ref rocsolver_sstein "STEIN"; their
                 indices are stored in ifail.
@@ -4676,7 +4676,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
                 The unit diagonal elements of L_l are not stored.
     @param[in]
     lda         rocblas_int. lda >= m.
-                Specifies the leading dimension of matrices A_j.
+                Specifies the leading dimension of matrices A_l.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
@@ -7603,7 +7603,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelqf_batched(rocblas_handle handle,
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[out]
     ipiv        pointer to type. Array on the GPU (the size depends on the value of strideP).
-                Contains the vectors ipiv_j of corresponding Householder scalars.
+                Contains the vectors ipiv_l of corresponding Householder scalars.
     @param[in]
     strideP     rocblas_stride.
                 Stride from the start of one vector ipiv_l to the next one ipiv_(l+1).
@@ -10885,7 +10885,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zposv_batched(rocblas_handle handle,
     @param[in]
     nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns
-                of all the matrices B_j.
+                of all the matrices B_l.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the symmetric/hermitian matrices A_l.
@@ -11846,62 +11846,62 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies how the left singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies how the right singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A.
                 On exit, the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A'A)
                 is <= norm(A'A) * abstol [resp. off(AA') <= norm(AA') * abstol]. If abstol <= 0,
                 then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type on the GPU.\n
+    residual    pointer to real type on the GPU.
                 The Frobenius norm of the off-diagonal elements of A'A (resp. AA') at the final
                 iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to a rocblas_int on the GPU.\n
+    n_sweeps    pointer to a rocblas_int on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm.
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension min(m,n). \n
+    S           pointer to real type. Array on the GPU of dimension min(m,n). 
                 The singular values of A in decreasing order.
     @param[out]
     U           pointer to type. Array on the GPU of dimension ldu*min(m,n) if
-                left_svect is set to singular, or ldu*m when left_svect is equal to all.\n
+                left_svect is set to singular, or ldu*m when left_svect is equal to all.
                 The matrix of left singular vectors stored as columns. Not
                 referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.
                 The leading dimension of U.
     @param[out]
-    V           pointer to type. Array on the GPU of dimension ldv*n. \n
+    V           pointer to type. Array on the GPU of dimension ldv*n. 
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit. If info = 1, the algorithm did not converge.
     ********************************************************************/
 
@@ -12010,7 +12010,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
       i.e. no singular vectors.
 
     The singular values are computed by applying QR factorization to \f$A_lV_l\f$ if m >= n
-    (resp. LQ factorization to \f$U_l'A_l\f$ if m < n), where \f$V_l\f$ (resp. \f$U_j\f$) is
+    (resp. LQ factorization to \f$U_l'A_l\f$ if m < n), where \f$V_l\f$ (resp. \f$U_l\f$) is
     found as the eigenvectors of \f$A_l'A_l\f$ (resp. \f$A_lA_l'\f$) using the Jacobi
     eigenvalue algorithm.
 
@@ -12021,81 +12021,81 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies how the left singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies how the right singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
     A           Array of pointers to type. Each pointer points to an array on
-                the GPU of dimension lda*n.\n
+                the GPU of dimension lda*n.
                 On entry, the matrices A_l.
                 On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A_l.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A_l'A_l)
                 is <= norm(A_l'A_l) * abstol [resp. off(A_lA_l') <= norm(A_lA_l') * abstol]. If abstol <= 0,
                 then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type on the GPU.\n
+    residual    pointer to real type on the GPU.
                 The Frobenius norm of the off-diagonal elements of A_l'A_l (resp. A_lA_l') at the final
                 iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).\n
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The singular values of A_l in decreasing order.
     @param[in]
-    strideS     rocblas_stride.\n
+    strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S(l+1).
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). \n
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.
                 The leading dimension of U_l.
     @param[in]
-    strideU     rocblas_stride.\n
+    strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U(l+1).
                 There is no restriction for the value of strideU.
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V.
     @param[in]
-    strideV     rocblas_stride.\n
+    strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V(l+1).
                 There is no restriction for the value of strideV.
                 Normal use case is strideV >= ldv*n.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info[l] = 0, successful exit. If info[l] = 1, the algorithm did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12202,7 +12202,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
 
     where the m-by-n matrix \f$S_l\f$ is zero except, possibly, for its min(m,n)
     diagonal elements, which are the singular values of \f$A_l\f$. \f$U_l\f$ and \f$V_l\f$ are
-    orthogonal (unitary) matrices. The first min(m,n) columns of \f$U_j\f$ and \f$V_l\f$ are
+    orthogonal (unitary) matrices. The first min(m,n) columns of \f$U_l\f$ and \f$V_l\f$ are
     the left and right singular vectors of \f$A_l\f$, respectively.
 
     The computation of the singular vectors is optional and it is controlled by
@@ -12231,85 +12231,85 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies how the left singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies how the right singular vectors are computed.
                 rocblas_svect_overwrite is not supported.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of all matrices A_l in the batch.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of all matrices A_l in the batch.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l.
                 On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(j+1).
                 There is no restriction for the value of strideA.
                 Normal use case is strideA >= lda*n.
     @param[in]
-    abstol      real type.\n
+    abstol      real type.
                 The absolute tolerance. The algorithm is considered to have converged once off(A_l'A_l)
                 is <= norm(A_l'A_l) * abstol [resp. off(A_lA_l') <= norm(A_lA_l') * abstol]. If abstol <= 0,
                 then the tolerance will be set to machine precision.
     @param[out]
-    residual    pointer to real type on the GPU.\n
+    residual    pointer to real type on the GPU.
                 The Frobenius norm of the off-diagonal elements of A_l'A_l (resp. A_lA_l') at the final
                 iteration.
     @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.\n
+    max_sweeps  rocblas_int. max_sweeps > 0.
                 Maximum number of sweeps (iterations) to be used by the algorithm.
     @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).\n
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The singular values of A_l in decreasing order.
     @param[in]
-    strideS     rocblas_stride.\n
+    strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S_(j+1).
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). \n
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.
                 The leading dimension of U_l.
     @param[in]
-    strideU     rocblas_stride.\n
+    strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U_(j+1).
                 There is no restriction for the value of strideU.
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
     ldv         rocblas_int. ldv >= n if right_svect is set to all; ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V.
     @param[in]
-    strideV     rocblas_stride.\n
+    strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V_(j+1).
                 There is no restriction for the value of strideV.
                 Normal use case is strideV >= ldv*n.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info[l] = 0, successful exit. If info[l] = 1, the algorithm did not converge.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12441,73 +12441,73 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies if the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies if the right singular vectors are computed.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange.
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of matrix A.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n.\n
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix A.
                 On exit, the contents of A are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A.
     @param[in]
-    vl          real type. 0 <= vl < vu.\n
+    vl          real type. 0 <= vl < vu.
                 The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of A or the singular values within a set of indices.
     @param[in]
-    vu          real type. 0 <= vl < vu.\n
+    vu          real type. 0 <= vl < vu.
                 The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of A or the singular values within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A or the singular values in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to a rocblas_int on the GPU. \n
+    nsv         pointer to a rocblas_int on the GPU. 
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = min(m,n).
                 If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= min(m,n).
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension min(m,n). \n
+    S           pointer to real type. Array on the GPU of dimension min(m,n). 
                 The first nsv elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[out]
-    U           pointer to type. Array on the GPU of dimension ldu*min(m,n).\n
+    U           pointer to type. Array on the GPU of dimension ldu*min(m,n).
                 The matrix of left singular vectors stored as columns. Not
                 referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.
                 The leading dimension of U.
     @param[out]
-    V           pointer to type. Array on the GPU of dimension ldv*n. \n
+    V           pointer to type. Array on the GPU of dimension ldv*n. 
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
     ldv         rocblas_int. ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension min(m,n).\n
+    ifail       pointer to rocblas_int. Array on the GPU of dimension min(m,n).
                 If info = 0, the first nsv elements of ifail are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge, as returned by \ref rocsolver_sbdsvdx "BDSVDX".
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, i eigenvectors did not converge in \ref rocsolver_sbdsvdx "BDSVDX"; their
                 indices are stored in ifail.
@@ -12633,94 +12633,94 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies if the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies if the right singular vectors are computed.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange.
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of matrix A_l.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of matrix A_l.
     @param[inout]
-    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.\n
+    A           Array of pointers to type. Each pointer points to an array on the GPU of dimension lda*n.
                 On entry, the matrices A_l.
                 On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A_l.
     @param[in]
-    vl          real type. 0 <= vl < vu.\n
+    vl          real type. 0 <= vl < vu.
                 The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values within a set of indices.
     @param[in]
-    vu          real type. 0 <= vl < vu.\n
+    vu          real type. 0 <= vl < vu.
                 The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. \n
+    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. 
                 The total number of singular values found. If srange is rocblas_srange_all, nsv[l] = min(m,n).
                 If srange is rocblas_srange_index, nsv[l] = iu - il + 1. Otherwise, 0 <= nsv[l] <= min(m,n).
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS). \n
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS). 
                 The first nsv_l elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[in]
-    strideS     rocblas_stride.\n
+    strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S_(l+1).
                 There is no restriction for the value of strideS. Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the size depends on the value of strideU).\n
+    U           pointer to type. Array on the GPU (the size depends on the value of strideU).
                 The matrix U_l of left singular vectors stored as columns. Not
                 referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.
                 The leading dimension of U_l.
     @param[in]
-    strideU     rocblas_stride.\n
+    strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U_(l+1).
                 There is no restriction for the value of strideU. Normal use case is strideU >= ldu*min(m,n).
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
                 The matrix V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
     ldv         rocblas_int. ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V_l.
     @param[in]
-    strideV     rocblas_stride.\n
+    strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V_(l+1).
                 There is no restriction for the value of strideV. Normal use case is strideV >= ldv*n.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nsv[l] elements of ifail_l are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge, as returned by \ref rocsolver_sbdsvdx "BDSVDX".
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= min(m,n).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info[l] = 0, successful exit.
                 If info[l] = i > 0, i eigenvectors did not converge in \ref rocsolver_sbdsvdx "BDSVDX"; their
                 indices are stored in ifail_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -12864,98 +12864,98 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    left_svect  #rocblas_svect.\n
+    left_svect  #rocblas_svect.
                 Specifies if the left singular vectors are computed.
     @param[in]
-    right_svect #rocblas_svect.\n
+    right_svect #rocblas_svect.
                 Specifies if the right singular vectors are computed.
     @param[in]
-    srange      #rocblas_srange.\n
+    srange      #rocblas_srange.
                 Specifies the type of range or interval of the singular values to be computed.
     @param[in]
-    m           rocblas_int. m >= 0.\n
+    m           rocblas_int. m >= 0.
                 The number of rows of matrix A_l.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of columns of matrix A_l.
     @param[inout]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 On entry, the matrices A_l.
                 On exit, the contents of A_l are destroyed.
     @param[in]
-    lda         rocblas_int. lda >= m.\n
+    lda         rocblas_int. lda >= m.
                 The leading dimension of A_l.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA. Normal use case is strideA >= lda*n.
     @param[in]
-    vl          real type. 0 <= vl < vu.\n
+    vl          real type. 0 <= vl < vu.
                 The lower bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values within a set of indices.
     @param[in]
-    vu          real type. 0 <= vl < vu.\n
+    vu          real type. 0 <= vl < vu.
                 The upper bound of the search interval [vl, vu). Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values within a set of indices.
     @param[in]
-    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.\n
+    il          rocblas_int. il = 1 if n = 0; 1 <= il <= iu otherwise.
                 The index of the largest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values in a half-open interval.
     @param[in]
-    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.\n
+    iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise.
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. \n
-                The total number of singular values found. If srange is rocblas_srange_all, nsv[j] = min(m,n).
-                If srange is rocblas_srange_index, nsv[j] = iu - il + 1. Otherwise, 0 <= nsv[j] <= min(m,n).
+    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. 
+                The total number of singular values found. If srange is rocblas_srange_all, nsv[l] = min(m,n).
+                If srange is rocblas_srange_index, nsv[l] = iu - il + 1. Otherwise, 0 <= nsv[l] <= min(m,n).
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS). \n
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS). 
                 The first nsv_l elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[in]
-    strideS     rocblas_stride.\n
+    strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S_(l+1).
                 There is no restriction for the value of strideS. Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the size depends on the value of strideU).\n
+    U           pointer to type. Array on the GPU (the size depends on the value of strideU).
                 The matrix U_l of left singular vectors stored as columns. Not
                 referenced if left_svect is set to none.
     @param[in]
-    ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.\n
+    ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.
                 The leading dimension of U_l.
     @param[in]
-    strideU     rocblas_stride.\n
+    strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U_(l+1).
                 There is no restriction for the value of strideU. Normal use case is strideU >= ldu*min(m,n).
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). \n
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
                 The matrix V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
     ldv         rocblas_int. ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.\n
+                set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V_l.
     @param[in]
-    strideV     rocblas_stride.\n
+    strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V_(l+1).
                 There is no restriction for the value of strideV. Normal use case is strideV >= ldv*n.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).\n
+    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
                 If info[l] = 0, the first nsv[l] elements of ifail_l are zero.
                 Otherwise, contains the indices of those eigenvectors that failed
                 to converge, as returned by \ref rocsolver_sbdsvdx "BDSVDX".
     @param[in]
-    strideF     rocblas_stride.\n
+    strideF     rocblas_stride.
                 Stride from the start of one vector ifail_l to the next one ifail_(l+1).
                 There is no restriction for the value of strideF. Normal use case is strideF >= min(m,n).
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info[l] = 0, successful exit.
                 If info[l] = i > 0, i eigenvectors did not converge in \ref rocsolver_sbdsvdx "BDSVDX"; their
                 indices are stored in ifail_l.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -13863,7 +13863,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhetrd(rocblas_handle handle,
         T_l^{} = Q_l'  A_l^{}  Q_l^{}
     \f]
 
-    where \f$T_l\f$ is symmetric tridiagonal and \f$Q_j\f$ is an orthogonal matrix represented as the product
+    where \f$T_l\f$ is symmetric tridiagonal and \f$Q_l\f$ is an orthogonal matrix represented as the product
     of Householder matrices
 
     \f[
@@ -13977,7 +13977,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
     \f[
         \begin{array}{cl}
         Q_l = H_l(1)H_l(2)\cdots H_l(n-1) & \: \text{if uplo indicates lower, or}\\
-        Q_j = H_l(n-1)H_l(n-2)\cdots H_l(1) & \: \text{if uplo indicates upper.}
+        Q_l = H_l(n-1)H_l(n-2)\cdots H_l(1) & \: \text{if uplo indicates upper.}
         \end{array}
     \f]
 
@@ -16379,7 +16379,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevd_strided_batched(rocblas_handle 
                 Number of rows and columns of matrices A_l.
     @param[inout]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).
-                On entry, the matrices A_l. On exit, the eigenvectors of A_j if they were computed and
+                On entry, the matrices A_l. On exit, the eigenvectors of A_l if they were computed and
                 the algorithm converged; otherwise the contents of A_l are destroyed.
     @param[in]
     lda         rocblas_int. lda >= n.
@@ -21467,7 +21467,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_hand
                 The number of rows and columns of all matrices A_l in the batch.
     @param[in]
     A           pointer to type. Array on the GPU (the size depends on the value of strideA).
-                The factors L_j and U_j of the factorization A_l = P_l*L_l*U_l returned by
+                The factors L_l and U_l of the factorization A_l = P_l*L_l*U_l returned by
                 \ref rocsolver_sgetrf_strided_batched "GETRF_STRIDED_BATCHED".
     @param[in]
     lda         rocblas_int. lda >= n.
@@ -22892,34 +22892,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsytrf_strided_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of the matrix.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension lda*nb*(nblocks-1).\n
+    A           pointer to type. Array on the GPU of dimension lda*nb*(nblocks-1).
                 Contains the blocks A_i arranged one after the other.
     @param[in]
-    lda         rocblas_int. lda >= nb.\n
+    lda         rocblas_int. lda >= nb.
                 Specifies the leading dimension of blocks A_i.
     @param[inout]
-    B           pointer to type. Array on the GPU of dimension ldb*nb*nblocks.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nb*nblocks.
                 On entry, contains the blocks B_i arranged one after the other.
                 On exit it is overwritten by blocks L_i in factorized form as returned by
                 \ref rocsolver_sgetrf_npvt "GETRF_NPVT"
     @param[in]
-    ldb         rocblas_int. ldb >= nb.\n
+    ldb         rocblas_int. ldb >= nb.
                 Specifies the leading dimension of blocks B_i.
     @param[inout]
-    C           pointer to type. Array on the GPU of dimension ldc*nb*(nblocks-1).\n
+    C           pointer to type. Array on the GPU of dimension ldc*nb*(nblocks-1).
                 On entry, contains the blocks C_i arranged one after the other.
                 On exit it is overwritten by blocks U_i.
     @param[in]
-    ldc         rocblas_int. ldc >= nb.\n
+    ldc         rocblas_int. ldc >= nb.
                 Specifies the leading dimension of blocks C_i.
     @param[out]
-    info        pointer to a rocblas_int on the GPU.\n
+    info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, the matrix is singular.
     ********************************************************************/
@@ -22977,71 +22977,71 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt(rocblas_handle handle,
 
     \f[
         M_l = \left[\begin{array}{ccccc}
-        B_{j1} & C_{j1}\\
-        A_{j1} & B_{j2} & C_{j2}\\
+        B_{l1} & C_{l1}\\
+        A_{l1} & B_{l2} & C_{l2}\\
          & \ddots & \ddots & \ddots \\
-         &  & A_{j(n-2)} & B_{j(n-1)} & C_{j(n-1)}\\
-         &  &  & A_{j(n-1)} & B_{jn}
+         &  & A_{l(n-2)} & B_{l(n-1)} & C_{l(l-1)}\\
+         &  &  & A_{l(n-1)} & B_{ln}
         \end{array}\right]
     \f]
 
     with \f$n = \mathrm{nblocks}\f$ diagonal blocks of size nb, can be represented as
 
     \f[
-        M_j = \left[\begin{array}{cccc}
-        L_{j1} \\
-        A_{j1} & L_{j2}\\
+        M_l = \left[\begin{array}{cccc}
+        L_{l1} \\
+        A_{l1} & L_{l2}\\
          & \ddots & \ddots \\
-         &  & A_{j(n-1)} & L_{jn}
+         &  & A_{l(n-1)} & L_{ln}
         \end{array}\right] \left[\begin{array}{cccc}
-        I & U_{j1} \\
+        I & U_{l1} \\
          & \ddots & \ddots \\
-         &  & I & U_{j(n-1)}\\
+         &  & I & U_{l(n-1)}\\
          &  &  & I
         \end{array}\right] = L_lU_l
     \f]
 
-    where the blocks \f$L_{ji}\f$ and \f$U_{ji}\f$ are also general blocks of size nb.
+    where the blocks \f$L_{li}\f$ and \f$U_{li}\f$ are also general blocks of size nb.
 
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
     A           array of pointers to type. Each pointer points to an array on the GPU of dimension
-                lda*nb*(nblocks-1).\n
-                Contains the blocks A_{ji} arranged one after the other.
+                lda*nb*(nblocks-1).
+                Contains the blocks A_{li} arranged one after the other.
     @param[in]
-    lda         rocblas_int. lda >= nb.\n
-                Specifies the leading dimension of blocks A_{ji}.
+    lda         rocblas_int. lda >= nb.
+                Specifies the leading dimension of blocks A_{li}.
     @param[inout]
     B           array of pointers to type. Each pointer points to an array on the GPU of dimension
-                ldb*nb*nblocks.\n
-                On entry, contains the blocks B_{ji} arranged one after the other.
-                On exit it is overwritten by blocks L_{ji} in factorized form as returned by
+                ldb*nb*nblocks.
+                On entry, contains the blocks B_{li} arranged one after the other.
+                On exit it is overwritten by blocks L_{li} in factorized form as returned by
                 \ref rocsolver_sgetrf_npvt "GETRF_NPVT"
     @param[in]
-    ldb         rocblas_int. ldb >= nb.\n
-                Specifies the leading dimension of blocks B_{ji}.
+    ldb         rocblas_int. ldb >= nb.
+                Specifies the leading dimension of blocks B_{li}.
     @param[inout]
     C           array of pointers to type. Each pointer points to an array on the GPU of dimension
-                ldc*nb*(nblocks-1).\n
-                On entry, contains the blocks C_{ji} arranged one after the other.
-                On exit it is overwritten by blocks U_{ji}.
+                ldc*nb*(nblocks-1).
+                On entry, contains the blocks C_{li} arranged one after the other.
+                On exit it is overwritten by blocks U_{li}.
     @param[in]
-    ldc         rocblas_int. ldc >= nb.\n
-                Specifies the leading dimension of blocks C_{ji}.
+    ldc         rocblas_int. ldc >= nb.
+                Specifies the leading dimension of blocks C_{li}.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-                If info[l] = 0, successful exit for factorization of j-th batch instance.
-                If info[l] = i > 0, the j-th batch instance is singular.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
+                If info[l] = 0, successful exit for factorization of l-th batch instance.
+                If info[l] = i > 0, the l-th batch instance is singular.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -23101,86 +23101,86 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrf_npvt_batched(rocblas_handle 
     \details The LU factorization of a block tridiagonal matrix \f$M_l\f$ in the batch
 
     \f[
-        M_j = \left[\begin{array}{ccccc}
-        B_{j1} & C_{j1}\\
-        A_{j1} & B_{j2} & C_{j2}\\
+        M_l = \left[\begin{array}{ccccc}
+        B_{l1} & C_{l1}\\
+        A_{l1} & B_{l2} & C_{l2}\\
          & \ddots & \ddots & \ddots \\
-         &  & A_{j(n-2)} & B_{j(n-1)} & C_{j(n-1)}\\
-         &  &  & A_{j(n-1)} & B_{jn}
+         &  & A_{l(n-2)} & B_{l(n-1)} & C_{l(n-1)}\\
+         &  &  & A_{l(n-1)} & B_{ln}
         \end{array}\right]
     \f]
 
     with \f$n = \mathrm{nblocks}\f$ diagonal blocks of size nb, can be represented as
 
     \f[
-        M_j = \left[\begin{array}{cccc}
-        L_{j1} \\
-        A_{j1} & L_{j2}\\
+        M_l = \left[\begin{array}{cccc}
+        L_{l1} \\
+        A_{l1} & L_{l2}\\
          & \ddots & \ddots \\
-         &  & A_{j(n-1)} & L_{jn}
+         &  & A_{l(n-1)} & L_{ln}
         \end{array}\right] \left[\begin{array}{cccc}
-        I & U_{j1} \\
+        I & U_{l1} \\
          & \ddots & \ddots \\
-         &  & I & U_{j(n-1)}\\
+         &  & I & U_{l(n-1)}\\
          &  &  & I
         \end{array}\right] = L_lU_l
     \f]
 
-    where the blocks \f$L_{ji}\f$ and \f$U_{ji}\f$ are also general blocks of size nb.
+    where the blocks \f$L_{li}\f$ and \f$U_{li}\f$ are also general blocks of size nb.
 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
-                Contains the blocks A_{ji} arranged one after the other.
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
+                Contains the blocks A_{li} arranged one after the other.
     @param[in]
-    lda         rocblas_int. lda >= nb.\n
-                Specifies the leading dimension of blocks A_{ji}.
+    lda         rocblas_int. lda >= nb.
+                Specifies the leading dimension of blocks A_{li}.
     @param[in]
-    strideA     rocblas_stride.\n
-                Stride from the start of one block A_{ji} to the same block in the next batch
-                instance A_{(j+1)i}.
+    strideA     rocblas_stride.
+                Stride from the start of one block A_{li} to the same block in the next batch
+                instance A_{(l+1)i}.
                 There is no restriction for the value of strideA. Normal use case is strideA >=
                 lda*nb*nblocks.
     @param[inout]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
-                On entry, contains the blocks B_{ji} arranged one after the other.
-                On exit it is overwritten by blocks L_{ji} in factorized form as returned by
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
+                On entry, contains the blocks B_{li} arranged one after the other.
+                On exit it is overwritten by blocks L_{li} in factorized form as returned by
                 \ref rocsolver_sgetrf_npvt "GETRF_NPVT"
     @param[in]
-    ldb         rocblas_int. ldb >= nb.\n
-                Specifies the leading dimension of matrix blocks B_{ji}.
+    ldb         rocblas_int. ldb >= nb.
+                Specifies the leading dimension of matrix blocks B_{li}.
     @param[in]
-    strideB     rocblas_stride.\n
-                Stride from the start of one block B_{ji} to the same block in the next batch
-                instance B_{(j+1)i}.
+    strideB     rocblas_stride.
+                Stride from the start of one block B_{li} to the same block in the next batch
+                instance B_{(l+1)i}.
                 There is no restriction for the value of strideB. Normal use case is strideB >=
                 ldb*nb*nblocks.
     @param[inout]
-    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
-                On entry, contains the blocks C_{ji} arranged one after the other.
-                On exit it is overwritten by blocks U_{ji}.
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).
+                On entry, contains the blocks C_{li} arranged one after the other.
+                On exit it is overwritten by blocks U_{li}.
     @param[in]
-    ldc         rocblas_int. ldc >= nb.\n
-                Specifies the leading dimension of matrix blocks C_{ji}.
+    ldc         rocblas_int. ldc >= nb.
+                Specifies the leading dimension of matrix blocks C_{li}.
     @param[in]
-    strideC     rocblas_stride.\n
-                Stride from the start of one block B_{ji} to the same block in the next batch
-                instance B_{(j+1)i}.
+    strideC     rocblas_stride.
+                Stride from the start of one block B_{li} to the same block in the next batch
+                instance B_{(l+1)i}.
                 There is no restriction for the value of strideC. Normal use case is strideC >=
                 ldc*nb*nblocks.
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
-                If info[l] = 0, successful exit for factorization of j-th batch instance.
-                If info[l] = i > 0, the j-th batch instance is singular.
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
+                If info[l] = 0, successful exit for factorization of l-th batch instance.
+                If info[l] = i > 0, the l-th batch instance is singular.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -23257,11 +23257,11 @@ ROCSOLVER_EXPORT rocblas_status
 
     \f[
         M_l = \left[\begin{array}{ccccc}
-        B_{j1} & C_{j1}\\
-        A_{j1} & B_{j2} & C_{j2}\\
+        B_{l1} & C_{l1}\\
+        A_{l1} & B_{l2} & C_{l2}\\
          & \ddots & \ddots & \ddots \\
-         &  & A_{j(n-2)} & B_{j(n-1)} & C_{j(n-1)}\\
-         &  &  & A_{j(n-1)} & B_{jn}
+         &  & A_{l(n-2)} & B_{l(n-1)} & C_{l(n-1)}\\
+         &  &  & A_{l(n-1)} & B_{ln}
         \end{array}\right]
     \f]
 
@@ -23286,71 +23286,71 @@ ROCSOLVER_EXPORT rocblas_status
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 Contains the blocks A_{li} arranged one after the other.
     @param[in]
-    inca        rocblas_int. inca > 0.\n
+    inca        rocblas_int. inca > 0.
                 Stride from the start of one row of A_{li} to the next. Normal use cases are
                 inca = 1 (strided batched case) or inca = batch_count (interleaved batched case).
     @param[in]
-    lda         rocblas_int. lda >= inca * nb.\n
+    lda         rocblas_int. lda >= inca * nb.
                 Specifies the leading dimension of blocks A_{li}, i.e. the stride from the start
                 of one column of A_{li} to the next.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one block A_{li} to the same block in the next batch
                 instance A_{(l+1)i}.
                 There is no restriction for the value of strideA. Normal use cases are strideA >=
                 lda*nb*nblocks (strided batched case) or strideA = 1 (interleaved batched case).
     @param[inout]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 On entry, contains the blocks B_{li} arranged one after the other.
                 On exit it is overwritten by blocks L_{li} in factorized form as returned by
                 \ref rocsolver_sgetrf_npvt "GETRF_NPVT"
     @param[in]
-    incb        rocblas_int. incb > 0.\n
+    incb        rocblas_int. incb > 0.
                 Stride from the start of one row of B_{li} to the next. Normal use cases are
                 incb = 1 (strided batched case) or incb = batch_count (interleaved batched case).
     @param[in]
-    ldb         rocblas_int. ldb >= incb * nb.\n
+    ldb         rocblas_int. ldb >= incb * nb.
                 Specifies the leading dimension of blocks B_{li}, i.e. the stride from the start
                 of one column of B_{li} to the next.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one block B_{li} to the same block in the next batch
                 instance B_{(l+1)i}.
                 There is no restriction for the value of strideB. Normal use cases are strideB >=
                 ldb*nb*nblocks (strided batched case) or strideB = 1 (interleaved batched case).
     @param[inout]
-    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).
                 On entry, contains the blocks C_{li} arranged one after the other.
                 On exit it is overwritten by blocks U_{li}.
     @param[in]
-    incc        rocblas_int. incc > 0.\n
+    incc        rocblas_int. incc > 0.
                 Stride from the start of one row of C_{li} to the next. Normal use cases are
                 incc = 1 (strided batched case) or incc = batch_count (interleaved batched case).
     @param[in]
-    ldc         rocblas_int. ldc >= incc * nb.\n
+    ldc         rocblas_int. ldc >= incc * nb.
                 Specifies the leading dimension of blocks C_{li}, i.e. the stride from the start
                 of one column of C_{li} to the next.
     @param[in]
-    strideC     rocblas_stride.\n
+    strideC     rocblas_stride.
                 Stride from the start of one block B_{li} to the same block in the next batch
                 instance B_{(l+1)i}.
                 There is no restriction for the value of strideC. Normal use cases are strideC >=
                 ldc*nb*nblocks (strided batched case) or strideC = 1 (interleaved batched case).
     @param[out]
-    info        pointer to rocblas_int. Array of batch_count integers on the GPU.\n
+    info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of l-th batch instance.
-                If info[l] = i > 0, the j-th batch instance is singular.
+                If info[l] = i > 0, the l-th batch instance is singular.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -23466,38 +23466,38 @@ ROCSOLVER_EXPORT rocblas_status
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of the matrix.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns of blocks R_i.
     @param[in]
-    A           pointer to type. Array on the GPU of dimension lda*nb*(nblocks-1).\n
+    A           pointer to type. Array on the GPU of dimension lda*nb*(nblocks-1).
                 Contains the blocks A_i as returned by \ref rocsolver_sgeblttrf_npvt "GEBLTTRF_NPVT".
     @param[in]
-    lda         rocblas_int. lda >= nb.\n
+    lda         rocblas_int. lda >= nb.
                 Specifies the leading dimension of blocks A_i.
     @param[in]
-    B           pointer to type. Array on the GPU of dimension ldb*nb*nblocks.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nb*nblocks.
                 Contains the blocks B_i as returned by \ref rocsolver_sgeblttrf_npvt "GEBLTTRF_NPVT".
     @param[in]
-    ldb         rocblas_int. ldb >= nb.\n
+    ldb         rocblas_int. ldb >= nb.
                 Specifies the leading dimension of blocks B_i.
     @param[in]
-    C           pointer to type. Array on the GPU of dimension ldc*nb*(nblocks-1).\n
+    C           pointer to type. Array on the GPU of dimension ldc*nb*(nblocks-1).
                 Contains the blocks C_i as returned by \ref rocsolver_sgeblttrf_npvt "GEBLTTRF_NPVT".
     @param[in]
-    ldc         rocblas_int. ldc >= nb.\n
+    ldc         rocblas_int. ldc >= nb.
                 Specifies the leading dimension of blocks C_i.
     @param[inout]
-    X           pointer to type. Array on the GPU of dimension ldx*nblocks*nrhs.\n
+    X           pointer to type. Array on the GPU of dimension ldx*nblocks*nrhs.
                 On entry, X contains the right-hand-side blocks R_i. It is overwritten by solution
                 vectors X_i on exit.
     @param[in]
-    ldx         rocblas_int. ldx >= nb.\n
+    ldx         rocblas_int. ldx >= nb.
                 Specifies the leading dimension of blocks X_i.
     ********************************************************************/
 
@@ -23589,45 +23589,45 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt(rocblas_handle handle,
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns of blocks R_{li}.
     @param[in]
     A           array of pointers to type. Each pointer points to an array on the GPU of dimension
-                lda*nb*(nblocks-1).\n
+                lda*nb*(nblocks-1).
                 Contains the blocks A_{li} as returned by \ref rocsolver_sgeblttrf_npvt_batched "GEBLTTRF_NPVT_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= nb.\n
+    lda         rocblas_int. lda >= nb.
                 Specifies the leading dimension of blocks A_{li}.
     @param[in]
     B           array of pointers to type. Each pointer points to an array on the GPU of dimension
-                lda*nb*nblocks.\n
+                lda*nb*nblocks.
                 Contains the blocks B_{li} as returned by \ref rocsolver_sgeblttrf_npvt_batched "GEBLTTRF_NPVT_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= nb.\n
+    ldb         rocblas_int. ldb >= nb.
                 Specifies the leading dimension of blocks B_{li}.
     @param[in]
     C           array of pointers to type. Each pointer points to an array on the GPU of dimension
-                ldc*nb*(nblocks-1).\n
+                ldc*nb*(nblocks-1).
                 Contains the blocks C_{li} as returned by \ref rocsolver_sgeblttrf_npvt_batched "GEBLTTRF_NPVT_BATCHED".
     @param[in]
-    ldc         rocblas_int. ldc >= nb.\n
+    ldc         rocblas_int. ldc >= nb.
                 Specifies the leading dimension of blocks C_{li}.
     @param[inout]
     X           array of pointers to type. Each pointer points to an array on the GPU of dimension
-                ldx*nblocks*nrhs.\n
+                ldx*nblocks*nrhs.
                 On entry, X contains the right-hand-side blocks R_{li}. It is overwritten by solution
                 vectors X_{li} on exit.
     @param[in]
-    ldx         rocblas_int. ldx >= nb.\n
+    ldx         rocblas_int. ldx >= nb.
                 Specifies the leading dimension of blocks X_{li}.
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -23723,65 +23723,65 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeblttrs_npvt_batched(rocblas_handle 
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns of blocks R_{li}.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 Contains the blocks A_{li} as returned by \ref rocsolver_sgeblttrf_npvt_strided_batched "GEBLTTRF_NPVT_STRIDED_BATCHED".
     @param[in]
-    lda         rocblas_int. lda >= nb.\n
+    lda         rocblas_int. lda >= nb.
                 Specifies the leading dimension of blocks A_{li}.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one block A_{li} to the same block in the next batch
                 instance A_{(l+1)i}.
                 There is no restriction for the value of strideA. Normal use case is strideA >=
                 lda*nb*nblocks
     @param[in]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 Contains the blocks B_{li} as returned by \ref rocsolver_sgeblttrf_npvt_strided_batched "GEBLTTRF_NPVT_STRIDED_BATCHED".
     @param[in]
-    ldb         rocblas_int. ldb >= nb.\n
+    ldb         rocblas_int. ldb >= nb.
                 Specifies the leading dimension of blocks B_{li}.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one block B_{li} to the same block in the next batch
                 instance B_{(l+1)i}.
                 There is no restriction for the value of strideB. Normal use case is strideB >=
                 ldb*nb*nblocks
     @param[in]
-    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).
                 Contains the blocks C_{li} as returned by \ref rocsolver_sgeblttrf_npvt_strided_batched "GEBLTTRF_NPVT_STRIDED_BATCHED".
     @param[in]
-    ldc         rocblas_int. ldc >= nb.\n
+    ldc         rocblas_int. ldc >= nb.
                 Specifies the leading dimension of blocks C_{li}.
     @param[in]
-    strideC     rocblas_stride.\n
+    strideC     rocblas_stride.
                 Stride from the start of one block C_{li} to the same block in the next batch
                 instance C_{(l+1)i}.
                 There is no restriction for the value of strideC. Normal use case is strideC >=
                 ldc*nb*nblocks
     @param[inout]
-    X           pointer to type. Array on the GPU (the size depends on the value of strideX).\n
+    X           pointer to type. Array on the GPU (the size depends on the value of strideX).
                 On entry, X contains the right-hand-side blocks R_{li}. It is overwritten by solution
                 vectors X_{li} on exit.
     @param[in]
-    ldx         rocblas_int. ldx >= nb.\n
+    ldx         rocblas_int. ldx >= nb.
                 Specifies the leading dimension of blocks X_{li}.
     @param[in]
-    strideX     rocblas_stride.\n
+    strideX     rocblas_stride.
                 Stride from the start of one block X_{li} to the same block in the next batch
                 instance X_{(l+1)i}.
                 There is no restriction for the value of strideX. Normal use case is strideX >=
                 ldx*nblocks*nrhs
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -23870,8 +23870,8 @@ ROCSOLVER_EXPORT rocblas_status
 
     \f[
         M_lX_l = \left[\begin{array}{ccccc}
-        B_{l1} & C_{jl}\\
-        A_{j1} & B_{jl} & C_{jl}\\
+        B_{l1} & C_{ll}\\
+        A_{l1} & B_{ll} & C_{ll}\\
          & \ddots & \ddots & \ddots \\
          &  & A_{l(n-2)} & B_{l(n-1)} & C_{l(n-1)}\\
          &  &  & A_{l(n-1)} & B_{ln}
@@ -23897,85 +23897,85 @@ ROCSOLVER_EXPORT rocblas_status
     @param[in]
     handle      rocblas_handle.
     @param[in]
-    nb          rocblas_int. nb >= 0.\n
+    nb          rocblas_int. nb >= 0.
                 The number of rows and columns of each block.
     @param[in]
-    nblocks     rocblas_int. nblocks >= 0.\n
+    nblocks     rocblas_int. nblocks >= 0.
                 The number of blocks along the diagonal of each matrix in the batch.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e., the number of columns of blocks R_{li}.
     @param[in]
-    A           pointer to type. Array on the GPU (the size depends on the value of strideA).\n
+    A           pointer to type. Array on the GPU (the size depends on the value of strideA).
                 Contains the blocks A_{li} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    inca        rocblas_int. inca > 0.\n
+    inca        rocblas_int. inca > 0.
                 Stride from the start of one row of A_{li} to the next. Normal use cases are
                 inca = 1 (strided batched case) or inca = batch_count (interleaved batched case).
     @param[in]
-    lda         rocblas_int. lda >= inca * nb.\n
+    lda         rocblas_int. lda >= inca * nb.
                 Specifies the leading dimension of blocks A_{li}, i.e. the stride from the start
                 of one column of A_{li} to the next.
     @param[in]
-    strideA     rocblas_stride.\n
+    strideA     rocblas_stride.
                 Stride from the start of one block A_{li} to the same block in the next batch
                 instance A_{(l+1)i}.
                 There is no restriction for the value of strideA. Normal use cases are strideA >=
                 lda*nb*nblocks (strided batched case) or strideA = 1 (interleaved batched case).
     @param[in]
-    B           pointer to type. Array on the GPU (the size depends on the value of strideB).\n
+    B           pointer to type. Array on the GPU (the size depends on the value of strideB).
                 Contains the blocks B_{li} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    incb        rocblas_int. incb > 0.\n
+    incb        rocblas_int. incb > 0.
                 Stride from the start of one row of B_{li} to the next. Normal use cases are
                 incb = 1 (strided batched case) or incb = batch_count (interleaved batched case).
     @param[in]
-    ldb         rocblas_int. ldb >= incb * nb.\n
+    ldb         rocblas_int. ldb >= incb * nb.
                 Specifies the leading dimension of blocks B_{li}, i.e. the stride from the start
                 of one column of B_{li} to the next.
     @param[in]
-    strideB     rocblas_stride.\n
+    strideB     rocblas_stride.
                 Stride from the start of one block B_{li} to the same block in the next batch
                 instance B_{(l+1)i}.
                 There is no restriction for the value of strideB. Normal use cases are strideB >=
                 ldb*nb*nblocks (strided batched case) or strideB = 1 (interleaved batched case).
     @param[in]
-    C           pointer to type. Array on the GPU (the size depends on the value of strideC).\n
+    C           pointer to type. Array on the GPU (the size depends on the value of strideC).
                 Contains the blocks C_{li} as returned by \ref rocsolver_sgeblttrf_npvt_interleaved_batched "GEBLTTRF_NPVT_INTERLEAVED_BATCHED".
     @param[in]
-    incc        rocblas_int. incc > 0.\n
+    incc        rocblas_int. incc > 0.
                 Stride from the start of one row of C_{li} to the next. Normal use cases are
                 incc = 1 (strided batched case) or incc = batch_count (interleaved batched case).
     @param[in]
-    ldc         rocblas_int. ldc >= incc * nb.\n
+    ldc         rocblas_int. ldc >= incc * nb.
                 Specifies the leading dimension of blocks C_{li}, i.e. the stride from the start
                 of one column of C_{li} to the next.
     @param[in]
-    strideC     rocblas_stride.\n
+    strideC     rocblas_stride.
                 Stride from the start of one block C_{li} to the same block in the next batch
                 instance C_{(l+1)i}.
                 There is no restriction for the value of strideC. Normal use cases are strideC >=
                 ldc*nb*nblocks (strided batched case) or strideC = 1 (interleaved batched case).
     @param[inout]
-    X           pointer to type. Array on the GPU (the size depends on the value of strideX).\n
+    X           pointer to type. Array on the GPU (the size depends on the value of strideX).
                 On entry, X contains the right-hand-side blocks R_{li}. It is overwritten by solution
                 vectors X_{li} on exit.
     @param[in]
-    incx        rocblas_int. incx > 0.\n
+    incx        rocblas_int. incx > 0.
                 Stride from the start of one row of X_{li} to the next. Normal use cases are
                 incx = 1 (strided batched case) or incx = batch_count (interleaved batched case).
     @param[in]
-    ldx         rocblas_int. ldx >= incx * nb.\n
+    ldx         rocblas_int. ldx >= incx * nb.
                 Specifies the leading dimension of blocks X_{li}, i.e. the stride from the start
                 of one column of X_{li} to the next.
     @param[in]
-    strideX     rocblas_stride.\n
+    strideX     rocblas_stride.
                 Stride from the start of one block X_{li} to the same block in the next batch
                 instance X_{(l+1)i}.
                 There is no restriction for the value of strideX. Normal use cases are strideX >=
                 ldx*nrhs*nblocks (strided batched case) or strideX = 1 (interleaved batched case).
     @param[in]
-    batch_count rocblas_int. batch_count >= 0.\n
+    batch_count rocblas_int. batch_count >= 0.
                 Number of matrices in the batch.
     ********************************************************************/
 
@@ -24084,10 +24084,10 @@ ROCSOLVER_EXPORT rocblas_status
 
     \details
     @param[out]
-    rfinfo      #rocsolver_rfinfo.\n
+    rfinfo      #rocsolver_rfinfo.
                 The pointer to the rfinfo struct to be initialized.
     @param[in]
-    handle      rocblas_handle.\n
+    handle      rocblas_handle.
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo,
@@ -24098,7 +24098,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo
 
     \details
     @param[in]
-    rfinfo      #rocsolver_rfinfo.\n
+    rfinfo      #rocsolver_rfinfo.
                 The rfinfo struct to be destroyed.
     ********************************************************************/
 
@@ -24114,48 +24114,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo
     elements of T, nnzT, is given by nnzT = nnzL - n + nnzU.
 
     @param[in]
-    handle      rocblas_handle.\n
+    handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows (and columns) of matrix A.
     @param[in]
-    nnzL        rocblas_int. nnzL >= n.\n
+    nnzL        rocblas_int. nnzL >= n.
                 The number of non-zero elements in L.
     @param[in]
-    ptrL        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrL        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indL and valL.
                 The last element of ptrL is equal to nnzL.
     @param[in]
-    indL        pointer to rocblas_int. Array on the GPU of dimension nnzL.\n
+    indL        pointer to rocblas_int. Array on the GPU of dimension nnzL.
                 It contains the column indices of the non-zero elements of L. Indices are
                 sorted by row and by column within each row.
     @param[in]
-    valL        pointer to type. Array on the GPU of dimension nnzL.\n
+    valL        pointer to type. Array on the GPU of dimension nnzL.
                 The values of the non-zero elements of L.
     @param[in]
-    nnzU        rocblas_int. nnzU >= 0.\n
+    nnzU        rocblas_int. nnzU >= 0.
                 The number of non-zero elements in U.
     @param[in]
-    ptrU        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrU        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indU and valU.
                 The last element of ptrU is equal to nnzU.
     @param[in]
-    indU        pointer to rocblas_int. Array on the GPU of dimension nnzU.\n
+    indU        pointer to rocblas_int. Array on the GPU of dimension nnzU.
                 It contains the column indices of the non-zero elements of U. Indices are
                 sorted by row and by column within each row.
     @param[in]
-    valU        pointer to type. Array on the GPU of dimension nnzU.\n
+    valU        pointer to type. Array on the GPU of dimension nnzU.
                 The values of the non-zero elements of U.
     @param[out]
-    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[out]
-    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
+    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.
                 It contains the column indices of the non-zero elements of T. Indices are
                 sorted by row and by column within each row.
     @param[out]
-    valT        pointer to type. Array on the GPU of dimension nnzT.\n
+    valT        pointer to type. Array on the GPU of dimension nnzT.
                 The values of the non-zero elements of T.
     ********************************************************************/
 
@@ -24198,48 +24198,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_sumlu(rocblas_handle handle,
     lower part of \f$T\f$.
 
     @param[in]
-    handle      rocblas_handle.\n
+    handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows (and columns) of matrix A.
     @param[in]
-    nnzT        rocblas_int. nnzT >= 0.\n
+    nnzT        rocblas_int. nnzT >= 0.
                 The number of non-zero elements in T.
     @param[in]
-    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
-    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
+    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.
                 It contains the column indices of the non-zero elements of T. Indices are
                 sorted by row and by column within each row.
     @param[in]
-    valT        pointer to type. Array on the GPU of dimension nnzT.\n
+    valT        pointer to type. Array on the GPU of dimension nnzT.
                 The values of the non-zero elements of T.
     @param[out]
-    ptrL        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrL        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indL and valL.
                 The last element of ptrL is equal to nnzL.
     @param[out]
-    indL        pointer to rocblas_int. Array on the GPU of dimension nnzL.\n
+    indL        pointer to rocblas_int. Array on the GPU of dimension nnzL.
                 It contains the column indices of the non-zero elements of L. Indices are
                 sorted by row and by column within each row. (If nnzL is not known in advance,
                 the size of this array could be set to nnzT + n as an upper bound).
     @param[out]
-    valL        pointer to type. Array on the GPU of dimension nnzL.\n
+    valL        pointer to type. Array on the GPU of dimension nnzL.
                 The values of the non-zero elements of L. (If nnzL is not known in advance,
                 the size of this array could be set to nnzT + n as an upper bound).
     @param[out]
-    ptrU        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrU        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indU and valU.
                 The last element of ptrU is equal to nnzU.
     @param[out]
-    indU        pointer to rocblas_int. Array on the GPU of dimension nnzU.\n
+    indU        pointer to rocblas_int. Array on the GPU of dimension nnzU.
                 It contains the column indices of the non-zero elements of U. Indices are
                 sorted by row and by column within each row. (If nnzU is not known in advance,
                 the size of this array could be set to nnzT as an upper bound).
     @param[out]
-    valU        pointer to type. Array on the GPU of dimension nnzU.\n
+    valU        pointer to type. Array on the GPU of dimension nnzU.
                 The values of the non-zero elements of U. (If nnzU is not known in advance,
                 the size of this array could be set to nnzT as an upper bound).
     ********************************************************************/
@@ -24307,58 +24307,58 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
     and B can be null.
 
     @param[in]
-    handle      rocblas_handle.\n
+    handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows (and columns) of matrix M.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right-hand-sides (columns of matrix B). Set nrhs to zero when only the
                 re-factorization is needed.
     @param[in]
-    nnzM        rocblas_int. nnzM >= 0.\n
+    nnzM        rocblas_int. nnzM >= 0.
                 The number of non-zero elements in M.
     @param[in]
-    ptrM        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrM        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indM and valM.
                 The last element of ptrM is equal to nnzM.
     @param[in]
-    indM        pointer to rocblas_int. Array on the GPU of dimension nnzM.\n
+    indM        pointer to rocblas_int. Array on the GPU of dimension nnzM.
                 It contains the column indices of the non-zero elements of M. Indices are
                 sorted by row and by column within each row.
     @param[in]
-    valM        pointer to type. Array on the GPU of dimension nnzM.\n
+    valM        pointer to type. Array on the GPU of dimension nnzM.
                 The values of the non-zero elements of M.
     @param[in]
-    nnzT        rocblas_int. nnzT >= 0.\n
+    nnzT        rocblas_int. nnzT >= 0.
                 The number of non-zero elements in T.
     @param[in]
-    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
-    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
+    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.
                 It contains the column indices of the non-zero elements of T. Indices are
                 sorted by row and by column within each row.
     @param[in]
-    valT        pointer to type. Array on the GPU of dimension nnzT.\n
+    valT        pointer to type. Array on the GPU of dimension nnzT.
                 The values of the non-zero elements of T.
     @param[in]
-    pivP        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    pivP        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix P, i.e. the
                 order in which the rows of matrix M were re-arranged.
     @param[in]
-    pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    pivQ        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix Q, i.e. the
                 order in which the columns of matrix M were re-arranged.
     @param[in]
-    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.
                 The right hand side matrix B. It can be null if only the re-factorization is needed.
     @param[in]
     ldb         rocblas_int. ldb >= n.
                 The leading dimension of B.
     @param[out]
-    rfinfo      rocsolver_rfinfo.\n
+    rfinfo      rocsolver_rfinfo.
                 Structure that holds the meta data generated in the analysis phase.
     ********************************************************************/
 
@@ -24422,48 +24422,48 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
     after the analysis phase of the previous matrix M and its initial factorization.
 
     @param[in]
-    handle      rocblas_handle.\n
+    handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows (and columns) of matrix A.
     @param[in]
-    nnzA        rocblas_int. nnzA >= 0.\n
+    nnzA        rocblas_int. nnzA >= 0.
                 The number of non-zero elements in A.
     @param[in]
-    ptrA        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrA        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indA and valA.
                 The last element of ptrM is equal to nnzA.
     @param[in]
-    indA        pointer to rocblas_int. Array on the GPU of dimension nnzA.\n
+    indA        pointer to rocblas_int. Array on the GPU of dimension nnzA.
                 It contains the column indices of the non-zero elements of M. Indices are
                 sorted by row and by column within each row.
     @param[in]
-    valA        pointer to type. Array on the GPU of dimension nnzA.\n
+    valA        pointer to type. Array on the GPU of dimension nnzA.
                 The values of the non-zero elements of A.
     @param[in]
-    nnzT        rocblas_int. nnzT >= 0.\n
+    nnzT        rocblas_int. nnzT >= 0.
                 The number of non-zero elements in T.
     @param[in]
-    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
-    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
+    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.
                 It contains the column indices of the non-zero elements of T. Indices are
                 sorted by row and by column within each row.
     @param[out]
-    valT        pointer to type. Array on the GPU of dimension nnzT.\n
+    valT        pointer to type. Array on the GPU of dimension nnzT.
                 The values of the non-zero elements of the new bundle matrix (L_A - I) + U_A.
     @param[in]
-    pivP        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    pivP        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix P, i.e. the
                 order in which the rows of matrix M were re-arranged.
     @param[in]
-    pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    pivQ        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix Q, i.e. the
                 order in which the columns of matrix M were re-arranged.
     @param[in]
-    rfinfo      rocsolver_rfinfo.\n
+    rfinfo      rocsolver_rfinfo.
                 Structure that holds the meta data generated in the analysis phase.
     ********************************************************************/
 
@@ -24520,43 +24520,43 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
     \ref rocsolver_scsrrf_analysis "CSRRF_ANALYSIS", after the analysis phase.
 
     @param[in]
-    handle      rocblas_handle.\n
+    handle      rocblas_handle.
     @param[in]
-    n           rocblas_int. n >= 0.\n
+    n           rocblas_int. n >= 0.
                 The number of rows (and columns) of matrix A.
     @param[in]
-    nrhs        rocblas_int. nrhs >= 0.\n
+    nrhs        rocblas_int. nrhs >= 0.
                 The number of right hand sides, i.e. the number of columns of matrix B.
     @param[in]
-    nnzT        rocblas_int. nnzT >= 0.\n
+    nnzT        rocblas_int. nnzT >= 0.
                 The number of non-zero elements in T.
     @param[in]
-    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.\n
+    ptrT        pointer to rocblas_int. Array on the GPU of dimension n+1.
                 It contains the positions of the beginning of each row in indT and valT.
                 The last element of ptrT is equal to nnzT.
     @param[in]
-    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.\n
+    indT        pointer to rocblas_int. Array on the GPU of dimension nnzT.
                 It contains the column indices of the non-zero elements of T. Indices are
                 sorted by row and by column within each row.
     @param[in]
-    valT        pointer to type. Array on the GPU of dimension nnzT.\n
+    valT        pointer to type. Array on the GPU of dimension nnzT.
                 The values of the non-zero elements of T.
     @param[in]
-    pivP        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    pivP        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix P, i.e. the
                 order in which the rows of matrix A were re-arranged.
     @param[in]
-    pivQ        pointer to rocblas_int. Array on the GPU of dimension n.\n
+    pivQ        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix Q, i.e. the
                 order in which the columns of matrix A were re-arranged.
     @param[inout]
-    B           pointer to type. Array on the GPU of dimension ldb*nrhs.\n
+    B           pointer to type. Array on the GPU of dimension ldb*nrhs.
                 On entry the right hand side matrix B. On exit, the solution matrix X.
     @param[in]
-    ldb         rocblas_int. ldb >= n.\n
+    ldb         rocblas_int. ldb >= n.
                 The leading dimension of B.
     @param[in]
-    rfinfo      rocsolver_rfinfo.\n
+    rfinfo      rocsolver_rfinfo.
                 Structure that holds the meta data generated in the analysis phase.
     ********************************************************************/
 
