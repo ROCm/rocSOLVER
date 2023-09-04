@@ -226,6 +226,7 @@ Re-factorization and direct solvers
     :ref:`rocsolver_csrrf_sumlu <rfsumlu>`, x, x, ,
     :ref:`rocsolver_csrrf_splitlu <rfsplitlu>`, x, x, ,
     :ref:`rocsolver_csrrf_refactlu <rfrefactlu>`, x, x, ,
+    :ref:`rocsolver_csrrf_refactchol <rfrefactchol>`, x, x, ,
 
 .. csv-table:: Direct solvers
     :header: "Function", "single", "double", "single complex", "double complex"

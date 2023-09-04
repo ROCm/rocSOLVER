@@ -9,61 +9,7 @@
 #include "rocsolver_rfinfo.hpp"
 #include "rocsparse.hpp"
 
-// -------------------------------------------------
-// function to perform search in array
-// -------------------------------------------------
-// search array ind[istart], ..., ind[iend-1]
-// for matching value "key"
-//
-// return the index value of matching position
-// ---------------------------------------
-template <typename T>
-__device__ rocblas_int rf_search(rocblas_int* ind, rocblas_int istart, rocblas_int iend, rocblas_int key)
-{
-    // -----------------
-    // use binary search
-    // -----------------
-    rocblas_int imid;
-    rocblas_int curr;
-    while(iend - istart > 10)
-    {
-        imid = istart + (iend - istart) / 2;
-        curr = ind[imid];
-
-        if(curr == key)
-            return imid;
-        else if(curr > key)
-            iend = imid;
-        else
-            istart = imid + 1;
-    }
-
-    // ------------------------
-    // use simple linear search
-    // ------------------------
-    for(imid = istart; imid < iend; imid++)
-    {
-        if(ind[imid] == key)
-            return imid;
-    }
-
-    return -1;
-}
-
-// ------------------------------------------------------------
-// Compute the inverse permutation inv_pivQ[] from pivQ
-// ------------------------------------------------------------
-template <typename T>
-ROCSOLVER_KERNEL void rf_ipvec_kernel(rocblas_int n, rocblas_int* pivQ, rocblas_int* inv_pivQ)
-{
-    rocblas_int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    if(tid < n)
-    {
-        rocblas_int iold = pivQ[tid];
-        inv_pivQ[iold] = tid;
-    }
-}
+#include "refact_helpers.hpp"
 
 // -------------------------------------------
 // Compute B = beta * B + alpha * (P * A * Q') as
@@ -160,8 +106,6 @@ rocblas_status rocsolver_csrrf_refactlu_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if(rfinfo == nullptr)
-        return rocblas_status_invalid_pointer;
     if(!rfinfo || !ptrA || !ptrT || (n && (!pivP || !pivQ)) || (nnzA && (!indA || !valA))
        || (nnzT && (!indT || !valT)))
         return rocblas_status_invalid_pointer;
@@ -215,6 +159,11 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     if(n == 0)
         return rocblas_status_success;
 
+    // check state of rfinfo
+    if(!rfinfo->analyzed || rfinfo->analyzed_mode != rocsolver_rfinfo_mode_lu
+       || rfinfo->mode != rocsolver_rfinfo_mode_lu)
+        return rocblas_status_internal_error;
+
     hipStream_t stream;
     ROCBLAS_CHECK(rocblas_get_stream(handle, &stream));
 
@@ -228,8 +177,11 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     // P and Q are applied, the incomplete factorization of P*A*Q (factorization without fill-in),
     // yields the complete factorization of A.
     // ---------------------------------------------------------------------
+    T const alpha = static_cast<T>(1);
+    T const beta = static_cast<T>(0);
     ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
-                            pivP, (rocblas_int*)work, 1, ptrA, indA, valA, 0, ptrT, indT, valT);
+                            pivP, (rocblas_int*)work, alpha, ptrA, indA, valA, beta, ptrT, indT,
+                            valT);
 
     // perform incomplete factorization of T
     ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
