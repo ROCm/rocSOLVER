@@ -12,6 +12,15 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
+/*
+ * ===========================================================================
+ *    testing_getrf_large tests the correctness of getrf, getrs, and gemm. We
+ *    use an implicit test that solves Ax = b for x (using getrf and getrs),
+ *    then computes Ax (using gemm) and compare with b. For the sizes tested,
+ *    this is much faster than calling getrf on the CPU.
+ * ===========================================================================
+ */
+
 template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void getrf_large_initData(const rocblas_handle handle,
                           const rocblas_int n,
@@ -129,12 +138,14 @@ void getrf_large_getError(const rocblas_handle handle,
     CHECK_ROCBLAS_ERROR(rocsolver_getf2_getrf(STRIDED, GETRF, handle, n, n, dA.data(), lda, stA,
                                               dIpiv.data(), stP, dInfo.data(), bc));
 
+    // Solve Ax = b for x
     CHECK_ROCBLAS_ERROR(rocsolver_getrs(STRIDED, handle, rocblas_operation_none, n, nrhs, dA, lda,
                                         stA, dIpiv, stP, dX, ldb, stB, bc));
 
     // Resetting the value of dA.
     CHECK_HIP_ERROR(dA.transfer_from(hA));
 
+    // Compute Ax
     T alpha = T(1), beta = T(0);
     CHECK_ROCBLAS_ERROR(rocblas_gemm(STRIDED, handle, rocblas_operation_none,
                                      rocblas_operation_none, n, nrhs, n, &alpha, dA, lda, stA, dX,
