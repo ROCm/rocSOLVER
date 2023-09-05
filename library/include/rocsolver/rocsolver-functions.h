@@ -170,7 +170,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
     n           rocblas_int. n >= 0.
                 The number of columns of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n. 
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, the matrix to which the row
                 interchanges will be applied. On exit, the resulting permuted matrix.
     @param[in]
@@ -1087,7 +1087,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlasyf(rocblas_handle handle,
     n           rocblas_int. n >= 0.
                 The number of columns and rows of the matrix A.
     @param[inout]
-    A           pointer to type. Array on the GPU of dimension lda*n. 
+    A           pointer to type. Array on the GPU of dimension lda*n.
                 On entry, it contains the upper (or lower) part of the symmetric/Hermitian matrix.
                 On exit, the upper (or lower) part is overwritten with the result of U*U' (or L'*L).
     @param[in]
@@ -1119,7 +1119,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlauum(rocblas_handle handle,
                                                  rocblas_double_complex* A,
                                                  const rocblas_int lda);
 //! @}
-
 
 /*! @{
     \brief ORG2R generates an m-by-n Matrix Q with orthonormal columns.
@@ -2122,7 +2121,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zungtr(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -2211,7 +2210,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorm2r(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -2301,7 +2300,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunm2r(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -2390,7 +2389,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormqr(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgeqrf "GEQRF"
                 in the first k columns of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right. 
+    lda         rocblas_int. lda >= m if side is left, or lda >= n if side is right.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -2479,7 +2478,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmqr(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. 
+    lda         rocblas_int. lda >= k.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -2569,7 +2568,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dorml2(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. 
+    lda         rocblas_int. lda >= k.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -2658,7 +2657,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunml2(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. 
+    lda         rocblas_int. lda >= k.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -2747,7 +2746,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormlq(rocblas_handle handle,
                 The Householder vectors as returned by \ref rocsolver_sgelqf "GELQF"
                 in the first k rows of its argument A.
     @param[in]
-    lda         rocblas_int. lda >= k. 
+    lda         rocblas_int. lda >= k.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least k.
@@ -3227,7 +3226,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmql(rocblas_handle handle,
     A           pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.
                 The Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. 
+    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least min(q,k).
@@ -3341,7 +3340,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dormbr(rocblas_handle handle,
     A           pointer to type. Array on the GPU of size lda*min(q,k) if column-wise, or lda*q if row-wise.
                 The Householder vectors as returned by \ref rocsolver_sgebrd "GEBRD".
     @param[in]
-    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise. 
+    lda         rocblas_int. lda >= q if column-wise, or lda >= min(q,k) if row-wise.
                 Leading dimension of A.
     @param[in]
     ipiv        pointer to type. Array on the GPU of dimension at least min(q,k).
@@ -4004,7 +4003,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedc(rocblas_handle handle,
     E           pointer to real type. Array on the GPU of dimension n-1.
                 The off-diagonal elements of the tridiagonal matrix.
     @param[out]
-    nev         pointer to a rocblas_int on the GPU. 
+    nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found.
     @param[out]
     nsplit      pointer to a rocblas_int on the GPU.
@@ -4244,7 +4243,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of B or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to a rocblas_int on the GPU. 
+    nsv         pointer to a rocblas_int on the GPU.
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = n.
                 If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= n.
     @param[out]
@@ -4337,7 +4336,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
     diagonal elements (lower trapezoidal if m > n), and U is upper
     triangular (upper trapezoidal if m < n).
 
-    \note 
+    \note
     Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
     If numerical accuracy is compromised, use the legacy-LAPACK API \ref rocsolver_sgetf2 "GETF2" routines instead.
 
@@ -4412,7 +4411,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
     diagonal elements (lower trapezoidal if m > n), and \f$U_l\f$ is upper
     triangular (upper trapezoidal if m < n).
 
-    \note 
+    \note
     Although this routine can offer better performance, Gaussian elimination without pivoting is not backward stable.
     If numerical accuracy is compromised, use the legacy-LAPACK API \ref rocsolver_sgetf2_batched "GETF2_BATCHED" routines instead.
 
@@ -4429,9 +4428,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
                 On entry, the m-by-n matrices A_l to be factored.
                 On exit, the factors L_l and U_l from the factorizations.
                 The unit diagonal elements of L_l are not stored.
-    @param[in]  
+    @param[in]
     lda         rocblas_int. lda >= m.
-                Specifies the leading dimension of matrices A_l. 
+                Specifies the leading dimension of matrices A_l.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for factorization of A_l.
@@ -11268,7 +11267,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     lda         rocblas_int. lda >= m.
                 The leading dimension of A.
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension min(m,n). 
+    S           pointer to real type. Array on the GPU of dimension min(m,n).
                 The singular values of A in decreasing order.
     @param[out]
     U           pointer to type. Array on the GPU of dimension ldu*min(m,n) if
@@ -11279,7 +11278,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     ldu         rocblas_int. ldu >= m if left_svect is all or singular; ldu >= 1 otherwise.
                 The leading dimension of U.
     @param[out]
-    V           pointer to type. Array on the GPU of dimension ldv*n. 
+    V           pointer to type. Array on the GPU of dimension ldv*n.
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
@@ -11295,7 +11294,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
                 are in S; those that converged correspond to a subset of the singular values
                 of A (not necessarily ordered).
     @param[in]
-    fast_alg    #rocblas_workmode. 
+    fast_alg    #rocblas_workmode.
                 If set to rocblas_outofplace, the function will execute the
                 fast thin-SVD version of the algorithm when possible.
     @param[out]
@@ -11450,7 +11449,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU).
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to overwrite or none.
     @param[in]
@@ -11463,7 +11462,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
@@ -11486,7 +11485,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
                 Stride from the start of one vector E_l to the next one E_(l+1).
                 There is no restriction for the value of strideE. Normal use case is strideE >= min(m,n)-1.
     @param[in]
-    fast_alg    #rocblas_workmode. 
+    fast_alg    #rocblas_workmode.
                 If set to rocblas_outofplace, the function will execute the fast thin-SVD version
                 of the algorithm when possible.
     @param[out]
@@ -11667,7 +11666,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU).
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to overwrite or none.
     @param[in]
@@ -11680,7 +11679,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to overwrite or none.
     @param[in]
@@ -11704,7 +11703,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                 There is no restriction for the value of strideE.
                 Normal use case is strideE >= min(m,n)-1.
     @param[in]
-    fast_alg    #rocblas_workmode. 
+    fast_alg    #rocblas_workmode.
                 If set to rocblas_outofplace, the function will execute the fast thin-SVD version
                 of the algorithm when possible.
     @param[out]
@@ -11882,7 +11881,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     n_sweeps    pointer to a rocblas_int on the GPU.
                 The actual number of sweeps (iterations) used by the algorithm.
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension min(m,n). 
+    S           pointer to real type. Array on the GPU of dimension min(m,n).
                 The singular values of A in decreasing order.
     @param[out]
     U           pointer to type. Array on the GPU of dimension ldu*min(m,n) if
@@ -11893,7 +11892,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     ldu         rocblas_int. ldu >= m if left_svect is set to all or singular; ldu >= 1 otherwise.
                 The leading dimension of U.
     @param[out]
-    V           pointer to type. Array on the GPU of dimension ldv*n. 
+    V           pointer to type. Array on the GPU of dimension ldv*n.
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
@@ -12066,7 +12065,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU).
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to none.
     @param[in]
@@ -12079,7 +12078,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
@@ -12280,7 +12279,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
                 There is no restriction for the value of strideS.
                 Normal use case is strideS >= min(m,n).
     @param[out]
-    U           pointer to type. Array on the GPU (the side depends on the value of strideU). 
+    U           pointer to type. Array on the GPU (the side depends on the value of strideU).
                 The matrices U_l of left singular vectors stored as columns.
                 Not referenced if left_svect is set to none.
     @param[in]
@@ -12293,7 +12292,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_batched(rocblas_handle handle,
                 Normal use case is strideU >= ldu*min(m,n) if left_svect is set to singular,
                 or strideU >= ldu*m when left_svect is equal to all.
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrices V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
@@ -12479,11 +12478,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to a rocblas_int on the GPU. 
+    nsv         pointer to a rocblas_int on the GPU.
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = min(m,n).
                 If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= min(m,n).
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension min(m,n). 
+    S           pointer to real type. Array on the GPU of dimension min(m,n).
                 The first nsv elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[out]
@@ -12494,7 +12493,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle
     ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.
                 The leading dimension of U.
     @param[out]
-    V           pointer to type. Array on the GPU of dimension ldv*n. 
+    V           pointer to type. Array on the GPU of dimension ldv*n.
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
@@ -12671,11 +12670,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. 
+    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of singular values found. If srange is rocblas_srange_all, nsv[l] = min(m,n).
                 If srange is rocblas_srange_index, nsv[l] = iu - il + 1. Otherwise, 0 <= nsv[l] <= min(m,n).
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS). 
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The first nsv_l elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[in]
@@ -12694,7 +12693,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                 Stride from the start of one matrix U_l to the next one U_(l+1).
                 There is no restriction for the value of strideU. Normal use case is strideU >= ldu*min(m,n).
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrix V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
@@ -12906,11 +12905,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 The index of the smallest singular value to be computed. Ignored if srange indicates to look
                 for all the singular values of A_l or the singular values in a half-open interval.
     @param[out]
-    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU. 
+    nsv         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of singular values found. If srange is rocblas_srange_all, nsv[l] = min(m,n).
                 If srange is rocblas_srange_index, nsv[l] = iu - il + 1. Otherwise, 0 <= nsv[l] <= min(m,n).
     @param[out]
-    S           pointer to real type. Array on the GPU (the size depends on the value of strideS). 
+    S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The first nsv_l elements contain the computed singular values in descending order.
                 (The remaining elements may be used as workspace for internal computations).
     @param[in]
@@ -12929,7 +12928,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
                 Stride from the start of one matrix U_l to the next one U_(l+1).
                 There is no restriction for the value of strideU. Normal use case is strideU >= ldu*min(m,n).
     @param[out]
-    V           pointer to type. Array on the GPU (the size depends on the value of strideV). 
+    V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrix V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
