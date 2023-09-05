@@ -9,5 +9,14 @@ Batched rocSOLVER
    :backlinks: top
 
 
-More to come later...
+.. _batched_routines:
+
+Batched routines
+==================
+
+
+.. _strided_batched_routines:
+
+Strided_batched routines
+=============================
 
