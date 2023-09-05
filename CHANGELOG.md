@@ -2,21 +2,14 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSOLVER
+## rocSOLVER 3.24.0 for ROCm 6.0.0
 ### Added
 - Cholesky refactorization for sparse matrices
     - CSRRF_REFACTCHOL
 - Added `rocsolver_rfinfo_mode` and the ability to specify the desired refactorization routine (see `rocsolver_set_rfinfo_mode`).
 
-### Optimized
 ### Changed
 - CSRRF_ANALYSIS and CSRRF_SOLVE now support sparse Cholesky factorization
-
-### Deprecated
-### Removed
-### Fixed
-### Known Issues
-### Security
 
 
 ## rocSOLVER 3.23.0 for ROCm 5.7.0
