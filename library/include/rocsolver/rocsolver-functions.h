@@ -24383,7 +24383,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
                 sorted by row and by column within each row.
     @param[in]
     valM        pointer to type. Array on the GPU of dimension nnzM.
-                The values of the non-zero elements of M.
+                The values of the non-zero elements of M. The strictly upper triangular entries are
+				not referenced when working in Cholesky mode.
     @param[in]
     nnzT        rocblas_int. nnzT >= 0.
                 The number of non-zero elements in T.
@@ -24397,7 +24398,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
                 sorted by row and by column within each row.
     @param[in]
     valT        pointer to type. Array on the GPU of dimension nnzT.
-                The values of the non-zero elements of T.
+                The values of the non-zero elements of T. The strictly upper triangular entries are
+                not referenced when working in Cholesky mode.
     @param[in]
     pivP        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix P, i.e. the
@@ -24707,7 +24709,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_refactchol(rocblas_handle handl
                 sorted by row and by column within each row.
     @param[in]
     valT        pointer to type. Array on the GPU of dimension nnzT.
-                The values of the non-zero elements of T.
+                The values of the non-zero elements of T. The strictly upper triangular entries are
+                not referenced when working in Cholesky mode.
     @param[in]
     pivP        pointer to rocblas_int. Array on the GPU of dimension n.
                 Contains the pivot indices representing the permutation matrix P, i.e. the
