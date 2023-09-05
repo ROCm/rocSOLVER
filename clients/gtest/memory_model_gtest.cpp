@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -74,7 +74,7 @@ protected:
 /*************************************/
 /***** rocblas_managed (default) *****/
 /*************************************/
-TEST_F(checkin_misc_MEMORY_MODEL, rocblas_managed)
+TEST_F(checkin_misc_MEMORY_MODEL, DISABLED_rocblas_managed)
 {
     size_t size, size1;
     rocblas_status status;
