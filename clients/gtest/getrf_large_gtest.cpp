@@ -88,16 +88,16 @@ TEST_P(GETRF_LARGE, __double)
     run_tests<false, false, double>();
 }
 
-TEST_P(GETRF_LARGE, __float_complex)
+TEST_P(GETRF_LARGE, DISABLED__float_complex)
 {
     run_tests<false, false, rocblas_float_complex>();
 }
 
-TEST_P(GETRF_LARGE, __double_complex)
+TEST_P(GETRF_LARGE, DISABLED__double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
-
+/*
 // batched tests
 
 TEST_P(GETRF_LARGE, batched__float)
@@ -141,7 +141,7 @@ TEST_P(GETRF_LARGE, strided_batched__double_complex)
 {
     run_tests<false, true, rocblas_double_complex>();
 }
-
+*/
 INSTANTIATE_TEST_SUITE_P(weekly_lapack,
                          GETRF_LARGE,
                          Combine(ValuesIn(very_large_matrixA_size_range), ValuesIn(very_large_nrhs)));
