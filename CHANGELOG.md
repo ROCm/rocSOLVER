@@ -2,18 +2,6 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
-
-## (Unreleased) rocSOLVER
-### Added
-### Optimized
-### Changed
-### Deprecated
-### Removed
-### Fixed
-### Known Issues
-### Security
-
-
 ## rocSOLVER 3.24.0 for ROCm 6.0.0
 ### Added
 - Cholesky refactorization for sparse matrices
