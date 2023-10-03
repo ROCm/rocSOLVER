@@ -430,7 +430,8 @@ inline void read_matrix(const std::string filenameS,
             rocblas_int v;
             int read = fscanf(mat, "%d", &v);
             if(read != 1)
-                throw std::out_of_range(fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
+                throw std::out_of_range(
+                    fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
             A[i + j * lda] = v;
         }
     }
@@ -496,7 +497,8 @@ inline void read_matrix(const std::string filenameS,
             float v;
             int read = fscanf(mat, "%g", &v);
             if(read != 1)
-                throw std::out_of_range(fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
+                throw std::out_of_range(
+                    fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
             A[i + j * lda] = v;
         }
     }
@@ -536,7 +538,8 @@ inline void read_matrix(const std::string filenameS,
             double v;
             int read = fscanf(mat, "%lg", &v);
             if(read != 1)
-                throw std::out_of_range(fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
+                throw std::out_of_range(
+                    fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
             A[i + j * lda] = v;
         }
     }
