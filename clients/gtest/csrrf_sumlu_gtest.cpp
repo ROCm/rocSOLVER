@@ -93,13 +93,15 @@ Arguments csrrf_sumlu_setup_arguments(csrrf_sumlu_tuple tup)
 class CSRRF_SUMLU : public ::TestWithParam<csrrf_sumlu_tuple>
 {
 protected:
-    CSRRF_SUMLU() {}
-    virtual void SetUp()
+    void SetUp() override
     {
         if(rocsolver_create_rfinfo(nullptr, nullptr) == rocblas_status_not_implemented)
             GTEST_SKIP() << "Sparse functionality is not enabled";
     }
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()
