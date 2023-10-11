@@ -409,9 +409,9 @@ void testing_csrrf_sumlu(Arguments& argus)
     {
         testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
         fs::path file = testcase / "ptrL";
-        read_last(file, &nnzL);
+        read_last(file.string(), &nnzL);
         file = testcase / "ptrU";
-        read_last(file, &nnzU);
+        read_last(file.string(), &nnzU);
     }
     rocblas_int nnzT = nnzL + nnzU - n;
 

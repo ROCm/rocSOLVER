@@ -365,7 +365,7 @@ void testing_csrrf_solve(Arguments& argus)
     {
         testcase = get_sparse_data_dir() / fmt::format("mat_{}_{}", n, nnzA);
         fs::path file = testcase / "ptrT";
-        read_last(file, &nnzT);
+        read_last(file.string(), &nnzT);
     }
 
     // determine existing right-hand-side
