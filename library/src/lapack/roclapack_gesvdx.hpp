@@ -78,11 +78,12 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_value;
 
     // 2. invalid size
+    const rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : min(m, n));
     if(n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || batch_count < 0)
         return rocblas_status_invalid_size;
     if(left_svect == rocblas_svect_singular && ldu < m)
         return rocblas_status_invalid_size;
-    if(right_svect == rocblas_svect_singular && ldv < min(m, n))
+    if(right_svect == rocblas_svect_singular && ldv < nsv_max)
         return rocblas_status_invalid_size;
     if(srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         return rocblas_status_invalid_size;
@@ -101,9 +102,9 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
     if((left_svect == rocblas_svect_singular || right_svect == rocblas_svect_singular) && min(m, n)
        && !ifail)
         return rocblas_status_invalid_pointer;
-    if(left_svect == rocblas_svect_singular && min(m, n) && !U)
+    if(left_svect == rocblas_svect_singular && m * nsv_max && !U)
         return rocblas_status_invalid_pointer;
-    if(right_svect == rocblas_svect_singular && n && !V)
+    if(right_svect == rocblas_svect_singular && nsv_max * n && !V)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

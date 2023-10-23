@@ -650,25 +650,28 @@ void testing_gesvdx(Arguments& argus)
     char leftvC = argus.get<char>("left_svect");
     char rightvC = argus.get<char>("right_svect");
     char srangeC = argus.get<char>("srange");
-    rocblas_int m = argus.get<rocblas_int>("m");
-    rocblas_int n = argus.get<rocblas_int>("n", m);
-    rocblas_int nn = std::min(m, n);
-    rocblas_int lda = argus.get<rocblas_int>("lda", m);
-    rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
-    rocblas_int ldv = argus.get<rocblas_int>("ldv", nn);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stS = argus.get<rocblas_stride>("strideS", nn);
-    rocblas_stride stF = argus.get<rocblas_stride>("strideF", nn);
-    rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * nn);
-    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
+    rocblas_svect leftv = char2rocblas_svect(leftvC);
+    rocblas_svect rightv = char2rocblas_svect(rightvC);
+    rocblas_srange srange = char2rocblas_srange(srangeC);
+
     S vl = S(argus.get<double>("vl", 0));
     S vu = S(argus.get<double>("vu", srangeC == 'V' ? 1 : 0));
     rocblas_int il = argus.get<rocblas_int>("il", srangeC == 'I' ? 1 : 0);
     rocblas_int iu = argus.get<rocblas_int>("iu", srangeC == 'I' ? 1 : 0);
 
-    rocblas_svect leftv = char2rocblas_svect(leftvC);
-    rocblas_svect rightv = char2rocblas_svect(rightvC);
-    rocblas_srange srange = char2rocblas_srange(srangeC);
+    rocblas_int m = argus.get<rocblas_int>("m");
+    rocblas_int n = argus.get<rocblas_int>("n", m);
+    rocblas_int nn = std::min(m, n);
+    rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : nn);
+    rocblas_int lda = argus.get<rocblas_int>("lda", m);
+    rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
+    rocblas_int ldv = argus.get<rocblas_int>("ldv", nsv_max);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stS = argus.get<rocblas_stride>("strideS", nn);
+    rocblas_stride stF = argus.get<rocblas_stride>("strideF", nn);
+    rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * nsv_max);
+    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
+
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
@@ -722,7 +725,7 @@ void testing_gesvdx(Arguments& argus)
         if(rightv == rocblas_svect_none)
         {
             rightvT = rocblas_svect_singular;
-            ldvT = nn;
+            ldvT = nsv_max;
             mT = m;
             nT = n;
         }
@@ -740,13 +743,13 @@ void testing_gesvdx(Arguments& argus)
     size_t size_A = size_t(lda) * n;
     size_t size_S = size_t(nn);
     size_t size_V = size_t(ldv) * n;
-    size_t size_U = size_t(ldu) * nn;
+    size_t size_U = size_t(ldu) * nsv_max;
     size_t size_ifail = nn;
     if(argus.unit_check || argus.norm_check)
     {
         size_hifailRes = nn;
         size_VT = size_t(ldvT) * n;
-        size_UT = size_t(lduT) * nn;
+        size_UT = size_t(lduT) * nsv_max;
         size_hSres = nn;
         if(svects)
         {
@@ -783,7 +786,7 @@ void testing_gesvdx(Arguments& argus)
     // check invalid sizes
     bool invalid_size = (n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || bc < 0)
         || (leftv == rocblas_svect_singular && ldu < m)
-        || (rightv == rocblas_svect_singular && ldv < nn)
+        || (rightv == rocblas_svect_singular && ldv < nsv_max)
         || (srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         || (srange == rocblas_srange_index && (il < 1 || iu < 0))
         || (srange == rocblas_srange_index && (iu > nn || (nn > 0 && il > iu)));
