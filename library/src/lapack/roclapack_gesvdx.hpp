@@ -172,6 +172,7 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
     const bool rightvS = (right_svect == rocblas_svect_singular);
     const bool thinSVD = (m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m);
     const rocblas_int k = min(m, n);
+    const rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : k);
 
     // init sizes
     size_t a[3] = {0, 0, 0};
@@ -186,7 +187,7 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
     // general requirements for bdsvdx and gebrd
     *size_tmpDE = 2 * k * sizeof(S) * bc;
     *size_tauqp = 2 * k * sizeof(T) * bc;
-    *size_tmpZ = 2 * k * k * sizeof(S) * bc;
+    *size_tmpZ = 2 * k * nsv_max * sizeof(S) * bc;
     rocsolver_bdsvdx_getMemorySize<S>(k, bc, size_WS_svdx1, &a[0], &b[0], &c[0], &d[0],
                                       size_WS_svdx6, size_WS_svdx7, size_WS_svdx8, size_WS_svdx9,
                                       &e[0], &f[0], &g[0]);
@@ -215,8 +216,6 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
         // extra requirements for gebrd
         rocsolver_gebrd_getMemorySize<BATCHED, T>(m, n, bc, size_scalars, &a[2], &b[2], &c[2], &d[1]);
     }
-
-    const rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : k);
 
     if(leftvS)
     {
@@ -377,7 +376,7 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
     const rocblas_stride strideT = k * k;
     const rocblas_stride strideX = ldx * GEBRD_GEBD2_SWITCHSIZE;
     const rocblas_stride strideY = ldy * GEBRD_GEBD2_SWITCHSIZE;
-    const rocblas_stride strideZ = 2 * k * k;
+    const rocblas_stride strideZ = 2 * k * nsv_max;
     T* UV;
     rocblas_stride strideUV;
     rocblas_int lduv;
