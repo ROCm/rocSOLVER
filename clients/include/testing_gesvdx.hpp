@@ -667,7 +667,8 @@ void testing_gesvdx(Arguments& argus)
     rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
     rocblas_int ldv = argus.get<rocblas_int>("ldv", nsv_max);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stS = argus.get<rocblas_stride>("strideS", nn);
+    rocblas_stride stS = argus.get<rocblas_stride>("strideS", nsv_max);
+    rocblas_stride stS_cpu = argus.get<rocblas_stride>("strideS", nn);
     rocblas_stride stF = argus.get<rocblas_stride>("strideF", nn);
     rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * nsv_max);
     rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
@@ -741,7 +742,8 @@ void testing_gesvdx(Arguments& argus)
     size_t size_UT = 0;
     size_t size_VT = 0;
     size_t size_A = size_t(lda) * n;
-    size_t size_S = size_t(nn);
+    size_t size_S = size_t(nsv_max);
+    size_t size_S_cpu = size_t(nn);
     size_t size_V = size_t(ldv) * n;
     size_t size_U = size_t(ldu) * nsv_max;
     size_t size_ifail = nn;
@@ -750,7 +752,7 @@ void testing_gesvdx(Arguments& argus)
         size_hifailRes = nn;
         size_VT = size_t(ldvT) * n;
         size_UT = size_t(lduT) * nsv_max;
-        size_hSres = nn;
+        size_hSres = nsv_max;
         if(svects)
         {
             if(leftv == rocblas_svect_none)
@@ -854,7 +856,7 @@ void testing_gesvdx(Arguments& argus)
 
     // memory allocations (all cases)
     // host
-    host_strided_batch_vector<S> hS(size_S, 1, stS, bc);
+    host_strided_batch_vector<S> hS(size_S_cpu, 1, stS_cpu, bc); // extra space for cpu_gesvd call
     host_strided_batch_vector<T> hV(size_V, 1, stV, bc);
     host_strided_batch_vector<T> hU(size_U, 1, stU, bc);
     host_strided_batch_vector<rocblas_int> hNsv(1, 1, 1, bc);
