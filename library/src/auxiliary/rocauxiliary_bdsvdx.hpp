@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2016 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2016-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -62,7 +62,7 @@ ROCSOLVER_KERNEL void bdsvdx_abs_eigs(const rocblas_int n,
         S[tid] = -Stmp[tid];
 }
 
-template <typename T, typename U>
+template <int MAX_THDS, typename T, typename U>
 ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
                                           const rocblas_int n,
                                           rocblas_int* nsvA,
@@ -74,9 +74,17 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
                                           const rocblas_stride strideZ,
                                           T* workA)
 {
+    using W = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
+
+    // shared mem for temporary values
+    extern __shared__ double lmem[];
+    W* sval1 = reinterpret_cast<W*>(lmem);
+    W* sval2 = reinterpret_cast<W*>(sval1 + MAX_THDS + 1);
+    rocblas_int* sidx = reinterpret_cast<rocblas_int*>(sval2 + MAX_THDS + 1);
 
     // local variables
     rocblas_int i, j;
@@ -92,29 +100,41 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
             nsvA[bid] = n;
     }
 
-    for(i = tid; i < nsv; i += hipBlockDim_x)
+    for(i = tid; i < nsv; i += MAX_THDS)
         S[i] = -work[i];
 
+    W scl1, scl2;
     for(j = 0; j < nsv; j++)
     {
-        for(i = tid; i < 2 * n; i += hipBlockDim_x)
+        for(i = tid; i < 2 * n; i += MAX_THDS)
             work[i] = Z[i + j * ldz];
         __syncthreads();
 
+        // compute normalization factors for U and V
+        iamax<MAX_THDS, W>(tid, n, work, 2, sval1, sidx);
+        nrm2<MAX_THDS, W>(tid, n, work, 2, sval2);
+        __syncthreads();
+        iamax<MAX_THDS, W>(tid, n, work + 1, 2, sval1 + 1, sidx + 1);
+        nrm2<MAX_THDS, W>(tid, n, work + 1, 2, sval2 + 1);
+        __syncthreads();
+
+        scl1 = (work[sidx[0]] >= 0 ? W(1) / sval2[0] : W(-1) / sval2[0]);
+        scl2 = (work[sidx[1]] >= 0 ? W(1) / sval2[1] : W(-1) / sval2[1]);
+
         if(uplo == rocblas_fill_upper)
         {
-            for(i = tid; i < n; i += hipBlockDim_x)
+            for(i = tid; i < n; i += MAX_THDS)
             {
-                Z[i + j * ldz] = work[2 * i + 1];
-                Z[(n + i) + j * ldz] = -work[2 * i];
+                Z[i + j * ldz] = work[2 * i + 1] * scl2;
+                Z[(n + i) + j * ldz] = -work[2 * i] * scl1;
             }
         }
         else
         {
-            for(i = tid; i < n; i += hipBlockDim_x)
+            for(i = tid; i < n; i += MAX_THDS)
             {
-                Z[i + j * ldz] = work[2 * i];
-                Z[(n + i) + j * ldz] = -work[2 * i + 1];
+                Z[i + j * ldz] = work[2 * i] * scl1;
+                Z[(n + i) + j * ldz] = -work[2 * i + 1] * scl2;
             }
         }
         __syncthreads();
@@ -345,9 +365,11 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
                                 stream, ntgk, nsv, Stmp, ntgk, Z, shiftZ, ldz, strideZ, ifail,
                                 strideF, info);
 
-        // take absolute value of eigenvalues, reorder eigenvector elements, and negate elements of V
-        ROCSOLVER_LAUNCH_KERNEL(bdsvdx_reorder_vect<T>, dim3(1, batch_count, 1), dim3(BS1, 1, 1), 0,
-                                stream, uplo, n, nsv, S, strideS, Z, shiftZ, ldz, strideZ, Stmp);
+        // take absolute value of eigenvalues, reorder and normalize eigenvector elements, and negate elements of V
+        size_t lmemsize = (BS1 + 1) * (2 * sizeof(decltype(std::real(T{}))) + sizeof(rocblas_int));
+        ROCSOLVER_LAUNCH_KERNEL((bdsvdx_reorder_vect<BS1, T>), dim3(1, batch_count, 1),
+                                dim3(BS1, 1, 1), lmemsize, stream, uplo, n, nsv, S, strideS, Z,
+                                shiftZ, ldz, strideZ, Stmp);
     }
 
     return rocblas_status_success;
