@@ -256,8 +256,17 @@ void bdsvdx_getError(const rocblas_handle handle,
         // U is stored in hZRes, and V is stored in hZRes+n
         if(svect != rocblas_svect_none)
         {
-            err = 0;
+            // first check singular vector normalization
+            for(rocblas_int k = 0; k < nn; ++k)
+            {
+                err = abs(double(snorm('F', n, 1, hZRes[0] + k * ldz, ldz)) - 1);
+                *max_err = err > *max_err ? err : *max_err;
 
+                err = abs(double(snorm('F', n, 1, hZRes[0] + n + k * ldz, ldz)) - 1);
+                *max_err = err > *max_err ? err : *max_err;
+            }
+
+            err = 0;
             // form bidiagonal matrix B
             std::vector<T> B(n * n);
             for(rocblas_int i = 0; i < n; i++)
