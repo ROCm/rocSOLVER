@@ -118,8 +118,8 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
         nrm2<MAX_THDS, W>(tid, n, work + 1, 2, sval2 + 1);
         __syncthreads();
 
-        scl1 = (work[sidx[0]] >= 0 ? W(1) / sval2[0] : W(-1) / sval2[0]);
-        scl2 = (work[sidx[1]] >= 0 ? W(1) / sval2[1] : W(-1) / sval2[1]);
+        scl1 = (work[sidx[0] - 1] >= 0 ? W(1) / sval2[0] : W(-1) / sval2[0]);
+        scl2 = (work[sidx[1] - 1] >= 0 ? W(1) / sval2[1] : W(-1) / sval2[1]);
 
         if(uplo == rocblas_fill_upper)
         {
