@@ -106,9 +106,10 @@ Arguments geblttrf_setup_arguments(geblttrf_tuple tup, bool interleaved)
 class GEBLTTRF_NPVT : public ::TestWithParam<geblttrf_tuple>
 {
 protected:
-    GEBLTTRF_NPVT() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
@@ -130,9 +131,10 @@ protected:
 class GEBLTTRF_NPVT_INTERLEAVED : public ::TestWithParam<geblttrf_tuple>
 {
 protected:
-    GEBLTTRF_NPVT_INTERLEAVED() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()

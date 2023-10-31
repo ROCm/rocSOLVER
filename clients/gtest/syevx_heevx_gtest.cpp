@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -101,9 +101,10 @@ Arguments syevx_heevx_setup_arguments(syevx_heevx_tuple tup)
 class SYEVX_HEEVX : public ::TestWithParam<syevx_heevx_tuple>
 {
 protected:
-    SYEVX_HEEVX() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()

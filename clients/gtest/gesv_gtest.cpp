@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -104,9 +104,10 @@ Arguments gesv_setup_arguments(gesv_tuple tup, bool outofplace)
 class GESV : public ::TestWithParam<gesv_tuple>
 {
 protected:
-    GESV() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
@@ -128,9 +129,10 @@ protected:
 class GESV_OUTOFPLACE : public ::TestWithParam<gesv_tuple>
 {
 protected:
-    GESV_OUTOFPLACE() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()

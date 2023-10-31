@@ -92,13 +92,15 @@ Arguments csrrf_refactlu_setup_arguments(csrrf_refactlu_tuple tup)
 class CSRRF_REFACTLU : public ::TestWithParam<csrrf_refactlu_tuple>
 {
 protected:
-    CSRRF_REFACTLU() {}
-    virtual void SetUp()
+    void SetUp() override
     {
         if(rocsolver_create_rfinfo(nullptr, nullptr) == rocblas_status_not_implemented)
             GTEST_SKIP() << "Sparse functionality is not enabled";
     }
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()

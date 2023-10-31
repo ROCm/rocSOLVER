@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -80,9 +80,10 @@ Arguments managed_malloc_setup_arguments(managed_malloc_tuple tup)
 class MANAGED_MALLOC : public ::TestWithParam<managed_malloc_tuple>
 {
 protected:
-    MANAGED_MALLOC() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()

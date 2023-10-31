@@ -92,9 +92,10 @@ Arguments syevj_heevj_setup_arguments(syevj_heevj_tuple tup)
 class SYEVJ_HEEVJ : public ::TestWithParam<syevj_heevj_tuple>
 {
 protected:
-    SYEVJ_HEEVJ() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -100,9 +100,10 @@ template <bool BLOCKED>
 class GETF2_GETRF : public ::TestWithParam<getrf_tuple>
 {
 protected:
-    GETF2_GETRF() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
@@ -125,9 +126,10 @@ template <bool BLOCKED>
 class GETF2_GETRF_NPVT : public ::TestWithParam<getrf_tuple>
 {
 protected:
-    GETF2_GETRF_NPVT() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -120,9 +120,10 @@ Arguments gels_setup_arguments(gels_tuple tup, bool outofplace)
 class GELS : public ::TestWithParam<gels_tuple>
 {
 protected:
-    GELS() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
@@ -144,9 +145,10 @@ protected:
 class GELS_OUTOFPLACE : public ::TestWithParam<gels_tuple>
 {
 protected:
-    GELS_OUTOFPLACE() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()

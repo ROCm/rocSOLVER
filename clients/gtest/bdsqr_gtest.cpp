@@ -115,9 +115,10 @@ Arguments bdsqr_setup_arguments(bdsqr_tuple tup)
 class BDSQR : public ::TestWithParam<bdsqr_tuple>
 {
 protected:
-    BDSQR() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()

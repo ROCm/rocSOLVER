@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -65,9 +65,10 @@ Arguments getrf_large_setup_arguments(getrf_large_tuple tup)
 class GETRF_LARGE : public ::TestWithParam<getrf_large_tuple>
 {
 protected:
-    GETRF_LARGE() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
@@ -84,9 +85,10 @@ protected:
 class GETRF_LARGE_NPVT : public ::TestWithParam<getrf_large_tuple>
 {
 protected:
-    GETRF_LARGE_NPVT() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
