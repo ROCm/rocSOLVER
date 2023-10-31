@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -98,9 +98,10 @@ Arguments latrd_setup_arguments(latrd_tuple tup)
 class LATRD : public ::TestWithParam<latrd_tuple>
 {
 protected:
-    LATRD() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()
