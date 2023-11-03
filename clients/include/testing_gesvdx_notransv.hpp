@@ -688,7 +688,6 @@ void testing_gesvdx_notransv(Arguments& argus)
     rocblas_int ldv = argus.get<rocblas_int>("ldv", n);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stS = argus.get<rocblas_stride>("strideS", nsv_max);
-    rocblas_stride stS_cpu = argus.get<rocblas_stride>("strideS", nn);
     rocblas_stride stF = argus.get<rocblas_stride>("strideF", nn);
     rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * nsv_max);
     rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * nsv_max);
@@ -798,6 +797,7 @@ void testing_gesvdx_notransv(Arguments& argus)
             }
         }
     }
+    rocblas_stride stS_cpu = size_S_cpu;
     rocblas_stride stUT = size_UT;
     rocblas_stride stVT = size_VT;
     rocblas_stride stUres = size_hUres;
