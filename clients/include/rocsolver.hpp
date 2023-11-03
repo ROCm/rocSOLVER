@@ -482,6 +482,114 @@ rocblas_status rocsolver_zgesvdj_notransv_strided_batched(rocblas_handle handle,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
+rocblas_status rocsolver_sgesvdx_notransv_strided_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          float* A,
+                                                          const rocblas_int lda,
+                                                          const rocblas_stride strideA,
+                                                          const float vl,
+                                                          const float vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          float* S,
+                                                          const rocblas_stride strideS,
+                                                          float* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          float* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+rocblas_status rocsolver_dgesvdx_notransv_strided_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          double* A,
+                                                          const rocblas_int lda,
+                                                          const rocblas_stride strideA,
+                                                          const double vl,
+                                                          const double vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          double* S,
+                                                          const rocblas_stride strideS,
+                                                          double* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          double* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+rocblas_status rocsolver_cgesvdx_notransv_strided_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          rocblas_float_complex* A,
+                                                          const rocblas_int lda,
+                                                          const rocblas_stride strideA,
+                                                          const float vl,
+                                                          const float vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          float* S,
+                                                          const rocblas_stride strideS,
+                                                          rocblas_float_complex* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          rocblas_float_complex* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
+rocblas_status rocsolver_zgesvdx_notransv_strided_batched(rocblas_handle handle,
+                                                          const rocblas_svect left_svect,
+                                                          const rocblas_svect right_svect,
+                                                          const rocblas_srange srange,
+                                                          const rocblas_int m,
+                                                          const rocblas_int n,
+                                                          rocblas_double_complex* A,
+                                                          const rocblas_int lda,
+                                                          const rocblas_stride strideA,
+                                                          const double vl,
+                                                          const double vu,
+                                                          const rocblas_int il,
+                                                          const rocblas_int iu,
+                                                          rocblas_int* nsv,
+                                                          double* S,
+                                                          const rocblas_stride strideS,
+                                                          rocblas_double_complex* U,
+                                                          const rocblas_int ldu,
+                                                          const rocblas_stride strideU,
+                                                          rocblas_double_complex* V,
+                                                          const rocblas_int ldv,
+                                                          const rocblas_stride strideV,
+                                                          rocblas_int* ifail,
+                                                          const rocblas_stride strideF,
+                                                          rocblas_int* info,
+                                                          const rocblas_int batch_count);
+
 #ifdef __cplusplus
 }
 #endif
@@ -4041,11 +4149,11 @@ inline rocblas_status rocsolver_gesvdx_notransv(bool STRIDED,
                                                 rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_sgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
-        // stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
-        // V, ldv, stV, ifail, stF, info, bc)
+        ? rocsolver_sgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
+                                                     stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
+                                                     V, ldv, stV, ifail, stF, info, bc)
         : rocblas_status_not_implemented; // rocsolver_sgesvdx_notransv(handle, leftv, rightv, srange, m, n, A, lda, vl, vu, il, iu,
-        // ns, S, U, ldu, V, ldv, ifail, info);
+    // ns, S, U, ldu, V, ldv, ifail, info);
 }
 
 inline rocblas_status rocsolver_gesvdx_notransv(bool STRIDED,
@@ -4077,11 +4185,11 @@ inline rocblas_status rocsolver_gesvdx_notransv(bool STRIDED,
                                                 rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_dgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
-        // stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
-        // V, ldv, stV, ifail, stF, info, bc)
+        ? rocsolver_dgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
+                                                     stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
+                                                     V, ldv, stV, ifail, stF, info, bc)
         : rocblas_status_not_implemented; // rocsolver_dgesvdx_notransv(handle, leftv, rightv, srange, m, n, A, lda, vl, vu, il, iu,
-        // ns, S, U, ldu, V, ldv, ifail, info);
+    // ns, S, U, ldu, V, ldv, ifail, info);
 }
 
 inline rocblas_status rocsolver_gesvdx_notransv(bool STRIDED,
@@ -4113,11 +4221,11 @@ inline rocblas_status rocsolver_gesvdx_notransv(bool STRIDED,
                                                 rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_cgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
-        // stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
-        // V, ldv, stV, ifail, stF, info, bc)
+        ? rocsolver_cgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
+                                                     stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
+                                                     V, ldv, stV, ifail, stF, info, bc)
         : rocblas_status_not_implemented; // rocsolver_cgesvdx_notransv(handle, leftv, rightv, srange, m, n, A, lda, vl, vu, il, iu,
-        // ns, S, U, ldu, V, ldv, ifail, info);
+    // ns, S, U, ldu, V, ldv, ifail, info);
 }
 
 inline rocblas_status rocsolver_gesvdx_notransv(bool STRIDED,
@@ -4149,11 +4257,11 @@ inline rocblas_status rocsolver_gesvdx_notransv(bool STRIDED,
                                                 rocblas_int bc)
 {
     return STRIDED
-        ? rocblas_status_not_implemented // rocsolver_zgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
-        // stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
-        // V, ldv, stV, ifail, stF, info, bc)
+        ? rocsolver_zgesvdx_notransv_strided_batched(handle, leftv, rightv, srange, m, n, A, lda,
+                                                     stA, vl, vu, il, iu, ns, S, stS, U, ldu, stU,
+                                                     V, ldv, stV, ifail, stF, info, bc)
         : rocblas_status_not_implemented; // rocsolver_zgesvdx_notransv(handle, leftv, rightv, srange, m, n, A, lda, vl, vu, il, iu,
-        // ns, S, U, ldu, V, ldv, ifail, info);
+    // ns, S, U, ldu, V, ldv, ifail, info);
 }
 
 // batched
