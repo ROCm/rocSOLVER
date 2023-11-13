@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,6 +45,9 @@
 #define CLASSICQR 1 // used to specify classic QR iteration solver (default case)
 #define JACOBI 2 // used to specify Jacobi iteration solver
 #define BISECTION 3 // used to specify bisection and inverse iteration solver
+
+/***************** Device auxiliary functions *****************************************/
+/**************************************************************************************/
 
 /** SEQ_EVAL evaluates the secular equation at a given point. It accumulates the
     corrections to the elements in D so that distance to poles are computed accurately **/
@@ -611,7 +614,7 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
         //	TODO
         break;
 
-    case JACOBI: levels = 0; break;
+    case JACOBI: levels = 1; break;
 
     case CLASSICQR:
     default:
@@ -654,6 +657,34 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
 
     return levels;
 }
+
+/** DE2TRIDIAG generates a tridiagonal matrix from vectors of diagonal entries (D) and
+	off-diagonal entries (E). **/
+template <typename S>
+__device__ inline void de2tridiag(const int numt,
+                                  const rocblas_int id,
+                                  const rocblas_int n,
+                                  S* D,
+                                  S* E,
+                                  S* C,
+                                  const rocblas_int ldc)
+{
+    for(rocblas_int k = id; k < n * n; k += numt)
+    {
+        rocblas_int i = k % n;
+        rocblas_int j = k / n;
+        S val;
+        bool offd = (i == j + 1);
+        if(offd || i == j - 1)
+            val = offd ? E[j] : E[i];
+        else
+            val = (i == j) ? D[i] : 0;
+        C[i + j * ldc] = val;
+    }
+}
+
+/*************** Main kernels *********************************************************/
+/**************************************************************************************/
 
 /** STEDC_SPLIT finds independent blocks in the tridiagonal matrix
     given by D and E. (The independent blocks can then be solved in
@@ -788,9 +819,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
     // used to store temp values during the different reductions
     S* inrms = reinterpret_cast<S*>(ps + maxblks);
     // shared mem for jacobi solver if needed
-    S* sj;
+    S* sj1;
+    rocblas_int* sj2;
     if(solver_mode == JACOBI)
-        sj = inrms + STDEC_BDIM;
+    {
+        sj1 = inrms + STEDC_BDIM;
+        sj2 = reinterpret_cast<rocblas_int*>(sj1 + n + maxblks);
+    }
     /* --------------------------------------------------- */
 
     // local variables
@@ -799,6 +834,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
     rocblas_int nb = splits[n + 1];
     // size of split block
     rocblas_int bs;
+    // size of sub block
+    rocblas_int sbs;
     // beginning of split block
     rocblas_int p1;
     // beginning of sub-block
@@ -838,16 +875,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
 
             case JACOBI:
             {
-                // arrange threads so that a group of bdim/blks threads works with each sub-block
-                // tn is the number of threads associated to each sub-block
-                tn = STEDC_BDIM / blks;
-                // tid indexes the sub-block
-                tid = id / tn;
-                // tidb indexes the threads in each sub-block
-                tidb = id % tn;
-
                 // transform D and E into full upper tridiag matrix and copy to C
-                de2tridiag(bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc);
+                de2tridiag(STEDC_BDIM, id, bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc);
 
                 // set work space
                 S* W_Acpy = W;
@@ -857,31 +886,34 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
                 // set shared mem
                 rocblas_int even_n = n + n % 2;
                 rocblas_int half_n = even_n / 2;
-                S* cosines_res = sj;
-                S* sines_diag = cosine_res + half_n;
-                rocblas_int* top = reinterpret_cast<rocblas_int*>(sines_diag + half_n);
+                S* cosines_res = sj1;
+                S* sines_diag = cosines_res + half_n;
+                rocblas_int* top = sj2;
                 rocblas_int* bottom = top + half_n;
 
                 // re-arrange threads in 2D array
                 rocblas_int ddx, ddy;
-                syevj_get_dims(n, tn, &ddx, &ddy);
-                rocblas_int tix = tidb / ddy;
-                rocblas_int tiy = tidb % ddy;
+                syevj_get_dims(n, STEDC_BDIM, &ddx, &ddy);
+                rocblas_int tix = id % ddx;
+                rocblas_int tiy = id / ddx;
+                __syncthreads();
 
-                run_syevj(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
-                          rocblas_fill_upper, bs, C + p1 + p1 * ldc, ldc, 0, eps, W_residual,
-                          MAXSWEEPS, W_n_sweeps, D + p1, info, W_Acpy, cosines_res, sines_diag, top,
-                          bottom);
+                // solve
+                run_syevj<S, S>(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
+                                rocblas_fill_upper, bs, C + p1 + p1 * ldc, ldc, 0, eps, W_residual,
+                                MAXSWEEPS, W_n_sweeps, D + p1, info, W_Acpy + p1 + p1 * n,
+                                cosines_res, sines_diag, top, bottom);
+
                 break;
             }
 
             case CLASSICQR:
             default:
+            {
                 if(id == 0)
-                {
                     run_steqr(bs, D + p1, E + p1, C + p1 + p1 * ldc, ldc, info, W + p1 * 2, 30 * bs,
                               eps, ssfmin, ssfmax, false);
-                }
+            }
             }
         }
 
@@ -951,18 +983,49 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
                 break;
 
             case JACOBI:
-                //  TODO
+            {
+                // transform D and E into full upper tridiag matrix and copy to C
+                sbs = ns[tid];
+                de2tridiag(STEDC_BDIM, tidb, sbs, D + p2, E + p2, C + p2 + p2 * ldc, ldc);
+
+                // set work space
+                S* W_Acpy = W;
+                S* W_residual = W_Acpy + n * n;
+                rocblas_int* W_n_sweeps = reinterpret_cast<rocblas_int*>(W_residual + 1);
+
+                // set shared mem
+                rocblas_int even_n = sbs + sbs % 2;
+                rocblas_int half_n = even_n / 2;
+                S* cosines_res = sj1 + tid + p2;
+                S* sines_diag = cosines_res + half_n;
+                rocblas_int* top = sj2 + tid + p2;
+                rocblas_int* bottom = top + half_n;
+
+                // re-arrange threads in 2D array
+                rocblas_int ddx, ddy;
+                syevj_get_dims(sbs, tn, &ddx, &ddy);
+                rocblas_int tix = tidb % ddx;
+                rocblas_int tiy = tidb / ddx;
+                __syncthreads();
+
+                // solve
+                run_syevj<S, S>(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
+                                rocblas_fill_upper, sbs, C + p2 + p2 * ldc, ldc, 0, eps, W_residual,
+                                MAXSWEEPS, W_n_sweeps, D + p2, info, W_Acpy + p2 + p2 * n,
+                                cosines_res, sines_diag, top, bottom);
+
                 break;
+            }
 
             case CLASSICQR:
             default:
+            {
                 // (Until STEQR is parallelized, only the first thread associated
                 // to each sub-block do computations)
                 if(tidb == 0)
-                {
                     run_steqr(ns[tid], D + p2, E + p2, C + p2 + p2 * ldc, ldc, info, W + p2 * 2,
                               30 * bs, eps, ssfmin, ssfmax, false);
-                }
+            }
             }
             __syncthreads();
             /* ----------------------------------------------------------------- */
@@ -1483,6 +1546,9 @@ ROCSOLVER_KERNEL void stedc_sort(const rocblas_int n,
     }
 }
 
+/******************* Host functions ********************************************/
+/*******************************************************************************/
+
 /** This local gemm adapts rocblas_gemm to multiply complex*real, and
     overwrite result: A = A*B **/
 template <bool BATCHED,
@@ -1635,7 +1701,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     }
 
     // if size is too small with classic solver
-	else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
+    else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         *size_tempvect = 0;
         *size_tempgemm = 0;
@@ -1650,7 +1716,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     {
         size_t s1, s2;
 
-		// requirements for solver of small independent blocks
+        // requirements for solver of small independent blocks
         switch(solver_mode)
         {
         case BISECTION: s1 = 0; break;
@@ -1768,13 +1834,13 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
     // if no eigenvectors required with the classic solver, use sterf
     if(evect == rocblas_evect_none && solver_mode != JACOBI && solver_mode != BISECTION)
-	{
-    	rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
+    {
+        rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
                                     batch_count, (rocblas_int*)work_stack);
     }
 
     // if size is too small with classic solver, use steqr
-	else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
+    else if(n < STEDC_MIN_DC_SIZE && solver_mode != JACOBI && solver_mode != BISECTION)
     {
         rocsolver_steqr_template<T>(handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C,
                                     shiftC, ldc, strideC, info, batch_count, work_stack);
@@ -1809,10 +1875,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         // find max number of sub-blocks to consider during the divide phase
         rocblas_int maxblks = 1 << stedc_num_levels(n, solver_mode);
 
-		// size of shared mem
+        // size of shared mem
         size_t lmemsize = sizeof(rocblas_int) * 2 * maxblks + sizeof(S) * STEDC_BDIM;
         if(solver_mode == JACOBI)
-            lmemsize += (n + n % 2) * (sizeof(rocblas_int) + sizeof(S));
+            lmemsize += (n + maxblks) * (sizeof(rocblas_int) + sizeof(S));
 
         // execute divide and conquer kernel with tempvect
         ROCSOLVER_LAUNCH_KERNEL((stedc_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),

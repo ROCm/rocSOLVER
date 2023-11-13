@@ -475,13 +475,13 @@ void testing_syevdj_heevdj(Arguments& argus)
         }
 
         // collect performance data
-        if(argus.timing)
+        /*        if(argus.timing)
         {
             syevdj_heevdj_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD,
                                                   dinfo, bc, hA, hD, hinfo, &gpu_time_used,
                                                   &cpu_time_used, hot_calls, argus.profile,
                                                   argus.profile_kernels, argus.perf);
-        }
+        }*/
     }
 
     else
@@ -513,13 +513,13 @@ void testing_syevdj_heevdj(Arguments& argus)
         }
 
         // collect performance data
-        if(argus.timing)
+        /*        if(argus.timing)
         {
             syevdj_heevdj_getPerfData<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD,
                                                   dinfo, bc, hA, hD, hinfo, &gpu_time_used,
                                                   &cpu_time_used, hot_calls, argus.profile,
                                                   argus.profile_kernels, argus.perf);
-        }
+        }*/
     }
 
     // validate results for rocsolver-test

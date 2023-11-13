@@ -82,6 +82,18 @@ rocblas_status rocsolver_syevdj_heevdj_impl(rocblas_handle handle,
     if(size_scalars > 0)
         init_scalars(handle, (T*)scalars);
 
+    /*printf("size of scalars: %zd\n",size_scalars);
+printf("size of workE: %zd\n",size_workE);
+printf("size of workTau: %zd\n",size_workTau);
+printf("size of workVec: %zd\n",size_workVec);
+printf("size of workSPlits: %zd\n",size_workSplits);
+printf("size of work1: %zd\n",size_work1);
+printf("size of work2: %zd\n",size_work2);
+printf("size of work3: %zd\n",size_work3);
+printf("size of work4: %zd\n",size_work4);
+printf("size of workArr: %zd\n",size_workArr);
+*/
+
     // execution
     return rocsolver_syevdj_heevdj_template<false, false, T>(
         handle, evect, uplo, n, A, shiftA, lda, strideA, D, strideD, info, batch_count, (T*)scalars,

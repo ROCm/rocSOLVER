@@ -95,8 +95,6 @@ __device__ void run_syevj(const rocblas_int dimx,
                     }
                 }
             }
-            cosines_res[tix] = local_res;
-            sines_diag[tix] = local_diag;
         }
         else
         {
@@ -123,9 +121,9 @@ __device__ void run_syevj(const rocblas_int dimx,
                     }
                 }
             }
-            cosines_res[tix] = local_res;
-            sines_diag[tix] = local_diag;
         }
+        cosines_res[tix] = local_res;
+        sines_diag[tix] = local_diag;
 
         // initialize top/bottom pairs
         for(i = tix; i < half_n; i += dimx)
@@ -156,6 +154,17 @@ __device__ void run_syevj(const rocblas_int dimx,
             for(rocblas_int cc = 0; cc < count; ++cc)
             {
                 rocblas_int kx = tix + cc * dimx;
+
+                //if(tiy==0 && tix==0)
+                //{
+                //printf("sweeps %d, k %d, cc %d\n",sweeps,k,cc);
+                //for(int u=0;u<8;++u)
+                //	printf("%d ",top[u]);
+                //printf("\n");
+                //for(int u=0;u<8;++u)
+                //	printf("%d ",bottom[u]);
+                //printf("\n");
+                //}
 
                 // get current top/bottom pair
                 i = kx < half_n ? top[kx] : n;
@@ -261,6 +270,8 @@ __device__ void run_syevj(const rocblas_int dimx,
                 // rotate top/bottom pair
                 if(tiy == 0 && kx < half_n)
                 {
+                    //printf("soy tix %d, mi kx es %d\n",tix,kx);
+
                     if(i > 0)
                     {
                         if(i == 2 || i == even_n - 1)
@@ -281,6 +292,7 @@ __device__ void run_syevj(const rocblas_int dimx,
         if(tiy == 0)
         {
             local_res = 0;
+
             for(i = tix; i < n; i += dimx)
             {
                 for(j = 0; j < i; j++)

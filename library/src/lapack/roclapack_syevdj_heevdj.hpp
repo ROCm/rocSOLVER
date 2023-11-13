@@ -208,8 +208,8 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
 
         // reduce A to tridiagonal form
         // (Note: a tridiag form is necessary to apply D&C. To solve the subblocks with Jacobi will
-        //	require copy D and E into a full tridiag matrix however, given all the zeros above the super diagonal,
-        //	it is expected that the algorithm converges in fewer sweeps)
+        // require copy D and E into a full tridiag matrix however, given all the zeros above the super diagonal,
+        // it is expected that the algorithm converges in fewer sweeps)
         rocsolver_sytrd_hetrd_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D,
                                                 strideD, workE, n, workTau, n, batch_count, scalars,
                                                 (T*)work1, (T*)work2, (T*)work3, (T**)workArr);
