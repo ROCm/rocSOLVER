@@ -27,6 +27,8 @@
 
 #pragma once
 
+#include <iostream>
+
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
@@ -45,81 +47,120 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
                                         T* Ux,
                                         rocblas_int* work)
 {
-    rocblas_int tid = hipThreadIdx_x;
+    const rocblas_int avg_nnzM = max(1, nnzM / n);
 
-    rocblas_int* const nzLp = work;
-    rocblas_int* const nzUp = work + n;
+    const rocblas_int waveSize = (avg_nnzM > warpSize) ? warpSize
+        : (avg_nnzM > warpSize / 2)                    ? warpSize / 2
+        : (avg_nnzM > warpSize / 4)                    ? warpSize / 4
+        : (avg_nnzM > warpSize / 8)                    ? warpSize / 8
+        : (avg_nnzM > warpSize / 16)                   ? warpSize / 16
+                                                       : 1;
+
+    const rocblas_int nthreads = blockDim.x;
+    const rocblas_int nwaves = nthreads / waveSize;
+
+    const rocblas_int tid = threadIdx.x;
+    const rocblas_int lid = tid % waveSize;
+    const rocblas_int wid = tid / waveSize;
+
+    rocblas_int* const diagpos = work;
 
     // -------------------------------------------------
     // 1st pass to determine number of non-zeros per row
     // and set up Lp and Up
     // -------------------------------------------------
-    rocblas_int i, j;
-    rocblas_int irow, icol, istart, iend;
-    __shared__ rocblas_int nnzL;
-    __shared__ rocblas_int nnzU;
 
-    for(irow = tid; irow < n; irow += hipBlockDim_x)
+    auto time_diagpos = -clock64();
+
+    for(auto irow = wid; irow < n; irow += nwaves)
     {
-        istart = Mp[irow];
-        iend = Mp[irow + 1];
+        const rocblas_int istart = Mp[irow];
+        const rocblas_int iend = Mp[irow + 1];
 
-        for(i = istart; i < iend; i++)
+#pragma unroll
+        for(auto i = istart + lid; i < iend; i += waveSize)
         {
-            icol = Mi[i];
-            if(icol >= irow)
-                break;
+            const auto icol = Mi[i];
+            if(icol == irow)
+            {
+                diagpos[irow] = i;
+            };
         }
-
-        nzLp[irow] = i - istart + 1; // add 1 for unit diagonal
-        nzUp[irow] = iend - i;
     }
     __syncthreads();
+    time_diagpos += clock64();
 
+    // ---------------------------------
+    // prefix sum to setup Lp[] and Up[]
+    // ---------------------------------
+    auto time_sum = -clock64();
     if(tid == 0)
     {
-        nnzL = 0;
-        nnzU = 0;
+        rocblas_int nnzL = 0;
+        rocblas_int nnzU = 0;
 
-        for(i = 0; i < n; i++)
+        for(auto irow = 0 * n; irow < n; irow++)
         {
-            Lp[i] = nnzL;
-            Up[i] = nnzU;
-            nnzL += nzLp[i];
-            nnzU += nzUp[i];
+            Lp[irow] = nnzL;
+            Up[irow] = nnzU;
+
+            const auto istart = Mp[irow];
+            const auto iend = Mp[irow + 1];
+            const auto idiag = diagpos[irow];
+
+            const auto nzUp_i = iend - idiag;
+            const auto nzLp_i = idiag - istart + 1; // add 1 for unit diagonal
+
+            nnzL += nzLp_i;
+            nnzU += nzUp_i;
         };
 
         Lp[n] = nnzL;
         Up[n] = nnzU;
     };
     __syncthreads();
+    time_sum += clock64();
 
     // ------------------------------------
     // 2nd pass to populate Li, Lx, Ui, Ux
     // ------------------------------------
-    for(irow = tid; irow < n; irow += hipBlockDim_x)
+    auto time_copy = -clock64();
+    for(auto irow = wid; irow < n; irow += nwaves)
     {
-        istart = Mp[irow];
-        iend = Mp[irow + 1];
+        const auto istart = Mp[irow];
+        const auto iend = Mp[irow + 1];
 
-        for(i = istart; i < iend; i++)
+        const auto idiag = diagpos[irow];
+
+        // -----------
+        // copy into L
+        // -----------
         {
-            icol = Mi[i];
-            if(icol < irow)
+            const auto nzLp_i = idiag - istart + 1; // add 1 for unit diagonal
+            for(auto k = lid; k < nzLp_i; k += waveSize)
             {
-                // element in L
-                j = Lp[irow] + (i - istart);
+                const auto ip = Lp[irow] + k;
+                const auto icol = Mi[istart + k];
+                const auto aij = Mx[istart + k];
 
-                Li[j] = icol;
-                Lx[j] = Mx[i];
+                Li[ip] = icol;
+                Lx[ip] = aij;
             }
-            else
-            {
-                // element in U
-                j = Up[irow + 1] - (iend - i);
+        }
 
-                Ui[j] = icol;
-                Ux[j] = Mx[i];
+        // -----------
+        // copy into U
+        // -----------
+        {
+            const auto nzUp_i = iend - idiag;
+            for(auto k = lid; k < nzUp_i; k += waveSize)
+            {
+                const auto ip = Up[irow] + k;
+                const auto icol = Mi[idiag + k];
+                const auto aij = Mx[idiag + k];
+
+                Ui[ip] = icol;
+                Ux[ip] = aij;
             }
         }
     }
@@ -127,12 +168,20 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     // -----------------------------
     // set unit diagonal entry in L
     // -----------------------------
-    for(irow = tid; irow < n; irow += hipBlockDim_x)
+    for(auto irow = tid; irow < n; irow += nthreads)
     {
-        j = Lp[irow + 1] - 1;
+        const auto j = Lp[irow + 1] - 1;
         Li[j] = irow;
-        Lx[j] = T(1);
+        Lx[j] = static_cast<T>(1);
     };
+
+    __syncthreads();
+    time_copy += clock64();
+    if(tid == 0)
+    {
+        printf("time_diagpos=%le, time_sum=%le, time_copy=%le\n", static_cast<double>(time_diagpos),
+               static_cast<double>(time_sum), static_cast<double>(time_copy));
+    }
 }
 
 template <typename T>
