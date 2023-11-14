@@ -28,16 +28,26 @@
 #pragma once
 
 #include "thrust/device_ptr.h"
-#include "thrust/device_vector.h"
-#include "thrust/fill.h"
-#include "thrust/host_vector.h"
 #include "thrust/scan.h"
-#include "thrust/sequence.h"
+
 #include <iostream>
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
+
+template <typename I>
+__device__ static I cal_wave_size(I avg_nnzM)
+{
+    const auto ifactor = 4;
+
+    return ((avg_nnzM >= ifactor * warpSize)              ? warpSize
+                : (avg_nnzM >= ifactor * (warpSize / 2))  ? (warpSize / 2)
+                : (avg_nnzM >= ifactor * (warpSize / 4))  ? (warpSize / 4)
+                : (avg_nnzM >= ifactor * (warpSize / 8))  ? (warpSize / 8)
+                : (avg_nnzM >= ifactor * (warpSize / 16)) ? (warpSize / 16)
+                                                          : 1);
+}
 
 template <typename T>
 ROCSOLVER_KERNEL void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
@@ -49,12 +59,7 @@ ROCSOLVER_KERNEL void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
 {
     const auto avg_nnzM = max(1, nnzM / n);
 
-    const auto waveSize = (avg_nnzM >= warpSize) ? warpSize
-        : (avg_nnzM >= (warpSize / 2))           ? (warpSize / 2)
-        : (avg_nnzM >= (warpSize / 4))           ? (warpSize / 4)
-        : (avg_nnzM >= (warpSize / 8))           ? (warpSize / 8)
-        : (avg_nnzM >= (warpSize / 16))          ? (warpSize / 16)
-                                                 : 1;
+    const auto waveSize = cal_wave_size(avg_nnzM);
 
     const auto nthreads = gridDim.x * blockDim.x;
     const auto nwaves = nthreads / waveSize;
@@ -98,12 +103,7 @@ ROCSOLVER_KERNEL void rf_splitLU_copy_kernel(const rocblas_int n,
 {
     const auto avg_nnzM = max(1, nnzM / n);
 
-    const auto waveSize = (avg_nnzM >= warpSize) ? warpSize
-        : (avg_nnzM >= (warpSize / 2))           ? (warpSize / 2)
-        : (avg_nnzM >= (warpSize / 4))           ? (warpSize / 4)
-        : (avg_nnzM >= (warpSize / 8))           ? (warpSize / 8)
-        : (avg_nnzM >= (warpSize / 16))          ? (warpSize / 16)
-                                                 : 1;
+    const auto waveSize = cal_wave_size(avg_nnzM);
 
     const auto nthreads = gridDim.x * blockDim.x;
     const auto nwaves = nthreads / waveSize;
@@ -424,7 +424,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
     else
     {
         rocblas_int const nthreads = BS1;
-        rocblas_int const nblocks = max(1, (n - 1) / nthreads + 1);
+        rocblas_int const nblocks = max(1, min(1024, (n - 1) / nthreads + 1));
 
         rocblas_int* const Lp = ptrL;
         rocblas_int* const Up = ptrU;
@@ -444,8 +444,23 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
 
         thrust::inclusive_scan(exec, (dev_Lp + 1), (dev_Lp + 1) + n, (dev_Lp + 1));
         thrust::inclusive_scan(exec, (dev_Up + 1), (dev_Up + 1) + n, (dev_Up + 1));
-        thrust::fill(exec, dev_Up, dev_Up + 1, 0);
-        thrust::fill(exec, dev_Lp, dev_Lp + 1, 0);
+        {
+            const rocblas_int ival = static_cast<rocblas_int>(0);
+
+            const auto istat_Lp
+                = hipMemcpyAsync(Lp, &ival, sizeof(rocblas_int), hipMemcpyHostToDevice, stream);
+            if(istat_Lp != hipSuccess)
+            {
+                return (rocblas_status_internal_error);
+            };
+
+            const auto istat_Up
+                = hipMemcpyAsync(Up, &ival, sizeof(rocblas_int), hipMemcpyHostToDevice, stream);
+            if(istat_Up != hipSuccess)
+            {
+                return (rocblas_status_internal_error);
+            };
+        }
 
         // -----------------
         // copy into L and U
