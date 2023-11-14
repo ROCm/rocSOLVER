@@ -152,9 +152,10 @@ Arguments gesvdx_setup_arguments(gesvdx_tuple tup, bool notransv)
 class GESVDX : public ::TestWithParam<gesvdx_tuple>
 {
 protected:
-    GESVDX() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()

@@ -111,9 +111,10 @@ Arguments geblttrs_setup_arguments(geblttrs_tuple tup, bool interleaved)
 class GEBLTTRS_NPVT : public ::TestWithParam<geblttrs_tuple>
 {
 protected:
-    GEBLTTRS_NPVT() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
@@ -132,9 +133,10 @@ protected:
 class GEBLTTRS_NPVT_INTERLEAVED : public ::TestWithParam<geblttrs_tuple>
 {
 protected:
-    GEBLTTRS_NPVT_INTERLEAVED() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()
