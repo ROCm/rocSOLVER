@@ -407,7 +407,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
     if(nnzT == 0)
     {
         // set ptrU = 0
-        rocblas_int blocks = n / BS1 + 1;
+        const rocblas_int blocks = n / BS1 + 1;
         dim3 grid(blocks, 1, 1);
         dim3 threads(BS1, 1, 1);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, ptrU, n + 1, 0);
@@ -418,11 +418,14 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    bool const use_alg1 = false;
+    const bool use_alg1 = (n <= 64);
     if(use_alg1)
     {
-        rocblas_int const nthreads = BS1;
-        rocblas_int const nblocks = 1;
+        // --------------------------------
+        // note using a single thread block
+        // --------------------------------
+        const rocblas_int nthreads = BS1;
+        const rocblas_int nblocks = 1;
         ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n,
                                 nnzT, ptrT, indT, valT, ptrL, indL, valL, ptrU, indU, valU, work);
     }
@@ -433,22 +436,31 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
 
         rocblas_int* const Lp = ptrL;
         rocblas_int* const Up = ptrU;
-        // -----------------------------------------
-        // setup number of nonzeros in each row of L
-        // -----------------------------------------
+
+        // ------------------------------------------------
+        // setup number of nonzeros in each row of L and U
+        // note: reuse arrays Lp[] and Up[]
+        // ------------------------------------------------
         ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_gen_nzLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0,
                                 stream, n, nnzT, ptrT, indT, Lp + 1, Up + 1);
 
         // -------------------------------------
         // generate prefix sum for Lp[] and Up[]
-        // -------------------------------------
-        auto exec = thrust::hip::par.on(stream);
+        // note: in-place prefix sum
+        // -------------------------
+        {
+            const auto exec = thrust::hip::par.on(stream);
 
-        thrust::device_ptr<rocblas_int> dev_Lp(Lp);
-        thrust::device_ptr<rocblas_int> dev_Up(Up);
+            thrust::device_ptr<rocblas_int> dev_Lp(Lp);
+            thrust::device_ptr<rocblas_int> dev_Up(Up);
 
-        thrust::inclusive_scan(exec, (dev_Lp + 1), (dev_Lp + 1) + n, (dev_Lp + 1));
-        thrust::inclusive_scan(exec, (dev_Up + 1), (dev_Up + 1) + n, (dev_Up + 1));
+            thrust::inclusive_scan(exec, (dev_Lp + 1), (dev_Lp + 1) + n, (dev_Lp + 1));
+            thrust::inclusive_scan(exec, (dev_Up + 1), (dev_Up + 1) + n, (dev_Up + 1));
+        }
+
+        // ------------------------
+        // set Lp[0] = 0, Up[0] = 0
+        // ------------------------
         {
             const rocblas_int ival = static_cast<rocblas_int>(0);
 
