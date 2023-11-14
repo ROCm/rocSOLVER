@@ -39,14 +39,15 @@
 template <typename I>
 __device__ static I cal_wave_size(I avg_nnzM)
 {
-    const auto ifactor = 4;
+    const auto ifactor = 2;
 
-    return ((avg_nnzM >= ifactor * warpSize)              ? warpSize
-                : (avg_nnzM >= ifactor * (warpSize / 2))  ? (warpSize / 2)
-                : (avg_nnzM >= ifactor * (warpSize / 4))  ? (warpSize / 4)
-                : (avg_nnzM >= ifactor * (warpSize / 8))  ? (warpSize / 8)
-                : (avg_nnzM >= ifactor * (warpSize / 16)) ? (warpSize / 16)
-                                                          : 1);
+    const auto wave_size = ((avg_nnzM >= ifactor * warpSize)              ? warpSize
+                                : (avg_nnzM >= ifactor * (warpSize / 2))  ? (warpSize / 2)
+                                : (avg_nnzM >= ifactor * (warpSize / 4))  ? (warpSize / 4)
+                                : (avg_nnzM >= ifactor * (warpSize / 8))  ? (warpSize / 8)
+                                : (avg_nnzM >= ifactor * (warpSize / 16)) ? (warpSize / 16)
+                                                                          : 1);
+    return (wave_size);
 }
 
 template <typename T>
@@ -89,17 +90,18 @@ ROCSOLVER_KERNEL void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
 }
 
 template <typename T>
-ROCSOLVER_KERNEL void rf_splitLU_copy_kernel(const rocblas_int n,
-                                             const rocblas_int nnzM,
-                                             rocblas_int* Mp,
-                                             rocblas_int* Mi,
-                                             T* Mx,
-                                             rocblas_int* Lp,
-                                             rocblas_int* Li,
-                                             T* Lx,
-                                             rocblas_int* Up,
-                                             rocblas_int* Ui,
-                                             T* Ux)
+ROCSOLVER_KERNEL void __launch_bounds__(BS1)
+    rf_splitLU_copy_kernel(const rocblas_int n,
+                           const rocblas_int nnzM,
+                           rocblas_int const* const __restrict__ Mp,
+                           rocblas_int const* const __restrict__ Mi,
+                           T const* const __restrict__ Mx,
+                           rocblas_int const* const __restrict__ Lp,
+                           rocblas_int* const __restrict__ Li,
+                           T* const __restrict__ Lx,
+                           rocblas_int const* const __restrict__ Up,
+                           rocblas_int* const __restrict__ Ui,
+                           T* const __restrict__ Ux)
 {
     const auto avg_nnzM = max(1, nnzM / n);
 
@@ -124,6 +126,7 @@ ROCSOLVER_KERNEL void rf_splitLU_copy_kernel(const rocblas_int n,
         // --------------------------
         // copy lower triangular part
         // --------------------------
+#pragma unroll 2
         for(auto k = lid; k < nzL; k += waveSize)
         {
             const auto kp = kstart + k;
@@ -135,9 +138,10 @@ ROCSOLVER_KERNEL void rf_splitLU_copy_kernel(const rocblas_int n,
             Lx[ip] = aij;
         };
 
-        // --------------------------
-        // copy upper triangular part
-        // --------------------------
+            // --------------------------
+            // copy upper triangular part
+            // --------------------------
+#pragma unroll 2
         for(auto k = lid; k < nzU; k += waveSize)
         {
             const auto kp = kdiag + k;
@@ -152,9 +156,9 @@ ROCSOLVER_KERNEL void rf_splitLU_copy_kernel(const rocblas_int n,
         // -------------------
         // unit diagonal entry of L
         // -------------------
+        const auto ip = Lp[irow + 1] - 1;
         if(lid == 0)
         {
-            const auto ip = Lp[irow + 1] - 1;
             Li[ip] = irow;
             Lx[ip] = static_cast<T>(1);
         };
