@@ -51,12 +51,12 @@ __device__ static I cal_wave_size(I avg_nnzM)
 }
 
 template <typename T>
-ROCSOLVER_KERNEL void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
-                                                 const rocblas_int nnzM,
-                                                 rocblas_int* Mp,
-                                                 rocblas_int* Mi,
-                                                 rocblas_int* nzLarray,
-                                                 rocblas_int* nzUarray)
+ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
+                                                                        const rocblas_int nnzM,
+                                                                        rocblas_int* Mp,
+                                                                        rocblas_int* Mi,
+                                                                        rocblas_int* nzLarray,
+                                                                        rocblas_int* nzUarray)
 {
     const auto avg_nnzM = max(1, nnzM / n);
 
@@ -68,18 +68,29 @@ ROCSOLVER_KERNEL void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
     const auto tid = threadIdx.x + blockIdx.x * blockDim.x;
     const auto lid = tid % waveSize;
     const auto wid = tid / waveSize;
+    const auto lwid = blockDim.x % waveSize;
+
+    __shared__ bool is_found[BS1];
 
     for(auto irow = wid; irow < n; irow += nwaves)
     {
         const auto kstart = Mp[irow];
         const auto kend = Mp[irow + 1];
-        bool is_found = false;
-        for(auto k = kstart + lid; (k < kend) && (!is_found); k += waveSize)
+        // -------------------
+        // find diagonal entry
+        // -------------------
+        is_found[lwid] = false;
+        for(auto k = kstart + lid; (k < kend); k += waveSize)
         {
+            if(is_found[lwid])
+            {
+                break;
+            };
+
             const auto icol = Mi[k];
             if(icol == irow)
             {
-                is_found = true;
+                is_found[lwid] = true;
                 const auto kdiag = k;
                 nzUarray[irow] = kend - kdiag;
                 nzLarray[irow] = (kdiag - kstart);
@@ -118,39 +129,29 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1)
     {
         const auto kstart = Mp[irow];
         const auto kend = Mp[irow + 1];
+        const auto nz = (kend - kstart);
 
         const auto nzU = (Up[irow + 1] - Up[irow]);
         const auto nzL = (kend - kstart) - nzU;
         const auto kdiag = kstart + nzL;
 
-        // --------------------------
-        // copy lower triangular part
-        // --------------------------
-#pragma unroll 2
-        for(auto k = lid; k < nzL; k += waveSize)
+        for(auto k = kstart + lid; k < kend; k += waveSize)
         {
-            const auto kp = kstart + k;
-            const auto icol = Mi[kp];
-            const auto aij = Mx[kp];
-
-            const auto ip = Lp[irow] + k;
-            Li[ip] = icol;
-            Lx[ip] = aij;
-        };
-
-            // --------------------------
-            // copy upper triangular part
-            // --------------------------
-#pragma unroll 2
-        for(auto k = lid; k < nzU; k += waveSize)
-        {
-            const auto kp = kdiag + k;
-            const auto icol = Mi[kp];
-            const auto aij = Mx[kp];
-
-            const auto ip = Up[irow] + k;
-            Ui[ip] = icol;
-            Ux[ip] = aij;
+            const auto icol = Mi[k];
+            const auto aij = Mx[k];
+            const bool is_lower = (icol < irow);
+            if(is_lower)
+            {
+                const auto ip = Lp[irow] + (k - kstart);
+                Li[ip] = icol;
+                Lx[ip] = aij;
+            }
+            else
+            {
+                const auto ip = Up[irow] + (k - kdiag);
+                Ui[ip] = icol;
+                Ux[ip] = aij;
+            };
         };
 
         // -------------------
