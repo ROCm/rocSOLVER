@@ -175,9 +175,10 @@ protected:
 class GESVDX_NOTRANSV : public ::TestWithParam<gesvdx_tuple>
 {
 protected:
-    GESVDX_NOTRANSV() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
