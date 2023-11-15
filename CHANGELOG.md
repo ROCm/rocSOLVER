@@ -7,6 +7,8 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Added
 ### Optimized
 ### Changed
+- Relaxed array length requirements for GESVDX with `rocblas_srange_index`.
+
 ### Deprecated
 ### Removed
 ### Fixed
