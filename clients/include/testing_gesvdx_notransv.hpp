@@ -534,6 +534,34 @@ void gesvdx_notransv_getError(const rocblas_handle handle,
             }
             err = std::sqrt(err) / double(snorm('F', m, n, A.data() + b * lda * n, lda));
             *max_errv = err > *max_errv ? err : *max_errv;
+
+            if(hNsv[b][0] > 0 && bc < 2)
+            {
+                // U and V should be orthonormal, if they are then U*V^T should be the identity
+                std::vector<T> UUres(m * m, 0.0);
+                std::vector<T> VVres(n * n, 0.0);
+                std::vector<T> Im(m * m, 0.0);
+                std::vector<T> In(n * n, 0.0);
+                err = 0;
+
+                cpu_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, m, hNsv[b][0],
+                         m, T(1), hUres[b], ldures, hUres[b], ldures, T(1), UUres.data(), m);
+                for(rocblas_int i = 0; i < m; ++i)
+                {
+                    Im[i + i * m] = T(UUres[0]);
+                }
+                err = norm_error('F', m, m, m, Im.data(), UUres.data());
+                *max_errv = err > *max_errv ? err : *max_errv;
+
+                cpu_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, n, hNsv[b][0],
+                         n, T(1), hVres[b], ldvres, hVres[b], ldvres, T(1), VVres.data(), n);
+                for(rocblas_int i = 0; i < n; ++i)
+                {
+                    In[i + i * n] = T(VVres[0]);
+                }
+                err = norm_error('F', n, n, n, In.data(), VVres.data());
+                *max_errv = err > *max_errv ? err : *max_errv;
+            }
         }
     }
 }
