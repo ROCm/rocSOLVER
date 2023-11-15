@@ -144,6 +144,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_gesvdx.cpp
   lapack/roclapack_gesvdx_batched.cpp
   lapack/roclapack_gesvdx_strided_batched.cpp
+  lapack/roclapack_gesvdx_notransv_strided_batched.cpp
   # symmetric eigensolvers
   lapack/roclapack_syev_heev.cpp
   lapack/roclapack_syev_heev_batched.cpp
