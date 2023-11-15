@@ -27,14 +27,30 @@
 
 #pragma once
 
+#define USE_THRUST
+#ifdef USE_THRUST
 #include "thrust/device_ptr.h"
 #include "thrust/scan.h"
+#else
+#include <rocprim/rocprim.hpp>
+#endif
 
 #include <iostream>
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
+
+#ifndef HIP_CHECK
+#define HIP_CHECK(fcn)                              \
+    {                                               \
+        auto ret = (fcn);                           \
+        if(ret != hipSuccess)                       \
+        {                                           \
+            return (rocblas_status_internal_error); \
+        };                                          \
+    }
+#endif
 
 template <typename I>
 __device__ static I cal_wave_size(I avg_nnzM)
@@ -448,6 +464,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         // generate prefix sum for Lp[] and Up[]
         // note: in-place prefix sum
         // -------------------------
+#ifdef USE_THRUST
         {
             const auto exec = thrust::hip::par.on(stream);
 
@@ -457,6 +474,48 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
             thrust::inclusive_scan(exec, (dev_Lp + 1), (dev_Lp + 1) + n, (dev_Lp + 1));
             thrust::inclusive_scan(exec, (dev_Up + 1), (dev_Up + 1) + n, (dev_Up + 1));
         }
+#else
+        {
+            // ------------------------------------------
+            // query amount of temporary storage required
+            // ------------------------------------------
+            size_t storage_size_bytes = 0;
+            void* temp_ptr = nullptr;
+
+            HIP_CHECK(rocprim::inclusive_scan(temp_ptr, storage_size_bytes, (Lp + 1), (Lp + 1), n,
+                                              rocprim::plus<rocblas_int>(), stream));
+
+            // ------------------------------------------------
+            // allocate memory in stream-associated memory pool
+            // ------------------------------------------------
+            const size_t work_size_bytes = sizeof(rocblas_int) * 2 * n;
+            const bool need_alloc = storage_size_bytes > work_size_bytes;
+            if(need_alloc)
+            {
+                HIP_CHECK(hipMallocAsync(&temp_ptr, storage_size_bytes, stream));
+            }
+            else
+            {
+                temp_ptr = (void*)work;
+                storage_size_bytes = work_size_bytes;
+            };
+
+            // ----------------------------------------
+            // perform inclusive scan for Lp[] and Up[]
+            // ----------------------------------------
+            HIP_CHECK(rocprim::inclusive_scan(temp_ptr, storage_size_bytes, (Lp + 1), (Lp + 1), n,
+                                              rocprim::plus<rocblas_int>(), stream));
+
+            HIP_CHECK(rocprim::inclusive_scan(temp_ptr, storage_size_bytes, (Up + 1), (Up + 1), n,
+                                              rocprim::plus<rocblas_int>(), stream));
+
+            if(need_alloc)
+            {
+                HIP_CHECK(hipFreeAsync(temp_ptr, stream));
+            };
+            temp_ptr = nullptr;
+        }
+#endif
 
         // ------------------------
         // set Lp[0] = 0, Up[0] = 0
@@ -464,19 +523,9 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         {
             const rocblas_int ival = static_cast<rocblas_int>(0);
 
-            const auto istat_Lp
-                = hipMemcpyAsync(Lp, &ival, sizeof(rocblas_int), hipMemcpyHostToDevice, stream);
-            if(istat_Lp != hipSuccess)
-            {
-                return (rocblas_status_internal_error);
-            };
+            HIP_CHECK(hipMemcpyAsync(Lp, &ival, sizeof(rocblas_int), hipMemcpyHostToDevice, stream));
 
-            const auto istat_Up
-                = hipMemcpyAsync(Up, &ival, sizeof(rocblas_int), hipMemcpyHostToDevice, stream);
-            if(istat_Up != hipSuccess)
-            {
-                return (rocblas_status_internal_error);
-            };
+            HIP_CHECK(hipMemcpyAsync(Up, &ival, sizeof(rocblas_int), hipMemcpyHostToDevice, stream));
         }
 
         // -----------------
@@ -484,7 +533,8 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         // -----------------
         ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_copy_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream,
                                 n, nnzT, ptrT, indT, valT, Lp, indL, valL, Up, indU, valU);
-    };
+    }
 
     return rocblas_status_success;
 }
+#undef HIP_CHECK
