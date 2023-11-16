@@ -22,8 +22,8 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
         }
     }
 
-    def getRocBLAS = auxiliary.getLibrary('rocBLAS-internal',platform.jenkinsLabel, null, sameOrg)
-    def getRocSPARSE = auxiliary.getLibrary('rocSPARSE-internal',platform.jenkinsLabel, null, sameOrg)
+    def getRocBLAS = auxiliary.getLibrary('rocBLAS', platform.jenkinsLabel, null, sameOrg)
+    def getRocSPARSE = auxiliary.getLibrary('rocSPARSE', platform.jenkinsLabel, null, sameOrg)
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
@@ -61,10 +61,10 @@ def runTestCommand (platform, project, gfilter)
 
 def runPackageCommand(platform, project)
 {
-        String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
-        def packageHelper = platform.makePackage(platform.jenkinsLabel,"${project.paths.project_build_prefix}/build/${buildType}")
-        platform.runCommand(this, packageHelper[0])
-        platform.archiveArtifacts(this, packageHelper[1])
+    String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
+    def packageHelper = platform.makePackage(platform.jenkinsLabel, "${project.paths.project_build_prefix}/build/${buildType}")
+    platform.runCommand(this, packageHelper[0])
+    platform.archiveArtifacts(this, packageHelper[1])
 }
 
 return this

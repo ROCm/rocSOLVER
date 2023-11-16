@@ -413,16 +413,19 @@ void testing_bdsvdx(Arguments& argus)
     char uploC = argus.get<char>("uplo");
     char svectC = argus.get<char>("svect");
     char srangeC = argus.get<char>("srange");
-    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_fill uplo = char2rocblas_fill(uploC);
+    rocblas_svect svect = char2rocblas_svect(svectC);
+    rocblas_srange srange = char2rocblas_srange(srangeC);
+
     T vl = T(argus.get<double>("vl", 0));
     T vu = T(argus.get<double>("vu", srangeC == 'V' ? 1 : 0));
     rocblas_int il = argus.get<rocblas_int>("il", srangeC == 'I' ? 1 : 0);
     rocblas_int iu = argus.get<rocblas_int>("iu", srangeC == 'I' ? 1 : 0);
-    rocblas_int ldz = argus.get<rocblas_int>("ldz", 2 * n);
 
-    rocblas_fill uplo = char2rocblas_fill(uploC);
-    rocblas_svect svect = char2rocblas_svect(svectC);
-    rocblas_srange srange = char2rocblas_srange(srangeC);
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int ldz = argus.get<rocblas_int>("ldz", 2 * n);
+    rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : n);
+
     rocblas_int hot_calls = argus.iters;
 
     // check non-supported values
@@ -444,8 +447,9 @@ void testing_bdsvdx(Arguments& argus)
     // determine sizes
     size_t size_D = n;
     size_t size_E = n;
-    size_t size_S = n;
-    size_t size_Z = ldz * n;
+    size_t size_S = nsv_max;
+    size_t size_S_cpu = n;
+    size_t size_Z = ldz * nsv_max;
     size_t size_Ifail = n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
@@ -497,7 +501,7 @@ void testing_bdsvdx(Arguments& argus)
     // host
     host_strided_batch_vector<T> hD(size_D, 1, size_D, 1);
     host_strided_batch_vector<T> hE(size_E, 1, size_E, 1);
-    host_strided_batch_vector<T> hS(size_S, 1, size_S, 1);
+    host_strided_batch_vector<T> hS(size_S_cpu, 1, size_S_cpu, 1); // extra space for cpu_bdsvdx
     host_strided_batch_vector<T> hSRes(size_SRes, 1, size_SRes, 1);
     host_strided_batch_vector<T> hZ(size_Z, 1, size_Z, 1);
     host_strided_batch_vector<T> hZRes(size_ZRes, 1, size_ZRes, 1);

@@ -102,6 +102,7 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
 
     for(i = tid; i < nsv; i += MAX_THDS)
         S[i] = -work[i];
+    __syncthreads();
 
     W scl1, scl2;
     for(j = 0; j < nsv; j++)
