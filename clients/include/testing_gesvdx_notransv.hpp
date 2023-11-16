@@ -503,6 +503,16 @@ void gesvdx_notransv_getError(const rocblas_handle handle,
         // Check the singular vectors if required
         if(hinfo[b][0] == 0 && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
         {
+            // first check singular vector normalization
+            for(rocblas_int k = 0; k < hNsv[b][0]; ++k)
+            {
+                err = abs(double(snorm('F', n, 1, hVres[b] + k * ldvres, ldvres)) - 1);
+                *max_errv = err > *max_errv ? err : *max_errv;
+
+                err = abs(double(snorm('F', m, 1, hUres[b] + k * ldures, ldures)) - 1);
+                *max_errv = err > *max_errv ? err : *max_errv;
+            }
+
             err = 0;
             // check singular vectors implicitly (A*v_k = s_k*u_k)
             for(rocblas_int k = 0; k < hNsv[b][0]; ++k)
