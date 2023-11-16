@@ -468,18 +468,14 @@ void gesvdx_getError(const rocblas_handle handle,
         }
     }*/
 
-    // Check number of returned singular values
     double err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
+        // check number of computed singular values
+        rocblas_int nn = hNsvRes[b][0];
+        *max_err += std::abs(nn - hNsv[b][0]);
         EXPECT_EQ(hNsv[b][0], hNsvRes[b][0]) << "where b = " << b;
-        if(hNsv[b][0] != hNsvRes[b][0])
-            err++;
-    }
-    *max_err = err > *max_err ? err : *max_err;
 
-    for(rocblas_int b = 0; b < bc; ++b)
-    {
         // error is ||hS - hSres||
         err = norm_error('F', 1, hNsv[b][0], 1, hS[b] + offset[b], hSres[b]); //WORKAROUND
         *max_err = err > *max_err ? err : *max_err;
@@ -487,13 +483,24 @@ void gesvdx_getError(const rocblas_handle handle,
         // Check the singular vectors if required
         if(hinfo[b][0] == 0 && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
         {
-            // first check singular vector normalization
-            for(rocblas_int k = 0; k < hNsv[b][0]; ++k)
+            // U and V should be orthonormal, if they are then U^T*U and V*V^T should be the identity
+            if(nn > 0)
             {
-                err = abs(double(snorm('F', 1, n, hVres[b] + k, ldvres)) - 1);
+                std::vector<T> UUres(nn * nn, 0.0);
+                std::vector<T> VVres(nn * nn, 0.0);
+                std::vector<T> I(nn * nn, 0.0);
+
+                for(rocblas_int i = 0; i < nn; i++)
+                    I[i + i * nn] = T(1);
+
+                cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, m,
+                         T(1), hUres[b], ldures, hUres[b], ldures, T(0), UUres.data(), nn);
+                err = norm_error('F', nn, nn, nn, I.data(), UUres.data());
                 *max_errv = err > *max_errv ? err : *max_errv;
 
-                err = abs(double(snorm('F', m, 1, hUres[b] + k * ldures, ldures)) - 1);
+                cpu_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, nn, nn, n,
+                         T(1), hVres[b], ldvres, hVres[b], ldvres, T(0), VVres.data(), nn);
+                err = norm_error('F', nn, nn, nn, I.data(), VVres.data());
                 *max_errv = err > *max_errv ? err : *max_errv;
             }
 
