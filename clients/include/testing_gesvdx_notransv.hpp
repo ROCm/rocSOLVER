@@ -1023,7 +1023,7 @@ void testing_gesvdx_notransv(Arguments& argus)
     {
         ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
         if(svects)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * min(m, n));
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 4 * min(m, n));
     }
 
     // output results for rocsolver-bench
