@@ -256,8 +256,28 @@ void bdsvdx_getError(const rocblas_handle handle,
         // U is stored in hZRes, and V is stored in hZRes+n
         if(svect != rocblas_svect_none)
         {
-            err = 0;
+            // U and V should be orthonormal, if they are then U^T*U and V^T*V should be the identity
+            if(nn > 0)
+            {
+                std::vector<T> UUres(nn * nn, 0.0);
+                std::vector<T> VVres(nn * nn, 0.0);
+                std::vector<T> I(nn * nn, 0.0);
 
+                for(rocblas_int i = 0; i < nn; i++)
+                    I[i + i * nn] = T(1);
+
+                cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, n,
+                         T(1), hZRes[0], ldz, hZRes[0], ldz, T(0), UUres.data(), nn);
+                err = norm_error('F', nn, nn, nn, I.data(), UUres.data());
+                *max_err = err > *max_err ? err : *max_err;
+
+                cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, n,
+                         T(1), hZRes[0] + n, ldz, hZRes[0] + n, ldz, T(0), VVres.data(), nn);
+                err = norm_error('F', nn, nn, nn, I.data(), VVres.data());
+                *max_err = err > *max_err ? err : *max_err;
+            }
+
+            err = 0;
             // form bidiagonal matrix B
             std::vector<T> B(n * n);
             for(rocblas_int i = 0; i < n; i++)
@@ -550,9 +570,9 @@ void testing_bdsvdx(Arguments& argus)
                               argus.perf);
 
     // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
+    // using 2 * n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
 
     // output results for rocsolver-bench
     if(argus.timing)
