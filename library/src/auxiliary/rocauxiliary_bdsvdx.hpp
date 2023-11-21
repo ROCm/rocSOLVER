@@ -74,6 +74,8 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
                                           const rocblas_stride strideZ,
                                           T* workA)
 {
+    using W = decltype(std::real(T{}));
+
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int tid = hipThreadIdx_x;
@@ -96,6 +98,7 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
         S[i] = -work[i];
     __syncthreads();
 
+    const W scl = W(sqrt(2.0));
     for(j = 0; j < nsv; j++)
     {
         for(i = tid; i < 2 * n; i += hipBlockDim_x)
@@ -106,16 +109,16 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
         {
             for(i = tid; i < n; i += hipBlockDim_x)
             {
-                Z[i + j * ldz] = work[2 * i + 1];
-                Z[(n + i) + j * ldz] = -work[2 * i];
+                Z[i + j * ldz] = work[2 * i + 1] * scl;
+                Z[(n + i) + j * ldz] = -work[2 * i] * scl;
             }
         }
         else
         {
             for(i = tid; i < n; i += hipBlockDim_x)
             {
-                Z[i + j * ldz] = work[2 * i];
-                Z[(n + i) + j * ldz] = -work[2 * i + 1];
+                Z[i + j * ldz] = work[2 * i] * scl;
+                Z[(n + i) + j * ldz] = -work[2 * i + 1] * scl;
             }
         }
         __syncthreads();
@@ -346,7 +349,7 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
                                 stream, ntgk, nsv, Stmp, ntgk, Z, shiftZ, ldz, strideZ, ifail,
                                 strideF, info);
 
-        // take absolute value of eigenvalues, reorder eigenvector elements, and negate elements of V
+        // take absolute value of eigenvalues, reorder and normalize eigenvector elements, and negate elements of V
         ROCSOLVER_LAUNCH_KERNEL(bdsvdx_reorder_vect<T>, dim3(1, batch_count, 1), dim3(BS1, 1, 1), 0,
                                 stream, uplo, n, nsv, S, strideS, Z, shiftZ, ldz, strideZ, Stmp);
     }

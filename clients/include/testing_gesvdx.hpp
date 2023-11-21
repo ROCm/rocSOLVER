@@ -468,18 +468,14 @@ void gesvdx_getError(const rocblas_handle handle,
         }
     }*/
 
-    // Check number of returned singular values
     double err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
+        // check number of computed singular values
+        rocblas_int nn = hNsvRes[b][0];
+        *max_err += std::abs(nn - hNsv[b][0]);
         EXPECT_EQ(hNsv[b][0], hNsvRes[b][0]) << "where b = " << b;
-        if(hNsv[b][0] != hNsvRes[b][0])
-            err++;
-    }
-    *max_err = err > *max_err ? err : *max_err;
 
-    for(rocblas_int b = 0; b < bc; ++b)
-    {
         // error is ||hS - hSres||
         err = norm_error('F', 1, hNsv[b][0], 1, hS[b] + offset[b], hSres[b]); //WORKAROUND
         *max_err = err > *max_err ? err : *max_err;
@@ -487,6 +483,27 @@ void gesvdx_getError(const rocblas_handle handle,
         // Check the singular vectors if required
         if(hinfo[b][0] == 0 && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
         {
+            // U and V should be orthonormal, if they are then U^T*U and V*V^T should be the identity
+            if(nn > 0)
+            {
+                std::vector<T> UUres(nn * nn, 0.0);
+                std::vector<T> VVres(nn * nn, 0.0);
+                std::vector<T> I(nn * nn, 0.0);
+
+                for(rocblas_int i = 0; i < nn; i++)
+                    I[i + i * nn] = T(1);
+
+                cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, m,
+                         T(1), hUres[b], ldures, hUres[b], ldures, T(0), UUres.data(), nn);
+                err = norm_error('F', nn, nn, nn, I.data(), UUres.data());
+                *max_errv = err > *max_errv ? err : *max_errv;
+
+                cpu_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, nn, nn, n,
+                         T(1), hVres[b], ldvres, hVres[b], ldvres, T(0), VVres.data(), nn);
+                err = norm_error('F', nn, nn, nn, I.data(), VVres.data());
+                *max_errv = err > *max_errv ? err : *max_errv;
+            }
+
             err = 0;
             // check singular vectors implicitly (A*v_k = s_k*u_k)
             for(rocblas_int k = 0; k < hNsv[b][0]; ++k)
@@ -984,7 +1001,7 @@ void testing_gesvdx(Arguments& argus)
     {
         ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
         if(svects)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * min(m, n));
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 4 * min(m, n));
     }
 
     // output results for rocsolver-bench

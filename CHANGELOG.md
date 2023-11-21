@@ -12,6 +12,9 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 ### Deprecated
 ### Removed
 ### Fixed
+- Corrected singular vector normalization in BDSVDX and GESVDX
+- Fixed potential memory access fault in STEIN, SYEVX/HEEVX, SYGVX/HEGVX, BDSVDX and GESVDX
+
 ### Known Issues
 ### Security
 
