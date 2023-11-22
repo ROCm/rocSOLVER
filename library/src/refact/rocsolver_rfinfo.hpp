@@ -48,4 +48,5 @@ struct rocsolver_rfinfo_
 
     rocsolver_rfinfo_mode mode, analyzed_mode;
     bool analyzed;
+    bool rocsparse_loaded;
 };

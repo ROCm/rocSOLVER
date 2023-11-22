@@ -29,7 +29,6 @@
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
-#include "rocsparse.hpp"
 
 template <typename T>
 ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int n,

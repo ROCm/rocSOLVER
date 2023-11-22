@@ -1,0 +1,53 @@
+/* ************************************************************************
+ * Copyright (C) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+ * ************************************************************************ */
+
+#include "rocsparse.hpp"
+
+fp_rocsparse_create_handle rocsolver_rocsparse_create_handle;
+fp_rocsparse_destroy_handle rocsolver_rocsparse_destroy_handle;
+fp_rocsparse_set_stream rocsolver_rocsparse_set_stream;
+fp_rocsparse_create_mat_descr rocsolver_rocsparse_create_mat_descr;
+fp_rocsparse_destroy_mat_descr rocsolver_rocsparse_destroy_mat_descr;
+fp_rocsparse_set_mat_type rocsolver_rocsparse_set_mat_type;
+fp_rocsparse_set_mat_index_base rocsolver_rocsparse_set_mat_index_base;
+fp_rocsparse_set_mat_fill_mode rocsolver_rocsparse_set_mat_fill_mode;
+fp_rocsparse_set_mat_diag_type rocsolver_rocsparse_set_mat_diag_type;
+fp_rocsparse_create_mat_info rocsolver_rocsparse_create_mat_info;
+fp_rocsparse_destroy_mat_info rocsolver_rocsparse_destroy_mat_info;
+fp_rocsparse_scsrilu0_buffer_size rocsolver_rocsparse_scsrilu0_buffer_size;
+fp_rocsparse_dcsrilu0_buffer_size rocsolver_rocsparse_dcsrilu0_buffer_size;
+fp_rocsparse_ccsrilu0_buffer_size rocsolver_rocsparse_ccsrilu0_buffer_size;
+fp_rocsparse_zcsrilu0_buffer_size rocsolver_rocsparse_zcsrilu0_buffer_size;
+fp_rocsparse_scsric0_buffer_size rocsolver_rocsparse_scsric0_buffer_size;
+fp_rocsparse_dcsric0_buffer_size rocsolver_rocsparse_dcsric0_buffer_size;
+fp_rocsparse_ccsric0_buffer_size rocsolver_rocsparse_ccsric0_buffer_size;
+fp_rocsparse_zcsric0_buffer_size rocsolver_rocsparse_zcsric0_buffer_size;
+fp_rocsparse_scsric0_analysis rocsolver_rocsparse_scsric0_analysis;
+fp_rocsparse_dcsric0_analysis rocsolver_rocsparse_dcsric0_analysis;
+fp_rocsparse_ccsric0_analysis rocsolver_rocsparse_ccsric0_analysis;
+fp_rocsparse_zcsric0_analysis rocsolver_rocsparse_zcsric0_analysis;
+fp_rocsparse_scsrsm_analysis rocsolver_rocsparse_scsrsm_analysis;
+fp_rocsparse_dcsrsm_analysis rocsolver_rocsparse_dcsrsm_analysis;
+fp_rocsparse_ccsrsm_analysis rocsolver_rocsparse_ccsrsm_analysis;
+fp_rocsparse_zcsrsm_analysis rocsolver_rocsparse_zcsrsm_analysis;
+fp_rocsparse_scsrsm_buffer_size rocsolver_rocsparse_scsrsm_buffer_size;
+fp_rocsparse_dcsrsm_buffer_size rocsolver_rocsparse_dcsrsm_buffer_size;
+fp_rocsparse_ccsrsm_buffer_size rocsolver_rocsparse_ccsrsm_buffer_size;
+fp_rocsparse_zcsrsm_buffer_size rocsolver_rocsparse_zcsrsm_buffer_size;
+fp_rocsparse_scsrsm_solve rocsolver_rocsparse_scsrsm_solve;
+fp_rocsparse_dcsrsm_solve rocsolver_rocsparse_dcsrsm_solve;
+fp_rocsparse_ccsrsm_solve rocsolver_rocsparse_ccsrsm_solve;
+fp_rocsparse_zcsrsm_solve rocsolver_rocsparse_zcsrsm_solve;
+fp_rocsparse_scsrilu0_analysis rocsolver_rocsparse_scsrilu0_analysis;
+fp_rocsparse_dcsrilu0_analysis rocsolver_rocsparse_dcsrilu0_analysis;
+fp_rocsparse_ccsrilu0_analysis rocsolver_rocsparse_ccsrilu0_analysis;
+fp_rocsparse_zcsrilu0_analysis rocsolver_rocsparse_zcsrilu0_analysis;
+fp_rocsparse_scsrilu0 rocsolver_rocsparse_scsrilu0;
+fp_rocsparse_dcsrilu0 rocsolver_rocsparse_dcsrilu0;
+fp_rocsparse_ccsrilu0 rocsolver_rocsparse_ccsrilu0;
+fp_rocsparse_zcsrilu0 rocsolver_rocsparse_zcsrilu0;
+fp_rocsparse_scsric0 rocsolver_rocsparse_scsric0;
+fp_rocsparse_dcsric0 rocsolver_rocsparse_dcsric0;
+fp_rocsparse_ccsric0 rocsolver_rocsparse_ccsric0;
+fp_rocsparse_zcsric0 rocsolver_rocsparse_zcsric0;

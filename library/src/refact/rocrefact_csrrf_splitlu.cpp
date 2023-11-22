@@ -25,9 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#ifdef HAVE_ROCSPARSE
 #include "rocrefact_csrrf_splitlu.hpp"
-#endif
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
@@ -48,7 +46,6 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
 {
     ROCSOLVER_ENTER_TOP("csrrf_splitlu", "-n", n, "--nnzT", nnzT);
 
-#ifdef HAVE_ROCSPARSE
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -83,9 +80,6 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
     // execution
     return rocsolver_csrrf_splitlu_template<T>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
                                                ptrU, indU, valU, (rocblas_int*)work);
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 /*
