@@ -4,9 +4,7 @@
 
 #include <new>
 
-#ifdef HAVE_ROCSPARSE
 #include "rocsolver_rfinfo.hpp"
-#endif
 
 #include "rocblas/rocblas.h"
 #include "rocsolver/rocsolver.h"
@@ -33,9 +31,13 @@
         }                                                 \
     } while(0)
 
+
+bool load_rocsparse() {
+  return false;
+}
+
 extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocblas_handle handle)
 {
-#ifdef HAVE_ROCSPARSE
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -45,6 +47,10 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     rocsolver_rfinfo_* impl = new(std::nothrow) rocsolver_rfinfo_{};
     if(!impl)
         return rocblas_status_memory_error;
+
+    if(!load_rocsparse())
+        return rocblas_status_internal_error;
+    impl->rocsparse_loaded = true;
 
     rocblas_status result;
 
@@ -112,16 +118,15 @@ cleanup:
 
     delete impl;
     return result;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 {
-#ifdef HAVE_ROCSPARSE
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
+
+    if(!rfinfo->rocsparse_loaded)
+        goto cleanup;
 
     ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoT));
     ROCSPARSE_CHECK(rocsparse_destroy_mat_info(rfinfo->infoU));
@@ -131,23 +136,22 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
     ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(rfinfo->descrL));
 
     ROCSPARSE_CHECK(rocsparse_destroy_handle(rfinfo->sphandle));
+cleanup:
     delete rfinfo;
-
     return rocblas_status_success;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
                                                     rocsolver_rfinfo_mode mode)
 {
-#ifdef HAVE_ROCSPARSE
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
     if(mode != rocsolver_rfinfo_mode_lu && mode != rocsolver_rfinfo_mode_cholesky)
         return rocblas_status_invalid_value;
+
+    if(!rfinfo->rocsparse_loaded)
+        return rocblas_status_internal_error;
 
     rfinfo->mode = mode;
     if(mode == rocsolver_rfinfo_mode_lu)
@@ -160,15 +164,11 @@ extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
     }
 
     return rocblas_status_success;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 extern "C" rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
                                                     rocsolver_rfinfo_mode* mode)
 {
-#ifdef HAVE_ROCSPARSE
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
@@ -178,7 +178,4 @@ extern "C" rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
     *mode = rfinfo->mode;
 
     return rocblas_status_success;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }

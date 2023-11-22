@@ -2,9 +2,7 @@
  * Copyright (c) 2023 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifdef HAVE_ROCSPARSE
 #include "rocrefact_csrrf_sumlu.hpp"
-#endif
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
@@ -26,7 +24,6 @@ rocblas_status rocsolver_csrrf_sumlu_impl(rocblas_handle handle,
 {
     ROCSOLVER_ENTER_TOP("csrrf_sumlu", "-n", n, "--nnzL", nnzL, "--nnzU", nnzU);
 
-#ifdef HAVE_ROCSPARSE
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -47,9 +44,6 @@ rocblas_status rocsolver_csrrf_sumlu_impl(rocblas_handle handle,
     // execution
     return rocsolver_csrrf_sumlu_template<T>(handle, n, nnzL, ptrL, indL, valL, nnzU, ptrU, indU,
                                              valU, ptrT, indT, valT);
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 /*
