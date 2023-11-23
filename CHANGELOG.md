@@ -2,6 +2,16 @@
 
 Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](https://rocsolver.readthedocs.io/en/latest/).
 
+## (Unreleased) rocSOLVER
+### Added
+### Optimized
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Known Issues
+### Security
+
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
 ### Changed
