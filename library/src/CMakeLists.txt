@@ -301,6 +301,7 @@ target_link_libraries(rocsolver
     hip::device
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
+    $<$<PLATFORM_ID:Linux>:dl>
 )
 
 #if(BUILD_WITH_SPARSE)

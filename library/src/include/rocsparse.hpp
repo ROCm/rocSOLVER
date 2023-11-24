@@ -763,17 +763,10 @@ typedef rocsparse_status (*fp_rocsparse_zcsric0)(rocsparse_handle          handl
 extern fp_rocsparse_zcsric0 rocsolver_rocsparse_zcsric0;
 #define rocsparse_zcsric0 rocsolver_rocsparse_zcsric0
 
-//template <typename Fn>
-//bool load_function(handle, symbol) {
-//  dlerror(); // clear errors
-//  Fn f = static_cast<F>(dlsym(handle, symbol_being_searched_for));
-//  err = dlerror(); // get errors
-//  if () {
-//    /* handle error, the symbol wasn't found */
-//  } else {
-//    /* symbol found, its value is in s */
-//  }
-//}
+
+
+
+
 
 // csrilu0 buffer
 inline rocsparse_status rocsparseCall_csrilu0_buffer_size(rocsparse_handle sphandle,
