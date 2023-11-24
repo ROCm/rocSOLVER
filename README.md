@@ -1,18 +1,17 @@
 # rocSOLVER
 
-rocSOLVER is a work-in-progress implementation of a subset of [LAPACK][1]
-functionality on the [ROCm platform][2].
+rocSOLVER is a work-in-progress implementation of a subset of
+[LAPACK](https://www.netlib.org/lapack/) functionality on
+[AMD ROCm software](https://rocm.docs.amd.com/).
 
 ## Documentation
 
-For a detailed description of the rocSOLVER library, its implemented routines,
-the installation process and user guide, see the [rocSOLVER documentation][3].
+Documentation for rocSOLVER is available at
+[https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/).
 
-### How to build documentation
+To build our documentation locally, use the following code:
 
-Please follow the instructions below to build the documentation.
-
-```
+```bash
 cd docs
 
 pip3 install -r sphinx/requirements.txt
@@ -20,38 +19,38 @@ pip3 install -r sphinx/requirements.txt
 python3 -m sphinx -T -E -b html -d _build/doctrees -D language=en . _build/html
 ```
 
-## Building rocSOLVER
+## Build and install
 
 To download the rocSOLVER source code, clone this repository with the command:
 
-    git clone https://github.com/ROCmSoftwarePlatform/rocSOLVER.git
+```bash
+git clone https://github.com/ROCmSoftwarePlatform/rocSOLVER.git
+```
 
-rocSOLVER requires rocBLAS as a companion GPU BLAS implementation. For
-more information about rocBLAS and how to install it, see the
-[rocBLAS documentation][4].
+rocSOLVER requires rocBLAS as a companion GPU BLAS implementation. For more information about
+rocBLAS and how to install it, refer to the
+[rocBLAS documentation](https://rocm.docs.amd.com/projects/rocBLAS/).
 
-After a standard installation of rocBLAS, the following commands will build
-rocSOLVER and install to `/opt/rocm`:
+After a standard installation of rocBLAS, the following commands build rocSOLVER and install it to
+`/opt/rocm`:
 
-    cd rocSOLVER
-    ./install.sh -i
+```bash
+cd rocSOLVER
+./install.sh -i
+```
 
-Once installed, rocSOLVER can be used just like any other library with a C API.
-The header file will need to be included in the user code, and both the rocBLAS
-and rocSOLVER shared libraries will become link-time and run-time dependencies
-for the user application.
+Once installed, rocSOLVER can be used just like any other library with a C-based API. The header file must be included in the user code, and the rocBLAS and rocSOLVER shared libraries become link-time
+and run-time dependencies for the user application.
 
-If you are a developer contributing to rocSOLVER, you may wish to run
-`./scripts/install-hooks` to install the git hooks for autoformatting.
-You may also want to take a look at the [contributing guidelines][7]
+If you're a developer contributing to rocSOLVER, you can run `./scripts/install-hooks` to install the githooks for autoformatting. Before contributing, refer to our
+[contributing guidelines](./CONTRIBUTING.md).
 
 ## Using rocSOLVER
 
-The following code snippet shows how to compute the QR factorization of a
-general m-by-n real matrix in double precision using rocSOLVER. A longer
-version of this example is provided by `example_basic.cpp` in the
-[samples directory][5]. For a description of the `rocsolver_dgeqrf`
-function, see the [rocSOLVER API documentation][6].
+To compute the QR factorization of a general m-by-n real matrix in double precision using rocSOLVER,
+run the following code. You can find a longer version of this example in `example_basic.cpp` (located in
+the [samples directory](./clients/samples/). For a description of the `rocsolver_dgeqrf` function, refer to
+the [rocSOLVER API documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/api/lapack.html#rocsolver-type-geqrf).
 
 ```cpp
 /////////////////////////////
@@ -104,17 +103,10 @@ int main() {
 }
 ```
 
-The exact command used to compile the example above may vary depending on the
-system environment, but here is a typical example:
+The exact command used to compile the example above may vary depending on your system
+environment, but this is a typical example:
 
-    /opt/rocm/bin/hipcc -I/opt/rocm/include -c example.cpp
-    /opt/rocm/bin/hipcc -o example -L/opt/rocm/lib -lrocsolver -lrocblas example.o
-
-
-[1]: https://www.netlib.org/lapack/
-[2]: https://rocm.docs.amd.com/
-[3]: https://rocm.docs.amd.com/projects/rocSOLVER/
-[4]: https://rocm.docs.amd.com/projects/rocBLAS/
-[5]: clients/samples/
-[6]: https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/api/lapack.html#rocsolver-type-geqrf
-[7]: CONTRIBUTING.md
+```bash
+/opt/rocm/bin/hipcc -I/opt/rocm/include -c example.cpp
+/opt/rocm/bin/hipcc -o example -L/opt/rocm/lib -lrocsolver -lrocblas example.o
+```
