@@ -203,21 +203,16 @@ rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(rf_ipvec_kernel<T>, dim3(nblocks), dim3(BS2), 0, stream, n, pivQ,
                             (rocblas_int*)work);
 
+    // set T to zero
+    auto ret = hipMemsetAsync((void*)valT, 0, sizeof(T) * nnzT, stream);
+    if(ret != hipSuccess)
+        return get_rocblas_status_for_hip_status(ret);
+
     // --------------------------------------------------------------
     // copy Q'*A*Q into T
     //
     // Note: assume A and B are symmetric and ONLY the LOWER triangular parts of A and T are touched
     // --------------------------------------------------------------
-    {
-        int value = 0;
-        void* dst = (void*)valT;
-        size_t sizeBytes = sizeof(*valT) * nnzT;
-        auto ret = hipMemsetAsync(dst, value, sizeBytes, stream);
-        if(ret != hipSuccess)
-        {
-            return (rocblas_status_internal_error);
-        };
-    };
     T const alpha = static_cast<T>(1);
     ROCSOLVER_LAUNCH_KERNEL(rf_add_QAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
                             pivQ, (rocblas_int*)work, alpha, ptrA, indA, valA, ptrT, indT, valT);

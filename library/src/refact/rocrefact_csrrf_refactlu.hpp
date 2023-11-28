@@ -184,23 +184,17 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(rf_ipvec_kernel<T>, dim3(nblocks), dim3(BS2), 0, stream, n, pivQ,
                             (rocblas_int*)work);
 
+    // set T to zero
+    hipError_t istat = hipMemsetAsync((void*)valT, 0, sizeof(T) * nnzT, stream);
+    if(istat != hipSuccess)
+        return get_rocblas_status_for_hip_status(istat);
+
     // ---------------------------------------------------------------------
     // copy P*A*Q into T
     // Note: the sparsity pattern of A is a subset of T, and since the re-orderings
     // P and Q are applied, the incomplete factorization of P*A*Q (factorization without fill-in),
     // yields the complete factorization of A.
     // ---------------------------------------------------------------------
-    {
-        void* dst = (void*)valT;
-        int ivalue = 0;
-        size_t sizeBytes = sizeof(*valT) * nnzT;
-        hipError_t istat = hipMemsetAsync(dst, ivalue, sizeBytes, stream);
-        if(istat != hipSuccess)
-        {
-            return (rocblas_status_internal_error);
-        };
-    }
-
     T const alpha = static_cast<T>(1);
     ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
                             pivP, (rocblas_int*)work, alpha, ptrA, indA, valA, ptrT, indT, valT);
