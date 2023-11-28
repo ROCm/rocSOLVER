@@ -51,7 +51,6 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
                                         rocblas_int* Ap,
                                         rocblas_int* Ai,
                                         T* Ax,
-                                        const T beta,
                                         rocblas_int* LUp,
                                         rocblas_int* LUi,
                                         T* LUx)
@@ -75,18 +74,6 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
         rocblas_int i_old, icol_old;
 
         T aij;
-
-        // ----------------
-        // scale B by beta
-        // ----------------
-        for(i = istart + tiy; i < iend; i += hipBlockDim_y)
-        {
-            // only access lower triangle of B
-            if(irow < LUi[i])
-                break;
-            LUx[i] *= beta;
-        }
-        __syncthreads();
 
         // ------------------------------
         // scale A by alpha and add to B
@@ -221,11 +208,19 @@ rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
     //
     // Note: assume A and B are symmetric and ONLY the LOWER triangular parts of A and T are touched
     // --------------------------------------------------------------
+    {
+        int value = 0;
+        void* dst = (void*)valT;
+        size_t sizeBytes = sizeof(U) * nnzT;
+        auto ret = hipMemsetAsync(dst, value, sizeBytes, stream);
+        if(ret != hipSuccess)
+        {
+            return (rocblas_status_internal_error);
+        };
+    };
     T const alpha = static_cast<T>(1);
-    T const beta = static_cast<T>(0);
     ROCSOLVER_LAUNCH_KERNEL(rf_add_QAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
-                            pivQ, (rocblas_int*)work, alpha, ptrA, indA, valA, beta, ptrT, indT,
-                            valT);
+                            pivQ, (rocblas_int*)work, alpha, ptrA, indA, valA, ptrT, indT, valT);
 
     // perform incomplete factorization of T
     ROCSPARSE_CHECK(rocsparseCall_csric0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
