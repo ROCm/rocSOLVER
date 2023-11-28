@@ -211,7 +211,7 @@ rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
     {
         int value = 0;
         void* dst = (void*)valT;
-        size_t sizeBytes = sizeof(U) * nnzT;
+        size_t sizeBytes = sizeof(*valT) * nnzT;
         auto ret = hipMemsetAsync(dst, value, sizeBytes, stream);
         if(ret != hipSuccess)
         {

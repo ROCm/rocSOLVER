@@ -193,8 +193,8 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     {
         void* dst = (void*)valT;
         int ivalue = 0;
-        size_t sizeBytes = sizeof(U) * nnzT;
-        auto istat = hipMemsetAsync(dst, ivalue, sizeBytes, stream);
+        size_t sizeBytes = sizeof(*valT) * nnzT;
+        hipError_t istat = hipMemsetAsync(dst, ivalue, sizeBytes, stream);
         if(istat != hipSuccess)
         {
             return (rocblas_status_internal_error);
