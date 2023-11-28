@@ -29,6 +29,14 @@
 
 #include "rocsolver_run_specialized_kernels.hpp"
 
+#ifndef HIP_CHECK
+#define HIP_CHECK(fcn)               \
+    {                                \
+        hipError_t istat = (fcn);    \
+        assert(istat == hipSuccess); \
+    }
+#endif
+
 /** Constants for block size of trsm **/
 // clang-format off
 #define TRSM_NUMROWS_REAL 12
@@ -850,9 +858,9 @@ void rocsolver_trsm_lower(rocblas_handle handle,
 
     // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
     int device;
-    hipGetDevice(&device);
+    HIP_CHECK(hipGetDevice(&device));
     hipDeviceProp_t deviceProperties;
-    hipGetDeviceProperties(&deviceProperties, device);
+    HIP_CHECK(hipGetDeviceProperties(&deviceProperties, device));
     std::string deviceFullString(deviceProperties.gcnArchName);
     std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
     bool do_sync = (deviceString.find("gfx940") != std::string::npos
@@ -889,7 +897,9 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update right hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
@@ -933,7 +943,9 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update right hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
@@ -989,7 +1001,9 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update left hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
@@ -1032,7 +1046,9 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update left hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
@@ -1133,9 +1149,9 @@ void rocsolver_trsm_upper(rocblas_handle handle,
 
     // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
     int device;
-    hipGetDevice(&device);
+    HIP_CHECK(hipGetDevice(&device));
     hipDeviceProp_t deviceProperties;
-    hipGetDeviceProperties(&deviceProperties, device);
+    HIP_CHECK(hipGetDeviceProperties(&deviceProperties, device));
     std::string deviceFullString(deviceProperties.gcnArchName);
     std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
     bool do_sync = (deviceString.find("gfx940") != std::string::npos
@@ -1172,7 +1188,9 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update right hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
@@ -1216,7 +1234,9 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update right hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
@@ -1272,7 +1292,9 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update left hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
@@ -1315,7 +1337,9 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                    hipStreamSynchronize(stream);
+                {
+                    HIP_CHECK(hipStreamSynchronize(stream));
+                };
 
                 // update left hand sides
                 rocsolver_gemm<BATCHED, STRIDED, T>(
