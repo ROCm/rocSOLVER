@@ -51,7 +51,6 @@ ROCSOLVER_KERNEL void rf_add_PAQ_kernel(const rocblas_int n,
                                         rocblas_int* Ap,
                                         rocblas_int* Ai,
                                         T* Ax,
-                                        const T beta,
                                         rocblas_int* LUp,
                                         rocblas_int* LUi,
                                         T* LUx)
@@ -73,15 +72,6 @@ ROCSOLVER_KERNEL void rf_add_PAQ_kernel(const rocblas_int n,
         rocblas_int istart_old = Ap[irow_old];
         rocblas_int iend_old = Ap[irow_old + 1];
         rocblas_int i_old, icol_old;
-
-        // ----------------
-        // scale B by beta
-        // ----------------
-        for(i = istart + tiy; i < iend; i += hipBlockDim_y)
-        {
-            LUx[i] *= beta;
-        }
-        __syncthreads();
 
         // ------------------------------
         // scale A by alpha and add to B
@@ -200,11 +190,20 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
     // P and Q are applied, the incomplete factorization of P*A*Q (factorization without fill-in),
     // yields the complete factorization of A.
     // ---------------------------------------------------------------------
+    {
+        void* dst = (void*)valT;
+        int ivalue = 0;
+        size_t sizeBytes = sizeof(U) * nnzT;
+        auto istat = hipMemsetAsync(dst, ivalue, sizeBytes, stream);
+        if(istat != hipSuccess)
+        {
+            return (rocblas_status_internal_error);
+        };
+    }
+
     T const alpha = static_cast<T>(1);
-    T const beta = static_cast<T>(0);
     ROCSOLVER_LAUNCH_KERNEL(rf_add_PAQ_kernel<T>, dim3(nblocks, 1), dim3(BS2, BS2), 0, stream, n,
-                            pivP, (rocblas_int*)work, alpha, ptrA, indA, valA, beta, ptrT, indT,
-                            valT);
+                            pivP, (rocblas_int*)work, alpha, ptrA, indA, valA, ptrT, indT, valT);
 
     // perform incomplete factorization of T
     ROCSPARSE_CHECK(rocsparseCall_csrilu0(rfinfo->sphandle, n, nnzT, rfinfo->descrT, valT, ptrT,
