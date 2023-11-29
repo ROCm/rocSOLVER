@@ -59,17 +59,24 @@ constexpr auto rocblas2string_status(rocblas_status status)
     }
 }
 
-#define ROCBLAS_CHECK(fcn)                    \
-    {                                         \
-        rocblas_status _status = (fcn);       \
-        if(_status != rocblas_status_success) \
-            return _status;                   \
+#define HIP_CHECK(...)                                         \
+    {                                                          \
+        hipError_t _status = (__VA_ARGS__);                    \
+        if(_status != hipSuccess)                              \
+            return get_rocblas_status_for_hip_status(_status); \
     }
-#define THROW_IF_ROCBLAS_ERROR(fcn)           \
-    {                                         \
-        rocblas_status _status = (fcn);       \
-        if(_status != rocblas_status_success) \
-            throw _status;                    \
+
+#define ROCBLAS_CHECK(...)                      \
+    {                                           \
+        rocblas_status _status = (__VA_ARGS__); \
+        if(_status != rocblas_status_success)   \
+            return _status;                     \
+    }
+#define THROW_IF_ROCBLAS_ERROR(...)             \
+    {                                           \
+        rocblas_status _status = (__VA_ARGS__); \
+        if(_status != rocblas_status_success)   \
+            throw _status;                      \
     }
 
 template <typename T>
