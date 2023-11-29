@@ -185,9 +185,7 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
                             (rocblas_int*)work);
 
     // set T to zero
-    hipError_t istat = hipMemsetAsync((void*)valT, 0, sizeof(T) * nnzT, stream);
-    if(istat != hipSuccess)
-        return get_rocblas_status_for_hip_status(istat);
+    HIP_CHECK(hipMemsetAsync((void*)valT, 0, sizeof(T) * nnzT, stream));
 
     // ---------------------------------------------------------------------
     // copy P*A*Q into T

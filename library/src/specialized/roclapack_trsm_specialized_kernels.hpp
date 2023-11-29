@@ -29,14 +29,6 @@
 
 #include "rocsolver_run_specialized_kernels.hpp"
 
-#ifndef HIP_CHECK
-#define HIP_CHECK(fcn)               \
-    {                                \
-        hipError_t istat = (fcn);    \
-        assert(istat == hipSuccess); \
-    }
-#endif
-
 /** Constants for block size of trsm **/
 // clang-format off
 #define TRSM_NUMROWS_REAL 12
@@ -795,28 +787,28 @@ void rocsolver_trsm_mem(const rocblas_side side,
     This is blocked implementation that calls the internal forward/backward subtitution kernels
     to solve the diagonal blocks, and uses gemm to update the right/left -hand-sides **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-void rocsolver_trsm_lower(rocblas_handle handle,
-                          const rocblas_side side,
-                          const rocblas_operation trans,
-                          const rocblas_diagonal diag,
-                          const rocblas_int m,
-                          const rocblas_int n,
-                          U A,
-                          const rocblas_int shiftA,
-                          const rocblas_int inca,
-                          const rocblas_int lda,
-                          const rocblas_stride strideA,
-                          U B,
-                          const rocblas_int shiftB,
-                          const rocblas_int incb,
-                          const rocblas_int ldb,
-                          const rocblas_stride strideB,
-                          const rocblas_int batch_count,
-                          const bool optim_mem,
-                          void* work1,
-                          void* work2,
-                          void* work3,
-                          void* work4)
+rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
+                                    const rocblas_side side,
+                                    const rocblas_operation trans,
+                                    const rocblas_diagonal diag,
+                                    const rocblas_int m,
+                                    const rocblas_int n,
+                                    U A,
+                                    const rocblas_int shiftA,
+                                    const rocblas_int inca,
+                                    const rocblas_int lda,
+                                    const rocblas_stride strideA,
+                                    U B,
+                                    const rocblas_int shiftB,
+                                    const rocblas_int incb,
+                                    const rocblas_int ldb,
+                                    const rocblas_stride strideB,
+                                    const rocblas_int batch_count,
+                                    const bool optim_mem,
+                                    void* work1,
+                                    void* work2,
+                                    void* work3,
+                                    void* work4)
 {
     ROCSOLVER_ENTER("trsm_lower", "side:", side, "trans:", trans, "diag:", diag, "m:", m, "n:", n,
                     "shiftA:", shiftA, "lda:", lda, "shiftB:", shiftB, "ldb:", ldb,
@@ -850,10 +842,9 @@ void rocsolver_trsm_lower(rocblas_handle handle,
 
     if(blk == 0)
     {
-        rocblasCall_trsm(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A, shiftA, lda,
-                         strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work1, work2,
-                         work3, work4);
-        return;
+        return rocblasCall_trsm(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A,
+                                shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
+                                optim_mem, work1, work2, work3, work4);
     }
 
     // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
@@ -864,8 +855,7 @@ void rocsolver_trsm_lower(rocblas_handle handle,
     std::string deviceFullString(deviceProperties.gcnArchName);
     std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
     bool do_sync = (deviceString.find("gfx940") != std::string::npos
-                    || deviceString.find("gfx941") != std::string::npos
-                    || deviceString.find("gfx942") != std::string::npos);
+                    || deviceString.find("gfx941") != std::string::npos);
 
     // ****** MAIN LOOP ***********
     if(isleft)
@@ -897,17 +887,15 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update right hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, blk,
                     &minone, A, shiftA + idx2D(nextpiv, j, inca, lda), inca, lda, strideA, B,
                     shiftB + idx2D(j, 0, incb, ldb), incb, ldb, strideB, &one, B,
                     shiftB + idx2D(nextpiv, 0, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr);
+                    (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -943,16 +931,14 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update right hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, trans, rocblas_operation_none, m - nextpiv, n, blk, &minone, A,
                     shiftA + idx2D(m - nextpiv, 0, inca, lda), inca, lda, strideA, B,
                     shiftB + idx2D(m - nextpiv, 0, incb, ldb), incb, ldb, strideB, &one, B,
-                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr);
+                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1001,16 +987,14 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update left hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, blk,
                     &minone, B, shiftB + idx2D(0, n - nextpiv, incb, ldb), incb, ldb, strideB, A,
                     shiftA + idx2D(n - nextpiv, 0, inca, lda), inca, lda, strideA, &one, B,
-                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr);
+                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1046,17 +1030,15 @@ void rocsolver_trsm_lower(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update left hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, trans, m, n - nextpiv, blk, &minone, B,
                     shiftB + idx2D(0, j, incb, ldb), incb, ldb, strideB, A,
                     shiftA + idx2D(nextpiv, j, inca, lda), inca, lda, strideA, &one, B,
                     shiftB + idx2D(0, nextpiv, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr);
+                    (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1075,6 +1057,8 @@ void rocsolver_trsm_lower(rocblas_handle handle,
             FORWARD_SUBSTITUTIONS;
         }
     }
+
+    return rocblas_status_success;
 }
 
 /** Internal TRSM (upper case):
@@ -1086,28 +1070,28 @@ void rocsolver_trsm_lower(rocblas_handle handle,
     This is blocked implementation that calls the internal forward/backward subtitution kernels
     to solve the diagonal blocks, and uses gemm to update the right/left -hand-sides **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-void rocsolver_trsm_upper(rocblas_handle handle,
-                          const rocblas_side side,
-                          const rocblas_operation trans,
-                          const rocblas_diagonal diag,
-                          const rocblas_int m,
-                          const rocblas_int n,
-                          U A,
-                          const rocblas_int shiftA,
-                          const rocblas_int inca,
-                          const rocblas_int lda,
-                          const rocblas_stride strideA,
-                          U B,
-                          const rocblas_int shiftB,
-                          const rocblas_int incb,
-                          const rocblas_int ldb,
-                          const rocblas_stride strideB,
-                          const rocblas_int batch_count,
-                          const bool optim_mem,
-                          void* work1,
-                          void* work2,
-                          void* work3,
-                          void* work4)
+rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
+                                    const rocblas_side side,
+                                    const rocblas_operation trans,
+                                    const rocblas_diagonal diag,
+                                    const rocblas_int m,
+                                    const rocblas_int n,
+                                    U A,
+                                    const rocblas_int shiftA,
+                                    const rocblas_int inca,
+                                    const rocblas_int lda,
+                                    const rocblas_stride strideA,
+                                    U B,
+                                    const rocblas_int shiftB,
+                                    const rocblas_int incb,
+                                    const rocblas_int ldb,
+                                    const rocblas_stride strideB,
+                                    const rocblas_int batch_count,
+                                    const bool optim_mem,
+                                    void* work1,
+                                    void* work2,
+                                    void* work3,
+                                    void* work4)
 {
     ROCSOLVER_ENTER("trsm_upper", "side:", side, "trans:", trans, "diag:", diag, "m:", m, "n:", n,
                     "shiftA:", shiftA, "lda:", lda, "shiftB:", shiftB, "ldb:", ldb,
@@ -1141,10 +1125,9 @@ void rocsolver_trsm_upper(rocblas_handle handle,
 
     if(blk == 0)
     {
-        rocblasCall_trsm(handle, side, rocblas_fill_upper, trans, diag, m, n, &one, A, shiftA, lda,
-                         strideA, B, shiftB, ldb, strideB, batch_count, optim_mem, work1, work2,
-                         work3, work4);
-        return;
+        return rocblasCall_trsm(handle, side, rocblas_fill_upper, trans, diag, m, n, &one, A,
+                                shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
+                                optim_mem, work1, work2, work3, work4);
     }
 
     // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
@@ -1155,8 +1138,7 @@ void rocsolver_trsm_upper(rocblas_handle handle,
     std::string deviceFullString(deviceProperties.gcnArchName);
     std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
     bool do_sync = (deviceString.find("gfx940") != std::string::npos
-                    || deviceString.find("gfx941") != std::string::npos
-                    || deviceString.find("gfx942") != std::string::npos);
+                    || deviceString.find("gfx941") != std::string::npos);
 
     // ****** MAIN LOOP ***********
     if(isleft)
@@ -1188,17 +1170,15 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update right hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, trans, rocblas_operation_none, m - nextpiv, n, blk, &minone, A,
                     shiftA + idx2D(j, nextpiv, inca, lda), inca, lda, strideA, B,
                     shiftB + idx2D(j, 0, incb, ldb), incb, ldb, strideB, &one, B,
                     shiftB + idx2D(nextpiv, 0, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr);
+                    (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1234,16 +1214,14 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update right hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, blk,
                     &minone, A, shiftA + idx2D(0, m - nextpiv, inca, lda), inca, lda, strideA, B,
                     shiftB + idx2D(m - nextpiv, 0, incb, ldb), incb, ldb, strideB, &one, B,
-                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr);
+                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1292,16 +1270,14 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 BACKWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update left hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, trans, m, n - nextpiv, blk, &minone, B,
                     shiftB + idx2D(0, n - nextpiv, incb, ldb), incb, ldb, strideB, A,
                     shiftA + idx2D(0, n - nextpiv, inca, lda), inca, lda, strideA, &one, B,
-                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr);
+                    shiftB + idx2D(0, 0, incb, ldb), incb, ldb, strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1337,17 +1313,15 @@ void rocsolver_trsm_upper(rocblas_handle handle,
                 FORWARD_SUBSTITUTIONS;
 
                 if(do_sync)
-                {
                     HIP_CHECK(hipStreamSynchronize(stream));
-                };
 
                 // update left hand sides
-                rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
                     handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, blk,
                     &minone, B, shiftB + idx2D(0, j, incb, ldb), incb, ldb, strideB, A,
                     shiftA + idx2D(j, nextpiv, inca, lda), inca, lda, strideA, &one, B,
                     shiftB + idx2D(0, nextpiv, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr);
+                    (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1366,6 +1340,8 @@ void rocsolver_trsm_upper(rocblas_handle handle,
             FORWARD_SUBSTITUTIONS;
         }
     }
+
+    return rocblas_status_success;
 }
 
 /*************************************************************
@@ -1373,57 +1349,57 @@ void rocsolver_trsm_upper(rocblas_handle handle,
 *************************************************************/
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-inline void rocsolver_trsm_lower(rocblas_handle handle,
-                                 const rocblas_side side,
-                                 const rocblas_operation trans,
-                                 const rocblas_diagonal diag,
-                                 const rocblas_int m,
-                                 const rocblas_int n,
-                                 U A,
-                                 const rocblas_int shiftA,
-                                 const rocblas_int lda,
-                                 const rocblas_stride strideA,
-                                 U B,
-                                 const rocblas_int shiftB,
-                                 const rocblas_int ldb,
-                                 const rocblas_stride strideB,
-                                 const rocblas_int batch_count,
-                                 const bool optim_mem,
-                                 void* work1,
-                                 void* work2,
-                                 void* work3,
-                                 void* work4)
+inline rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
+                                           const rocblas_side side,
+                                           const rocblas_operation trans,
+                                           const rocblas_diagonal diag,
+                                           const rocblas_int m,
+                                           const rocblas_int n,
+                                           U A,
+                                           const rocblas_int shiftA,
+                                           const rocblas_int lda,
+                                           const rocblas_stride strideA,
+                                           U B,
+                                           const rocblas_int shiftB,
+                                           const rocblas_int ldb,
+                                           const rocblas_stride strideB,
+                                           const rocblas_int batch_count,
+                                           const bool optim_mem,
+                                           void* work1,
+                                           void* work2,
+                                           void* work3,
+                                           void* work4)
 {
-    rocsolver_trsm_lower<BATCHED, STRIDED, T>(handle, side, trans, diag, m, n, A, shiftA, 1, lda,
-                                              strideA, B, shiftB, 1, ldb, strideB, batch_count,
-                                              optim_mem, work1, work2, work3, work4);
+    return rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+        handle, side, trans, diag, m, n, A, shiftA, 1, lda, strideA, B, shiftB, 1, ldb, strideB,
+        batch_count, optim_mem, work1, work2, work3, work4);
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
-inline void rocsolver_trsm_upper(rocblas_handle handle,
-                                 const rocblas_side side,
-                                 const rocblas_operation trans,
-                                 const rocblas_diagonal diag,
-                                 const rocblas_int m,
-                                 const rocblas_int n,
-                                 U A,
-                                 const rocblas_int shiftA,
-                                 const rocblas_int lda,
-                                 const rocblas_stride strideA,
-                                 U B,
-                                 const rocblas_int shiftB,
-                                 const rocblas_int ldb,
-                                 const rocblas_stride strideB,
-                                 const rocblas_int batch_count,
-                                 const bool optim_mem,
-                                 void* work1,
-                                 void* work2,
-                                 void* work3,
-                                 void* work4)
+inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
+                                           const rocblas_side side,
+                                           const rocblas_operation trans,
+                                           const rocblas_diagonal diag,
+                                           const rocblas_int m,
+                                           const rocblas_int n,
+                                           U A,
+                                           const rocblas_int shiftA,
+                                           const rocblas_int lda,
+                                           const rocblas_stride strideA,
+                                           U B,
+                                           const rocblas_int shiftB,
+                                           const rocblas_int ldb,
+                                           const rocblas_stride strideB,
+                                           const rocblas_int batch_count,
+                                           const bool optim_mem,
+                                           void* work1,
+                                           void* work2,
+                                           void* work3,
+                                           void* work4)
 {
-    rocsolver_trsm_upper<BATCHED, STRIDED, T>(handle, side, trans, diag, m, n, A, shiftA, 1, lda,
-                                              strideA, B, shiftB, 1, ldb, strideB, batch_count,
-                                              optim_mem, work1, work2, work3, work4);
+    return rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+        handle, side, trans, diag, m, n, A, shiftA, 1, lda, strideA, B, shiftB, 1, ldb, strideB,
+        batch_count, optim_mem, work1, work2, work3, work4);
 }
 
 /*************************************************************
@@ -1437,7 +1413,7 @@ inline void rocsolver_trsm_upper(rocblas_handle handle,
         size_t* size_work2, size_t* size_work3, size_t* size_work4, bool* optim_mem, \
         bool inblocked, const rocblas_int, const rocblas_int)
 #define INSTANTIATE_TRSM_LOWER(BATCHED, STRIDED, T, U)                                      \
-    template void rocsolver_trsm_lower<BATCHED, STRIDED, T, U>(                             \
+    template rocblas_status rocsolver_trsm_lower<BATCHED, STRIDED, T, U>(                   \
         rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,      \
         const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, U A,         \
         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, U B, \
@@ -1445,7 +1421,7 @@ inline void rocsolver_trsm_upper(rocblas_handle handle,
         const rocblas_int batch_count, const bool optim_mem, void* work1, void* work2,      \
         void* work3, void* work4)
 #define INSTANTIATE_TRSM_UPPER(BATCHED, STRIDED, T, U)                                      \
-    template void rocsolver_trsm_upper<BATCHED, STRIDED, T, U>(                             \
+    template rocblas_status rocsolver_trsm_upper<BATCHED, STRIDED, T, U>(                   \
         rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,      \
         const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, U A,         \
         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, U B, \
