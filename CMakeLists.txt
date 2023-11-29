@@ -190,12 +190,12 @@ get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
 set(rocsolver_pkgdeps "rocblas >= 4.2")
 
-if(BUILD_WITH_SPARSE)
-  find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
-  get_imported_target_location(location roc::rocsparse)
-  message(STATUS "Found rocSPARSE: ${location}")
-  list(APPEND rocsolver_pkgdeps "rocsparse >= 2.2")
-endif()
+#if(BUILD_WITH_SPARSE)
+#  find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
+#  get_imported_target_location(location roc::rocsparse)
+#  message(STATUS "Found rocSPARSE: ${location}")
+#  list(APPEND rocsolver_pkgdeps "rocsparse >= 2.2")
+#endif()
 
 add_subdirectory(common)
 

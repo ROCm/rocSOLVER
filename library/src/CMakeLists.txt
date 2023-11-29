@@ -280,6 +280,7 @@ endif()
 set(auxiliaries
   common/buildinfo.cpp
   common/rocsolver_logger.cpp
+  common/rocsparse.cpp
 )
 
 add_library(rocsolver
@@ -302,13 +303,13 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
-if(BUILD_WITH_SPARSE)
-  target_link_libraries(rocsolver PRIVATE roc::rocsparse)
-  set_source_files_properties(${rocsolver_refact_source}
-    PROPERTIES
-      COMPILE_DEFINITIONS HAVE_ROCSPARSE
-  )
-endif()
+#if(BUILD_WITH_SPARSE)
+#  target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+#  set_source_files_properties(${rocsolver_refact_source}
+#    PROPERTIES
+#      COMPILE_DEFINITIONS HAVE_ROCSPARSE
+#  )
+#endif()
 
 if(ROCSOLVER_EMBED_FMT)
   target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
