@@ -67,15 +67,15 @@ constexpr auto rocsparse2rocblas_status(rocsparse_status status)
     }
 }
 
-#define ROCSPARSE_CHECK(fcn)                          \
+#define ROCSPARSE_CHECK(...)                          \
     {                                                 \
-        rocsparse_status _status = (fcn);             \
+        rocsparse_status _status = (__VA_ARGS__);     \
         if(_status != rocsparse_status_success)       \
             return rocsparse2rocblas_status(_status); \
     }
-#define THROW_IF_ROCSPARSE_ERROR(fcn)                \
+#define THROW_IF_ROCSPARSE_ERROR(...)                \
     {                                                \
-        rocsparse_status _status = (fcn);            \
+        rocsparse_status _status = (__VA_ARGS__);    \
         if(_status != rocsparse_status_success)      \
             throw rocsparse2rocblas_status(_status); \
     }
