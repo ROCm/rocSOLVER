@@ -70,8 +70,11 @@ static bool load_function(void* handle, const char* symbol, Fn* fn) {
   return !err;
 }
 
-bool load_rocsparse() {
-  void* handle = dlopen("librocsparse.so.1", 0);
+static bool load_rocsparse() {
+  void* handle = dlopen("librocsparse.so.1", RTLD_LOCAL | RTLD_NOW);
+  if (!handle) {
+    fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", dlerror());
+  }
   if(!handle) return false;
   (void)dlerror(); // clear errors
   if(!load_function(handle, "rocsparse_create_handle", &rocsolver_rocsparse_create_handle)) return false;
@@ -135,12 +138,15 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
+    if(!load_rocsparse()) {
+        fmt::print(stderr, "error: {}\n");
+        return rocblas_status_internal_error;
+    }
+
     rocsolver_rfinfo_* impl = new(std::nothrow) rocsolver_rfinfo_{};
     if(!impl)
         return rocblas_status_memory_error;
 
-    if(!load_rocsparse())
-        return rocblas_status_internal_error;
     impl->rocsparse_loaded = true;
 
     rocblas_status result;
