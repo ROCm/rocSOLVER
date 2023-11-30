@@ -82,8 +82,8 @@ rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
     work = mem[0];
 
     // execution
-    return rocsolver_csrrf_refactlu_template<T>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
-                                                valT, pivP, pivQ, rfinfo, work);
+    return rocsolver_csrrf_refactlu_template<T, U>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
+                                                   indT, valT, pivP, pivQ, rfinfo, work);
 #else
     return rocblas_status_not_implemented;
 #endif
