@@ -61,8 +61,8 @@
     } while(0)
 
 template <typename Fn>
-static bool load_function(void* handle, const char* symbol, Fn* fn) {
-  fn = static_cast<Fn*>(dlsym(handle, symbol));
+static bool load_function(void* handle, const char* symbol, Fn& fn) {
+  fn = (Fn)(dlsym(handle, symbol));
   char* err = dlerror();
   if (err) {
     fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
@@ -71,61 +71,70 @@ static bool load_function(void* handle, const char* symbol, Fn* fn) {
 }
 
 static bool load_rocsparse() {
-  void* handle = dlopen("librocsparse.so.1", RTLD_LOCAL | RTLD_NOW);
+  if(rocsolver_rocsparse_zcsric0) {
+    return true; // already loaded
+  }
+
+  fmt::print(stderr, "dlopen!!\n");
+  void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
   if (!handle) {
     fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", dlerror());
   }
+  fmt::print(stderr, "rocsparse not yet loaded!\n");
   if(!handle) return false;
+  fmt::print(stderr, "rocsparse loaded!\n");
   (void)dlerror(); // clear errors
-  if(!load_function(handle, "rocsparse_create_handle", &rocsolver_rocsparse_create_handle)) return false;
-  if(!load_function(handle, "rocsparse_destroy_handle", &rocsolver_rocsparse_destroy_handle)) return false;
+  if(!load_function(handle, "rocsparse_create_handle", rocsolver_rocsparse_create_handle)) return false;
+  fmt::print(stderr, "loaded first symbol...\n");
+  if(!load_function(handle, "rocsparse_destroy_handle", rocsolver_rocsparse_destroy_handle)) return false;
 
-  if(!load_function(handle, "rocsparse_set_stream", &rocsolver_rocsparse_set_stream)) return false;
-  if(!load_function(handle, "rocsparse_create_mat_descr", &rocsolver_rocsparse_create_mat_descr)) return false;
-  if(!load_function(handle, "rocsparse_destroy_mat_descr", &rocsolver_rocsparse_destroy_mat_descr)) return false;
-  if(!load_function(handle, "rocsparse_set_mat_type", &rocsolver_rocsparse_set_mat_type)) return false;
-  if(!load_function(handle, "rocsparse_set_mat_index_base", &rocsolver_rocsparse_set_mat_index_base)) return false;
-  if(!load_function(handle, "rocsparse_set_mat_fill_mode", &rocsolver_rocsparse_set_mat_fill_mode)) return false;
-  if(!load_function(handle, "rocsparse_set_mat_diag_type", &rocsolver_rocsparse_set_mat_diag_type)) return false;
-  if(!load_function(handle, "rocsparse_create_mat_info", &rocsolver_rocsparse_create_mat_info)) return false;
-  if(!load_function(handle, "rocsparse_destroy_mat_info", &rocsolver_rocsparse_destroy_mat_info)) return false;
+  if(!load_function(handle, "rocsparse_set_stream", rocsolver_rocsparse_set_stream)) return false;
+  if(!load_function(handle, "rocsparse_create_mat_descr", rocsolver_rocsparse_create_mat_descr)) return false;
+  if(!load_function(handle, "rocsparse_destroy_mat_descr", rocsolver_rocsparse_destroy_mat_descr)) return false;
+  if(!load_function(handle, "rocsparse_set_mat_type", rocsolver_rocsparse_set_mat_type)) return false;
+  if(!load_function(handle, "rocsparse_set_mat_index_base", rocsolver_rocsparse_set_mat_index_base)) return false;
+  if(!load_function(handle, "rocsparse_set_mat_fill_mode", rocsolver_rocsparse_set_mat_fill_mode)) return false;
+  if(!load_function(handle, "rocsparse_set_mat_diag_type", rocsolver_rocsparse_set_mat_diag_type)) return false;
+  if(!load_function(handle, "rocsparse_create_mat_info", rocsolver_rocsparse_create_mat_info)) return false;
+  if(!load_function(handle, "rocsparse_destroy_mat_info", rocsolver_rocsparse_destroy_mat_info)) return false;
 
-  if(!load_function(handle, "rocsparse_scsrilu0_buffer_size", &rocsolver_rocsparse_scsrilu0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_dcsrilu0_buffer_size", &rocsolver_rocsparse_dcsrilu0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_ccsrilu0_buffer_size", &rocsolver_rocsparse_ccsrilu0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_zcsrilu0_buffer_size", &rocsolver_rocsparse_zcsrilu0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_scsric0_buffer_size", &rocsolver_rocsparse_scsric0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_dcsric0_buffer_size", &rocsolver_rocsparse_dcsric0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_ccsric0_buffer_size", &rocsolver_rocsparse_ccsric0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_zcsric0_buffer_size", &rocsolver_rocsparse_zcsric0_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_scsric0_analysis", &rocsolver_rocsparse_scsric0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_dcsric0_analysis", &rocsolver_rocsparse_dcsric0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_ccsric0_analysis", &rocsolver_rocsparse_ccsric0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_zcsric0_analysis", &rocsolver_rocsparse_zcsric0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_scsrsm_analysis", &rocsolver_rocsparse_scsrsm_analysis)) return false;
-  if(!load_function(handle, "rocsparse_dcsrsm_analysis", &rocsolver_rocsparse_dcsrsm_analysis)) return false;
-  if(!load_function(handle, "rocsparse_ccsrsm_analysis", &rocsolver_rocsparse_ccsrsm_analysis)) return false;
-  if(!load_function(handle, "rocsparse_zcsrsm_analysis", &rocsolver_rocsparse_zcsrsm_analysis)) return false;
-  if(!load_function(handle, "rocsparse_scsrsm_buffer_size", &rocsolver_rocsparse_scsrsm_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_dcsrsm_buffer_size", &rocsolver_rocsparse_dcsrsm_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_ccsrsm_buffer_size", &rocsolver_rocsparse_ccsrsm_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_zcsrsm_buffer_size", &rocsolver_rocsparse_zcsrsm_buffer_size)) return false;
-  if(!load_function(handle, "rocsparse_scsrsm_solve", &rocsolver_rocsparse_scsrsm_solve)) return false;
-  if(!load_function(handle, "rocsparse_dcsrsm_solve", &rocsolver_rocsparse_dcsrsm_solve)) return false;
-  if(!load_function(handle, "rocsparse_ccsrsm_solve", &rocsolver_rocsparse_ccsrsm_solve)) return false;
-  if(!load_function(handle, "rocsparse_zcsrsm_solve", &rocsolver_rocsparse_zcsrsm_solve)) return false;
-  if(!load_function(handle, "rocsparse_scsrilu0_analysis", &rocsolver_rocsparse_scsrilu0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_dcsrilu0_analysis", &rocsolver_rocsparse_dcsrilu0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_ccsrilu0_analysis", &rocsolver_rocsparse_ccsrilu0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_zcsrilu0_analysis", &rocsolver_rocsparse_zcsrilu0_analysis)) return false;
-  if(!load_function(handle, "rocsparse_scsrilu0", &rocsolver_rocsparse_scsrilu0)) return false;
-  if(!load_function(handle, "rocsparse_dcsrilu0", &rocsolver_rocsparse_dcsrilu0)) return false;
-  if(!load_function(handle, "rocsparse_ccsrilu0", &rocsolver_rocsparse_ccsrilu0)) return false;
-  if(!load_function(handle, "rocsparse_zcsrilu0", &rocsolver_rocsparse_zcsrilu0)) return false;
-  if(!load_function(handle, "rocsparse_scsric0", &rocsolver_rocsparse_scsric0)) return false;
-  if(!load_function(handle, "rocsparse_dcsric0", &rocsolver_rocsparse_dcsric0)) return false;
-  if(!load_function(handle, "rocsparse_ccsric0", &rocsolver_rocsparse_ccsric0)) return false;
-  if(!load_function(handle, "rocsparse_zcsric0", &rocsolver_rocsparse_zcsric0)) return false;
+  if(!load_function(handle, "rocsparse_scsrilu0_buffer_size", rocsolver_rocsparse_scsrilu0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_dcsrilu0_buffer_size", rocsolver_rocsparse_dcsrilu0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_ccsrilu0_buffer_size", rocsolver_rocsparse_ccsrilu0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_zcsrilu0_buffer_size", rocsolver_rocsparse_zcsrilu0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_scsric0_buffer_size", rocsolver_rocsparse_scsric0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_dcsric0_buffer_size", rocsolver_rocsparse_dcsric0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_ccsric0_buffer_size", rocsolver_rocsparse_ccsric0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_zcsric0_buffer_size", rocsolver_rocsparse_zcsric0_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_scsric0_analysis", rocsolver_rocsparse_scsric0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_dcsric0_analysis", rocsolver_rocsparse_dcsric0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_ccsric0_analysis", rocsolver_rocsparse_ccsric0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_zcsric0_analysis", rocsolver_rocsparse_zcsric0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_scsrsm_analysis", rocsolver_rocsparse_scsrsm_analysis)) return false;
+  if(!load_function(handle, "rocsparse_dcsrsm_analysis", rocsolver_rocsparse_dcsrsm_analysis)) return false;
+  if(!load_function(handle, "rocsparse_ccsrsm_analysis", rocsolver_rocsparse_ccsrsm_analysis)) return false;
+  if(!load_function(handle, "rocsparse_zcsrsm_analysis", rocsolver_rocsparse_zcsrsm_analysis)) return false;
+  if(!load_function(handle, "rocsparse_scsrsm_buffer_size", rocsolver_rocsparse_scsrsm_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_dcsrsm_buffer_size", rocsolver_rocsparse_dcsrsm_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_ccsrsm_buffer_size", rocsolver_rocsparse_ccsrsm_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_zcsrsm_buffer_size", rocsolver_rocsparse_zcsrsm_buffer_size)) return false;
+  if(!load_function(handle, "rocsparse_scsrsm_solve", rocsolver_rocsparse_scsrsm_solve)) return false;
+  if(!load_function(handle, "rocsparse_dcsrsm_solve", rocsolver_rocsparse_dcsrsm_solve)) return false;
+  if(!load_function(handle, "rocsparse_ccsrsm_solve", rocsolver_rocsparse_ccsrsm_solve)) return false;
+  if(!load_function(handle, "rocsparse_zcsrsm_solve", rocsolver_rocsparse_zcsrsm_solve)) return false;
+  if(!load_function(handle, "rocsparse_scsrilu0_analysis", rocsolver_rocsparse_scsrilu0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_dcsrilu0_analysis", rocsolver_rocsparse_dcsrilu0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_ccsrilu0_analysis", rocsolver_rocsparse_ccsrilu0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_zcsrilu0_analysis", rocsolver_rocsparse_zcsrilu0_analysis)) return false;
+  if(!load_function(handle, "rocsparse_scsrilu0", rocsolver_rocsparse_scsrilu0)) return false;
+  if(!load_function(handle, "rocsparse_dcsrilu0", rocsolver_rocsparse_dcsrilu0)) return false;
+  if(!load_function(handle, "rocsparse_ccsrilu0", rocsolver_rocsparse_ccsrilu0)) return false;
+  if(!load_function(handle, "rocsparse_zcsrilu0", rocsolver_rocsparse_zcsrilu0)) return false;
+  if(!load_function(handle, "rocsparse_scsric0", rocsolver_rocsparse_scsric0)) return false;
+  if(!load_function(handle, "rocsparse_dcsric0", rocsolver_rocsparse_dcsric0)) return false;
+  if(!load_function(handle, "rocsparse_ccsric0", rocsolver_rocsparse_ccsric0)) return false;
+  if(!load_function(handle, "rocsparse_zcsric0", rocsolver_rocsparse_zcsric0)) return false;
+  fmt::print(stderr, "loaded all symbols...\n");
 
   return true;
 }
@@ -138,21 +147,27 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
+    fmt::print(stderr, "going to load rocsparse\n");
     if(!load_rocsparse()) {
         fmt::print(stderr, "error: {}\n");
         return rocblas_status_internal_error;
     }
+    fmt::print(stderr, "loaded rocsparse\n");
 
     rocsolver_rfinfo_* impl = new(std::nothrow) rocsolver_rfinfo_{};
     if(!impl)
         return rocblas_status_memory_error;
 
+    fmt::print(stderr, "set loaded\n");
     impl->rocsparse_loaded = true;
+    fmt::print(stderr, "loaded set\n");
 
     rocblas_status result;
 
     // create sparse handle
+    fmt::print(stderr, "create handle: {}!\n", (void*)(rocsparse_create_handle));
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_handle(&impl->sphandle), result, cleanup);
+    fmt::print(stderr, "created handle!\n");
 
     // use handle->stream to sphandle->stream
     hipStream_t stream;
