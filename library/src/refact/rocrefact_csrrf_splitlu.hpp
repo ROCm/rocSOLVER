@@ -27,30 +27,13 @@
 
 #pragma once
 
-#define USE_THRUST
-#ifdef USE_THRUST
-#include "thrust/device_ptr.h"
-#include "thrust/scan.h"
-#else
 #include <rocprim/rocprim.hpp>
-#endif
 
 #include <iostream>
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
-
-#ifndef HIP_CHECK
-#define HIP_CHECK(fcn)                              \
-    {                                               \
-        auto ret = (fcn);                           \
-        if(ret != hipSuccess)                       \
-        {                                           \
-            return (rocblas_status_internal_error); \
-        };                                          \
-    }
-#endif
 
 template <typename I>
 __device__ static I cal_wave_size(I avg_nnzM)
@@ -206,12 +189,7 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 
     const rocblas_int avg_nnzM = max(1, nnzM / n);
 
-    const rocblas_int waveSize = (avg_nnzM >= warpSize) ? warpSize
-        : (avg_nnzM >= warpSize / 2)                    ? warpSize / 2
-        : (avg_nnzM >= warpSize / 4)                    ? warpSize / 4
-        : (avg_nnzM >= warpSize / 8)                    ? warpSize / 8
-        : (avg_nnzM >= warpSize / 16)                   ? warpSize / 16
-                                                        : 1;
+    const auto waveSize = cal_wave_size(avg_nnzM);
 
     const rocblas_int nthreads = blockDim.x;
     const rocblas_int nwaves = nthreads / waveSize;
@@ -226,8 +204,6 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
     // 1st pass to determine number of non-zeros per row
     // and set up Lp and Up
     // -------------------------------------------------
-
-    auto time_diagpos = -clock64();
 
     for(auto irow = wid; irow < n; irow += nwaves)
     {
@@ -244,12 +220,10 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
         }
     }
     __syncthreads();
-    time_diagpos += clock64();
 
     // ---------------------------------
     // prefix sum to setup Lp[] and Up[]
     // ---------------------------------
-    auto time_sum = -clock64();
     if(tid == 0)
     {
         rocblas_int nnzL = 0;
@@ -275,12 +249,10 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
         Up[n] = nnzU;
     };
     __syncthreads();
-    time_sum += clock64();
 
     // ------------------------------------
     // 2nd pass to populate Li, Lx, Ui, Ux
     // ------------------------------------
-    auto time_copy = -clock64();
     for(auto irow = wid; irow < n; irow += nwaves)
     {
         const auto istart = Mp[irow];
@@ -321,6 +293,7 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
         }
     }
 
+    __syncthreads();
     // -----------------------------
     // set unit diagonal entry in L
     // -----------------------------
@@ -330,19 +303,12 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
         Li[j] = irow;
         Lx[j] = static_cast<T>(1);
     };
-
-    __syncthreads();
-    time_copy += clock64();
-    if(tid == 0)
-    {
-        printf("time_diagpos=%le, time_sum=%le, time_copy=%le\n", static_cast<double>(time_diagpos),
-               static_cast<double>(time_sum), static_cast<double>(time_copy));
-    }
 }
 
 template <typename T>
 void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
                                            const rocblas_int nnzT,
+                                           rocblas_int* LUp,
                                            size_t* size_work)
 {
     // if quick return, no need of workspace
@@ -353,7 +319,19 @@ void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
     }
 
     // space to store the number of non-zeros per row in L and U
-    *size_work = sizeof(rocblas_int) * 2 * n;
+    const size_t size_work_LU = sizeof(rocblas_int) * 2 * n;
+
+    // ------------------------------------------
+    // query amount of temporary storage required
+    // ------------------------------------------
+    size_t rocprim_size_bytes = 0;
+    void* temp_ptr = nullptr;
+
+    const hipError_t istat = rocprim::inclusive_scan(temp_ptr, rocprim_size_bytes, LUp, LUp, n,
+                                                     rocprim::plus<rocblas_int>());
+    assert(istat == hipSuccess);
+
+    *size_work = max(rocprim_size_bytes, size_work_LU);
 }
 
 template <typename T>
@@ -408,7 +386,8 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
                                                 rocblas_int* ptrU,
                                                 rocblas_int* indU,
                                                 U valU,
-                                                rocblas_int* work)
+                                                rocblas_int* work,
+                                                size_t size_work)
 {
     ROCSOLVER_ENTER("csrrf_splitlu", "n:", n, "nnzT:", nnzT);
 
@@ -464,41 +443,31 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         // generate prefix sum for Lp[] and Up[]
         // note: in-place prefix sum
         // -------------------------
-#ifdef USE_THRUST
-        {
-            const auto exec = thrust::hip::par.on(stream);
-
-            thrust::device_ptr<rocblas_int> dev_Lp(Lp);
-            thrust::device_ptr<rocblas_int> dev_Up(Up);
-
-            thrust::inclusive_scan(exec, (dev_Lp + 1), (dev_Lp + 1) + n, (dev_Lp + 1));
-            thrust::inclusive_scan(exec, (dev_Up + 1), (dev_Up + 1) + n, (dev_Up + 1));
-        }
-#else
         {
             // ------------------------------------------
             // query amount of temporary storage required
             // ------------------------------------------
-            size_t storage_size_bytes = 0;
+            size_t storage_size_bytes_Lp = 0;
+            size_t storage_size_bytes_Up = 0;
+
             void* temp_ptr = nullptr;
 
-            HIP_CHECK(rocprim::inclusive_scan(temp_ptr, storage_size_bytes, (Lp + 1), (Lp + 1), n,
-                                              rocprim::plus<rocblas_int>(), stream));
+            HIP_CHECK(rocprim::inclusive_scan(temp_ptr, storage_size_bytes_Lp, (Lp + 1), (Lp + 1),
+                                              n, rocprim::plus<rocblas_int>(), stream));
 
-            // ------------------------------------------------
-            // allocate memory in stream-associated memory pool
-            // ------------------------------------------------
-            const size_t work_size_bytes = sizeof(rocblas_int) * 2 * n;
-            const bool need_alloc = storage_size_bytes > work_size_bytes;
-            if(need_alloc)
+            HIP_CHECK(rocprim::inclusive_scan(temp_ptr, storage_size_bytes_Up, (Up + 1), (Up + 1),
+                                              n, rocprim::plus<rocblas_int>(), stream));
+
+            size_t storage_size_bytes = max(storage_size_bytes_Lp, storage_size_bytes_Up);
+            assert(size_work >= storage_size_bytes);
+
+            if(size_work < storage_size_bytes)
             {
-                HIP_CHECK(hipMallocAsync(&temp_ptr, storage_size_bytes, stream));
-            }
-            else
-            {
-                temp_ptr = (void*)work;
-                storage_size_bytes = work_size_bytes;
+                return (rocblas_status_internal_error);
             };
+
+            temp_ptr = (void*)work;
+            storage_size_bytes = size_work;
 
             // ----------------------------------------
             // perform inclusive scan for Lp[] and Up[]
@@ -508,14 +477,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
 
             HIP_CHECK(rocprim::inclusive_scan(temp_ptr, storage_size_bytes, (Up + 1), (Up + 1), n,
                                               rocprim::plus<rocblas_int>(), stream));
-
-            if(need_alloc)
-            {
-                HIP_CHECK(hipFreeAsync(temp_ptr, stream));
-            };
-            temp_ptr = nullptr;
         }
-#endif
 
         // ------------------------
         // set Lp[0] = 0, Up[0] = 0
