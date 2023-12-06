@@ -45,27 +45,27 @@
 
 /** Argument checking **/
 template <typename T, typename TT, typename W>
-rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
-                                         const rocblas_svect left_svect,
-                                         const rocblas_svect right_svect,
-                                         const rocblas_srange srange,
-                                         const rocblas_int m,
-                                         const rocblas_int n,
-                                         W A,
-                                         const rocblas_int lda,
-                                         const TT vl,
-                                         const TT vu,
-                                         const rocblas_int il,
-                                         const rocblas_int iu,
-                                         rocblas_int* nsv,
-                                         TT* S,
-                                         T* U,
-                                         const rocblas_int ldu,
-                                         T* V,
-                                         const rocblas_int ldv,
-                                         rocblas_int* ifail,
-                                         rocblas_int* info,
-                                         const rocblas_int batch_count = 1)
+rocblas_status rocsolver_gesvdx_notransv_argCheck(rocblas_handle handle,
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  W A,
+                                                  const rocblas_int lda,
+                                                  const TT vl,
+                                                  const TT vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  TT* S,
+                                                  T* U,
+                                                  const rocblas_int ldu,
+                                                  T* V,
+                                                  const rocblas_int ldv,
+                                                  rocblas_int* ifail,
+                                                  rocblas_int* info,
+                                                  const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -83,7 +83,7 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_size;
     if(left_svect == rocblas_svect_singular && ldu < m)
         return rocblas_status_invalid_size;
-    if(right_svect == rocblas_svect_singular && ldv < nsv_max)
+    if(right_svect == rocblas_svect_singular && ldv < n)
         return rocblas_status_invalid_size;
     if(srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         return rocblas_status_invalid_size;
@@ -104,7 +104,7 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_pointer;
     if(left_svect == rocblas_svect_singular && m * nsv_max && !U)
         return rocblas_status_invalid_pointer;
-    if(right_svect == rocblas_svect_singular && nsv_max * n && !V)
+    if(right_svect == rocblas_svect_singular && n * nsv_max && !V)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -112,34 +112,34 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
 
 /** Helper to calculate workspace sizes **/
 template <bool BATCHED, typename T, typename S>
-void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
-                                    const rocblas_svect right_svect,
-                                    const rocblas_srange srange,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
-                                    const rocblas_int il,
-                                    const rocblas_int iu,
-                                    const rocblas_int bc,
-                                    size_t* size_scalars,
-                                    size_t* size_WS_svdx1,
-                                    size_t* size_WS_svdx2_lqrf1_brd1,
-                                    size_t* size_WS_svdx3_lqrf2_brd2,
-                                    size_t* size_WS_svdx4_lqrf3_brd3,
-                                    size_t* size_WS_svdx5_brd4,
-                                    size_t* size_WS_svdx6,
-                                    size_t* size_WS_svdx7,
-                                    size_t* size_WS_svdx8,
-                                    size_t* size_WS_svdx9,
-                                    size_t* size_WS_svdx10_mlqr1_mbr1,
-                                    size_t* size_WS_svdx11_mlqr2_mbr2,
-                                    size_t* size_WS_svdx12_mlqr3_mbr3,
-                                    size_t* size_tmpDE,
-                                    size_t* size_tauqp,
-                                    size_t* size_tmpZ,
-                                    size_t* size_tau,
-                                    size_t* size_tmpT,
-                                    size_t* size_workArr,
-                                    size_t* size_workArr2)
+void rocsolver_gesvdx_notransv_getMemorySize(const rocblas_svect left_svect,
+                                             const rocblas_svect right_svect,
+                                             const rocblas_srange srange,
+                                             const rocblas_int m,
+                                             const rocblas_int n,
+                                             const rocblas_int il,
+                                             const rocblas_int iu,
+                                             const rocblas_int bc,
+                                             size_t* size_scalars,
+                                             size_t* size_WS_svdx1,
+                                             size_t* size_WS_svdx2_lqrf1_brd1,
+                                             size_t* size_WS_svdx3_lqrf2_brd2,
+                                             size_t* size_WS_svdx4_lqrf3_brd3,
+                                             size_t* size_WS_svdx5_brd4,
+                                             size_t* size_WS_svdx6,
+                                             size_t* size_WS_svdx7,
+                                             size_t* size_WS_svdx8,
+                                             size_t* size_WS_svdx9,
+                                             size_t* size_WS_svdx10_mlqr1_mbr1,
+                                             size_t* size_WS_svdx11_mlqr2_mbr2,
+                                             size_t* size_WS_svdx12_mlqr3_mbr3,
+                                             size_t* size_tmpDE,
+                                             size_t* size_tauqp,
+                                             size_t* size_tmpZ,
+                                             size_t* size_tau,
+                                             size_t* size_tmpT,
+                                             size_t* size_workArr,
+                                             size_t* size_workArr2)
 {
     // if quick return, set workspace to zero
     if(n == 0 || m == 0 || bc == 0)
@@ -249,11 +249,11 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
             // requirements for ormlq
             if(!row)
                 rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(
-                    rocblas_side_right, nsv_max, n, k, bc, size_scalars, &e[3], &f[3], &g[3], &w[3]);
+                    rocblas_side_left, n, nsv_max, k, bc, size_scalars, &e[3], &f[3], &g[3], &w[3]);
 
             // requirements for ormbr
-            rocsolver_ormbr_unmbr_getMemorySize<false, T>(rocblas_row_wise, rocblas_side_right,
-                                                          nsv_max, k, k, bc, size_scalars, &e[4],
+            rocsolver_ormbr_unmbr_getMemorySize<false, T>(rocblas_row_wise, rocblas_side_left, k,
+                                                          nsv_max, k, bc, size_scalars, &e[4],
                                                           &f[4], &g[4], &w[4]);
         }
         else
@@ -261,9 +261,9 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
             // requirements for ormbr
             rocblas_int nn = row ? k : n;
             rocblas_int kk = row ? m : k;
-            rocsolver_ormbr_unmbr_getMemorySize<BATCHED, T>(rocblas_row_wise, rocblas_side_right,
-                                                            nsv_max, nn, kk, bc, size_scalars,
-                                                            &e[4], &f[4], &g[4], &w[4]);
+            rocsolver_ormbr_unmbr_getMemorySize<BATCHED, T>(rocblas_row_wise, rocblas_side_left, nn,
+                                                            nsv_max, kk, bc, size_scalars, &e[4],
+                                                            &f[4], &g[4], &w[4]);
         }
     }
 
@@ -285,57 +285,57 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename TT, typename W>
-rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
-                                         const rocblas_svect left_svect,
-                                         const rocblas_svect right_svect,
-                                         const rocblas_srange srange,
-                                         const rocblas_int m,
-                                         const rocblas_int n,
-                                         W A,
-                                         const rocblas_int shiftA,
-                                         const rocblas_int lda,
-                                         const rocblas_stride strideA,
-                                         const TT vl,
-                                         const TT vu,
-                                         const rocblas_int il,
-                                         const rocblas_int iu,
-                                         rocblas_int* nsv,
-                                         TT* S,
-                                         const rocblas_stride strideS,
-                                         T* U,
-                                         const rocblas_int ldu,
-                                         const rocblas_stride strideU,
-                                         T* V,
-                                         const rocblas_int ldv,
-                                         const rocblas_stride strideV,
-                                         rocblas_int* ifail,
-                                         const rocblas_stride strideF,
-                                         rocblas_int* info,
-                                         const rocblas_int batch_count,
-                                         T* scalars,
-                                         rocblas_int* WS_svdx1,
-                                         void* WS_svdx2_lqrf1_brd1,
-                                         void* WS_svdx3_lqrf2_brd2,
-                                         void* WS_svdx4_lqrf3_brd3,
-                                         void* WS_svdx5_brd4,
-                                         rocblas_int* WS_svdx6,
-                                         rocblas_int* WS_svdx7,
-                                         rocblas_int* WS_svdx8,
-                                         rocblas_int* WS_svdx9,
-                                         void* WS_svdx10_mlqr1_mbr1,
-                                         void* WS_svdx11_mlqr2_mbr2,
-                                         void* WS_svdx12_mlqr3_mbr3,
-                                         TT* tmpDE,
-                                         T* tauqp,
-                                         TT* tmpZ,
-                                         T* tau,
-                                         T* tmpT,
-                                         T** workArr,
-                                         T** workArr2)
+rocblas_status rocsolver_gesvdx_notransv_template(rocblas_handle handle,
+                                                  const rocblas_svect left_svect,
+                                                  const rocblas_svect right_svect,
+                                                  const rocblas_srange srange,
+                                                  const rocblas_int m,
+                                                  const rocblas_int n,
+                                                  W A,
+                                                  const rocblas_int shiftA,
+                                                  const rocblas_int lda,
+                                                  const rocblas_stride strideA,
+                                                  const TT vl,
+                                                  const TT vu,
+                                                  const rocblas_int il,
+                                                  const rocblas_int iu,
+                                                  rocblas_int* nsv,
+                                                  TT* S,
+                                                  const rocblas_stride strideS,
+                                                  T* U,
+                                                  const rocblas_int ldu,
+                                                  const rocblas_stride strideU,
+                                                  T* V,
+                                                  const rocblas_int ldv,
+                                                  const rocblas_stride strideV,
+                                                  rocblas_int* ifail,
+                                                  const rocblas_stride strideF,
+                                                  rocblas_int* info,
+                                                  const rocblas_int batch_count,
+                                                  T* scalars,
+                                                  rocblas_int* WS_svdx1,
+                                                  void* WS_svdx2_lqrf1_brd1,
+                                                  void* WS_svdx3_lqrf2_brd2,
+                                                  void* WS_svdx4_lqrf3_brd3,
+                                                  void* WS_svdx5_brd4,
+                                                  rocblas_int* WS_svdx6,
+                                                  rocblas_int* WS_svdx7,
+                                                  rocblas_int* WS_svdx8,
+                                                  rocblas_int* WS_svdx9,
+                                                  void* WS_svdx10_mlqr1_mbr1,
+                                                  void* WS_svdx11_mlqr2_mbr2,
+                                                  void* WS_svdx12_mlqr3_mbr3,
+                                                  TT* tmpDE,
+                                                  T* tauqp,
+                                                  TT* tmpZ,
+                                                  T* tau,
+                                                  T* tmpT,
+                                                  T** workArr,
+                                                  T** workArr2)
 {
-    ROCSOLVER_ENTER("gesvdx", "leftsv:", left_svect, "rightsv:", right_svect, "srange:", srange,
-                    "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "vl:", vl, "vu:", vu,
-                    "il:", il, "iu:", iu, "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
+    ROCSOLVER_ENTER("gesvdx_notransv", "leftsv:", left_svect, "rightsv:", right_svect,
+                    "srange:", srange, "m:", m, "n:", n, "shiftA:", shiftA, "lda:", lda, "vl:", vl,
+                    "vu:", vu, "il:", il, "iu:", iu, "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
 
     // quick return (no batch items)
     if(batch_count == 0)
@@ -496,22 +496,22 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
         //  template functions accepting dimensions as pointers)
 
         // initialize matrix V
-        ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_nsv, blocks_n, batch_count),
-                                dim3(thread_count, thread_count, 1), 0, stream, nsv_max, n, V, 0,
+        ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocks_n, blocks_nsv, batch_count),
+                                dim3(thread_count, thread_count, 1), 0, stream, n, nsv_max, V, 0,
                                 ldv, strideV);
 
         // copy right vectors to matrix V
         ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_nsv, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream,
-                                rocblas_operation_transpose, k, nsv_max, tmpZ, k, ldz, strideZ, V,
-                                0, ldv, strideV);
+                                rocblas_operation_none, k, nsv_max, tmpZ, k, ldz, strideZ, V, 0,
+                                ldv, strideV);
 
         if(thinSVD)
         {
             // apply ormbr (update with tranformation from bidiagonalization)
             rocsolver_ormbr_unmbr_template<false, STRIDED>(
-                handle, rocblas_row_wise, rocblas_side_right, rocblas_operation_transpose, nsv_max,
-                k, k, tmpT, 0, ldt, strideT, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
+                handle, rocblas_row_wise, rocblas_side_left, rocblas_operation_none, k, nsv_max, k,
+                tmpT, 0, ldt, strideT, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
                 batch_count, scalars, (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2,
                 (T*)WS_svdx12_mlqr3_mbr3, workArr);
 
@@ -519,8 +519,8 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             {
                 // apply ormlq (update with transformation from column compression)
                 rocsolver_ormlq_unmlq_template<BATCHED, STRIDED>(
-                    handle, rocblas_side_right, rocblas_operation_none, nsv_max, n, k, A, shiftA,
-                    lda, strideA, tau, k, V, 0, ldv, strideV, batch_count, scalars,
+                    handle, rocblas_side_left, rocblas_operation_transpose, n, nsv_max, k, A,
+                    shiftA, lda, strideA, tau, k, V, 0, ldv, strideV, batch_count, scalars,
                     (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2, (T*)WS_svdx12_mlqr3_mbr3,
                     workArr, workArr2);
             }
@@ -531,8 +531,8 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
             rocblas_int nn = row ? k : n;
             rocblas_int kk = row ? m : k;
             rocsolver_ormbr_unmbr_template<BATCHED, STRIDED>(
-                handle, rocblas_row_wise, rocblas_side_right, rocblas_operation_transpose, nsv_max,
-                nn, kk, A, shiftA, lda, strideA, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
+                handle, rocblas_row_wise, rocblas_side_left, rocblas_operation_none, nn, nsv_max,
+                kk, A, shiftA, lda, strideA, (tauqp + k * batch_count), k, V, 0, ldv, strideV,
                 batch_count, scalars, (T*)WS_svdx10_mlqr1_mbr1, (T*)WS_svdx11_mlqr2_mbr2,
                 (T*)WS_svdx12_mlqr3_mbr3, workArr);
         }
