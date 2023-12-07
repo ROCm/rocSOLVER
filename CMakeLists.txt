@@ -197,6 +197,8 @@ if(BUILD_WITH_SPARSE)
   list(APPEND rocsolver_pkgdeps "rocsparse >= 2.2")
 endif()
 
+find_package(rocprim REQUIRED CONFIG PATHS ${ROCM_PATH})
+
 add_subdirectory(common)
 
 if(BUILD_LIBRARY)
