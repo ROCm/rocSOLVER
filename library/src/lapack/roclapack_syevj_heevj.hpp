@@ -153,20 +153,8 @@ __device__ void run_syevj(const rocblas_int dimx,
         {
             for(rocblas_int cc = 0; cc < count; ++cc)
             {
-                rocblas_int kx = tix + cc * dimx;
-
-                //if(tiy==0 && tix==0)
-                //{
-                //printf("sweeps %d, k %d, cc %d\n",sweeps,k,cc);
-                //for(int u=0;u<8;++u)
-                //	printf("%d ",top[u]);
-                //printf("\n");
-                //for(int u=0;u<8;++u)
-                //	printf("%d ",bottom[u]);
-                //printf("\n");
-                //}
-
                 // get current top/bottom pair
+                rocblas_int kx = tix + cc * dimx;
                 i = kx < half_n ? top[kx] : n;
                 j = kx < half_n ? bottom[kx] : n;
 
@@ -270,8 +258,6 @@ __device__ void run_syevj(const rocblas_int dimx,
                 // rotate top/bottom pair
                 if(tiy == 0 && kx < half_n)
                 {
-                    //printf("soy tix %d, mi kx es %d\n",tix,kx);
-
                     if(i > 0)
                     {
                         if(i == 2 || i == even_n - 1)
@@ -309,33 +295,35 @@ __device__ void run_syevj(const rocblas_int dimx,
         sweeps++;
     }
 
-    if(tiy > 0)
-        return;
-
     // finalize outputs
-    if(tix == 0)
+    if(tiy == 0)
     {
-        *residual = sqrt(local_res);
-        if(sweeps <= max_sweeps)
+        if(tix == 0)
         {
-            *n_sweeps = sweeps;
-            *info = 0;
+            *residual = sqrt(local_res);
+            if(sweeps <= max_sweeps)
+            {
+                *n_sweeps = sweeps;
+                *info = 0;
+            }
+            else
+            {
+                *n_sweeps = max_sweeps;
+                *info = 1;
+            }
         }
-        else
-        {
-            *n_sweeps = max_sweeps;
-            *info = 1;
-        }
-    }
 
-    // update W and then sort eigenvalues and eigenvectors by selection sort
-    for(i = tix; i < n; i += dimx)
-        W[i] = std::real(Acpy[i + i * n]);
+        // update W
+        for(i = tix; i < n; i += dimx)
+            W[i] = std::real(Acpy[i + i * n]);
+    }
     __syncthreads();
 
-    if((evect == rocblas_evect_none && tix > 0) || esort == rocblas_esort_none)
+    // if no sort, then stop
+    if(esort == rocblas_esort_none)
         return;
 
+    //otherwise sort eigenvalues and eigenvectors by selection sort
     rocblas_int m;
     S p;
     for(j = 0; j < n - 1; j++)
@@ -352,7 +340,7 @@ __device__ void run_syevj(const rocblas_int dimx,
         }
         __syncthreads();
 
-        if(m != j)
+        if(m != j && tiy == 0)
         {
             if(tix == 0)
             {
