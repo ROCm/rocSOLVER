@@ -611,6 +611,10 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int solver_mode)
 {
     rocblas_int levels = 0;
+    // return the max number of levels such that the sub-blocks are at least of size 1
+    // (i.e. 2^levels <= n), and there are no more than 256 sub-blocks (i.e. 2^levels <= 256)
+    if(n <= 2)
+        return levels;
 
     switch(solver_mode)
     {
@@ -618,13 +622,15 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
         //	TODO
         break;
 
-    case JACOBI: levels = 1; break;
+    case JACOBI: levels = 2; break;
 
     case CLASSICQR:
     default:
-        // return the max number of levels such that the sub-blocks are at least of size 8, and
-        // there are no more than 256 sub-blocks
-        if(n <= 32)
+        if(n <= 4)
+        {
+            levels = 1;
+        }
+        else if(n <= 32)
         {
             levels = 2;
         }
@@ -1211,6 +1217,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                     z[p2 + j] = ptz[(p2 + j) * ldc] / sqrt(2);
             }
             __syncthreads();
+
             /* ----------------------------------------------------------------- */
 
             // 3b. calculate deflation tolerance
