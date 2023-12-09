@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -103,7 +103,7 @@ rocblas_status rocsolver_gesvdx_batched_impl(rocblas_handle handle,
     size_t size_workArr2;
 
     rocsolver_gesvdx_getMemorySize<true, T, TT>(
-        left_svect, right_svect, srange, m, n, batch_count, &size_scalars, &size_WS_svdx1,
+        left_svect, right_svect, srange, m, n, il, iu, batch_count, &size_scalars, &size_WS_svdx1,
         &size_WS_svdx2_lqrf1_brd1, &size_WS_svdx3_lqrf2_brd2, &size_WS_svdx4_lqrf3_brd3,
         &size_WS_svdx5_brd4, &size_WS_svdx6, &size_WS_svdx7, &size_WS_svdx8, &size_WS_svdx9,
         &size_WS_svdx10_mlqr1_mbr1, &size_WS_svdx11_mlqr2_mbr2, &size_WS_svdx12_mlqr3_mbr3,

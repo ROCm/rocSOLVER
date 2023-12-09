@@ -85,13 +85,15 @@ Arguments csrrf_workflow_setup_arguments(csrrf_workflow_tuple tup)
 class CSRRF_WORKFLOW : public ::TestWithParam<csrrf_workflow_tuple>
 {
 protected:
-    CSRRF_WORKFLOW() {}
-    virtual void SetUp()
+    void SetUp() override
     {
         if(rocsolver_create_rfinfo(nullptr, nullptr) == rocblas_status_not_implemented)
             GTEST_SKIP() << "Sparse functionality is not enabled";
     }
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <typename T>
     void run_tests()

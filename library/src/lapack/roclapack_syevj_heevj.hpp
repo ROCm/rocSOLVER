@@ -6,7 +6,7 @@
  * and
  * Hari & Kovac (2019). On the Convergence of Complex Jacobi Methods.
  *     Linear and Multilinear Algebra 69(3), p. 489-514.
- * Copyright (c) 2021-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2021-2023 Advanced Micro Devices, Inc.
  * ***********************************************************************/
 
 #pragma once
@@ -1496,14 +1496,9 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         while(h_sweeps < max_sweeps)
         {
             // if all instances in the batch have finished, exit the loop
-            hipError_t status = hipMemcpyAsync(&h_completed, completed, sizeof(rocblas_int),
-                                               hipMemcpyDeviceToHost, stream);
-            if(status != hipSuccess)
-                return get_rocblas_status_for_hip_status(status);
-
-            status = hipStreamSynchronize(stream);
-            if(status != hipSuccess)
-                return get_rocblas_status_for_hip_status(status);
+            HIP_CHECK(hipMemcpyAsync(&h_completed, completed, sizeof(rocblas_int),
+                                     hipMemcpyDeviceToHost, stream));
+            HIP_CHECK(hipStreamSynchronize(stream));
 
             if(h_completed == batch_count)
                 break;

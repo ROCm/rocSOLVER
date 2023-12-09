@@ -36,113 +36,125 @@
 #include "rocsolver_test.hpp"
 
 template <bool STRIDED, typename T, typename S, typename W>
-void gesvdx_checkBadArgs(const rocblas_handle handle,
-                         const rocblas_svect left_svect,
-                         const rocblas_svect right_svect,
-                         const rocblas_srange srange,
-                         const rocblas_int m,
-                         const rocblas_int n,
-                         W dA,
-                         const rocblas_int lda,
-                         const rocblas_stride stA,
-                         const S vl,
-                         const S vu,
-                         const rocblas_int il,
-                         const rocblas_int iu,
-                         rocblas_int* dNsv,
-                         S* dS,
-                         const rocblas_stride stS,
-                         T dU,
-                         const rocblas_int ldu,
-                         const rocblas_stride stU,
-                         T dV,
-                         const rocblas_int ldv,
-                         const rocblas_stride stV,
-                         rocblas_int* difail,
-                         const rocblas_stride stF,
-                         rocblas_int* dinfo,
-                         const rocblas_int bc)
+void gesvdx_notransv_checkBadArgs(const rocblas_handle handle,
+                                  const rocblas_svect left_svect,
+                                  const rocblas_svect right_svect,
+                                  const rocblas_srange srange,
+                                  const rocblas_int m,
+                                  const rocblas_int n,
+                                  W dA,
+                                  const rocblas_int lda,
+                                  const rocblas_stride stA,
+                                  const S vl,
+                                  const S vu,
+                                  const rocblas_int il,
+                                  const rocblas_int iu,
+                                  rocblas_int* dNsv,
+                                  S* dS,
+                                  const rocblas_stride stS,
+                                  T dU,
+                                  const rocblas_int ldu,
+                                  const rocblas_stride stU,
+                                  T dV,
+                                  const rocblas_int ldv,
+                                  const rocblas_stride stV,
+                                  rocblas_int* difail,
+                                  const rocblas_stride stF,
+                                  rocblas_int* dinfo,
+                                  const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, nullptr, left_svect, right_svect, srange, m, n,
-                                           dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU, ldu,
-                                           stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, nullptr, left_svect, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
+                                                    difail, stF, dinfo, bc),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, rocblas_svect_all, right_svect, srange,
-                                           m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU,
-                                           ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, rocblas_svect_all, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
+                                                    difail, stF, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, rocblas_svect_all, srange,
-                                           m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU,
-                                           ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, rocblas_svect_all,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
+                                                    difail, stF, dinfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, rocblas_srange(0),
-                                           m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU,
-                                           ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    rocblas_srange(0), m, n, dA, lda, stA, vl, vu,
+                                                    il, iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv,
+                                                    stV, difail, stF, dinfo, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m,
-                                               n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU,
-                                               ldu, stU, dV, ldv, stV, difail, stF, dinfo, -1),
+        EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                        srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                        dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
+                                                        difail, stF, dinfo, -1),
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                           (W) nullptr, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU,
-                                           ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    srange, m, n, (W) nullptr, lda, stA, vl, vu, il,
+                                                    iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
+                                                    difail, stF, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                           dA, lda, stA, vl, vu, il, iu, (rocblas_int*)nullptr, dS,
-                                           stS, dU, ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    (rocblas_int*)nullptr, dS, stS, dU, ldu, stU,
+                                                    dV, ldv, stV, difail, stF, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                           dA, lda, stA, vl, vu, il, iu, dNsv, (S*)nullptr, stS, dU,
-                                           ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, (S*)nullptr, stS, dU, ldu, stU, dV, ldv,
+                                                    stV, difail, stF, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                           dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, (T) nullptr,
-                                           ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, dS, stS, (T) nullptr, ldu, stU, dV, ldv,
+                                                    stV, difail, stF, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                           dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU, ldu,
-                                           stU, (T) nullptr, ldv, stV, difail, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, dS, stS, dU, ldu, stU, (T) nullptr, ldv,
+                                                    stV, difail, stF, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                           dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU, ldu,
-                                           stU, dV, ldv, stV, (rocblas_int*)nullptr, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
+                                                    (rocblas_int*)nullptr, stF, dinfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                           dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS, dU, ldu, stU,
-                                           dV, ldv, stV, difail, stF, (rocblas_int*)nullptr, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect,
+                                                    srange, m, n, dA, lda, stA, vl, vu, il, iu,
+                                                    dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
+                                                    difail, stF, (rocblas_int*)nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, 0, n,
-                                           (W) nullptr, lda, stA, vl, vu, il, iu, dNsv, (S*)nullptr,
-                                           stS, (T) nullptr, ldu, stU, dV, ldv, stV,
-                                           (rocblas_int*)nullptr, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(
+                              STRIDED, handle, left_svect, right_svect, srange, 0, n, (W) nullptr,
+                              lda, stA, vl, vu, il, iu, dNsv, (S*)nullptr, stS, (T) nullptr, ldu,
+                              stU, dV, ldv, stV, (rocblas_int*)nullptr, stF, dinfo, bc),
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, 0,
-                                           (W) nullptr, lda, stA, vl, vu, il, iu, dNsv, (S*)nullptr,
-                                           stS, (T) nullptr, ldu, stU, (T) nullptr, ldv, stV,
-                                           (rocblas_int*)nullptr, stF, dinfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(
+                              STRIDED, handle, left_svect, right_svect, srange, m, 0, (W) nullptr,
+                              lda, stA, vl, vu, il, iu, dNsv, (S*)nullptr, stS, (T) nullptr, ldu,
+                              stU, (T) nullptr, ldv, stV, (rocblas_int*)nullptr, stF, dinfo, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m,
-                                               n, dA, lda, stA, vl, vu, il, iu,
-                                               (rocblas_int*)nullptr, dS, stS, dU, ldu, stU, dV,
-                                               ldv, stV, difail, stF, (rocblas_int*)nullptr, 0),
-                              rocblas_status_success);
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect, srange, m, n, dA,
+                                      lda, stA, vl, vu, il, iu, (rocblas_int*)nullptr, dS, stS, dU,
+                                      ldu, stU, dV, ldv, stV, difail, stF, (rocblas_int*)nullptr, 0),
+            rocblas_status_success);
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_gesvdx_bad_arg()
+void testing_gesvdx_notransv_bad_arg()
 {
     using S = decltype(std::real(T{}));
 
@@ -188,9 +200,10 @@ void testing_gesvdx_bad_arg()
         CHECK_HIP_ERROR(dA.memcheck());
 
         // check bad arguments
-        gesvdx_checkBadArgs<STRIDED>(handle, left_svect, right_svect, srange, m, n, dA.data(), lda,
-                                     stA, vl, vu, il, iu, dNsv, dS.data(), stS, dU.data(), ldu, stU,
-                                     dV.data(), ldv, stV, difail.data(), stF, dinfo.data(), bc);
+        gesvdx_notransv_checkBadArgs<STRIDED>(handle, left_svect, right_svect, srange, m, n,
+                                              dA.data(), lda, stA, vl, vu, il, iu, dNsv, dS.data(),
+                                              stS, dU.data(), ldu, stU, dV.data(), ldv, stV,
+                                              difail.data(), stF, dinfo.data(), bc);
     }
     else
     {
@@ -199,24 +212,25 @@ void testing_gesvdx_bad_arg()
         CHECK_HIP_ERROR(dA.memcheck());
 
         // check bad arguments
-        gesvdx_checkBadArgs<STRIDED>(handle, left_svect, right_svect, srange, m, n, dA.data(), lda,
-                                     stA, vl, vu, il, iu, dNsv, dS.data(), stS, dU.data(), ldu, stU,
-                                     dV.data(), ldv, stV, difail.data(), stF, dinfo.data(), bc);
+        gesvdx_notransv_checkBadArgs<STRIDED>(handle, left_svect, right_svect, srange, m, n,
+                                              dA.data(), lda, stA, vl, vu, il, iu, dNsv, dS.data(),
+                                              stS, dU.data(), ldu, stU, dV.data(), ldv, stV,
+                                              difail.data(), stF, dinfo.data(), bc);
     }
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void gesvdx_initData(const rocblas_handle handle,
-                     const rocblas_svect left_svect,
-                     const rocblas_svect right_svect,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     Td& dA,
-                     const rocblas_int lda,
-                     const rocblas_int bc,
-                     Th& hA,
-                     std::vector<T>& A,
-                     bool test = true)
+void gesvdx_notransv_initData(const rocblas_handle handle,
+                              const rocblas_svect left_svect,
+                              const rocblas_svect right_svect,
+                              const rocblas_int m,
+                              const rocblas_int n,
+                              Td& dA,
+                              const rocblas_int lda,
+                              const rocblas_int bc,
+                              Th& hA,
+                              std::vector<T>& A,
+                              bool test = true)
 {
     if(CPU)
     {
@@ -286,59 +300,59 @@ template <bool STRIDED,
           typename Th,
           typename Uh,
           typename Ih>
-void gesvdx_getError(const rocblas_handle handle,
-                     const rocblas_svect left_svect,
-                     const rocblas_svect right_svect,
-                     const rocblas_srange srange,
-                     const rocblas_int m,
-                     const rocblas_int n,
-                     Wd& dA,
-                     const rocblas_int lda,
-                     const rocblas_stride stA,
-                     const S vl,
-                     const S vu,
-                     const rocblas_int il,
-                     const rocblas_int iu,
-                     Id& dNsv,
-                     Ud& dS,
-                     const rocblas_stride stS,
-                     Td& dU,
-                     const rocblas_int ldu,
-                     const rocblas_stride stU,
-                     Td& dV,
-                     const rocblas_int ldv,
-                     const rocblas_stride stV,
-                     Id& difail,
-                     const rocblas_stride stF,
-                     Id& dinfo,
-                     const rocblas_int bc,
-                     const rocblas_svect left_svectT,
-                     const rocblas_svect right_svectT,
-                     const rocblas_int mT,
-                     const rocblas_int nT,
-                     Td& dUT,
-                     const rocblas_int lduT,
-                     const rocblas_stride stUT,
-                     Td& dVT,
-                     const rocblas_int ldvT,
-                     const rocblas_stride stVT,
-                     Wh& hA,
-                     Ih& hNsv,
-                     Ih& hNsvRes,
-                     Uh& hS,
-                     Uh& hSres,
-                     Th& hU,
-                     Th& hUres,
-                     const rocblas_int ldures,
-                     Th& hV,
-                     Th& hVres,
-                     const rocblas_int ldvres,
-                     Ih& hifail,
-                     Ih& hifailRes,
-                     Ih& hinfo,
-                     Ih& hinfoRes,
-                     double* max_err,
-                     double* max_errv)
+void gesvdx_notransv_getError(const rocblas_handle handle,
+                              const rocblas_svect left_svect,
+                              const rocblas_svect right_svect,
+                              const rocblas_srange srange,
+                              const rocblas_int m,
+                              const rocblas_int n,
+                              Wd& dA,
+                              const rocblas_int lda,
+                              const rocblas_stride stA,
+                              const S vl,
+                              const S vu,
+                              const rocblas_int il,
+                              const rocblas_int iu,
+                              Id& dNsv,
+                              Ud& dS,
+                              const rocblas_stride stS,
+                              Td& dU,
+                              const rocblas_int ldu,
+                              const rocblas_stride stU,
+                              Td& dV,
+                              const rocblas_int ldv,
+                              const rocblas_stride stV,
+                              Id& difail,
+                              const rocblas_stride stF,
+                              Id& dinfo,
+                              const rocblas_int bc,
+                              const rocblas_svect left_svectT,
+                              const rocblas_svect right_svectT,
+                              const rocblas_int mT,
+                              const rocblas_int nT,
+                              Td& dUT,
+                              const rocblas_int lduT,
+                              const rocblas_stride stUT,
+                              Td& dVT,
+                              const rocblas_int ldvT,
+                              const rocblas_stride stVT,
+                              Wh& hA,
+                              Ih& hNsv,
+                              Ih& hNsvRes,
+                              Uh& hS,
+                              Uh& hSres,
+                              Th& hU,
+                              Th& hUres,
+                              const rocblas_int ldures,
+                              Th& hV,
+                              Th& hVres,
+                              const rocblas_int ldvres,
+                              Ih& hifail,
+                              Ih& hifailRes,
+                              Ih& hinfo,
+                              Ih& hinfoRes,
+                              double* max_err,
+                              double* max_errv)
 {
     /** As per lapack's documentation, the following workspace size should work:
         rocblas_int minn = std::min(m,n);
@@ -378,16 +392,17 @@ void gesvdx_getError(const rocblas_handle handle,
 
     // input data initialization
     std::vector<T> A(lda * n * bc);
-    gesvdx_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
+    gesvdx_notransv_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA,
+                                            A);
 
     // execute computations:
     // complementary execution to compute all singular vectors if needed
     if(mT * nT > 0)
     {
-        CHECK_ROCBLAS_ERROR(rocsolver_gesvdx(STRIDED, handle, left_svectT, right_svectT, srange, mT,
-                                             nT, dA.data(), lda, stA, vl, vu, il, iu, dNsv.data(),
-                                             dS.data(), stS, dUT.data(), lduT, stUT, dVT.data(),
-                                             ldvT, stVT, difail.data(), stF, dinfo.data(), bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_gesvdx_notransv(
+            STRIDED, handle, left_svectT, right_svectT, srange, mT, nT, dA.data(), lda, stA, vl, vu,
+            il, iu, dNsv.data(), dS.data(), stS, dUT.data(), lduT, stUT, dVT.data(), ldvT, stVT,
+            difail.data(), stF, dinfo.data(), bc));
 
         if(left_svect == rocblas_svect_none && right_svect != rocblas_svect_none)
             CHECK_HIP_ERROR(hUres.transfer_from(dUT));
@@ -395,7 +410,8 @@ void gesvdx_getError(const rocblas_handle handle,
             CHECK_HIP_ERROR(hVres.transfer_from(dVT));
     }
 
-    gesvdx_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
+    gesvdx_notransv_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA,
+                                             A);
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
@@ -434,10 +450,10 @@ void gesvdx_getError(const rocblas_handle handle,
     }
 
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                         dA.data(), lda, stA, vl, vu, il, iu, dNsv.data(),
-                                         dS.data(), stS, dU.data(), ldu, stU, dV.data(), ldv, stV,
-                                         difail.data(), stF, dinfo.data(), bc));
+    CHECK_ROCBLAS_ERROR(rocsolver_gesvdx_notransv(
+        STRIDED, handle, left_svect, right_svect, srange, m, n, dA.data(), lda, stA, vl, vu, il, iu,
+        dNsv.data(), dS.data(), stS, dU.data(), ldu, stU, dV.data(), ldv, stV, difail.data(), stF,
+        dinfo.data(), bc));
 
     CHECK_HIP_ERROR(hSres.transfer_from(dS));
     CHECK_HIP_ERROR(hNsvRes.transfer_from(dNsv));
@@ -477,13 +493,13 @@ void gesvdx_getError(const rocblas_handle handle,
         EXPECT_EQ(hNsv[b][0], hNsvRes[b][0]) << "where b = " << b;
 
         // error is ||hS - hSres||
-        err = norm_error('F', 1, hNsv[b][0], 1, hS[b] + offset[b], hSres[b]); //WORKAROUND
+        err = norm_error('F', 1, nn, 1, hS[b] + offset[b], hSres[b]); //WORKAROUND
         *max_err = err > *max_err ? err : *max_err;
 
         // Check the singular vectors if required
         if(hinfo[b][0] == 0 && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
         {
-            // U and V should be orthonormal, if they are then U^T*U and V*V^T should be the identity
+            // U and V should be orthonormal, if they are then U^T*U and V^T*V should be the identity
             if(nn > 0)
             {
                 std::vector<T> UUres(nn * nn, 0.0);
@@ -498,7 +514,7 @@ void gesvdx_getError(const rocblas_handle handle,
                 err = norm_error('F', nn, nn, nn, I.data(), UUres.data());
                 *max_errv = err > *max_errv ? err : *max_errv;
 
-                cpu_gemm(rocblas_operation_none, rocblas_operation_conjugate_transpose, nn, nn, n,
+                cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, n,
                          T(1), hVres[b], ldvres, hVres[b], ldvres, T(0), VVres.data(), nn);
                 err = norm_error('F', nn, nn, nn, I.data(), VVres.data());
                 *max_errv = err > *max_errv ? err : *max_errv;
@@ -506,7 +522,7 @@ void gesvdx_getError(const rocblas_handle handle,
 
             err = 0;
             // check singular vectors implicitly (A*v_k = s_k*u_k)
-            for(rocblas_int k = 0; k < hNsv[b][0]; ++k)
+            for(rocblas_int k = 0; k < nn; ++k)
             {
                 T tmp = 0;
                 double tmp2 = 0;
@@ -518,7 +534,7 @@ void gesvdx_getError(const rocblas_handle handle,
                 {
                     tmp = 0;
                     for(rocblas_int j = 0; j < n; ++j)
-                        tmp += A[b * lda * n + i + j * lda] * sconj(hVres[b][k + j * ldvres]);
+                        tmp += A[b * lda * n + i + j * lda] * hVres[b][j + k * ldvres];
                     tmp2 = std::abs(tmp) - std::abs(hSres[b][k] * hUres[b][i + k * ldures]);
                     err += tmp2 * tmp2;
                 }
@@ -540,45 +556,45 @@ template <bool STRIDED,
           typename Th,
           typename Uh,
           typename Ih>
-void gesvdx_getPerfData(const rocblas_handle handle,
-                        const rocblas_svect left_svect,
-                        const rocblas_svect right_svect,
-                        const rocblas_srange srange,
-                        const rocblas_int m,
-                        const rocblas_int n,
-                        Wd& dA,
-                        const rocblas_int lda,
-                        const rocblas_stride stA,
-                        const S vl,
-                        const S vu,
-                        const rocblas_int il,
-                        const rocblas_int iu,
-                        Id& dNsv,
-                        Ud& dS,
-                        const rocblas_stride stS,
-                        Td& dU,
-                        const rocblas_int ldu,
-                        const rocblas_stride stU,
-                        Td& dV,
-                        const rocblas_int ldv,
-                        const rocblas_stride stV,
-                        Id& difail,
-                        const rocblas_stride stF,
-                        Id& dinfo,
-                        const rocblas_int bc,
-                        Wh& hA,
-                        Ih& hNsv,
-                        Uh& hS,
-                        Th& hU,
-                        Th& hV,
-                        Ih& hifail,
-                        Ih& hinfo,
-                        double* gpu_time_used,
-                        double* cpu_time_used,
-                        const rocblas_int hot_calls,
-                        const int profile,
-                        const bool profile_kernels,
-                        const bool perf)
+void gesvdx_notransv_getPerfData(const rocblas_handle handle,
+                                 const rocblas_svect left_svect,
+                                 const rocblas_svect right_svect,
+                                 const rocblas_srange srange,
+                                 const rocblas_int m,
+                                 const rocblas_int n,
+                                 Wd& dA,
+                                 const rocblas_int lda,
+                                 const rocblas_stride stA,
+                                 const S vl,
+                                 const S vu,
+                                 const rocblas_int il,
+                                 const rocblas_int iu,
+                                 Id& dNsv,
+                                 Ud& dS,
+                                 const rocblas_stride stS,
+                                 Td& dU,
+                                 const rocblas_int ldu,
+                                 const rocblas_stride stU,
+                                 Td& dV,
+                                 const rocblas_int ldv,
+                                 const rocblas_stride stV,
+                                 Id& difail,
+                                 const rocblas_stride stF,
+                                 Id& dinfo,
+                                 const rocblas_int bc,
+                                 Wh& hA,
+                                 Ih& hNsv,
+                                 Uh& hS,
+                                 Th& hU,
+                                 Th& hV,
+                                 Ih& hifail,
+                                 Ih& hinfo,
+                                 double* gpu_time_used,
+                                 double* cpu_time_used,
+                                 const rocblas_int hot_calls,
+                                 const int profile,
+                                 const bool profile_kernels,
+                                 const bool perf)
 {
     /** As per lapack's documentation, the following workspace size should work:
         rocblas_int minn = std::min(m,n);
@@ -605,7 +621,7 @@ void gesvdx_getPerfData(const rocblas_handle handle,
 
     if(!perf)
     {
-        //gesvdx_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
+        //gesvdx_notransv_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
         // cpu-lapack performance (only if not in perf mode)
         //*cpu_time_used = get_time_us_no_sync();
@@ -616,17 +632,19 @@ void gesvdx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = nan("");
     }
 
-    gesvdx_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
+    gesvdx_notransv_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA,
+                                             A, 0);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        gesvdx_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
+        gesvdx_notransv_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc,
+                                                 hA, A, 0);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n,
-                                             dA.data(), lda, stA, vl, vu, il, iu, dNsv.data(),
-                                             dS.data(), stS, dU.data(), ldu, stU, dV.data(), ldv,
-                                             stV, difail.data(), stF, dinfo.data(), bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_gesvdx_notransv(
+            STRIDED, handle, left_svect, right_svect, srange, m, n, dA.data(), lda, stA, vl, vu, il,
+            iu, dNsv.data(), dS.data(), stS, dU.data(), ldu, stU, dV.data(), ldv, stV,
+            difail.data(), stF, dinfo.data(), bc));
     }
 
     // gpu-lapack performance
@@ -646,19 +664,21 @@ void gesvdx_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        gesvdx_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
+        gesvdx_notransv_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc,
+                                                 hA, A, 0);
 
         start = get_time_us_sync(stream);
-        rocsolver_gesvdx(STRIDED, handle, left_svect, right_svect, srange, m, n, dA.data(), lda,
-                         stA, vl, vu, il, iu, dNsv.data(), dS.data(), stS, dU.data(), ldu, stU,
-                         dV.data(), ldv, stV, difail.data(), stF, dinfo.data(), bc);
+        rocsolver_gesvdx_notransv(STRIDED, handle, left_svect, right_svect, srange, m, n, dA.data(),
+                                  lda, stA, vl, vu, il, iu, dNsv.data(), dS.data(), stS, dU.data(),
+                                  ldu, stU, dV.data(), ldv, stV, difail.data(), stF, dinfo.data(),
+                                  bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_gesvdx(Arguments& argus)
+void testing_gesvdx_notransv(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
@@ -682,12 +702,12 @@ void testing_gesvdx(Arguments& argus)
     rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : nn);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
-    rocblas_int ldv = argus.get<rocblas_int>("ldv", nsv_max);
+    rocblas_int ldv = argus.get<rocblas_int>("ldv", n);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stS = argus.get<rocblas_stride>("strideS", nsv_max);
     rocblas_stride stF = argus.get<rocblas_stride>("strideF", nn);
     rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * nsv_max);
-    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
+    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * nsv_max);
 
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
@@ -698,18 +718,18 @@ void testing_gesvdx(Arguments& argus)
     {
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(
-                rocsolver_gesvdx(STRIDED, handle, leftv, rightv, srange, m, n, (T* const*)nullptr,
-                                 lda, stA, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS,
-                                 (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
-                                 (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
+                rocsolver_gesvdx_notransv(
+                    STRIDED, handle, leftv, rightv, srange, m, n, (T* const*)nullptr, lda, stA, vl,
+                    vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS, (T*)nullptr, ldu, stU,
+                    (T*)nullptr, ldv, stV, (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
                 rocblas_status_invalid_value);
         else
-            EXPECT_ROCBLAS_STATUS(
-                rocsolver_gesvdx(STRIDED, handle, leftv, rightv, srange, m, n, (T*)nullptr, lda,
-                                 stA, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS,
-                                 (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
-                                 (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
-                rocblas_status_invalid_value);
+            EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(
+                                      STRIDED, handle, leftv, rightv, srange, m, n, (T*)nullptr,
+                                      lda, stA, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr,
+                                      stS, (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
+                                      (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
+                                  rocblas_status_invalid_value);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_args);
@@ -742,7 +762,7 @@ void testing_gesvdx(Arguments& argus)
         if(rightv == rocblas_svect_none)
         {
             rightvT = rocblas_svect_singular;
-            ldvT = nsv_max;
+            ldvT = n;
             mT = m;
             nT = n;
         }
@@ -760,13 +780,13 @@ void testing_gesvdx(Arguments& argus)
     size_t size_A = size_t(lda) * n;
     size_t size_S = size_t(nsv_max);
     size_t size_S_cpu = size_t(nn);
-    size_t size_V = size_t(ldv) * n;
+    size_t size_V = size_t(ldv) * nsv_max;
     size_t size_U = size_t(ldu) * nsv_max;
     size_t size_ifail = nn;
     if(argus.unit_check || argus.norm_check)
     {
         size_hifailRes = nn;
-        size_VT = size_t(ldvT) * n;
+        size_VT = size_t(ldvT) * nsv_max;
         size_UT = size_t(lduT) * nsv_max;
         size_hSres = nsv_max;
         if(svects)
@@ -805,7 +825,7 @@ void testing_gesvdx(Arguments& argus)
     // check invalid sizes
     bool invalid_size = (n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || bc < 0)
         || (leftv == rocblas_svect_singular && ldu < m)
-        || (rightv == rocblas_svect_singular && ldv < nsv_max)
+        || (rightv == rocblas_svect_singular && ldv < n)
         || (srange == rocblas_srange_value && (vl < 0 || vl >= vu))
         || (srange == rocblas_srange_index && (il < 1 || iu < 0))
         || (srange == rocblas_srange_index && (iu > nn || (nn > 0 && il > iu)));
@@ -814,18 +834,18 @@ void testing_gesvdx(Arguments& argus)
     {
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(
-                rocsolver_gesvdx(STRIDED, handle, leftv, rightv, srange, m, n, (T* const*)nullptr,
-                                 lda, stA, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS,
-                                 (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
-                                 (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
+                rocsolver_gesvdx_notransv(
+                    STRIDED, handle, leftv, rightv, srange, m, n, (T* const*)nullptr, lda, stA, vl,
+                    vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS, (T*)nullptr, ldu, stU,
+                    (T*)nullptr, ldv, stV, (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
                 rocblas_status_invalid_size);
         else
-            EXPECT_ROCBLAS_STATUS(
-                rocsolver_gesvdx(STRIDED, handle, leftv, rightv, srange, m, n, (T*)nullptr, lda,
-                                 stA, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS,
-                                 (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
-                                 (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
-                rocblas_status_invalid_size);
+            EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(
+                                      STRIDED, handle, leftv, rightv, srange, m, n, (T*)nullptr,
+                                      lda, stA, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr,
+                                      stS, (T*)nullptr, ldu, stU, (T*)nullptr, ldv, stV,
+                                      (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc),
+                                  rocblas_status_invalid_size);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_size);
@@ -839,22 +859,22 @@ void testing_gesvdx(Arguments& argus)
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
         {
-            CHECK_ALLOC_QUERY(rocsolver_gesvdx(
+            CHECK_ALLOC_QUERY(rocsolver_gesvdx_notransv(
                 STRIDED, handle, leftv, rightv, srange, m, n, (T* const*)nullptr, lda, stA, vl, vu,
                 il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS, (T*)nullptr, ldu, stU, (T*)nullptr,
                 ldv, stV, (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc));
-            CHECK_ALLOC_QUERY(rocsolver_gesvdx(
+            CHECK_ALLOC_QUERY(rocsolver_gesvdx_notransv(
                 STRIDED, handle, leftvT, rightvT, srange, mT, nT, (T* const*)nullptr, lda, stA, vl,
                 vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stS, (T*)nullptr, lduT, stUT,
                 (T*)nullptr, ldvT, stVT, (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc));
         }
         else
         {
-            CHECK_ALLOC_QUERY(rocsolver_gesvdx(
+            CHECK_ALLOC_QUERY(rocsolver_gesvdx_notransv(
                 STRIDED, handle, leftv, rightv, srange, m, n, (T*)nullptr, lda, stA, vl, vu, il, iu,
                 (rocblas_int*)nullptr, (S*)nullptr, stS, (T*)nullptr, ldu, stU, (T*)nullptr, ldv,
                 stV, (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc));
-            CHECK_ALLOC_QUERY(rocsolver_gesvdx(
+            CHECK_ALLOC_QUERY(rocsolver_gesvdx_notransv(
                 STRIDED, handle, leftvT, rightvT, srange, mT, nT, (T*)nullptr, lda, stA, vl, vu, il,
                 iu, (rocblas_int*)nullptr, (S*)nullptr, stS, (T*)nullptr, lduT, stUT, (T*)nullptr,
                 ldvT, stVT, (rocblas_int*)nullptr, stF, (rocblas_int*)nullptr, bc));
@@ -920,10 +940,11 @@ void testing_gesvdx(Arguments& argus)
         // check quick return
         if(n == 0 || m == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, leftv, rightv, srange, m, n,
-                                                   dA.data(), lda, stA, vl, vu, il, iu, dNsv.data(),
-                                                   dS.data(), stS, dU.data(), ldu, stU, dV.data(),
-                                                   ldv, stV, difail.data(), stF, dinfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, leftv, rightv, srange,
+                                                            m, n, dA.data(), lda, stA, vl, vu, il,
+                                                            iu, dNsv.data(), dS.data(), stS,
+                                                            dU.data(), ldu, stU, dV.data(), ldv, stV,
+                                                            difail.data(), stF, dinfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -934,7 +955,7 @@ void testing_gesvdx(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            gesvdx_getError<STRIDED, T>(
+            gesvdx_notransv_getError<STRIDED, T>(
                 handle, leftv, rightv, srange, m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS,
                 dU, ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc, leftvT, rightvT, mT, nT, dUT,
                 lduT, stUT, dVT, ldvT, stVT, hA, hNsv, hNsvRes, hS, hSres, hU, hUres, ldures, hV,
@@ -944,11 +965,11 @@ void testing_gesvdx(Arguments& argus)
         // collect performance data
         if(argus.timing)
         {
-            gesvdx_getPerfData<STRIDED, T>(handle, leftv, rightv, srange, m, n, dA, lda, stA, vl,
-                                           vu, il, iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
-                                           difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
-                                           hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                           argus.profile, argus.profile_kernels, argus.perf);
+            gesvdx_notransv_getPerfData<STRIDED, T>(
+                handle, leftv, rightv, srange, m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS,
+                dU, ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
+                hinfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                argus.profile_kernels, argus.perf);
         }
     }
 
@@ -963,10 +984,11 @@ void testing_gesvdx(Arguments& argus)
         // check quick return
         if(n == 0 || m == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx(STRIDED, handle, leftv, rightv, srange, m, n,
-                                                   dA.data(), lda, stA, vl, vu, il, iu, dNsv.data(),
-                                                   dS.data(), stS, dU.data(), ldu, stU, dV.data(),
-                                                   ldv, stV, difail.data(), stF, dinfo.data(), bc),
+            EXPECT_ROCBLAS_STATUS(rocsolver_gesvdx_notransv(STRIDED, handle, leftv, rightv, srange,
+                                                            m, n, dA.data(), lda, stA, vl, vu, il,
+                                                            iu, dNsv.data(), dS.data(), stS,
+                                                            dU.data(), ldu, stU, dV.data(), ldv, stV,
+                                                            difail.data(), stF, dinfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
@@ -977,7 +999,7 @@ void testing_gesvdx(Arguments& argus)
         // check computations
         if(argus.unit_check || argus.norm_check)
         {
-            gesvdx_getError<STRIDED, T>(
+            gesvdx_notransv_getError<STRIDED, T>(
                 handle, leftv, rightv, srange, m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS,
                 dU, ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc, leftvT, rightvT, mT, nT, dUT,
                 lduT, stUT, dVT, ldvT, stVT, hA, hNsv, hNsvRes, hS, hSres, hU, hUres, ldures, hV,
@@ -987,11 +1009,11 @@ void testing_gesvdx(Arguments& argus)
         // collect performance data
         if(argus.timing)
         {
-            gesvdx_getPerfData<STRIDED, T>(handle, leftv, rightv, srange, m, n, dA, lda, stA, vl,
-                                           vu, il, iu, dNsv, dS, stS, dU, ldu, stU, dV, ldv, stV,
-                                           difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
-                                           hinfo, &gpu_time_used, &cpu_time_used, hot_calls,
-                                           argus.profile, argus.profile_kernels, argus.perf);
+            gesvdx_notransv_getPerfData<STRIDED, T>(
+                handle, leftv, rightv, srange, m, n, dA, lda, stA, vl, vu, il, iu, dNsv, dS, stS,
+                dU, ldu, stU, dV, ldv, stV, difail, stF, dinfo, bc, hA, hNsv, hS, hU, hV, hifail,
+                hinfo, &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                argus.profile_kernels, argus.perf);
         }
     }
 
@@ -1060,7 +1082,3 @@ void testing_gesvdx(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
-
-#define EXTERN_TESTING_GESVDX(...) extern template void testing_gesvdx<__VA_ARGS__>(Arguments&);
-
-INSTANTIATE(EXTERN_TESTING_GESVDX, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)

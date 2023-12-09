@@ -4270,16 +4270,17 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstein(rocblas_handle handle,
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = n.
                 If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= n.
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension n.
+    S           pointer to real type. Array on the GPU of dimension nsv.
                 The first nsv elements contain the computed singular values in descending order.
+                Note: If srange is rocblas_srange_value, then the value of nsv is not known in advance.
+                In this case, the user should ensure that S is large enough to hold n values.
     @param[out]
     Z           pointer to real type. Array on the GPU of dimension ldz*nsv.
                 If info = 0, the first nsv columns contain the computed singular vectors corresponding to the
                 singular values in S. The first n rows of Z contain the matrix U, and the next n rows contain
                 the matrix V. Not referenced if svect is rocblas_svect_none.
-                Note: If srange is rocblas_srange_value, then the values of nsv are not known in advance.
-                The user should ensure that Z is large enough to hold n columns, as all n columns
-                can be used as workspace for internal computations.
+                Note: If srange is rocblas_srange_value, then the value of nsv is not known in advance.
+                In this case, the user should ensure that Z is large enough to hold n columns.
     @param[in]
     ldz         rocblas_int. ldz >= 2*n if svect is rocblas_svect_singular; ldz >= 1 otherwise.
                 Specifies the leading dimension of Z.
@@ -12505,13 +12506,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle
                 The total number of singular values found. If srange is rocblas_srange_all, nsv = min(m,n).
                 If srange is rocblas_srange_index, nsv = iu - il + 1. Otherwise, 0 <= nsv <= min(m,n).
     @param[out]
-    S           pointer to real type. Array on the GPU of dimension min(m,n).
+    S           pointer to real type. Array on the GPU of dimension nsv.
                 The first nsv elements contain the computed singular values in descending order.
-                (The remaining elements may be used as workspace for internal computations).
+                Note: If srange is rocblas_srange_value, then the value of nsv is not known in advance.
+                In this case, the user should ensure that S is large enough to hold min(m,n) values.
     @param[out]
-    U           pointer to type. Array on the GPU of dimension ldu*min(m,n).
+    U           pointer to type. Array on the GPU of dimension ldu*nsv.
                 The matrix of left singular vectors stored as columns. Not
                 referenced if left_svect is set to none.
+                Note: If srange is rocblas_srange_value, then the value of nsv is not known in advance.
+                In this case, the user should ensure that U is large enough to hold min(m,n) columns.
     @param[in]
     ldu         rocblas_int. ldu >= m if left_svect singular; ldu >= 1 otherwise.
                 The leading dimension of U.
@@ -12520,9 +12524,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_strided_batched(rocblas_handle
                 The matrix of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
-    ldv         rocblas_int. ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.
+    ldv         rocblas_int. ldv >= nsv if right_svect is set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V.
+                Note: If srange is rocblas_srange_value, then the value of nsv is not known in advance.
+                In this case, the user should ensure that V is large enough to hold min(m,n) rows.
     @param[out]
     ifail       pointer to rocblas_int. Array on the GPU of dimension min(m,n).
                 If info = 0, the first nsv elements of ifail are zero.
@@ -12703,7 +12708,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     @param[in]
     strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S_(l+1).
-                There is no restriction for the value of strideS. Normal use case is strideS >= min(m,n).
+                There is no restriction for the value of strideS. Normal use case is strideS >= nsv_l.
+                Note: If srange is rocblas_srange_value, then the value of nsv_l is not known in advance.
+                In this case, the user should ensure that S_l is large enough to hold min(m,n) values.
     @param[out]
     U           pointer to type. Array on the GPU (the size depends on the value of strideU).
                 The matrix U_l of left singular vectors stored as columns. Not
@@ -12714,15 +12721,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
     @param[in]
     strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U_(l+1).
-                There is no restriction for the value of strideU. Normal use case is strideU >= ldu*min(m,n).
+                There is no restriction for the value of strideU. Normal use case is strideU >= ldu*nsv_l.
+                Note: If srange is rocblas_srange_value, then the value of nsv_l is not known in advance.
+                In this case, the user should ensure that U_l is large enough to hold min(m,n) columns.
     @param[out]
     V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrix V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
-    ldv         rocblas_int. ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.
+    ldv         rocblas_int. ldv >= nsv_l if right_svect is set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V_l.
+                Note: If srange is rocblas_srange_value, then the value of nsv_l is not known in advance.
+                In this case, the user should ensure that V_l is large enough to hold min(m,n) rows.
     @param[in]
     strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V_(l+1).
@@ -12938,7 +12948,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     @param[in]
     strideS     rocblas_stride.
                 Stride from the start of one vector S_l to the next one S_(l+1).
-                There is no restriction for the value of strideS. Normal use case is strideS >= min(m,n).
+                There is no restriction for the value of strideS. Normal use case is strideS >= nsv_l.
+                Note: If srange is rocblas_srange_value, then the value of nsv_l is not known in advance.
+                In this case, the user should ensure that S_l is large enough to hold min(m,n) values.
     @param[out]
     U           pointer to type. Array on the GPU (the size depends on the value of strideU).
                 The matrix U_l of left singular vectors stored as columns. Not
@@ -12949,15 +12961,18 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdx_batched(rocblas_handle handle,
     @param[in]
     strideU     rocblas_stride.
                 Stride from the start of one matrix U_l to the next one U_(l+1).
-                There is no restriction for the value of strideU. Normal use case is strideU >= ldu*min(m,n).
+                There is no restriction for the value of strideU. Normal use case is strideU >= ldu*nsv_l.
+                Note: If srange is rocblas_srange_value, then the value of nsv_l is not known in advance.
+                In this case, the user should ensure that U_l is large enough to hold min(m,n) columns.
     @param[out]
     V           pointer to type. Array on the GPU (the size depends on the value of strideV).
                 The matrix V_l of right singular vectors stored as rows (transposed / conjugate-transposed).
                 Not referenced if right_svect is set to none.
     @param[in]
-    ldv         rocblas_int. ldv >= min(m,n) if right_svect is
-                set to singular; or ldv >= 1 otherwise.
+    ldv         rocblas_int. ldv >= nsv_l if right_svect is set to singular; or ldv >= 1 otherwise.
                 The leading dimension of V_l.
+                Note: If srange is rocblas_srange_value, then the value of nsv_l is not known in advance.
+                In this case, the user should ensure that V_l is large enough to hold min(m,n) rows.
     @param[in]
     strideV     rocblas_stride.
                 Stride from the start of one matrix V_l to the next one V_(l+1).
