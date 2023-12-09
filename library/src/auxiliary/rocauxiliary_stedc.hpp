@@ -624,7 +624,7 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
         break;
     }
 
-    case JACOBI: // TODO: tuning will be required; using for know the same tuning
+    case JACOBI: // TODO: tuning will be required; using the same tuning as QR for now
     {
         if(n <= 4)
         {
