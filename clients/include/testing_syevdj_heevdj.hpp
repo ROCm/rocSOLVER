@@ -282,25 +282,12 @@ void syevdj_heevdj_getPerfData(const rocblas_handle handle,
                                const bool profile_kernels,
                                const bool perf)
 {
-    constexpr bool COMPLEX = rocblas_is_complex<T>;
-    using S = decltype(std::real(T{}));
-
-    int lwork = (COMPLEX ? 2 * n - 1 : 0);
-    int lrwork = 3 * n - 1;
-    std::vector<T> work(lwork);
-    std::vector<S> rwork(lrwork);
     std::vector<T> A(lda * n * bc);
 
     if(!perf)
     {
-        syevdj_heevdj_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
-
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
-            cpu_syev_heev(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, rwork.data(),
-                          lrwork, hinfo[b]);
-        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
+        *cpu_time_used = nan("");
     }
 
     syevdj_heevdj_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);

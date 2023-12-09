@@ -1,5 +1,5 @@
 # ##########################################################################
-# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (c) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -70,6 +70,7 @@ set(roclapack_test_source
   sygvx_hegvx_gtest.cpp
   sygvdx_hegvdx_gtest.cpp
   syevdj_heevdj_gtest.cpp
+  sygvdj_hegvdj_gtest.cpp
 )
 
 set(rocauxiliary_test_source
