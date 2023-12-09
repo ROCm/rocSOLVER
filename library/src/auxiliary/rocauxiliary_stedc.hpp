@@ -39,7 +39,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#define STEDC_BDIM 128 // Number of threads per thread-block used in main stedc kernels
+#define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
 #define MAXITERS 50 // Max number of iterations for root finding method
 #define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 #define CLASSICQR 1 // used to specify classic QR iteration solver (default case)
@@ -619,13 +619,56 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
     switch(solver_mode)
     {
     case BISECTION:
+    {
         //	TODO
         break;
+    }
 
-    case JACOBI: levels = 2; break;
+    case JACOBI: // TODO: tuning will be required; using for know the same tuning
+    {
+        if(n <= 4)
+        {
+            levels = 1;
+        }
+        else if(n <= 32)
+        {
+            levels = 2;
+        }
+        else if(n <= 232)
+        {
+            levels = 4;
+        }
+        else
+        {
+            if(n <= 1946)
+            {
+                if(n <= 1692)
+                {
+                    if(n <= 295)
+                    {
+                        levels = 5;
+                    }
+                    else
+                    {
+                        levels = 7;
+                    }
+                }
+                else
+                {
+                    levels = 7;
+                }
+            }
+            else
+            {
+                levels = 8;
+            }
+        }
+        break;
+    }
 
     case CLASSICQR:
     default:
+    {
         if(n <= 4)
         {
             levels = 1;
@@ -664,6 +707,7 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
             }
         }
     }
+    } //end switch
 
     return levels;
 }
@@ -920,9 +964,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
     S* W;
     switch(solver_mode)
     {
-    case BISECTION:
-        //  TODO
-        break;
+    case BISECTION: break;
 
     case JACOBI: W = WA + bid * (2 + n * n); break;
 
@@ -1040,7 +1082,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
                     run_steqr(sbs, D + p2, E + p2, C + p2 + p2 * ldc, ldc, info, W + p2 * 2,
                               30 * bs, eps, ssfmin, ssfmax, false);
             }
-            }
+            } // end switch
             __syncthreads();
         }
     }
