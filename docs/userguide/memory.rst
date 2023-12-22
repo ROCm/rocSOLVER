@@ -120,5 +120,5 @@ as the workspace for rocSOLVER. For example:
 For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
 
 
-.. _the rocBLAS memory model: https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#device-memory-allocation-in-rocblas
-.. _Device Memory Allocation Functions in rocBLAS: https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#device-memory-allocation-functions
+.. _the rocBLAS memory model: https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-in-rocblas
+.. _Device Memory Allocation Functions in rocBLAS: https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-in-rocblas
