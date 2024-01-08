@@ -312,7 +312,7 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 template <typename T>
 rocblas_status rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
                                                      const rocblas_int nnzT,
-                                                     rocblas_int* LUp,
+                                                     rocblas_int* ptrT,
                                                      size_t* size_work)
 {
     // if quick return, no need of workspace
@@ -331,7 +331,7 @@ rocblas_status rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
     size_t rocprim_size_bytes = 0;
     void* temp_ptr = nullptr;
 
-    const hipError_t istat = rocprim::inclusive_scan(temp_ptr, rocprim_size_bytes, LUp, LUp, n,
+    const hipError_t istat = rocprim::inclusive_scan(temp_ptr, rocprim_size_bytes, ptrT, ptrT, n,
                                                      rocprim::plus<rocblas_int>());
     assert(istat == hipSuccess);
     if(istat != hipSuccess)
