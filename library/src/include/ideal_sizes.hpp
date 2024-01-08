@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -283,3 +283,10 @@
 #define TRTRI_BATCH_NUM_INTERVALS 3
 #define TRTRI_BATCH_INTERVALS 32, 245, 1009
 #define TRTRI_BATCH_BLKSIZES 0, 16, 32, 0
+
+/************************** splitlu ***************************************
+*******************************************************************************/
+/*! \brief Determines the size at which rocSOLVER switches from
+    the kernel using a single thread block or using faster algorithm using rocPRIM */
+
+#define SPLITLU_SWITCH_SIZE 64
