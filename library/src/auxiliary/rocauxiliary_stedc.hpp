@@ -1387,6 +1387,45 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
 }
 
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
+template <typename T, typename S>
+__device__ void stedc_sort_selection_sort(const rocblas_int n, S* D, T* C, const rocblas_int ldc)
+{
+    // Sort eigenvalues and eigenvectors by selection sort
+    for(rocblas_int ii = 1; ii < n; ii++)
+    {
+        auto l = ii - 1;
+        auto m = l;
+        auto p = D[l];
+
+        for(rocblas_int j = ii; j < n; j++)
+        {
+            if(D[j] < p)
+            {
+                m = j;
+                p = D[j];
+            }
+        }
+        if(m != l)
+        {
+            D[m] = D[l];
+            D[l] = p;
+            // swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
+            auto const Ap = C + 0 + l * ((int64_t)ldc);
+            auto const Bp = C + 0 + m * ((int64_t)ldc);
+
+            rocblas_int const k_start = hipThreadIdx_x;
+            rocblas_int const k_inc = hipBlockDim_x;
+
+            for(rocblas_int k = k_start; k < n; k += k_inc)
+            {
+                auto const tmp = Ap[k];
+                Ap[k] = Bp[k];
+                Bp[k] = tmp;
+            };
+            __syncthreads();
+        }
+    }
+}
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
                                                         S* DD,
@@ -1405,43 +1444,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
         C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
     S* D = DD + (bid * strideD);
 
-    rocblas_int l, m;
-    S p;
-
-    // Sort eigenvalues and eigenvectors by selection sort
-    for(int ii = 1; ii < n; ii++)
-    {
-        l = ii - 1;
-        m = l;
-        p = D[l];
-        for(int j = ii; j < n; j++)
-        {
-            if(D[j] < p)
-            {
-                m = j;
-                p = D[j];
-            }
-        }
-        if(m != l)
-        {
-            D[m] = D[l];
-            D[l] = p;
-            // swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
-            auto const Ap = C + 0 + l * ldc;
-            auto const Bp = C + 0 + m * ldc;
-
-            rocblas_int const k_start = hipThreadIdx_x;
-            rocblas_int const k_inc = hipBlockDim_x;
-
-            for(rocblas_int k = k_start; k < n; k += k_inc)
-            {
-                auto const tmp = Ap[k];
-                Ap[k] = Bp[k];
-                Bp[k] = tmp;
-            };
-            __syncthreads();
-        }
-    }
+    stedc_sort_selection_sort(n, D, C, ldc);
 }
 
 /** This local gemm adapts rocblas_gemm to multiply complex*real, and
