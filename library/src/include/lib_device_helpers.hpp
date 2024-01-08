@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -81,8 +81,19 @@ template <typename T>
 __device__ void
     swapvect(const rocblas_int n, T* a, const rocblas_int inca, T* b, const rocblas_int incb)
 {
-    for(rocblas_int i = 0; i < n; ++i)
-        swap(a[inca * i], b[incb * i]);
+    // check common special case
+    if((inca == 1) && (incb == 1))
+    {
+        for(rocblas_int i = 0; i < n; ++i)
+        {
+            swap(a[i], b[i]);
+        };
+    }
+    else
+    {
+        for(rocblas_int i = 0; i < n; ++i)
+            swap(a[inca * i], b[incb * i]);
+    };
 }
 
 /** FIND_MAX_TRIDIAG finds the element with the largest magnitude in the
