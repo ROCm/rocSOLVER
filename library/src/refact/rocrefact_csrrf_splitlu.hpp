@@ -35,6 +35,10 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
+#ifndef SPLITLU_SWITCH_SIZE
+#define SPLITLU_SWITCH_SIZE 64
+#endif
+
 template <typename I>
 __device__ static I cal_wave_size(I avg_nnzM)
 {
@@ -306,16 +310,16 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
 }
 
 template <typename T>
-void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
-                                           const rocblas_int nnzT,
-                                           rocblas_int* LUp,
-                                           size_t* size_work)
+rocblas_status rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
+                                                     const rocblas_int nnzT,
+                                                     rocblas_int* LUp,
+                                                     size_t* size_work)
 {
     // if quick return, no need of workspace
     if(n == 0 || nnzT == 0)
     {
         *size_work = 0;
-        return;
+        return (rocblas_status_success);
     }
 
     // space to store the number of non-zeros per row in L and U
@@ -330,8 +334,14 @@ void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
     const hipError_t istat = rocprim::inclusive_scan(temp_ptr, rocprim_size_bytes, LUp, LUp, n,
                                                      rocprim::plus<rocblas_int>());
     assert(istat == hipSuccess);
+    if(istat != hipSuccess)
+    {
+        return (rocblas_status_internal_error);
+    };
 
     *size_work = max(rocprim_size_bytes, size_work_LU);
+
+    return (rocblas_status_success);
 }
 
 template <typename T>
@@ -413,8 +423,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    const bool use_alg1 = (n <= 64);
-    if(use_alg1)
+    if(n <= SPLITLU_SWITCH_SIZE)
     {
         // --------------------------------
         // note using a single thread block
