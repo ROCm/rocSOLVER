@@ -71,9 +71,6 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
     const auto tid = threadIdx.x + blockIdx.x * blockDim.x;
     const auto lid = tid % waveSize;
     const auto wid = tid / waveSize;
-    const auto lwid = blockDim.x % waveSize;
-
-    __shared__ bool is_found[BS1];
 
     for(auto irow = wid; irow < n; irow += nwaves)
     {
@@ -82,18 +79,11 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
         // -------------------
         // find diagonal entry
         // -------------------
-        is_found[lwid] = false;
         for(auto k = kstart + lid; (k < kend); k += waveSize)
         {
-            if(is_found[lwid])
-            {
-                break;
-            };
-
             const auto icol = Mi[k];
             if(icol == irow)
             {
-                is_found[lwid] = true;
                 const auto kdiag = k;
                 nzUarray[irow] = kend - kdiag;
                 nzLarray[irow] = (kdiag - kstart);
