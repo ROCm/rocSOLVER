@@ -39,56 +39,54 @@
 // swap strided batched
 // --------------------
 
-extern "C" {
-
-rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
-                                                rocblas_int n,
-                                                float* x,
-                                                rocblas_int incx,
-                                                rocblas_stride stridex,
-                                                float* y,
-                                                rocblas_int incy,
-                                                rocblas_stride stridey,
-                                                rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
+                                                       rocblas_int n,
+                                                       float* x,
+                                                       rocblas_int incx,
+                                                       rocblas_stride stridex,
+                                                       float* y,
+                                                       rocblas_int incy,
+                                                       rocblas_stride stridey,
+                                                       rocblas_int batch_count)
 {
     return (rocblas_sswap_strided_batched(handle, n, x, incx, stridex, y, incy, stridey, batch_count));
 }
 
-rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
-                                                rocblas_int n,
-                                                double* x,
-                                                rocblas_int incx,
-                                                rocblas_stride stridex,
-                                                double* y,
-                                                rocblas_int incy,
-                                                rocblas_stride stridey,
-                                                rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
+                                                       rocblas_int n,
+                                                       double* x,
+                                                       rocblas_int incx,
+                                                       rocblas_stride stridex,
+                                                       double* y,
+                                                       rocblas_int incy,
+                                                       rocblas_stride stridey,
+                                                       rocblas_int batch_count)
 {
     return (rocblas_dswap_strided_batched(handle, n, x, incx, stridex, y, incy, stridey, batch_count));
 }
 
-rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
-                                                rocblas_int n,
-                                                rocblas_float_complex* x,
-                                                rocblas_int incx,
-                                                rocblas_stride stridex,
-                                                rocblas_float_complex* y,
-                                                rocblas_int incy,
-                                                rocblas_stride stridey,
-                                                rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
+                                                       rocblas_int n,
+                                                       rocblas_float_complex* x,
+                                                       rocblas_int incx,
+                                                       rocblas_stride stridex,
+                                                       rocblas_float_complex* y,
+                                                       rocblas_int incy,
+                                                       rocblas_stride stridey,
+                                                       rocblas_int batch_count)
 {
     return (rocblas_cswap_strided_batched(handle, n, x, incx, stridex, y, incy, stridey, batch_count));
 }
 
-rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
-                                                rocblas_int n,
-                                                rocblas_double_complex* x,
-                                                rocblas_int incx,
-                                                rocblas_stride stridex,
-                                                rocblas_double_complex* y,
-                                                rocblas_int incy,
-                                                rocblas_stride stridey,
-                                                rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
+                                                       rocblas_int n,
+                                                       rocblas_double_complex* x,
+                                                       rocblas_int incx,
+                                                       rocblas_stride stridex,
+                                                       rocblas_double_complex* y,
+                                                       rocblas_int incy,
+                                                       rocblas_stride stridey,
+                                                       rocblas_int batch_count)
 {
     return (rocblas_zswap_strided_batched(handle, n, x, incx, stridex, y, incy, stridey, batch_count));
 }
@@ -96,46 +94,46 @@ rocblas_status rocblasCall_swap_strided_batched(rocblas_handle handle,
 // ------------
 // swap batched
 // ------------
-rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
-                                        rocblas_int n,
-                                        float* const x[],
-                                        rocblas_int incx,
-                                        float* const y[],
-                                        rocblas_int incy,
-                                        rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
+                                               rocblas_int n,
+                                               float* const x[],
+                                               rocblas_int incx,
+                                               float* const y[],
+                                               rocblas_int incy,
+                                               rocblas_int batch_count)
 {
     return (rocblas_sswap_batched(handle, n, x, incx, y, incy, batch_count));
 }
 
-rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
-                                        rocblas_int n,
-                                        double* const x[],
-                                        rocblas_int incx,
-                                        double* const y[],
-                                        rocblas_int incy,
-                                        rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
+                                               rocblas_int n,
+                                               double* const x[],
+                                               rocblas_int incx,
+                                               double* const y[],
+                                               rocblas_int incy,
+                                               rocblas_int batch_count)
 {
     return (rocblas_dswap_batched(handle, n, x, incx, y, incy, batch_count));
 }
 
-rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
-                                        rocblas_int n,
-                                        rocblas_float_complex* const x[],
-                                        rocblas_int incx,
-                                        rocblas_float_complex* const y[],
-                                        rocblas_int incy,
-                                        rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
+                                               rocblas_int n,
+                                               rocblas_float_complex* const x[],
+                                               rocblas_int incx,
+                                               rocblas_float_complex* const y[],
+                                               rocblas_int incy,
+                                               rocblas_int batch_count)
 {
     return (rocblas_cswap_batched(handle, n, x, incx, y, incy, batch_count));
 }
 
-rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
-                                        rocblas_int n,
-                                        rocblas_double_complex* const x[],
-                                        rocblas_int incx,
-                                        rocblas_double_complex* const y[],
-                                        rocblas_int incy,
-                                        rocblas_int batch_count)
+inline rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
+                                               rocblas_int n,
+                                               rocblas_double_complex* const x[],
+                                               rocblas_int incx,
+                                               rocblas_double_complex* const y[],
+                                               rocblas_int incy,
+                                               rocblas_int batch_count)
 {
     return (rocblas_zswap_batched(handle, n, x, incx, y, incy, batch_count));
 }
@@ -144,43 +142,42 @@ rocblas_status rocblasCall_swap_batched(rocblas_handle handle,
 // swap non-batched
 // ----------------
 
-rocblas_status rocblasCall_swap(rocblas_handle handle,
-                                rocblas_int n,
-                                float* x,
-                                rocblas_int incx,
-                                float* y,
-                                rocblas_int incy)
+inline rocblas_status rocblasCall_swap(rocblas_handle handle,
+                                       rocblas_int n,
+                                       float* x,
+                                       rocblas_int incx,
+                                       float* y,
+                                       rocblas_int incy)
 {
     return (rocblas_sswap(handle, n, x, incx, y, incy));
 }
 
-rocblas_status rocblasCall_swap(rocblas_handle handle,
-                                rocblas_int n,
-                                double* x,
-                                rocblas_int incx,
-                                double* y,
-                                rocblas_int incy)
+inline rocblas_status rocblasCall_swap(rocblas_handle handle,
+                                       rocblas_int n,
+                                       double* x,
+                                       rocblas_int incx,
+                                       double* y,
+                                       rocblas_int incy)
 {
     return (rocblas_dswap(handle, n, x, incx, y, incy));
 }
 
-rocblas_status rocblasCall_swap(rocblas_handle handle,
-                                rocblas_int n,
-                                rocblas_float_complex* x,
-                                rocblas_int incx,
-                                rocblas_float_complex* y,
-                                rocblas_int incy)
+inline rocblas_status rocblasCall_swap(rocblas_handle handle,
+                                       rocblas_int n,
+                                       rocblas_float_complex* x,
+                                       rocblas_int incx,
+                                       rocblas_float_complex* y,
+                                       rocblas_int incy)
 {
     return (rocblas_cswap(handle, n, x, incx, y, incy));
 }
 
-rocblas_status rocblasCall_swap(rocblas_handle handle,
-                                rocblas_int n,
-                                rocblas_double_complex* x,
-                                rocblas_int incx,
-                                rocblas_double_complex* y,
-                                rocblas_int incy)
+inline rocblas_status rocblasCall_swap(rocblas_handle handle,
+                                       rocblas_int n,
+                                       rocblas_double_complex* x,
+                                       rocblas_int incx,
+                                       rocblas_double_complex* y,
+                                       rocblas_int incy)
 {
     return (rocblas_zswap(handle, n, x, incx, y, incy));
-}
 }
