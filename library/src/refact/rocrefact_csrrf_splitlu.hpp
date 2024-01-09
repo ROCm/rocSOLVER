@@ -42,6 +42,21 @@
 template <typename I>
 __device__ static I cal_wave_size(I avg_nnzM)
 {
+    // -----------------------------------------------------------------------------------
+    // Ideally to  encourage stride-1 coalesced access to compressed sparse data
+    // one would like to use a full warp to process a row. However, if the number
+    // of non-zeros per row is small, say about 16, then using 64 threads in a warp
+    // may not be most efficient since many threads will have no work.
+    // One may consider repartitioning the threads in a warp to assign 4 threads to
+    // process a row, and process 16 rows concurrently
+    //
+    // The threads assigned to process the same row will be called a virtual "wave"
+    // of threads.
+    //
+    // This routine uses a heuristic to determine the number of threads (called wave_size)
+    // in a virtual "wave"
+    // -----------------------------------------------------------------------------------
+
     const auto ifactor = 2;
 
     const auto wave_size = ((avg_nnzM >= ifactor * warpSize)              ? warpSize
@@ -54,12 +69,13 @@ __device__ static I cal_wave_size(I avg_nnzM)
 }
 
 template <typename T>
-ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
-                                                                        const rocblas_int nnzM,
-                                                                        rocblas_int* Mp,
-                                                                        rocblas_int* Mi,
-                                                                        rocblas_int* nzLarray,
-                                                                        rocblas_int* nzUarray)
+ROCSOLVER_KERNEL
+    __launch_bounds__(SPLITLU_BS1) void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
+                                                                   const rocblas_int nnzM,
+                                                                   rocblas_int* Mp,
+                                                                   rocblas_int* Mi,
+                                                                   rocblas_int* nzLarray,
+                                                                   rocblas_int* nzUarray)
 {
     const auto avg_nnzM = max(1, nnzM / n);
 
@@ -67,6 +83,13 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
 
     const auto nthreads = gridDim.x * blockDim.x;
     const auto nwaves = nthreads / waveSize;
+
+    assert(blockDim.x % warpSize == 0);
+    // ------------------------------------------------------------------
+    // the code may not work correct if number of threads in thread block
+    // is not a multiple of warpSize
+    // ------------------------------------------------------------------
+    assert((blockDim.x % warpSize) == 0);
 
     const auto tid = threadIdx.x + blockIdx.x * blockDim.x;
     const auto lid = tid % waveSize;
@@ -94,7 +117,7 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
 }
 
 template <typename T>
-ROCSOLVER_KERNEL void __launch_bounds__(BS1)
+ROCSOLVER_KERNEL void __launch_bounds__(SPLITLU_BS1)
     rf_splitLU_copy_kernel(const rocblas_int n,
                            const rocblas_int nnzM,
                            rocblas_int const* const __restrict__ Mp,
@@ -402,9 +425,9 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
     if(nnzT == 0)
     {
         // set ptrU = 0
-        const rocblas_int blocks = n / BS1 + 1;
+        const rocblas_int blocks = n / SPLITLU_BS1 + 1;
         dim3 grid(blocks, 1, 1);
-        dim3 threads(BS1, 1, 1);
+        dim3 threads(SPLITLU_BS1, 1, 1);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, ptrU, n + 1, 0);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, ptrL, n + 1, 0, 1);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, grid, threads, 0, stream, indL, n, 0, 1);
@@ -418,14 +441,14 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         // --------------------------------
         // note using a single thread block
         // --------------------------------
-        const rocblas_int nthreads = BS1;
+        const rocblas_int nthreads = SPLITLU_BS1;
         const rocblas_int nblocks = 1;
         ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_kernel<T>, dim3(nblocks), dim3(nthreads), 0, stream, n,
                                 nnzT, ptrT, indT, valT, ptrL, indL, valL, ptrU, indU, valU, work);
     }
     else
     {
-        rocblas_int const nthreads = BS1;
+        rocblas_int const nthreads = SPLITLU_BS1;
         rocblas_int const nblocks = max(1, min(1024, (n - 1) / nthreads + 1));
 
         rocblas_int* const Lp = ptrL;

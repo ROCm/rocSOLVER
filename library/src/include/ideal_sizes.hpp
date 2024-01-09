@@ -290,3 +290,4 @@
     the kernel using a single thread block or using faster algorithm using rocPRIM */
 
 #define SPLITLU_SWITCH_SIZE 64
+#define SPLITLU_BS1 256
