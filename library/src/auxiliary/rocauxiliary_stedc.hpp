@@ -1400,7 +1400,8 @@ __device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const ro
     // Sort an array a[0...n-1].
     // ------------------------
 
-    auto const k_start = hipThreadIdx_x;
+    auto const tid = hipThreadIdx_x;
+    auto const k_start = tid;
     auto const k_inc = hipBlockDim_x;
 
     auto const a = D;
@@ -1431,16 +1432,13 @@ __device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const ro
             // ---------------------------------------------------------------------------------
             __syncthreads();
 
-            __shared__ S temp;
             __shared__ int niter;
-            __shared__ int j;
-            __shared__ int jfinal;
 
-            if(k_start == 0)
+            if(tid == 0)
             {
-                temp = a[i];
+                S const temp = a[i];
                 niter = 0;
-                j = i;
+                auto j = i;
 
                 while((j >= gap) && (a[j - gap] > temp))
                 {
@@ -1454,7 +1452,6 @@ __device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const ro
                 // put temp (the original a[i]) in its correct location
                 // ----------------------------------------------------
                 a[j] = temp;
-                jfinal = j;
             };
 
             __syncthreads();
@@ -1469,7 +1466,6 @@ __device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const ro
                     j -= gap;
                 };
 
-                assert(j == jfinal);
                 C(k, j) = Ctemp;
             }
             __syncthreads();
