@@ -4,6 +4,14 @@ Full documentation for rocSOLVER is available at [rocsolver.readthedocs.io](http
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
+### Added
+- Eigensolver routines for symmetric/hermitian matrices using Divide & Conquer and Jacobi algorithm:
+    - SYEVDJ (with batched and strided\_batched versions)
+    - HEEVDJ (with batched and strided\_batched versions)
+- Generalized symmetric/hermitian-definite eigensolvers using Divide & Conquer and Jacobi algorithm:
+    - SYGVDJ (with batched and strided\_batched versions)
+    - HEGVDJ (with batched and strided\_batched versions)
+
 ### Changed
 - Relaxed array length requirements for GESVDX with `rocblas_srange_index`.
 
