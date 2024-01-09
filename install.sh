@@ -75,7 +75,7 @@ Options:
   --address-sanitizer         Pass this flag to build with address sanitizer enabled
 
   --docs                      (experimental) Pass this flag to build the documentation from source.
-                              Official documentation is available online at https://rocsolver.readthedocs.io/
+                              Official documentation is available online at https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html
                               Building locally with this flag will require docker on your machine. If you are
                               familiar with doxygen, sphinx and documentation tools, you can alternatively
                               use the scripts provided in the docs directory.
