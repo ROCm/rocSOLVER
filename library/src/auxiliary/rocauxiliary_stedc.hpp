@@ -1387,6 +1387,96 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
 }
 
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
+
+template <typename T, typename S>
+__device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const rocblas_int ldc)
+{
+    // -----------------------------------------------
+    // Sort eigenvalues and eigenvectors by shell sort
+    // -----------------------------------------------
+
+    // ------------------------
+    // Shell sort (from wikipedia)
+    // Sort an array a[0...n-1].
+    // ------------------------
+
+    auto const k_start = hipThreadIdx_x;
+    auto const k_inc = hipBlockDim_x;
+
+    auto const a = D;
+    int const ngaps = 8;
+    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
+
+    auto C = [=](auto i, auto j) -> T& { return C_[i + j * static_cast<size_t>(ldc)]; };
+
+    // --------------------------------------------------------------------------
+    // Start with the largest gap and work down to a gap of 1
+    // similar to insertion sort but instead of 1, gap is being used in each step
+    // --------------------------------------------------------------------------
+    for(auto igap = 0; igap < ngaps; igap++)
+    {
+        auto const gap = gaps[igap];
+
+        // -----------------------------------------------------
+        // Do a gapped insertion sort for every elements in gaps
+        // Each loop leaves a[0..gap-1] in gapped order
+        // -----------------------------------------------------
+        for(auto i = gap; i < n; i += 1)
+        {
+            // -----------------------------------------------
+            // save a[i] in temp and make a hole at position i
+            // -----------------------------------------------
+            // ---------------------------------------------------------------------------------
+            // shift earlier gap-sorted elements up until the correct location for a[i] is found
+            // ---------------------------------------------------------------------------------
+            __syncthreads();
+
+            __shared__ S temp;
+            __shared__ int niter;
+            __shared__ int j;
+            __shared__ int jfinal;
+
+            if(k_start == 0)
+            {
+                temp = a[i];
+                niter = 0;
+                j = i;
+
+                while((j >= gap) && (a[j - gap] > temp))
+                {
+                    a[j] = a[j - gap];
+                    j -= gap;
+
+                    niter++;
+                };
+
+                // ----------------------------------------------------
+                // put temp (the original a[i]) in its correct location
+                // ----------------------------------------------------
+                a[j] = temp;
+                jfinal = j;
+            };
+
+            __syncthreads();
+
+            for(auto k = k_start; k < n; k += k_inc)
+            {
+                auto const Ctemp = C(k, i);
+                auto j = i;
+                for(auto it = 0; it < niter; it++)
+                {
+                    C(k, j) = C(k, j - gap);
+                    j -= gap;
+                };
+
+                assert(j == jfinal);
+                C(k, j) = Ctemp;
+            }
+            __syncthreads();
+        }
+    }
+}
+
 template <typename T, typename S>
 __device__ void stedc_sort_selection_sort(const rocblas_int n, S* D, T* C, const rocblas_int ldc)
 {
@@ -1444,7 +1534,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
         C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
     S* D = DD + (bid * strideD);
 
-    stedc_sort_selection_sort(n, D, C, ldc);
+    bool const use_shell_sort = true;
+    if(use_shell_sort)
+    {
+        stedc_sort_shell_sort(n, D, C, ldc);
+    }
+    else
+    {
+        stedc_sort_selection_sort(n, D, C, ldc);
+    };
 }
 
 /** This local gemm adapts rocblas_gemm to multiply complex*real, and
