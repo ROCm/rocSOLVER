@@ -1439,7 +1439,111 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 
 template <typename T, typename S>
-__device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const rocblas_int ldc)
+__device__ void stedc_sort_shell_sort_lds(const rocblas_int n, S* D, T* C_, const rocblas_int ldc)
+{
+    // -----------------------------------------------
+    // Sort eigenvalues and eigenvectors by shell sort
+    // -----------------------------------------------
+
+    // ------------------------
+    // Shell sort (from wikipedia)
+    // Sort an array a[0...n-1].
+    // ------------------------
+
+    auto const k_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    auto const k_inc = hipBlockDim_x * hipGridDim_x;
+
+    bool const is_root = (hipThreadIdx_x == 0) && (hipBlockIdx_x == 0);
+
+    auto const a = D;
+    int const ngaps = 8;
+    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
+
+    auto C = [=](auto i, auto j) -> T& { return C_[i + (j * static_cast<int64_t>(ldc))]; };
+
+    __shared__ int niter;
+    size_t constexpr memsize = 32 * 1000;
+    size_t constexpr knb = memsize / sizeof(S);
+    __shared__ T Ctemp[knb];
+
+    // --------------------------------------------------------------------------
+    // Start with the largest gap and work down to a gap of 1
+    // similar to insertion sort but instead of 1, gap is being used in each step
+    // --------------------------------------------------------------------------
+    for(auto igap = 0; igap < ngaps; igap++)
+    {
+        auto const gap = gaps[igap];
+
+        // -----------------------------------------------------
+        // Do a gapped insertion sort for every elements in gaps
+        // Each loop leaves a[0..gap-1] in gapped order
+        // -----------------------------------------------------
+        for(auto i = gap; i < n; i += 1)
+        {
+            __syncthreads();
+
+            if(is_root)
+            {
+                // -----------------------------------------------
+                // save a[i] in temp and make a hole at position i
+                // -----------------------------------------------
+                S const temp = a[i];
+
+                // ---------------------------------------------------------------------------------
+                // shift earlier gap-sorted elements up until the correct location for a[i] is found
+                // ---------------------------------------------------------------------------------
+                niter = 0;
+                auto j = i;
+
+                while((j >= gap) && (a[j - gap] > temp))
+                {
+                    a[j] = a[j - gap];
+                    j -= gap;
+
+                    niter++;
+                };
+
+                // ----------------------------------------------------
+                // put temp (the original a[i]) in its correct location
+                // ----------------------------------------------------
+                a[j] = temp;
+            };
+
+            __syncthreads();
+
+            for(auto vkstart = 0; vkstart < n; vkstart += knb)
+            {
+                auto const vkend = min(n, vkstart + knb);
+
+                __syncthreads();
+
+                for(auto k = vkstart + k_start; k < vkend; k += k_inc)
+                {
+                    Ctemp[k - vkstart] = C(k, i);
+                };
+
+                auto j = i;
+
+                for(auto it = 0; it < niter; it++)
+                {
+                    for(auto k = vkstart + k_start; k < vkend; k += k_inc)
+                    {
+                        C(k, j) = C(k, j - gap);
+                    };
+                    j -= gap;
+                };
+
+                for(auto k = vkstart + k_start; k < vkend; k += k_inc)
+                {
+                    C(k, j) = Ctemp[k - vkstart];
+                };
+            };
+        }
+    }
+}
+
+template <typename T, typename S>
+__device__ void stedc_sort_shell_sort_nolds(const rocblas_int n, S* D, T* C_, const rocblas_int ldc)
 {
     // -----------------------------------------------
     // Sort eigenvalues and eigenvectors by shell sort
@@ -1512,6 +1616,8 @@ __device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const ro
             {
                 auto const Ctemp = C(k, i);
                 auto j = i;
+
+#pragma unroll
                 for(auto it = 0; it < niter; it++)
                 {
                     C(k, j) = C(k, j - gap);
@@ -1571,25 +1677,30 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
                                                         U CC,
                                                         const rocblas_int shiftC,
                                                         const rocblas_int ldc,
-                                                        const rocblas_stride strideC)
+                                                        const rocblas_stride strideC,
+                                                        const rocblas_int batch_count)
 {
-    rocblas_int bid = hipBlockIdx_z;
+    rocblas_int bid_start = hipBlockIdx_z;
+    rocblas_int bid_inc = hipGridDim_z;
 
-    // select batch instance to work with
-    // (avoiding arithmetics with possible nullptrs)
-    T* C;
-    if(CC)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
-    S* D = DD + (bid * strideD);
+    for(auto bid = bid_start; bid < batch_count; bid += bid_inc)
+    {
+        // select batch instance to work with
+        // (avoiding arithmetics with possible nullptrs)
+        T* C;
+        if(CC)
+            C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+        S* D = DD + (bid * strideD);
 
-    bool const use_shell_sort = true;
-    if(use_shell_sort)
-    {
-        stedc_sort_shell_sort(n, D, C, ldc);
-    }
-    else
-    {
-        stedc_sort_selection_sort(n, D, C, ldc);
+        bool const use_shell_sort = true;
+        if(use_shell_sort)
+        {
+            stedc_sort_shell_sort_lds(n, D, C, ldc);
+        }
+        else
+        {
+            stedc_sort_selection_sort(n, D, C, ldc);
+        };
     };
 }
 
@@ -1926,14 +2037,12 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
 
         // finally sort eigenvalues and eigenvectors
-        bool const use_host_sort = (batch_count == 1);
+        bool const use_host_sort = false;
         if(use_host_sort)
         {
             // -----------------------
             // perform sorting on host
             // -----------------------
-
-            const int idebug = 1;
 
             for(rocblas_int bid = 0; bid < batch_count; bid++)
             {
@@ -1961,17 +2070,17 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // ------------------------------------
                 thrust::host_vector<S> h_D_key_org(h_D_key);
 
-                thrust::stable_sort_by_key(h_D_key.begin(), h_D_key.end(), map.begin());
+                thrust::sort_by_key(h_D_key.begin(), h_D_key.end(), map.begin());
 
-                if(idebug >= 1)
+                // ------------------------------
+                // copy sorted result back to GPU
+                // ------------------------------
                 {
-                    for(auto i = 0 * n; i < (n - 1); i++)
-                    {
-                        auto const di = h_D_key_org[map[i]];
-                        auto const dip1 = h_D_key_org[map[i + 1]];
-                        assert(di <= dip1);
-                    };
-                };
+                    size_t sizeBytes = sizeof(S) * n;
+                    void* dst = Dp;
+                    void* src = h_D_key.data();
+                    HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, hipMemcpyHostToDevice, stream));
+                }
 
                 // -----------------------------------------------
                 // perform swaps based on permutation vector map[]
@@ -1996,11 +2105,17 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 };
 
             }; // end for bid
+
+            HIP_CHECK(hipStreamSynchronize(stream));
         }
         else
         {
-            ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream,
-                                    n, D + shiftD, strideD, C, shiftC, ldc, strideC);
+            size_t constexpr max_lds = 64 * 1024;
+            auto constexpr max_blocks = 64 * 1024 - 1;
+            auto const nblocks = max(1, min(max_blocks, batch_count));
+
+            ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
+                                    D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count);
         };
     }
 
