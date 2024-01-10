@@ -6,7 +6,30 @@
  * and
  * Hari & Kovac (2019). On the Convergence of Complex Jacobi Methods.
  *     Linear and Multilinear Algebra 69(3), p. 489-514.
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
  * ***********************************************************************/
 
 #pragma once
@@ -95,8 +118,6 @@ __device__ void run_syevj(const rocblas_int dimx,
                     }
                 }
             }
-            cosines_res[tix] = local_res;
-            sines_diag[tix] = local_diag;
         }
         else
         {
@@ -123,9 +144,9 @@ __device__ void run_syevj(const rocblas_int dimx,
                     }
                 }
             }
-            cosines_res[tix] = local_res;
-            sines_diag[tix] = local_diag;
         }
+        cosines_res[tix] = local_res;
+        sines_diag[tix] = local_diag;
 
         // initialize top/bottom pairs
         for(i = tix; i < half_n; i += dimx)
@@ -155,9 +176,8 @@ __device__ void run_syevj(const rocblas_int dimx,
         {
             for(rocblas_int cc = 0; cc < count; ++cc)
             {
-                rocblas_int kx = tix + cc * dimx;
-
                 // get current top/bottom pair
+                rocblas_int kx = tix + cc * dimx;
                 i = kx < half_n ? top[kx] : n;
                 j = kx < half_n ? bottom[kx] : n;
 
@@ -281,6 +301,7 @@ __device__ void run_syevj(const rocblas_int dimx,
         if(tiy == 0)
         {
             local_res = 0;
+
             for(i = tix; i < n; i += dimx)
             {
                 for(j = 0; j < i; j++)
@@ -297,33 +318,35 @@ __device__ void run_syevj(const rocblas_int dimx,
         sweeps++;
     }
 
-    if(tiy > 0)
-        return;
-
     // finalize outputs
-    if(tix == 0)
+    if(tiy == 0)
     {
-        *residual = sqrt(local_res);
-        if(sweeps <= max_sweeps)
+        if(tix == 0)
         {
-            *n_sweeps = sweeps;
-            *info = 0;
+            *residual = sqrt(local_res);
+            if(sweeps <= max_sweeps)
+            {
+                *n_sweeps = sweeps;
+                *info = 0;
+            }
+            else
+            {
+                *n_sweeps = max_sweeps;
+                *info = 1;
+            }
         }
-        else
-        {
-            *n_sweeps = max_sweeps;
-            *info = 1;
-        }
-    }
 
-    // update W and then sort eigenvalues and eigenvectors by selection sort
-    for(i = tix; i < n; i += dimx)
-        W[i] = std::real(Acpy[i + i * n]);
+        // update W
+        for(i = tix; i < n; i += dimx)
+            W[i] = std::real(Acpy[i + i * n]);
+    }
     __syncthreads();
 
-    if((evect == rocblas_evect_none && tix > 0) || esort == rocblas_esort_none)
+    // if no sort, then stop
+    if(esort == rocblas_esort_none)
         return;
 
+    //otherwise sort eigenvalues and eigenvectors by selection sort
     rocblas_int m;
     S p;
     for(j = 0; j < n - 1; j++)
@@ -340,7 +363,7 @@ __device__ void run_syevj(const rocblas_int dimx,
         }
         __syncthreads();
 
-        if(m != j)
+        if(m != j && tiy == 0)
         {
             if(tix == 0)
             {
@@ -354,19 +377,23 @@ __device__ void run_syevj(const rocblas_int dimx,
                     swap(A[i + m * lda], A[i + j * lda]);
             }
         }
+        __syncthreads();
     }
 }
 
-__host__ __device__ inline void syevj_get_dims(rocblas_int n, rocblas_int* ddx, rocblas_int* ddy)
+__host__ __device__ inline void
+    syevj_get_dims(rocblas_int n, rocblas_int bdim, rocblas_int* ddx, rocblas_int* ddy)
 {
     // (TODO: Some tuning could be beneficial in the future.
     //	For now, we use a max of BDIM = ddx * ddy threads.
-    //	ddy is set to ceil(n/2) and ddx to min(BDIM/ddy, ceil(n/2)).
+    //	ddy is set to min(BDIM/4, ceil(n/2)) and ddx to min(BDIM/ddy, ceil(n/2)).
 
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
-    *ddy = half_n;
-    *ddx = min(SYEVJ_BDIM / half_n, half_n);
+    rocblas_int y = min(bdim / 4, half_n);
+    rocblas_int x = min(bdim / y, half_n);
+    *ddx = x;
+    *ddy = y;
 }
 
 template <typename T, typename S, typename U>
@@ -403,7 +430,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYEVJ_BDIM) syevj_small_kernel(const roc
 
     // get dimensions of 2D thread array
     rocblas_int ddx, ddy;
-    syevj_get_dims(n, &ddx, &ddy);
+    syevj_get_dims(n, SYEVJ_BDIM, &ddx, &ddy);
 
     // shared memory
     extern __shared__ double lmem[];
@@ -1436,7 +1463,7 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
         // (TODO: SYEVJ_BLOCKED_SWITCH may need re-tuning as it could be larger than 64 now).
 
         rocblas_int ddx, ddy;
-        syevj_get_dims(n, &ddx, &ddy);
+        syevj_get_dims(n, SYEVJ_BDIM, &ddx, &ddy);
         dim3 grid(1, 1, batch_count);
         dim3 threads(ddx * ddy, 1, 1);
         size_t lmemsize = (sizeof(S) + sizeof(T)) * ddx + 2 * sizeof(rocblas_int) * half_n;

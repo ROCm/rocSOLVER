@@ -388,6 +388,86 @@ rocsolver_<type>hegvj_strided_batched()
 .. doxygenfunction:: rocsolver_chegvj_strided_batched
 
 
+.. _syevdj:
+
+rocsolver_<type>syevdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdj
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdj
+
+rocsolver_<type>syevdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdj_batched
+
+rocsolver_<type>syevdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdj_strided_batched
+
+.. _heevdj:
+
+rocsolver_<type>heevdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdj
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdj
+
+rocsolver_<type>heevdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdj_batched
+
+rocsolver_<type>heevdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdj_strided_batched
+
+.. _sygvdj:
+
+rocsolver_<type>sygvdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdj
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdj
+
+rocsolver_<type>sygvdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdj_batched
+
+rocsolver_<type>sygvdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdj_strided_batched
+
+.. _hegvdj:
+
+rocsolver_<type>hegvdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdj
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdj
+
+rocsolver_<type>hegvdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdj_batched
+
+rocsolver_<type>hegvdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdj_strided_batched
+
 
 .. _likesvds:
 

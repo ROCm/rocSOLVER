@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -90,11 +90,13 @@
 #include "testing_sterf.hpp"
 #include "testing_syev_heev.hpp"
 #include "testing_syevd_heevd.hpp"
+#include "testing_syevdj_heevdj.hpp"
 #include "testing_syevj_heevj.hpp"
 #include "testing_syevx_heevx.hpp"
 #include "testing_sygsx_hegsx.hpp"
 #include "testing_sygv_hegv.hpp"
 #include "testing_sygvd_hegvd.hpp"
+#include "testing_sygvdj_hegvdj.hpp"
 #include "testing_sygvj_hegvj.hpp"
 #include "testing_sygvx_hegvx.hpp"
 #include "testing_sytf2_sytrf.hpp"
@@ -322,6 +324,10 @@ class rocsolver_dispatcher
             {"syevd", testing_syevd_heevd<false, false, T>},
             {"syevd_batched", testing_syevd_heevd<true, true, T>},
             {"syevd_strided_batched", testing_syevd_heevd<false, true, T>},
+            // syevdj
+            {"syevdj", testing_syevdj_heevdj<false, false, T>},
+            {"syevdj_batched", testing_syevdj_heevdj<true, true, T>},
+            {"syevdj_strided_batched", testing_syevdj_heevdj<false, true, T>},
             // syevj
             {"syevj", testing_syevj_heevj<false, false, T>},
             {"syevj_batched", testing_syevj_heevj<true, true, T>},
@@ -338,6 +344,10 @@ class rocsolver_dispatcher
             {"sygvd", testing_sygvd_hegvd<false, false, T>},
             {"sygvd_batched", testing_sygvd_hegvd<true, true, T>},
             {"sygvd_strided_batched", testing_sygvd_hegvd<false, true, T>},
+            // sygvdj
+            {"sygvdj", testing_sygvdj_hegvdj<false, false, T>},
+            {"sygvdj_batched", testing_sygvdj_hegvdj<true, true, T>},
+            {"sygvdj_strided_batched", testing_sygvdj_hegvdj<false, true, T>},
             // sygvj
             {"sygvj", testing_sygvj_hegvj<false, false, T>},
             {"sygvj_batched", testing_sygvj_hegvj<true, true, T>},
@@ -412,6 +422,10 @@ class rocsolver_dispatcher
             {"heevd", testing_syevd_heevd<false, false, T>},
             {"heevd_batched", testing_syevd_heevd<true, true, T>},
             {"heevd_strided_batched", testing_syevd_heevd<false, true, T>},
+            // heevdj
+            {"heevdj", testing_syevdj_heevdj<false, false, T>},
+            {"heevdj_batched", testing_syevdj_heevdj<true, true, T>},
+            {"heevdj_strided_batched", testing_syevdj_heevdj<false, true, T>},
             // heevj
             {"heevj", testing_syevj_heevj<false, false, T>},
             {"heevj_batched", testing_syevj_heevj<true, true, T>},
@@ -428,6 +442,10 @@ class rocsolver_dispatcher
             {"hegvd", testing_sygvd_hegvd<false, false, T>},
             {"hegvd_batched", testing_sygvd_hegvd<true, true, T>},
             {"hegvd_strided_batched", testing_sygvd_hegvd<false, true, T>},
+            // hegvdj
+            {"hegvdj", testing_sygvdj_hegvdj<false, false, T>},
+            {"hegvdj_batched", testing_sygvdj_hegvdj<true, true, T>},
+            {"hegvdj_strided_batched", testing_sygvdj_hegvdj<false, true, T>},
             // hegvj
             {"hegvj", testing_sygvj_hegvj<false, false, T>},
             {"hegvj_batched", testing_sygvj_hegvj<true, true, T>},
