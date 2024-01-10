@@ -31,6 +31,9 @@
  * *************************************************************************/
 
 #pragma once
+#include "thrust/host_vector.h"
+#include "thrust/sequence.h"
+#include "thrust/sort.h"
 
 #include "lapack/roclapack_syevj_heevj.hpp"
 #include "lapack_device_functions.hpp"
@@ -654,6 +657,53 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
     }
 
     return levels;
+}
+
+/** ROCSOLVER_SWAP perform swapping of two vectors on GPU **/
+template <typename T>
+ROCSOLVER_KERNEL void rocsolver_swap(rocblas_int n, T* x, rocblas_int incx_, T* y, rocblas_int incy_)
+{
+    auto const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    auto const i_inc = hipBlockDim_x * hipGridDim_x;
+
+    int64_t const incx = incx_;
+    int64_t const incy = incy_;
+
+    // -----------------------------
+    // check for common special case
+    // -----------------------------
+    if((incx == 1) && (incy == 1))
+    {
+        for(auto i = i_start; i < n; i += i_inc)
+        {
+            T const temp = x[i];
+            x[i] = y[i];
+            y[i] = temp;
+        };
+    }
+    else
+    {
+        for(auto i = i_start; i < n; i += i_inc)
+        {
+            T const temp = x[i * incx];
+            x[i * incx] = y[i * incy];
+            y[i * incy] = temp;
+        };
+    };
+}
+
+/** SET_SEQUENCE sets the integer vector to be sequence
+    [istart, istart + 1, istart + 2, ... ] **/
+template <typename I>
+ROCSOLVER_KERNEL void set_sequence(const rocblas_int n, I* ivec, const rocblas_int istart)
+{
+    auto const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    auto const i_inc = hipBlockDim_x * hipGridDim_x;
+
+    for(auto i = i_start; i < n; i += i_inc)
+    {
+        ivec[i] = i + istart;
+    };
 }
 
 /** STEDC_SPLIT finds independent blocks in the tridiagonal matrix
@@ -1400,15 +1450,16 @@ __device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const ro
     // Sort an array a[0...n-1].
     // ------------------------
 
-    auto const tid = hipThreadIdx_x;
-    auto const k_start = tid;
-    auto const k_inc = hipBlockDim_x;
+    auto const k_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    auto const k_inc = hipBlockDim_x * hipGridDim_x;
+
+    bool const is_root = (hipThreadIdx_x == 0) && (hipBlockIdx_x == 0);
 
     auto const a = D;
     int const ngaps = 8;
     int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
 
-    auto C = [=](auto i, auto j) -> T& { return C_[i + j * static_cast<size_t>(ldc)]; };
+    auto C = [=](auto i, auto j) -> T& { return C_[i + (j * static_cast<int64_t>(ldc))]; };
 
     // --------------------------------------------------------------------------
     // Start with the largest gap and work down to a gap of 1
@@ -1424,19 +1475,20 @@ __device__ void stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const ro
         // -----------------------------------------------------
         for(auto i = gap; i < n; i += 1)
         {
-            // -----------------------------------------------
-            // save a[i] in temp and make a hole at position i
-            // -----------------------------------------------
-            // ---------------------------------------------------------------------------------
-            // shift earlier gap-sorted elements up until the correct location for a[i] is found
-            // ---------------------------------------------------------------------------------
             __syncthreads();
 
             __shared__ int niter;
 
-            if(tid == 0)
+            if(is_root)
             {
+                // -----------------------------------------------
+                // save a[i] in temp and make a hole at position i
+                // -----------------------------------------------
                 S const temp = a[i];
+
+                // ---------------------------------------------------------------------------------
+                // shift earlier gap-sorted elements up until the correct location for a[i] is found
+                // ---------------------------------------------------------------------------------
                 niter = 0;
                 auto j = i;
 
@@ -1521,7 +1573,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
                                                         const rocblas_int ldc,
                                                         const rocblas_stride strideC)
 {
-    rocblas_int bid = hipBlockIdx_x;
+    rocblas_int bid = hipBlockIdx_z;
 
     // select batch instance to work with
     // (avoiding arithmetics with possible nullptrs)
@@ -1874,8 +1926,82 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
 
         // finally sort eigenvalues and eigenvectors
-        ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(BS1), 0, stream, n,
-                                D + shiftD, strideD, C, shiftC, ldc, strideC);
+        bool const use_host_sort = (batch_count == 1);
+        if(use_host_sort)
+        {
+            // -----------------------
+            // perform sorting on host
+            // -----------------------
+
+            const int idebug = 1;
+
+            for(rocblas_int bid = 0; bid < batch_count; bid++)
+            {
+                T* const Cp = load_ptr_batch<T>(C, bid, shiftC, strideC);
+
+                // T* const Cp = (C + shiftC) + (bid * strideC);
+                S* const Dp = (D + shiftD) + (bid * strideD);
+
+                thrust::host_vector<S> h_D_key(n);
+
+                {
+                    size_t sizeBytes = sizeof(S) * n;
+                    void* dst = h_D_key.data();
+                    void* src = Dp;
+                    HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, hipMemcpyDeviceToHost, stream));
+                };
+
+                thrust::host_vector<int> map(n);
+                thrust::sequence(map.begin(), map.end());
+
+                HIP_CHECK(hipStreamSynchronize(stream));
+
+                // ------------------------------------
+                // generate permutation vector in map[]
+                // ------------------------------------
+                thrust::host_vector<S> h_D_key_org(h_D_key);
+
+                thrust::stable_sort_by_key(h_D_key.begin(), h_D_key.end(), map.begin());
+
+                if(idebug >= 1)
+                {
+                    for(auto i = 0 * n; i < (n - 1); i++)
+                    {
+                        auto const di = h_D_key_org[map[i]];
+                        auto const dip1 = h_D_key_org[map[i + 1]];
+                        assert(di <= dip1);
+                    };
+                };
+
+                // -----------------------------------------------
+                // perform swaps based on permutation vector map[]
+                // -----------------------------------------------
+                for(auto i = 0 * n; i < n; i++)
+                {
+                    while(map[i] != i)
+                    {
+                        auto const map_i = map[i];
+                        auto const map_ii = map[map[i]];
+
+                        map[i] = map_ii;
+                        map[map_i] = map_i;
+
+                        rocblas_int const inc1 = 1;
+                        rocblas_int const inc2 = 1;
+                        auto const nblocks = (n - 1) / BS1 + 1;
+                        ROCSOLVER_LAUNCH_KERNEL((rocsolver_swap<T>), dim3(nblocks), dim3(BS1), 0,
+                                                stream, n, Cp + map_i * ((int64_t)ldc), inc1,
+                                                Cp + map_ii * ((int64_t)ldc), inc2);
+                    };
+                };
+
+            }; // end for bid
+        }
+        else
+        {
+            ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream,
+                                    n, D + shiftD, strideD, C, shiftC, ldc, strideC);
+        };
     }
 
     return rocblas_status_success;
