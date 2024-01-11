@@ -42,6 +42,17 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+#include <chrono>
+#include <stdlib.h>
+typedef std::chrono::high_resolution_clock Time;
+typedef std::chrono::milliseconds ms;
+
+static double getCurrentTime()
+{
+    auto now = Time::now();
+    return (std::chrono::duration_cast<ms>(now.time_since_epoch()).count() / 1000.0);
+}
+
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernel
 #define MAXITERS 50 // Max number of iterations for root finding method
 #define CLASSICQR 1 // used to specify classic QR iteration solver (default case)
@@ -2037,7 +2048,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
 
         // finally sort eigenvalues and eigenvectors
-        bool const use_host_sort = false;
+        bool const use_host_sort = true;
         if(use_host_sort)
         {
             // -----------------------
@@ -2070,7 +2081,14 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // ------------------------------------
                 thrust::host_vector<S> h_D_key_org(h_D_key);
 
-                thrust::sort_by_key(h_D_key.begin(), h_D_key.end(), map.begin());
+                {
+                    auto const tic = getCurrentTime();
+
+                    thrust::sort_by_key(h_D_key.begin(), h_D_key.end(), map.begin());
+
+                    auto const toc = getCurrentTime();
+                    printf("time for sort_by_key = %lf sec\n", (double)(toc - tic));
+                }
 
                 // ------------------------------
                 // copy sorted result back to GPU
@@ -2085,25 +2103,31 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // -----------------------------------------------
                 // perform swaps based on permutation vector map[]
                 // -----------------------------------------------
-                for(auto i = 0 * n; i < n; i++)
                 {
-                    while(map[i] != i)
+                    auto const tic = getCurrentTime();
+
+                    for(auto i = 0 * n; i < n; i++)
                     {
-                        auto const map_i = map[i];
-                        auto const map_ii = map[map[i]];
+                        while(map[i] != i)
+                        {
+                            auto const map_i = map[i];
+                            auto const map_ii = map[map[i]];
 
-                        map[i] = map_ii;
-                        map[map_i] = map_i;
+                            map[i] = map_ii;
+                            map[map_i] = map_i;
 
-                        rocblas_int const inc1 = 1;
-                        rocblas_int const inc2 = 1;
-                        auto const nblocks = (n - 1) / BS1 + 1;
-                        ROCSOLVER_LAUNCH_KERNEL((rocsolver_swap<T>), dim3(nblocks), dim3(BS1), 0,
-                                                stream, n, Cp + map_i * ((int64_t)ldc), inc1,
-                                                Cp + map_ii * ((int64_t)ldc), inc2);
+                            rocblas_int const inc1 = 1;
+                            rocblas_int const inc2 = 1;
+                            auto const nblocks = (n - 1) / BS1 + 1;
+                            ROCSOLVER_LAUNCH_KERNEL((rocsolver_swap<T>), dim3(nblocks), dim3(BS1),
+                                                    0, stream, n, Cp + map_i * ((int64_t)ldc), inc1,
+                                                    Cp + map_ii * ((int64_t)ldc), inc2);
+                        };
                     };
-                };
 
+                    auto const toc = getCurrentTime();
+                    printf("rocsolver_swaps took %lf sec\n", (double)(toc - tic));
+                };
             }; // end for bid
 
             HIP_CHECK(hipStreamSynchronize(stream));
@@ -2114,8 +2138,27 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             auto constexpr max_blocks = 64 * 1024 - 1;
             auto const nblocks = max(1, min(max_blocks, batch_count));
 
+            hipEvent_t tic;
+            hipEvent_t toc;
+            HIP_CHECK(hipEventCreate(&tic));
+            HIP_CHECK(hipEventCreate(&toc));
+
+            HIP_CHECK(hipEventRecord(tic, stream));
+
             ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
                                     D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count);
+
+            HIP_CHECK(hipEventRecord(toc, stream));
+
+            HIP_CHECK(hipEventSynchronize(toc));
+
+            float ms;
+            HIP_CHECK(hipEventElapsedTime(&ms, tic, toc));
+
+            printf("stedc_sort took %lf ms\n", (double)ms);
+
+            HIP_CHECK(hipEventDestroy(tic));
+            HIP_CHECK(hipEventDestroy(toc));
         };
     }
 
