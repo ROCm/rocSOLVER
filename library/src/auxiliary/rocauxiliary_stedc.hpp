@@ -656,39 +656,6 @@ __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n, int
     return levels;
 }
 
-/** ROCSOLVER_SWAP perform swapping of two vectors on GPU **/
-template <typename T>
-ROCSOLVER_KERNEL void rocsolver_swap(rocblas_int n, T* x, rocblas_int incx_, T* y, rocblas_int incy_)
-{
-    auto const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-    auto const i_inc = hipBlockDim_x * hipGridDim_x;
-
-    int64_t const incx = incx_;
-    int64_t const incy = incy_;
-
-    // -----------------------------
-    // check for common special case
-    // -----------------------------
-    if((incx == 1) && (incy == 1))
-    {
-        for(auto i = i_start; i < n; i += i_inc)
-        {
-            T const temp = x[i];
-            x[i] = y[i];
-            y[i] = temp;
-        };
-    }
-    else
-    {
-        for(auto i = i_start; i < n; i += i_inc)
-        {
-            T const temp = x[i * incx];
-            x[i * incx] = y[i * incy];
-            y[i * incy] = temp;
-        };
-    };
-}
-
 /** SET_SEQUENCE sets the integer vector to be sequence
     [istart, istart + 1, istart + 2, ... ] **/
 template <typename I>
@@ -1436,7 +1403,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_kernel(const rocblas_i
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 
 template <typename T, typename S>
-__device__ void
+__device__ static void
     stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const rocblas_int ldc, rocblas_int* map)
 {
     // -----------------------------------------------
@@ -1605,6 +1572,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
                                                         const rocblas_int batch_count,
                                                         rocblas_int* work)
 {
+    // -----------------------------------
+    // use z-grid dimension as batch index
+    // -----------------------------------
     rocblas_int bid_start = hipBlockIdx_z;
     rocblas_int bid_inc = hipGridDim_z;
 
@@ -1612,8 +1582,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
 
     for(auto bid = bid_start; bid < batch_count; bid += bid_inc)
     {
+        // ---------------------------------------------
         // select batch instance to work with
         // (avoiding arithmetics with possible nullptrs)
+        // ---------------------------------------------
         T* C;
         if(CC)
             C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
