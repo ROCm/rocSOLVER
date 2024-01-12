@@ -1942,13 +1942,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             // -------------------------------------
             rocblas_int* work = (rocblas_int*)tempvect;
 
-            // --------------------------------------------------------------------
-            // calculate nblocks to make sure there is sufficient temporary storage
-            // --------------------------------------------------------------------
             auto constexpr max_blocks = 64 * 1000;
-            auto const nblocks_guess = (sizeof(T) * n * n) / (sizeof(rocblas_int) * n);
-            auto const nblocks = max(1, min(max_blocks, min(nblocks_guess, batch_count)));
-            assert(sizeof(rocblas_int) * n * nblocks <= sizeof(T) * n * n);
+            auto const nblocks = max(1, min(max_blocks, batch_count));
 
             ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
                                     D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count, work);
