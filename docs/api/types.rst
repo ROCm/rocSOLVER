@@ -5,8 +5,8 @@ Types
 
 rocSOLVER uses most types and enumerations defined in rocBLAS for the general operation and
 dense matrix computations, and some defined in rocSPARSE for sparse matrix computations (direct solvers).
-For more information, see the `rocBLAS types <https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#rocblas-datatypes>`_ and
-`rocSPARSE types <https://rocsparse.readthedocs.io/en/master/usermanual.html#types>`_ documentation.
+For more information, see the `rocBLAS types <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#rocblas-datatypes>`_ and
+`rocSPARSE types <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/types.html>`_ documentation.
 Next we present additional types, only used in rocSOLVER, that extend the rocBLAS and rocSPARSE APIs.
 
 
