@@ -1700,7 +1700,8 @@ __device__ static void
     // execute on only a single thread block
     // -------------------------------------
     {
-        bool const is_root_block = (hipBlockIdx_x == 0) & (hipBlockIdx_y == 0);
+        bool const is_root_block
+            = (hipBlockIdx_x == 0) && (hipBlockIdx_y == 0) && (hipBlockIdx_z == 0);
         if(!is_root_block)
         {
             return;
