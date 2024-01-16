@@ -214,6 +214,10 @@ LAPACK-like functions
     :ref:`rocsolver_sygvdj <sygvdj>`, x, x, ,
     :ref:`rocsolver_heevdj <heevdj>`, , , x, x
     :ref:`rocsolver_hegvdj <hegvdj>`, , , x, x
+    :ref:`rocsolver_syevdj <syevdx>`, x, x, ,
+    :ref:`rocsolver_sygvdj <sygvdx>`, x, x, ,
+    :ref:`rocsolver_heevdj <heevdx>`, , , x, x
+    :ref:`rocsolver_hegvdj <hegvdx>`, , , x, x
 
 .. csv-table:: Singular value decomposition
     :header: "Function", "single", "double", "single complex", "double complex"
