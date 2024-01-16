@@ -5,6 +5,7 @@ Lapack-like Functions
 
 Other Lapack-like routines provided by rocSOLVER. These are divided into the following subcategories:
 
+* :ref:`liketridiag`. Computations specialized in tridiagonal matrices.
 * :ref:`liketriangular`. Based on Gaussian elimination.
 * :ref:`likelinears`. Based on triangular factorizations.
 * :ref:`likeeigens`. Eigenproblems for symmetric matrices.
@@ -15,13 +16,13 @@ Other Lapack-like routines provided by rocSOLVER. These are divided into the fol
 
     * i, j, and k are used as general purpose indices. In some legacy LAPACK APIs, k could be
       a parameter indicating some problem/matrix dimension.
-    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices, 
-      i is assigned to rows, j to columns and k to blocks. :math:`l` is always used to index 
+    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices,
+      i is assigned to rows, j to columns and k to blocks. :math:`l` is always used to index
       matrices/problems in a batch.
     * x[i] stands for the i-th element of vector x, while A[i,j] represents the element
       in the i-th row and j-th column of matrix A. Indices are 1-based, i.e. x[1] is the first
       element of x.
-    * To identify a block in a matrix or a matrix in the batch, k and :math:`l` are used as sub-indices 
+    * To identify a block in a matrix or a matrix in the batch, k and :math:`l` are used as sub-indices
     * x_i :math:`=x_i`; we sometimes use both notations, :math:`x_i` when displaying mathematical
       equations, and x_i in the text describing the function parameters.
     * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then
@@ -29,6 +30,29 @@ Other Lapack-like routines provided by rocSOLVER. These are divided into the fol
       indicate X transposed or X conjugate transposed, accordingly.
     * When a matrix `A` is formed as the product of several matrices, the following notation is used:
       `A=M(1)M(2)...M(t)`.
+
+
+
+.. _liketridiag:
+
+Tridiagonal forms
+==================================
+
+.. contents:: List of Lapack-like functions for tridiagonal forms
+   :local:
+   :backlinks: top\
+
+.. _stedcj:
+
+rocsolver_<type>stedcj()
+---------------------------------------
+.. doxygenfunction:: rocsolver_zstedcj
+   :outline:
+.. doxygenfunction:: rocsolver_cstedcj
+   :outline:
+.. doxygenfunction:: rocsolver_dstedcj
+   :outline:
+.. doxygenfunction:: rocsolver_sstedcj
 
 
 
