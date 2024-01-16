@@ -51,6 +51,7 @@ typedef enum rocsolver_stedc_mode_
 template <rocsolver_stedc_mode MODE>
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n);
 
+
 /***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 

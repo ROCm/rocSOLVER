@@ -5,6 +5,7 @@ Lapack-like Functions
 
 Other Lapack-like routines provided by rocSOLVER. These are divided into the following subcategories:
 
+* :ref:`liketridiag`. Computations specialized in tridiagonal matrices.
 * :ref:`liketriangular`. Based on Gaussian elimination.
 * :ref:`likelinears`. Based on triangular factorizations.
 * :ref:`likeeigens`. Eigenproblems for symmetric matrices.
@@ -29,6 +30,29 @@ Other Lapack-like routines provided by rocSOLVER. These are divided into the fol
       indicate X transposed or X conjugate transposed, accordingly.
     * When a matrix `A` is formed as the product of several matrices, the following notation is used:
       `A=M(1)M(2)...M(t)`.
+
+
+
+.. _liketridiag:
+
+Tridiagonal forms
+==================================
+
+.. contents:: List of Lapack-like functions for tridiagonal forms
+   :local:
+   :backlinks: top\
+
+.. _stedcj:
+
+rocsolver_<type>stedcj()
+---------------------------------------
+.. doxygenfunction:: rocsolver_zstedcj
+   :outline:
+.. doxygenfunction:: rocsolver_cstedcj
+   :outline:
+.. doxygenfunction:: rocsolver_dstedcj
+   :outline:
+.. doxygenfunction:: rocsolver_sstedcj
 
 
 

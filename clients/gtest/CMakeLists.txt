@@ -101,6 +101,7 @@ set(rocauxiliary_test_source
   sterf_gtest.cpp
   steqr_gtest.cpp
   stedc_gtest.cpp
+  stedcj_gtest.cpp
   stebz_gtest.cpp
   stein_gtest.cpp
   latrd_gtest.cpp
