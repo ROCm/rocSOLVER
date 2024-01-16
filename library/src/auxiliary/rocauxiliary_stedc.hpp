@@ -1900,8 +1900,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         // 2. solve phase
         //-----------------------------
         ROCSOLVER_LAUNCH_KERNEL((stedc_solve_kernel<S>),
-                                dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
-                                0, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0,
+                                dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(1), 0,
+                                stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0,
                                 ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
 
         // 3. merge phase
