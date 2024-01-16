@@ -129,12 +129,12 @@ __device__ inline void de2tridiag(const int numt,
 	compute the eigenvalues/eigenvectors of the different sub-blocks of each split-block.
 	A matrix in the batch could have many split-blocks, and each split-block could be
 	divided in a maximum of nn sub-blocks.
-	- Call his kernel with batch_count groups in z,	STEDC_NUM_SPLIT_BLKS groups in y
+	- Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y
 	  and nn groups in x. Groups are size STEDC_BDIM.
 	- STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will be analysed
 	  in parallel). If there are actually more split-blocks, some groups will work with more
 	  than one split-block sequentially.
-	- An uper bound for the number of sub-blocks (nn) can be estimated from the size n.
+	- An upper bound for the number of sub-blocks (nn) can be estimated from the size n.
 	  If a group has an id larger than the actual number of sub-blocks in a split-block,
 	  it will do nothing. **/
 template <typename S>
@@ -185,7 +185,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* nsA = splits + n + 2;
     // the sub-blocks initial positions
     rocblas_int* psA = nsA + n;
-    // worksapce for solvers
+    // workspace for solvers
     S* W = WA + bid * (2 + n * n);
     /* --------------------------------------------------- */
 
