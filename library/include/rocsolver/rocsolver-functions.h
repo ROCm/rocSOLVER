@@ -3894,8 +3894,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zsteqr(rocblas_handle handle,
     a symmetric tridiagonal matrix.
 
     \details
-    The eigenvalues are found using the iterative Jacobi algorithm and are returned in ascending order.
     This function uses the divide and conquer method to compute the eigenvectors.
+    The eigenvalues are returned in increasing order.
 
     The matrix is not represented explicitly, but rather as the array of
     diagonal elements D and the array of symmetric off-diagonal elements E.
