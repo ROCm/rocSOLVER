@@ -188,11 +188,6 @@ LAPACK main functions
 LAPACK-like functions
 ----------------------------
 
-.. csv-table:: Tridiagonal forms
-    :header: "Function", "single", "double", "single complex", "double complex"
-
-    :ref:`rocsolver_stedcj <stedcj>`, x, x, x, x
-
 .. csv-table:: Triangular factorizations
     :header: "Function", "single", "double", "single complex", "double complex"
 
