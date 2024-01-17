@@ -45,7 +45,9 @@
 /** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
-__host__ __device__ inline rocblas_int stedcj_num_levels(const rocblas_int n)
+template <>
+__host__ __device__ inline rocblas_int
+    stedc_num_levels<rocsolver_stedc_mode_jacobi>(const rocblas_int n)
 {
     rocblas_int levels = 0;
     // return the max number of levels such that the sub-blocks are at least of size 1
@@ -229,7 +231,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         ps = psA + p1;
 
         // determine ideal number of sub-blocks
-        levs = stedcj_num_levels(bs);
+        levs = stedc_num_levels<rocsolver_stedc_mode_jacobi>(bs);
         blks = 1 << levs;
 
         // 2. SOLVE PHASE
@@ -434,7 +436,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                             stream, n, n, tempvect, 0, ldt, strideT);
 
     // find max number of sub-blocks to consider during the divide phase
-    rocblas_int maxblks = 1 << stedcj_num_levels(n);
+    rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_jacobi>(n);
 
     // find independent split blocks in matrix
     ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
@@ -442,8 +444,9 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
 
     // 1. divide phase
     //-----------------------------
-    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<S>), dim3(batch_count), dim3(STEDC_BDIM), 0,
-                            stream, n, D + shiftD, strideD, E + shiftE, strideE, splits);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_jacobi, S>),
+                            dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD, strideD,
+                            E + shiftE, strideE, splits);
 
     // 2. solve phase
     //-----------------------------
@@ -458,10 +461,10 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     //----------------
     lmemsize = sizeof(S) * STEDC_BDIM;
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),
-                            dim3(STEDC_BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE,
-                            strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm, splits, eps, ssfmin,
-                            ssfmax);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
+                            dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
+                            stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
+                            strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
     // 4. update and sort
     //----------------------
