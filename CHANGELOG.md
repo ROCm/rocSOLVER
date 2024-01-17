@@ -4,9 +4,6 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ## (Unreleased) rocSOLVER
 ### Added
-- Eigensolver routines for symmetric/hermitian matrices using Divide & Conquer and Jacobi algorithm:
-    - STEDCJ
-
 ### Optimized
 ### Changed
 ### Deprecated

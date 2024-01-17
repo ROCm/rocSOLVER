@@ -46,6 +46,42 @@
 extern "C" {
 #endif
 
+rocblas_status rocsolver_sstedcj(rocblas_handle handle,
+                                 const rocblas_evect evect,
+                                 const rocblas_int n,
+                                 float* D,
+                                 float* E,
+                                 float* C,
+                                 const rocblas_int ldc,
+                                 rocblas_int* info);
+
+rocblas_status rocsolver_dstedcj(rocblas_handle handle,
+                                 const rocblas_evect evect,
+                                 const rocblas_int n,
+                                 double* D,
+                                 double* E,
+                                 double* C,
+                                 const rocblas_int ldc,
+                                 rocblas_int* info);
+
+rocblas_status rocsolver_cstedcj(rocblas_handle handle,
+                                 const rocblas_evect evect,
+                                 const rocblas_int n,
+                                 float* D,
+                                 float* E,
+                                 rocblas_float_complex* C,
+                                 const rocblas_int ldc,
+                                 rocblas_int* info);
+
+rocblas_status rocsolver_zstedcj(rocblas_handle handle,
+                                 const rocblas_evect evect,
+                                 const rocblas_int n,
+                                 double* D,
+                                 double* E,
+                                 rocblas_double_complex* C,
+                                 const rocblas_int ldc,
+                                 rocblas_int* info);
+
 rocblas_status rocsolver_sgeqrf_ptr_batched(rocblas_handle handle,
                                             const rocblas_int m,
                                             const rocblas_int n,
