@@ -52,16 +52,6 @@ template <rocsolver_stedc_mode MODE>
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n);
 
 
-typedef enum rocsolver_stedc_mode_
-{
-    rocsolver_stedc_mode_qr,
-    rocsolver_stedc_mode_jacobi,
-    rocsolver_stedc_mode_bisection
-} rocsolver_stedc_mode;
-
-template <rocsolver_stedc_mode MODE>
-__host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n);
-
 /***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 
