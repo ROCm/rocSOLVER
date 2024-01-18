@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -50,7 +50,7 @@ rocblas_status rocsolver_stedcj_impl(rocblas_handle handle,
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st = rocsolver_stedcj_argCheck(handle, evect, n, D, E, C, ldc, info);
+    rocblas_status st = rocsolver_stedc_argCheck(handle, evect, n, D, E, C, ldc, info);
     if(st != rocblas_status_continue)
         return st;
 

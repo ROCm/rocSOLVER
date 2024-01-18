@@ -40,7 +40,6 @@
 
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
 #define MAXITERS 50 // Max number of iterations for root finding method
-#define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 
 typedef enum rocsolver_stedc_mode_
 {

@@ -1,10 +1,5 @@
 /************************************************************************
- * Derived from the BSD3-licensed
- * LAPACK routine (version 3.7.0) --
- *     Univ. of Tennessee, Univ. of California Berkeley,
- *     Univ. of Colorado Denver and NAG Ltd..
- *     December 2016
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +32,8 @@
 #include "rocauxiliary_stedc.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
+#define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 
 /***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
@@ -329,42 +326,6 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
 
     // size for temporary diagonal and rank-1 modif vector
     *size_tmpz = sizeof(S) * (2 * n) * batch_count;
-}
-
-//--------------------------------------------------------------------------------------//
-/** This helper check argument correctness for stedcj API **/
-template <typename T, typename S>
-rocblas_status rocsolver_stedcj_argCheck(rocblas_handle handle,
-                                         const rocblas_evect evect,
-                                         const rocblas_int n,
-                                         S D,
-                                         S E,
-                                         T C,
-                                         const rocblas_int ldc,
-                                         rocblas_int* info)
-{
-    // order is important for unit tests:
-
-    // 1. invalid/non-supported values
-    if(evect != rocblas_evect_none && evect != rocblas_evect_tridiagonal
-       && evect != rocblas_evect_original)
-        return rocblas_status_invalid_value;
-
-    // 2. invalid size
-    if(n < 0)
-        return rocblas_status_invalid_size;
-    if(evect != rocblas_evect_none && ldc < n)
-        return rocblas_status_invalid_size;
-
-    // skip pointer check if querying memory size
-    if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_status_continue;
-
-    // 3. invalid pointers
-    if((n && !D) || (n && !E) || (evect != rocblas_evect_none && n && !C) || !info)
-        return rocblas_status_invalid_pointer;
-
-    return rocblas_status_continue;
 }
 
 //--------------------------------------------------------------------------------------//
