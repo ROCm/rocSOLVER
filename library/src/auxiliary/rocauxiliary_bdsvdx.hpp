@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2016-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2016-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -345,9 +345,45 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
                                     strideF, info, batch_count, work2_pivmin, work1_iwork);
 
         // sort eigenvalues and vectors
+        rocblas_int* map_array = nullptr;
+        {
+            size_t size_work1_iwork = 0;
+            size_t size_work2_pivmin = 0;
+            size_t size_Esqr = 0;
+            size_t size_bounds = 0;
+            size_t size_inter = 0;
+            size_t size_ninter = 0;
+            size_t size_nsplit = 0;
+            size_t size_iblock = 0;
+            size_t size_isplit = 0;
+            size_t size_Dtgk = 0;
+            size_t size_Etgk = 0;
+            size_t size_Stmp = 0;
+            rocsolver_bdsvdx_getMemorySize<T>(n, batch_count, &size_work1_iwork, &size_work2_pivmin,
+                                              &size_Esqr, &size_bounds, &size_inter, &size_ninter,
+                                              &size_nsplit, &size_iblock, &size_isplit, &size_Dtgk,
+                                              &size_Etgk, &size_Stmp);
+
+            size_t const size_map_array = sizeof(rocblas_int) * n * batch_count;
+            map_array = (size_work1_iwork >= size_map_array) ? (rocblas_int*)work1_iwork
+                : (size_work2_pivmin >= size_map_array)      ? (rocblas_int*)work2_pivmin
+                : (size_nsplit >= size_map_array)            ? (rocblas_int*)nsplit
+                : (size_isplit >= size_map_array)            ? (rocblas_int*)isplit
+                : (size_iblock >= size_map_array)            ? (rocblas_int*)iblock
+                : (size_Esqr >= size_map_array)              ? (rocblas_int*)Esqr
+                : (size_Dtgk >= size_map_array)              ? (rocblas_int*)Dtgk
+                : (size_Etgk >= size_map_array)              ? (rocblas_int*)Etgk
+                                                             : nullptr;
+
+            assert(map_array != nullptr);
+            if(map_array == nullptr)
+            {
+                return (rocblas_status_internal_error);
+            };
+        };
         ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, dim3(1, batch_count, 1), dim3(BS1, 1, 1), 0,
                                 stream, ntgk, nsv, Stmp, ntgk, Z, shiftZ, ldz, strideZ, ifail,
-                                strideF, info);
+                                strideF, info, map_array);
 
         // take absolute value of eigenvalues, reorder and normalize eigenvector elements, and negate elements of V
         ROCSOLVER_LAUNCH_KERNEL(bdsvdx_reorder_vect<T>, dim3(1, batch_count, 1), dim3(BS1, 1, 1), 0,

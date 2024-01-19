@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,18 +39,268 @@
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
 
+template <typename S>
+__device__ static void syevx_shell_sort(const rocblas_int n, S* a, rocblas_int* map)
+{
+    // -----------------------------------------------
+    // Sort eigenvalues and eigenvectors by shell sort
+    // -----------------------------------------------
+
+    // ------------------------
+    // Shell sort (from wikipedia)
+    // Sort an array a[0...n-1].
+    // ------------------------
+
+    {
+        bool const is_root_block = (hipBlockIdx_x == 0);
+        if(!is_root_block)
+        {
+            return;
+        };
+    };
+
+    int constexpr ngaps = 8;
+    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
+
+    auto const tid = hipThreadIdx_x;
+    auto const k_start = tid;
+    auto const k_inc = hipBlockDim_x;
+    bool const is_root_thread = (tid == 0);
+
+    __syncthreads();
+    for(auto k = k_start; k < n; k += k_inc)
+    {
+        map[k] = k;
+    };
+    __syncthreads();
+
+    // ---------------------------------------------------------------
+    // perform sorting to generate permutation vector using shell sort
+    // ---------------------------------------------------------------
+    if(is_root_thread)
+    {
+        // --------------------------------------------------------------------------
+        // Start with the largest gap and work down to a gap of 1
+        // similar to insertion sort but instead of 1, gap is being used in each step
+        // --------------------------------------------------------------------------
+        for(auto igap = 0; igap < ngaps; igap++)
+        {
+            auto const gap = gaps[igap];
+
+            // -----------------------------------------------------
+            // Do a gapped insertion sort for every elements in gaps
+            // Each loop leaves a[0..gap-1] in gapped order
+            // -----------------------------------------------------
+            for(rocblas_int i = gap; i < n; i += 1)
+            {
+                {
+                    // -----------------------------------------------
+                    // save a[i] in temp and make a hole at position i
+                    // -----------------------------------------------
+                    auto const temp = a[i];
+                    auto const itemp = map[i];
+
+                    // ---------------------------------------------------------------------------------
+                    // shift earlier gap-sorted elements up until the correct location for a[i] is found
+                    // ---------------------------------------------------------------------------------
+                    auto j = i;
+
+                    while((j >= gap) && (a[j - gap] > temp))
+                    {
+                        a[j] = a[j - gap];
+                        map[j] = map[j - gap];
+                        j -= gap;
+                    };
+
+                    // ----------------------------------------------------
+                    // put temp (the original a[i]) in its correct location
+                    // ----------------------------------------------------
+                    a[j] = temp;
+                    map[j] = itemp;
+                };
+            };
+        };
+    };
+
+    __syncthreads();
+
+    // ------------
+    // double check
+    // ------------
+    for(auto k = k_start; k < (n - 1); k += k_inc)
+    {
+        bool const isok = (a[k] <= a[k + 1]);
+        if(!isok)
+        {
+            printf("k=%d, a[k]=%lf, a[k+1]=%lf\n", k, (double)a[k], (double)a[k + 1]);
+        };
+        assert(isok);
+    };
+    __syncthreads();
+}
+
+template <typename T>
+__device__ static void syevx_permute_swap(rocblas_int n,
+                                          rocblas_int nev,
+                                          rocblas_int info,
+                                          rocblas_int* map,
+                                          T* Z,
+                                          rocblas_int ldz,
+                                          rocblas_int* ifail)
+{
+    auto const tid = hipThreadIdx_x;
+    auto const k_start = tid;
+    auto const k_inc = hipBlockDim_x;
+    bool const is_root_thread = (tid == 0);
+
+    {
+        bool const is_root_block = (hipBlockIdx_x == 0);
+        if(!is_root_block)
+        {
+            return;
+        };
+    };
+
+    // ---------------------------------------
+    // perform swaps to implement permutation
+    // ---------------------------------------
+    for(rocblas_int ii = 0; ii < nev; ii++)
+    {
+        __syncthreads();
+
+        while(map[ii] != ii)
+        {
+            auto const map_i = map[ii];
+            auto const map_ii = map[map[ii]];
+
+            __syncthreads();
+
+            if(is_root_thread)
+            {
+                map[map_i] = map_i;
+                map[ii] = map_ii;
+            };
+
+            __syncthreads();
+
+            auto const i = map_i;
+            auto const j = map_ii;
+
+            __syncthreads();
+            for(int k = k_start; k < n; k += k_inc)
+            {
+                swap(Z[k + i * int64_t(ldz)], Z[k + j * int64_t(ldz)]);
+            };
+            __syncthreads();
+
+            if(ifail)
+            {
+                __syncthreads();
+                for(int k = k_start; k < info; k += k_inc)
+                {
+                    if(ifail[k] == i + 1)
+                        ifail[k] = j + 1;
+                    else if(ifail[k] == j + 1)
+                        ifail[k] = i + 1;
+                }
+                __syncthreads();
+            }
+        }; // end while
+    }; // end for
+
+    // double check
+    __syncthreads();
+    for(auto k = k_start; k < nev; k += k_inc)
+    {
+        assert(map[k] == k);
+    };
+    __syncthreads();
+}
+
+template <typename S>
+__device__ static void syevx_selection_sort(rocblas_int nev, S* W, rocblas_int* map)
+{
+    auto const tid = hipThreadIdx_x;
+    bool const is_root_thread = (tid == 0);
+    auto const j_start = tid;
+    auto const j_inc = hipBlockDim_x;
+
+    {
+        bool const is_root_block = (hipBlockIdx_x == 0);
+        if(!is_root_block)
+        {
+            return;
+        };
+    }
+
+    __syncthreads();
+
+    for(auto j = j_start; j < nev; j += j_inc)
+    {
+        map[j] = j;
+    };
+
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(rocblas_int j = 0; j < nev - 1; j++)
+        {
+            rocblas_int i = 0;
+            auto tmp1 = W[j];
+            auto itmp1 = map[j];
+
+            for(rocblas_int jj = j + 1; jj < nev; jj++)
+            {
+                if(W[jj] < tmp1)
+                {
+                    i = jj;
+                    tmp1 = W[jj];
+                    itmp1 = map[jj];
+                }
+            }
+
+            if(i != 0)
+            {
+                if(tid == 0)
+                {
+                    W[i] = W[j];
+                    W[j] = tmp1;
+
+                    map[i] = map[j];
+                    map[j] = itmp1;
+                }
+            }
+        }
+    };
+    __syncthreads();
+    // ------------
+    // double check
+    // ------------
+    for(auto j = j_start; j < (nev - 1); j += j_inc)
+    {
+        bool const isok = (W[j] <= W[j + 1]);
+        if(!isok)
+        {
+            printf("j=%d, W[j]=%le, W[j+1]=%le\n", j, (double)W[j], (double)W[j + 1]);
+        };
+        assert(isok);
+    };
+    __syncthreads();
+}
+
 template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n,
-                                                             rocblas_int* nevA,
-                                                             S* WW,
-                                                             const rocblas_stride strideW,
-                                                             U ZZ,
-                                                             const rocblas_int shiftZ,
-                                                             const rocblas_int ldz,
-                                                             const rocblas_stride strideZ,
-                                                             rocblas_int* ifailA,
-                                                             const rocblas_stride strideIfail,
-                                                             rocblas_int* infoA)
+ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs_org(const rocblas_int n,
+                                                                 rocblas_int* nevA,
+                                                                 S* WW,
+                                                                 const rocblas_stride strideW,
+                                                                 U ZZ,
+                                                                 const rocblas_int shiftZ,
+                                                                 const rocblas_int ldz,
+                                                                 const rocblas_stride strideZ,
+                                                                 rocblas_int* ifailA,
+                                                                 const rocblas_stride strideIfail,
+                                                                 rocblas_int* infoA)
 {
     // select batch instance
     rocblas_int bid = hipBlockIdx_y;
@@ -105,6 +355,107 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
         }
         __syncthreads();
     }
+}
+
+template <typename T, typename S, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n,
+                                                             rocblas_int* nevA,
+                                                             S* WW,
+                                                             const rocblas_stride strideW,
+                                                             U ZZ,
+                                                             const rocblas_int shiftZ,
+                                                             const rocblas_int ldz,
+                                                             const rocblas_stride strideZ,
+                                                             rocblas_int* ifailA,
+                                                             const rocblas_stride strideIfail,
+                                                             rocblas_int* infoA,
+                                                             rocblas_int* map_array)
+{
+    // select batch instance
+    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int tid = hipThreadIdx_x;
+
+    // local variables
+    rocblas_int nev = nevA[bid];
+    rocblas_int info = infoA[bid];
+
+    S* W = WW + (bid * strideW);
+    T* Z = load_ptr_batch<T>(ZZ, bid, shiftZ, strideZ);
+    rocblas_int* ifail = nullptr;
+    if(ifailA)
+        ifail = ifailA + (bid * strideIfail);
+
+    assert(nev <= n);
+
+    rocblas_int* map = map_array + (bid * n);
+
+    bool const use_map = false;
+    if(use_map)
+    {
+        bool const use_shell_sort = true;
+        if(use_shell_sort)
+        {
+            syevx_shell_sort(nev, W, map);
+        }
+        else
+        {
+            syevx_selection_sort(nev, W, map);
+        };
+
+        __syncthreads();
+        syevx_permute_swap(n, nev, info, map, Z, ldz, ifail);
+    }
+    else
+    {
+        for(rocblas_int j = 0; j < nev - 1; j++)
+        {
+            rocblas_int i = 0;
+            S tmp1 = W[j];
+            for(rocblas_int jj = j + 1; jj < nev; jj++)
+            {
+                if(W[jj] < tmp1)
+                {
+                    i = jj;
+                    tmp1 = W[jj];
+                }
+            }
+            __syncthreads();
+
+            if(i != 0)
+            {
+                if(tid == 0)
+                {
+                    W[i] = W[j];
+                    W[j] = tmp1;
+                }
+
+                for(auto k = tid; k < n; k += hipBlockDim_x)
+                {
+                    swap(Z[k + i * ldz], Z[k + j * ldz]);
+                };
+
+                if(ifail)
+                {
+                    for(auto k = tid; k < info; k += hipBlockDim_x)
+                    {
+                        if(ifail[k] == i + 1)
+                            ifail[k] = j + 1;
+                        else if(ifail[k] == j + 1)
+                            ifail[k] = i + 1;
+                    }
+                }
+            }
+            __syncthreads();
+        }
+        // double check
+        __syncthreads();
+        for(auto k = tid; k < (nev - 1); k += hipBlockDim_x)
+        {
+            bool const isok = (W[k] <= W[k + 1]);
+            assert(isok);
+        };
+        __syncthreads();
+    };
 }
 
 /** Argument checking **/
@@ -341,8 +692,46 @@ rocblas_status rocsolver_syevx_heevx_template(rocblas_handle handle,
         // sort eigenvalues and eigenvectors
         dim3 grid(1, batch_count, 1);
         dim3 threads(BS1, 1, 1);
+
+        rocblas_int* map_array = nullptr;
+        {
+            size_t size_scalars = 0;
+            size_t size_work1 = 0;
+            size_t size_work2 = 0;
+            size_t size_work3 = 0;
+            size_t size_work4 = 0;
+            size_t size_work5 = 0;
+            size_t size_work6 = 0;
+            size_t size_D = 0;
+            size_t size_E = 0;
+            size_t size_iblock = 0;
+            size_t size_isplit = 0;
+            size_t size_tau = 0;
+            size_t size_nsplit_workArr = 0;
+
+            rocsolver_syevx_heevx_getMemorySize<BATCHED, T, S>(
+                evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
+                &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
+                &size_tau, &size_nsplit_workArr);
+
+            size_t const size_map_array = sizeof(rocblas_int) * n * batch_count;
+            map_array = (size_work1 >= size_map_array) ? (rocblas_int*)work1
+                : (size_work2 >= size_map_array)       ? (rocblas_int*)work2
+                : (size_work3 >= size_map_array)       ? (rocblas_int*)work3
+                : (size_work4 >= size_map_array)       ? (rocblas_int*)work4
+                : (size_work5 >= size_map_array)       ? (rocblas_int*)work5
+                : (size_work6 >= size_map_array)       ? (rocblas_int*)work6
+                                                       : nullptr;
+
+            assert(map_array != nullptr);
+            if(map_array == nullptr)
+            {
+                return (rocblas_status_internal_error);
+            };
+        };
+
         ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid, threads, 0, stream, n, nev, W, strideW, Z,
-                                shiftZ, ldz, strideZ, ifail, strideF, info);
+                                shiftZ, ldz, strideZ, ifail, strideF, info, map_array);
     }
 
     return rocblas_status_success;

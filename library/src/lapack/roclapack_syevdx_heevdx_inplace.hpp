@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -283,8 +283,47 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
             (T*)work3, (T**)nsplit_workArr);
 
         // sort eigenvalues and eigenvectors
-        ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, d_nev, W,
-                                strideW, A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info);
+        rocblas_int* map_array = nullptr;
+
+        {
+            size_t size_scalars = 0;
+            size_t size_work1 = 0;
+            size_t size_work2 = 0;
+            size_t size_work3 = 0;
+            size_t size_work4 = 0;
+            size_t size_work5 = 0;
+            size_t size_work6 = 0;
+            size_t size_D = 0;
+            size_t size_E = 0;
+            size_t size_iblock = 0;
+            size_t size_isplit = 0;
+            size_t size_tau = 0;
+            size_t size_nev = 0;
+            size_t size_nsplit_workArr = 0;
+
+            rocsolver_syevdx_heevdx_inplace_getMemorySize<BATCHED, T, S>(
+                evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
+                &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
+                &size_tau, &size_nev, &size_nsplit_workArr);
+
+            size_t const size_map_array = sizeof(rocblas_int) * n * batch_count;
+            map_array = (size_work1 >= size_map_array) ? (rocblas_int*)work1
+                : (size_work2 >= size_map_array)       ? (rocblas_int*)work2
+                : (size_work3 >= size_map_array)       ? (rocblas_int*)work3
+                : (size_work4 >= size_map_array)       ? (rocblas_int*)work4
+                : (size_work5 >= size_map_array)       ? (rocblas_int*)work5
+                : (size_work6 >= size_map_array)       ? (rocblas_int*)work6
+                                                       : nullptr;
+
+            assert(map_array != nullptr);
+            if(map_array == nullptr)
+            {
+                return (rocblas_status_internal_error);
+            };
+        };
+
+        ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, d_nev, W, strideW,
+                                A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info, map_array);
     }
 
     // copy nev from device to host
