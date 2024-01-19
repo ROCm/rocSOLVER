@@ -1683,176 +1683,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
 
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 
-template <typename T, typename S>
-__device__ static void
-    stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const rocblas_int ldc, rocblas_int* map)
-{
-    // -----------------------------------------------
-    // Sort eigenvalues and eigenvectors by shell sort
-    // -----------------------------------------------
-
-    // ------------------------
-    // Shell sort (from wikipedia)
-    // Sort an array a[0...n-1].
-    // ------------------------
-
-    // -------------------------------------
-    // execute on only a single thread block
-    // -------------------------------------
-    {
-        bool const is_root_block = (hipBlockIdx_x == 0);
-        if(!is_root_block)
-        {
-            return;
-        };
-    }
-
-    bool const is_root_thread = (hipThreadIdx_x == 0);
-
-    int constexpr ngaps = 8;
-    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
-
-    auto C = [=](auto i, auto j) -> T& { return C_[i + (j * static_cast<int64_t>(ldc))]; };
-
-    auto const k_start = hipThreadIdx_x;
-    auto const k_inc = hipBlockDim_x;
-
-    __syncthreads();
-    for(auto k = k_start; k < n; k += k_inc)
-    {
-        map[k] = k;
-    };
-    __syncthreads();
-
-    // ---------------------------------------------------------------
-    // perform sorting to generate permutation vector using shell sort
-    // ---------------------------------------------------------------
-    if(is_root_thread)
-    {
-        auto const a = D;
-
-        // --------------------------------------------------------------------------
-        // Start with the largest gap and work down to a gap of 1
-        // similar to insertion sort but instead of 1, gap is being used in each step
-        // --------------------------------------------------------------------------
-        for(auto igap = 0; igap < ngaps; igap++)
-        {
-            auto const gap = gaps[igap];
-
-            // -----------------------------------------------------
-            // Do a gapped insertion sort for every elements in gaps
-            // Each loop leaves a[0..gap-1] in gapped order
-            // -----------------------------------------------------
-            for(rocblas_int i = gap; i < n; i += 1)
-            {
-                {
-                    // -----------------------------------------------
-                    // save a[i] in temp and make a hole at position i
-                    // -----------------------------------------------
-                    S const temp = a[i];
-                    auto const itemp = map[i];
-
-                    // ---------------------------------------------------------------------------------
-                    // shift earlier gap-sorted elements up until the correct location for a[i] is found
-                    // ---------------------------------------------------------------------------------
-                    auto j = i;
-
-                    while((j >= gap) && (a[j - gap] > temp))
-                    {
-                        a[j] = a[j - gap];
-                        map[j] = map[j - gap];
-                        j -= gap;
-                    };
-
-                    // ----------------------------------------------------
-                    // put temp (the original a[i]) in its correct location
-                    // ----------------------------------------------------
-                    a[j] = temp;
-                    map[j] = itemp;
-                };
-            };
-        };
-    };
-    __syncthreads();
-
-    // -------------
-    // perform swaps
-    // -------------
-
-    for(rocblas_int i = 0; i < n; i++)
-    {
-        __syncthreads();
-
-        while(map[i] != i)
-        {
-            auto const map_i = map[i];
-            auto const map_ii = map[map[i]];
-
-            __syncthreads();
-
-            if(is_root_thread)
-            {
-                map[map_i] = map_i;
-                map[i] = map_ii;
-            };
-
-            // ---------------------------------------
-            // swap columns C(:,map_i) and C(:,map_ii)
-            // ---------------------------------------
-
-            __syncthreads();
-
-            for(auto k = k_start; k < n; k += k_inc)
-            {
-                auto const ctemp = C(k, map_i);
-                C(k, map_i) = C(k, map_ii);
-                C(k, map_ii) = ctemp;
-            };
-
-            __syncthreads();
-        };
-    };
-}
-
-template <typename T, typename S>
-__device__ void stedc_sort_selection_sort(const rocblas_int n, S* D, T* C, const rocblas_int ldc)
-{
-    // Sort eigenvalues and eigenvectors by selection sort
-    for(rocblas_int ii = 1; ii < n; ii++)
-    {
-        auto l = ii - 1;
-        auto m = l;
-        auto p = D[l];
-
-        for(rocblas_int j = ii; j < n; j++)
-        {
-            if(D[j] < p)
-            {
-                m = j;
-                p = D[j];
-            }
-        }
-        if(m != l)
-        {
-            D[m] = D[l];
-            D[l] = p;
-            // swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
-            auto const Ap = C + 0 + l * ((int64_t)ldc);
-            auto const Bp = C + 0 + m * ((int64_t)ldc);
-
-            rocblas_int const k_start = hipThreadIdx_x;
-            rocblas_int const k_inc = hipBlockDim_x;
-
-            for(rocblas_int k = k_start; k < n; k += k_inc)
-            {
-                auto const tmp = Ap[k];
-                Ap[k] = Bp[k];
-                Bp[k] = tmp;
-            };
-            __syncthreads();
-        }
-    }
-}
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
                                                         S* DD,
@@ -1878,20 +1708,29 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
         // select batch instance to work with
         // (avoiding arithmetics with possible nullptrs)
         // ---------------------------------------------
-        T* C;
+        T* C = nullptr;
         if(CC)
             C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
         S* D = DD + (bid * strideD);
 
         bool constexpr use_shell_sort = true;
+
+        __syncthreads();
+
         if(use_shell_sort)
         {
-            stedc_sort_shell_sort(n, D, C, ldc, map);
+            shell_sort(n, D, map);
         }
         else
         {
-            stedc_sort_selection_sort(n, D, C, ldc);
+            selection_sort(n, D, map);
         };
+
+        __syncthreads();
+
+        permute_swap(n, C, ldc, map);
+
+        __syncthreads();
     };
 }
 

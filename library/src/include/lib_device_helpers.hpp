@@ -784,3 +784,201 @@ ROCSOLVER_KERNEL void check_singularity(const rocblas_int n,
     if(hipThreadIdx_y == 0)
         info[b] = _info;
 }
+
+template <typename S, typename I>
+__device__ static void shell_sort(const I n, S* a, I* map)
+{
+    // -----------------------------------------------
+    // Sort array a[0...(n-1)] and generate permutation vector
+    // in map[]
+    // Note: performs in a single thread block
+    // -----------------------------------------------
+
+    // ------------------------
+    // Shell sort (from wikipedia)
+    // Sort an array a[0...(n-1)].
+    // ------------------------
+
+    bool const is_root_thread
+        = (hipThreadIdx_x == 0) && (hipThreadIdx_y == 0) && (hipThreadIdx_z == 0);
+
+    int constexpr ngaps = 8;
+    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
+
+    auto const k_start = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const k_inc = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    __syncthreads();
+    for(auto k = k_start; k < n; k += k_inc)
+    {
+        map[k] = k;
+    };
+    __syncthreads();
+
+    // ---------------------------------------------------------------
+    // perform sorting to generate permutation vector using shell sort
+    // ---------------------------------------------------------------
+    if(is_root_thread)
+    {
+        // --------------------------------------------------------------------------
+        // Start with the largest gap and work down to a gap of 1
+        // similar to insertion sort but instead of 1, gap is being used in each step
+        // --------------------------------------------------------------------------
+        for(auto igap = 0; igap < ngaps; igap++)
+        {
+            auto const gap = gaps[igap];
+
+            // -----------------------------------------------------
+            // Do a gapped insertion sort for every elements in gaps
+            // Each loop leaves a[0..gap-1] in gapped order
+            // -----------------------------------------------------
+            for(rocblas_int i = gap; i < n; i += 1)
+            {
+                {
+                    // -----------------------------------------------
+                    // save a[i] in temp and make a hole at position i
+                    // -----------------------------------------------
+                    S const temp = a[i];
+                    auto const itemp = map[i];
+
+                    // ---------------------------------------------------------------------------------
+                    // shift earlier gap-sorted elements up until the correct location for a[i] is found
+                    // ---------------------------------------------------------------------------------
+                    auto j = i;
+
+                    while((j >= gap) && (a[j - gap] > temp))
+                    {
+                        a[j] = a[j - gap];
+                        map[j] = map[j - gap];
+                        j -= gap;
+                    };
+
+                    // ----------------------------------------------------
+                    // put temp (the original a[i]) in its correct location
+                    // ----------------------------------------------------
+                    a[j] = temp;
+                    map[j] = itemp;
+                };
+            };
+        };
+    };
+    __syncthreads();
+}
+
+template <typename S, typename I>
+__device__ static void selection_sort(const I n, S* D, I* map)
+{
+    // ---------------------------------------------------
+    // Sort entries in D[0...(n-1)]
+    // Note: performs in a single thread block
+    // ---------------------------------------------------
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+    bool const is_root_thread = (tid == 0);
+
+    __syncthreads();
+
+    for(auto k = k_start; k < n; k += k_inc)
+    {
+        map[k] = k;
+    };
+
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(I ii = 1; ii < n; ii++)
+        {
+            auto l = ii - 1;
+            auto m = l;
+            auto p = D[l];
+            auto ip = map[l];
+
+            for(auto j = ii; j < n; j++)
+            {
+                if(D[j] < p)
+                {
+                    m = j;
+                    p = D[j];
+                    ip = map[j];
+                }
+            }
+            if(m != l)
+            {
+                D[m] = D[l];
+                D[l] = p;
+
+                map[m] = map[l];
+                map[l] = ip;
+            }
+        }
+    }
+    __syncthreads();
+}
+
+template <typename T, typename I>
+__device__ static void permute_swap(const I n, T* C, I ldc, I* map)
+{
+    // --------------------------------------------
+    // perform swaps to implement permutation vector
+    // the permutation vector will be restored to the
+    // identity permutation 0,1,2,...
+    //
+    // Note: performs in a thread block
+    // --------------------------------------------
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+
+    bool const is_root_thread = (tid == 0);
+
+    for(I i = 0; i < n; i++)
+    {
+        __syncthreads();
+
+        while(map[i] != i)
+        {
+            auto const map_i = map[i];
+            auto const map_ii = map[map[i]];
+
+            __syncthreads();
+
+            if(is_root_thread)
+            {
+                map[map_i] = map_i;
+                map[i] = map_ii;
+            };
+
+            __syncthreads();
+
+            // ---------------------------------------
+            // swap columns C( 0:(n-1),map_i) and C( 0:(n-1),map_ii)
+            // ---------------------------------------
+
+            for(auto k = k_start; k < n; k += k_inc)
+            {
+                auto const k_map_i = k + (map_i * static_cast<int64_t>(ldc));
+                auto const k_map_ii = k + (map_ii * static_cast<int64_t>(ldc));
+
+                auto const ctemp = C[k_map_i];
+                C[k_map_i] = C[k_map_ii];
+                C[k_map_ii] = ctemp;
+            };
+
+            __syncthreads();
+        };
+    };
+}
