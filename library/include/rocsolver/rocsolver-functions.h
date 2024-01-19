@@ -25881,12 +25881,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_solve(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
@@ -25907,11 +25901,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrrf_solve(rocblas_handle handle,
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
-                If info = 0, the first nev elements of ifail are zero.
-                Otherwise, contains the indices of those eigenvectors that failed
-                to converge. Not referenced if evect is rocblas_evect_none.
-    @param[out]
     info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, the algorithm did not converge. i columns of Z did not converge.
@@ -25928,12 +25917,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdx(rocblas_handle handle,
                                                   const float vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const float abstol,
                                                   rocblas_int* nev,
                                                   float* W,
                                                   float* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx(rocblas_handle handle,
@@ -25947,12 +25934,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx(rocblas_handle handle,
                                                   const double vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const double abstol,
                                                   rocblas_int* nev,
                                                   double* W,
                                                   double* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 //! @}
 
@@ -26006,12 +25991,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
@@ -26032,11 +26011,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx(rocblas_handle handle,
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
-                If info = 0, the first nev elements of ifail are zero.
-                Otherwise, contains the indices of those eigenvectors that failed
-                to converge. Not referenced if evect is rocblas_evect_none.
-    @param[out]
     info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
                 If info = i > 0, the algorithm did not converge. i columns of Z did not converge.
@@ -26053,12 +26027,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdx(rocblas_handle handle,
                                                   const float vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const float abstol,
                                                   rocblas_int* nev,
                                                   float* W,
                                                   rocblas_float_complex* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx(rocblas_handle handle,
@@ -26072,12 +26044,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx(rocblas_handle handle,
                                                   const double vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const double abstol,
                                                   rocblas_int* nev,
                                                   double* W,
                                                   rocblas_double_complex* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 //! @}
 
@@ -26131,12 +26101,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -26161,15 +26125,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx(rocblas_handle handle,
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                Otherwise, contains the indices of those eigenvectors that failed
-                to converge. Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
-    @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
@@ -26189,14 +26144,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdx_batched(rocblas_handle handle,
                                                           const float vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const float abstol,
                                                           rocblas_int* nev,
                                                           float* W,
                                                           const rocblas_stride strideW,
                                                           float* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -26211,14 +26163,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_batched(rocblas_handle handle,
                                                           const double vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const double abstol,
                                                           rocblas_int* nev,
                                                           double* W,
                                                           const rocblas_stride strideW,
                                                           double* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -26273,12 +26222,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_batched(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -26303,15 +26246,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_batched(rocblas_handle handle,
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                Otherwise, contains the indices of those eigenvectors that failed
-                to converge. Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
-    @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
@@ -26331,14 +26265,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdx_batched(rocblas_handle handle,
                                                           const float vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const float abstol,
                                                           rocblas_int* nev,
                                                           float* W,
                                                           const rocblas_stride strideW,
                                                           rocblas_float_complex* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -26353,14 +26284,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_batched(rocblas_handle handle,
                                                           const double vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const double abstol,
                                                           rocblas_int* nev,
                                                           double* W,
                                                           const rocblas_stride strideW,
                                                           rocblas_double_complex* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -26419,12 +26347,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_batched(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -26453,15 +26375,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_batched(rocblas_handle handle,
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                Otherwise, contains the indices of those eigenvectors that failed
-                to converge. Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
-    @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
@@ -26482,15 +26395,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdx_strided_batched(rocblas_handle
                                                                   const float vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const float abstol,
                                                                   rocblas_int* nev,
                                                                   float* W,
                                                                   const rocblas_stride strideW,
                                                                   float* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -26506,15 +26416,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_strided_batched(rocblas_handle
                                                                   const double vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const double abstol,
                                                                   rocblas_int* nev,
                                                                   double* W,
                                                                   const rocblas_stride strideW,
                                                                   double* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}
@@ -26573,12 +26480,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_strided_batched(rocblas_handle
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -26607,15 +26508,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_strided_batched(rocblas_handle
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                Otherwise, contains the indices of those eigenvectors that failed
-                to converge. Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
-    @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit for matrix A_l.
                 If info[l] = i > 0, the algorithm did not converge. i columns of Z_l did not converge.
@@ -26636,15 +26528,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdx_strided_batched(rocblas_handle
                                                                   const float vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const float abstol,
                                                                   rocblas_int* nev,
                                                                   float* W,
                                                                   const rocblas_stride strideW,
                                                                   rocblas_float_complex* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -26660,15 +26549,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_strided_batched(rocblas_handle
                                                                   const double vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const double abstol,
                                                                   rocblas_int* nev,
                                                                   double* W,
                                                                   const rocblas_stride strideW,
                                                                   rocblas_double_complex* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}
@@ -26755,12 +26641,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_strided_batched(rocblas_handle
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
@@ -26780,12 +26660,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_strided_batched(rocblas_handle
     @param[in]
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
-    @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
-                If info = 0, the first nev elements of ifail are zero.
-                If info = i <= n, ifail contains the indices of the i eigenvectors that failed
-                to converge.
-                Not referenced if evect is rocblas_evect_none.
     @param[out]
     info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
@@ -26808,12 +26682,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdx(rocblas_handle handle,
                                                   const float vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const float abstol,
                                                   rocblas_int* nev,
                                                   float* W,
                                                   float* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx(rocblas_handle handle,
@@ -26830,12 +26702,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx(rocblas_handle handle,
                                                   const double vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const double abstol,
                                                   rocblas_int* nev,
                                                   double* W,
                                                   double* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 //! @}
 
@@ -26921,12 +26791,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to a rocblas_int on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev = n.
@@ -26946,12 +26810,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx(rocblas_handle handle,
     @param[in]
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrix Z.
-    @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU of dimension n.
-                If info = 0, the first nev elements of ifail are zero.
-                If info = i <= n, ifail contains the indices of the i eigenvectors that failed
-                to converge.
-                Not referenced if evect is rocblas_evect_none.
     @param[out]
     info        pointer to a rocblas_int on the GPU.
                 If info = 0, successful exit.
@@ -26974,12 +26832,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdx(rocblas_handle handle,
                                                   const float vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const float abstol,
                                                   rocblas_int* nev,
                                                   float* W,
                                                   rocblas_float_complex* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx(rocblas_handle handle,
@@ -26996,12 +26852,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx(rocblas_handle handle,
                                                   const double vu,
                                                   const rocblas_int il,
                                                   const rocblas_int iu,
-                                                  const double abstol,
                                                   rocblas_int* nev,
                                                   double* W,
                                                   rocblas_double_complex* Z,
                                                   const rocblas_int ldz,
-                                                  rocblas_int* ifail,
                                                   rocblas_int* info);
 //! @}
 
@@ -27087,12 +26941,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -27116,16 +26964,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx(rocblas_handle handle,
     @param[in]
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
-    @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
-                to converge.
-                Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch instance l.
@@ -27151,14 +26989,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdx_batched(rocblas_handle handle,
                                                           const float vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const float abstol,
                                                           rocblas_int* nev,
                                                           float* W,
                                                           const rocblas_stride strideW,
                                                           float* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -27176,14 +27011,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_batched(rocblas_handle handle,
                                                           const double vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const double abstol,
                                                           rocblas_int* nev,
                                                           double* W,
                                                           const rocblas_stride strideW,
                                                           double* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -27270,12 +27102,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_batched(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -27299,16 +27125,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_batched(rocblas_handle handle,
     @param[in]
     ldz         rocblas_int. ldz >= n.
                 Specifies the leading dimension of matrices Z_l.
-    @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
-                to converge.
-                Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
     @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch instance l.
@@ -27334,14 +27150,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdx_batched(rocblas_handle handle,
                                                           const float vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const float abstol,
                                                           rocblas_int* nev,
                                                           float* W,
                                                           const rocblas_stride strideW,
                                                           rocblas_float_complex* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 
@@ -27359,14 +27172,11 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx_batched(rocblas_handle handle,
                                                           const double vu,
                                                           const rocblas_int il,
                                                           const rocblas_int iu,
-                                                          const double abstol,
                                                           rocblas_int* nev,
                                                           double* W,
                                                           const rocblas_stride strideW,
                                                           rocblas_double_complex* const Z[],
                                                           const rocblas_int ldz,
-                                                          rocblas_int* ifail,
-                                                          const rocblas_stride strideF,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count);
 //! @}
@@ -27461,12 +27271,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx_batched(rocblas_handle handle,
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -27495,16 +27299,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx_batched(rocblas_handle handle,
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
-                to converge.
-                Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
-    @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n, i columns of Z_l did not converge.
@@ -27531,15 +27325,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdx_strided_batched(rocblas_handle
                                                                   const float vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const float abstol,
                                                                   rocblas_int* nev,
                                                                   float* W,
                                                                   const rocblas_stride strideW,
                                                                   float* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -27559,15 +27350,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_strided_batched(rocblas_handle
                                                                   const double vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const double abstol,
                                                                   rocblas_int* nev,
                                                                   double* W,
                                                                   const rocblas_stride strideW,
                                                                   double* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}
@@ -27662,12 +27450,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_strided_batched(rocblas_handle
     iu          rocblas_int. iu = 0 if n = 0; 1 <= il <= iu otherwise..
                 The index of the largest eigenvalue to be computed. Ignored if range indicates to look
                 for all the eigenvalues of A_l or the eigenvalues in a half-open interval.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. An eigenvalue is considered to be located if it lies
-                in an interval whose width is <= abstol. If abstol is negative, then machine-epsilon times
-                the 1-norm of the tridiagonal form of A_l will be used as tolerance. If abstol=0, then the tolerance will be set
-                to twice the underflow threshold; this is the tolerance that could get the most accurate results.
     @param[out]
     nev         pointer to rocblas_int. Array of batch_count integers on the GPU.
                 The total number of eigenvalues found. If erange is rocblas_erange_all, nev[l] = n.
@@ -27696,16 +27478,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_strided_batched(rocblas_handle
                 The user should ensure that Z_l is large enough to hold n columns, as all n columns
                 can be used as workspace for internal computations.
     @param[out]
-    ifail       pointer to rocblas_int. Array on the GPU (the size depends on the value of strideF).
-                If info[l] = 0, the first nev[l] elements of ifail_l are zero.
-                If info[l] = i <= n, ifail_l contains the indices of the i eigenvectors that failed
-                to converge.
-                Not referenced if evect is rocblas_evect_none.
-    @param[in]
-    strideF     rocblas_stride.
-                Stride from the start of one vector ifail_l to the next one ifail_(l+1).
-                There is no restriction for the value of strideF. Normal use case is strideF >= n.
-    @param[out]
     info        pointer to rocblas_int. Array of batch_count integers on the GPU.
                 If info[l] = 0, successful exit of batch l.
                 If info[l] = i <= n, i columns of Z_l did not converge.
@@ -27732,15 +27504,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdx_strided_batched(rocblas_handle
                                                                   const float vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const float abstol,
                                                                   rocblas_int* nev,
                                                                   float* W,
                                                                   const rocblas_stride strideW,
                                                                   rocblas_float_complex* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 
@@ -27760,15 +27529,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx_strided_batched(rocblas_handle
                                                                   const double vu,
                                                                   const rocblas_int il,
                                                                   const rocblas_int iu,
-                                                                  const double abstol,
                                                                   rocblas_int* nev,
                                                                   double* W,
                                                                   const rocblas_stride strideW,
                                                                   rocblas_double_complex* Z,
                                                                   const rocblas_int ldz,
                                                                   const rocblas_stride strideZ,
-                                                                  rocblas_int* ifail,
-                                                                  const rocblas_stride strideF,
                                                                   rocblas_int* info,
                                                                   const rocblas_int batch_count);
 //! @}
