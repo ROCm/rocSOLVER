@@ -868,7 +868,7 @@ __device__ static void shell_sort(const I n, S* a, I* map)
 }
 
 template <typename S, typename I>
-__device__ void selection_sort(const I n, S* D, I* map)
+__device__ static void selection_sort(const I n, S* D, I* map)
 {
     // ---------------------------------------------------
     // Sort entries in D[0...(n-1)]
