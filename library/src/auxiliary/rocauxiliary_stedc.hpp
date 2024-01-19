@@ -1683,12 +1683,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
 
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 
-template <typename T, typename S>
-__device__ static void
-    stedc_sort_shell_sort(const rocblas_int n, S* D, T* C_, const rocblas_int ldc, rocblas_int* map)
+template <typename S, typename I>
+__device__ static void shell_sort(const I n, S* a, I* map)
 {
     // -----------------------------------------------
     // Sort eigenvalues and eigenvectors by shell sort
+    // works only on a single thread block
     // -----------------------------------------------
 
     // ------------------------
@@ -1696,27 +1696,16 @@ __device__ static void
     // Sort an array a[0...n-1].
     // ------------------------
 
-    // -------------------------------------
-    // execute on only a single thread block
-    // -------------------------------------
-    {
-        bool const is_root_block
-            = (hipBlockIdx_x == 0) && (hipBlockIdx_y == 0) && (hipBlockIdx_z == 0);
-        if(!is_root_block)
-        {
-            return;
-        };
-    }
-
-    bool const is_root_thread = (hipThreadIdx_x == 0);
+    bool const is_root_thread
+        = (hipThreadIdx_x == 0) && (hipThreadIdx_y == 0) && (hipThreadIdx_z == 0);
 
     int constexpr ngaps = 8;
     int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
 
-    auto C = [=](auto i, auto j) -> T& { return C_[i + (j * static_cast<int64_t>(ldc))]; };
+    auto const k_start = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
 
-    auto const k_start = hipThreadIdx_x;
-    auto const k_inc = hipBlockDim_x;
+    auto const k_inc = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
 
     __syncthreads();
     for(auto k = k_start; k < n; k += k_inc)
@@ -1730,8 +1719,6 @@ __device__ static void
     // ---------------------------------------------------------------
     if(is_root_thread)
     {
-        auto const a = D;
-
         // --------------------------------------------------------------------------
         // Start with the largest gap and work down to a gap of 1
         // similar to insertion sort but instead of 1, gap is being used in each step
@@ -1775,12 +1762,30 @@ __device__ static void
         };
     };
     __syncthreads();
+}
 
-    // -------------
-    // perform swaps
-    // -------------
+template <typename T, typename I>
+__device__ static void permute_swap(const I n, T* C, I ldc, I* map)
+{
+    // --------------------------------------------
+    // perform swaps to implement permutation vector
+    // the permutation vector will be restored to the
+    // identity permutation 0,1,2,...
+    //
+    // Note: this routine works in a thread block
+    // --------------------------------------------
 
-    for(rocblas_int i = 0; i < n; i++)
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+
+    bool const is_root_thread = (tid == 0);
+
+    for(I i = 0; i < n; i++)
     {
         __syncthreads();
 
@@ -1797,17 +1802,20 @@ __device__ static void
                 map[i] = map_ii;
             };
 
-            // ---------------------------------------
-            // swap columns C(:,map_i) and C(:,map_ii)
-            // ---------------------------------------
-
             __syncthreads();
+
+            // ---------------------------------------
+            // swap columns C( 0:(n-1),map_i) and C( 0:(n-1),map_ii)
+            // ---------------------------------------
 
             for(auto k = k_start; k < n; k += k_inc)
             {
-                auto const ctemp = C(k, map_i);
-                C(k, map_i) = C(k, map_ii);
-                C(k, map_ii) = ctemp;
+                auto const k_map_i = k + (map_i * static_cast<int64_t>(ldc));
+                auto const k_map_ii = k + (map_ii * static_cast<int64_t>(ldc));
+
+                auto const ctemp = C[k_map_i];
+                C[k_map_i] = C[k_map_ii];
+                C[k_map_ii] = ctemp;
             };
 
             __syncthreads();
@@ -1815,45 +1823,94 @@ __device__ static void
     };
 }
 
-template <typename T, typename S>
-__device__ void stedc_sort_selection_sort(const rocblas_int n, S* D, T* C, const rocblas_int ldc)
+template <typename T, typename S, typename I>
+__device__ static void stedc_sort_shell_sort(const I n, S* D, T* C, const I ldc, I* map)
 {
-    // Sort eigenvalues and eigenvectors by selection sort
-    for(rocblas_int ii = 1; ii < n; ii++)
-    {
-        auto l = ii - 1;
-        auto m = l;
-        auto p = D[l];
+    // -----------------------------------------------
+    // Sort eigenvalues and eigenvectors by shell sort
+    // -----------------------------------------------
 
-        for(rocblas_int j = ii; j < n; j++)
+    shell_sort(n, D, map);
+
+    __syncthreads();
+
+    permute_swap(n, C, ldc, map);
+
+    __syncthreads();
+}
+
+template <typename S, typename I>
+__device__ void selection_sort(const I n, S* D, I* map)
+{
+    // ---------------------------------------------------
+    // Sort eigenvalues and eigenvectors by selection sort
+    // Note: performed in a single thread block
+    // ---------------------------------------------------
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+    bool const is_root_thread = (tid == 0);
+
+    __syncthreads();
+
+    for(auto k = k_start; k < n; k += k_inc)
+    {
+        map[k] = k;
+    };
+
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(I ii = 1; ii < n; ii++)
         {
-            if(D[j] < p)
+            auto l = ii - 1;
+            auto m = l;
+            auto p = D[l];
+            auto ip = map[l];
+
+            for(auto j = ii; j < n; j++)
             {
-                m = j;
-                p = D[j];
+                if(D[j] < p)
+                {
+                    m = j;
+                    p = D[j];
+                    ip = map[j];
+                }
+            }
+            if(m != l)
+            {
+                D[m] = D[l];
+                D[l] = p;
+
+                map[m] = map[l];
+                map[l] = ip;
             }
         }
-        if(m != l)
-        {
-            D[m] = D[l];
-            D[l] = p;
-            // swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
-            auto const Ap = C + 0 + l * ((int64_t)ldc);
-            auto const Bp = C + 0 + m * ((int64_t)ldc);
-
-            rocblas_int const k_start = hipThreadIdx_x;
-            rocblas_int const k_inc = hipBlockDim_x;
-
-            for(rocblas_int k = k_start; k < n; k += k_inc)
-            {
-                auto const tmp = Ap[k];
-                Ap[k] = Bp[k];
-                Bp[k] = tmp;
-            };
-            __syncthreads();
-        }
     }
+    __syncthreads();
 }
+
+template <typename T, typename S>
+__device__ void
+    stedc_sort_selection_sort(const rocblas_int n, S* D, T* C, const rocblas_int ldc, rocblas_int* map)
+{
+    __syncthreads();
+
+    selection_sort(n, D, map);
+
+    __syncthreads();
+
+    permute_swap(n, C, ldc, map);
+
+    __syncthreads();
+}
+
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
                                                         S* DD,
@@ -1891,7 +1948,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
         }
         else
         {
-            stedc_sort_selection_sort(n, D, C, ldc);
+            stedc_sort_selection_sort(n, D, C, ldc, map);
         };
     };
 }
