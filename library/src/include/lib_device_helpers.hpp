@@ -790,7 +790,7 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map)
 {
     // -----------------------------------------------
     // Sort array a[0...(n-1)] and generate permutation vector
-    // in map[]
+    // in map[] if map[] is available
     // Note: performs in a single thread block
     // -----------------------------------------------
 
@@ -810,10 +810,15 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map)
 
     auto const k_inc = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
 
+    bool const has_map = (map != nullptr);
+
     __syncthreads();
-    for(auto k = k_start; k < n; k += k_inc)
+    if(has_map)
     {
-        map[k] = k;
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
     };
     __syncthreads();
 
@@ -841,7 +846,7 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map)
                     // save a[i] in temp and make a hole at position i
                     // -----------------------------------------------
                     S const temp = a[i];
-                    auto const itemp = map[i];
+                    auto const itemp = (has_map) ? map[i] : 0;
 
                     // ---------------------------------------------------------------------------------
                     // shift earlier gap-sorted elements up until the correct location for a[i] is found
@@ -851,7 +856,10 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map)
                     while((j >= gap) && (a[j - gap] > temp))
                     {
                         a[j] = a[j - gap];
-                        map[j] = map[j - gap];
+                        if(has_map)
+                        {
+                            map[j] = map[j - gap];
+                        };
                         j -= gap;
                     };
 
@@ -859,7 +867,10 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map)
                     // put temp (the original a[i]) in its correct location
                     // ----------------------------------------------------
                     a[j] = temp;
-                    map[j] = itemp;
+                    if(has_map)
+                    {
+                        map[j] = itemp;
+                    };
                 };
             };
         };
@@ -872,6 +883,7 @@ __device__ static void selection_sort_ascending(const I n, S* D, I* map)
 {
     // ---------------------------------------------------
     // Sort entries in D[0...(n-1)]
+    // generates permutation vector in map[] if map[] is available
     // Note: performs in a single thread block
     // ---------------------------------------------------
 
@@ -884,11 +896,16 @@ __device__ static void selection_sort_ascending(const I n, S* D, I* map)
     auto const k_inc = nthreads;
     bool const is_root_thread = (tid == 0);
 
+    bool const has_map = (map != nullptr);
+
     __syncthreads();
 
-    for(auto k = k_start; k < n; k += k_inc)
+    if(has_map)
     {
-        map[k] = k;
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
     };
 
     __syncthreads();
@@ -900,7 +917,7 @@ __device__ static void selection_sort_ascending(const I n, S* D, I* map)
             auto l = ii - 1;
             auto m = l;
             auto p = D[l];
-            auto ip = map[l];
+            auto ip = (has_map) ? map[l] : 0;
 
             for(auto j = ii; j < n; j++)
             {
@@ -908,7 +925,10 @@ __device__ static void selection_sort_ascending(const I n, S* D, I* map)
                 {
                     m = j;
                     p = D[j];
-                    ip = map[j];
+                    if(has_map)
+                    {
+                        ip = map[j];
+                    };
                 }
             }
             if(m != l)
@@ -916,8 +936,11 @@ __device__ static void selection_sort_ascending(const I n, S* D, I* map)
                 D[m] = D[l];
                 D[l] = p;
 
-                map[m] = map[l];
-                map[l] = ip;
+                if(has_map)
+                {
+                    map[m] = map[l];
+                    map[l] = ip;
+                };
             }
         }
     }
@@ -988,6 +1011,7 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map)
 {
     // ---------------------------------------------------
     // Sort entries in D[0...(n-1)]
+    // generates permutation vector in map[] if map[] is available
     // Note: performs in a single thread block
     // ---------------------------------------------------
 
@@ -1000,11 +1024,16 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map)
     auto const k_inc = nthreads;
     bool const is_root_thread = (tid == 0);
 
+    bool const has_map = (map != nullptr);
+
     __syncthreads();
 
-    for(auto k = k_start; k < n; k += k_inc)
+    if(has_map)
     {
-        map[k] = k;
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
     };
 
     __syncthreads();
@@ -1016,7 +1045,7 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map)
             auto l = ii - 1;
             auto m = l;
             auto p = D[l];
-            auto ip = map[l];
+            auto ip = (has_map) ? map[l] : 0;
 
             for(auto j = ii; j < n; j++)
             {
@@ -1024,7 +1053,10 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map)
                 {
                     m = j;
                     p = D[j];
-                    ip = map[j];
+                    if(has_map)
+                    {
+                        ip = map[j];
+                    };
                 }
             }
             if(m != l)
@@ -1032,8 +1064,11 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map)
                 D[m] = D[l];
                 D[l] = p;
 
-                map[m] = map[l];
-                map[l] = ip;
+                if(has_map)
+                {
+                    map[m] = map[l];
+                    map[l] = ip;
+                };
             }
         }
     }
@@ -1045,7 +1080,7 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map)
 {
     // -----------------------------------------------
     // Sort array a[0...(n-1)] and generate permutation vector
-    // in map[]
+    // in map[] if map[] is available
     // Note: performs in a single thread block
     // -----------------------------------------------
 
@@ -1065,10 +1100,15 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map)
 
     auto const k_inc = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
 
+    bool const has_map = (map != nullptr);
+
     __syncthreads();
-    for(auto k = k_start; k < n; k += k_inc)
+    if(has_map)
     {
-        map[k] = k;
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
     };
     __syncthreads();
 
@@ -1096,7 +1136,7 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map)
                     // save a[i] in temp and make a hole at position i
                     // -----------------------------------------------
                     S const temp = a[i];
-                    auto const itemp = map[i];
+                    auto const itemp = (has_map) ? map[i] : 0;
 
                     // ---------------------------------------------------------------------------------
                     // shift earlier gap-sorted elements up until the correct location for a[i] is found
@@ -1106,7 +1146,10 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map)
                     while((j >= gap) && (a[j - gap] < temp))
                     {
                         a[j] = a[j - gap];
-                        map[j] = map[j - gap];
+                        if(has_map)
+                        {
+                            map[j] = map[j - gap];
+                        };
                         j -= gap;
                     };
 
@@ -1114,7 +1157,10 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map)
                     // put temp (the original a[i]) in its correct location
                     // ----------------------------------------------------
                     a[j] = temp;
-                    map[j] = itemp;
+                    if(has_map)
+                    {
+                        map[j] = itemp;
+                    };
                 };
             };
         };
