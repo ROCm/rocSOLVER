@@ -786,7 +786,7 @@ ROCSOLVER_KERNEL void check_singularity(const rocblas_int n,
 }
 
 template <typename S, typename I>
-__device__ static void shell_sort(const I n, S* a, I* map)
+__device__ static void shell_sort_ascending(const I n, S* a, I* map)
 {
     // -----------------------------------------------
     // Sort array a[0...(n-1)] and generate permutation vector
@@ -868,7 +868,7 @@ __device__ static void shell_sort(const I n, S* a, I* map)
 }
 
 template <typename S, typename I>
-__device__ static void selection_sort(const I n, S* D, I* map)
+__device__ static void selection_sort_ascending(const I n, S* D, I* map)
 {
     // ---------------------------------------------------
     // Sort entries in D[0...(n-1)]
@@ -980,5 +980,170 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
 
             __syncthreads();
         };
+    };
+}
+
+template <typename S, typename I>
+__device__ static void selection_sort_descending(const I n, S* D, I* map)
+{
+    // ---------------------------------------------------
+    // Sort entries in D[0...(n-1)]
+    // Note: performs in a single thread block
+    // ---------------------------------------------------
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+    bool const is_root_thread = (tid == 0);
+
+    __syncthreads();
+
+    for(auto k = k_start; k < n; k += k_inc)
+    {
+        map[k] = k;
+    };
+
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(I ii = 1; ii < n; ii++)
+        {
+            auto l = ii - 1;
+            auto m = l;
+            auto p = D[l];
+            auto ip = map[l];
+
+            for(auto j = ii; j < n; j++)
+            {
+                if(D[j] > p)
+                {
+                    m = j;
+                    p = D[j];
+                    ip = map[j];
+                }
+            }
+            if(m != l)
+            {
+                D[m] = D[l];
+                D[l] = p;
+
+                map[m] = map[l];
+                map[l] = ip;
+            }
+        }
+    }
+    __syncthreads();
+}
+
+template <typename S, typename I>
+__device__ static void shell_sort_descending(const I n, S* a, I* map)
+{
+    // -----------------------------------------------
+    // Sort array a[0...(n-1)] and generate permutation vector
+    // in map[]
+    // Note: performs in a single thread block
+    // -----------------------------------------------
+
+    // ------------------------
+    // Shell sort (from wikipedia)
+    // Sort an array a[0...(n-1)].
+    // ------------------------
+
+    bool const is_root_thread
+        = (hipThreadIdx_x == 0) && (hipThreadIdx_y == 0) && (hipThreadIdx_z == 0);
+
+    int constexpr ngaps = 8;
+    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
+
+    auto const k_start = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const k_inc = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    __syncthreads();
+    for(auto k = k_start; k < n; k += k_inc)
+    {
+        map[k] = k;
+    };
+    __syncthreads();
+
+    // ---------------------------------------------------------------
+    // perform sorting to generate permutation vector using shell sort
+    // ---------------------------------------------------------------
+    if(is_root_thread)
+    {
+        // --------------------------------------------------------------------------
+        // Start with the largest gap and work down to a gap of 1
+        // similar to insertion sort but instead of 1, gap is being used in each step
+        // --------------------------------------------------------------------------
+        for(auto igap = 0; igap < ngaps; igap++)
+        {
+            auto const gap = gaps[igap];
+
+            // -----------------------------------------------------
+            // Do a gapped insertion sort for every elements in gaps
+            // Each loop leaves a[0..gap-1] in gapped order
+            // -----------------------------------------------------
+            for(rocblas_int i = gap; i < n; i += 1)
+            {
+                {
+                    // -----------------------------------------------
+                    // save a[i] in temp and make a hole at position i
+                    // -----------------------------------------------
+                    S const temp = a[i];
+                    auto const itemp = map[i];
+
+                    // ---------------------------------------------------------------------------------
+                    // shift earlier gap-sorted elements up until the correct location for a[i] is found
+                    // ---------------------------------------------------------------------------------
+                    auto j = i;
+
+                    while((j >= gap) && (a[j - gap] < temp))
+                    {
+                        a[j] = a[j - gap];
+                        map[j] = map[j - gap];
+                        j -= gap;
+                    };
+
+                    // ----------------------------------------------------
+                    // put temp (the original a[i]) in its correct location
+                    // ----------------------------------------------------
+                    a[j] = temp;
+                    map[j] = itemp;
+                };
+            };
+        };
+    };
+    __syncthreads();
+}
+
+template <typename S, typename I>
+__device__ static void shell_sort(const I n, S* a, I* map, const bool is_ascending = true)
+{
+    if(is_ascending)
+    {
+        shell_sort_ascending(n, a, map);
+    }
+    else
+    {
+        shell_sort_descending(n, a, map);
+    };
+}
+
+template <typename S, typename I>
+__device__ static void selection_sort(const I n, S* a, I* map, const bool is_ascending = true)
+{
+    if(is_ascending)
+    {
+        selection_sort_ascending(n, a, map);
+    }
+    else
+    {
+        selection_sort_descending(n, a, map);
     };
 }
