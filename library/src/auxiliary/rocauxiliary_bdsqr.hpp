@@ -833,8 +833,7 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     if(nc)
         C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
 
-    assert(map_array != nullptr);
-    rocblas_int* map = map_array + bid * n;
+    rocblas_int* map = (map_array == nullptr) ? nullptr : map_array + bid * n;
     //
     // ensure all singular values converged and are positive
 
@@ -867,55 +866,61 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     }
     __syncthreads();
 
-    shell_sort_descending(n, D, map);
-    // sort singular values & vectors
-    __syncthreads();
-    bdsqr_permute_swap(n, nv, V, ldv, nu, U, ldu, nc, C, ldc, map);
-#if(0)
-    S p;
-    for(i = 0; i < n - 1; i++)
+    bool const use_map = (map != nullptr);
+    if(use_map)
     {
-        m = i;
-        p = D[i];
-        for(j = i + 1; j < n; j++)
-        {
-            if(D[j] > p)
-            {
-                m = j;
-                p = D[j];
-            }
-        }
+        shell_sort_descending(n, D, map);
+        // sort singular values & vectors
         __syncthreads();
-
-        if(m != i)
+        bdsqr_permute_swap(n, nv, V, ldv, nu, U, ldu, nc, C, ldc, map);
+        __syncthreads();
+    }
+    else
+    {
+        S p;
+        for(i = 0; i < n - 1; i++)
         {
-            if(tid == 0)
+            m = i;
+            p = D[i];
+            for(j = i + 1; j < n; j++)
             {
-                D[m] = D[i];
-                D[i] = p;
+                if(D[j] > p)
+                {
+                    m = j;
+                    p = D[j];
+                }
             }
+            __syncthreads();
 
-            if(nv)
+            if(m != i)
             {
-                for(j = tid; j < nv; j += hipBlockDim_x)
-                    swap(V[m + j * ldv], V[i + j * ldv]);
-                __syncthreads();
-            }
-            if(nu)
-            {
-                for(j = tid; j < nu; j += hipBlockDim_x)
-                    swap(U[j + m * ldu], U[j + i * ldu]);
-                __syncthreads();
-            }
-            if(nc)
-            {
-                for(j = tid; j < nc; j += hipBlockDim_x)
-                    swap(C[m + j * ldc], C[i + j * ldc]);
-                __syncthreads();
+                if(tid == 0)
+                {
+                    D[m] = D[i];
+                    D[i] = p;
+                }
+
+                if(nv)
+                {
+                    for(j = tid; j < nv; j += hipBlockDim_x)
+                        swap(V[m + j * ldv], V[i + j * ldv]);
+                    __syncthreads();
+                }
+                if(nu)
+                {
+                    for(j = tid; j < nu; j += hipBlockDim_x)
+                        swap(U[j + m * ldu], U[j + i * ldu]);
+                    __syncthreads();
+                }
+                if(nc)
+                {
+                    for(j = tid; j < nc; j += hipBlockDim_x)
+                        swap(C[m + j * ldc], C[i + j * ldc]);
+                    __syncthreads();
+                }
             }
         }
     }
-#endif
 }
 
 /****** Template function, workspace size and argument validation **********/
