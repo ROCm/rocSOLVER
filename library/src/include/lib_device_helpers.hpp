@@ -786,7 +786,7 @@ ROCSOLVER_KERNEL void check_singularity(const rocblas_int n,
 }
 
 template <typename S, typename I>
-__device__ static void shell_sort_ascending(const I n, S* a, I* map)
+__device__ static void shell_sort_ascending(const I n, S* a, I* map = nullptr)
 {
     // -----------------------------------------------
     // Sort array a[0...(n-1)] and generate permutation vector
@@ -879,7 +879,7 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map)
 }
 
 template <typename S, typename I>
-__device__ static void selection_sort_ascending(const I n, S* D, I* map)
+__device__ static void selection_sort_ascending(const I n, S* D, I* map = nullptr)
 {
     // ---------------------------------------------------
     // Sort entries in D[0...(n-1)]
@@ -1007,7 +1007,7 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
 }
 
 template <typename S, typename I>
-__device__ static void selection_sort_descending(const I n, S* D, I* map)
+__device__ static void selection_sort_descending(const I n, S* D, I* map = nullptr)
 {
     // ---------------------------------------------------
     // Sort entries in D[0...(n-1)]
@@ -1076,7 +1076,7 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map)
 }
 
 template <typename S, typename I>
-__device__ static void shell_sort_descending(const I n, S* a, I* map)
+__device__ static void shell_sort_descending(const I n, S* a, I* map = nullptr)
 {
     // -----------------------------------------------
     // Sort array a[0...(n-1)] and generate permutation vector
@@ -1169,7 +1169,7 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map)
 }
 
 template <typename S, typename I>
-__device__ static void shell_sort(const I n, S* a, I* map, const bool is_ascending = true)
+__device__ static void shell_sort(const I n, S* a, I* map = nullptr, const bool is_ascending = true)
 {
     if(is_ascending)
     {
@@ -1182,7 +1182,7 @@ __device__ static void shell_sort(const I n, S* a, I* map, const bool is_ascendi
 }
 
 template <typename S, typename I>
-__device__ static void selection_sort(const I n, S* a, I* map, const bool is_ascending = true)
+__device__ static void selection_sort(const I n, S* a, I* map = nullptr, const bool is_ascending = true)
 {
     if(is_ascending)
     {
