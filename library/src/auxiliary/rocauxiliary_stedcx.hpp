@@ -38,7 +38,7 @@
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
-/** STEDCX_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
+/** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
 template <>
@@ -111,18 +111,25 @@ __host__ __device__ inline rocblas_int
 	  it will do nothing. **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedcx_solve_kernel(const rocblas_int n,
+    stedcx_solve_kernel(const rocblas_erange range,
+                        const rocblas_int n,
+                        const S vl,
+                        const S vu,
+                        const rocblas_int il,
+                        const rocblas_int iu,
                         S* DD,
                         const rocblas_stride strideD,
                         S* EE,
                         const rocblas_stride strideE,
+                        rocblas_int* nevA,
+                        S* VA,
                         S* CC,
                         const rocblas_int shiftC,
                         const rocblas_int ldc,
                         const rocblas_stride strideC,
                         rocblas_int* iinfo,
-                        S* WA,
-                        rocblas_int* splitsA,
+                        //S* WA,
+                        //rocblas_int* splitsA,
                         const S eps,
                         const S ssfmin,
                         const S ssfmax)
@@ -151,26 +158,26 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     /* --------------------------------------------------- */
-    // contains the beginning of split blocks
+    /*    // contains the beginning of split blocks
     rocblas_int* splits = splitsA + bid * (5 * n + 2);
     // the sub-blocks sizes
     rocblas_int* nsA = splits + n + 2;
     // the sub-blocks initial positions
     rocblas_int* psA = nsA + n;
     // workspace for solvers
-    S* W = WA + bid * (2 + n * n);
+    S* W = WA + bid * (2 + n * n);*/
     /* --------------------------------------------------- */
 
     // temporary arrays in shared memory
     /* --------------------------------------------------- */
-    extern __shared__ rocblas_int lsmem[];
+    /*    extern __shared__ rocblas_int lsmem[];
     rocblas_int* sj2 = lsmem;
-    S* sj1 = reinterpret_cast<S*>(sj2 + n + n % 2);
+    S* sj1 = reinterpret_cast<S*>(sj2 + n + n % 2);*/
     /* --------------------------------------------------- */
 
     // local variables
     /* --------------------------------------------------- */
-    // total number of split blocks
+    /*    // total number of split blocks
     rocblas_int nb = splits[n + 1];
     // size of split block
     rocblas_int bs;
@@ -186,14 +193,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int levs;
     // other aux variables
     S p;
-    rocblas_int *ns, *ps;
+    rocblas_int *ns, *ps;*/
     /* --------------------------------------------------- */
 
     // work with STEDC_NUM_SPLIT_BLKS split blocks in parallel
     /* --------------------------------------------------- */
     for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
     {
-        // Select current split block
+        /*        // Select current split block
         p1 = splits[kb];
         p2 = splits[kb + 1];
         bs = p2 - p1;
@@ -202,7 +209,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
         // determine ideal number of sub-blocks
         levs = stedc_num_levels<rocsolver_stedc_mode_jacobi>(bs);
-        blks = 1 << levs;
+        blks = 1 << levs;*/
 
         // 2. SOLVE PHASE
         /* ----------------------------------------------------------------- */
@@ -252,8 +259,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 //--------------------------------------------------------------------------------------//
 /** This helper calculates required workspace size **/
 template <bool BATCHED, typename T, typename S>
-void rocsolver_stedcx_getMemorySize(const rocblas_evect evect,
-                                    const rocblas_int n,
+void rocsolver_stedcx_getMemorySize(const rocblas_int n,
                                     const rocblas_int batch_count,
                                     size_t* size_work_stack,
                                     size_t* size_tempvect,
@@ -302,17 +308,67 @@ void rocsolver_stedcx_getMemorySize(const rocblas_evect evect,
 }
 
 //--------------------------------------------------------------------------------------//
+/** Helper to check argument correctnesss **/
+template <typename T>
+rocblas_status rocsolver_stedcx_argCheck(rocblas_handle handle,
+                                         const rocblas_erange range,
+                                         const rocblas_int n,
+                                         const T vlow,
+                                         const T vup,
+                                         const rocblas_int ilow,
+                                         const rocblas_int iup,
+                                         T* D,
+                                         T* E,
+                                         rocblas_int* nev,
+                                         T* W,
+                                         T* C,
+                                         const rocblas_int ldc,
+                                         rocblas_int* info)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if(range != rocblas_erange_all && range != rocblas_erange_value && range != rocblas_erange_index)
+        return rocblas_status_invalid_value;
+
+    // 2. invalid size
+    if(n < 0 || ldc < n)
+        return rocblas_status_invalid_size;
+    if(range == rocblas_erange_value && vlow >= vup)
+        return rocblas_status_invalid_size;
+    if(range == rocblas_erange_index && (iup > n || (n > 0 && ilow > iup)))
+        return rocblas_status_invalid_size;
+    if(range == rocblas_erange_index && (ilow < 1 || iup < 0))
+        return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
+
+    // 3. invalid pointers
+    if((n && (!D || !W || !C)) || (n > 1 && !E) || !info || !nev)
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
+
+//--------------------------------------------------------------------------------------//
 /** STEDCX templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                          const rocblas_erange range,
                                          const rocblas_int n,
+                                         const S vl,
+                                         const S vu,
+                                         const rocblas_int il,
+                                         const rocblas_int iu,
                                          S* D,
-                                         const rocblas_int shiftD,
                                          const rocblas_stride strideD,
                                          S* E,
-                                         const rocblas_int shiftE,
                                          const rocblas_stride strideE,
+                                         rocblas_int* nev,
+                                         S* W,
+                                         const rocblas_stride strideW,
                                          U C,
                                          const rocblas_int shiftC,
                                          const rocblas_int ldc,
@@ -326,7 +382,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                          rocblas_int* splits,
                                          S** workArr)
 {
-    ROCSOLVER_ENTER("stedcx", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
+    ROCSOLVER_ENTER("stedcx", "erange:", range, "n:", n, "vl:", vl, "vu:", vu, "il:", il, "iu:", iu,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
     // quick return
