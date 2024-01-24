@@ -880,6 +880,17 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map = nullptr)
         };
     };
     __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 1)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(a[k] <= a[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
 }
 
 template <typename S, typename I>
@@ -953,6 +964,17 @@ __device__ static void selection_sort_ascending(const I n, S* D, I* map = nullpt
         }
     }
     __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 1)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(D[k] <= D[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
 }
 
 template <typename T, typename I>
@@ -1092,6 +1114,17 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map = nullp
         }
     }
     __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 1)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(D[k] >= D[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
 }
 
 template <typename S, typename I>
@@ -1190,6 +1223,17 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map = nullptr)
         };
     };
     __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 1)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(a[k] >= a[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
 }
 
 template <typename S, typename I>
