@@ -793,6 +793,10 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map = nullptr)
     // in map[] if map[] is available
     // Note: performs in a single thread block
     // -----------------------------------------------
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
 
     // ------------------------
     // Shell sort (from wikipedia)
@@ -886,6 +890,10 @@ __device__ static void selection_sort_ascending(const I n, S* D, I* map = nullpt
     // generates permutation vector in map[] if map[] is available
     // Note: performs in a single thread block
     // ---------------------------------------------------
+    if((n <= 0) || (D == nullptr))
+    {
+        return;
+    };
 
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -957,6 +965,13 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
     //
     // Note: performs in a thread block
     // --------------------------------------------
+    {
+        bool const has_work = (n >= 1) && (C != nullptr) && (ldc >= 1) && (map != nullptr);
+        if(!has_work)
+        {
+            return;
+        };
+    };
 
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -1014,6 +1029,10 @@ __device__ static void selection_sort_descending(const I n, S* D, I* map = nullp
     // generates permutation vector in map[] if map[] is available
     // Note: performs in a single thread block
     // ---------------------------------------------------
+    if((n <= 0) || (D == nullptr))
+    {
+        return;
+    };
 
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -1083,6 +1102,11 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map = nullptr)
     // in map[] if map[] is available
     // Note: performs in a single thread block
     // -----------------------------------------------
+
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
 
     // ------------------------
     // Shell sort (from wikipedia)
@@ -1171,6 +1195,11 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map = nullptr)
 template <typename S, typename I>
 __device__ static void shell_sort(const I n, S* a, I* map = nullptr, const bool is_ascending = true)
 {
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
+
     if(is_ascending)
     {
         shell_sort_ascending(n, a, map);
@@ -1184,6 +1213,11 @@ __device__ static void shell_sort(const I n, S* a, I* map = nullptr, const bool 
 template <typename S, typename I>
 __device__ static void selection_sort(const I n, S* a, I* map = nullptr, const bool is_ascending = true)
 {
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
+
     if(is_ascending)
     {
         selection_sort_ascending(n, a, map);
