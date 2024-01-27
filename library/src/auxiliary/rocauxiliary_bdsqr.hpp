@@ -801,7 +801,7 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
                                  const rocblas_int ldc,
                                  const rocblas_stride strideC,
                                  rocblas_int* info,
-                                 rocblas_int* map_array)
+                                 rocblas_int* isplit_map)
 {
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -833,7 +833,7 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     if(nc)
         C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
 
-    rocblas_int* map = (map_array == nullptr) ? nullptr : map_array + bid * n;
+    rocblas_int* map = (isplit_map == nullptr) ? nullptr : isplit_map + bid * n;
     //
     // ensure all singular values converged and are positive
 
@@ -1087,10 +1087,13 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     }
 
     // sort the singular values and vectors
-    rocblas_int* const map_array = (rocblas_int*)work;
+    //
+    // Note: array isplit_map[] is used to hold the permutation vector
+    //
+    rocblas_int* const isplit_map = (rocblas_int*)work;
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_sort<T>), grid1, threads3, 0, stream, n, nv, nu, nc, D, strideD,
                             E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
-                            ldc, strideC, info, map_array);
+                            ldc, strideC, info, isplit_map);
 
     return rocblas_status_success;
 }

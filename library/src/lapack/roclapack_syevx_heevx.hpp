@@ -54,7 +54,6 @@ __device__ static void syevx_permute_swap(rocblas_int n,
 
     auto const k_start = tid;
     auto const k_inc = nthreads;
-    ;
     bool const is_root_thread = (tid == 0);
 
     // ---------------------------------------
@@ -109,6 +108,8 @@ __device__ static void syevx_permute_swap(rocblas_int n,
         }; // end while
     }; // end for
 
+#ifdef NDEBUG
+#else
     {
         // ------------------------------------------------------
         // double check map[] is restored to identity permutation
@@ -120,6 +121,7 @@ __device__ static void syevx_permute_swap(rocblas_int n,
         };
         __syncthreads();
     };
+#endif
 }
 
 template <typename T, typename S, typename U>
@@ -134,7 +136,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
                                                              rocblas_int* ifailA,
                                                              const rocblas_stride strideIfail,
                                                              rocblas_int* infoA,
-                                                             rocblas_int* map_array)
+                                                             rocblas_int* isplit_map)
 {
     // select batch instance
     auto const bid = hipBlockIdx_y;
@@ -156,9 +158,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
         ifail = ifailA + (bid * strideIfail);
 
     assert(nev <= n);
-    assert(map_array != nullptr);
+    assert(isplit_map != nullptr);
 
-    auto const map = map_array + (bid * n);
+    auto const map = isplit_map + (bid * n);
 
     {
         bool constexpr use_shell_sort = true;
@@ -414,7 +416,7 @@ rocblas_status rocsolver_syevx_heevx_template(rocblas_handle handle,
         dim3 grid(1, batch_count, 1);
         dim3 threads(BS1, 1, 1);
 
-        rocblas_int* map_array = nullptr;
+        rocblas_int* isplit_map = nullptr;
         {
             size_t size_scalars = 0;
             size_t size_work1 = 0;
@@ -435,24 +437,20 @@ rocblas_status rocsolver_syevx_heevx_template(rocblas_handle handle,
                 &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
                 &size_tau, &size_nsplit_workArr);
 
-            size_t const size_map_array = sizeof(rocblas_int) * n * batch_count;
-            map_array = (size_work1 >= size_map_array) ? (rocblas_int*)work1
-                : (size_work2 >= size_map_array)       ? (rocblas_int*)work2
-                : (size_work3 >= size_map_array)       ? (rocblas_int*)work3
-                : (size_work4 >= size_map_array)       ? (rocblas_int*)work4
-                : (size_work5 >= size_map_array)       ? (rocblas_int*)work5
-                : (size_work6 >= size_map_array)       ? (rocblas_int*)work6
-                                                       : nullptr;
-
-            assert(map_array != nullptr);
-            if(map_array == nullptr)
+            size_t const size_isplit_map = sizeof(rocblas_int) * n * batch_count;
+            bool const isok = (size_isplit_map <= size_isplit);
+            if(isok)
+            {
+                isplit_map = isplit;
+            }
+            else
             {
                 return (rocblas_status_internal_error);
             };
         };
 
         ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid, threads, 0, stream, n, nev, W, strideW, Z,
-                                shiftZ, ldz, strideZ, ifail, strideF, info, map_array);
+                                shiftZ, ldz, strideZ, ifail, strideF, info, isplit_map);
     }
 
     return rocblas_status_success;

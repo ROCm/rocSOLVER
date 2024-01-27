@@ -283,7 +283,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
             (T*)work3, (T**)nsplit_workArr);
 
         // sort eigenvalues and eigenvectors
-        rocblas_int* map_array = nullptr;
+        rocblas_int* isplit_map = nullptr;
 
         {
             size_t size_scalars = 0;
@@ -306,24 +306,20 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
                 &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
                 &size_tau, &size_nev, &size_nsplit_workArr);
 
-            size_t const size_map_array = sizeof(rocblas_int) * n * batch_count;
-            map_array = (size_work1 >= size_map_array) ? (rocblas_int*)work1
-                : (size_work2 >= size_map_array)       ? (rocblas_int*)work2
-                : (size_work3 >= size_map_array)       ? (rocblas_int*)work3
-                : (size_work4 >= size_map_array)       ? (rocblas_int*)work4
-                : (size_work5 >= size_map_array)       ? (rocblas_int*)work5
-                : (size_work6 >= size_map_array)       ? (rocblas_int*)work6
-                                                       : nullptr;
-
-            assert(map_array != nullptr);
-            if(map_array == nullptr)
+            size_t const size_isplit_map = sizeof(rocblas_int) * n * batch_count;
+            bool const isok = (size_isplit_map <= size_isplit);
+            if(isok)
+            {
+                isplit_map = isplit;
+            }
+            else
             {
                 return (rocblas_status_internal_error);
             };
         };
 
         ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, d_nev, W, strideW,
-                                A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info, map_array);
+                                A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info, isplit_map);
     }
 
     // copy nev from device to host
