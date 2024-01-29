@@ -2107,8 +2107,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             // -------------------------------------
             rocblas_int* work = (rocblas_int*)tempvect;
 
-            auto constexpr max_blocks = 64 * 1000;
-            auto const nblocks = max(1, min(max_blocks, batch_count));
+            auto const nblocks = max(1, batch_count);
 
             ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
                                     D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count, work);
