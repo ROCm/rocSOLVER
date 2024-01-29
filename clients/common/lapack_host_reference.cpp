@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2016-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2016-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,6 +41,43 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void sgecon_(char* norm,
+             int* n,
+             float* A,
+             int* lda,
+             float* anorm,
+             float* rcond,
+             float* work,
+             int* iwork,
+             int* info);
+void dgecon_(char* norm,
+             int* n,
+             double* A,
+             int* lda,
+             double* anorm,
+             double* rcond,
+             double* work,
+             int* iwork,
+             int* info);
+void cgecon_(char* norm,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             float* anorm,
+             float* rcond,
+             rocblas_float_complex* work,
+             float* rwork,
+             int* info);
+void zgecon_(char* norm,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             double* anorm,
+             double* rcond,
+             rocblas_double_complex* work,
+             double* rwork,
+             int* info);
 
 void sgemv_(char* transA,
             int* m,
@@ -2525,6 +2562,72 @@ void dbdsvdx_(char* uplo,
 
 /************************************************************************/
 // These are templated functions used in rocSOLVER clients code
+
+// gecon
+
+template <>
+float cpu_gecon<float, float>(char norm,
+                              rocblas_int n,
+                              float* A,
+                              rocblas_int lda,
+                              float anorm,
+                              float* work,
+                              float* rwork,
+                              rocblas_int* iwork)
+{
+    float rcond;
+    rocblas_int info;
+    sgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, iwork, &info);
+    return rcond;
+}
+
+template <>
+double cpu_gecon<double, double>(char norm,
+                                 rocblas_int n,
+                                 double* A,
+                                 rocblas_int lda,
+                                 double anorm,
+                                 double* work,
+                                 double* rwork,
+                                 rocblas_int* iwork)
+{
+    double rcond;
+    rocblas_int info;
+    dgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, iwork, &info);
+    return rcond;
+}
+
+template <>
+float cpu_gecon<rocblas_float_complex, float>(char norm,
+                                              rocblas_int n,
+                                              rocblas_float_complex* A,
+                                              rocblas_int lda,
+                                              float anorm,
+                                              rocblas_float_complex* work,
+                                              float* rwork,
+                                              rocblas_int* iwork)
+{
+    float rcond;
+    rocblas_int info;
+    cgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, rwork, &info);
+    return rcond;
+}
+
+template <>
+double cpu_gecon<rocblas_double_complex, double>(char norm,
+                                                 rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 rocblas_int lda,
+                                                 double anorm,
+                                                 rocblas_double_complex* work,
+                                                 double* rwork,
+                                                 rocblas_int* iwork)
+{
+    double rcond;
+    rocblas_int info;
+    zgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, rwork, &info);
+    return rcond;
+}
 
 // lacgv
 

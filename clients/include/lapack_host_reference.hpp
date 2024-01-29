@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -75,6 +75,9 @@ template <typename T>
 void cpu_syr(rocblas_fill uplo, rocblas_int n, T alpha, T *x,
                rocblas_int incx, T *A, rocblas_int lda);
 */
+
+template <typename T, typename S>
+S cpu_gecon(char norm, rocblas_int n, T* A, rocblas_int lda, S anorm, T* work, S* rwork, rocblas_int* iwork);
 
 template <typename T>
 void cpu_gemv(rocblas_operation transA,
