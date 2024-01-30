@@ -48,10 +48,6 @@ template <typename T1, typename T2>
 void cpu_asum(rocblas_int n, const T1 *x, rocblas_int incx, T2 *result);
 
 template <typename T>
-void cpu_axpy(rocblas_int n, const T alpha, T *x, rocblas_int incx, T *y,
-                rocblas_int incy);
-
-template <typename T>
 void cpu_copy(rocblas_int n, T *x, rocblas_int incx, T *y, rocblas_int incy);
 
 template <typename T>
@@ -77,7 +73,13 @@ void cpu_syr(rocblas_fill uplo, rocblas_int n, T alpha, T *x,
 */
 
 template <typename T, typename S>
+S cpu_lange(char norm, rocblas_int m, rocblas_int n, T* A, rocblas_int lda, S* work);
+
+template <typename T, typename S>
 S cpu_gecon(char norm, rocblas_int n, T* A, rocblas_int lda, S anorm, T* work, S* rwork, rocblas_int* iwork);
+
+template <typename T>
+void cpu_axpy(rocblas_int n, T alpha, T* x, rocblas_int incx, T* y, rocblas_int incy);
 
 template <typename T>
 void cpu_gemv(rocblas_operation transA,
