@@ -1718,13 +1718,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
         __syncthreads();
 
         if(use_shell_sort)
-        {
             shell_sort(n, D, map);
-        }
         else
-        {
             selection_sort(n, D, map);
-        };
 
         __syncthreads();
 
@@ -1861,7 +1857,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
                                    size_t* size_tempvect,
                                    size_t* size_tempgemm,
                                    size_t* size_tmpz,
-                                   size_t* size_splits,
+                                   size_t* size_splits_map,
                                    size_t* size_workArr,
                                    int solver_mode = CLASSICQR)
 {
@@ -1874,7 +1870,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_tmpz = 0;
         return;
     }
@@ -1885,7 +1881,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_tmpz = 0;
         rocsolver_sterf_getMemorySize<S>(n, batch_count, size_work_stack);
     }
@@ -1896,7 +1892,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_tmpz = 0;
         rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
     }
@@ -1931,7 +1927,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_work_stack = max(s1, s2);
 
         // size for split blocks and sub-blocks positions
-        *size_splits = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
+        *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
 
         // size for temporary diagonal and rank-1 modif vector
         *size_tmpz = sizeof(S) * (2 * n) * batch_count;
@@ -1996,7 +1992,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         S* tempvect,
                                         S* tempgemm,
                                         S* tmpz,
-                                        rocblas_int* splits,
+                                        rocblas_int* splits_map,
                                         S** workArr,
                                         int solver_mode = CLASSICQR)
 {
@@ -2065,12 +2061,12 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         // find independent split blocks in matrix
         ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                                strideD, E + shiftE, strideE, splits, eps);
+                                strideD, E + shiftE, strideE, splits_map, eps);
 
         // 1. divide phase
         //-----------------------------
         ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<S>), dim3(batch_count), dim3(STEDC_BDIM), 0,
-                                stream, n, D + shiftD, strideD, E + shiftE, strideE, splits,
+                                stream, n, D + shiftD, strideD, E + shiftE, strideE, splits_map,
                                 solver_mode);
 
         // 2. solve phase
@@ -2082,7 +2078,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL((stedc_solve_kernel<S>),
                                 dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE,
-                                tempvect, 0, ldt, strideT, info, (S*)work_stack, splits, eps,
+                                tempvect, 0, ldt, strideT, info, (S*)work_stack, splits_map, eps,
                                 ssfmin, ssfmax, solver_mode);
 
         // 3. merge phase
@@ -2092,7 +2088,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<S>), dim3(STEDC_NUM_SPLIT_BLKS, batch_count),
                                 dim3(STEDC_BDIM), lmemsize, stream, n, D + shiftD, strideD,
                                 E + shiftE, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm,
-                                splits, eps, ssfmin, ssfmax, solver_mode);
+                                splits_map, eps, ssfmin, ssfmax, solver_mode);
 
         // 4. update and sort
         //----------------------
@@ -2101,17 +2097,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
 
         // finally sort eigenvalues and eigenvectors
-        {
-            // -------------------------------------
-            // reuse array T* tempvect of size n * n
-            // -------------------------------------
-            rocblas_int* work = (rocblas_int*)tempvect;
-
-            auto const nblocks = max(1, batch_count);
-
-            ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
-                                    D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count, work);
-        };
+        auto const nblocks = max(1, batch_count);
+        ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
+                                D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count,
+                                splits_map);
     }
 
     return rocblas_status_success;

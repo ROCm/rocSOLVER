@@ -801,7 +801,7 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
                                  const rocblas_int ldc,
                                  const rocblas_stride strideC,
                                  rocblas_int* info,
-                                 rocblas_int* isplit_map)
+                                 rocblas_int* splits_map)
 {
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -833,12 +833,11 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     if(nc)
         C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
 
-    rocblas_int* map = (isplit_map == nullptr) ? nullptr : isplit_map + bid * n;
-    //
-    // ensure all singular values converged and are positive
+    rocblas_int* map = (splits_map == nullptr) ? nullptr : splits_map + bid * n;
 
     __syncthreads();
 
+    // ensure all singular values converged and are positive
     for(rocblas_int i = 0; i < n; i++)
     {
         if(i < n - 1 && E[i] != 0)
@@ -866,11 +865,11 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     }
     __syncthreads();
 
+    // sort singular values & vectors
     bool const use_map = (map != nullptr);
     if(use_map)
     {
         shell_sort_descending(n, D, map);
-        // sort singular values & vectors
         __syncthreads();
         bdsqr_permute_swap(n, nv, V, ldv, nu, U, ldu, nc, C, ldc, map);
         __syncthreads();
@@ -932,19 +931,19 @@ void rocsolver_bdsqr_getMemorySize(const rocblas_int n,
                                    const rocblas_int nu,
                                    const rocblas_int nc,
                                    const rocblas_int batch_count,
-                                   size_t* size_splits,
+                                   size_t* size_splits_map,
                                    size_t* size_work)
 {
     // if quick return, no workspace is needed
     if(n == 0 || batch_count == 0)
     {
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_work = 0;
         return;
     }
 
     // size of split indices array
-    *size_splits = sizeof(rocblas_int) * n * batch_count;
+    *size_splits_map = sizeof(rocblas_int) * n * batch_count;
 
     // size of workspace
     rocblas_int incW = 0;
@@ -1021,7 +1020,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                         const rocblas_stride strideC,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
-                                        rocblas_int* splits,
+                                        rocblas_int* splits_map,
                                         S* work)
 {
     ROCSOLVER_ENTER("bdsqr", "uplo:", uplo, "n:", n, "nv:", nv, "nu:", nu, "nc:", nc,
@@ -1067,7 +1066,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     // check for NaNs and Infs in input
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), grid1, threads1, 0, stream, n, D, strideD, E, strideE,
-                            info, maxiter, sfm, tol, splits, work, incW, strideW);
+                            info, maxiter, sfm, tol, splits_map, work, incW, strideW);
 
     if(n > 1)
     {
@@ -1083,17 +1082,13 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL((bdsqr_kernel<T>), grid2, threads3, 0, stream, n, nv, nu, nc, D,
                                 strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
                                 strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
-                                minshift, splits, work, incW, strideW);
+                                minshift, splits_map, work, incW, strideW);
     }
 
     // sort the singular values and vectors
-    //
-    // Note: array isplit_map[] is used to hold the permutation vector
-    //
-    rocblas_int* const isplit_map = (rocblas_int*)work;
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_sort<T>), grid1, threads3, 0, stream, n, nv, nu, nc, D, strideD,
                             E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
-                            ldc, strideC, info, isplit_map);
+                            ldc, strideC, info, splits_map);
 
     return rocblas_status_success;
 }
