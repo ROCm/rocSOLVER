@@ -84,6 +84,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_steqr.cpp
     common/testing_stedc.cpp
     common/testing_stedcj.cpp
+    common/testing_stedcx.cpp
     common/testing_stein.cpp
     common/testing_lasyf.cpp
     common/testing_sterf.cpp
@@ -129,11 +130,13 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_syev_heev.cpp
     common/testing_syevd_heevd.cpp
     common/testing_syevdj_heevdj.cpp
+    common/testing_syevdx_heevdx.cpp
     common/testing_syevj_heevj.cpp
     common/testing_syevx_heevx.cpp
     common/testing_sygv_hegv.cpp
     common/testing_sygvd_hegvd.cpp
     common/testing_sygvdj_hegvdj.cpp
+    common/testing_sygvdx_hegvdx.cpp
     common/testing_sygvj_hegvj.cpp
     common/testing_sygvx_hegvx.cpp
     common/testing_geblttrf_npvt.cpp

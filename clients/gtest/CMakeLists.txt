@@ -62,15 +62,15 @@ set(roclapack_test_source
   syev_heev_gtest.cpp
   syevd_heevd_gtest.cpp
   syevj_heevj_gtest.cpp
+  syevdj_heevdj_gtest.cpp
   syevx_heevx_gtest.cpp
   syevdx_heevdx_gtest.cpp
   sygv_hegv_gtest.cpp
   sygvd_hegvd_gtest.cpp
   sygvj_hegvj_gtest.cpp
+  sygvdj_hegvdj_gtest.cpp
   sygvx_hegvx_gtest.cpp
   sygvdx_hegvdx_gtest.cpp
-  syevdj_heevdj_gtest.cpp
-  sygvdj_hegvdj_gtest.cpp
 )
 
 set(rocauxiliary_test_source
@@ -101,6 +101,7 @@ set(rocauxiliary_test_source
   sterf_gtest.cpp
   steqr_gtest.cpp
   stedc_gtest.cpp
+  stedcx_gtest.cpp
   stebz_gtest.cpp
   stein_gtest.cpp
   latrd_gtest.cpp

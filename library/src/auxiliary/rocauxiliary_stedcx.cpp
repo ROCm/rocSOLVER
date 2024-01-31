@@ -36,7 +36,7 @@
 
 template <typename T, typename S>
 rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
-                                     const rocblas_erange range,
+                                     const rocblas_erange erange,
                                      const rocblas_int n,
                                      const S vl,
                                      const S vu,
@@ -50,7 +50,7 @@ rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
                                      const rocblas_int ldc,
                                      rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("stedcx", "--erange", range, "-n", n, "--vl", vl, "--vu", vu, "--il", il,
+    ROCSOLVER_ENTER_TOP("stedcx", "--erange", erange, "-n", n, "--vl", vl, "--vu", vu, "--il", il,
                         "--iu", iu, "--ldc", ldc);
 
     if(!handle)
@@ -108,9 +108,9 @@ rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_stedcx_template<false, false, T>(
-        handle, n, vl, vu, il, iu, D, strideD, E, strideE, nev, W strideW, C, shiftC, ldc, strideC,
-        info, batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz, (rocblas_int*)splits,
-        (S**)workArr);
+        handle, erange, n, vl, vu, il, iu, D, strideD, E, strideE, nev, W, strideW, C, shiftC, ldc,
+        strideC, info, batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz,
+        (rocblas_int*)splits, (S**)workArr);
 }
 
 /*

@@ -198,9 +198,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // work with STEDC_NUM_SPLIT_BLKS split blocks in parallel
     /* --------------------------------------------------- */
-    for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
-    {
-        /*        // Select current split block
+    //    for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
+    //    {
+    /*        // Select current split block
         p1 = splits[kb];
         p2 = splits[kb + 1];
         bs = p2 - p1;
@@ -211,11 +211,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         levs = stedc_num_levels<rocsolver_stedc_mode_jacobi>(bs);
         blks = 1 << levs;*/
 
-        // 2. SOLVE PHASE
-        /* ----------------------------------------------------------------- */
-        // Solve the blks sub-blocks in parallel.
+    // 2. SOLVE PHASE
+    /* ----------------------------------------------------------------- */
+    // Solve the blks sub-blocks in parallel.
 
-        /*        if(tid < blks)
+    /*        if(tid < blks)
         {
             sbs = ns[tid];
             p2 = ps[tid];
@@ -250,7 +250,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                             sines_diag, top, bottom);
             __syncthreads();
         }*/
-    }
+    //    }
 }
 
 /******************* Host functions ********************************************/
@@ -309,18 +309,18 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
 
 //--------------------------------------------------------------------------------------//
 /** Helper to check argument correctnesss **/
-template <typename T>
+template <typename T, typename S>
 rocblas_status rocsolver_stedcx_argCheck(rocblas_handle handle,
                                          const rocblas_erange range,
                                          const rocblas_int n,
-                                         const T vlow,
-                                         const T vup,
+                                         const S vlow,
+                                         const S vup,
                                          const rocblas_int ilow,
                                          const rocblas_int iup,
-                                         T* D,
-                                         T* E,
+                                         S* D,
+                                         S* E,
                                          rocblas_int* nev,
-                                         T* W,
+                                         S* W,
                                          T* C,
                                          const rocblas_int ldc,
                                          rocblas_int* info)
@@ -356,7 +356,7 @@ rocblas_status rocsolver_stedcx_argCheck(rocblas_handle handle,
 /** STEDCX templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
-                                         const rocblas_erange range,
+                                         const rocblas_erange erange,
                                          const rocblas_int n,
                                          const S vl,
                                          const S vu,
@@ -382,8 +382,8 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                          rocblas_int* splits,
                                          S** workArr)
 {
-    ROCSOLVER_ENTER("stedcx", "erange:", range, "n:", n, "vl:", vl, "vu:", vu, "il:", il, "iu:", iu,
-                    "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
+    ROCSOLVER_ENTER("stedcx", "erange:", erange, "n:", n, "vl:", vl, "vu:", vu, "il:", il,
+                    "iu:", iu, "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)

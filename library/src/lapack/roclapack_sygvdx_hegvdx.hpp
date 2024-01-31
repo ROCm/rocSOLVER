@@ -135,7 +135,7 @@ void rocsolver_sygvdx_hegvdx_getMemorySize(const rocblas_eform itype,
         return;
     }
 
-    /*    bool opt1, opt2, opt3 = true;
+    bool opt1, opt2, opt3 = true;
     size_t unused, temp1, temp2, temp3, temp4, temp5;
 
     // requirements for calling POTRF
@@ -179,7 +179,7 @@ void rocsolver_sygvdx_hegvdx_getMemorySize(const rocblas_eform itype,
         }
     }
 
-    *optim_mem = opt1 && opt2 && opt3;*/
+    *optim_mem = opt1 && opt2 && opt3;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
