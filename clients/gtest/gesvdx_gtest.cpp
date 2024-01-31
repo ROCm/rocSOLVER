@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,7 @@
  * *************************************************************************/
 
 #include "testing_gesvdx.hpp"
+#include "testing_gesvdx_notransv.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -102,7 +103,7 @@ const vector<vector<int>> large_size_range
 const vector<vector<int>> large_opt_range
     = {{0, 0, 1, 5, 10, 0, 0}, {1, 0, 1, 10, 20, 0, 0}, {0, 1, 2, 0, 0, 3, 10}, {1, 1, 0, 0, 0, 0, 0}};
 
-Arguments gesvdx_setup_arguments(gesvdx_tuple tup)
+Arguments gesvdx_setup_arguments(gesvdx_tuple tup, bool notransv)
 {
     vector<int> size = std::get<0>(tup);
     vector<int> opt = std::get<1>(tup);
@@ -118,7 +119,10 @@ Arguments gesvdx_setup_arguments(gesvdx_tuple tup)
     // leading dimensions
     arg.set<rocblas_int>("lda", m + size[2] * 10);
     arg.set<rocblas_int>("ldu", m + size[3] * 10);
-    arg.set<rocblas_int>("ldv", min(m, n) + size[4] * 10);
+    if(notransv)
+        arg.set<rocblas_int>("ldv", n + size[4] * 10);
+    else
+        arg.set<rocblas_int>("ldv", min(m, n) + size[4] * 10);
 
     // vector options
     if(opt[0] == 0)
@@ -148,14 +152,15 @@ Arguments gesvdx_setup_arguments(gesvdx_tuple tup)
 class GESVDX : public ::TestWithParam<gesvdx_tuple>
 {
 protected:
-    GESVDX() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
 
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = gesvdx_setup_arguments(GetParam());
+        Arguments arg = gesvdx_setup_arguments(GetParam(), false);
 
         if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0
            && arg.peek<char>("left_svect") == 'N' && arg.peek<char>("right_svect") == 'N'
@@ -164,6 +169,29 @@ protected:
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         testing_gesvdx<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class GESVDX_NOTRANSV : public ::TestWithParam<gesvdx_tuple>
+{
+protected:
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = gesvdx_setup_arguments(GetParam(), true);
+
+        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0
+           && arg.peek<char>("left_svect") == 'N' && arg.peek<char>("right_svect") == 'N'
+           && arg.peek<char>("srange") == 'A')
+            testing_gesvdx_notransv_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_gesvdx_notransv<BATCHED, STRIDED, T>(arg);
     }
 };
 
@@ -233,11 +261,36 @@ TEST_P(GESVDX, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
-// daily_lapack tests normal execution with medium to large sizes
+TEST_P(GESVDX_NOTRANSV, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GESVDX_NOTRANSV, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GESVDX_NOTRANSV, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GESVDX_NOTRANSV, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          GESVDX,
                          Combine(ValuesIn(large_size_range), ValuesIn(large_opt_range)));
 
-// checkin_lapack tests normal execution with small sizes, invalid sizes,
-// quick returns, and corner cases
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, GESVDX, Combine(ValuesIn(size_range), ValuesIn(opt_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GESVDX_NOTRANSV,
+                         Combine(ValuesIn(large_size_range), ValuesIn(large_opt_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GESVDX_NOTRANSV,
+                         Combine(ValuesIn(size_range), ValuesIn(opt_range)));

@@ -253,9 +253,11 @@ void stein_getError(const rocblas_handle handle,
 
     if(hInfo[0][0] == 0)
     {
+        rocblas_int nn = hNev[0][0];
+
         // check ifail
         err = 0;
-        for(int j = 0; j < hNev[0][0]; j++)
+        for(int j = 0; j < nn; j++)
         {
             EXPECT_EQ(hIfailRes[0][j], 0) << "j = " << j;
             if(hIfailRes[0][j] != 0)
@@ -265,10 +267,25 @@ void stein_getError(const rocblas_handle handle,
 
         // need to implicitly test eigenvectors due to non-uniqueness of eigenvectors under scaling
 
+        // Z should be orthonormal, if it is then Z^T*Z should be the identity
+        if(nn > 0)
+        {
+            std::vector<T> ZZres(nn * nn, 0.0);
+            std::vector<T> I(nn * nn, 0.0);
+
+            for(rocblas_int i = 0; i < nn; i++)
+                I[i + i * nn] = T(1);
+
+            cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, n, T(1),
+                     hZRes[0], ldz, hZRes[0], ldz, T(0), ZZres.data(), nn);
+            err = norm_error('F', nn, nn, nn, I.data(), ZZres.data());
+            *max_err = err > *max_err ? err : *max_err;
+        }
+
         // for each of the nev eigenvalues w_j, verify that the associated eigenvector is in the
         // null space of (A - w_i * I)
         T alpha, t1, t2;
-        for(int j = 0; j < hNev[0][0]; j++)
+        for(int j = 0; j < nn; j++)
         {
             for(int i = 0; i < n; i++)
             {
@@ -288,7 +305,7 @@ void stein_getError(const rocblas_handle handle,
 
         // error is then ||hZ - hZRes|| / ||hZ||
         // using frobenius norm
-        err = norm_error('F', n, hNev[0][0], ldz, hZ[0], hZRes[0]);
+        err = norm_error('F', n, nn, ldz, hZ[0], hZRes[0]);
         *max_err = err > *max_err ? err : *max_err;
     }
     else

@@ -30,3 +30,6 @@ subtrees:
         - file: api/refact
         - file: api/logging
         - file: api/deprecated
+  - caption: About
+    entries:
+      - file: license

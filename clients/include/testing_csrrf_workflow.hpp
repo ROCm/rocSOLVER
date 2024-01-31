@@ -334,8 +334,10 @@ void testing_csrrf_workflow(Arguments& argus)
             matname = fmt::format("posmat_{}_{}", n, nnzM);
 
         testcase = get_sparse_data_dir() / fs::path(matname);
-        fs::path file = testcase / "ptrT";
-        read_last(file.string(), &nnzT);
+        fs::path fileA = testcase / "ptrA";
+        read_last(fileA.string(), &nnzM);
+        fs::path fileT = testcase / "ptrT";
+        read_last(fileT.string(), &nnzT);
     }
 
     // determine existing right-hand-side
