@@ -1,3 +1,8 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _rocsolver_auxiliary_functions:
 
 ***************************
 LAPACK Auxiliary Functions

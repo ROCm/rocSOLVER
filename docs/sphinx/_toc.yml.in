@@ -1,35 +1,34 @@
-# Anywhere {branch} is used, the branch name will be substituted.
-# These comments will also be removed.
+defaults:
+  numbered: False
 root: index
 subtrees:
-  - numbered: True
-    entries:
-    - file: userguide/index
-      subtrees:
-      - entries:
-        - file: userguide/intro
-        - file: userguide/install
-        - file: userguide/examples
-        - file: userguide/memory
-        - file: userguide/logging
-        - file: userguide/clients
-    - file: design/index
-      subtrees:
-      - entries:
-        - file: design/intro
-        - file: design/batch
-        - file: design/tuning
-        - file: design/contribute
-    - file: api/index
-      subtrees:
-      - entries:
-        - file: api/types
-        - file: api/auxiliary
-        - file: api/lapack
-        - file: api/lapacklike
-        - file: api/refact
-        - file: api/logging
-        - file: api/deprecated
-  - caption: About
-    entries:
-      - file: license
+- entries:
+  - file: userguide/install.rst
+    title: Installation
+  - file: userguide/index.rst
+    title: How To
+    subtrees:
+    - entries:
+      - file: userguide/intro.rst
+      - file: userguide/examples.rst
+      - file: userguide/memory.rst
+      - file: userguide/logging.rst
+      - file: userguide/clients.rst
+  - file: design/index.rst
+    title: rocSOLVER Library Design
+    subtrees:
+    - entries:
+      - file: design/tuning.rst
+      - file: design/contribute.rst
+  - file: api/index.rst
+    title: rocSOLVER Reference
+    subtrees:
+    - entries:
+      - file: api/types.rst
+      - file: api/auxiliary.rst
+      - file: api/lapack.rst
+      - file: api/lapacklike.rst
+      - file: api/refact.rst
+      - file: api/logging.rst
+      - file: api/deprecated.rst
+  - file: license.rst

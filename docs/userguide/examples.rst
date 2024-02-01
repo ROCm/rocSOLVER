@@ -1,4 +1,10 @@
 
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _examples:
+
 *************************
 Using rocSOLVER
 *************************
@@ -8,11 +14,6 @@ The header file will need to be included in the user code, and both the rocBLAS 
 will become link-time and run-time dependencies for the user application.
 
 Next, some examples are used to illustrate the basic use of rocSOLVER API and rocSOLVER batched API.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
 
 QR factorization of a single matrix
 ================================================

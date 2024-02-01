@@ -1,11 +1,12 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _contribute:
 
 *******************************
-Contributing Guidelines
+Contributing to rocSOLVER
 *******************************
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
 
 AMD welcomes contributions from the community. Whether those contributions are bug reports,
 bug fixes, documentation additions, performance notes, or other improvements, we value

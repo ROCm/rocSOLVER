@@ -1,20 +1,20 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
 .. _logging-label:
 
 *************************
 Multi-level Logging
 *************************
 
-Similar to `rocBLAS logging <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#logging-in-rocblas>`_,
+Similar to `Logging in rocBLAS <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#logging-in-rocblas>`_,
 rocSOLVER provides logging facilities that can be used to output information
 on rocSOLVER function calls. Three modes of logging are supported: trace logging, bench logging,
 and profile logging.
 
-Note that performance will degrade when logging is enabled.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
+.. note::
+   Performance will degrade when logging is enabled.
 
 Logging modes
 ================================================

@@ -1,3 +1,8 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _refactor:
 
 *****************************************
 Re-factorization and direct solvers

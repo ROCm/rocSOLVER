@@ -1,3 +1,7 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
 .. _tuning_label:
 
 *******************************
@@ -22,12 +26,6 @@ These are not run-time arguments for the associated API functions. The library m
     to predict, and such analysis is beyond the scope of this document. Advanced users and
     developers tuning these values should proceed with caution. New values may (or may not)
     improve or worsen the performance of the associated functions.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
-
 
 geqr2/geqrf and geql2/geqlf functions
 ======================================

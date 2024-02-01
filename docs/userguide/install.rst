@@ -1,12 +1,12 @@
-.. _userguide_install:
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _install:
 
 *****************************
 Building and Installation
 *****************************
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
 
 Prerequisites
 =================

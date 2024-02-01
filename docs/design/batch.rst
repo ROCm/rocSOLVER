@@ -1,13 +1,12 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
 .. _batch_label:
 
 *****************
 Batched rocSOLVER
 *****************
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
 
 .. _batched_routines:
 

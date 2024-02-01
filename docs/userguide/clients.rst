@@ -1,4 +1,8 @@
-.. _clients_label:
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _clients:
 
 *********
 Clients
@@ -16,11 +20,6 @@ If the ``-DBUILD_CLIENTS_TESTS=ON`` flag, the ``-DBUILD_CLIENTS_BENCHMARKS=ON`` 
 ``-DBUILD_CLIENTS_SAMPLES=ON`` flag are passed to the CMake system, the relevant client binaries will normally
 be located in the directory ``<rocsolverDIR>/build/clients/staging``. See the :ref:`Building and installation
 section <userguide_install>` of the User Guide for more information on building the library and its clients.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
 
 Testing rocSOLVER
 ==========================

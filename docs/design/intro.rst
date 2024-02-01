@@ -1,11 +1,11 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-*****************
-Introduction
-*****************
+.. _design-intro:
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
+********************************************************************
+Library Introduction
+********************************************************************
 
 More to come later...

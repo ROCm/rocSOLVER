@@ -1,8 +1,12 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _api_logging:
+
 *****************************************
 Logging Functions and Library Information
 *****************************************
-
-.. _api_logging:
 
 Logging functions
 ===============================
