@@ -10,7 +10,7 @@ Memory Model
 
 Almost all LAPACK and rocSOLVER routines require workspace memory in order to compute their results. In contrast to LAPACK, however, pointers to the workspace are not explicitly passed to rocSOLVER functions as arguments; instead, they are managed behind-the-scenes using a configurable device memory model.
 
-rocSOLVER makes use of and is integrated with the :doc:`rocBLAS Device Memory Allocation <rocBLAS:how-to/Programmers_Guide>`. Workspace memory, and the scheme used to manage it, is tracked on a per-``rocblas_handle`` basis. The same functionality that is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory. You can also refer to `rocBLAS Device Memory Management <https://github.com/ROCm/rocBLAS/blob/develop/docs/Device_Memory_Allocation.pdf>`_.
+rocSOLVER makes use of and is integrated with `the rocBLAS memory model`_. Workspace memory, and the scheme used to manage it, is tracked on a per-``rocblas_handle`` basis. The same functionality that is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory. You can also refer to `rocBLAS Device Memory Management <https://github.com/ROCm/rocBLAS/blob/develop/docs/Device_Memory_Allocation.pdf>`_.
 
 There are four schemes for device memory management:
 

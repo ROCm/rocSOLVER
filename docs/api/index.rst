@@ -8,7 +8,6 @@
 rocSOLVER API Reference
 ########################################
 
-* :ref:`library_api`
 * :ref:`rocsolver-types`
 * :ref:`rocsolver_auxiliary_functions` 
 * :ref:`lapackfunc`

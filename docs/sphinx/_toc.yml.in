@@ -14,11 +14,6 @@ subtrees:
       - file: userguide/memory.rst
       - file: userguide/logging.rst
       - file: userguide/clients.rst
-  - file: design/index.rst
-    title: rocSOLVER Library Design
-    subtrees:
-    - entries:
-      - file: design/tuning.rst
       - file: design/contribute.rst
   - file: api/index.rst
     title: rocSOLVER Reference
@@ -30,5 +25,6 @@ subtrees:
       - file: api/lapacklike.rst
       - file: api/refact.rst
       - file: api/logging.rst
+      - file: design/tuning.rst
       - file: api/deprecated.rst
   - file: license.rst

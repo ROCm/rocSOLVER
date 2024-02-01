@@ -13,3 +13,5 @@ rocSOLVER User Guide
 * :ref:`memory`
 * :ref:`logging-label`
 * :ref:`clients`
+* :ref:`tuning_label`
+* :ref:`contribute`
