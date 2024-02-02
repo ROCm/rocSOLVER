@@ -282,7 +282,7 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
         return;
     }
 
-    /*    size_t s1, s2;
+    size_t s1, s2;
 
     // requirements for solver of small independent blocks
     s1 = sizeof(S) * (n * n + 2) * batch_count;
@@ -304,7 +304,7 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
     *size_splits = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
 
     // size for temporary diagonal and rank-1 modif vector
-    *size_tmpz = sizeof(S) * (2 * n) * batch_count;*/
+    *size_tmpz = sizeof(S) * (2 * n) * batch_count;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -389,7 +389,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     if(batch_count == 0)
         return rocblas_status_success;
 
-    /*    hipStream_t stream;
+    hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
     rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
@@ -415,9 +415,8 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     rocblas_int blocksn = (n - 1) / BS2 + 1;
 
     // initialize identity matrix in C if required
-    if(evect == rocblas_evect_tridiagonal)
-        ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2),
-                                0, stream, n, n, C, shiftC, ldc, strideC);
+    ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2), 0,
+                            stream, n, n, C, shiftC, ldc, strideC);
 
     // initialize identity matrix in tempvect
     rocblas_int ldt = n;
@@ -426,7 +425,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                             stream, n, n, tempvect, 0, ldt, strideT);
 
     // find max number of sub-blocks to consider during the divide phase
-    rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_jacobi>(n);
+    rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_bisection>(n);
 
     // find independent split blocks in matrix
     ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
@@ -434,7 +433,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
 
     // 1. divide phase
     //-----------------------------
-    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_jacobi, S>),
+    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_bisection, S>),
                             dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD, strideD,
                             E + shiftE, strideE, splits);
 
@@ -442,7 +441,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     //-----------------------------
     size_t lmemsize = (n + n % 2) * (sizeof(rocblas_int) + sizeof(S));
 
-    ROCSOLVER_LAUNCH_KERNEL((stedcj_solve_kernel<S>),
+    ROCSOLVER_LAUNCH_KERNEL((stedcx_solve_kernel<S>),
                             dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                             lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect,
                             0, ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
@@ -451,7 +450,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     //----------------
     lmemsize = sizeof(S) * STEDC_BDIM;
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
+    ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_bisection, S>),
                             dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
                             stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
                             strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
@@ -464,6 +463,6 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
 
     ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
                             strideD, C, shiftC, ldc, strideC);
-*/
+
     return rocblas_status_success;
 }
