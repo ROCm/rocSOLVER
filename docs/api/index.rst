@@ -14,4 +14,5 @@ rocSOLVER API Reference
 * :ref:`lapack-like`
 * :ref:`refactor`
 * :ref:`api_logging`
+* :ref:`tuning_label`
 * :ref:`deprecated`
