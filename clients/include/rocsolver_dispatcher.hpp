@@ -85,6 +85,7 @@
 #include "testing_potrs.hpp"
 #include "testing_stebz.hpp"
 #include "testing_stedc.hpp"
+#include "testing_stedcj.hpp"
 #include "testing_stein.hpp"
 #include "testing_steqr.hpp"
 #include "testing_sterf.hpp"
@@ -132,6 +133,7 @@ class rocsolver_dispatcher
             {"bdsqr", testing_bdsqr<T>},
             {"steqr", testing_steqr<T>},
             {"stedc", testing_stedc<T>},
+            {"stedcj", testing_stedcj<T>},
             {"stein", testing_stein<T>},
             {"lasyf", testing_lasyf<T>},
             {"lauum", testing_lauum<T>},

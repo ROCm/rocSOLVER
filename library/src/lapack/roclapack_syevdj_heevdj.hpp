@@ -1,5 +1,5 @@
 /************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
 #pragma once
 
 #include "auxiliary/rocauxiliary_ormtr_unmtr.hpp"
-#include "auxiliary/rocauxiliary_stedc.hpp"
+#include "auxiliary/rocauxiliary_stedcj.hpp"
 #include "rocblas.hpp"
 #include "roclapack_syev_heev.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
@@ -105,11 +105,9 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
     rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w11, &w21, &w31,
                                                     &unused);
 
-    // extra requirements for computing eigenvalues and vectors (stedc)
-    int solver_mode = JACOBI;
-    rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
-                                                 &w22, &w32, size_work4, size_workSplits, &unused,
-                                                 solver_mode);
+    // extra requirements for computing eigenvalues and vectors (stedcj)
+    rocsolver_stedcj_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
+                                                  &w22, &w32, size_work4, size_workSplits, &unused);
 
     // extra requirements for ormtr/unmtr
     rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
@@ -242,11 +240,10 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
         const rocblas_stride strideV = n * n;
 
         // solve with Jacobi solver
-        int solver_mode = JACOBI;
-        rocsolver_stedc_template<false, ISBATCHED, T>(
+        rocsolver_stedcj_template<false, ISBATCHED, T>(
             handle, rocblas_evect_tridiagonal, n, D, 0, strideD, workE, 0, n, workVec, 0, ldv,
             strideV, info, batch_count, work1, (S*)work2, (S*)work3, (S*)work4, workSplits,
-            (S**)workArr, solver_mode);
+            (S**)workArr);
 
         // update vectors
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
