@@ -17,31 +17,31 @@ The code is open and hosted at: https://github.com/ROCm/rocSOLVER
 The rocSOLVER documentation is structured as follows:
 
 .. grid:: 2
-   :gutter: 3
+  :gutter: 3
 
-    .. grid-item-card:: Installation
+  .. grid-item-card:: Installation
 
-      * :ref:`install`
+    * :ref:`install`
 
-    .. grid-item-card:: How To
+  .. grid-item-card:: How to
 
-      * :ref:`intro`
-      * :ref:`examples`
-      * :ref:`memory`
-      * :ref:`logging-label`
-      * :ref:`clients`
-      * :ref:`contribute`
+    * :ref:`intro`
+    * :ref:`examples`
+    * :ref:`memory`
+    * :ref:`logging-label`
+    * :ref:`clients`
+    * :ref:`contribute`
 
-    .. grid-item-card:: API reference
+  .. grid-item-card:: API reference
 
-      * :ref:`rocsolver-types`
-      * :ref:`rocsolver_auxiliary_functions` 
-      * :ref:`lapackfunc`
-      * :ref:`lapack-like`
-      * :ref:`refactor`
-      * :ref:`api_logging`
-      * :ref:`tuning_label`
-      * :ref:`deprecated`
+    * :ref:`rocsolver-types`
+    * :ref:`rocsolver_auxiliary_functions` 
+    * :ref:`lapackfunc`
+    * :ref:`lapack-like`
+    * :ref:`refactor`
+    * :ref:`api_logging`
+    * :ref:`tuning_label`
+    * :ref:`deprecated`
 
 To contribute to the documentation refer to `Contributing to ROCm  <https://rocm.docs.amd.com/en/latest/contribute/index.html>`_.
 
