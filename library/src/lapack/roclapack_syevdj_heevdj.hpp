@@ -106,8 +106,8 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
                                                     &unused);
 
     // extra requirements for computing eigenvalues and vectors (stedcj)
-    rocsolver_stedcj_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
-                                                  &w22, &w32, size_work4, size_workSplits, &unused);
+    rocsolver_stedcj_getMemorySize<BATCHED, T, S>(n, batch_count, &w12, &w22, &w32, size_work4,
+                                                  size_workSplits, &unused);
 
     // extra requirements for ormtr/unmtr
     rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
@@ -241,9 +241,8 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
 
         // solve with Jacobi solver
         rocsolver_stedcj_template<false, ISBATCHED, T>(
-            handle, rocblas_evect_tridiagonal, n, D, 0, strideD, workE, 0, n, workVec, 0, ldv,
-            strideV, info, batch_count, work1, (S*)work2, (S*)work3, (S*)work4, workSplits,
-            (S**)workArr);
+            handle, n, D, strideD, workE, n, workVec, 0, ldv, strideV, info, batch_count, work1,
+            (S*)work2, (S*)work3, (S*)work4, workSplits, (S**)workArr);
 
         // update vectors
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(

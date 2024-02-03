@@ -400,7 +400,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
-    if(n == 1 && evect != rocblas_evect_none)
+    if(n == 1)
         ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
                                 strideC, n, 1);
     if(n <= 1)
@@ -428,32 +428,32 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_bisection>(n);
 
     // find independent split blocks in matrix
-    ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                            strideD, E + shiftE, strideE, splits, eps);
+    ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D, strideD, E,
+                            strideE, splits, eps);
 
     // 1. divide phase
     //-----------------------------
     ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_bisection, S>),
-                            dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD, strideD,
-                            E + shiftE, strideE, splits);
+                            dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D, strideD, E,
+                            strideE, splits);
 
     // 2. solve phase
     //-----------------------------
     size_t lmemsize = (n + n % 2) * (sizeof(rocblas_int) + sizeof(S));
 
-    ROCSOLVER_LAUNCH_KERNEL((stedcx_solve_kernel<S>),
+    /*    ROCSOLVER_LAUNCH_KERNEL((stedcx_solve_kernel<S>),
                             dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
-                            lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect,
+                            lmemsize, stream, n, D, strideD, E, strideE, tempvect,
                             0, ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
-
+*/
     // 3. merge phase
     //----------------
     lmemsize = sizeof(S) * STEDC_BDIM;
 
     ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_bisection, S>),
                             dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
-                            stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
-                            strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+                            stream, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT, tmpz,
+                            tempgemm, splits, eps, ssfmin, ssfmax);
 
     // 4. update and sort
     //----------------------
@@ -461,8 +461,8 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
                                     (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                            strideD, C, shiftC, ldc, strideC);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D, strideD,
+                            C, shiftC, ldc, strideC);
 
     return rocblas_status_success;
 }

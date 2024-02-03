@@ -279,8 +279,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 //--------------------------------------------------------------------------------------//
 /** This helper calculates required workspace size **/
 template <bool BATCHED, typename T, typename S>
-void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
-                                    const rocblas_int n,
+void rocsolver_stedcj_getMemorySize(const rocblas_int n,
                                     const rocblas_int batch_count,
                                     size_t* size_work_stack,
                                     size_t* size_tempvect,
@@ -332,13 +331,10 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
 /** STEDC templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
-                                         const rocblas_evect evect,
                                          const rocblas_int n,
                                          S* D,
-                                         const rocblas_int shiftD,
                                          const rocblas_stride strideD,
                                          S* E,
-                                         const rocblas_int shiftE,
                                          const rocblas_stride strideE,
                                          U C,
                                          const rocblas_int shiftC,
@@ -353,8 +349,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                          rocblas_int* splits,
                                          S** workArr)
 {
-    ROCSOLVER_ENTER("stedcj", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
-                    "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
+    ROCSOLVER_ENTER("stedcj", "n:", n, "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)
@@ -371,7 +366,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
-    if(n == 1 && evect != rocblas_evect_none)
+    if(n == 1)
         ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
                                 strideC, n, 1);
     if(n <= 1)
@@ -386,9 +381,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     rocblas_int blocksn = (n - 1) / BS2 + 1;
 
     // initialize identity matrix in C if required
-    if(evect == rocblas_evect_tridiagonal)
-        ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2),
-                                0, stream, n, n, C, shiftC, ldc, strideC);
+    ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2), 0,
+                            stream, n, n, C, shiftC, ldc, strideC);
 
     // initialize identity matrix in tempvect
     rocblas_int ldt = n;
@@ -400,14 +394,13 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_jacobi>(n);
 
     // find independent split blocks in matrix
-    ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                            strideD, E + shiftE, strideE, splits, eps);
+    ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D, strideD, E,
+                            strideE, splits, eps);
 
     // 1. divide phase
     //-----------------------------
-    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_jacobi, S>),
-                            dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD, strideD,
-                            E + shiftE, strideE, splits);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_jacobi, S>), dim3(batch_count),
+                            dim3(STEDC_BDIM), 0, stream, n, D, strideD, E, strideE, splits);
 
     // 2. solve phase
     //-----------------------------
@@ -415,8 +408,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
 
     ROCSOLVER_LAUNCH_KERNEL((stedcj_solve_kernel<S>),
                             dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
-                            lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect,
-                            0, ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
+                            lmemsize, stream, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT,
+                            info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
 
     // 3. merge phase
     //----------------
@@ -424,8 +417,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
 
     ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
                             dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
-                            stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
-                            strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+                            stream, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT, tmpz,
+                            tempgemm, splits, eps, ssfmin, ssfmax);
 
     // 4. update and sort
     //----------------------
@@ -433,8 +426,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
                                     (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                            strideD, C, shiftC, ldc, strideC);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D, strideD,
+                            C, shiftC, ldc, strideC);
 
     return rocblas_status_success;
 }

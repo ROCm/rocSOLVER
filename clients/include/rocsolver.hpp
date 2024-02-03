@@ -107,7 +107,6 @@ rocblas_status rocsolver_zstedcx(rocblas_handle handle,
                                  rocblas_int* info);
 
 rocblas_status rocsolver_sstedcj(rocblas_handle handle,
-                                 const rocblas_evect evect,
                                  const rocblas_int n,
                                  float* D,
                                  float* E,
@@ -116,7 +115,6 @@ rocblas_status rocsolver_sstedcj(rocblas_handle handle,
                                  rocblas_int* info);
 
 rocblas_status rocsolver_dstedcj(rocblas_handle handle,
-                                 const rocblas_evect evect,
                                  const rocblas_int n,
                                  double* D,
                                  double* E,
@@ -125,7 +123,6 @@ rocblas_status rocsolver_dstedcj(rocblas_handle handle,
                                  rocblas_int* info);
 
 rocblas_status rocsolver_cstedcj(rocblas_handle handle,
-                                 const rocblas_evect evect,
                                  const rocblas_int n,
                                  float* D,
                                  float* E,
@@ -134,7 +131,6 @@ rocblas_status rocsolver_cstedcj(rocblas_handle handle,
                                  rocblas_int* info);
 
 rocblas_status rocsolver_zstedcj(rocblas_handle handle,
-                                 const rocblas_evect evect,
                                  const rocblas_int n,
                                  double* D,
                                  double* E,
@@ -2194,7 +2190,6 @@ inline rocblas_status rocsolver_stedc(rocblas_handle handle,
 
 /******************** STEDCJ ********************/
 inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
-                                       rocblas_evect evect,
                                        rocblas_int n,
                                        float* D,
                                        float* E,
@@ -2202,11 +2197,10 @@ inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
                                        rocblas_int ldc,
                                        rocblas_int* info)
 {
-    return rocsolver_sstedcj(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_sstedcj(handle, n, D, E, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
-                                       rocblas_evect evect,
                                        rocblas_int n,
                                        double* D,
                                        double* E,
@@ -2214,11 +2208,10 @@ inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
                                        rocblas_int ldc,
                                        rocblas_int* info)
 {
-    return rocsolver_dstedcj(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_dstedcj(handle, n, D, E, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
-                                       rocblas_evect evect,
                                        rocblas_int n,
                                        float* D,
                                        float* E,
@@ -2226,11 +2219,10 @@ inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
                                        rocblas_int ldc,
                                        rocblas_int* info)
 {
-    return rocsolver_cstedcj(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_cstedcj(handle, n, D, E, C, ldc, info);
 }
 
 inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
-                                       rocblas_evect evect,
                                        rocblas_int n,
                                        double* D,
                                        double* E,
@@ -2238,7 +2230,7 @@ inline rocblas_status rocsolver_stedcj(rocblas_handle handle,
                                        rocblas_int ldc,
                                        rocblas_int* info)
 {
-    return rocsolver_zstedcj(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver_zstedcj(handle, n, D, E, C, ldc, info);
 }
 /********************************************************/
 
