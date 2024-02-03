@@ -49,6 +49,5 @@ with `--gtest_filter='daily*'`.
 Unfortunately, sometimes a contribution cannot be accepted. The rationale for a decision may or may
 not be disclosed.
 
-
-[1]: https://rocsolver.readthedocs.io/en/latest/userguide_install.html
+[1]: https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/userguide/install.html
 [2]: https://github.com/google/googletest/blob/release-1.10.0/googletest/docs/advanced.md#running-a-subset-of-the-tests

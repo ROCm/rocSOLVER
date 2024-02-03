@@ -15,13 +15,13 @@ Other Lapack-like routines provided by rocSOLVER. These are divided into the fol
 
     * i, j, and k are used as general purpose indices. In some legacy LAPACK APIs, k could be
       a parameter indicating some problem/matrix dimension.
-    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices, 
-      i is assigned to rows, j to columns and k to blocks. :math:`l` is always used to index 
+    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices,
+      i is assigned to rows, j to columns and k to blocks. :math:`l` is always used to index
       matrices/problems in a batch.
     * x[i] stands for the i-th element of vector x, while A[i,j] represents the element
       in the i-th row and j-th column of matrix A. Indices are 1-based, i.e. x[1] is the first
       element of x.
-    * To identify a block in a matrix or a matrix in the batch, k and :math:`l` are used as sub-indices 
+    * To identify a block in a matrix or a matrix in the batch, k and :math:`l` are used as sub-indices
     * x_i :math:`=x_i`; we sometimes use both notations, :math:`x_i` when displaying mathematical
       equations, and x_i in the text describing the function parameters.
     * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then
@@ -387,6 +387,86 @@ rocsolver_<type>hegvj_strided_batched()
    :outline:
 .. doxygenfunction:: rocsolver_chegvj_strided_batched
 
+
+.. _syevdj:
+
+rocsolver_<type>syevdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdj
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdj
+
+rocsolver_<type>syevdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdj_batched
+
+rocsolver_<type>syevdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdj_strided_batched
+
+.. _heevdj:
+
+rocsolver_<type>heevdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdj
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdj
+
+rocsolver_<type>heevdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdj_batched
+
+rocsolver_<type>heevdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdj_strided_batched
+
+.. _sygvdj:
+
+rocsolver_<type>sygvdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdj
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdj
+
+rocsolver_<type>sygvdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdj_batched
+
+rocsolver_<type>sygvdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdj_strided_batched
+
+.. _hegvdj:
+
+rocsolver_<type>hegvdj()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdj
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdj
+
+rocsolver_<type>hegvdj_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdj_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdj_batched
+
+rocsolver_<type>hegvdj_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdj_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdj_strided_batched
 
 
 .. _likesvds:

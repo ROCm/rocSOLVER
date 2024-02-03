@@ -1,5 +1,5 @@
 # ##########################################################################
-# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -167,8 +167,6 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1102
   )
   set(AMDGPU_TARGETS_INIT
-    gfx803
-    gfx900
     gfx906:xnack-
     gfx908:xnack-
     gfx1010
@@ -188,7 +186,7 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
-set(rocsolver_pkgdeps "rocblas >= 4.2")
+set(rocsolver_pkgdeps "rocblas >= 4.1")
 
 if(BUILD_WITH_SPARSE)
   find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})

@@ -29,7 +29,7 @@ void get_example_matrix(std::vector<double>& hA,
 }
 
 // We use rocsolver_dgeqrf to factor a real M-by-N matrix, A.
-// See https://rocsolver.readthedocs.io/en/latest/api_lapackfunc.html#c.rocsolver_dgeqrf
+// See https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/api/lapack.html#rocsolver-type-geqrf
 int main() {
   rocblas_int M;          // rows
   rocblas_int N;          // cols
