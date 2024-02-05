@@ -309,8 +309,11 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
+set(static_depends)
+
 if(BUILD_WITH_SPARSE)
   target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+  list(APPEND static_depends PACKAGE rocsparse)
   set_source_files_properties(${rocsolver_refact_source}
     PROPERTIES
       COMPILE_DEFINITIONS HAVE_ROCSPARSE
@@ -322,6 +325,7 @@ if(ROCSOLVER_EMBED_FMT)
 else()
   target_link_libraries(rocsolver PRIVATE fmt::fmt)
 endif()
+list(APPEND static_depends PACKAGE fmt)
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
 target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
@@ -418,6 +422,8 @@ rocm_export_targets(
   DEPENDS
     PACKAGE hip
     PACKAGE rocblas
+  STATIC_DEPENDS
+    ${static_depends}
   NAMESPACE roc::
 )
 
