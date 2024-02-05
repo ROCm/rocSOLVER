@@ -186,7 +186,7 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
-set(rocsolver_pkgdeps "rocblas >= 4.2")
+set(rocsolver_pkgdeps "rocblas >= 4.1")
 
 if(BUILD_WITH_SPARSE)
   find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
