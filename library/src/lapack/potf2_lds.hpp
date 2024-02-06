@@ -377,6 +377,14 @@ __device__ static void herk_small(bool const is_upper,
     __syncthreads();
 }
 
+/**
+ * ------------------------------------------------
+ * perform Cholesky factorization for N by N matrix.
+ * using a conceptually recursive block formulation
+ * note: this function executes within a single thread block.
+ * ------------------------------------------------
+**/
+
 template <typename T, typename Treal, typename I, int N = 1>
 __device__ static void potf2_small(bool is_upper, T* A, const I lda, I* info, I ioffset)
 {
@@ -519,6 +527,179 @@ __device__ static void potf2_small(bool is_upper, T* A, const I lda, I* info, I 
     }
 }
 
+template <typename T, typename I>
+__device__ static void
+    potf2_simple(bool const is_upper, I const n, T* const A, I const lda, I* const info)
+{
+    bool const is_lower = (!is_upper);
+
+    auto const i_start = hipThreadIdx_x;
+    auto const i_inc = hipBlockDim_x;
+    auto const j_start = hipThreadIdx_y;
+    auto const j_inc = hipBlockDim_y;
+    assert(hipBlockDim_z == 1);
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const j0_start = tid;
+    auto const j0_inc = nthreads;
+
+    auto idx2D = [](auto i, auto j, auto lda) { return (i + j * lda); };
+
+    *info = 0;
+    if(is_lower)
+    {
+        // ---------------------------------------------------
+        // [  l11     ]  * [ l11'   vl21' ]  =  [ a11       ]
+        // [ vl21  L22]    [        L22' ]     [ va21, A22 ]
+        //
+        //
+        //   assume l11 is scalar 1x1 matrix
+        //
+        //   (1) l11 * l11' = a11 =>  l11 = sqrt( abs(a11) ), scalar computation
+        //   (2) vl21 * l11' = va21 =>  vl21 = va21/ l11', scale vector
+        //   (3) L22 * L22' + vl21 * vl21' = A22
+        //
+        //   (3a) A22 = A22 - vl21 * vl21',  symmetric rank-1 update
+        //   (3b) L22 * L22' = A22,   cholesky factorization, tail recursion
+        // ---------------------------------------------------
+
+        for(I kcol = 0; kcol < n; kcol++)
+        {
+            auto kk = idx2D(kcol, kcol, lda);
+            auto const akk = A[kk];
+            bool const isok = (std::real(akk) >= 0) && (std::imag(akk) == 0);
+            if(!isok)
+            {
+                if(tid == 0)
+                {
+                    *info = kcol + 1;
+                };
+                break;
+            }
+
+            auto const lkk = std::sqrt(std::abs(akk));
+            if(tid == 0)
+            {
+                A[kk] = lkk;
+            }
+
+            __syncthreads();
+
+            // ------------------------------------------------------------
+            //   (2) vl21 * l11' = va21 =>  vl21 = va21/ l11', scale vector
+            // ------------------------------------------------------------
+
+            auto const inv_lkk = 1 / rocsolver_conj(lkk);
+            for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
+            {
+                auto const j0k = idx2D(j0, kcol, lda);
+                A[j0k] *= inv_lkk;
+            }
+
+            __syncthreads();
+
+            // ------------------------------------------------------------
+            //   (3a) A22 = A22 - vl21 * vl21',  symmetric rank-1 update
+            //
+            //   note: update lower triangular part
+            // ------------------------------------------------------------
+
+            for(I j = (kcol + 1) + j_start; j < n; j += j_inc)
+            {
+                auto const vj = A[idx2D(j, kcol, lda)];
+                for(I i = (kcol + 1) + i_start; i < n; i += i_inc)
+                {
+                    auto const vi = A[idx2D(i, kcol, lda)];
+                    auto const ij = idx2D(i, j, lda);
+                    bool const lower_part = (i >= j);
+                    if(lower_part)
+                    {
+                        A[ij] = A[ij] - vi * rocsolver_conj(vj);
+                    };
+                }
+            }
+
+            __syncthreads();
+
+        } // end for kcol
+    }
+    else
+    {
+        // --------------------------------------------------
+        // [u11'        ] * [u11    vU12 ] = [ a11     vA12 ]
+        // [vU12'   U22']   [       U22  ]   [ vA12'   A22  ]
+        //
+        // (1) u11' * u11 = a11 =?  u11 = sqrt( abs( a11 ) )
+        // (2) vU12' * u11 = vA12', or u11' * vU12 = vA12
+        //     or vU12 = vA12/u11'
+        // (3) vU12' * vU12 + U22'*U22 = A22
+        //
+        // (3a) A22 = A22 - vU12' * vU12
+        // (3b) U22' * U22 = A22,  cholesky factorization, tail recursion
+        // --------------------------------------------------
+
+        for(I kcol = 0; kcol < n; kcol++)
+        {
+            auto const kk = idx2D(kcol, kcol, lda);
+            auto const akk = A[kk];
+            bool const isok = (std::real(akk) >= 0) && (std::imag(akk) == 0);
+            if(!isok)
+            {
+                *info = kcol + 1;
+                break;
+            }
+
+            auto const ukk = std::sqrt(std::abs(akk));
+            if(tid == 0)
+            {
+                A[kk] = ukk;
+            }
+            __syncthreads();
+
+            // ----------------------------------------------
+            // (2) vU12' * u11 = vA12', or u11' * vU12 = vA12
+            // ----------------------------------------------
+            auto const inv_ukk = 1 / rocsolver_conj(ukk);
+            for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
+            {
+                auto const kj0 = idx2D(kcol, j0, lda);
+                A[kj0] *= inv_ukk;
+            }
+
+            __syncthreads();
+
+            // -----------------------------
+            // (3a) A22 = A22 - vU12' * vU12
+            //
+            // note: update upper triangular part
+            // -----------------------------
+            for(I j = (kcol + 1) + j_start; j < n; j += j_inc)
+            {
+                auto const vj = A[idx2D(kcol, j, lda)];
+                for(I i = (kcol + 1) + i_start; i < n; i += i_inc)
+                {
+                    auto const vi = A[idx2D(kcol, i, lda)];
+                    auto const ij = idx2D(i, j, lda);
+
+                    bool const upper_part = (i <= j);
+                    if(upper_part)
+                    {
+                        A[ij] = A[ij] - rocsolver_conj(vi) * vj;
+                    };
+                }
+            }
+
+            __syncthreads();
+
+        } // end for kcol
+    }
+
+    __syncthreads();
+}
+
 template <typename T, typename U, typename Treal, int N = POTRF_BLOCKSIZE>
 ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
                                 U AA,
@@ -575,7 +756,7 @@ ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
     __syncthreads();
 
     rocblas_int ioffset = 0;
-    potf2_small<T, Treal, rocblas_int, N>(is_upper, Ash, ld_Ash, info, ioffset);
+    potf2_simple<T, rocblas_int>(is_upper, N, Ash, ld_Ash, info);
 
     __syncthreads();
 
