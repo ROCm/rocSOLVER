@@ -408,7 +408,7 @@ __device__ static void potf2_small(bool is_upper, T* A, const I lda, I* info, I 
     if(N == 1)
     {
         T const aii = *A;
-        bool const isok = (std::real(aii) >= 0) && (std::imag(aii) == 0);
+        bool const isok = (std::real(aii) >= 0); // note test ignores imaginary part
         *info = (isok) ? 0 : 1 + ioffset;
         if(isok)
         {
@@ -548,7 +548,6 @@ __device__ static void
 
     auto idx2D = [](auto i, auto j, auto lda) { return (i + j * lda); };
 
-    *info = 0;
     if(is_lower)
     {
         // ---------------------------------------------------
@@ -569,18 +568,20 @@ __device__ static void
         for(I kcol = 0; kcol < n; kcol++)
         {
             auto kk = idx2D(kcol, kcol, lda);
-            auto const akk = A[kk];
-            bool const isok = (std::real(akk) >= 0) && (std::imag(akk) == 0);
+            auto const akk = std::real(A[kk]);
+            bool const isok = (akk > 0) && (std::isfinite(akk));
             if(!isok)
             {
                 if(tid == 0)
                 {
-                    *info = kcol + 1;
-                };
+                    A[kk] = akk;
+                    // Fortran 1-based index
+                    *info = (*info == 0) ? kcol + 1 : (*info);
+                }
                 break;
             }
 
-            auto const lkk = std::sqrt(std::abs(akk));
+            auto const lkk = std::sqrt(akk);
             if(tid == 0)
             {
                 A[kk] = lkk;
@@ -612,11 +613,11 @@ __device__ static void
                 auto const vj = A[idx2D(j, kcol, lda)];
                 for(I i = (kcol + 1) + i_start; i < n; i += i_inc)
                 {
-                    auto const vi = A[idx2D(i, kcol, lda)];
-                    auto const ij = idx2D(i, j, lda);
                     bool const lower_part = (i >= j);
                     if(lower_part)
                     {
+                        auto const vi = A[idx2D(i, kcol, lda)];
+                        auto const ij = idx2D(i, j, lda);
                         A[ij] = A[ij] - vi * rocsolver_conj(vj);
                     };
                 }
@@ -644,15 +645,21 @@ __device__ static void
         for(I kcol = 0; kcol < n; kcol++)
         {
             auto const kk = idx2D(kcol, kcol, lda);
-            auto const akk = A[kk];
-            bool const isok = (std::real(akk) >= 0) && (std::imag(akk) == 0);
+            auto const akk = std::real(A[kk]);
+            bool const isok = (akk > 0) && (std::isfinite(akk));
             if(!isok)
             {
-                *info = kcol + 1;
+                A[kk] = akk;
+                if(tid == 0)
+                {
+                    // Fortran 1-based index
+                    *info = (*info == 0) ? kcol + 1 : (*info);
+                }
+
                 break;
             }
 
-            auto const ukk = std::sqrt(std::abs(akk));
+            auto const ukk = std::sqrt(akk);
             if(tid == 0)
             {
                 A[kk] = ukk;
@@ -681,12 +688,12 @@ __device__ static void
                 auto const vj = A[idx2D(kcol, j, lda)];
                 for(I i = (kcol + 1) + i_start; i < n; i += i_inc)
                 {
-                    auto const vi = A[idx2D(kcol, i, lda)];
-                    auto const ij = idx2D(i, j, lda);
-
                     bool const upper_part = (i <= j);
                     if(upper_part)
                     {
+                        auto const vi = A[idx2D(kcol, i, lda)];
+                        auto const ij = idx2D(i, j, lda);
+
                         A[ij] = A[ij] - rocsolver_conj(vi) * vj;
                     };
                 }
@@ -700,8 +707,9 @@ __device__ static void
     __syncthreads();
 }
 
-template <typename T, typename U, typename Treal, int N = POTRF_BLOCKSIZE>
+template <typename T, typename U>
 ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
+                                const rocblas_int n,
                                 U AA,
                                 const rocblas_int shiftA,
                                 const rocblas_stride strideA,
@@ -710,70 +718,86 @@ ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
 {
     bool const is_lower = (!is_upper);
 
+    using Treal = decltype(std::real(T{}));
+
     auto const i_start = hipThreadIdx_x;
     auto const i_inc = hipBlockDim_x;
     auto const j_start = hipThreadIdx_y;
     auto const j_inc = hipBlockDim_y;
     assert(hipBlockDim_z == 1);
 
+    // --------------------------------
+    // note hipGridDim_z == batch_count
+    // --------------------------------
     auto const bid = hipBlockIdx_z;
     assert(AA != nullptr);
 
     T* const A = (AA != nullptr) ? load_ptr_batch(AA, bid, shiftA, strideA) : nullptr;
+
+    assert(info != nullptr);
+    rocblas_int* const info_bid = (info == nullptr) ? nullptr : &(info[bid]);
+
     assert(A != nullptr);
 
-    auto idx2D = [](auto i, auto j, auto lda) { return (i + j * lda); };
+    auto idx2D = [](auto i, auto j, auto lda) { return (i + j * static_cast<int64_t>(lda)); };
 
     // -----------------------------------------
-    // assume N by N matrix will fit in LDS cache
+    // assume n by n matrix will fit in LDS cache
     // -----------------------------------------
 
-    auto const ld_Ash = N;
-    {
-        size_t constexpr LDS_MAXIMUM_SIZE = 64 * 1024;
-        assert((sizeof(T) * ld_Ash * N) <= LDS_MAXIMUM_SIZE);
-    }
+    auto const ld_Ash = n;
+    size_t constexpr LDS_MAXIMUM_SIZE = 64 * 1024;
 
-    __shared__ T Ash[ld_Ash * N];
+    bool const use_lds = (sizeof(T) * ld_Ash * n <= LDS_MAXIMUM_SIZE);
+    __shared__ T Ash[LDS_MAXIMUM_SIZE / sizeof(T)];
 
     T const zero = static_cast<T>(0);
     // ------------------------------------
-    // copy N by N matrix into shared memory
+    // copy n by n matrix into shared memory
     // ------------------------------------
     __syncthreads();
 
-    for(auto j = j_start; j < N; j += j_inc)
+    if(use_lds)
     {
-        for(auto i = i_start; i < N; i += i_inc)
+        for(auto j = j_start; j < n; j += j_inc)
         {
-            bool const lower_part = (i >= j);
-            bool const upper_part = (i <= j);
-            bool const do_assignment = (is_upper && upper_part) || (is_lower && lower_part);
+            for(auto i = i_start; i < n; i += i_inc)
+            {
+                bool const lower_part = (i >= j);
+                bool const upper_part = (i <= j);
+                bool const do_assignment = (is_upper && upper_part) || (is_lower && lower_part);
 
-            Ash[i + j * ld_Ash] = (do_assignment) ? A[idx2D(i, j, lda)] : zero;
+                Ash[i + j * ld_Ash] = (do_assignment) ? A[idx2D(i, j, lda)] : zero;
+            }
         }
     }
     __syncthreads();
 
-    rocblas_int ioffset = 0;
-    potf2_simple<T, rocblas_int>(is_upper, N, Ash, ld_Ash, info);
+    {
+        T* const Amat = (use_lds) ? Ash : A;
+        auto const ldAmat = (use_lds) ? ld_Ash : lda;
+        potf2_simple<T, rocblas_int>(is_upper, n, Amat, ldAmat, info_bid);
+    }
 
     __syncthreads();
 
     // -------------------------------------
-    // copy N by N matrix into global memory
+    // copy n by n matrix into global memory
     // -------------------------------------
-    for(auto j = j_start; j < N; j += j_inc)
+    if(use_lds)
     {
-        for(auto i = i_start; i < N; i += i_inc)
+        for(auto j = j_start; j < n; j += j_inc)
         {
-            bool const lower_part = (i >= j);
-            bool const upper_part = (i <= j);
-            bool const do_assignment = (is_upper && upper_part) || (is_lower && lower_part);
-            if(do_assignment)
+            for(auto i = i_start; i < n; i += i_inc)
             {
-                auto const ij = idx2D(i, j, lda);
-                A[ij] = Ash[i + j * ld_Ash];
+                bool const lower_part = (i >= j);
+                bool const upper_part = (i <= j);
+                bool const do_assignment = (is_upper && upper_part) || (is_lower && lower_part);
+                if(do_assignment)
+                {
+                    auto const ij = idx2D(i, j, lda);
+                    A[ij] = Ash[i + j * ld_Ash];
+                }
             }
         }
     }
