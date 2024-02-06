@@ -679,6 +679,15 @@ ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
         info[bid] = 0;
 }
 
+/**
+ --------------------------------------------
+ perform swaps to implement permutation vector
+ the permutation vector will be restored to the
+ identity permutation 0,1,2,...
+
+ Note: this routine works in a thread block
+ --------------------------------------------
+ **/
 template <typename T, typename I>
 __device__ static void bdsqr_permute_swap(const I n,
                                           const I nv,
@@ -692,14 +701,6 @@ __device__ static void bdsqr_permute_swap(const I n,
                                           const I ldc,
                                           I* map)
 {
-    // --------------------------------------------
-    // perform swaps to implement permutation vector
-    // the permutation vector will be restored to the
-    // identity permutation 0,1,2,...
-    //
-    // Note: this routine works in a thread block
-    // --------------------------------------------
-
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
 
