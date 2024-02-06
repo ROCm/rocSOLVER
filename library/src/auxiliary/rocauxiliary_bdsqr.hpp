@@ -679,8 +679,6 @@ ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
         info[bid] = 0;
 }
 
-/** BDSQR_SORT sorts the singular values and vectors by selection sort if applicable. **/
-
 template <typename T, typename I>
 __device__ static void bdsqr_permute_swap(const I n,
                                           const I nv,
@@ -779,6 +777,12 @@ __device__ static void bdsqr_permute_swap(const I n,
         };
     };
 }
+
+/**
+ * BDSQR_SORT sorts the singular values and vectors by
+ * shell sort or selection sort if applicable.
+ * **/
+
 template <typename T, typename S, typename W1, typename W2, typename W3>
 ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
                                  const rocblas_int nv,
@@ -821,17 +825,11 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     rocblas_int local_info = 0;
 
     // array pointers
-    T* V = nullptr;
-    T* U = nullptr;
-    T* C = nullptr;
-    S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
-    if(nv)
-        V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
-    if(nu)
-        U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-    if(nc)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+    S* const D = (DD != nullptr) ? DD + bid * strideD : nullptr;
+    S* const E = (EE != nullptr) ? EE + bid * strideE : nullptr;
+    T* const V = (nv > 0) ? load_ptr_batch<T>(VV, bid, shiftV, strideV) : nullptr;
+    T* const U = (nu > 0) ? load_ptr_batch<T>(UU, bid, shiftU, strideU) : nullptr;
+    T* const C = (nc > 0) ? load_ptr_batch<T>(CC, bid, shiftC, strideC) : nullptr;
 
     rocblas_int* map = (splits_map == nullptr) ? nullptr : splits_map + bid * n;
 
@@ -869,9 +867,19 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     bool const use_map = (map != nullptr);
     if(use_map)
     {
-        shell_sort_descending(n, D, map);
-        __syncthreads();
-        bdsqr_permute_swap(n, nv, V, ldv, nu, U, ldu, nc, C, ldc, map);
+        bool const need_swap = (nv > 0) || (nu > 0) || (nc > 0);
+        if(need_swap)
+        {
+            shell_sort_descending(n, D, map);
+            __syncthreads();
+            bdsqr_permute_swap(n, nv, V, ldv, nu, U, ldu, nc, C, ldc, map);
+        }
+        else
+        {
+            rocblas_int* const null_map = nullptr;
+            shell_sort_descending(n, D, null_map);
+        };
+
         __syncthreads();
     }
     else
