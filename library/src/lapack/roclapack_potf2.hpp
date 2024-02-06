@@ -197,17 +197,14 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
-    auto constexpr NB = POTRF_BLOCKSIZE;
-    if(n == NB)
+    if(n <= POTRF_BLOCKSIZE)
     {
         // ----------------------
         // use specialized kernel
         // ----------------------
         bool const is_upper = (uplo == rocblas_fill_upper);
-        using Treal = decltype(std::real(T{}));
-        ROCSOLVER_LAUNCH_KERNEL((potf2_lds<T, U, Treal, NB>), dim3(1, 1, batch_count),
-                                dim3(BS2, BS2, 1), 0, stream, is_upper, A, shiftA, strideA, lda,
-                                info);
+        ROCSOLVER_LAUNCH_KERNEL((potf2_lds<T, U>), dim3(1, 1, batch_count), dim3(BS2, BS2, 1), 0,
+                                stream, is_upper, n, A, shiftA, strideA, lda, info);
     }
     else
     {
