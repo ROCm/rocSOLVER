@@ -66,14 +66,7 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
     // size to store number of non-zeros per row
     size_t size_work = 0;
 
-    {
-        rocblas_status const istat
-            = rocsolver_csrrf_splitlu_getMemorySize<T>(n, nnzT, ptrT, &size_work);
-        if(istat != rocblas_status_success)
-        {
-            return (istat);
-        }
-    }
+    ROCBLAS_CHECK(rocsolver_csrrf_splitlu_getMemorySize<T>(n, nnzT, ptrT, &size_work));
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work);

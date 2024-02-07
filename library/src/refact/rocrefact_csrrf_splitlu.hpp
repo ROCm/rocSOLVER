@@ -347,12 +347,8 @@ rocblas_status rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
     size_t rocprim_size_bytes = 0;
     void* temp_ptr = nullptr;
 
-    const hipError_t istat = rocprim::inclusive_scan(temp_ptr, rocprim_size_bytes, ptrT, ptrT, n,
-                                                     rocprim::plus<rocblas_int>());
-    if(istat != hipSuccess)
-    {
-        return (rocblas_status_internal_error);
-    }
+    HIP_CHECK(rocprim::inclusive_scan(temp_ptr, rocprim_size_bytes, ptrT, ptrT, n,
+                                      rocprim::plus<rocblas_int>()));
 
     *size_work = max(rocprim_size_bytes, size_work_LU);
 
