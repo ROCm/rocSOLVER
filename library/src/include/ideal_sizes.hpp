@@ -301,8 +301,9 @@
 #define GETF2_SSKER_MAX_N 64 //always <= wavefront and <= GETF2_SPKER_MAX_N
 #endif
 #ifndef GETF2_OPTIM_NGRP
-#define GETF2_OPTIM_NGRP #endif
-16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+#define GETF2_OPTIM_NGRP \
+    16, 15, 8, 8, 8, 8, 8, 8, 6, 6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+#endif
 #ifndef GETRF_NUM_INTERVALS_REAL
 #define GETRF_NUM_INTERVALS_REAL 4
 #endif
