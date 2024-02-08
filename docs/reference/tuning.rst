@@ -1,3 +1,7 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
 .. _tuning_label:
 
 *******************************
@@ -15,19 +19,13 @@ These constants are specific to the rocSOLVER implementation and are only descri
 
 All described constants can be found in ``library/src/include/ideal_sizes.hpp``.
 These are not run-time arguments for the associated API functions. The library must be
-:ref:`rebuilt from source<userguide_install_source>` for any change to take effect.
+:ref:`rebuilt from source<linux-install-source>` for any change to take effect.
 
 .. warning::
     The effect of changing a tunable constant on the performance of the library is difficult
     to predict, and such analysis is beyond the scope of this document. Advanced users and
     developers tuning these values should proceed with caution. New values may (or may not)
     improve or worsen the performance of the associated functions.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
-
 
 geqr2/geqrf and geql2/geqlf functions
 ======================================
