@@ -1,9 +1,12 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
 .. _lapackfunc:
 
-********************
-LAPACK Functions
-********************
+***************************
+rocSOLVER LAPACK Functions
+***************************
 
 LAPACK routines solve complex Numerical Linear Algebra problems. These functions are organized
 in the following categories:

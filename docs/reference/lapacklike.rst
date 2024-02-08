@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-***********************
-Lapack-like Functions
-***********************
+.. _lapack-like:
+
+********************************
+rocSOLVER LAPACK-like Functions
+********************************
 
 Other Lapack-like routines provided by rocSOLVER. These are divided into the following subcategories:
 

@@ -1,12 +1,12 @@
-.. _userguide_install:
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-*****************************
-Building and Installation
-*****************************
+.. _install-linux:
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
+********************************************
+Building and Installing rocSOLVER on Linux
+********************************************
 
 Prerequisites
 =================
@@ -38,7 +38,7 @@ rocSOLVER can be installed using a package manager. On Ubuntu, for example, use 
     sudo apt-get install rocsolver
 
 
-.. _userguide_install_source:
+.. _linux-install-source:
 
 Building & installing from source
 =====================================
@@ -52,8 +52,9 @@ on GitHub. Download the code and checkout the desired branch using:
     cd rocSOLVER
 
 To build from source, some external dependencies such as CMake and Python are required. Additionally, if the library clients
-are to be built (by default they are not), then LAPACK and GoogleTest will be also required. (The library clients, rocsolver-test and rocsolver-bench,
-provide the infrastructure for testing and benchmarking rocSOLVER. For more details see the :ref:`clients section <clients_label>` of this user's guide).
+are to be built (by default they are not), then LAPACK and GoogleTest will be also required. 
+(The library clients, rocsolver-test and rocsolver-bench, provide the infrastructure for testing and benchmarking rocSOLVER. 
+For more details see the :ref:`rocSOLVER clients How-To <clients>`).
 
 Using the install.sh script
 -------------------------------

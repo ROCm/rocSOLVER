@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-***************************
-LAPACK Auxiliary Functions
-***************************
+.. _rocsolver_auxiliary_functions:
+
+*************************************
+rocSOLVER LAPACK Auxiliary Functions
+*************************************
 
 These are functions that support more :ref:`advanced LAPACK routines <lapackfunc>`.
 The auxiliary functions are divided into the following categories:

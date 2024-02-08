@@ -1,6 +1,12 @@
 
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _using:
+
 *************************
-Using rocSOLVER
+Using rocSOLVER Library
 *************************
 
 Once installed, rocSOLVER can be used just like any other library with a C API.
@@ -8,11 +14,6 @@ The header file will need to be included in the user code, and both the rocBLAS 
 will become link-time and run-time dependencies for the user application.
 
 Next, some examples are used to illustrate the basic use of rocSOLVER API and rocSOLVER batched API.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
 
 QR factorization of a single matrix
 ================================================
@@ -46,8 +47,6 @@ The following code snippet uses rocSOLVER to compute the QR factorization of a s
 The matrices must be stored in contiguous memory locations on the GPU and, in this example, are accessed by a pointer to the first matrix and a
 stride value that gives the separation between one matrix and the next.
 For a full description of the used rocSOLVER routine, see the API documentation of :ref:`rocsolver_dgeqrf_strided_batched() <geqrf_strided_batched>`.
-For more details on the approach to batch
-functionality and the strided_batched routines in rocSOLVER, see :ref:`here <strided_batched_routines>`.
 
 .. literalinclude:: ../../clients/samples/example_strided_batched.c
     :language: c
@@ -58,8 +57,6 @@ Batched version
 The following code snippet uses rocSOLVER to compute the QR factorization of a series of general m-by-n real matrices in double precision.
 In this case, the matrices do not need to be in contiguous memory locations on the GPU, and will be accessed by an array of pointers.
 For a full description of the used rocSOLVER routine, see the API documentation of :ref:`rocsolver_dgeqrf_batched <geqrf_batched>`.
-For more details on the approach to batch
-functionality and the batched routines in rocSOLVER, see :ref:`here <batched_routines>`.
 
 .. literalinclude:: ../../clients/samples/example_batched.c
     :language: c

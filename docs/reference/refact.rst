@@ -1,7 +1,12 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-*****************************************
-Re-factorization and direct solvers
-*****************************************
+.. _refactor:
+
+**********************************************
+rocSOLVER Re-Factorization and Direct Solvers
+**********************************************
 
 These are functions that implement direct solvers for sparse systems with
 different coefficient matrices that share the same sparsity pattern.

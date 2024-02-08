@@ -1,8 +1,12 @@
-.. _clients_label:
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-*********
-Clients
-*********
+.. _clients:
+
+******************************
+rocSOLVER Client Applications
+******************************
 
 rocSOLVER has an infrastructure for testing and benchmarking similar to that of
 `rocBLAS's testing and benchmarking <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/Programmers_Guide.html#rocblas-benchmarking-and-testing>`_,
@@ -14,13 +18,8 @@ directory ``<rocsolverDIR>/build/release/clients/staging``. If both the ``-c`` a
 ``install.sh``, the client binaries will be located in ``<rocsolverDIR>/build/debug/clients/staging``.
 If the ``-DBUILD_CLIENTS_TESTS=ON`` flag, the ``-DBUILD_CLIENTS_BENCHMARKS=ON`` flag, and/or the
 ``-DBUILD_CLIENTS_SAMPLES=ON`` flag are passed to the CMake system, the relevant client binaries will normally
-be located in the directory ``<rocsolverDIR>/build/clients/staging``. See the :ref:`Building and installation
-section <userguide_install>` of the User Guide for more information on building the library and its clients.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
+be located in the directory ``<rocsolverDIR>/build/clients/staging``. See the :ref:`Installation
+section <installation>` for more information on building the library and its clients.
 
 Testing rocSOLVER
 ==========================
@@ -79,7 +78,7 @@ flag allows the user to select the data precision for the function, and can be o
 d (double precision), c (single precision complex), or z (double precision complex).
 
 The non-pointer arguments for a function can be passed to ``rocsolver-bench`` by using the argument name as
-a flag (see the :ref:`rocSOLVER API <library_api>` document for information on the function arguments and
+a flag (see the :ref:`Reference <reference>` sections for more information on the function arguments and
 their names). For example, the function ``rocsolver_dgeqrf_strided_batched`` has the following method signature:
 
 .. code-block:: cpp
