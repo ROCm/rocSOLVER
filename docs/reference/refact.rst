@@ -4,9 +4,9 @@
 
 .. _refactor:
 
-*****************************************
-Re-factorization and direct solvers
-*****************************************
+**********************************************
+rocSOLVER Re-Factorization and Direct Solvers
+**********************************************
 
 These are functions that implement direct solvers for sparse systems with
 different coefficient matrices that share the same sparsity pattern.

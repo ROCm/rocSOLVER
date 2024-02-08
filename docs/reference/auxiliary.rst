@@ -4,9 +4,9 @@
 
 .. _rocsolver_auxiliary_functions:
 
-***************************
-LAPACK Auxiliary Functions
-***************************
+*************************************
+rocSOLVER LAPACK Auxiliary Functions
+*************************************
 
 These are functions that support more :ref:`advanced LAPACK routines <lapackfunc>`.
 The auxiliary functions are divided into the following categories:

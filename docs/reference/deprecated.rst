@@ -5,7 +5,7 @@
 .. _deprecated:
 
 ********************************
-Deprecated rocSOLVER functions
+Deprecated rocSOLVER components
 ********************************
 
 Originally, rocSOLVER maintained its own types and helpers as aliases to those of rocBLAS.

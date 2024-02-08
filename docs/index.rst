@@ -8,7 +8,8 @@
 rocSOLVER documentation
 ********************************************************************
 
-rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_ on top of `AMD's open source ROCm platform <https://rocm.docs.amd.com/>`_. rocSOLVER is implemented in the
+rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_ 
+on top of `AMD's open source ROCm platform <https://rocm.docs.amd.com/>`_. rocSOLVER is implemented in the
 `HIP programming language <https://rocm.docs.amd.com/projects/HIP/>`_ and optimized for AMD's
 latest discrete GPUs.
 
@@ -21,19 +22,19 @@ The rocSOLVER documentation is structured as follows:
 
   .. grid-item-card:: Installation
 
-    * :ref:`install`
+    * :ref:`install-linux`
 
-  .. grid-item-card:: How to
+  .. grid-item-card:: How-to
 
-    * :ref:`intro`
-    * :ref:`examples`
+    * :ref:`using`
     * :ref:`memory`
     * :ref:`logging-label`
     * :ref:`clients`
     * :ref:`contribute`
 
-  .. grid-item-card:: API reference
+  .. grid-item-card:: Reference
 
+    * :ref:`intro`
     * :ref:`rocsolver-types`
     * :ref:`rocsolver_auxiliary_functions` 
     * :ref:`lapackfunc`

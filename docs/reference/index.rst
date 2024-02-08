@@ -2,12 +2,16 @@
   :description: rocSOLVER documentation and API reference library
   :keywords: rocSOLVER, ROCm, API, documentation
 
-.. _library_api:
+.. _reference:
 
 ########################################
-rocSOLVER API Reference
+Reference
 ########################################
 
+This section provides technical descriptions and important information about 
+the different rocSOLVER APIs and library components. 
+
+* :ref:`intro`
 * :ref:`rocsolver-types`
 * :ref:`rocsolver_auxiliary_functions` 
 * :ref:`lapackfunc`

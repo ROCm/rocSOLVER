@@ -4,9 +4,9 @@
 
 .. _api_logging:
 
-*****************************************
-Logging Functions and Library Information
-*****************************************
+*****************************************************
+rocSOLVER Logging Functions and Library Information
+*****************************************************
 
 Logging functions
 ===============================

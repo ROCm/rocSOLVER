@@ -2,15 +2,12 @@
   :description: rocSOLVER documentation and API reference library
   :keywords: rocSOLVER, ROCm, API, documentation
 
-.. _user-guide:
+.. _installation:
 
 ********************************************************************
-rocSOLVER User Guide
+Installation
 ********************************************************************
 
-* :ref:`intro`
-* :ref:`examples`
-* :ref:`memory`
-* :ref:`logging-label`
-* :ref:`clients`
-* :ref:`contribute`
+This section provides a guide to install rocSOLVER in different systems. 
+
+* :ref:`install-linux`
