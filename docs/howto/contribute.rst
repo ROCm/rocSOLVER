@@ -1,5 +1,12 @@
-Contributing
-=============
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
+.. _contribute:
+
+*******************************
+Contribute to rocSOLVER
+*******************************
 
 Philosophy
 ---------------
@@ -42,11 +49,12 @@ Tests
 ---------------------------
 
 To run the rocSOLVER test suite, first build the rocSOLVER test client following the instructions in
-[Building and Installation][1]. Then, run the `rocsolver-test` binary. For a typical build, the test
+the :ref:`Installation section <installation>`. Then, run the `rocsolver-test` binary. For a typical build, the test
 binary will be found at `./build/release/clients/staging/rocsolver-test`.
 
-The full test suite is quite large and may take a long time to complete, so passing the
-[`--gtest_filter=<pattern>`][2] option to rocsolver-test may be useful during development. A fast
+The full test suite is quite large and may take a long time to complete, so passing a
+`--gtest_filter=<pattern> <https://github.com/google/googletest/blob/release-1.10.0/googletest/docs/advanced.md#running-a-subset-of-the-tests>`_ 
+option to rocsolver-test may be useful during development. A fast
 subset of tests can be run with `--gtest_filter='checkin*'`, while the extended tests can be run
 with `--gtest_filter='daily*'`.
 
@@ -56,5 +64,5 @@ Rejected contributions
 Unfortunately, sometimes a contribution cannot be accepted. The rationale for a decision may or may
 not be disclosed.
 
-* [1]: https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/userguide/install.html
-* [2]: https://github.com/google/googletest/blob/release-1.10.0/googletest/docs/advanced.md#running-a-subset-of-the-tests
+
+

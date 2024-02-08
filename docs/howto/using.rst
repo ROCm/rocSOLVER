@@ -3,10 +3,10 @@
   :description: rocSOLVER documentation and API reference library
   :keywords: rocSOLVER, ROCm, API, documentation
 
-.. _examples:
+.. _using:
 
 *************************
-Using rocSOLVER
+Using rocSOLVER Library
 *************************
 
 Once installed, rocSOLVER can be used just like any other library with a C API.

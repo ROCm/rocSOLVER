@@ -3,28 +3,31 @@ defaults:
 root: index
 subtrees:
 - entries:
-  - file: userguide/install.rst
+  - file: installation/index.rst
     title: Installation
-  - file: userguide/index.rst
+    subtrees:
+    - entries:
+      - file: installation/installlinux.rst
+  - file: howto/index.rst
     title: How To
     subtrees:
     - entries:
-      - file: userguide/intro.rst
-      - file: userguide/examples.rst
-      - file: userguide/memory.rst
-      - file: userguide/logging.rst
-      - file: userguide/clients.rst
-      - file: design/contribute.rst
-  - file: api/index.rst
-    title: rocSOLVER Reference
+      - file: howto/using.rst
+      - file: howto/memory.rst
+      - file: howto/logging.rst
+      - file: howto/clients.rst
+      - file: howto/contribute.rst
+  - file: reference/index.rst
+    title: Reference
     subtrees:
     - entries:
-      - file: api/types.rst
-      - file: api/auxiliary.rst
-      - file: api/lapack.rst
-      - file: api/lapacklike.rst
-      - file: api/refact.rst
-      - file: api/logging.rst
-      - file: design/tuning.rst
-      - file: api/deprecated.rst
+      - file: reference/intro.rst
+      - file: reference/types.rst
+      - file: reference/auxiliary.rst
+      - file: reference/lapack.rst
+      - file: reference/lapacklike.rst
+      - file: reference/refact.rst
+      - file: reference/logging.rst
+      - file: reference/tuning.rst
+      - file: reference/deprecated.rst
   - file: license.rst

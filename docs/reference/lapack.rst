@@ -4,9 +4,9 @@
 
 .. _lapackfunc:
 
-********************
-LAPACK Functions
-********************
+***************************
+rocSOLVER LAPACK Functions
+***************************
 
 LAPACK routines solve complex Numerical Linear Algebra problems. These functions are organized
 in the following categories:
