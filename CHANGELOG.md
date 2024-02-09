@@ -3,6 +3,16 @@
 Documentation for rocSOLVER is available at
 [https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/).
 
+## (Unreleased) rocSOLVER
+### Added
+### Optimized
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Known Issues
+### Security
+
 ## (unreleased) rocSOLVER 3.25.0 for ROCm 6.1.0
 
 ### Changes
@@ -14,7 +24,7 @@ Documentation for rocSOLVER is available at
 * Singular vector normalization in BDSVDX and GESVDX
 * Potential memory access fault in STEIN, SYEVX/HEEVX, SYGVX/HEGVX, BDSVDX, and GESVDX
 
-## (unreleased) rocSOLVER 3.24.0 for ROCm 6.0.0
+## rocSOLVER 3.24.0 for ROCm 6.0.0
 
 ### Additions
 
