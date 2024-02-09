@@ -4,12 +4,9 @@ Documentation for rocSOLVER is available at
 [https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/).
 
 ## (Unreleased) rocSOLVER
-### Added
-### Optimized
-### Changed
-### Deprecated
-### Removed
-### Fixed
+### Changes
+### Deprecations
+### Fixes
 ### Known Issues
 ### Security
 
