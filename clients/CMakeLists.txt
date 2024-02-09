@@ -1,5 +1,5 @@
 # ##########################################################################
-# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -83,6 +83,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_bdsvdx.cpp
     common/testing_steqr.cpp
     common/testing_stedc.cpp
+    common/testing_stedcj.cpp
     common/testing_stein.cpp
     common/testing_lasyf.cpp
     common/testing_sterf.cpp
@@ -127,10 +128,12 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/testing_sygsx_hegsx.cpp
     common/testing_syev_heev.cpp
     common/testing_syevd_heevd.cpp
+    common/testing_syevdj_heevdj.cpp
     common/testing_syevj_heevj.cpp
     common/testing_syevx_heevx.cpp
     common/testing_sygv_hegv.cpp
     common/testing_sygvd_hegvd.cpp
+    common/testing_sygvdj_hegvdj.cpp
     common/testing_sygvj_hegvj.cpp
     common/testing_sygvx_hegvx.cpp
     common/testing_geblttrf_npvt.cpp

@@ -1,3 +1,7 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
+
 .. _tuning_label:
 
 *******************************
@@ -15,19 +19,13 @@ These constants are specific to the rocSOLVER implementation and are only descri
 
 All described constants can be found in ``library/src/include/ideal_sizes.hpp``.
 These are not run-time arguments for the associated API functions. The library must be
-:ref:`rebuilt from source<userguide_install_source>` for any change to take effect.
+:ref:`rebuilt from source<linux-install-source>` for any change to take effect.
 
 .. warning::
     The effect of changing a tunable constant on the performance of the library is difficult
     to predict, and such analysis is beyond the scope of this document. Advanced users and
     developers tuning these values should proceed with caution. New values may (or may not)
     improve or worsen the performance of the associated functions.
-
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
-
-
 
 geqr2/geqrf and geql2/geqlf functions
 ======================================
@@ -262,10 +260,15 @@ STEDC_MIN_DC_SIZE
 
 (As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
 
+STEDC_NUM_SPLIT_BLKS
+---------------------
+.. doxygendefine:: STEDC_NUM_SPLIT_BLKS
+
+(As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
 
 
-syevj and heevj functions
-==========================
+syevj, heevj, syevdj and heevdj functions
+===========================================
 
 The Jacobi eigensolver routines SYEVJ/HEEVJ (or the corresponding batched and strided-batched routines) can
 be executed with a single kernel call (for small-size matrices) or with multiple kernel calls (for large-size
@@ -274,15 +277,20 @@ computed cosine and sine values, and the number of iterations/sweeps is controll
 the matrix is partitioned into blocks, Jacobi rotations are accumulated per block (to be applied in separate kernel
 calls), and the number of iterations/sweeps is controlled by the CPU (requiring synchronization of the handle stream).
 
+When running SYEVDJ/HEEVDJ (or the corresponding batched and strided-batched routines),
+the computation of the eigenvectors of the associated tridiagonal matrix
+can be sped up using a divide-and-conquer approach,
+provided the size of the independent block is large enough.
+
 SYEVJ_BLOCKED_SWITCH
 ----------------------
 .. doxygendefine:: SYEVJ_BLOCKED_SWITCH
 
 (As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
 
-STEDC_NUM_SPLIT_BLKS
----------------------
-.. doxygendefine:: STEDC_NUM_SPLIT_BLKS
+SYEVDJ_MIN_DC_SIZE
+-------------------
+.. doxygendefine:: SYEVDJ_MIN_DC_SIZE
 
 (As of the current rocSOLVER release, this constant has not been tuned for any specific cases.)
 

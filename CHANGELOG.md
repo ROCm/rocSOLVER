@@ -2,6 +2,7 @@
 
 Documentation for rocSOLVER is available at
 [https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/).
+Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
 ## (Unreleased) rocSOLVER
 ### Changes
@@ -13,6 +14,17 @@ Documentation for rocSOLVER is available at
 ## (unreleased) rocSOLVER 3.25.0 for ROCm 6.1.0
 
 ### Changes
+## rocSOLVER 3.25.0 for ROCm 6.1.0
+### Added
+- Eigensolver routines for symmetric/hermitian matrices using Divide & Conquer and Jacobi algorithm:
+    - SYEVDJ (with batched and strided\_batched versions)
+    - HEEVDJ (with batched and strided\_batched versions)
+- Generalized symmetric/hermitian-definite eigensolvers using Divide & Conquer and Jacobi algorithm:
+    - SYGVDJ (with batched and strided\_batched versions)
+    - HEGVDJ (with batched and strided\_batched versions)
+
+### Changed
+- Relaxed array length requirements for GESVDX with `rocblas_srange_index`.
 
 * Relaxed array length requirements for GESVDX with `rocblas_srange_index`
 

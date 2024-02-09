@@ -1,12 +1,12 @@
-.. _userguide_install:
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-*****************************
-Building and Installation
-*****************************
+.. _install-linux:
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
+********************************************
+Building and Installing rocSOLVER on Linux
+********************************************
 
 Prerequisites
 =================
@@ -15,8 +15,8 @@ rocSOLVER requires a ROCm-enabled platform. For more information, see the
 `ROCm install guide <https://rocm.docs.amd.com/en/latest/deploy/linux/index.html>`_.
 
 rocSOLVER also requires compatible versions of rocBLAS and rocSPARSE installed on the system.
-For more information, see the `rocBLAS install guide <https://rocblas.readthedocs.io/en/latest/Linux_Install_Guide.html#building-and-installing-rocblas>`_
-and `rocSPARSE install guide <https://rocsparse.readthedocs.io/en/latest/usermanual.html#building-and-installing>`_.
+For more information, see the `rocBLAS install guide <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/Linux_Install_Guide.html>`_
+and `rocSPARSE install guide <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/install.html>`_.
 
 rocBLAS, rocSPARSE, and rocSOLVER are still under active development, and it is hard to define minimal
 compatibility versions. For now, a good rule of thumb is to always use rocSOLVER together with the
@@ -38,7 +38,7 @@ rocSOLVER can be installed using a package manager. On Ubuntu, for example, use 
     sudo apt-get install rocsolver
 
 
-.. _userguide_install_source:
+.. _linux-install-source:
 
 Building & installing from source
 =====================================
@@ -52,8 +52,9 @@ on GitHub. Download the code and checkout the desired branch using:
     cd rocSOLVER
 
 To build from source, some external dependencies such as CMake and Python are required. Additionally, if the library clients
-are to be built (by default they are not), then LAPACK and GoogleTest will be also required. (The library clients, rocsolver-test and rocsolver-bench,
-provide the infrastructure for testing and benchmarking rocSOLVER. For more details see the :ref:`clients section <clients_label>` of this user's guide).
+are to be built (by default they are not), then LAPACK and GoogleTest will be also required. 
+(The library clients, rocsolver-test and rocsolver-bench, provide the infrastructure for testing and benchmarking rocSOLVER. 
+For more details see the :ref:`rocSOLVER clients How-To <clients>`).
 
 Using the install.sh script
 -------------------------------

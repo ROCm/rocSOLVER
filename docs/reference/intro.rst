@@ -1,32 +1,23 @@
+.. meta::
+  :description: rocSOLVER documentation and API reference library
+  :keywords: rocSOLVER, ROCm, API, documentation
 
-*************
-Introduction
-*************
+.. _intro:
 
-.. contents:: Table of contents
-   :local:
-   :backlinks: top
+********************************************************************
+Introduction to rocSOLVER API
+********************************************************************
 
-
-Library overview
-==========================
-
-rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
-on top of `AMD's open source ROCm platform <https://rocm.docs.amd.com/>`_. rocSOLVER is implemented in the
-`HIP programming language <https://rocm.docs.amd.com/projects/HIP/>`_ and optimized for AMD's
-latest discrete GPUs.
-
+.. note::
+    The rocSOLVER library is in the early stages of active development. New features are being continuously added, 
+    with new functionality documented at each `release of the ROCm platform <https://rocm.docs.amd.com/en/latest/release.html>`_.
 
 Currently implemented functionality
 ====================================
 
-The rocSOLVER library is in the early stages of active development. New features are being
-continuously added, with new functionality documented at each `release of the ROCm platform <https://rocm.docs.amd.com/en/latest/release.html>`_.
-
 The following tables summarize the functionality implemented for the different supported precisions in rocSOLVER's latest release.
 All LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
-routines, please see the :ref:`rocSOLVER API <library_api>` document. For more details about the batch functionality
-see the :ref:`rocSOLVER Library Design Guide <batch_label>`.
+routines, please see the corresponding reference guides. 
 
 LAPACK auxiliary functions
 ----------------------------
@@ -210,6 +201,10 @@ LAPACK-like functions
     :ref:`rocsolver_sygvj <sygvj>`, x, x, ,
     :ref:`rocsolver_heevj <heevj>`, , , x, x
     :ref:`rocsolver_hegvj <hegvj>`, , , x, x
+    :ref:`rocsolver_syevdj <syevdj>`, x, x, ,
+    :ref:`rocsolver_sygvdj <sygvdj>`, x, x, ,
+    :ref:`rocsolver_heevdj <heevdj>`, , , x, x
+    :ref:`rocsolver_hegvdj <hegvdj>`, , , x, x
 
 .. csv-table:: Singular value decomposition
     :header: "Function", "single", "double", "single complex", "double complex"
@@ -232,3 +227,4 @@ Re-factorization and direct solvers
     :header: "Function", "single", "double", "single complex", "double complex"
 
     :ref:`rocsolver_csrrf_solve <rfsolve>`, x, x, ,
+
