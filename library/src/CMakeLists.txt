@@ -321,11 +321,11 @@ if(BUILD_WITH_SPARSE)
 endif()
 
 if(ROCSOLVER_EMBED_FMT)
-  target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
+  target_link_libraries(rocsolver PRIVATE $<BUILD_INTERFACE:fmt::fmt-header-only>)
 else()
+  list(APPEND static_depends PACKAGE fmt)
   target_link_libraries(rocsolver PRIVATE fmt::fmt)
 endif()
-list(APPEND static_depends PACKAGE fmt)
 
 # In ROCm 4.0 and earlier, the default maximum threads per block is 256
 target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
