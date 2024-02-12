@@ -403,22 +403,13 @@ while true; do
     --install_dir)
         install_dir=${2}
         shift 2 ;;
-    --rocblas_dir)
+    --rocblas_dir|--rocblas-path)
         rocblas_path=${2}
         shift 2 ;;
-    --rocblas-path)
-        rocblas_path=${2}
-        shift 2 ;;
-    --rocsolver_dir)
+    --rocsolver_dir|--rocsolver-path)
         rocsolver_path=${2}
         shift 2 ;;
-    --rocsolver-path)
-        rocsolver_path=${2}
-        shift 2 ;;
-    --rocsparse_dir)
-        rocsparse_path=${2}
-        shift 2 ;;
-    --rocsparse-path)
+    --rocsparse_dir|--rocsparse-path)
         rocsparse_path=${2}
         shift 2 ;;
     -a|--architecture)
