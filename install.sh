@@ -16,16 +16,16 @@ Usage:
 Options:
   -h | --help                  Print this help message.
 
-  --build_dir <builddir>       Specify path to the configure & build process output directory.
+  --build-path <builddir>      Specify path to the configure & build process output directory.
                                Relative paths are relative to the current directory.
                                (Default is ./build)
 
-  --lib_dir <libdir>           Specify path to the directory where the library generated files
+  --lib-path <libdir>          Specify path to the directory where the library generated files
                                will be located. Relative paths are relative to builddir/release
                                or builddir/debug, depending on the build type.
                                (Default is builddir/release/rocsolver-install)
 
-  --install_dir <installdir>   Specify path to the directory where the library package
+  --install-path <installdir>  Specify path to the directory where the library package
                                (when generated) will be installed. Use only absolute paths.
                                (Default is /opt/rocm)
 
@@ -340,7 +340,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocblas-path:,rocsolver_dir:,rocsolver-path:,rocsparse_dir:,rocsparse-path:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,build-path:,lib_dir:,lib-path:,install_dir:,install-path:,rocblas_dir:,rocblas-path:,rocsolver_dir:,rocsolver-path:,rocsparse_dir:,rocsparse-path:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -391,16 +391,13 @@ while true; do
     --no-sparse)
         build_with_sparse=false
         shift ;;
-    --build_dir)
+    --build_dir|--build-path)
         build_dir=${2}
         shift 2;;
-    --cleanup)
-        cleanup=true
-        shift ;;
-    --lib_dir)
+    --lib_dir|--lib-path)
         lib_dir=${2}
         shift 2 ;;
-    --install_dir)
+    --install_dir|--install-path)
         install_dir=${2}
         shift 2 ;;
     --rocblas_dir|--rocblas-path)
@@ -412,6 +409,9 @@ while true; do
     --rocsparse_dir|--rocsparse-path)
         rocsparse_path=${2}
         shift 2 ;;
+    --cleanup)
+        cleanup=true
+        shift ;;
     -a|--architecture)
         architecture=${2}
         shift 2 ;;
