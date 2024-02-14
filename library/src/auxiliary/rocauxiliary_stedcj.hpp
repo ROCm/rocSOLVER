@@ -264,7 +264,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             __syncthreads();
 
             // solve
-            run_syevj<S, S>(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
+            run_syevj<S, S>(ddx, ddy, tix, tiy, rocblas_esort_none, rocblas_evect_original,
                             rocblas_fill_upper, sbs, C + p2 + p2 * ldc, ldc, 0, eps, W_residual,
                             MAXSWEEPS, W_n_sweeps, D + p2, info, W_Acpy + p2 + p2 * n, cosines_res,
                             sines_diag, top, bottom);

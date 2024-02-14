@@ -128,8 +128,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                         const rocblas_int ldc,
                         const rocblas_stride strideC,
                         rocblas_int* iinfo,
-                        //S* WA,
-                        //rocblas_int* splitsA,
+                        S* WA,
+                        rocblas_int* splitsA,
                         const S eps,
                         const S ssfmin,
                         const S ssfmax)
@@ -158,14 +158,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     /* --------------------------------------------------- */
-    /*    // contains the beginning of split blocks
+    // contains the beginning of split blocks
     rocblas_int* splits = splitsA + bid * (5 * n + 2);
     // the sub-blocks sizes
     rocblas_int* nsA = splits + n + 2;
     // the sub-blocks initial positions
     rocblas_int* psA = nsA + n;
     // workspace for solvers
-    S* W = WA + bid * (2 + n * n);*/
+    ////////////////    S* W = WA + bid * (2 + n * n);
     /* --------------------------------------------------- */
 
     // temporary arrays in shared memory
@@ -177,7 +177,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // local variables
     /* --------------------------------------------------- */
-    /*    // total number of split blocks
+    // total number of split blocks
     rocblas_int nb = splits[n + 1];
     // size of split block
     rocblas_int bs;
@@ -193,14 +193,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int levs;
     // other aux variables
     S p;
-    rocblas_int *ns, *ps;*/
+    rocblas_int *ns, *ps;
     /* --------------------------------------------------- */
 
     // work with STEDC_NUM_SPLIT_BLKS split blocks in parallel
     /* --------------------------------------------------- */
-    //    for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
-    //    {
-    /*        // Select current split block
+    for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
+    {
+        // Select current split block
         p1 = splits[kb];
         p2 = splits[kb + 1];
         bs = p2 - p1;
@@ -209,13 +209,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
         // determine ideal number of sub-blocks
         levs = stedc_num_levels<rocsolver_stedc_mode_jacobi>(bs);
-        blks = 1 << levs;*/
+        blks = 1 << levs;
 
-    // 2. SOLVE PHASE
-    /* ----------------------------------------------------------------- */
-    // Solve the blks sub-blocks in parallel.
+        // 2. SOLVE PHASE
+        /* ----------------------------------------------------------------- */
+        // Solve the blks sub-blocks in parallel.
 
-    /*        if(tid < blks)
+        /*        if(tid < blks)
         {
             sbs = ns[tid];
             p2 = ps[tid];
@@ -250,7 +250,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                             sines_diag, top, bottom);
             __syncthreads();
         }*/
-    //    }
+    }
 }
 
 /******************* Host functions ********************************************/
