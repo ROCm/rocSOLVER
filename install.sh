@@ -480,8 +480,8 @@ case "${ID}" in
   ;;
 esac
 
-export CXX="hipcc"
-export CC="clang"
+export CXX="${rocm_path}/bin/amdclang++"
+export CC="${rocm_path}/bin/amdclang"
 export FC="gfortran"
 export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
 
@@ -542,6 +542,7 @@ else
 fi
 
 cmake_common_options+=(
+  "--toolchain=toolchain-linux.cmake"
   "-DROCM_PATH=${rocm_path}"
   '-DCPACK_SET_DESTDIR=OFF'
   "-DCMAKE_INSTALL_PREFIX=${lib_dir}"
