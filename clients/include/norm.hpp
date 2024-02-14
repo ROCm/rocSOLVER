@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,58 +33,7 @@
 #include <rocblas/rocblas.h>
 
 #include "clientcommon.hpp"
-
-/* LAPACK fortran library functionality */
-
-extern "C" {
-float slange_(char* norm_type, int* m, int* n, float* A, int* lda, float* work);
-double dlange_(char* norm_type, int* m, int* n, double* A, int* lda, double* work);
-float clange_(char* norm_type, int* m, int* n, rocblas_float_complex* A, int* lda, float* work);
-double zlange_(char* norm_type, int* m, int* n, rocblas_double_complex* A, int* lda, double* work);
-
-void daxpy_(int* n, double* alpha, double* x, int* incx, double* y, int* incy);
-void zaxpy_(int* n,
-            rocblas_double_complex* alpha,
-            rocblas_double_complex* x,
-            int* incx,
-            rocblas_double_complex* y,
-            int* incy);
-}
-
-inline float xlange(char* norm_type, int* m, int* n, float* A, int* lda, float* work)
-{
-    return slange_(norm_type, m, n, A, lda, work);
-}
-
-inline double xlange(char* norm_type, int* m, int* n, double* A, int* lda, double* work)
-{
-    return dlange_(norm_type, m, n, A, lda, work);
-}
-
-inline float xlange(char* norm_type, int* m, int* n, rocblas_float_complex* A, int* lda, float* work)
-{
-    return clange_(norm_type, m, n, A, lda, work);
-}
-
-inline double xlange(char* norm_type, int* m, int* n, rocblas_double_complex* A, int* lda, double* work)
-{
-    return zlange_(norm_type, m, n, A, lda, work);
-}
-
-inline void xaxpy(int* n, double* alpha, double* x, int* incx, double* y, int* incy)
-{
-    return daxpy_(n, alpha, x, incx, y, incy);
-}
-
-inline void xaxpy(int* n,
-                  rocblas_double_complex* alpha,
-                  rocblas_double_complex* x,
-                  int* incx,
-                  rocblas_double_complex* y,
-                  int* incy)
-{
-    return zaxpy_(n, alpha, x, incx, y, incy);
-}
+#include "lapack_host_reference.hpp"
 
 /* Norm of error functions */
 
@@ -125,9 +74,9 @@ double norm_error(char norm_type,
     DoublePrecisionType alpha = -1.0;
     rocblas_int size = lda * N;
 
-    double gold_norm = xlange(&norm_type, &M, &N, gold_double.data(), &lda, work.data());
-    xaxpy(&size, &alpha, gold_double.data(), &incx, comp_double.data(), &incx);
-    double error = xlange(&norm_type, &M, &N, comp_double.data(), &lda, work.data());
+    double gold_norm = cpu_lange(norm_type, M, N, gold_double.data(), lda, work.data());
+    cpu_axpy(size, alpha, gold_double.data(), incx, comp_double.data(), incx);
+    double error = cpu_lange(norm_type, M, N, comp_double.data(), lda, work.data());
     if(gold_norm > 0)
         error /= gold_norm;
 
@@ -171,5 +120,5 @@ double norm_error_lowerTr(char norm_type, rocblas_int M, rocblas_int N, rocblas_
 template <typename T, typename S = decltype(std::real(T{}))>
 S snorm(char norm_type, rocblas_int m, rocblas_int n, T* A, rocblas_int lda)
 {
-    return xlange(&norm_type, &m, &n, A, &lda, (S*)nullptr);
+    return cpu_lange(norm_type, m, n, A, lda, (S*)nullptr);
 }
