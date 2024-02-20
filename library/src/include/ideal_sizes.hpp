@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -191,7 +191,8 @@
 /*! \brief Determines the size of the leading block that is factorized at each step
     when using the blocked algorithm (POTRF). It also applies to the
     corresponding batched and strided-batched routines.*/
-#define POTRF_BLOCKSIZE 64
+// #define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4)?128 : (sizeof(T) == 8) ? 90 : 64 )
+#define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
 
 /*! \brief Determines the size at which rocSOLVER switches from
     the unblocked to the blocked algorithm when executing POTRF. It also applies to the
@@ -200,7 +201,7 @@
     \details POTRF will factorize blocks of POTRF_BLOCKSIZE columns at a time until
     the rest of the matrix has no more than POTRF_POTF2_SWITCHSIZE columns; at this point the last block,
     if any, will be factorized with the unblocked algorithm (POTF2).*/
-#define POTRF_POTF2_SWITCHSIZE 128
+#define POTRF_POTF2_SWITCHSIZE(T) POTRF_BLOCKSIZE(T)
 
 /************************** syevj/heevj ***************************************
 *******************************************************************************/

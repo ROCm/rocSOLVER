@@ -1,3 +1,4 @@
+#define ASSERT(cond)
 /************************************************************************
  * Derived from the BSD3-licensed
  * LAPACK routine (version 3.7.0) --
@@ -65,10 +66,10 @@ __device__ static rocblas_float_complex rocsolver_conj(rocblas_float_complex x)
 template <typename I>
 __device__ static I idx_upper(I i, I k, I n)
 {
-    assert((0 <= i) && (i <= (n - 1)));
-    assert((0 <= k) && (k <= (n - 1)));
+    ASSERT((0 <= i) && (i <= (n - 1)));
+    ASSERT((0 <= k) && (k <= (n - 1)));
     bool const is_upper = (i <= k);
-    assert(is_upper);
+    ASSERT(is_upper);
     return (i + ((k) * (k + 1)) / 2);
 }
 
@@ -87,10 +88,10 @@ __device__ static I idx_upper(I i, I k, I n)
 template <typename I>
 __device__ static I idx_lower(I i, I k, I n)
 {
-    assert((0 <= i) && (i <= (n - 1)));
-    assert((0 <= k) && (k <= (n - 1)));
+    ASSERT((0 <= i) && (i <= (n - 1)));
+    ASSERT((0 <= k) && (k <= (n - 1)));
     bool const is_lower = (i >= k);
-    assert(is_lower);
+    ASSERT(is_lower);
 
     return ((i - k) + (k * (2 * n + 1 - k)) / 2);
 }
@@ -111,7 +112,7 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
     auto const i_inc = hipBlockDim_x;
     auto const j_start = hipThreadIdx_y;
     auto const j_inc = hipBlockDim_y;
-    assert(hipBlockDim_z == 1);
+    ASSERT(hipBlockDim_z == 1);
 
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -299,20 +300,20 @@ ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
     auto const i_inc = hipBlockDim_x;
     auto const j_start = hipThreadIdx_y;
     auto const j_inc = hipBlockDim_y;
-    assert(hipBlockDim_z == 1);
+    ASSERT(hipBlockDim_z == 1);
 
     // --------------------------------
     // note hipGridDim_z == batch_count
     // --------------------------------
     auto const bid = hipBlockIdx_z;
-    assert(AA != nullptr);
+    ASSERT(AA != nullptr);
 
     T* const A = (AA != nullptr) ? load_ptr_batch(AA, bid, shiftA, strideA) : nullptr;
 
-    assert(info != nullptr);
+    ASSERT(info != nullptr);
     rocblas_int* const info_bid = (info == nullptr) ? nullptr : &(info[bid]);
 
-    assert(A != nullptr);
+    ASSERT(A != nullptr);
 
     auto idx2D = [](auto i, auto j, auto lda) { return (i + j * static_cast<int64_t>(lda)); };
 
@@ -326,7 +327,7 @@ ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
     bool const use_lds = (sizeof(T) * n * (n + 1) <= LDS_MAXIMUM_SIZE * 2);
     __shared__ T Ash[LDS_MAXIMUM_SIZE / sizeof(T)];
 
-    assert(use_lds);
+    ASSERT(use_lds);
 
     // ------------------------------------
     // copy n by n packed matrix into shared memory
