@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -74,8 +74,8 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         return;
     }
 
-    rocblas_int jb = POTRF_BLOCKSIZE;
-    if(n <= POTRF_POTF2_SWITCHSIZE)
+    rocblas_int jb = POTRF_BLOCKSIZE(T);
+    if(n <= POTRF_POTF2_SWITCHSIZE(T))
     {
         // requirements for calling a single POTF2
         rocsolver_potf2_getMemorySize<T>(n, batch_count, size_scalars, size_work1, size_pivots);
@@ -156,8 +156,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
-    rocblas_int nb = POTRF_BLOCKSIZE;
-    if(n <= POTRF_POTF2_SWITCHSIZE)
+    rocblas_int nb = POTRF_BLOCKSIZE(T);
+    if(n <= POTRF_POTF2_SWITCHSIZE(T))
         return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
                                            batch_count, scalars, (T*)work1, pivots);
 
@@ -175,7 +175,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     if(uplo == rocblas_fill_upper)
     {
         // Compute the Cholesky factorization A = U'*U.
-        while(j < n - POTRF_POTF2_SWITCHSIZE)
+        while(j < n - POTRF_POTF2_SWITCHSIZE(T))
         {
             // Factor diagonal and subdiagonal blocks
             jb = min(n - j, nb); // number of columns in the block
@@ -207,7 +207,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     else
     {
         // Compute the Cholesky factorization A = L*L'.
-        while(j < n - POTRF_POTF2_SWITCHSIZE)
+        while(j < n - POTRF_POTF2_SWITCHSIZE(T))
         {
             // Factor diagonal and subdiagonal blocks
             jb = min(n - j, nb); // number of columns in the block

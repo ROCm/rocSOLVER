@@ -51,15 +51,60 @@ __device__ static rocblas_float_complex rocsolver_conj(rocblas_float_complex x)
 }
 
 /**
+ * indexing for packed storage
+ * for upper triangular
+ *
+ * ---------------------------
+ * 0 1 3
+ *   2 4
+ *     5
+ * ---------------------------
+ *
+ **/
+
+template <typename I>
+__device__ static I idx_upper(I i, I k, I n)
+{
+    assert((0 <= i) && (i <= (n - 1)));
+    assert((0 <= k) && (k <= (n - 1)));
+    bool const is_upper = (i <= k);
+    assert(is_upper);
+    return (i + ((k) * (k + 1)) / 2);
+}
+
+/**
+ * indexing for packed storage
+ * for lower triangular
+ *
+ * ---------------------------
+ * 0
+ * 1      n
+ * *      (n+1)
+ * *
+ * (n-1)  ...        n*(n+1)/2
+ * ---------------------------
+ **/
+template <typename I>
+__device__ static I idx_lower(I i, I k, I n)
+{
+    assert((0 <= i) && (i <= (n - 1)));
+    assert((0 <= k) && (k <= (n - 1)));
+    bool const is_lower = (i >= k);
+    assert(is_lower);
+
+    return ((i - k) + (k * (2 * n + 1 - k)) / 2);
+}
+
+/**
  * ------------------------------------------------------
  * Perform Cholesky factorization for small n by n matrix.
  * The function executes in a single thread block.
  * ------------------------------------------------------
 **/
 template <typename T, typename I>
-__device__ static void
-    potf2_simple(bool const is_upper, I const n, T* const A, I const lda, I* const info)
+__device__ static void potf2_simple(bool const is_upper, I const n, T* const A, I* const info)
 {
+    auto const lda = n;
     bool const is_lower = (!is_upper);
 
     auto const i_start = hipThreadIdx_x;
@@ -75,10 +120,9 @@ __device__ static void
     auto const j0_start = tid;
     auto const j0_inc = nthreads;
 
-    auto idx2D = [](auto i, auto j, auto lda) { return (i + j * lda); };
-
     if(is_lower)
     {
+        auto idx2D = [=](I i, I k, I n) { return (idx_lower<I>(i, k, n)); };
         // ---------------------------------------------------
         // [  l11     ]  * [ l11'   vl21' ]  =  [ a11       ]
         // [ vl21  L22]    [        L22' ]     [ va21, A22 ]
@@ -158,6 +202,8 @@ __device__ static void
     }
     else
     {
+        auto idx2D = [](I i, I k, I n) { return (idx_upper<I>(i, k, n)); };
+
         // --------------------------------------------------
         // [u11'        ] * [u11    vU12 ] = [ a11     vA12 ]
         // [vU12'   U22']   [       U22  ]   [ vA12'   A22  ]
@@ -277,58 +323,79 @@ ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
     auto const ld_Ash = n;
     size_t constexpr LDS_MAXIMUM_SIZE = 64 * 1024;
 
-    bool const use_lds = (sizeof(T) * ld_Ash * n <= LDS_MAXIMUM_SIZE);
+    bool const use_lds = (sizeof(T) * n * (n + 1) <= LDS_MAXIMUM_SIZE * 2);
     __shared__ T Ash[LDS_MAXIMUM_SIZE / sizeof(T)];
 
-    T const zero = static_cast<T>(0);
+    assert(use_lds);
+
     // ------------------------------------
-    // copy n by n matrix into shared memory
+    // copy n by n packed matrix into shared memory
     // ------------------------------------
     __syncthreads();
 
-    if(use_lds)
+    if(is_lower)
     {
         for(auto j = j_start; j < n; j += j_inc)
         {
-            for(auto i = i_start; i < n; i += i_inc)
+            for(auto i = j + i_start; i < n; i += i_inc)
             {
-                bool const lower_part = (i >= j);
-                bool const upper_part = (i <= j);
-                bool const do_assignment = (is_upper && upper_part) || (is_lower && lower_part);
+                auto const ij = idx2D(i, j, lda);
+                auto const ij_packed = idx_lower<rocblas_int>(i, j, n);
 
-                Ash[i + j * ld_Ash] = (do_assignment) ? A[idx2D(i, j, lda)] : zero;
-            }
-        }
+                Ash[ij_packed] = A[ij];
+            };
+        };
     }
+    else
+    {
+        for(auto j = j_start; j < n; j += j_inc)
+        {
+            for(auto i = i_start; i <= j; i += i_inc)
+            {
+                auto const ij = idx2D(i, j, lda);
+                auto const ij_packed = idx_upper<rocblas_int>(i, j, n);
+
+                Ash[ij_packed] = A[ij];
+            };
+        };
+    }
+
     __syncthreads();
 
     {
-        T* const Amat = (use_lds) ? Ash : A;
-        auto const ldAmat = (use_lds) ? ld_Ash : lda;
-        potf2_simple<T, rocblas_int>(is_upper, n, Amat, ldAmat, info_bid);
+        potf2_simple<T, rocblas_int>(is_upper, n, Ash, info_bid);
     }
 
     __syncthreads();
 
     // -------------------------------------
-    // copy n by n matrix into global memory
+    // copy n by n packed matrix into global memory
     // -------------------------------------
-    if(use_lds)
+    if(is_lower)
     {
         for(auto j = j_start; j < n; j += j_inc)
         {
-            for(auto i = i_start; i < n; i += i_inc)
+            for(auto i = j + i_start; i < n; i += i_inc)
             {
-                bool const lower_part = (i >= j);
-                bool const upper_part = (i <= j);
-                bool const do_assignment = (is_upper && upper_part) || (is_lower && lower_part);
-                if(do_assignment)
-                {
-                    auto const ij = idx2D(i, j, lda);
-                    A[ij] = Ash[i + j * ld_Ash];
-                }
-            }
-        }
+                auto const ij = idx2D(i, j, lda);
+                auto const ij_packed = idx_lower<rocblas_int>(i, j, n);
+                A[ij] = Ash[ij_packed];
+            };
+        };
     }
+    else
+    {
+        for(auto j = j_start; j < n; j += j_inc)
+        {
+            for(auto i = i_start; i <= j; i += i_inc)
+            {
+                auto const ij = idx2D(i, j, lda);
+                auto const ij_packed = idx_upper<rocblas_int>(i, j, n);
+
+                A[ij] = Ash[ij_packed];
+            };
+        };
+    }
+
     __syncthreads();
 }
