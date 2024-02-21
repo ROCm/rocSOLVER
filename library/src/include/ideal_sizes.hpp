@@ -191,7 +191,6 @@
 /*! \brief Determines the size of the leading block that is factorized at each step
     when using the blocked algorithm (POTRF). It also applies to the
     corresponding batched and strided-batched routines.*/
-// #define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4)?128 : (sizeof(T) == 8) ? 90 : 64 )
 #define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
 
 /*! \brief Determines the size at which rocSOLVER switches from
