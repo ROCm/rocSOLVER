@@ -113,27 +113,42 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
             // ------------------------
 
             size_t w1a = 0;
+            size_t w1b = 0;
             size_t w2a = 0;
+            size_t w2b = 0;
             size_t w3a = 0;
+            size_t w3b = 0;
             size_t w4a = 0;
+            size_t w4b = 0;
 
-            if(uplo == rocblas_fill_upper)
+            // -----------------------------------------------------------
+            // TODO: investigate why memsize for upper triangular case with
+            // double_complex seems to be incorrect.
+            //
+            // Current work-around is to request memsize
+            // for both lower and upper cases
+            //
+            // The extra amount of memory requested should be small compared to overall
+            // memory used and should not have significant impact to applications
+            // -----------------------------------------------------------
             {
+                // upper triangular case
                 rocblasCall_trsm_mem<BATCHED || STRIDED, T>(
                     rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb,
                     batch_count, &w1a, &w2a, &w3a, &w4a);
             }
-            else
+
             {
+                // lower triangular case
                 rocblasCall_trsm_mem<BATCHED || STRIDED, T>(
                     rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb,
-                    batch_count, &w1a, &w2a, &w3a, &w4a);
+                    batch_count, &w1b, &w2b, &w3b, &w4b);
             }
 
-            *size_work1 = max(*size_work1, w1a);
-            *size_work2 = max(*size_work2, w2a);
-            *size_work3 = max(*size_work3, w3a);
-            *size_work4 = max(*size_work4, w4a);
+            *size_work1 = max(*size_work1, max(w1a, w1b));
+            *size_work2 = max(*size_work2, max(w2a, w2b));
+            *size_work3 = max(*size_work3, max(w3a, w3b));
+            *size_work4 = max(*size_work4, max(w4a, w4b));
         }
     }
 }
