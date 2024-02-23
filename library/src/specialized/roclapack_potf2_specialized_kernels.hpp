@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,7 +29,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  * *************************************************************************/
+
 #pragma once
+
+#include "rocsolver_run_specialized_kernels.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -280,14 +283,20 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
     __syncthreads();
 }
 
+/*************************************************************
+    Templated kernels are instantiated in separate cpp
+    files in order to improve compilation times and reduce
+    the library size.
+*************************************************************/
+
 template <typename T, typename U>
-ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
-                                const rocblas_int n,
-                                U AA,
-                                const rocblas_int shiftA,
-                                const rocblas_stride strideA,
-                                const rocblas_int lda,
-                                rocblas_int* const info)
+ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
+                                         const rocblas_int n,
+                                         U AA,
+                                         const rocblas_int shiftA,
+                                         const rocblas_int lda,
+                                         const rocblas_stride strideA,
+                                         rocblas_int* const info)
 {
     bool const is_lower = (!is_upper);
 
@@ -406,3 +415,41 @@ ROCSOLVER_KERNEL void potf2_lds(const bool is_upper,
 
     __syncthreads();
 }
+
+/*************************************************************
+    Launchers of specilized kernels
+*************************************************************/
+
+template <typename T, typename U>
+rocblas_status potf2_run_small(rocblas_handle handle,
+                               const rocblas_fill uplo,
+                               const rocblas_int n,
+                               U A,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               rocblas_int* info,
+                               const rocblas_int batch_count)
+{
+    ROCSOLVER_ENTER("potf2_kernel_small", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
+                    "bc:", batch_count);
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    bool const is_upper = (uplo == rocblas_fill_upper);
+    ROCSOLVER_LAUNCH_KERNEL((potf2_kernel_small<T, U>), dim3(1, 1, batch_count), dim3(BS2, BS2, 1),
+                            0, stream, is_upper, n, A, shiftA, lda, strideA, info);
+
+    return rocblas_status_success;
+}
+
+/*************************************************************
+    Instantiation macros
+*************************************************************/
+
+#define INSTANTIATE_POTF2_SMALL(T, U)                                                  \
+    template rocblas_status potf2_run_small<T, U>(                                     \
+        rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n, U A,      \
+        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, \
+        rocblas_int* info, const rocblas_int batch_count)
