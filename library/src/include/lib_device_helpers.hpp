@@ -1171,8 +1171,8 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
         if(!has_work)
         {
             return;
-        };
-    };
+        }
+    }
 
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -1199,7 +1199,7 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
             {
                 map[map_i] = map_i;
                 map[i] = map_ii;
-            };
+            }
 
             __syncthreads();
 
@@ -1215,11 +1215,11 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
                 auto const ctemp = C[k_map_i];
                 C[k_map_i] = C[k_map_ii];
                 C[k_map_ii] = ctemp;
-            };
+            }
 
             __syncthreads();
-        };
-    };
+        }
+    }
 #ifdef NDEBUG
 #else
     // ----------------------------------------------------------
@@ -1229,7 +1229,7 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
     for(auto k = k_start; k < n; k += k_inc)
     {
         assert(map[k] == k);
-    };
+    }
     __syncthreads();
 #endif
 }
