@@ -33,9 +33,9 @@
 #pragma once
 
 #include "auxiliary/rocauxiliary_lacgv.hpp"
-#include "potf2_lds.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
@@ -202,9 +202,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
         // ----------------------
         // use specialized kernel
         // ----------------------
-        bool const is_upper = (uplo == rocblas_fill_upper);
-        ROCSOLVER_LAUNCH_KERNEL((potf2_lds<T, U>), dim3(1, 1, batch_count), dim3(BS2, BS2, 1), 0,
-                                stream, is_upper, n, A, shiftA, strideA, lda, info);
+        potf2_run_small<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count);
     }
     else
     {
