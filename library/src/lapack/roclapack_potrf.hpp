@@ -36,6 +36,7 @@
 #include "roclapack_potf2.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+#include <type_traits>
 
 template <typename U>
 ROCSOLVER_KERNEL void
@@ -235,9 +236,11 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             {
                 // update trailing submatrix
 
-                // TODO: fix seg fault on GPU when activating rocblas trsm for double_complex
-                //       disable rocblas_trsm for now
-                bool const use_rocblas_trsm = false;
+                // --------------------------------------------------
+                // TODO: investigate accuracy issue with rocblas trsm
+                // --------------------------------------------------
+                bool const use_rocblas_trsm = std::is_same<T, double>::value
+                    || std::is_same<T, rocblas_double_complex>::value;
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_left, rocblas_fill_upper,
@@ -281,7 +284,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if(j + jb < n)
             {
                 // update trailing submatrix
-                bool const use_rocblas_trsm = true;
+
+                bool const use_rocblas_trsm = std::is_same<T, double>::value
+                    || std::is_same<T, rocblas_double_complex>::value;
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower,
