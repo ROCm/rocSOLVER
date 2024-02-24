@@ -167,11 +167,12 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
             //   (2) vl21 * l11' = va21 =>  vl21 = va21/ l11', scale vector
             // ------------------------------------------------------------
 
-            auto const inv_lkk = 1 / rocsolver_conj(lkk);
+            auto const conj_lkk = rocsolver_conj(lkk);
             for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
             {
                 auto const j0k = idx2D(j0, kcol, lda);
-                A[j0k] *= inv_lkk;
+
+                A[j0k] = (A[j0k] / conj_lkk);
             }
 
             __syncthreads();
@@ -245,11 +246,10 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
             // ----------------------------------------------
             // (2) vU12' * u11 = vA12', or u11' * vU12 = vA12
             // ----------------------------------------------
-            auto const inv_ukk = 1 / rocsolver_conj(ukk);
             for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
             {
                 auto const kj0 = idx2D(kcol, j0, lda);
-                A[kj0] *= inv_ukk;
+                A[kj0] = A[kj0] / ukk;
             }
 
             __syncthreads();
@@ -369,7 +369,8 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
                 auto const ij_packed = (use_compute_lower) ? idx_lower<rocblas_int>(j, i, n)
                                                            : idx_upper<rocblas_int>(i, j, n);
 
-                Ash[ij_packed] = A[ij];
+                auto const aij = A[ij];
+                Ash[ij_packed] = (use_compute_lower) ? rocsolver_conj(aij) : aij;
             };
         };
     }
@@ -408,7 +409,8 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
                 auto const ij_packed = (use_compute_lower) ? idx_lower<rocblas_int>(j, i, n)
                                                            : idx_upper<rocblas_int>(i, j, n);
 
-                A[ij] = Ash[ij_packed];
+                auto const aij_packed = Ash[ij_packed];
+                A[ij] = (use_compute_lower) ? rocsolver_conj(aij_packed) : aij_packed;
             };
         };
     }
