@@ -114,7 +114,7 @@ rocblas_status rocsolver_getrf_nopiv_impl(rocblas_handle handle,
                                           const rocblas_int n,
                                           U A,
                                           const rocblas_int lda,
-                                          rocblas_int* info )
+                                          rocblas_int* info)
 {
     const char* name = "getrf_nopiv";
     ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda);
@@ -126,12 +126,12 @@ rocblas_status rocsolver_getrf_nopiv_impl(rocblas_handle handle,
 
     // argument checking
     {
-    bool const pivot = false;
-    rocblas_int * const ipiv = nullptr;
+        bool const pivot = false;
+        rocblas_int* const ipiv = nullptr;
 
-    rocblas_status st = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, pivot);
-    if(st != rocblas_status_continue)
-        return st;
+        rocblas_status st = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, pivot);
+        if(st != rocblas_status_continue)
+            return st;
     }
 
     // working with unshifted arrays

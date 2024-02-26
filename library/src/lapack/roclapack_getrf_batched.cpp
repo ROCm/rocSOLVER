@@ -269,8 +269,8 @@ rocblas_status rocsolver_sgetrf_npvt_batched(rocblas_handle handle,
     else
     {
         rocblas_int* ipiv = nullptr;
-    return rocsolver_getrf_batched_impl<float>(handle, m, n, A, lda, ipiv, 0, info, false,
-                                               batch_count);
+        return rocsolver_getrf_batched_impl<float>(handle, m, n, A, lda, ipiv, 0, info, false,
+                                                   batch_count);
     }
 }
 
@@ -289,8 +289,8 @@ rocblas_status rocsolver_dgetrf_npvt_batched(rocblas_handle handle,
     else
     {
         rocblas_int* ipiv = nullptr;
-    return rocsolver_getrf_batched_impl<double>(handle, m, n, A, lda, ipiv, 0, info, false,
-                                                batch_count);
+        return rocsolver_getrf_batched_impl<double>(handle, m, n, A, lda, ipiv, 0, info, false,
+                                                    batch_count);
     }
 }
 
