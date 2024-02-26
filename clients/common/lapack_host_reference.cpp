@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2016-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2016-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,6 +41,63 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+float slange_(char* norm, int* m, int* n, float* A, int* lda, float* work);
+double dlange_(char* norm, int* m, int* n, double* A, int* lda, double* work);
+float clange_(char* norm, int* m, int* n, rocblas_float_complex* A, int* lda, float* work);
+double zlange_(char* norm, int* m, int* n, rocblas_double_complex* A, int* lda, double* work);
+
+void sgecon_(char* norm,
+             int* n,
+             float* A,
+             int* lda,
+             float* anorm,
+             float* rcond,
+             float* work,
+             int* iwork,
+             int* info);
+void dgecon_(char* norm,
+             int* n,
+             double* A,
+             int* lda,
+             double* anorm,
+             double* rcond,
+             double* work,
+             int* iwork,
+             int* info);
+void cgecon_(char* norm,
+             int* n,
+             rocblas_float_complex* A,
+             int* lda,
+             float* anorm,
+             float* rcond,
+             rocblas_float_complex* work,
+             float* rwork,
+             int* info);
+void zgecon_(char* norm,
+             int* n,
+             rocblas_double_complex* A,
+             int* lda,
+             double* anorm,
+             double* rcond,
+             rocblas_double_complex* work,
+             double* rwork,
+             int* info);
+
+void saxpy_(int* n, float* alpha, float* x, int* incx, float* y, int* incy);
+void daxpy_(int* n, double* alpha, double* x, int* incx, double* y, int* incy);
+void caxpy_(int* n,
+            rocblas_float_complex* alpha,
+            rocblas_float_complex* x,
+            int* incx,
+            rocblas_float_complex* y,
+            int* incy);
+void zaxpy_(int* n,
+            rocblas_double_complex* alpha,
+            rocblas_double_complex* x,
+            int* incx,
+            rocblas_double_complex* y,
+            int* incy);
 
 void sgemv_(char* transA,
             int* m,
@@ -2525,6 +2582,154 @@ void dbdsvdx_(char* uplo,
 
 /************************************************************************/
 // These are templated functions used in rocSOLVER clients code
+
+// lange
+
+template <>
+float cpu_lange<float, float>(char norm,
+                              rocblas_int m,
+                              rocblas_int n,
+                              float* A,
+                              rocblas_int lda,
+                              float* work)
+{
+    return slange_(&norm, &m, &n, A, &lda, work);
+}
+
+template <>
+double cpu_lange<double, double>(char norm,
+                                 rocblas_int m,
+                                 rocblas_int n,
+                                 double* A,
+                                 rocblas_int lda,
+                                 double* work)
+{
+    return dlange_(&norm, &m, &n, A, &lda, work);
+}
+
+template <>
+float cpu_lange<rocblas_float_complex, float>(char norm,
+                                              rocblas_int m,
+                                              rocblas_int n,
+                                              rocblas_float_complex* A,
+                                              rocblas_int lda,
+                                              float* work)
+{
+    return clange_(&norm, &m, &n, A, &lda, work);
+}
+
+template <>
+double cpu_lange<rocblas_double_complex, double>(char norm,
+                                                 rocblas_int m,
+                                                 rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 rocblas_int lda,
+                                                 double* work)
+{
+    return zlange_(&norm, &m, &n, A, &lda, work);
+}
+
+// gecon
+
+template <>
+float cpu_gecon<float, float>(char norm,
+                              rocblas_int n,
+                              float* A,
+                              rocblas_int lda,
+                              float anorm,
+                              float* work,
+                              float* rwork,
+                              rocblas_int* iwork)
+{
+    float rcond;
+    rocblas_int info;
+    sgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, iwork, &info);
+    return rcond;
+}
+
+template <>
+double cpu_gecon<double, double>(char norm,
+                                 rocblas_int n,
+                                 double* A,
+                                 rocblas_int lda,
+                                 double anorm,
+                                 double* work,
+                                 double* rwork,
+                                 rocblas_int* iwork)
+{
+    double rcond;
+    rocblas_int info;
+    dgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, iwork, &info);
+    return rcond;
+}
+
+template <>
+float cpu_gecon<rocblas_float_complex, float>(char norm,
+                                              rocblas_int n,
+                                              rocblas_float_complex* A,
+                                              rocblas_int lda,
+                                              float anorm,
+                                              rocblas_float_complex* work,
+                                              float* rwork,
+                                              rocblas_int* iwork)
+{
+    float rcond;
+    rocblas_int info;
+    cgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, rwork, &info);
+    return rcond;
+}
+
+template <>
+double cpu_gecon<rocblas_double_complex, double>(char norm,
+                                                 rocblas_int n,
+                                                 rocblas_double_complex* A,
+                                                 rocblas_int lda,
+                                                 double anorm,
+                                                 rocblas_double_complex* work,
+                                                 double* rwork,
+                                                 rocblas_int* iwork)
+{
+    double rcond;
+    rocblas_int info;
+    zgecon_(&norm, &n, A, &lda, &anorm, &rcond, work, rwork, &info);
+    return rcond;
+}
+
+// axpy
+
+template <>
+void cpu_axpy<float>(rocblas_int n, float alpha, float* x, rocblas_int incx, float* y, rocblas_int incy)
+{
+    saxpy_(&n, &alpha, x, &incx, y, &incy);
+}
+
+template <>
+void cpu_axpy<double>(rocblas_int n, double alpha, double* x, rocblas_int incx, double* y, rocblas_int incy)
+{
+    daxpy_(&n, &alpha, x, &incx, y, &incy);
+}
+
+template <>
+void cpu_axpy<rocblas_float_complex>(rocblas_int n,
+                                     rocblas_float_complex alpha,
+                                     rocblas_float_complex* x,
+                                     rocblas_int incx,
+                                     rocblas_float_complex* y,
+                                     rocblas_int incy)
+{
+    caxpy_(&n, &alpha, x, &incx, y, &incy);
+}
+
+template <>
+void cpu_axpy<rocblas_double_complex>(rocblas_int n,
+                                      rocblas_double_complex alpha,
+                                      rocblas_double_complex* x,
+                                      rocblas_int incx,
+                                      rocblas_double_complex* y,
+                                      rocblas_int incy)
+{
+    zaxpy_(&n, &alpha, x, &incx, y, &incy);
+}
 
 // lacgv
 

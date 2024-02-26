@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -112,12 +112,12 @@ TEST_P(GETRF_LARGE, __double)
     run_tests<false, false, double>();
 }
 
-TEST_P(GETRF_LARGE, DISABLED__float_complex)
+TEST_P(GETRF_LARGE, __float_complex)
 {
     run_tests<false, false, rocblas_float_complex>();
 }
 
-TEST_P(GETRF_LARGE, DISABLED__double_complex)
+TEST_P(GETRF_LARGE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }

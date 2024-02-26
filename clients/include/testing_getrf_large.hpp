@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (c) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,7 +44,14 @@
  * ===========================================================================
  */
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
+template <bool CPU,
+          bool GPU,
+          typename T,
+          typename Td,
+          typename Ud,
+          typename Th,
+          typename Uh,
+          std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 void getrf_large_initData(const rocblas_handle handle,
                           const rocblas_int n,
                           const rocblas_int nrhs,
@@ -82,6 +89,97 @@ void getrf_large_initData(const rocblas_handle handle,
                         hA[b][i + j * lda] += 400;
                     else
                         hA[b][i + j * lda] -= 4;
+                }
+            }
+
+            // shuffle rows to test pivoting
+            // always the same permuation for debugging purposes
+            for(rocblas_int i = 0; i < n / 2; i++)
+            {
+                for(rocblas_int j = 0; j < n; j++)
+                {
+                    tmp = hA[b][i + j * lda];
+                    hA[b][i + j * lda] = hA[b][n - 1 - i + j * lda];
+                    hA[b][n - 1 - i + j * lda] = tmp;
+                }
+            }
+
+            if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
+            {
+                // When required, add some singularities
+                // (always the same elements for debugging purposes).
+                // The algorithm must detect the first zero pivot in those
+                // matrices in the batch that are singular
+                rocblas_int j = n / 4 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < n; i++)
+                    hA[b][i + j * lda] = 0;
+                j = n / 2 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < n; i++)
+                    hA[b][i + j * lda] = 0;
+                j = n - 1 + b;
+                j -= (j / n) * n;
+                for(rocblas_int i = 0; i < n; i++)
+                    hA[b][i + j * lda] = 0;
+            }
+        }
+    }
+
+    if(GPU)
+    {
+        // now copy data to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dB.transfer_from(hB));
+        CHECK_HIP_ERROR(dX.transfer_from(hB));
+    }
+}
+
+template <bool CPU,
+          bool GPU,
+          typename T,
+          typename Td,
+          typename Ud,
+          typename Th,
+          typename Uh,
+          std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+void getrf_large_initData(const rocblas_handle handle,
+                          const rocblas_int n,
+                          const rocblas_int nrhs,
+                          Td& dA,
+                          const rocblas_int lda,
+                          const rocblas_stride stA,
+                          Td& dB,
+                          const rocblas_int ldb,
+                          const rocblas_stride stB,
+                          Td& dX,
+                          Ud& dIpiv,
+                          const rocblas_stride stP,
+                          Ud& dInfo,
+                          const rocblas_int bc,
+                          Th& hA,
+                          Th& hB,
+                          Uh& hIpiv,
+                          Uh& hInfo,
+                          const bool singular)
+{
+    if(CPU)
+    {
+        T tmp;
+        rocblas_init<T>(hA, true);
+        rocblas_init<T>(hB, false);
+
+        for(rocblas_int b = 0; b < bc; ++b)
+        {
+            // scale A to avoid singularities
+            for(rocblas_int i = 0; i < n; i++)
+            {
+                for(rocblas_int j = 0; j < n; j++)
+                {
+                    if(i == j)
+                        hA[b][i + j * lda] += T(400, 400);
+                    else
+                        hA[b][i + j * lda] -= T(4, 4);
                 }
             }
 
