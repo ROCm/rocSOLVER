@@ -239,8 +239,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                 // --------------------------------------------------
                 // TODO: investigate accuracy issue with rocblas trsm
                 // --------------------------------------------------
-                bool const use_rocblas_trsm = std::is_same<T, double>::value
+                bool use_rocblas_trsm = std::is_same<T, double>::value
                     || std::is_same<T, rocblas_double_complex>::value;
+		use_rocblas_trsm = true;
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_left, rocblas_fill_upper,
@@ -285,8 +286,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             {
                 // update trailing submatrix
 
-                bool const use_rocblas_trsm = std::is_same<T, double>::value
+                bool use_rocblas_trsm = std::is_same<T, double>::value
                     || std::is_same<T, rocblas_double_complex>::value;
+		use_rocblas_trsm = true;
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower,
