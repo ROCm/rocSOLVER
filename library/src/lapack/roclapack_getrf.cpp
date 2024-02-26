@@ -26,6 +26,7 @@
  * *************************************************************************/
 
 #include "roclapack_getrf.hpp"
+#include "roclapack_getrf_nopiv.hpp"
 
 template <typename T, typename U>
 rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
@@ -107,6 +108,85 @@ rocblas_status rocsolver_getrf_impl(rocblas_handle handle,
         (rocblas_int*)iipiv, (rocblas_int*)iinfo, optim_mem, pivot);
 }
 
+template <typename T, typename U>
+rocblas_status rocsolver_getrf_nopiv_impl(rocblas_handle handle,
+                                          const rocblas_int m,
+                                          const rocblas_int n,
+                                          U A,
+                                          const rocblas_int lda,
+                                          rocblas_int* info )
+{
+    const char* name = "getrf_nopiv";
+    ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda);
+
+    using S = decltype(std::real(T{}));
+
+    if(!handle)
+        return rocblas_status_invalid_handle;
+
+    // argument checking
+    {
+    bool const pivot = false;
+    rocblas_int * const ipiv = nullptr;
+
+    rocblas_status st = rocsolver_getf2_getrf_argCheck(handle, m, n, lda, A, ipiv, info, pivot);
+    if(st != rocblas_status_continue)
+        return st;
+    }
+
+    // working with unshifted arrays
+    rocblas_int shiftA = 0;
+
+    // normal (non-batched non-strided) execution
+    rocblas_stride strideA = 0;
+    rocblas_int batch_count = 1;
+
+    // memory workspace sizes:
+    //
+    // size of reusable workspace (and for calling TRSM)
+    bool optim_mem = false;
+    size_t size_work1 = 0;
+    size_t size_work2 = 0;
+    size_t size_work3 = 0;
+    size_t size_work4 = 0;
+
+    // size to store info about singularity of each subblock
+    size_t size_iinfo = 0;
+
+    constexpr bool is_batched = false;
+    constexpr bool is_strided = false;
+    rocsolver_getrf_nopiv_getMemorySize<is_batched, is_strided, T>(
+        m, n, batch_count, &size_work1, &size_work2, &size_work3, &size_work4, &size_iinfo,
+        &optim_mem);
+
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
+                                                      size_work4, size_iinfo);
+
+    // memory workspace allocation
+
+    void* work1 = nullptr;
+    void* work2 = nullptr;
+    void* work3 = nullptr;
+    void* work4 = nullptr;
+    void* iinfo = nullptr;
+    rocblas_device_malloc mem(handle, size_work1, size_work2, size_work3, size_work4, size_iinfo);
+
+    if(!mem)
+        return rocblas_status_memory_error;
+
+    work1 = mem[0];
+    work2 = mem[1];
+    work3 = mem[2];
+    work4 = mem[3];
+    iinfo = mem[4];
+
+    // execution
+    return rocsolver_getrf_nopiv_template<false, false, T>(handle, m, n, A, shiftA, lda, strideA,
+                                                           info, batch_count, work1, work2, work3,
+                                                           work4, (rocblas_int*)iinfo, optim_mem);
+}
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -159,6 +239,8 @@ rocblas_status rocsolver_zgetrf(rocblas_handle handle,
     return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, true);
 }
 
+static constexpr bool use_getrf_nopiv = true;
+
 rocblas_status rocsolver_sgetrf_npvt(rocblas_handle handle,
                                      const rocblas_int m,
                                      const rocblas_int n,
@@ -166,8 +248,15 @@ rocblas_status rocsolver_sgetrf_npvt(rocblas_handle handle,
                                      const rocblas_int lda,
                                      rocblas_int* info)
 {
-    rocblas_int* ipiv = nullptr;
-    return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info, false);
+    if(use_getrf_nopiv)
+    {
+        return rocsolver_getrf_nopiv_impl<float>(handle, m, n, A, lda, info);
+    }
+    else
+    {
+        rocblas_int* ipiv = nullptr;
+        return rocsolver_getrf_impl<float>(handle, m, n, A, lda, ipiv, info, false);
+    }
 }
 
 rocblas_status rocsolver_dgetrf_npvt(rocblas_handle handle,
@@ -177,8 +266,15 @@ rocblas_status rocsolver_dgetrf_npvt(rocblas_handle handle,
                                      const rocblas_int lda,
                                      rocblas_int* info)
 {
-    rocblas_int* ipiv = nullptr;
-    return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info, false);
+    if(use_getrf_nopiv)
+    {
+        return rocsolver_getrf_nopiv_impl<double>(handle, m, n, A, lda, info);
+    }
+    else
+    {
+        rocblas_int* ipiv = nullptr;
+        return rocsolver_getrf_impl<double>(handle, m, n, A, lda, ipiv, info, false);
+    }
 }
 
 rocblas_status rocsolver_cgetrf_npvt(rocblas_handle handle,
@@ -188,8 +284,15 @@ rocblas_status rocsolver_cgetrf_npvt(rocblas_handle handle,
                                      const rocblas_int lda,
                                      rocblas_int* info)
 {
-    rocblas_int* ipiv = nullptr;
-    return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
+    if(use_getrf_nopiv)
+    {
+        return rocsolver_getrf_nopiv_impl<rocblas_float_complex>(handle, m, n, A, lda, info);
+    }
+    else
+    {
+        rocblas_int* ipiv = nullptr;
+        return rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
+    }
 }
 
 rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
@@ -199,8 +302,15 @@ rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
                                      const rocblas_int lda,
                                      rocblas_int* info)
 {
-    rocblas_int* ipiv = nullptr;
-    return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
+    if(use_getrf_nopiv)
+    {
+        return rocsolver_getrf_nopiv_impl<rocblas_double_complex>(handle, m, n, A, lda, info);
+    }
+    else
+    {
+        rocblas_int* ipiv = nullptr;
+        return rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
+    }
 }
 
 } // extern C
