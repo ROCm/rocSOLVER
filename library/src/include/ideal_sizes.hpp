@@ -270,6 +270,11 @@
 #define GETRF_NPVT_BATCH_INTERVALS_COMPLEX 20, 32, 42, 512, 1408
 #define GETRF_NPVT_BATCH_BLKSIZES_COMPLEX 0, -16, -32, -48, 64, 128
 
+// ---------------------------------------------------------------
+// size of submatrix that can fit in 64 KBytes of LDS shared memory
+// ---------------------------------------------------------------
+#define GETRF_NOPIV_BLOCKSIZE(T) ((sizeof(T) == 4) ? 128 : (sizeof(T) == 8) ? 90 : 64)
+
 /****************************** getri *****************************************
 *******************************************************************************/
 #define GETRI_MAX_COLS 64 //always <= wavefront size
