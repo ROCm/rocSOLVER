@@ -157,6 +157,7 @@
                                     strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
     }
 
+ROCSOLVER_BEGIN_NAMESPACE
 /*************************************************************
     Templated kernels are instantiated in separate cpp
     files in order to improve compilation times and reduce
@@ -644,7 +645,7 @@ ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_in
         B[idb] = c;
     }
 }
-
+ROCSOLVER_END_NAMESPACE
 /*************************************************************
     Launchers of specilized  kernels
 *************************************************************/

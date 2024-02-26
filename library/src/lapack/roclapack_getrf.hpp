@@ -189,6 +189,7 @@
     {1, 8, 16, 16}
 // clang-format on
 
+ROCSOLVER_BEGIN_NAMESPACE
 /** Execute all permutations dictated by the panel factorization
     in parallel (concurrency by rows and columns) **/
 template <typename T, typename U>
@@ -536,6 +537,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+ROCSOLVER_END_NAMESPACE
 
 /** Return the sizes of the different workspace arrays **/
 template <bool BATCHED, bool STRIDED, typename T>

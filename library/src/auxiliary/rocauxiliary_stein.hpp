@@ -43,6 +43,7 @@
 #define STEIN_MAX_ITERS 5
 
 #define STEIN_MAX_NRMCHK 2
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void stein_reorthogonalize(rocblas_int i,
@@ -311,6 +312,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEIN_MAX_THDS)
         iblock + (bid * strideIblock), isplit + (bid * strideIsplit), Z, ldz, ifail, info + bid,
         work + (bid * stride_work), iwork + (bid * stride_iwork), sval1, sval2, sidx, eps, ssfmin);
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T, typename S>
 void rocsolver_stein_getMemorySize(const rocblas_int n,

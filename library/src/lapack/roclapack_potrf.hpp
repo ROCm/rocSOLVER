@@ -36,6 +36,7 @@
 #include "roclapack_potf2.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename U>
 ROCSOLVER_KERNEL void
@@ -108,6 +109,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         *size_work1 = max(s1, s2);
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_potrf_template(rocblas_handle handle,

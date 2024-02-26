@@ -30,6 +30,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
@@ -134,6 +135,7 @@ ROCSOLVER_KERNEL void rf_splitLU_kernel(const rocblas_int n,
         Lx[j] = T(1);
     };
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 void rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,

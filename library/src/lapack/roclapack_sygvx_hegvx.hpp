@@ -37,6 +37,7 @@
 #include "roclapack_syevx_heevx.hpp"
 #include "roclapack_sygst_hegst.hpp"
 #include "rocsolver/rocsolver.h"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 ROCSOLVER_KERNEL void
@@ -55,6 +56,7 @@ ROCSOLVER_KERNEL void
             info[b] = iinfo[b];
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T, typename S>
 rocblas_status rocsolver_sygvx_hegvx_argCheck(rocblas_handle handle,

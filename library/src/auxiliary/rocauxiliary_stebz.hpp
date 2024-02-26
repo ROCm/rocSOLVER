@@ -40,6 +40,7 @@
 #define IBISEC_BLKS 64
 #define IBISEC_THDS 128
 
+ROCSOLVER_BEGIN_NAMESPACE
 /************** Kernels and device functions *********************************/
 /*****************************************************************************/
 
@@ -866,6 +867,7 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
             increasing_order(nn, W, IB);
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 /****** Template function, workspace size and argument validation **********/
 /***************************************************************************/

@@ -37,7 +37,7 @@
 #include "rocsolver/rocsolver.h"
 
 #include <cmath>
-
+ROCSOLVER_BEGIN_NAMESPACE
 /************** Kernels and device functions *******************/
 /***************************************************************/
 
@@ -930,7 +930,7 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
         }
     }
 }
-
+ROCSOLVER_END_NAMESPACE
 /****** Template function, workspace size and argument validation **********/
 /***************************************************************************/
 

@@ -37,6 +37,7 @@
 #include "roclapack_syev_heev.hpp"
 #include "roclapack_sygst_hegst.hpp"
 #include "rocsolver/rocsolver.h"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 ROCSOLVER_KERNEL void sygv_update_info(T* info, T* iinfo, const rocblas_int n, const rocblas_int bc)
@@ -51,6 +52,7 @@ ROCSOLVER_KERNEL void sygv_update_info(T* info, T* iinfo, const rocblas_int n, c
             info[b] = iinfo[b];
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, bool STRIDED, typename T, typename S>
 void rocsolver_sygv_hegv_getMemorySize(const rocblas_eform itype,

@@ -44,6 +44,8 @@
 #include "rocsolver_datatype2string.hpp"
 #include "rocsolver_logvalue.hpp"
 
+using namespace rocsolver;
+
 /***************************************************************************
  * rocSOLVER logging macros
  ***************************************************************************/
