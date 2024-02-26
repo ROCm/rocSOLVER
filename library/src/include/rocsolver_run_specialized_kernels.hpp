@@ -254,6 +254,16 @@ rocblas_status potf2_run_small(rocblas_handle handle,
                                rocblas_int* info,
                                const rocblas_int batch_count);
 
+template <typename T, typename U>
+rocblas_status getf2_nopiv_run_small(rocblas_handle handle,
+                                     const rocblas_int n,
+                                     U AA,
+                                     const rocblas_int shiftA,
+                                     const rocblas_int lda,
+                                     const rocblas_stride strideA,
+                                     rocblas_int* info,
+                                     const rocblas_int batch_count);
+
 #ifdef OPTIMAL
 
 // getf2
