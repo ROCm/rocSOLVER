@@ -310,8 +310,11 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
+set(static_depends PACKAGE rocblas)
+
 if(BUILD_WITH_SPARSE)
   target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+  list(APPEND static_depends PACKAGE rocsparse)
   set_source_files_properties(${rocsolver_refact_source}
     PROPERTIES
       COMPILE_DEFINITIONS HAVE_ROCSPARSE
@@ -319,8 +322,9 @@ if(BUILD_WITH_SPARSE)
 endif()
 
 if(ROCSOLVER_EMBED_FMT)
-  target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
+  target_link_libraries(rocsolver PRIVATE $<BUILD_INTERFACE:fmt::fmt-header-only>)
 else()
+  list(APPEND static_depends PACKAGE fmt)
   target_link_libraries(rocsolver PRIVATE fmt::fmt)
 endif()
 
@@ -418,7 +422,8 @@ rocm_export_targets(
   TARGETS roc::rocsolver
   DEPENDS
     PACKAGE hip
-    PACKAGE rocblas
+  STATIC_DEPENDS
+    ${static_depends}
   NAMESPACE roc::
 )
 
