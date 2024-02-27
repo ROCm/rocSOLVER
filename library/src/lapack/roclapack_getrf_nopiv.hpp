@@ -38,14 +38,18 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 #include <type_traits>
 
-template <typename U>
+template <typename I>
 ROCSOLVER_KERNEL void
-    chk_singular(rocblas_int* iinfo, rocblas_int* info, int j, rocblas_int batch_count)
+    chk_singular(I* iinfo, I* info, I j, I batch_count)
 {
-    int id = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I const id_start = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I const id_inc = hipBlockDim_x * hipGridDim_x;
 
-    if(id < batch_count && info[id] == 0 && iinfo[id] > 0)
+    for( I id=id_start; id < batch_count; id += id_inc) {
+      if( (info[id] == 0) && (iinfo[id] > 0) ) {
         info[id] = iinfo[id] + j;
+      }
+    }
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
@@ -79,13 +83,9 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
     }
 
     rocblas_int const jb = GETRF_NOPIV_BLOCKSIZE(T);
-    *size_iinfo = sizeof(rocblas_int) * jb * std::max(1, batch_count);
+    *size_iinfo = sizeof(rocblas_int) * std::max(1, batch_count);
     *optim_mem = true;
 
-    if(n <= jb)
-    {
-        return;
-    }
 
     {
         // ------------------------
@@ -108,11 +108,10 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
             rocblas_side const side = rocblas_side_right;
             rocblas_operation const trans = rocblas_operation_none;
 
-            rocblas_int const j = 0;
-            rocblas_int const mm = (m - (j + jb));
+            rocblas_int const mm = m;
             rocblas_int const nn = jb;
 
-            rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
+            rocblasCall_trsm_mem<BATCHED,  T>(side, trans, mm, nn, batch_count, &w1a,
                                                         &w2a, &w3a, &w4a);
         }
 
@@ -123,11 +122,10 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
             rocblas_side const side = rocblas_side_left;
             rocblas_operation const trans = rocblas_operation_none;
 
-            rocblas_int const j = 0;
             rocblas_int const mm = jb;
-            rocblas_int const nn = (n - (j + jb));
+            rocblas_int const nn = n;
 
-            rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count, &w1b,
+            rocblasCall_trsm_mem<BATCHED , T>(side, trans, mm, nn, batch_count, &w1b,
                                                         &w2b, &w3b, &w4b);
         }
 
@@ -165,7 +163,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
+    rocblas_int const blocksReset = std::max(1,(batch_count - 1) / BS1 + 1);
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
@@ -188,8 +186,6 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     // constants for rocblas functions calls
     T t_one = 1;
     T t_minone = -1;
-    S s_one = 1;
-    S s_minone = -1;
 
     // [ L11      ] * [ U11   U12 ] = [A11   A12]
     // [ L21  L22 ]   [       U22 ]   [A21   A22]
@@ -218,7 +214,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
                                           iinfo, batch_count);
 
         // test for singular submatrix
-        ROCSOLVER_LAUNCH_KERNEL(chk_singular<U>, gridReset, threads, 0, stream, iinfo, info, j,
+        ROCSOLVER_LAUNCH_KERNEL(chk_singular<rocblas_int>, gridReset, threads, 0, stream, iinfo, info, j,
                                 batch_count);
         // --------------------------------------
         // (2) L21 * U11 = A21 => L21 = A21 / U11
@@ -274,6 +270,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
         {
             rocblas_operation const trans_a = rocblas_operation_none;
             rocblas_operation const trans_b = rocblas_operation_none;
+
             rocblas_int const mm = (m - (j + jb));
             rocblas_int const nn = (n - (j + jb));
             rocblas_int const kk = jb;
