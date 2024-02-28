@@ -86,7 +86,10 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
         auto const akk_re = std::real(akk);
         auto const akk_im = std::imag(akk);
 
-        bool const isok = std::isfinite(akk_re) && std::isfinite(akk_im) && (std::abs(akk) != 0);
+        bool const isok_finite = std::isfinite(akk_re) && std::isfinite(akk_im);
+        bool const is_zero = (akk_re == 0) && (akk_im == 0);
+        bool const isok = isok_finite && (!is_zero);
+
         if(!isok)
         {
             if(tid == 0)
@@ -114,9 +117,7 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
         __syncthreads();
 
         // ------------------------------------------------------------
-        //   (3a) A22 = A22 - vl21 * vl21',  symmetric rank-1 update
-        //
-        //   note: update lower triangular part
+        //   (4) A22 = A22 - vl21 * vu12
         // ------------------------------------------------------------
 
         for(I j = (kcol + 1) + j_start; j < n; j += j_inc)

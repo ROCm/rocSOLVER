@@ -39,16 +39,17 @@
 #include <type_traits>
 
 template <typename I>
-ROCSOLVER_KERNEL void
-    chk_singular(I* iinfo, I* info, I j, I batch_count)
+ROCSOLVER_KERNEL void chk_singular(I* iinfo, I* info, I j, I batch_count)
 {
     I const id_start = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     I const id_inc = hipBlockDim_x * hipGridDim_x;
 
-    for( I id=id_start; id < batch_count; id += id_inc) {
-      if( (info[id] == 0) && (iinfo[id] > 0) ) {
-        info[id] = iinfo[id] + j;
-      }
+    for(I id = id_start; id < batch_count; id += id_inc)
+    {
+        if((info[id] == 0) && (iinfo[id] > 0))
+        {
+            info[id] = iinfo[id] + j;
+        }
     }
 }
 
@@ -77,29 +78,32 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
     *size_iinfo = 0;
     *optim_mem = true;
     // if quick return no need of workspace
-    if(n == 0 || batch_count == 0)
+    if((m == 0) || (n == 0) || (batch_count == 0))
     {
         return;
     }
 
-    rocblas_int const jb = GETRF_NOPIV_BLOCKSIZE(T);
-    *size_iinfo = sizeof(rocblas_int) * std::max(1, batch_count);
+    rocblas_int const nb = GETRF_NOPIV_BLOCKSIZE(T);
+    *size_iinfo = sizeof(rocblas_int) * batch_count;
     *optim_mem = true;
 
-
     {
+        auto is_even = [](auto n) { return ((n % 2) == 0); };
         // ------------------------
         // storage for rocblas TRSM
         // ------------------------
 
+        size_t w1_max = 0;
+        size_t w2_max = 0;
+        size_t w3_max = 0;
+        size_t w4_max = 0;
+
         size_t w1a = 0;
-        size_t w1b = 0;
         size_t w2a = 0;
-        size_t w2b = 0;
         size_t w3a = 0;
-        size_t w3b = 0;
         size_t w4a = 0;
-        size_t w4b = 0;
+
+        rocblas_int const min_mn = std::min(m, n);
 
         // --------------------------------------
         //  L21 * U11 = A21 => L21 = A21 / U11
@@ -108,11 +112,24 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
             rocblas_side const side = rocblas_side_right;
             rocblas_operation const trans = rocblas_operation_none;
 
-            rocblas_int const mm = m;
-            rocblas_int const nn = jb;
+            for(rocblas_int j = 0; j < min_mn; j += nb)
+            {
+                rocblas_int const jb = std::min(min_mn - j, nb);
+                rocblas_int const mm = m - (j + jb);
+                rocblas_int const nn = jb;
 
-            rocblasCall_trsm_mem<BATCHED,  T>(side, trans, mm, nn, batch_count, &w1a,
-                                                        &w2a, &w3a, &w4a);
+                bool const has_work = (mm >= 1) && (nn >= 1);
+                if(has_work)
+                {
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a);
+
+                    w1_max = std::max(w1_max, w1a);
+                    w2_max = std::max(w2_max, w2a);
+                    w3_max = std::max(w3_max, w3a);
+                    w4_max = std::max(w4_max, w4a);
+                }
+            }
         }
 
         // --------------------------------------
@@ -122,17 +139,30 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
             rocblas_side const side = rocblas_side_left;
             rocblas_operation const trans = rocblas_operation_none;
 
-            rocblas_int const mm = jb;
-            rocblas_int const nn = n;
+            for(rocblas_int j = 0; j < min_mn; j += nb)
+            {
+                rocblas_int const jb = std::min(min_mn - j, nb);
+                rocblas_int const mm = jb;
+                rocblas_int const nn = n - (j + jb);
 
-            rocblasCall_trsm_mem<BATCHED , T>(side, trans, mm, nn, batch_count, &w1b,
-                                                        &w2b, &w3b, &w4b);
+                bool const has_work = (mm >= 1) && (nn >= 1);
+                if(has_work)
+                {
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a);
+
+                    w1_max = std::max(w1_max, w1a);
+                    w2_max = std::max(w2_max, w2a);
+                    w3_max = std::max(w3_max, w3a);
+                    w4_max = std::max(w4_max, w4a);
+                }
+            }
         }
 
-        *size_work1 = max(*size_work1, max(w1a, w1b));
-        *size_work2 = max(*size_work2, max(w2a, w2b));
-        *size_work3 = max(*size_work3, max(w3a, w3b));
-        *size_work4 = max(*size_work4, max(w4a, w4b));
+        *size_work1 = std::max(*size_work1, w1_max);
+        *size_work2 = std::max(*size_work2, w2_max);
+        *size_work3 = std::max(*size_work3, w3_max);
+        *size_work4 = std::max(*size_work4, w4_max);
     }
 }
 
@@ -163,7 +193,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int const blocksReset = std::max(1,(batch_count - 1) / BS1 + 1);
+    rocblas_int const blocksReset = std::max(1, (batch_count - 1) / BS1 + 1);
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
@@ -198,12 +228,11 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     // (4a)  A22 = A22 - L21 * U12,   GEMM
     // (4b)  L22 * U22 = A22,  factorize remaining using tail recursion
 
-    rocblas_int jb, j = 0;
-    rocblas_int min_mn = std::min(m, n);
+    rocblas_int const min_mn = std::min(m, n);
     for(rocblas_int j = 0; j < min_mn; j += nb)
     {
         // Factor diagonal and subdiagonal blocks
-        jb = min(min_mn - j, nb); // number of columns in the block
+        rocblas_int const jb = min(min_mn - j, nb); // number of columns in the block
 
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
 
@@ -214,8 +243,8 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
                                           iinfo, batch_count);
 
         // test for singular submatrix
-        ROCSOLVER_LAUNCH_KERNEL(chk_singular<rocblas_int>, gridReset, threads, 0, stream, iinfo, info, j,
-                                batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(chk_singular<rocblas_int>, gridReset, threads, 0, stream, iinfo,
+                                info, j, batch_count);
         // --------------------------------------
         // (2) L21 * U11 = A21 => L21 = A21 / U11
         // --------------------------------------

@@ -145,7 +145,7 @@ rocblas_status rocsolver_getrf_nopiv_strided_batched_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size of reusable workspace (and for calling TRSM)
-    bool optim_mem = false;
+    bool optim_mem = true;
     size_t size_work1 = 0;
     size_t size_work2 = 0;
     size_t size_work3 = 0;
