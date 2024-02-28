@@ -7,5 +7,5 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 # Build the doxygen info
 rm -rf docBin
-cd .doxygen
+cd doxygen
 doxygen Doxyfile
