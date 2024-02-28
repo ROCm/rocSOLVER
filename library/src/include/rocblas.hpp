@@ -1889,18 +1889,30 @@ void rocblasCall_trsm_mem(rocblas_side side,
                           size_t* invA,
                           size_t* invA_arr)
 {
-    size_t no_opt_size;
+    assert(x_temp != nullptr);
+    assert(x_temp_arr != nullptr);
+    assert(invA != nullptr);
+    assert(invA_arr != nullptr);
+
+    size_t no_opt_size = 0;
     /** TODO: For now, we always request the size for optimal performance.
         no_opt_size could be used in the future if we generalize the use of
         rocblas_workmode parameter **/
 
     // can't infer batched based on input params
+    rocblas_status istat = rocblas_status_success;
     if constexpr(BATCHED)
-        rocblas_internal_trsm_batched_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
-                                                        x_temp_arr, invA, invA_arr, &no_opt_size);
+    {
+        istat = (rocblas_internal_trsm_batched_workspace_size<T>(
+            side, transA, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size));
+    }
     else
-        rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
-                                                x_temp_arr, invA, invA_arr, &no_opt_size);
+    {
+        istat = (rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
+                                                         x_temp_arr, invA, invA_arr, &no_opt_size));
+    }
+
+    assert((istat == rocblas_status_success) || (istat == rocblas_status_continue));
 }
 
 // trsm
