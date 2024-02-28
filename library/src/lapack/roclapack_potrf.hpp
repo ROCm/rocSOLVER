@@ -36,7 +36,6 @@
 #include "roclapack_potf2.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
-#include <type_traits>
 
 template <typename U>
 ROCSOLVER_KERNEL void
@@ -75,7 +74,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         return;
     }
 
-    rocblas_int jb = POTRF_BLOCKSIZE(T);
+    rocblas_int nb = POTRF_BLOCKSIZE(T);
     if(n <= POTRF_POTF2_SWITCHSIZE(T))
     {
         // requirements for calling a single POTF2
@@ -88,6 +87,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     }
     else
     {
+        rocblas_int jb = nb;
         size_t s1, s2;
 
         // size to store info about positiveness of each subblock
@@ -96,15 +96,20 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         // requirements for calling POTF2 for the subblocks
         rocsolver_potf2_getMemorySize<T>(jb, batch_count, size_scalars, &s1, size_pivots);
 
+        bool const use_upper = (uplo == rocblas_fill_upper);
         // extra requirements for calling TRSM
-        if(uplo == rocblas_fill_upper)
+        if(use_upper)
+        {
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(
                 rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb, batch_count,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
+        }
         else
+        {
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(
                 rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb, batch_count,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
+        }
 
         *size_work1 = max(s1, s2);
 
@@ -113,43 +118,99 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
             // storage for rocblas TRSM
             // ------------------------
 
+            size_t w1_max = 0;
+            size_t w2_max = 0;
+            size_t w3_max = 0;
+            size_t w4_max = 0;
+
             size_t w1a = 0;
-            size_t w1b = 0;
             size_t w2a = 0;
-            size_t w2b = 0;
             size_t w3a = 0;
-            size_t w3b = 0;
             size_t w4a = 0;
-            size_t w4b = 0;
 
             // -----------------------------------------------------------
             // TODO: investigate why memsize for upper triangular case with
-            // double_complex seems to be incorrect.
+            // rocblasCall_trsm() may not be correct
             //
-            // Current work-around is to request memsize
-            // for both lower and upper cases
-            //
-            // The extra amount of memory requested should be small compared to overall
-            // memory used and should not have significant impact to applications
+            // Suspect rocblasCall_trsm_mem() may not be "monotone" that
+            // storage for case (M,N) is sufficient for all smaller cases
+            // of (m,n) that satisfy "(m <= M) && (n <= N)"
             // -----------------------------------------------------------
+
+            if(use_upper)
             {
+                // ---------------------------------------
                 // upper triangular case
-                rocblasCall_trsm_mem<BATCHED || STRIDED, T>(
-                    rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb,
-                    batch_count, &w1a, &w2a, &w3a, &w4a);
-            }
+                //
+                // [U11'     ] * [U11  U12] = [A11   A12]
+                // [U12' U22']   [     U22]   [A12'  A22]
+                //
+                // then U11' * U12 = A12
+                // ---------------------------------------
+                rocblas_side const side = rocblas_side_left;
+                rocblas_operation const trans = rocblas_operation_conjugate_transpose;
+                {
+                    rocblas_int const mm = nb;
+                    rocblas_int const nn = n;
 
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1_max, &w2_max, &w3_max, &w4_max);
+                }
+
+                for(rocblas_int j = 0; j < n; j += nb)
+                {
+                    rocblas_int const jb = std::min(n - j, nb);
+                    rocblas_int const mm = jb;
+                    rocblas_int const nn = n - (j + jb);
+
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a);
+
+                    w1_max = std::max(w1_max, w1a);
+                    w2_max = std::max(w2_max, w2a);
+                    w3_max = std::max(w3_max, w3a);
+                    w4_max = std::max(w4_max, w4a);
+                }
+            }
+            else
             {
+                // ----------------------------------------
                 // lower triangular case
-                rocblasCall_trsm_mem<BATCHED || STRIDED, T>(
-                    rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb,
-                    batch_count, &w1b, &w2b, &w3b, &w4b);
+                // [L11     ] * [L11'  L21'] = [A11  A21']
+                // [L21  L22]   [      L22']   [A21  A22 ]
+                //
+                // then L21 * L11' = A21
+                // ----------------------------------------
+                rocblas_side const side = rocblas_side_right;
+                rocblas_operation const trans = rocblas_operation_conjugate_transpose;
+                {
+                    rocblas_int const mm = n;
+                    rocblas_int const nn = nb;
+
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1_max, &w2_max, &w3_max, &w4_max);
+                }
+
+                for(rocblas_int j = 0; j < n; j += nb)
+                {
+                    rocblas_int const jb = std::min(n - j, nb);
+                    rocblas_int const mm = n - (j + jb);
+                    rocblas_int const nn = jb;
+
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a);
+
+                    w1_max = std::max(w1_max, w1a);
+                    w2_max = std::max(w2_max, w2a);
+                    w3_max = std::max(w3_max, w3a);
+                    w4_max = std::max(w4_max, w4a);
+                }
             }
 
-            *size_work1 = max(*size_work1, max(w1a, w1b));
-            *size_work2 = max(*size_work2, max(w2a, w2b));
-            *size_work3 = max(*size_work3, max(w3a, w3b));
-            *size_work4 = max(*size_work4, max(w4a, w4b));
+            *size_work1 = std::max(*size_work1, w1_max);
+            *size_work2 = std::max(*size_work2, w2_max);
+            *size_work3 = std::max(*size_work3, w3_max);
+            *size_work4 = std::max(*size_work4, w4_max);
         }
     }
 }
@@ -236,12 +297,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             {
                 // update trailing submatrix
 
-                // --------------------------------------------------
-                // TODO: investigate accuracy issue with rocblas trsm
-                // --------------------------------------------------
-                bool use_rocblas_trsm = std::is_same<T, double>::value
-                    || std::is_same<T, rocblas_double_complex>::value;
-		use_rocblas_trsm = true;
+                // TODO: fix seg fault on GPU when activating rocblas trsm for double_complex
+                //       disable rocblas_trsm for now
+                bool const use_rocblas_trsm = true;
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_left, rocblas_fill_upper,
@@ -285,10 +343,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if(j + jb < n)
             {
                 // update trailing submatrix
-
-                bool use_rocblas_trsm = std::is_same<T, double>::value
-                    || std::is_same<T, rocblas_double_complex>::value;
-		use_rocblas_trsm = true;
+                bool const use_rocblas_trsm = true;
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower,
