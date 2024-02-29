@@ -112,6 +112,24 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
             rocblas_side const side = rocblas_side_right;
             rocblas_operation const trans = rocblas_operation_none;
 
+            {
+                // -----------------------------------
+                // avoid magic numbers in rocblas TRSM
+                // by inflating (mm,nn) to odd numbers
+                // -----------------------------------
+
+                rocblas_int const mm = is_even(m) ? m + 1 : m;
+                rocblas_int const nn = is_even(nb) ? nb + 1 : nb;
+
+                rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
+                                                            &w2a, &w3a, &w4a);
+
+                w1_max = std::max(w1_max, w1a);
+                w2_max = std::max(w2_max, w2a);
+                w3_max = std::max(w3_max, w3a);
+                w4_max = std::max(w4_max, w4a);
+            }
+
             for(rocblas_int j = 0; j < min_mn; j += nb)
             {
                 rocblas_int const jb = std::min(min_mn - j, nb);
@@ -138,6 +156,24 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
         {
             rocblas_side const side = rocblas_side_left;
             rocblas_operation const trans = rocblas_operation_none;
+
+            {
+                // -----------------------------------
+                // avoid magic numbers in rocblas TRSM
+                // by inflating (mm,nn) to odd numbers
+                // -----------------------------------
+
+                rocblas_int const mm = is_even(nb) ? nb + 1 : nb;
+                rocblas_int const nn = is_even(n) ? n + 1 : n;
+
+                rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
+                                                            &w2a, &w3a, &w4a);
+
+                w1_max = std::max(w1_max, w1a);
+                w2_max = std::max(w2_max, w2a);
+                w3_max = std::max(w3_max, w3a);
+                w4_max = std::max(w4_max, w4a);
+            }
 
             for(rocblas_int j = 0; j < min_mn; j += nb)
             {
