@@ -89,11 +89,11 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
 
         bool const isok_finite = std::isfinite(akk_re) && std::isfinite(akk_im);
         bool const is_zero = (akk == zero);
-        bool const isok = isok_finite && (!is_zero);
+        bool const isok_akk = isok_finite && (!is_zero);
 
         __syncthreads();
 
-        if(!isok)
+        if(!isok_akk)
         {
             if(tid == 0)
             {
@@ -108,12 +108,18 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
         //   (3) vl21 *u11  = va21 =>  vl21 = va21/u11  , scale vector
         // ------------------------------------------------------------
 
-        auto const ukk = akk;
-        for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
+        // --------------------------------------
+        // avoid division by zero (or Inf or Nan)
+        // --------------------------------------
+        if(isok_akk)
         {
-            auto const j0k = idx2D(j0, kcol, lda);
+            auto const ukk = akk;
+            for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
+            {
+                auto const j0k = idx2D(j0, kcol, lda);
 
-            A[j0k] = A[j0k] / ukk;
+                A[j0k] = A[j0k] / ukk;
+            }
         }
 
         __syncthreads();
