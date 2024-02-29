@@ -84,17 +84,18 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
     {
         auto const kk = idx2D(kcol, kcol, lda);
         auto const akk = A[kk];
-        auto const akk_re = std::real(akk);
-        auto const akk_im = std::imag(akk);
-
-        bool const isok_finite = std::isfinite(akk_re) && std::isfinite(akk_im);
-        bool const is_zero = (akk == zero);
-        bool const isok_akk = isok_finite && (!is_zero);
 
         __syncthreads();
 
-        if(!isok_akk)
+        bool const isok_akk = (akk != zero);
+        T pivot_val = 1;
+        if(isok_akk)
         {
+            pivot_val = 1 / akk;
+        }
+        else
+        {
+            pivot_val = 1;
             if(tid == 0)
             {
                 // Fortran 1-based index
@@ -108,17 +109,12 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
         //   (3) vl21 *u11  = va21 =>  vl21 = va21/u11  , scale vector
         // ------------------------------------------------------------
 
-        // --------------------------------------
-        // avoid division by zero (or Inf or Nan)
-        // --------------------------------------
-        if(isok_akk)
         {
-            auto const ukk = akk;
             for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
             {
                 auto const j0k = idx2D(j0, kcol, lda);
 
-                A[j0k] = A[j0k] / ukk;
+                A[j0k] = A[j0k] * pivot_val;
             }
         }
 
