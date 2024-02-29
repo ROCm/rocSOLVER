@@ -79,6 +79,7 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
 
     __syncthreads();
 
+    T const zero = 0;
     for(I kcol = 0; kcol < n; kcol++)
     {
         auto const kk = idx2D(kcol, kcol, lda);
@@ -87,8 +88,10 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
         auto const akk_im = std::imag(akk);
 
         bool const isok_finite = std::isfinite(akk_re) && std::isfinite(akk_im);
-        bool const is_zero = (akk_re == 0) && (akk_im == 0);
+        bool const is_zero = (akk == zero);
         bool const isok = isok_finite && (!is_zero);
+
+        __syncthreads();
 
         if(!isok)
         {
@@ -97,7 +100,6 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
                 // Fortran 1-based index
                 *info = (*info == 0) ? kcol + 1 : (*info);
             }
-            break;
         }
 
         __syncthreads();
@@ -162,6 +164,9 @@ ROCSOLVER_KERNEL void getf2_nopiv_kernel_small(const rocblas_int n,
     auto const j_inc = hipBlockDim_y;
     assert(hipBlockDim_z == 1);
 
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
     // --------------------------------
     // note hipGridDim_z == batch_count
     // --------------------------------
@@ -191,7 +196,7 @@ ROCSOLVER_KERNEL void getf2_nopiv_kernel_small(const rocblas_int n,
     assert(use_lds);
 
     // ------------------------------------
-    // copy n by n packed matrix into shared memory
+    // copy n by n sub-matrix into shared memory
     // ------------------------------------
     __syncthreads();
 
