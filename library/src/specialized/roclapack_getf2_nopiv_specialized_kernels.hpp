@@ -45,6 +45,9 @@
 template <typename T, typename I>
 __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
 {
+    using S = decltype(std::real(T{}));
+    auto const sfmin = get_safemin<S>();
+
     auto const lda = n;
 
     auto const i_start = hipThreadIdx_x;
@@ -110,11 +113,31 @@ __device__ static void getf2_nopiv_simple(I const n, T* const A, I* const info)
         // ------------------------------------------------------------
 
         {
-            for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
+            auto const ukk = akk;
+            if(std::abs(akk) >= sfmin)
             {
-                auto const j0k = idx2D(j0, kcol, lda);
+                // ------------------------------------
+                // perform multiplication of reciprocal
+                // ------------------------------------
+                auto const pivot_val = S{1.0} / ukk;
+                for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
+                {
+                    auto const j0k = idx2D(j0, kcol, lda);
 
-                A[j0k] = A[j0k] * pivot_val;
+                    A[j0k] = A[j0k] * pivot_val;
+                }
+            }
+            else
+            {
+                // ----------------
+                // perform division
+                // ----------------
+                for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
+                {
+                    auto const j0k = idx2D(j0, kcol, lda);
+
+                    A[j0k] = A[j0k] / ukk;
+                }
             }
         }
 
