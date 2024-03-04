@@ -466,3 +466,15 @@ catch(...)
 }
 
 #undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+
+template <typename T>
+static T max(T x, T y)
+{
+    return (std::max<T>(x, y));
+}
+
+template <typename T>
+static T min(T x, T y)
+{
+    return (std::min<T>(x, y));
+}

@@ -242,11 +242,11 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n, blk + 1,
                                      batch_count, &w1a, &w2a, &w3a, &w4a);
 
-    *size_work1 = max(w1a, w1b);
-    *size_work2 = max(w2a, w2b);
-    *size_work3 = max(w3a, w3b);
-    *size_work4 = max(w4a, w4b);
-    *size_tmpcopy = max(t1, t2);
+    *size_work1 = std::max(w1a, w1b);
+    *size_work2 = std::max(w2a, w2b);
+    *size_work3 = std::max(w3a, w3b);
+    *size_work4 = std::max(w4a, w4b);
+    *size_tmpcopy = std::max(t1, t2);
 
     // always allocate all required memory for TRSM optimal performance
     opt2 = true;
