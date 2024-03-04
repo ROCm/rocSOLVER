@@ -134,16 +134,16 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
             // -----------------------------------------------------------
             {
                 // upper triangular case
-                rocblasCall_trsm_mem<BATCHED, T>(
-                    rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb,
-                    batch_count, &w1a, &w2a, &w3a, &w4a);
+                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left,
+                                                 rocblas_operation_conjugate_transpose, jb, n - jb,
+                                                 batch_count, &w1a, &w2a, &w3a, &w4a);
             }
 
             {
                 // lower triangular case
-                rocblasCall_trsm_mem<BATCHED, T>(
-                    rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb,
-                    batch_count, &w1b, &w2b, &w3b, &w4b);
+                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right,
+                                                 rocblas_operation_conjugate_transpose, n - jb, jb,
+                                                 batch_count, &w1b, &w2b, &w3b, &w4b);
             }
 
             *size_work1 = max(*size_work1, max(w1a, w1b));
