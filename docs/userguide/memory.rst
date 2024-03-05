@@ -9,7 +9,7 @@ In contrast to LAPACK, however, pointers to the workspace are not explicitly pas
 functions as arguments; instead, they are managed behind-the-scenes using a configurable device memory
 model.
 
-rocSOLVER makes use of and is integrated with `the rocBLAS memory model`_. Workspace memory, and the
+rocSOLVER makes use of and is integrated with `the rocBLAS memory model`. Workspace memory, and the
 scheme used to manage it, is tracked on a per-``rocblas_handle`` basis. The same functionality that
 is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory.
 
