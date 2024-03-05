@@ -284,7 +284,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         while(j < n - POTRF_POTF2_SWITCHSIZE(T))
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, nb); // number of columns in the block
+            jb = std::min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
@@ -331,7 +331,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         while(j < n - POTRF_POTF2_SWITCHSIZE(T))
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, nb); // number of columns in the block
+            jb = std::min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
