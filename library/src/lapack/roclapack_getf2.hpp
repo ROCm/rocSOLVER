@@ -577,7 +577,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(256, 1, 1);
-    rocblas_int dim = min(m, n); // total number of pivots
+    rocblas_int dim = std::min(m, n); // total number of pivots
 
     // info=0 (starting with a nonsingular matrix)
     if(offset == 0)

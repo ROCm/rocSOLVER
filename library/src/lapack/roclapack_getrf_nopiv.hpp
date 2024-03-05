@@ -268,7 +268,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     for(rocblas_int j = 0; j < min_mn; j += nb)
     {
         // Factor diagonal and subdiagonal blocks
-        rocblas_int const jb = min(min_mn - j, nb); // number of columns in the block
+        rocblas_int const jb = std::min(min_mn - j, nb); // number of columns in the block
 
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
 
