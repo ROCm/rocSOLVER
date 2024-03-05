@@ -111,7 +111,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
         }
 
-        *size_work1 = max(s1, s2);
+        *size_work1 = std::max(s1, s2);
 
         {
             // ------------------------
