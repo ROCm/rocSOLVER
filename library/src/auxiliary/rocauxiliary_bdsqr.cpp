@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,25 +71,26 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
 
     // memory workspace sizes:
     // size of re-usable workspace
-    size_t size_splits, size_work;
-    rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size_splits, &size_work);
+    size_t size_splits_map, size_work;
+    rocsolver_bdsqr_getMemorySize<S>(n, nv, nu, nc, batch_count, &size_splits_map, &size_work);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_splits, size_work);
+        return rocblas_set_optimal_device_memory_size(handle, size_splits_map, size_work);
 
     // memory workspace allocation
-    void *splits, *work;
-    rocblas_device_malloc mem(handle, size_splits, size_work);
+    void *splits_map, *work;
+    rocblas_device_malloc mem(handle, size_splits_map, size_work);
     if(!mem)
         return rocblas_status_memory_error;
 
-    splits = mem[0];
+    splits_map = mem[0];
     work = mem[1];
 
     // execution
     return rocsolver_bdsqr_template<T>(handle, uplo, n, nv, nu, nc, D, strideD, E, strideE, V,
-                                       shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC, ldc,
-                                       strideC, info, batch_count, (rocblas_int*)splits, (S*)work);
+                                       shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
+                                       ldc, strideC, info, batch_count, (rocblas_int*)splits_map,
+                                       (S*)work);
 }
 
 /*

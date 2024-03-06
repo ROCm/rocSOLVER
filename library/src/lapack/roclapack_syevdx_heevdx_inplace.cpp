@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -82,24 +82,24 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_impl(rocblas_handle handle,
     // size of reusable workspaces (for calling SYTRD/HETRD, STEBZ, STEIN, and ORMTR/UNMTR)
     size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6;
     // size for temporary arrays
-    size_t size_D, size_E, size_iblock, size_isplit, size_tau, size_nev, size_nsplit_workArr;
+    size_t size_D, size_E, size_iblock, size_isplit_map, size_tau, size_nev, size_nsplit_workArr;
 
     rocsolver_syevdx_heevdx_inplace_getMemorySize<false, T, S>(
         evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
+        &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit_map,
         &size_tau, &size_nev, &size_nsplit_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
                                                       size_work3, size_work4, size_work5, size_work6,
-                                                      size_D, size_E, size_iblock, size_isplit,
+                                                      size_D, size_E, size_iblock, size_isplit_map,
                                                       size_tau, size_nev, size_nsplit_workArr);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6, *D, *E, *iblock, *isplit, *tau,
-        *d_nev, *nsplit_workArr;
+    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6, *D, *E, *iblock, *isplit_map,
+        *tau, *d_nev, *nsplit_workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_work5, size_work6, size_D, size_E, size_iblock, size_isplit,
+                              size_work5, size_work6, size_D, size_E, size_iblock, size_isplit_map,
                               size_tau, size_nev, size_nsplit_workArr);
 
     if(!mem)
@@ -115,7 +115,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_impl(rocblas_handle handle,
     D = mem[7];
     E = mem[8];
     iblock = mem[9];
-    isplit = mem[10];
+    isplit_map = mem[10];
     tau = mem[11];
     d_nev = mem[12];
     nsplit_workArr = mem[13];
@@ -126,7 +126,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_impl(rocblas_handle handle,
     return rocsolver_syevdx_heevdx_inplace_template<false, false, T>(
         handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, abstol, h_nev, W,
         strideW, info, batch_count, (T*)scalars, work1, work2, work3, work4, work5, work6, (S*)D,
-        (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit, (T*)tau, (rocblas_int*)d_nev,
+        (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit_map, (T*)tau, (rocblas_int*)d_nev,
         nsplit_workArr);
 }
 

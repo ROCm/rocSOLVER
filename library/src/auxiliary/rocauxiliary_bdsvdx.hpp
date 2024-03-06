@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2016-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2016-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -137,7 +137,7 @@ void rocsolver_bdsvdx_getMemorySize(const rocblas_int n,
                                     size_t* size_ninter,
                                     size_t* size_nsplit,
                                     size_t* size_iblock,
-                                    size_t* size_isplit,
+                                    size_t* size_isplit_map,
                                     size_t* size_Dtgk,
                                     size_t* size_Etgk,
                                     size_t* size_Stmp)
@@ -153,7 +153,7 @@ void rocsolver_bdsvdx_getMemorySize(const rocblas_int n,
         *size_ninter = 0;
         *size_nsplit = 0;
         *size_iblock = 0;
-        *size_isplit = 0;
+        *size_isplit_map = 0;
         *size_Dtgk = 0;
         *size_Etgk = 0;
         *size_Stmp = 0;
@@ -175,7 +175,7 @@ void rocsolver_bdsvdx_getMemorySize(const rocblas_int n,
     // size of arrays for temporary submatrix indices
     *size_nsplit = sizeof(rocblas_int) * batch_count;
     *size_iblock = sizeof(rocblas_int) * 2 * n * batch_count;
-    *size_isplit = sizeof(rocblas_int) * 2 * n * batch_count;
+    *size_isplit_map = sizeof(rocblas_int) * 2 * n * batch_count;
 
     // size of arrays for temporary tridiagonal matrix
     *size_Dtgk = sizeof(T) * 2 * n * batch_count;
@@ -275,7 +275,7 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
                                          rocblas_int* ninter,
                                          rocblas_int* nsplit,
                                          rocblas_int* iblock,
-                                         rocblas_int* isplit,
+                                         rocblas_int* isplit_map,
                                          T* Dtgk,
                                          T* Etgk,
                                          T* Stmp)
@@ -327,9 +327,9 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
 
     // compute eigenvalues of tridiagonal matrix
     rocsolver_stebz_template<T>(handle, range, order, ntgk, vltgk, vutgk, iltgk, iutgk, 0, Dtgk, 0,
-                                ntgk, Etgk, 0, ntgk, nsv, nsplit, Stmp, ntgk, iblock, ntgk, isplit,
-                                ntgk, info, batch_count, work1_iwork, work2_pivmin, Esqr, bounds,
-                                inter, ninter);
+                                ntgk, Etgk, 0, ntgk, nsv, nsplit, Stmp, ntgk, iblock, ntgk,
+                                isplit_map, ntgk, info, batch_count, work1_iwork, work2_pivmin,
+                                Esqr, bounds, inter, ninter);
 
     if(svect == rocblas_svect_none)
     {
@@ -341,13 +341,13 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
     {
         // compute eigenvectors of tridiagonal matrix
         rocsolver_stein_template<T>(handle, ntgk, Dtgk, 0, ntgk, Etgk, 0, ntgk, nsv, Stmp, 0, ntgk,
-                                    iblock, ntgk, isplit, ntgk, Z, shiftZ, ldz, strideZ, ifail,
+                                    iblock, ntgk, isplit_map, ntgk, Z, shiftZ, ldz, strideZ, ifail,
                                     strideF, info, batch_count, work2_pivmin, work1_iwork);
 
         // sort eigenvalues and vectors
         ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, dim3(1, batch_count, 1), dim3(BS1, 1, 1), 0,
                                 stream, ntgk, nsv, Stmp, ntgk, Z, shiftZ, ldz, strideZ, ifail,
-                                strideF, info);
+                                strideF, info, isplit_map);
 
         // take absolute value of eigenvalues, reorder and normalize eigenvector elements, and negate elements of V
         ROCSOLVER_LAUNCH_KERNEL(bdsvdx_reorder_vect<T>, dim3(1, batch_count, 1), dim3(BS1, 1, 1), 0,
