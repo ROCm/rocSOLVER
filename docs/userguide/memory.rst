@@ -9,9 +9,11 @@ In contrast to LAPACK, however, pointers to the workspace are not explicitly pas
 functions as arguments; instead, they are managed behind-the-scenes using a configurable device memory
 model.
 
-rocSOLVER makes use of and is integrated with `the rocBLAS memory model`. Workspace memory, and the
-scheme used to manage it, is tracked on a per-``rocblas_handle`` basis. The same functionality that
-is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory.
+rocSOLVER makes use of and is integrated with the
+`rocBLAS memory model <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-in-rocblas>`_.
+Workspace memory, and the scheme used to manage it, is tracked on a per-``rocblas_handle`` basis. The
+same functionality that is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's
+workspace memory.
 
 There are four schemes for device memory management:
 
@@ -36,7 +38,8 @@ using the rocBLAS memory model, and will increase the amount of allocated memory
 functions. If this scheme is in use, the function ``rocblas_is_managing_device_memory`` will return
 ``true``. In order to re-enable this scheme if it is not in use, a ``nullptr`` or zero size can be
 passed to the helper functions ``rocblas_set_device_memory_size`` or ``rocblas_set_workspace``. For
-more details on these rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
+more details on these rocBLAS APIs, see
+`Device Memory Allocation Functions in rocBLAS <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-functions>`_.
 
 This scheme has the disadvantage that automatic reallocation is synchronizing, and the user cannot
 control when this synchronization happens.
@@ -69,7 +72,8 @@ system with 1 right-hand side (involving calls to ``getrf`` and ``getrs``):
     rocsolver_dgetrs(handle, rocblas_operation_none, 1024, 1, nullptr, lda, nullptr, nullptr, ldb);
     rocblas_stop_device_memory_size_query(handle, &memory_size);
 
-For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
+For more details on the rocBLAS APIs, see
+`Device Memory Allocation Functions in rocBLAS <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-functions>`_.
 
 
 Using an environment variable
@@ -96,7 +100,8 @@ called. For example:
 
     rocblas_set_device_memory_size(handle, memory_size);
 
-For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
+For more details on the rocBLAS APIs, see
+`Device Memory Allocation Functions in rocBLAS <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-functions>`_.
 
 
 User-owned workspace
@@ -117,8 +122,4 @@ as the workspace for rocSOLVER. For example:
     rocblas_set_workspace(handle, nullptr, 0);
     hipFree(device_memory);
 
-For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
-
-
-.. _the rocBLAS memory model: https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#device-memory-allocation-in-rocblas
-.. _Device Memory Allocation Functions in rocBLAS: https://rocblas.readthedocs.io/en/latest/API_Reference_Guide.html#device-memory-allocation-functions
+For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-functions>`_.
