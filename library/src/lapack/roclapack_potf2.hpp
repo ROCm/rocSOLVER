@@ -115,6 +115,14 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n,
         return;
     }
 
+    if(n <= POTRF_BLOCKSIZE(T))
+    {
+        *size_scalars = 0;
+        *size_work = 0;
+        *size_pivots = 0;
+        return;
+    }
+
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 

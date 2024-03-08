@@ -96,9 +96,8 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         // requirements for calling POTF2 for the subblocks
         rocsolver_potf2_getMemorySize<T>(jb, batch_count, size_scalars, &s1, size_pivots);
 
-        bool const use_upper = (uplo == rocblas_fill_upper);
         // extra requirements for calling TRSM
-        if(use_upper)
+        if(uplo == rocblas_fill_upper)
         {
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(
                 rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb, batch_count,
@@ -112,106 +111,6 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         }
 
         *size_work1 = std::max(s1, s2);
-
-        {
-            // ------------------------
-            // storage for rocblas TRSM
-            // ------------------------
-
-            size_t w1_max = 0;
-            size_t w2_max = 0;
-            size_t w3_max = 0;
-            size_t w4_max = 0;
-
-            size_t w1a = 0;
-            size_t w2a = 0;
-            size_t w3a = 0;
-            size_t w4a = 0;
-
-            // -----------------------------------------------------------
-            // TODO: investigate why memsize for upper triangular case with
-            // rocblasCall_trsm() may not be correct
-            //
-            // Suspect rocblasCall_trsm_mem() may not be "monotone" that
-            // storage for case (M,N) is sufficient for all smaller cases
-            // of (m,n) that satisfy "(m <= M) && (n <= N)"
-            // -----------------------------------------------------------
-
-            if(use_upper)
-            {
-                // ---------------------------------------
-                // upper triangular case
-                //
-                // [U11'     ] * [U11  U12] = [A11   A12]
-                // [U12' U22']   [     U22]   [A12'  A22]
-                //
-                // then U11' * U12 = A12
-                // ---------------------------------------
-                rocblas_side const side = rocblas_side_left;
-                rocblas_operation const trans = rocblas_operation_conjugate_transpose;
-                {
-                    rocblas_int const mm = nb;
-                    rocblas_int const nn = n;
-
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1_max, &w2_max, &w3_max, &w4_max);
-                }
-
-                for(rocblas_int j = 0; j < n; j += nb)
-                {
-                    rocblas_int const jb = std::min(n - j, nb);
-                    rocblas_int const mm = jb;
-                    rocblas_int const nn = n - (j + jb);
-
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1a, &w2a, &w3a, &w4a);
-
-                    w1_max = std::max(w1_max, w1a);
-                    w2_max = std::max(w2_max, w2a);
-                    w3_max = std::max(w3_max, w3a);
-                    w4_max = std::max(w4_max, w4a);
-                }
-            }
-            else
-            {
-                // ----------------------------------------
-                // lower triangular case
-                // [L11     ] * [L11'  L21'] = [A11  A21']
-                // [L21  L22]   [      L22']   [A21  A22 ]
-                //
-                // then L21 * L11' = A21
-                // ----------------------------------------
-                rocblas_side const side = rocblas_side_right;
-                rocblas_operation const trans = rocblas_operation_conjugate_transpose;
-                {
-                    rocblas_int const mm = n;
-                    rocblas_int const nn = nb;
-
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1_max, &w2_max, &w3_max, &w4_max);
-                }
-
-                for(rocblas_int j = 0; j < n; j += nb)
-                {
-                    rocblas_int const jb = std::min(n - j, nb);
-                    rocblas_int const mm = n - (j + jb);
-                    rocblas_int const nn = jb;
-
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1a, &w2a, &w3a, &w4a);
-
-                    w1_max = std::max(w1_max, w1a);
-                    w2_max = std::max(w2_max, w2a);
-                    w3_max = std::max(w3_max, w3a);
-                    w4_max = std::max(w4_max, w4a);
-                }
-            }
-
-            *size_work1 = std::max(*size_work1, w1_max);
-            *size_work2 = std::max(*size_work2, w2_max);
-            *size_work3 = std::max(*size_work3, w3_max);
-            *size_work4 = std::max(*size_work4, w4_max);
-        }
     }
 }
 
@@ -296,26 +195,11 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if(j + jb < n)
             {
                 // update trailing submatrix
-
-                // TODO: fix seg fault on GPU when activating rocblas trsm for double_complex
-                //       disable rocblas_trsm for now
-                bool const use_rocblas_trsm = true;
-                if(use_rocblas_trsm)
-                {
-                    rocblasCall_trsm(handle, rocblas_side_left, rocblas_fill_upper,
-                                     rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
-                                     jb, (n - j - jb), &t_one, A, shiftA + idx2D(j, j, lda), lda,
-                                     strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA,
-                                     batch_count, optim_mem, work1, work2, work3, work4);
-                }
-                else
-                {
-                    rocsolver_trsm_upper<BATCHED, STRIDED, T>(
-                        handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
-                        rocblas_diagonal_non_unit, jb, (n - j - jb), A, shiftA + idx2D(j, j, lda),
-                        lda, strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
-                        optim_mem, work1, work2, work3, work4);
-                }
+                rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, jb, (n - j - jb), A, shiftA + idx2D(j, j, lda), lda,
+                    strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
+                    optim_mem, work1, work2, work3, work4);
 
                 rocblasCall_syrk_herk<BATCHED, T>(
                     handle, uplo, rocblas_operation_conjugate_transpose, n - j - jb, jb, &s_minone,
@@ -343,23 +227,11 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             if(j + jb < n)
             {
                 // update trailing submatrix
-                bool const use_rocblas_trsm = true;
-                if(use_rocblas_trsm)
-                {
-                    rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower,
-                                     rocblas_operation_conjugate_transpose, rocblas_diagonal_non_unit,
-                                     (n - j - jb), jb, &t_one, A, shiftA + idx2D(j, j, lda), lda,
-                                     strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA,
-                                     batch_count, optim_mem, work1, work2, work3, work4);
-                }
-                else
-                {
-                    rocsolver_trsm_lower<BATCHED, STRIDED, T>(
-                        handle, rocblas_side_right, rocblas_operation_conjugate_transpose,
-                        rocblas_diagonal_non_unit, (n - j - jb), jb, A, shiftA + idx2D(j, j, lda),
-                        lda, strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count,
-                        optim_mem, work1, work2, work3, work4);
-                }
+                rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_right, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, (n - j - jb), jb, A, shiftA + idx2D(j, j, lda), lda,
+                    strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count,
+                    optim_mem, work1, work2, work3, work4);
 
                 rocblasCall_syrk_herk<BATCHED, T>(
                     handle, uplo, rocblas_operation_none, n - j - jb, jb, &s_minone, A,
