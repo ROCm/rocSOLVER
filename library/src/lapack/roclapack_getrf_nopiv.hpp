@@ -38,6 +38,17 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 #include <type_traits>
 
+template <typename T>
+static rocblas_int get_getrf_nopiv_blocksize(rocblas_int n)
+{
+    auto iceil = [](auto n, auto base) { return ((n - 1) / base + 1); };
+    rocblas_int const nb_max = GETRF_NOPIV_BLOCKSIZE(T);
+    rocblas_int const npass = iceil(n, nb_max);
+    rocblas_int nb = iceil(n, npass);
+    nb = std::max(1, std::min(nb_max, nb));
+    return (nb);
+}
+
 template <typename I>
 ROCSOLVER_KERNEL void chk_singular(I* iinfo, I* info, I j, I batch_count)
 {
@@ -83,7 +94,8 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
         return;
     }
 
-    rocblas_int const nb = GETRF_NOPIV_BLOCKSIZE(T);
+    rocblas_int const nb = get_getrf_nopiv_blocksize<T>(n);
+
     *size_iinfo = sizeof(rocblas_int) * batch_count;
     *optim_mem = true;
 
@@ -158,11 +170,6 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
             rocblas_operation const trans = rocblas_operation_none;
 
             {
-                // -----------------------------------
-                // avoid magic numbers in rocblas TRSM
-                // by inflating (mm,nn) to odd numbers
-                // -----------------------------------
-
                 rocblas_int const mm = is_even(nb) ? nb + 1 : nb;
                 rocblas_int const nn = is_even(n) ? n + 1 : n;
 
@@ -247,7 +254,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
-    rocblas_int const nb = GETRF_NOPIV_BLOCKSIZE(T);
+    rocblas_int const nb = get_getrf_nopiv_blocksize<T>(n);
 
     // constants for rocblas functions calls
     T t_one = 1;
