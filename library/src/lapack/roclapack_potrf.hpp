@@ -37,12 +37,43 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+static rocblas_int get_lds_size()
+{
+    rocblas_int const default_lds_size = 64 * 1024;
+
+    int lds_size = 0;
+    int deviceId = 0;
+    auto istat_device = hipGetDevice(&deviceId);
+    if(istat_device != hipSuccess)
+    {
+        return (default_lds_size);
+    };
+    auto const attr = hipDeviceAttributeMaxSharedMemoryPerBlock;
+    auto istat_attr = hipDeviceGetAttribute(&lds_size, attr, deviceId);
+    if(istat_attr != hipSuccess)
+    {
+        return (default_lds_size);
+    };
+
+    return (lds_size);
+}
+
 template <typename T>
 static rocblas_int get_potrf_blocksize(rocblas_int n)
 {
     auto iceil = [](auto n, auto base) { return ((n - 1) / base + 1); };
 
     rocblas_int const nb_max = POTRF_BLOCKSIZE(T);
+
+#ifdef NDEBUG
+#else
+    {
+        auto const lds_size = get_lds_size();
+        bool const is_ok = ((sizeof(T) * (nb_max * (nb_max + 1)) / 2) <= lds_size);
+        assert(is_ok);
+    }
+#endif
+
     rocblas_int const npass = iceil(n, nb_max);
     rocblas_int const nb = iceil(n, npass);
     return (nb);
