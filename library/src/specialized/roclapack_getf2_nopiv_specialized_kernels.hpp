@@ -213,12 +213,8 @@ ROCSOLVER_KERNEL void getf2_nopiv_kernel_small(const rocblas_int n,
     // -----------------------------------------
 
     auto const ld_Ash = n;
-    size_t constexpr LDS_MAXIMUM_SIZE = 64 * 1024;
 
-    bool const use_lds = (sizeof(T) * n * n <= LDS_MAXIMUM_SIZE);
-    __shared__ T Ash[LDS_MAXIMUM_SIZE / sizeof(T)];
-
-    assert(use_lds);
+    extern __shared__ T Ash[];
 
     // ------------------------------------
     // copy n by n sub-matrix into shared memory
@@ -286,8 +282,12 @@ rocblas_status getf2_nopiv_run_small(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    ROCSOLVER_LAUNCH_KERNEL((getf2_nopiv_kernel_small<T, U>), dim3(1, 1, batch_count),
-                            dim3(BS2, BS2, 1), 0, stream, n, A, shiftA, lda, strideA, info);
+    {
+        auto const lds_size = sizeof(T) * n * n;
+        ROCSOLVER_LAUNCH_KERNEL((getf2_nopiv_kernel_small<T, U>), dim3(1, 1, batch_count),
+                                dim3(BS2, BS2, 1), lds_size, stream, n, A, shiftA, lda, strideA,
+                                info);
+    }
 
     return rocblas_status_success;
 }
