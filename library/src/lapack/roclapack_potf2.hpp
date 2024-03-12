@@ -118,6 +118,13 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n,
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
+    if(n <= POTRF_BLOCKSIZE(T))
+    {
+        *size_work = 0;
+        *size_pivots = 0;
+        return;
+    }
+
     // size of workspace
     // TODO: replace with rocBLAS call
     constexpr int ROCBLAS_DOT_NB = 512;

@@ -36,23 +36,6 @@
 #include <algorithm>
 #include <cmath>
 
-__device__ static double rocsolver_conj(double x)
-{
-    return (x);
-}
-__device__ static float rocsolver_conj(float x)
-{
-    return (x);
-}
-__device__ static rocblas_double_complex rocsolver_conj(rocblas_double_complex x)
-{
-    return (std::conj(x));
-}
-__device__ static rocblas_float_complex rocsolver_conj(rocblas_float_complex x)
-{
-    return (std::conj(x));
-}
-
 /**
  * indexing for packed storage
  * for upper triangular
@@ -66,12 +49,13 @@ __device__ static rocblas_float_complex rocsolver_conj(rocblas_float_complex x)
  **/
 
 template <typename I>
-__device__ static I idx_upper(I i, I k, I n)
+__device__ static I idx_upper(I i, I j, I n)
 {
     assert((0 <= i) && (i <= (n - 1)));
-    assert((0 <= k) && (k <= (n - 1)));
-    assert(i <= k);
-    return (i + ((k) * (k + 1)) / 2);
+    assert((0 <= j) && (j <= (n - 1)));
+    assert(i <= j);
+
+    return (i + (j * (j + 1)) / 2);
 }
 
 /**
@@ -87,13 +71,13 @@ __device__ static I idx_upper(I i, I k, I n)
  * ---------------------------
  **/
 template <typename I>
-__device__ static I idx_lower(I i, I k, I n)
+__device__ static I idx_lower(I i, I j, I n)
 {
     assert((0 <= i) && (i <= (n - 1)));
-    assert((0 <= k) && (k <= (n - 1)));
-    assert(i >= k);
+    assert((0 <= j) && (j <= (n - 1)));
+    assert(i >= j);
 
-    return ((i - k) + (k * (2 * n + 1 - k)) / 2);
+    return ((i - j) + (j * (2 * n + 1 - j)) / 2);
 }
 
 /**
@@ -123,7 +107,6 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
 
     if(is_lower)
     {
-        auto idx2D = [=](I i, I k, I n) { return (idx_lower<I>(i, k, n)); };
         // ---------------------------------------------------
         // [  l11     ]  * [ l11'   vl21' ]  =  [ a11       ]
         // [ vl21  L22]    [        L22' ]     [ va21, A22 ]
@@ -141,7 +124,7 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
 
         for(I kcol = 0; kcol < n; kcol++)
         {
-            auto kk = idx2D(kcol, kcol, lda);
+            auto kk = idx_lower(kcol, kcol, lda);
             auto const akk = std::real(A[kk]);
             bool const isok = (akk > 0) && (std::isfinite(akk));
             if(!isok)
@@ -150,7 +133,8 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
                 {
                     A[kk] = akk;
                     // Fortran 1-based index
-                    *info = (*info == 0) ? kcol + 1 : (*info);
+                    if(*info == 0)
+                        *info = kcol + 1;
                 }
                 break;
             }
@@ -167,10 +151,10 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
             //   (2) vl21 * l11' = va21 =>  vl21 = va21/ l11', scale vector
             // ------------------------------------------------------------
 
-            auto const conj_lkk = rocsolver_conj(lkk);
+            auto const conj_lkk = conj(lkk);
             for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
             {
-                auto const j0k = idx2D(j0, kcol, lda);
+                auto const j0k = idx_lower(j0, kcol, lda);
 
                 A[j0k] = (A[j0k] / conj_lkk);
             }
@@ -185,15 +169,16 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
 
             for(I j = (kcol + 1) + j_start; j < n; j += j_inc)
             {
-                auto const vj = A[idx2D(j, kcol, lda)];
+                auto const vj = A[idx_lower(j, kcol, lda)];
                 for(I i = (kcol + 1) + i_start; i < n; i += i_inc)
                 {
                     bool const lower_part = (i >= j);
                     if(lower_part)
                     {
-                        auto const vi = A[idx2D(i, kcol, lda)];
-                        auto const ij = idx2D(i, j, lda);
-                        A[ij] = A[ij] - vi * rocsolver_conj(vj);
+                        auto const vi = A[idx_lower(i, kcol, lda)];
+                        auto const ij = idx_lower(i, j, lda);
+
+                        A[ij] = A[ij] - vi * conj(vj);
                     }
                 }
             }
@@ -204,8 +189,6 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
     }
     else
     {
-        auto idx2D = [](I i, I k, I n) { return (idx_upper<I>(i, k, n)); };
-
         // --------------------------------------------------
         // [u11'        ] * [u11    vU12 ] = [ a11     vA12 ]
         // [vU12'   U22']   [       U22  ]   [ vA12'   A22  ]
@@ -221,16 +204,17 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
 
         for(I kcol = 0; kcol < n; kcol++)
         {
-            auto const kk = idx2D(kcol, kcol, lda);
+            auto const kk = idx_upper(kcol, kcol, lda);
             auto const akk = std::real(A[kk]);
             bool const isok = (akk > 0) && (std::isfinite(akk));
             if(!isok)
             {
-                A[kk] = akk;
                 if(tid == 0)
                 {
+                    A[kk] = akk;
                     // Fortran 1-based index
-                    *info = (*info == 0) ? kcol + 1 : (*info);
+                    if(*info == 0)
+                        *info = kcol + 1;
                 }
 
                 break;
@@ -248,7 +232,8 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
             // ----------------------------------------------
             for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
             {
-                auto const kj0 = idx2D(kcol, j0, lda);
+                auto const kj0 = idx_upper(kcol, j0, lda);
+
                 A[kj0] = A[kj0] / ukk;
             }
 
@@ -261,16 +246,16 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
             // -----------------------------
             for(I j = (kcol + 1) + j_start; j < n; j += j_inc)
             {
-                auto const vj = A[idx2D(kcol, j, lda)];
+                auto const vj = A[idx_upper(kcol, j, lda)];
                 for(I i = (kcol + 1) + i_start; i < n; i += i_inc)
                 {
                     bool const upper_part = (i <= j);
                     if(upper_part)
                     {
-                        auto const vi = A[idx2D(kcol, i, lda)];
-                        auto const ij = idx2D(i, j, lda);
+                        auto const vi = A[idx_upper(kcol, i, lda)];
+                        auto const ij = idx_upper(i, j, lda);
 
-                        A[ij] = A[ij] - rocsolver_conj(vi) * vj;
+                        A[ij] = A[ij] - conj(vi) * vj;
                     }
                 }
             }
@@ -279,8 +264,6 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
 
         } // end for kcol
     }
-
-    __syncthreads();
 }
 
 /*************************************************************
@@ -300,8 +283,6 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
 {
     bool const is_lower = (!is_upper);
 
-    using Treal = decltype(std::real(T{}));
-
     auto const i_start = hipThreadIdx_x;
     auto const i_inc = hipBlockDim_x;
     auto const j_start = hipThreadIdx_y;
@@ -313,27 +294,18 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
     // --------------------------------
     auto const bid = hipBlockIdx_z;
     assert(AA != nullptr);
-
-    T* const A = (AA != nullptr) ? load_ptr_batch(AA, bid, shiftA, strideA) : nullptr;
-
     assert(info != nullptr);
-    rocblas_int* const info_bid = (info == nullptr) ? nullptr : &(info[bid]);
+
+    T* const A = load_ptr_batch(AA, bid, shiftA, strideA);
+    rocblas_int* const info_bid = info + bid;
 
     assert(A != nullptr);
-
-    auto idx2D = [](auto i, auto j, auto lda) { return (i + j * static_cast<int64_t>(lda)); };
 
     // -----------------------------------------
     // assume n by n matrix will fit in LDS cache
     // -----------------------------------------
-
-    auto const ld_Ash = n;
-    size_t constexpr LDS_MAXIMUM_SIZE = 64 * 1024;
-
-    bool const use_lds = (sizeof(T) * n * (n + 1) <= LDS_MAXIMUM_SIZE * 2);
-    __shared__ T Ash[LDS_MAXIMUM_SIZE / sizeof(T)];
-
-    assert(use_lds);
+    extern __shared__ rocblas_int lsmem[];
+    T* Ash = reinterpret_cast<T*>(lsmem);
 
     // --------------------------------------------------------
     // factoring Lower triangular matrix may be slightly faster
@@ -352,12 +324,12 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(rocblas_int i = j + i_start; i < n; i += i_inc)
             {
-                auto const ij = idx2D(i, j, lda);
-                auto const ij_packed = idx_lower<rocblas_int>(i, j, n);
+                auto const ij = i + j * static_cast<int64_t>(lda);
+                auto const ij_packed = idx_lower(i, j, n);
 
                 Ash[ij_packed] = A[ij];
-            };
-        };
+            }
+        }
     }
     else
     {
@@ -365,22 +337,19 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(rocblas_int i = i_start; i <= j; i += i_inc)
             {
-                auto const ij = idx2D(i, j, lda);
-                auto const ij_packed = (use_compute_lower) ? idx_lower<rocblas_int>(j, i, n)
-                                                           : idx_upper<rocblas_int>(i, j, n);
+                auto const ij = i + j * static_cast<int64_t>(lda);
+                auto const ij_packed = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
 
                 auto const aij = A[ij];
-                Ash[ij_packed] = (use_compute_lower) ? rocsolver_conj(aij) : aij;
-            };
-        };
+                Ash[ij_packed] = (use_compute_lower) ? conj(aij) : aij;
+            }
+        }
     }
 
     __syncthreads();
 
-    {
-        bool const is_up = (use_compute_lower) ? false : is_upper;
-        potf2_simple<T, rocblas_int>(is_up, n, Ash, info_bid);
-    }
+    bool const is_up = (use_compute_lower) ? false : is_upper;
+    potf2_simple<T>(is_up, n, Ash, info_bid);
 
     __syncthreads();
 
@@ -393,11 +362,12 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(rocblas_int i = j + i_start; i < n; i += i_inc)
             {
-                auto const ij = idx2D(i, j, lda);
-                auto const ij_packed = idx_lower<rocblas_int>(i, j, n);
+                auto const ij = i + j * static_cast<int64_t>(lda);
+                auto const ij_packed = idx_lower(i, j, n);
+
                 A[ij] = Ash[ij_packed];
-            };
-        };
+            }
+        }
     }
     else
     {
@@ -405,14 +375,13 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(rocblas_int i = i_start; i <= j; i += i_inc)
             {
-                auto const ij = idx2D(i, j, lda);
-                auto const ij_packed = (use_compute_lower) ? idx_lower<rocblas_int>(j, i, n)
-                                                           : idx_upper<rocblas_int>(i, j, n);
+                auto const ij = i + j * static_cast<int64_t>(lda);
+                auto const ij_packed = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
 
                 auto const aij_packed = Ash[ij_packed];
-                A[ij] = (use_compute_lower) ? rocsolver_conj(aij_packed) : aij_packed;
-            };
-        };
+                A[ij] = (use_compute_lower) ? conj(aij_packed) : aij_packed;
+            }
+        }
     }
 
     __syncthreads();
@@ -439,9 +408,11 @@ rocblas_status potf2_run_small(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    size_t lmemsize = sizeof(T) * (n * (n + 1)) / 2;
+
     bool const is_upper = (uplo == rocblas_fill_upper);
     ROCSOLVER_LAUNCH_KERNEL((potf2_kernel_small<T, U>), dim3(1, 1, batch_count), dim3(BS2, BS2, 1),
-                            0, stream, is_upper, n, A, shiftA, lda, strideA, info);
+                            lmemsize, stream, is_upper, n, A, shiftA, lda, strideA, info);
 
     return rocblas_status_success;
 }
