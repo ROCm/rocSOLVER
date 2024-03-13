@@ -162,8 +162,24 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 rocblas_int const mm = is_even(m) ? m + 1 : m;
                 rocblas_int const nn = is_even(nb) ? nb + 1 : nb;
 
-                rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
-                                                            &w2a, &w3a, &w4a);
+                {
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a);
+                    w1_max = std::max(w1_max, w1a);
+                    w2_max = std::max(w2_max, w2a);
+                    w3_max = std::max(w3_max, w3a);
+                    w4_max = std::max(w4_max, w4a);
+                }
+
+                {
+                    bool const inblocked = true;
+                    const rocblas_int inca = 1;
+                    const rocblas_int incb = 1;
+
+                    rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
+                                                            &w2a, &w3a, &w4a, optim_mem, inblocked,
+                                                            inca, incb);
+                };
 
                 w1_max = std::max(w1_max, w1a);
                 w2_max = std::max(w2_max, w2a);
@@ -180,13 +196,30 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 bool const has_work = (mm >= 1) && (nn >= 1);
                 if(has_work)
                 {
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1a, &w2a, &w3a, &w4a);
+                    {
+                        rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                    &w1a, &w2a, &w3a, &w4a);
 
-                    w1_max = std::max(w1_max, w1a);
-                    w2_max = std::max(w2_max, w2a);
-                    w3_max = std::max(w3_max, w3a);
-                    w4_max = std::max(w4_max, w4a);
+                        w1_max = std::max(w1_max, w1a);
+                        w2_max = std::max(w2_max, w2a);
+                        w3_max = std::max(w3_max, w3a);
+                        w4_max = std::max(w4_max, w4a);
+                    }
+
+                    {
+                        bool const inblocked = true;
+                        const rocblas_int inca = 1;
+                        const rocblas_int incb = 1;
+
+                        rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a, optim_mem,
+                                                                inblocked, inca, incb);
+
+                        w1_max = std::max(w1_max, w1a);
+                        w2_max = std::max(w2_max, w2a);
+                        w3_max = std::max(w3_max, w3a);
+                        w4_max = std::max(w4_max, w4a);
+                    }
                 }
             }
         }
@@ -202,13 +235,30 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 rocblas_int const mm = is_even(nb) ? nb + 1 : nb;
                 rocblas_int const nn = is_even(n) ? n + 1 : n;
 
-                rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
-                                                            &w2a, &w3a, &w4a);
+                {
+                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a);
 
-                w1_max = std::max(w1_max, w1a);
-                w2_max = std::max(w2_max, w2a);
-                w3_max = std::max(w3_max, w3a);
-                w4_max = std::max(w4_max, w4a);
+                    w1_max = std::max(w1_max, w1a);
+                    w2_max = std::max(w2_max, w2a);
+                    w3_max = std::max(w3_max, w3a);
+                    w4_max = std::max(w4_max, w4a);
+                }
+
+                {
+                    bool const inblocked = true;
+                    const rocblas_int inca = 1;
+                    const rocblas_int incb = 1;
+
+                    rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
+                                                            &w2a, &w3a, &w4a, optim_mem, inblocked,
+                                                            inca, incb);
+
+                    w1_max = std::max(w1_max, w1a);
+                    w2_max = std::max(w2_max, w2a);
+                    w3_max = std::max(w3_max, w3a);
+                    w4_max = std::max(w4_max, w4a);
+                }
             }
 
             for(rocblas_int j = 0; j < min_mn; j += nb)
@@ -220,13 +270,32 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 bool const has_work = (mm >= 1) && (nn >= 1);
                 if(has_work)
                 {
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1a, &w2a, &w3a, &w4a);
+                    {
+                        rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                    &w1a, &w2a, &w3a, &w4a);
 
-                    w1_max = std::max(w1_max, w1a);
-                    w2_max = std::max(w2_max, w2a);
-                    w3_max = std::max(w3_max, w3a);
-                    w4_max = std::max(w4_max, w4a);
+                        w1_max = std::max(w1_max, w1a);
+                        w2_max = std::max(w2_max, w2a);
+                        w3_max = std::max(w3_max, w3a);
+                        w4_max = std::max(w4_max, w4a);
+                    }
+
+                    {
+                        rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                    &w1a, &w2a, &w3a, &w4a);
+
+                        bool const inblocked = true;
+                        const rocblas_int inca = 1;
+                        const rocblas_int incb = 1;
+                        rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a, optim_mem,
+                                                                inblocked, inca, incb);
+
+                        w1_max = std::max(w1_max, w1a);
+                        w2_max = std::max(w2_max, w2a);
+                        w3_max = std::max(w3_max, w3a);
+                        w4_max = std::max(w4_max, w4a);
+                    }
                 }
             }
         }
@@ -288,6 +357,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     // constants for rocblas functions calls
     T t_one = 1;
     T t_minone = -1;
+    bool const use_rocblas = false;
 
     // [ L11      ] * [ U11   U12 ] = [A11   A12]
     // [ L21  L22 ]   [       U22 ]   [A21   A22]
@@ -334,10 +404,20 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
             bool const has_work = (mm >= 1) && (nn >= 1);
             if(has_work)
             {
-                rocblasCall_trsm(handle, side, uplo, trans, diag, mm, nn, alpha, A,
-                                 shiftA + idx2D(j, j, lda), lda, strideA, A,
-                                 shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count,
-                                 optim_mem, work1, work2, work3, work4);
+                if(use_rocblas)
+                {
+                    rocblasCall_trsm(handle, side, uplo, trans, diag, mm, nn, alpha, A,
+                                     shiftA + idx2D(j, j, lda), lda, strideA, A,
+                                     shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count,
+                                     optim_mem, work1, work2, work3, work4);
+                }
+                else
+                {
+                    rocsolver_trsm_upper<BATCHED, STRIDED, T, U>(
+                        handle, side, trans, diag, mm, nn, A, shiftA + idx2D(j, j, lda), lda,
+                        strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count,
+                        optim_mem, work1, work2, work3, work4);
+                }
             }
         }
 
@@ -358,10 +438,20 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
             bool const has_work = (mm >= 1) && (nn >= 1);
             if(has_work)
             {
-                rocblasCall_trsm(handle, side, uplo, trans, diag, mm, nn, alpha, A,
-                                 shiftA + idx2D(j, j, lda), lda, strideA, A,
-                                 shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
-                                 optim_mem, work1, work2, work3, work4);
+                if(use_rocblas)
+                {
+                    rocblasCall_trsm(handle, side, uplo, trans, diag, mm, nn, alpha, A,
+                                     shiftA + idx2D(j, j, lda), lda, strideA, A,
+                                     shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
+                                     optim_mem, work1, work2, work3, work4);
+                }
+                else
+                {
+                    rocsolver_trsm_lower<BATCHED, STRIDED, T, U>(
+                        handle, side, trans, diag, mm, nn, A, shiftA + idx2D(j, j, lda), lda,
+                        strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
+                        optim_mem, work1, work2, work3, work4);
+                }
             }
         }
 
@@ -384,10 +474,22 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
             bool const has_work = (mm >= 1) && (nn >= 1) && (kk >= 1);
             if(has_work)
             {
-                rocblasCall_gemm(
-                    handle, trans_a, trans_b, mm, nn, kk, alpha, A, shiftA + idx2D(j + jb, j, lda),
-                    lda, strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, beta, A,
-                    shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, work);
+                if(use_rocblas)
+                {
+                    rocblasCall_gemm(handle, trans_a, trans_b, mm, nn, kk, alpha, A,
+                                     shiftA + idx2D(j + jb, j, lda), lda, strideA, A,
+                                     shiftA + idx2D(j, j + jb, lda), lda, strideA, beta, A,
+                                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count,
+                                     work);
+                }
+                else
+                {
+                    rocsolver_gemm<BATCHED, STRIDED, T, U>(
+                        handle, trans_a, trans_b, mm, nn, kk, alpha, A,
+                        shiftA + idx2D(j + jb, j, lda), lda, strideA, A,
+                        shiftA + idx2D(j, j + jb, lda), lda, strideA, beta, A,
+                        shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, (T**)nullptr);
+                }
             }
         }
 
