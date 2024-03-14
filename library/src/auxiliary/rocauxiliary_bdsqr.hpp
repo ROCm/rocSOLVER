@@ -40,7 +40,7 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-/************** Kernels and device functions *******************/
+/******************** Device functions *************************/
 /***************************************************************/
 
 /** BDSQR_ESTIMATE device function computes an estimate of the smallest
@@ -315,6 +315,290 @@ __device__ void bdsqr_b2tQRstep(const rocblas_int tid,
     }
 }
 
+/** BDSQR_PERMUTE_SWAP device function performs swaps to implement permutation vector.
+    The permutation vector will be restored to the identity permutation 0,1,2,...
+
+    Note: this routine works in a single thread block **/
+template <typename T, typename I>
+__device__ static void bdsqr_permute_swap(const I n,
+                                          const I nv,
+                                          T* V,
+                                          const I ldv,
+                                          const I nu,
+                                          T* U,
+                                          const I ldu,
+                                          const I nc,
+                                          T* C,
+                                          const I ldc,
+                                          I* map)
+{
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    if(n <= 0)
+        return;
+
+    assert(map != nullptr);
+
+    for(I i = 0; i < n; i++)
+    {
+        __syncthreads();
+
+        while(map[i] != i)
+        {
+            auto const map_i = map[i];
+            auto const map_ii = map[map[i]];
+
+            __syncthreads();
+
+            if(tid == 0)
+            {
+                map[map_i] = map_i;
+                map[i] = map_ii;
+            }
+
+            __syncthreads();
+
+            // -----------
+            // swap arrays
+            // -----------
+
+            auto const j_start = tid;
+            auto const j_inc = nthreads;
+
+            __syncthreads();
+
+            if(nv > 0)
+            {
+                auto const m = map_i;
+                auto const i = map_ii;
+                for(auto j = j_start; j < nv; j += j_inc)
+                    swap(V[m + j * ((int64_t)ldv)], V[i + j * ((int64_t)ldv)]);
+            }
+            __syncthreads();
+
+            if(nu > 0)
+            {
+                auto const m = map_i;
+                auto const i = map_ii;
+                for(auto j = j_start; j < nu; j += j_inc)
+                    swap(U[j + m * ((int64_t)ldu)], U[j + i * ((int64_t)ldu)]);
+            }
+            __syncthreads();
+
+            if(nc > 0)
+            {
+                auto const m = map_i;
+                auto const i = map_ii;
+                for(auto j = j_start; j < nc; j += j_inc)
+                    swap(C[m + j * ((int64_t)ldc)], C[i + j * ((int64_t)ldc)]);
+            }
+            __syncthreads();
+        }
+    }
+}
+
+/********************* Device kernels **************************/
+/***************************************************************/
+
+/** BDSQR_INIT kernel checks if there are any NaNs or Infs in the input, calculates the
+    convergence threshold and initial estimate for the smallest singular value, and splits
+    the matrix into diagonal blocks. **/
+template <typename T, typename S>
+ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
+                                 S* DD,
+                                 const rocblas_stride strideD,
+                                 S* EE,
+                                 const rocblas_stride strideE,
+                                 rocblas_int* info,
+                                 const rocblas_int maxiter,
+                                 const S sfm,
+                                 const S tol,
+                                 rocblas_int* splitsA,
+                                 S* workA,
+                                 const rocblas_int incW,
+                                 const rocblas_stride strideW)
+{
+    rocblas_int bid = hipBlockIdx_y;
+
+    // select batch instance to work with
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
+    rocblas_int* splits = splitsA + bid * n;
+    S* work = workA + bid * strideW;
+
+    bool found = false;
+    rocblas_int ii = 0;
+    rocblas_int start = 0;
+
+    // calculate threshold for zeroing elements (convergence threshold)
+    // direction
+    int t2b = (D[0] >= D[n - 1]) ? 1 : 0;
+    // estimate of the smallest singular value
+    S smin = bdsqr_estimate<S>(n, D, E, t2b, tol, 0);
+    // threshold
+    S thresh = std::max(tol * smin / S(std::sqrt(n)), S(maxiter) * sfm);
+
+    work[0] = smin;
+    work[1] = thresh;
+
+    // search for NaNs, Infs, and splits in the input
+    for(rocblas_int i = 0; i < n - 1; i++)
+    {
+        if(2 * i + 1 < n)
+        {
+            splits[2 * i] = 0;
+            splits[2 * i + 1] = 0;
+            __threadfence();
+        }
+
+        if(!std::isfinite(D[i]) || !std::isfinite(E[i]))
+            found = true;
+
+        if(std::abs(E[i]) < thresh)
+        {
+            E[i] = 0;
+            if(start < i)
+            {
+                // save diagonal block endpoints
+                splits[2 * ii] = start;
+                splits[2 * ii + 1] = i;
+                ii++;
+            }
+            start = i + 1;
+        }
+    }
+
+    if(!std::isfinite(D[n - 1]))
+        found = true;
+
+    if(start < n - 1)
+    {
+        // save diagonal block endpoints
+        splits[2 * ii] = start;
+        splits[2 * ii + 1] = n - 1;
+    }
+
+    // update output
+    if(found)
+    {
+        for(rocblas_int i = 0; i < n - 1; i++)
+        {
+            D[i] = nan("");
+            E[i] = nan("");
+        }
+        D[n - 1] = nan("");
+        info[bid] = n;
+    }
+    else
+        info[bid] = 0;
+}
+
+/** BDSQR_LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
+    into an upper bidiagonal matrix via givens rotations **/
+template <typename T, typename S, typename W1, typename W2>
+ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
+                                        const rocblas_int nu,
+                                        const rocblas_int nc,
+                                        S* DD,
+                                        const rocblas_stride strideD,
+                                        S* EE,
+                                        const rocblas_stride strideE,
+                                        W1 UU,
+                                        const rocblas_int shiftU,
+                                        const rocblas_int ldu,
+                                        const rocblas_stride strideU,
+                                        W2 CC,
+                                        const rocblas_int shiftC,
+                                        const rocblas_int ldc,
+                                        const rocblas_stride strideC,
+                                        rocblas_int* info,
+                                        S* workA,
+                                        const rocblas_stride strideW)
+{
+    rocblas_int tid = hipThreadIdx_x;
+    rocblas_int bid = hipBlockIdx_y;
+
+    // local variables
+    rocblas_int i, j;
+    S f, g, c, s, r;
+    T temp1, temp2;
+
+    // if a NaN or Inf was detected in the input, return
+    if(info[bid] != 0)
+        return;
+
+    // select batch instance to work with
+    // (avoiding arithmetics with possible nullptrs)
+    T *U, *C;
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
+    if(UU)
+        U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
+    if(CC)
+        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+    S* rots = workA + bid * strideW + 2;
+
+    if(tid == 0)
+    {
+        f = D[0];
+        g = E[0];
+        for(i = 0; i < n - 1; ++i)
+        {
+            // apply rotations by rows
+            lartg(f, g, c, s, r);
+            D[i] = r;
+            E[i] = -s * D[i + 1];
+            f = c * D[i + 1];
+            g = E[i + 1];
+
+            // save rotation to update singular vectors
+            if(nu || nc)
+            {
+                rots[i] = c;
+                rots[i + n] = -s;
+            }
+        }
+        D[n - 1] = f;
+    }
+    __syncthreads();
+
+    // update singular vectors
+    if(nu)
+    {
+        // rotate from the right (forward direction)
+        for(j = 0; j < n - 1; j++)
+        {
+            for(i = tid; i < nu; i += hipBlockDim_x)
+            {
+                temp1 = U[i + j * ldu];
+                temp2 = U[i + (j + 1) * ldu];
+                c = rots[j];
+                s = rots[j + n];
+                U[i + j * ldu] = c * temp1 + s * temp2;
+                U[i + (j + 1) * ldu] = c * temp2 - s * temp1;
+            }
+        }
+    }
+    if(nc)
+    {
+        // rotate from the left (forward direction)
+        for(i = 0; i < n - 1; i++)
+        {
+            for(j = tid; j < nc; j += hipBlockDim_x)
+            {
+                temp1 = C[i + j * ldc];
+                temp2 = C[(i + 1) + j * ldc];
+                c = rots[i];
+                s = rots[i + n];
+                C[i + j * ldc] = c * temp1 + s * temp2;
+                C[(i + 1) + j * ldc] = c * temp2 - s * temp1;
+            }
+        }
+    }
+}
+
 /** BDSQR_KERNEL implements the main loop of the bdsqr algorithm
     to compute the SVD of an upper bidiagonal matrix given by D and E **/
 template <typename T, typename S, typename W1, typename W2, typename W3>
@@ -484,308 +768,10 @@ ROCSOLVER_KERNEL void bdsqr_kernel(const rocblas_int n,
     }
 }
 
-/** BDSQR_LOWER2UPPER kernel transforms a lower bidiagonal matrix given by D and E
-    into an upper bidiagonal matrix via givens rotations **/
-template <typename T, typename S, typename W1, typename W2>
-ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
-                                        const rocblas_int nu,
-                                        const rocblas_int nc,
-                                        S* DD,
-                                        const rocblas_stride strideD,
-                                        S* EE,
-                                        const rocblas_stride strideE,
-                                        W1 UU,
-                                        const rocblas_int shiftU,
-                                        const rocblas_int ldu,
-                                        const rocblas_stride strideU,
-                                        W2 CC,
-                                        const rocblas_int shiftC,
-                                        const rocblas_int ldc,
-                                        const rocblas_stride strideC,
-                                        rocblas_int* info,
-                                        S* workA,
-                                        const rocblas_stride strideW)
-{
-    rocblas_int tid = hipThreadIdx_x;
-    rocblas_int bid = hipBlockIdx_y;
-
-    // local variables
-    rocblas_int i, j;
-    S f, g, c, s, r;
-    T temp1, temp2;
-
-    // if a NaN or Inf was detected in the input, return
-    if(info[bid] != 0)
-        return;
-
-    // select batch instance to work with
-    // (avoiding arithmetics with possible nullptrs)
-    T *U, *C;
-    S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
-    if(UU)
-        U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-    if(CC)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
-    S* rots = workA + bid * strideW + 2;
-
-    if(tid == 0)
-    {
-        f = D[0];
-        g = E[0];
-        for(i = 0; i < n - 1; ++i)
-        {
-            // apply rotations by rows
-            lartg(f, g, c, s, r);
-            D[i] = r;
-            E[i] = -s * D[i + 1];
-            f = c * D[i + 1];
-            g = E[i + 1];
-
-            // save rotation to update singular vectors
-            if(nu || nc)
-            {
-                rots[i] = c;
-                rots[i + n] = -s;
-            }
-        }
-        D[n - 1] = f;
-    }
-    __syncthreads();
-
-    // update singular vectors
-    if(nu)
-    {
-        // rotate from the right (forward direction)
-        for(j = 0; j < n - 1; j++)
-        {
-            for(i = tid; i < nu; i += hipBlockDim_x)
-            {
-                temp1 = U[i + j * ldu];
-                temp2 = U[i + (j + 1) * ldu];
-                c = rots[j];
-                s = rots[j + n];
-                U[i + j * ldu] = c * temp1 + s * temp2;
-                U[i + (j + 1) * ldu] = c * temp2 - s * temp1;
-            }
-        }
-    }
-    if(nc)
-    {
-        // rotate from the left (forward direction)
-        for(i = 0; i < n - 1; i++)
-        {
-            for(j = tid; j < nc; j += hipBlockDim_x)
-            {
-                temp1 = C[i + j * ldc];
-                temp2 = C[(i + 1) + j * ldc];
-                c = rots[i];
-                s = rots[i + n];
-                C[i + j * ldc] = c * temp1 + s * temp2;
-                C[(i + 1) + j * ldc] = c * temp2 - s * temp1;
-            }
-        }
-    }
-}
-
-/** BDSQR_INIT kernel checks if there are any NaNs or Infs in the input, calculates the
-    convergence threshold and initial estimate for the smallest singular value, and splits
-    the matrix into diagonal blocks. **/
-template <typename T, typename S>
-ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
-                                 S* DD,
-                                 const rocblas_stride strideD,
-                                 S* EE,
-                                 const rocblas_stride strideE,
-                                 rocblas_int* info,
-                                 const rocblas_int maxiter,
-                                 const S sfm,
-                                 const S tol,
-                                 rocblas_int* splitsA,
-                                 S* workA,
-                                 const rocblas_int incW,
-                                 const rocblas_stride strideW)
-{
-    rocblas_int bid = hipBlockIdx_y;
-
-    // select batch instance to work with
-    S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
-    rocblas_int* splits = splitsA + bid * n;
-    S* work = workA + bid * strideW;
-
-    bool found = false;
-    rocblas_int ii = 0;
-    rocblas_int start = 0;
-
-    // calculate threshold for zeroing elements (convergence threshold)
-    // direction
-    int t2b = (D[0] >= D[n - 1]) ? 1 : 0;
-    // estimate of the smallest singular value
-    S smin = bdsqr_estimate<S>(n, D, E, t2b, tol, 0);
-    // threshold
-    S thresh = std::max(tol * smin / S(std::sqrt(n)), S(maxiter) * sfm);
-
-    work[0] = smin;
-    work[1] = thresh;
-
-    // search for NaNs, Infs, and splits in the input
-    for(rocblas_int i = 0; i < n - 1; i++)
-    {
-        if(2 * i + 1 < n)
-        {
-            splits[2 * i] = 0;
-            splits[2 * i + 1] = 0;
-            __threadfence();
-        }
-
-        if(!std::isfinite(D[i]) || !std::isfinite(E[i]))
-            found = true;
-
-        if(std::abs(E[i]) < thresh)
-        {
-            E[i] = 0;
-            if(start < i)
-            {
-                // save diagonal block endpoints
-                splits[2 * ii] = start;
-                splits[2 * ii + 1] = i;
-                ii++;
-            }
-            start = i + 1;
-        }
-    }
-
-    if(!std::isfinite(D[n - 1]))
-        found = true;
-
-    if(start < n - 1)
-    {
-        // save diagonal block endpoints
-        splits[2 * ii] = start;
-        splits[2 * ii + 1] = n - 1;
-    }
-
-    // update output
-    if(found)
-    {
-        for(rocblas_int i = 0; i < n - 1; i++)
-        {
-            D[i] = nan("");
-            E[i] = nan("");
-        }
-        D[n - 1] = nan("");
-        info[bid] = n;
-    }
-    else
-        info[bid] = 0;
-}
-
-/**
- --------------------------------------------
- perform swaps to implement permutation vector
- the permutation vector will be restored to the
- identity permutation 0,1,2,...
-
- Note: this routine works in a thread block
- --------------------------------------------
- **/
-template <typename T, typename I>
-__device__ static void bdsqr_permute_swap(const I n,
-                                          const I nv,
-                                          T* V,
-                                          const I ldv,
-                                          const I nu,
-                                          T* U,
-                                          const I ldu,
-                                          const I nc,
-                                          T* C,
-                                          const I ldc,
-                                          I* map)
-{
-    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
-        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
-
-    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
-
-    bool const is_root_thread = (tid == 0);
-
-    if(n <= 0)
-    {
-        return;
-    };
-
-    assert(map != nullptr);
-
-    for(I i = 0; i < n; i++)
-    {
-        __syncthreads();
-
-        while(map[i] != i)
-        {
-            auto const map_i = map[i];
-            auto const map_ii = map[map[i]];
-
-            __syncthreads();
-
-            if(is_root_thread)
-            {
-                map[map_i] = map_i;
-                map[i] = map_ii;
-            };
-
-            __syncthreads();
-
-            // -----------
-            // swap arrays
-            // -----------
-
-            auto const j_start = tid;
-            auto const j_inc = nthreads;
-
-            __syncthreads();
-
-            if(nv > 0)
-            {
-                auto const m = map_i;
-                auto const i = map_ii;
-                for(auto j = j_start; j < nv; j += j_inc)
-                {
-                    swap(V[m + j * ((int64_t)ldv)], V[i + j * ((int64_t)ldv)]);
-                };
-            }
-            __syncthreads();
-
-            if(nu > 0)
-            {
-                auto const m = map_i;
-                auto const i = map_ii;
-                for(auto j = j_start; j < nu; j += j_inc)
-                {
-                    swap(U[j + m * ((int64_t)ldu)], U[j + i * ((int64_t)ldu)]);
-                };
-            }
-            __syncthreads();
-
-            if(nc > 0)
-            {
-                auto const m = map_i;
-                auto const i = map_ii;
-                for(auto j = j_start; j < nc; j += j_inc)
-                {
-                    swap(C[m + j * ((int64_t)ldc)], C[i + j * ((int64_t)ldc)]);
-                };
-            }
-            __syncthreads();
-        };
-    };
-}
-
 /**
  * BDSQR_SORT sorts the singular values and vectors by
  * shell sort or selection sort if applicable.
  * **/
-
 template <typename T, typename S, typename W1, typename W2, typename W3>
 ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
                                  const rocblas_int nv,
