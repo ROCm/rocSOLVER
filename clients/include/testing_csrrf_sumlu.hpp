@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -138,11 +138,12 @@ void testing_csrrf_sumlu_bad_arg()
 template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
 void csrrf_sumlu_initData(rocblas_handle handle,
                           const rocblas_int n,
+                          const rocblas_int nnzT,
                           const rocblas_int nnzL,
+                          const rocblas_int nnzU,
                           Ud& dptrL,
                           Ud& dindL,
                           Td& dvalL,
-                          const rocblas_int nnzU,
                           Ud& dptrU,
                           Ud& dindU,
                           Td& dvalU,
@@ -154,9 +155,7 @@ void csrrf_sumlu_initData(rocblas_handle handle,
                           Th& hvalU,
                           Uh& hptrT,
                           Uh& hindT,
-                          Th& hvalT,
-                          const fs::path testcase,
-                          bool test = true)
+                          Th& hvalT)
 {
     bool mat_zero = (nnzU + nnzL - n == 0);
 
@@ -165,35 +164,6 @@ void csrrf_sumlu_initData(rocblas_handle handle,
     {
         if(CPU)
         {
-            fs::path file;
-
-            // read-in L
-            file = testcase / "ptrL";
-            read_matrix(file.string(), 1, n + 1, hptrL.data(), 1);
-            file = testcase / "indL";
-            read_matrix(file.string(), 1, nnzL, hindL.data(), 1);
-            file = testcase / "valL";
-            read_matrix(file.string(), 1, nnzL, hvalL.data(), 1);
-
-            // read-in U
-            file = testcase / "ptrU";
-            read_matrix(file.string(), 1, n + 1, hptrU.data(), 1);
-            file = testcase / "indU";
-            read_matrix(file.string(), 1, nnzU, hindU.data(), 1);
-            file = testcase / "valU";
-            read_matrix(file.string(), 1, nnzU, hvalU.data(), 1);
-
-            // get results (matrix T) if validation is required
-            if(test)
-            {
-                rocblas_int nnzT = nnzL + nnzU - n;
-                file = testcase / "ptrT";
-                read_matrix(file.string(), 1, n + 1, hptrT.data(), 1);
-                file = testcase / "indT";
-                read_matrix(file.string(), 1, nnzT, hindT.data(), 1);
-                file = testcase / "valT";
-                read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
-            }
         }
 
         if(GPU)
@@ -219,6 +189,7 @@ void csrrf_sumlu_getError(rocblas_handle handle,
                           Ud& dptrU,
                           Ud& dindU,
                           Td& dvalU,
+                          const rocblas_int nnzT,
                           Ud& dptrT,
                           Ud& dindT,
                           Td& dvalT,
@@ -234,13 +205,12 @@ void csrrf_sumlu_getError(rocblas_handle handle,
                           Uh& hptrTres,
                           Uh& hindTres,
                           Th& hvalTres,
-                          double* max_err,
-                          const fs::path testcase)
+                          double* max_err)
 {
     // input data initialization
-    csrrf_sumlu_initData<true, true, T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU, dindU,
-                                        dvalU, hptrL, hindL, hvalL, hptrU, hindU, hvalU, hptrT,
-                                        hindT, hvalT, testcase);
+    csrrf_sumlu_initData<true, true, T>(handle, n, nnzT, nnzL, nnzU, dptrL, dindL, dvalL, dptrU,
+                                        dindU, dvalU, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
+                                        hptrT, hindT, hvalT);
 
     // execute computations
     // GPU lapack
@@ -253,7 +223,6 @@ void csrrf_sumlu_getError(rocblas_handle handle,
     CHECK_HIP_ERROR(hvalTres.transfer_from(dvalT));
 
     double err = 0;
-    rocblas_int nnzT = nnzU + nnzL - n;
     bool mat_zero = (nnzT == 0);
 
     // if not matrix zero, compare computed results with original result
@@ -261,8 +230,6 @@ void csrrf_sumlu_getError(rocblas_handle handle,
     {
         for(rocblas_int i = 0; i <= n; ++i)
             err += (hptrT[0][i] - hptrTres[0][i]);
-
-        err += nnzT - hptrTres[0][n];
 
         for(rocblas_int i = 0; i < nnzT; ++i)
         {
@@ -291,6 +258,7 @@ void csrrf_sumlu_getPerfData(rocblas_handle handle,
                              Ud& dptrU,
                              Ud& dindU,
                              Td& dvalU,
+                             const rocblas_int nnzT,
                              Ud& dptrT,
                              Ud& dindT,
                              Td& dvalT,
@@ -308,21 +276,20 @@ void csrrf_sumlu_getPerfData(rocblas_handle handle,
                              const rocblas_int hot_calls,
                              const int profile,
                              const bool profile_kernels,
-                             const bool perf,
-                             const fs::path testcase)
+                             const bool perf)
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
-    csrrf_sumlu_initData<true, false, T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU, dindU,
-                                         dvalU, hptrL, hindL, hvalL, hptrU, hindU, hvalU, hptrT,
-                                         hindT, hvalT, testcase, false);
+    csrrf_sumlu_initData<true, false, T>(handle, n, nnzT, nnzL, nnzU, dptrL, dindL, dvalL, dptrU,
+                                         dindU, dvalU, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
+                                         hptrT, hindT, hvalT);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        csrrf_sumlu_initData<false, true, T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU,
-                                             dindU, dvalU, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
-                                             hptrT, hindT, hvalT, testcase, false);
+        csrrf_sumlu_initData<false, true, T>(handle, n, nnzT, nnzL, nnzU, dptrL, dindL, dvalL,
+                                             dptrU, dindU, dvalU, hptrL, hindL, hvalL, hptrU, hindU,
+                                             hvalU, hptrT, hindT, hvalT);
 
         CHECK_ROCBLAS_ERROR(rocsolver_csrrf_sumlu(
             handle, n, nnzL, dptrL.data(), dindL.data(), dvalL.data(), nnzU, dptrU.data(),
@@ -346,9 +313,9 @@ void csrrf_sumlu_getPerfData(rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        csrrf_sumlu_initData<false, true, T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU,
-                                             dindU, dvalU, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
-                                             hptrT, hindT, hvalT, testcase, false);
+        csrrf_sumlu_initData<false, true, T>(handle, n, nnzT, nnzL, nnzU, dptrL, dindL, dvalL,
+                                             dptrU, dindU, dvalU, hptrL, hindL, hvalL, hptrU, hindU,
+                                             hvalU, hptrT, hindT, hvalT);
 
         start = get_time_us_sync(stream);
         rocsolver_csrrf_sumlu(handle, n, nnzL, dptrL.data(), dindL.data(), dvalL.data(), nnzU,
@@ -389,55 +356,6 @@ void testing_csrrf_sumlu(Arguments& argus)
         return;
     }
 
-    // determine existing test case
-    rocblas_int nnzA = nnzL + nnzU - n;
-    bool mat_zero = (nnzA == 0);
-    if(!mat_zero)
-    {
-        if(n > 0)
-        {
-            if(n <= 35)
-                n = 20;
-            else if(n <= 75)
-                n = 50;
-            else if(n <= 175)
-                n = 100;
-            else
-                n = 250;
-        }
-
-        if(n <= 50) // small case
-        {
-            if(nnzA <= 80)
-                nnzA = 60;
-            else if(nnzA <= 120)
-                nnzA = 100;
-            else
-                nnzA = 140;
-        }
-        else // large case
-        {
-            if(nnzA <= 400)
-                nnzA = 300;
-            else if(nnzA <= 600)
-                nnzA = 500;
-            else
-                nnzA = 700;
-        }
-    }
-
-    // read/set actual nnzL, nnzU and nnzT
-    fs::path testcase;
-    if(!mat_zero && n > 0)
-    {
-        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
-        fs::path file = testcase / "ptrL";
-        read_last(file.string(), &nnzL);
-        file = testcase / "ptrU";
-        read_last(file.string(), &nnzU);
-    }
-    rocblas_int nnzT = nnzL + nnzU - n;
-
     // memory size query if necessary
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
@@ -457,6 +375,9 @@ void testing_csrrf_sumlu(Arguments& argus)
 
         CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
     }
+
+    // determine/validate number of non-zeros
+    rocblas_int nnzT = nnzL + nnzU - n;
 
     // determine sizes
     size_t size_ptrL = size_t(n) + 1;
@@ -537,15 +458,15 @@ void testing_csrrf_sumlu(Arguments& argus)
     // check computations
     if(argus.unit_check || argus.norm_check)
         csrrf_sumlu_getError<T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU, dindU, dvalU,
-                                dptrT, dindT, dvalT, hptrL, hindL, hvalL, hptrU, hindU, hvalU, hptrT,
-                                hindT, hvalT, hptrTres, hindTres, hvalTres, &max_error, testcase);
+                                nnzT, dptrT, dindT, dvalT, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
+                                hptrT, hindT, hvalT, hptrTres, hindTres, hvalTres, &max_error);
 
     // collect performance data
     if(argus.timing)
         csrrf_sumlu_getPerfData<T>(handle, n, nnzL, dptrL, dindL, dvalL, nnzU, dptrU, dindU, dvalU,
-                                   dptrT, dindT, dvalT, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
-                                   hptrT, hindT, hvalT, &gpu_time_used, &cpu_time_used, hot_calls,
-                                   argus.profile, argus.profile_kernels, argus.perf, testcase);
+                                   nnzT, dptrT, dindT, dvalT, hptrL, hindL, hvalL, hptrU, hindU,
+                                   hvalU, hptrT, hindT, hvalT, &gpu_time_used, &cpu_time_used,
+                                   hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using machine precision for tolerance
