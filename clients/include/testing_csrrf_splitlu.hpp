@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -141,6 +141,8 @@ template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th,
 void csrrf_splitlu_initData(rocblas_handle handle,
                             const rocblas_int n,
                             const rocblas_int nnzT,
+                            const rocblas_int nnzL,
+                            const rocblas_int nnzU,
                             Ud& dptrT,
                             Ud& dindT,
                             Td& dvalT,
@@ -152,50 +154,15 @@ void csrrf_splitlu_initData(rocblas_handle handle,
                             Th& hvalL,
                             Uh& hptrU,
                             Uh& hindU,
-                            Th& hvalU,
-                            const fs::path testcase,
-                            bool test = true)
+                            Th& hvalU)
 {
     bool mat_zero = (nnzT == 0);
 
-    // if not matrix zero, read data from files
+    // if not matrix zero, generate input data
     if(!mat_zero)
     {
         if(CPU)
         {
-            fs::path file;
-
-            // read-in T
-            file = testcase / "ptrT";
-            read_matrix(file.string(), 1, n + 1, hptrT.data(), 1);
-            file = testcase / "indT";
-            read_matrix(file.string(), 1, nnzT, hindT.data(), 1);
-            file = testcase / "valT";
-            read_matrix(file.string(), 1, nnzT, hvalT.data(), 1);
-
-            // get results (matrices L and U) if validation is required
-            if(test)
-            {
-                rocblas_int nnzL, nnzU;
-
-                // read-in L
-                file = testcase / "ptrL";
-                read_matrix(file.string(), 1, n + 1, hptrL.data(), 1);
-                nnzL = hptrL[0][n];
-                file = testcase / "indL";
-                read_matrix(file.string(), 1, nnzL, hindL.data(), 1);
-                file = testcase / "valL";
-                read_matrix(file.string(), 1, nnzL, hvalL.data(), 1);
-
-                // read-in U
-                file = testcase / "ptrU";
-                read_matrix(file.string(), 1, n + 1, hptrU.data(), 1);
-                nnzU = hptrU[0][n];
-                file = testcase / "indU";
-                read_matrix(file.string(), 1, nnzU, hindU.data(), 1);
-                file = testcase / "valU";
-                read_matrix(file.string(), 1, nnzU, hvalU.data(), 1);
-            }
         }
 
         if(GPU)
@@ -214,9 +181,11 @@ void csrrf_splitlu_getError(rocblas_handle handle,
                             Ud& dptrT,
                             Ud& dindT,
                             Td& dvalT,
+                            const rocblas_int nnzL,
                             Ud& dptrL,
                             Ud& dindL,
                             Td& dvalL,
+                            const rocblas_int nnzU,
                             Ud& dptrU,
                             Ud& dindU,
                             Td& dvalU,
@@ -235,12 +204,11 @@ void csrrf_splitlu_getError(rocblas_handle handle,
                             Uh& hptrUres,
                             Uh& hindUres,
                             Th& hvalUres,
-                            double* max_err,
-                            const fs::path testcase)
+                            double* max_err)
 {
     // input data initialization
-    csrrf_splitlu_initData<true, true, T>(handle, n, nnzT, dptrT, dindT, dvalT, hptrT, hindT, hvalT,
-                                          hptrL, hindL, hvalL, hptrU, hindU, hvalU, testcase);
+    csrrf_splitlu_initData<true, true, T>(handle, n, nnzT, nnzL, nnzU, dptrT, dindT, dvalT, hptrT,
+                                          hindT, hvalT, hptrL, hindL, hvalL, hptrU, hindU, hvalU);
 
     // execute computations
     // GPU lapack
@@ -266,11 +234,6 @@ void csrrf_splitlu_getError(rocblas_handle handle,
             err += (hptrL[0][i] - hptrLres[0][i]);
             err += (hptrU[0][i] - hptrUres[0][i]);
         }
-
-        rocblas_int nnzL = hptrL[0][n];
-        rocblas_int nnzU = hptrU[0][n];
-
-        err += nnzT - (nnzL + nnzU - n);
 
         for(rocblas_int i = 0; i < nnzL; ++i)
         {
@@ -308,9 +271,11 @@ void csrrf_splitlu_getPerfData(rocblas_handle handle,
                                Ud& dptrT,
                                Ud& dindT,
                                Td& dvalT,
+                               const rocblas_int nnzL,
                                Ud& dptrL,
                                Ud& dindL,
                                Td& dvalL,
+                               const rocblas_int nnzU,
                                Ud& dptrU,
                                Ud& dindU,
                                Td& dvalU,
@@ -328,20 +293,19 @@ void csrrf_splitlu_getPerfData(rocblas_handle handle,
                                const rocblas_int hot_calls,
                                const int profile,
                                const bool profile_kernels,
-                               const bool perf,
-                               const fs::path testcase)
+                               const bool perf)
 {
     *cpu_time_used = nan(""); // no timing on cpu-lapack execution
 
-    csrrf_splitlu_initData<true, false, T>(handle, n, nnzT, dptrT, dindT, dvalT, hptrT, hindT, hvalT,
-                                           hptrL, hindL, hvalL, hptrU, hindU, hvalU, testcase, false);
+    csrrf_splitlu_initData<true, false, T>(handle, n, nnzT, nnzL, nnzU, dptrT, dindT, dvalT, hptrT,
+                                           hindT, hvalT, hptrL, hindL, hvalL, hptrU, hindU, hvalU);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        csrrf_splitlu_initData<false, true, T>(handle, n, nnzT, dptrT, dindT, dvalT, hptrT, hindT,
-                                               hvalT, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
-                                               testcase, false);
+        csrrf_splitlu_initData<false, true, T>(handle, n, nnzT, nnzL, nnzU, dptrT, dindT, dvalT,
+                                               hptrT, hindT, hvalT, hptrL, hindL, hvalL, hptrU,
+                                               hindU, hvalU);
 
         CHECK_ROCBLAS_ERROR(rocsolver_csrrf_splitlu(
             handle, n, nnzT, dptrT.data(), dindT.data(), dvalT.data(), dptrL.data(), dindL.data(),
@@ -365,9 +329,9 @@ void csrrf_splitlu_getPerfData(rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        csrrf_splitlu_initData<false, true, T>(handle, n, nnzT, dptrT, dindT, dvalT, hptrT, hindT,
-                                               hvalT, hptrL, hindL, hvalL, hptrU, hindU, hvalU,
-                                               testcase, false);
+        csrrf_splitlu_initData<false, true, T>(handle, n, nnzT, nnzL, nnzU, dptrT, dindT, dvalT,
+                                               hptrT, hindT, hvalT, hptrL, hindL, hvalL, hptrU,
+                                               hindU, hvalU);
 
         start = get_time_us_sync(stream);
         rocsolver_csrrf_splitlu(handle, n, nnzT, dptrT.data(), dindT.data(), dvalT.data(),
@@ -407,57 +371,6 @@ void testing_csrrf_splitlu(Arguments& argus)
         return;
     }
 
-    // determine existing test case
-    rocblas_int nnzA = nnzT;
-    bool mat_zero = (nnzA == 0);
-    if(!mat_zero)
-    {
-        if(n > 0)
-        {
-            if(n <= 35)
-                n = 20;
-            else if(n <= 75)
-                n = 50;
-            else if(n <= 175)
-                n = 100;
-            else
-                n = 250;
-        }
-
-        if(n <= 50) // small case
-        {
-            if(nnzA <= 80)
-                nnzA = 60;
-            else if(nnzA <= 120)
-                nnzA = 100;
-            else
-                nnzA = 140;
-        }
-        else // large case
-        {
-            if(nnzA <= 400)
-                nnzA = 300;
-            else if(nnzA <= 600)
-                nnzA = 500;
-            else
-                nnzA = 700;
-        }
-    }
-
-    // read/set corresponding nnzL, nnzU and nnzT
-    fs::path testcase;
-    rocblas_int nnzU = 0;
-    rocblas_int nnzL = n;
-    if(!mat_zero && n > 0)
-    {
-        testcase = get_sparse_data_dir() / fs::path(fmt::format("mat_{}_{}", n, nnzA));
-        fs::path file = testcase / "ptrL";
-        read_last(file.string(), &nnzL);
-        file = testcase / "ptrU";
-        read_last(file.string(), &nnzU);
-    }
-    nnzT = nnzL + nnzU - n;
-
     // memory size query if necessary
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
@@ -476,6 +389,18 @@ void testing_csrrf_splitlu(Arguments& argus)
         }
 
         CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
+    }
+
+    // determine/validate number of non-zeros
+    rocblas_int nnzL = n;
+    rocblas_int nnzU = 0;
+    bool mat_zero = (nnzT == 0);
+
+    if(!mat_zero)
+    {
+        // arbitrarily assign ~55% of nnzT to U, ~45% to L
+        nnzU = (nnzT * 55) / 100;
+        nnzL += nnzT - nnzU;
     }
 
     // determine sizes
@@ -565,17 +490,17 @@ void testing_csrrf_splitlu(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        csrrf_splitlu_getError<T>(handle, n, nnzT, dptrT, dindT, dvalT, dptrL, dindL, dvalL, dptrU,
-                                  dindU, dvalU, hptrT, hindT, hvalT, hptrL, hindL, hvalL, hptrU,
-                                  hindU, hvalU, hptrLres, hindLres, hvalLres, hptrUres, hindUres,
-                                  hvalUres, &max_error, testcase);
+        csrrf_splitlu_getError<T>(handle, n, nnzT, dptrT, dindT, dvalT, nnzL, dptrL, dindL, dvalL,
+                                  nnzU, dptrU, dindU, dvalU, hptrT, hindT, hvalT, hptrL, hindL,
+                                  hvalL, hptrU, hindU, hvalU, hptrLres, hindLres, hvalLres,
+                                  hptrUres, hindUres, hvalUres, &max_error);
 
     // collect performance data
     if(argus.timing)
-        csrrf_splitlu_getPerfData<T>(handle, n, nnzT, dptrT, dindT, dvalT, dptrL, dindL, dvalL,
-                                     dptrU, dindU, dvalU, hptrT, hindT, hvalT, hptrL, hindL, hvalL,
-                                     hptrU, hindU, hvalU, &gpu_time_used, &cpu_time_used, hot_calls,
-                                     argus.profile, argus.profile_kernels, argus.perf, testcase);
+        csrrf_splitlu_getPerfData<T>(handle, n, nnzT, dptrT, dindT, dvalT, nnzL, dptrL, dindL, dvalL,
+                                     nnzU, dptrU, dindU, dvalU, hptrT, hindT, hvalT, hptrL, hindL,
+                                     hvalL, hptrU, hindU, hvalU, &gpu_time_used, &cpu_time_used,
+                                     hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using machine precision for tolerance
