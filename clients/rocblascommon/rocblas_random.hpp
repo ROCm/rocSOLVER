@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -124,33 +124,34 @@ public:
  */
 /* generate random number :*/
 
-/*! \brief  generate a random number in range [1,2,3,4,5,6,7,8,9,10] */
+// generate a random number in range [l1, l2] */
 template <typename T>
-inline T random_generator()
+inline T random_generator(const rocblas_int l1 = 1, const rocblas_int l2 = 10)
 {
-    return std::uniform_int_distribution<int>(1, 10)(rocblas_rng);
+    return std::uniform_int_distribution<int>(l1, l2)(rocblas_rng);
 }
 
 // for rocblas_float_complex, generate two random ints (same behaviour as for
 // floats)
 template <>
-inline rocblas_float_complex random_generator<rocblas_float_complex>()
+inline rocblas_float_complex random_generator<rocblas_float_complex>(const rocblas_int l1,
+                                                                     const rocblas_int l2)
 {
-    return {float(std::uniform_int_distribution<int>(1, 10)(rocblas_rng)),
-            float(std::uniform_int_distribution<int>(1, 10)(rocblas_rng))};
+    return {float(std::uniform_int_distribution<int>(l1, l2)(rocblas_rng)),
+            float(std::uniform_int_distribution<int>(l1, l2)(rocblas_rng))};
 };
 
 // for rocblas_double_complex, generate two random ints (same behaviour as for
 // doubles)
 template <>
-inline rocblas_double_complex random_generator<rocblas_double_complex>()
+inline rocblas_double_complex random_generator<rocblas_double_complex>(const rocblas_int l1,
+                                                                       const rocblas_int l2)
 {
-    return {double(std::uniform_int_distribution<int>(1, 10)(rocblas_rng)),
-            double(std::uniform_int_distribution<int>(1, 10)(rocblas_rng))};
+    return {double(std::uniform_int_distribution<int>(l1, l2)(rocblas_rng)),
+            double(std::uniform_int_distribution<int>(l1, l2)(rocblas_rng))};
 };
 
-// for rocblas_half, generate float, and convert to rocblas_half
-/*! \brief  generate a random number in range [-2,-1,0,1,2] */
+/*// for rocblas_half, generate float, and convert to rocblas_half
 template <>
 inline rocblas_half random_generator<rocblas_half>()
 {
@@ -158,21 +159,20 @@ inline rocblas_half random_generator<rocblas_half>()
 };
 
 // for rocblas_bfloat16, generate float, and convert to rocblas_bfloat16
-/*! \brief  generate a random number in range [-2,-1,0,1,2] */
 template <>
 inline rocblas_bfloat16 random_generator<rocblas_bfloat16>()
 {
     return rocblas_bfloat16(std::uniform_int_distribution<int>(-2, 2)(rocblas_rng));
 };
 
-/*! \brief  generate a random number in range [1,2,3] */
+//  generate a random number in range [1,2,3]
 template <>
 inline int8_t random_generator<int8_t>()
 {
     return int8_t(std::uniform_int_distribution<int>(1, 3)(rocblas_rng));
-};
+};*/
 
-/*! \brief  generate a random number in HPL-like [-0.5,0.5] doubles  */
+//  generate a random number in HPL-like [-0.5,0.5] doubles  */
 template <typename T>
 inline T random_hpl_generator()
 {
