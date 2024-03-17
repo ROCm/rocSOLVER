@@ -157,13 +157,24 @@ void csrrf_sumlu_initData(rocblas_handle handle,
                           Uh& hindT,
                           Th& hvalT)
 {
-    bool mat_zero = (nnzU + nnzL - n == 0);
+    bool mat_zero = (nnzT == 0);
 
     // if not matrix zero, read data from files
     if(!mat_zero)
     {
         if(CPU)
         {
+            // initialize input (factor L)
+            random_sparse_matrix(n, nnzL, hptrL.data(), hindL.data(), hvalL.data(),
+                                 rocblas_fill_lower, rocsolver_diagonal_mode_unit);
+
+            // initialize input (factor U)
+            random_sparse_matrix(n, nnzU, hptrU.data(), hindU.data(), hvalU.data(),
+                                 rocblas_fill_upper, rocsolver_diagonal_mode_random);
+
+            // construct golden result (bundle matrix L - I + U)
+            cpu_sumlu(n, hptrL.data(), hindL.data(), hvalL.data(), hptrU.data(), hindU.data(),
+                      hvalU.data(), hptrT.data(), hindT.data(), hvalT.data());
         }
 
         if(GPU)
@@ -225,7 +236,7 @@ void csrrf_sumlu_getError(rocblas_handle handle,
     double err = 0;
     bool mat_zero = (nnzT == 0);
 
-    // if not matrix zero, compare computed results with original result
+    // if not matrix zero, compare computed results with golden result
     if(!mat_zero)
     {
         for(rocblas_int i = 0; i <= n; ++i)
@@ -377,6 +388,11 @@ void testing_csrrf_sumlu(Arguments& argus)
     }
 
     // determine/validate number of non-zeros
+    rocblas_int mx = n * (n + 1) / 2;
+    if(nnzL > mx)
+        nnzL = mx;
+    if(nnzU > mx)
+        nnzU = mx;
     rocblas_int nnzT = nnzL + nnzU - n;
 
     // determine sizes

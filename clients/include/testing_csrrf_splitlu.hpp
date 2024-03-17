@@ -163,6 +163,17 @@ void csrrf_splitlu_initData(rocblas_handle handle,
     {
         if(CPU)
         {
+            // initialize golden result (factor L)
+            random_sparse_matrix(n, nnzL, hptrL.data(), hindL.data(), hvalL.data(),
+                                 rocblas_fill_lower, rocsolver_diagonal_mode_unit);
+
+            // initialize golden result (factor U)
+            random_sparse_matrix(n, nnzU, hptrU.data(), hindU.data(), hvalU.data(),
+                                 rocblas_fill_upper, rocsolver_diagonal_mode_random);
+
+            // construct input matrix (bundle matrix L - I + U)
+            cpu_sumlu(n, hptrL.data(), hindL.data(), hvalL.data(), hptrU.data(), hindU.data(),
+                      hvalU.data(), hptrT.data(), hindT.data(), hvalT.data());
         }
 
         if(GPU)
@@ -226,7 +237,7 @@ void csrrf_splitlu_getError(rocblas_handle handle,
     double err = 0;
     bool mat_zero = (nnzT == 0);
 
-    // if not mat zero, compare computed results with original result
+    // if not matrix zero, compare computed results with golden result
     if(!mat_zero)
     {
         for(rocblas_int i = 0; i <= n; ++i)
@@ -395,11 +406,17 @@ void testing_csrrf_splitlu(Arguments& argus)
     rocblas_int nnzL = n;
     rocblas_int nnzU = 0;
     bool mat_zero = (nnzT == 0);
-
     if(!mat_zero)
     {
-        // arbitrarily assign ~55% of nnzT to U, ~45% to L
-        nnzU = (nnzT * 55) / 100;
+        if(nnzT > n * n)
+            nnzT = n * n;
+
+        // assign a random number of nonzeros to L and U
+        rocblas_seedrand();
+        rocblas_int high, low;
+        low = max(0, nnzT - n * (n - 1) / 2);
+        high = min(nnzT, n * (n + 1) / 2);
+        nnzU = random_generator<rocblas_int>(low, high);
         nnzL += nnzT - nnzU;
     }
 
