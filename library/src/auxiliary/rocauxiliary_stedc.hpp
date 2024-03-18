@@ -38,6 +38,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+#include <algorithm>
+
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
 #define MAXITERS 50 // Max number of iterations for root finding method
 
@@ -51,12 +53,13 @@ typedef enum rocsolver_stedc_mode_
 template <rocsolver_stedc_mode MODE>
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n);
 
-/***************** Device auxiliary functions *****************************************/
+/***************** Device auxiliary functions ******************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
 /** SEQ_EVAL evaluates the secular equation at a given point. It accumulates the
-    corrections to the elements in D so that distance to poles are computed accurately **/
+    corrections to the elements in D so that distance to poles are computed
+   accurately **/
 template <typename S>
 __device__ void seq_eval(const rocblas_int type,
                          const rocblas_int k,
@@ -96,7 +99,7 @@ __device__ void seq_eval(const rocblas_int type,
         hout = k;
     }
     // if type = 2: evaluate secular equation without the k-th and (k+1)-th poles
-    else
+    else if(type == 2)
     {
         if(modif)
         {
@@ -107,6 +110,11 @@ __device__ void seq_eval(const rocblas_int type,
         }
         gout = k;
         hout = k + 1;
+    }
+    else
+    {
+        // unexpected value for type, something is wrong
+        assert(false);
     }
 
     // computations
@@ -154,12 +162,12 @@ __device__ void seq_eval(const rocblas_int type,
 }
 
 //--------------------------------------------------------------------------------------//
-/** SEQ_SOLVE solves secular equation at point k (i.e. computes kth eigenvalue that
-    is within an internal interval). We use rational interpolation and fixed weights
-    method between the 2 poles of the interval.
-    (TODO: In the future, we could consider using 3 poles for those cases that may need it
-    to reduce the number of required iterations to converge. The performance improvements
-    are expected to be marginal, though) **/
+/** SEQ_SOLVE solves secular equation at point k (i.e. computes kth eigenvalue
+   that is within an internal interval). We use rational interpolation and fixed
+   weights method between the 2 poles of the interval. (TODO: In the future, we
+   could consider using 3 poles for those cases that may need it to reduce the
+   number of required iterations to converge. The performance improvements are
+   expected to be marginal, though) **/
 template <typename S>
 __device__ rocblas_int seq_solve(const rocblas_int dd,
                                  S* D,
@@ -194,8 +202,9 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
     fx = cc + 2 * (hdx - gdx) / tau;
     if(fx > 0)
     {
-        // if the secular eq at the midpoint is positive, the root is in between D[k] and the midpoint
-        // take D[k] as the origin, i.e. x = D[k] + tau with tau in (0, uppb)
+        // if the secular eq at the midpoint is positive, the root is in between
+        // D[k] and the midpoint take D[k] as the origin, i.e. x = D[k] + tau with
+        // tau in (0, uppb)
         lowb = 0;
         uppb = tau / 2;
         up = true;
@@ -239,7 +248,8 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
     // calculate tolerance er for convergence test
     er += 8 * (hx - gx) + 2 * pinv + 3 * abs(bb) + abs(tau) * fdx;
 
-    // if the value of secular eq is small enough, no point to continue; converged!!!
+    // if the value of secular eq is small enough, no point to continue;
+    // converged!!!
     if(abs(fx) <= tol * er)
         converged = true;
 
@@ -280,12 +290,13 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         }
 
         // verify that the correction eta will get x closer to the root
-        // i.e. eta*fx should be negative. If not the case, take a Newton step instead
+        // i.e. eta*fx should be negative. If not the case, take a Newton step
+        // instead
         if(fx * eta >= 0)
             eta = -fx / fdx;
 
-        // now verify that applying the correction won't get the process out of bounds
-        // if that is the case, bisect the interval instead
+        // now verify that applying the correction won't get the process out of
+        // bounds if that is the case, bisect the interval instead
         if(tau + eta > uppb || tau + eta < lowb)
         {
             if(fx < 0)
@@ -310,8 +321,9 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         // calculate tolerance er for convergence test
         er += 8 * (hx - gx) + 2 * pinv + 3 * abs(bb) + abs(tau) * fdx;
 
-        // from now on, further step corrections will be calculated either with fixed weights method
-        // or with normal interpolation depending on the value of boolean fixed
+        // from now on, further step corrections will be calculated either with
+        // fixed weights method or with normal interpolation depending on the value
+        // of boolean fixed
         cc = up ? -1 : 1;
         fixed = (cc * fx) > (abs(oldfx) / 10);
 
@@ -319,7 +331,8 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
         // ==============================================
         for(int i = 1; i < MAXITERS; ++i)
         {
-            // if the value of secular eq is small enough, no point to continue; converged!!!
+            // if the value of secular eq is small enough, no point to continue;
+            // converged!!!
             if(abs(fx) <= tol * er)
             {
                 converged = true;
@@ -330,7 +343,8 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
             lowb = (fx <= 0) ? max(lowb, tau) : lowb;
             uppb = (fx > 0) ? min(uppb, tau) : uppb;
 
-            // calculate next step correction with either fixed weight method or simple interpolation
+            // calculate next step correction with either fixed weight method or
+            // simple interpolation
             ddk = D[k];
             ddk1 = D[k1];
             if(fixed)
@@ -376,12 +390,13 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
             }
 
             // verify that the correction eta will get x closer to the root
-            // i.e. eta*fx should be negative. If not the case, take a Newton step instead
+            // i.e. eta*fx should be negative. If not the case, take a Newton step
+            // instead
             if(fx * eta >= 0)
                 eta = -fx / fdx;
 
-            // now verify that applying the correction won't get the process out of bounds
-            // if that is the case, bisect the interval instead
+            // now verify that applying the correction won't get the process out of
+            // bounds if that is the case, bisect the interval instead
             if(tau + eta > uppb || tau + eta < lowb)
             {
                 if(fx < 0)
@@ -417,11 +432,12 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
 }
 
 //--------------------------------------------------------------------------------------//
-/** SEQ_SOLVE_EXT solves secular equation at point n (i.e. computes last eigenvalue).
-    We use rational interpolation and fixed weights method between the (n-1)th and nth poles.
-    (TODO: In the future, we could consider using 3 poles for those cases that may need it
-    to reduce the number of required iterations to converge. The performance improvements
-    are expected to be marginal, though) **/
+/** SEQ_SOLVE_EXT solves secular equation at point n (i.e. computes last
+   eigenvalue). We use rational interpolation and fixed weights method between
+   the (n-1)th and nth poles. (TODO: In the future, we could consider using 3
+   poles for those cases that may need it to reduce the number of required
+   iterations to converge. The performance improvements are expected to be
+   marginal, though) **/
 template <typename S>
 __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
                                      S* D,
@@ -453,8 +469,9 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     fx = cc + gdx / (dkm1 - x) - 2 * hdx * pinv;
     if(fx > 0)
     {
-        // if the secular eq at the midpoint is positive, the root is in between D[k] and the midpoint
-        // take D[k] as the origin, i.e. x = D[k] + tau with tau in (0, uppb)
+        // if the secular eq at the midpoint is positive, the root is in between
+        // D[k] and the midpoint take D[k] as the origin, i.e. x = D[k] + tau with
+        // tau in (0, uppb)
         lowb = 0;
         uppb = p / 2;
         tau = dk - dkm1;
@@ -496,7 +513,8 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     // calculate tolerance er for convergence test
     er += abs(tau) * (hdx + gdx) - 8 * (hx + gx) - hx + pinv;
 
-    // if the value of secular eq is small enough, no point to continue; converged!!!
+    // if the value of secular eq is small enough, no point to continue;
+    // converged!!!
     if(abs(fx) <= tol * er)
         converged = true;
 
@@ -527,12 +545,13 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         }
 
         // verify that the correction eta will get x closer to the root
-        // i.e. eta*fx should be negative. If not the case, take a Newton step instead
+        // i.e. eta*fx should be negative. If not the case, take a Newton step
+        // instead
         if(fx * eta > 0)
             eta = -fx / (gdx + hdx);
 
-        // now verify that applying the correction won't get the process out of bounds
-        // if that is the case, bisect the interval instead
+        // now verify that applying the correction won't get the process out of
+        // bounds if that is the case, bisect the interval instead
         if(tau + eta > uppb || tau + eta < lowb)
         {
             if(fx < 0)
@@ -555,7 +574,8 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         // ==============================================
         for(int i = 1; i < MAXITERS; ++i)
         {
-            // if the value of secular eq is small enough, no point to continue; converged!!!
+            // if the value of secular eq is small enough, no point to continue;
+            // converged!!!
             if(abs(fx) <= tol * er)
             {
                 converged = true;
@@ -579,12 +599,13 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
                 eta = (2 * bb) / (aa - eta);
 
             // verify that the correction eta will get x closer to the root
-            // i.e. eta*fx should be negative. If not the case, take a Newton step instead
+            // i.e. eta*fx should be negative. If not the case, take a Newton step
+            // instead
             if(fx * eta > 0)
                 eta = -fx / (gdx + hdx);
 
-            // now verify that applying the correction won't get the process out of bounds
-            // if that is the case, bisect the interval instead
+            // now verify that applying the correction won't get the process out of
+            // bounds if that is the case, bisect the interval instead
             if(tau + eta > uppb || tau + eta < lowb)
             {
                 if(fx < 0)
@@ -610,15 +631,16 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
 }
 
 //--------------------------------------------------------------------------------------//
-/** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
-    will be divided during the divide phase of divide & conquer algorithm.
-    i.e. number of sub-blocks = 2^levels **/
+/** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix
+   (or split block) will be divided during the divide phase of divide & conquer
+   algorithm. i.e. number of sub-blocks = 2^levels **/
 template <>
 __host__ __device__ inline rocblas_int stedc_num_levels<rocsolver_stedc_mode_qr>(const rocblas_int n)
 {
     rocblas_int levels = 0;
-    // return the max number of levels such that the sub-blocks are at least of size 1
-    // (i.e. 2^levels <= n), and there are no more than 256 sub-blocks (i.e. 2^levels <= 256)
+    // return the max number of levels such that the sub-blocks are at least of
+    // size 1 (i.e. 2^levels <= n), and there are no more than 256 sub-blocks
+    // (i.e. 2^levels <= 256)
     if(n <= 2)
         return levels;
 
@@ -663,14 +685,15 @@ __host__ __device__ inline rocblas_int stedc_num_levels<rocsolver_stedc_mode_qr>
     return levels;
 }
 
-/*************** Main kernels *********************************************************/
+/*************** Main kernels
+ * *********************************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
-/** STEDC_SPLIT finds independent blocks (split-blocks) in the tridiagonal matrix
-    given by D and E. The independent blocks can then be solved in
+/** STEDC_SPLIT finds independent blocks (split-blocks) in the tridiagonal
+   matrix given by D and E. The independent blocks can then be solved in
     parallel by the DC algorithm.
-	- Call this kernel with batch_count single-threaded groups in x **/
+        - Call this kernel with batch_count single-threaded groups in x **/
 template <typename S>
 ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
                                   S* DD,
@@ -687,11 +710,12 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
     S* E = EE + (bid * strideE);
     rocblas_int* splits = splitsA + bid * (5 * n + 2);
 
-    rocblas_int k = 0; //position where the last block starts
-    S tol; //tolerance. If an element of E is <= tol we have an independent block
-    rocblas_int bs; //size of an independent block
-    rocblas_int nb = 1; //number of blocks
-    splits[0] = 0; //positions where each block begings
+    rocblas_int k = 0; // position where the last block starts
+    S tol; // tolerance. If an element of E is <= tol we have an independent
+        // block
+    rocblas_int bs; // size of an independent block
+    rocblas_int nb = 1; // number of blocks
+    splits[0] = 0; // positions where each block begings
 
     // main loop
     while(k < n)
@@ -713,15 +737,16 @@ ROCSOLVER_KERNEL void stedc_split(const rocblas_int n,
         k += bs;
     }
     splits[nb] = n;
-    splits[n + 1] = nb; //also save the number of split blocks
+    splits[n + 1] = nb; // also save the number of split blocks
 }
 
 //--------------------------------------------------------------------------------------//
-/** STEDC_DIVIDE_KERNEL implements the divide phase of the DC algorithm. It divides each
-	split-block into a number of sub-blocks.
-	- Call this kernel with batch_count groups in x. Groups are of size STEDC_BDIM.
-	- If there are actually more split-blocks than STEDC_BDIM, some threads will work with more
-	  than one split-block sequentially. **/
+/** STEDC_DIVIDE_KERNEL implements the divide phase of the DC algorithm. It
+   divides each split-block into a number of sub-blocks.
+        - Call this kernel with batch_count groups in x. Groups are of size
+   STEDC_BDIM.
+        - If there are actually more split-blocks than STEDC_BDIM, some threads
+   will work with more than one split-block sequentially. **/
 template <rocsolver_stedc_mode MODE, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const rocblas_int n,
                                                                         S* DD,
@@ -825,17 +850,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
 
 //--------------------------------------------------------------------------------------//
 /** STEDC_SOLVE_KERNEL implements the solver phase of the DC algorithm to
-	compute the eigenvalues/eigenvectors of the different sub-blocks of each split-block.
-	A matrix in the batch could have many split-blocks, and each split-block could be
-	divided in a maximum of nn sub-blocks.
-	- Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y
-	  and nn groups in x. Groups are size STEDC_BDIM.
-	- STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will be analysed
-	  in parallel). If there are actually more split-blocks, some groups will work with more
-	  than one split-block sequentially.
-	- An upper bound for the number of sub-blocks (nn) can be estimated from the size n.
-	  If a group has an id larger than the actual number of sub-blocks in a split-block,
-	  it will do nothing. **/
+        compute the eigenvalues/eigenvectors of the different sub-blocks of each
+   split-block. A matrix in the batch could have many split-blocks, and each
+   split-block could be divided in a maximum of nn sub-blocks.
+        - Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS
+   groups in y and nn groups in x. Groups are size STEDC_BDIM.
+        - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
+   be analysed in parallel). If there are actually more split-blocks, some
+   groups will work with more than one split-block sequentially.
+        - An upper bound for the number of sub-blocks (nn) can be estimated from
+   the size n. If a group has an id larger than the actual number of sub-blocks
+   in a split-block, it will do nothing. **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const rocblas_int n,
                                                                        S* DD,
@@ -944,14 +969,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
 
 //--------------------------------------------------------------------------------------//
 /** STEDC_MERGE_KERNEL implements the main loop of the DC algorithm to merge the
-	eigenvalues/eigenvectors of the different sub-blocks of each split-block.
-	A matrix in the batch could have many split-blocks, and each split-block could be
-	divided in a maximum of nn sub-blocks.
-	- Call this kernel with batch_count groups in y, and STEDC_NUM_SPLIT_BLKS groups in x.
-	  Groups are size STEDC_BDIM.
-	- STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will be analysed
-	  in parallel). If there are actually more split-blocks, some groups will work with more
-	  than one split-block sequentially. **/
+        eigenvalues/eigenvectors of the different sub-blocks of each
+   split-block. A matrix in the batch could have many split-blocks, and each
+   split-block could be divided in a maximum of nn sub-blocks.
+        - Call this kernel with batch_count groups in y, and
+   STEDC_NUM_SPLIT_BLKS groups in x. Groups are size STEDC_BDIM.
+        - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
+   be analysed in parallel). If there are actually more split-blocks, some
+   groups will work with more than one split-block sequentially. **/
 template <rocsolver_stedc_mode MODE, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const rocblas_int n,
                                                                        S* DD,
@@ -1055,8 +1080,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
         levs = stedc_num_levels<MODE>(bs);
         blks = 1 << levs;
 
-        // arrange threads so that a group of bdim/blks threads works with each sub-block
-        // tn is the number of threads associated with each sub-block
+        // arrange threads so that a group of bdim/blks threads works with each
+        // sub-block tn is the number of threads associated with each sub-block
         tn = STEDC_BDIM / blks;
         // tid indexes the sub-block
         tid = id / tn;
@@ -1152,7 +1177,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             }
             __syncthreads();
 
-            // tol should be  8 * eps * (max diagonal or z element participating in merge)
+            // tol should be  8 * eps * (max diagonal or z element participating in
+            // merge)
             maxd = inrms[tid - iam];
             maxz = inrms[tid - iam + blks];
             maxd = maxz > maxd ? maxz : maxd;
@@ -1221,7 +1247,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 if(tidb == 0)
                 {
                     rocblas_int div = 1 << (ii + 1);
-                    //actual number of threads is halved each time
+                    // actual number of threads is halved each time
                     if(iam % div == div - 1)
                     {
                         // find limits
@@ -1278,7 +1304,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             // determine boundaries of what would be the new merged sub-block
             // 'in' will be its initial position
             rocblas_int in = ps[tid - iam];
-            // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
+            // 'sz' will be its size (i.e. the sum of the sizes of all merging
+            // sub-blocks)
             sz = ns[tid];
             for(int i = iam; i > 0; --i)
                 sz += ns[tid - i];
@@ -1286,7 +1313,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 sz += ns[tid + i];
 
             // All threads of the participating merging blocks will work together
-            // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
+            // to solve the correspondinbg secular eqn. Now 'iam' indexes those
+            // threads
             iam = iam * tn + tidb;
             bdm *= tn;
 
@@ -1299,8 +1327,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             rocblas_int* per = pers + in;
 
             // find degree and components of secular equation
-            // tmpd contains the non-deflated diagonal elements (ie. poles of the secular eqn)
-            // zz contains the corresponding non-zero elements of the rank-1 modif vector
+            // tmpd contains the non-deflated diagonal elements (ie. poles of the
+            // secular eqn) zz contains the corresponding non-zero elements of the
+            // rank-1 modif vector
             rocblas_int dd = 0;
             for(int i = 0; i < sz; ++i)
             {
@@ -1318,8 +1347,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             }
             __syncthreads();
 
-            // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
-            // This will allow us to find initial intervals for eigenvalue guesses
+            // Order the elements in tmpd and zz using a simple parallel
+            // selection/bubble sort. This will allow us to find initial intervals for
+            // eigenvalue guesses
             rocblas_int tsz = 1 << (levs - 1 - k);
             tsz = (bs - 1) / tsz + 1;
             for(int i = 0; i < tsz; ++i)
@@ -1377,8 +1407,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                     tmpd[i + j * n] = tmpd[i];
             }
 
-            // finally copy over all diagonal elements in ev. ev will be overwritten by the
-            // new computed eigenvalues of the merged block
+            // finally copy over all diagonal elements in ev. ev will be overwritten
+            // by the new computed eigenvalues of the merged block
             for(int i = iam; i < sz; i += bdm)
                 ev[i] = diag[i];
             __syncthreads();
@@ -1534,52 +1564,57 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
     } // end of for-loop for the independent split blocks
 }
 
-/** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
+/** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order
+ * **/
+
 template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void stedc_sort(const rocblas_int n,
-                                 S* DD,
-                                 const rocblas_stride strideD,
-                                 U CC,
-                                 const rocblas_int shiftC,
-                                 const rocblas_int ldc,
-                                 const rocblas_stride strideC)
+ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
+                                                        S* DD,
+                                                        const rocblas_stride strideD,
+                                                        U CC,
+                                                        const rocblas_int shiftC,
+                                                        const rocblas_int ldc,
+                                                        const rocblas_stride strideC,
+                                                        const rocblas_int batch_count,
+                                                        rocblas_int* work)
 {
-    rocblas_int bid = hipBlockIdx_x;
+    // -----------------------------------
+    // use z-grid dimension as batch index
+    // -----------------------------------
+    rocblas_int bid_start = hipBlockIdx_z;
+    rocblas_int bid_inc = hipGridDim_z;
 
-    // select batch instance to work with
-    // (avoiding arithmetics with possible nullptrs)
-    T* C;
-    if(CC)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
-    S* D = DD + (bid * strideD);
+    rocblas_int* const map = work + bid_start * ((int64_t)n);
 
-    rocblas_int l, m;
-    S p;
-
-    // Sort eigenvalues and eigenvectors by selection sort
-    for(int ii = 1; ii < n; ii++)
+    for(auto bid = bid_start; bid < batch_count; bid += bid_inc)
     {
-        l = ii - 1;
-        m = l;
-        p = D[l];
-        for(int j = ii; j < n; j++)
-        {
-            if(D[j] < p)
-            {
-                m = j;
-                p = D[j];
-            }
-        }
-        if(m != l)
-        {
-            D[m] = D[l];
-            D[l] = p;
-            swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
-        }
+        // ---------------------------------------------
+        // select batch instance to work with
+        // (avoiding arithmetics with possible nullptrs)
+        // ---------------------------------------------
+        T* C = nullptr;
+        if(CC)
+            C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+        S* D = DD + (bid * strideD);
+
+        bool constexpr use_shell_sort = true;
+
+        __syncthreads();
+
+        if(use_shell_sort)
+            shell_sort(n, D, map);
+        else
+            selection_sort(n, D, map);
+
+        __syncthreads();
+
+        permute_swap(n, C, ldc, map);
+
+        __syncthreads();
     }
 }
 
-/******************* Host functions ********************************************/
+/******************* Host functions *********************************************/
 /*******************************************************************************/
 
 //--------------------------------------------------------------------------------------//
@@ -1706,7 +1741,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
                                    size_t* size_tempvect,
                                    size_t* size_tempgemm,
                                    size_t* size_tmpz,
-                                   size_t* size_splits,
+                                   size_t* size_splits_map,
                                    size_t* size_workArr)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
@@ -1718,7 +1753,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_tmpz = 0;
         return;
     }
@@ -1729,7 +1764,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_tmpz = 0;
         rocsolver_sterf_getMemorySize<S>(n, batch_count, size_work_stack);
     }
@@ -1740,7 +1775,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_tmpz = 0;
         rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
     }
@@ -1767,7 +1802,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_work_stack = max(s1, s2);
 
         // size for split blocks and sub-blocks positions
-        *size_splits = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
+        *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
 
         // size for temporary diagonal and rank-1 modif vector
         *size_tmpz = sizeof(S) * (2 * n) * batch_count;
@@ -1842,6 +1877,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     if(batch_count == 0)
         return rocblas_status_success;
 
+    auto const splits_map = splits;
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -1863,7 +1900,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     if(evect == rocblas_evect_none)
     {
         rocsolver_sterf_template<S>(handle, n, D, shiftD, strideD, E, shiftE, strideE, info,
-                                    batch_count, (rocblas_int*)work_stack);
+                                    batch_count, static_cast<rocblas_int*>(work_stack));
     }
 
     // if size is too small with classic solver, use steqr
@@ -1900,7 +1937,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         // find independent split blocks in matrix
         ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                                strideD, E + shiftE, strideE, splits, eps);
+                                strideD, E + shiftE, strideE, splits_map, eps);
 
         // 1. divide phase
         //-----------------------------
@@ -1928,10 +1965,14 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         //----------------------
         // eigenvectors C <- C*tempvect
         local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
-                                        (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
+                                        static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
+                                        workArr);
 
-        ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n,
-                                D + shiftD, strideD, C, shiftC, ldc, strideC);
+        // finally sort eigenvalues and eigenvectors
+        auto const nblocks = batch_count;
+        ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
+                                D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count,
+                                splits_map);
     }
 
     return rocblas_status_success;

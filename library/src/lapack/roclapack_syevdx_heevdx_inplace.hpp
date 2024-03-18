@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -106,7 +106,7 @@ void rocsolver_syevdx_heevdx_inplace_getMemorySize(const rocblas_evect evect,
                                                    size_t* size_D,
                                                    size_t* size_E,
                                                    size_t* size_iblock,
-                                                   size_t* size_isplit,
+                                                   size_t* size_isplit_map,
                                                    size_t* size_tau,
                                                    size_t* size_nev,
                                                    size_t* size_nsplit_workArr)
@@ -124,7 +124,7 @@ void rocsolver_syevdx_heevdx_inplace_getMemorySize(const rocblas_evect evect,
         *size_D = 0;
         *size_E = 0;
         *size_iblock = 0;
-        *size_isplit = 0;
+        *size_isplit_map = 0;
         *size_tau = 0;
         *size_nev = 0;
         *size_nsplit_workArr = 0;
@@ -168,7 +168,7 @@ void rocsolver_syevdx_heevdx_inplace_getMemorySize(const rocblas_evect evect,
 
     // size of arrays for temporary submatrix indices
     *size_iblock = sizeof(rocblas_int) * n * batch_count;
-    *size_isplit = sizeof(rocblas_int) * n * batch_count;
+    *size_isplit_map = sizeof(rocblas_int) * n * batch_count;
 
     // size of array for temporary householder scalars
     *size_tau = sizeof(T) * n * batch_count;
@@ -210,7 +210,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
                                                         S* D,
                                                         S* E,
                                                         rocblas_int* iblock,
-                                                        rocblas_int* isplit,
+                                                        rocblas_int* isplit_map,
                                                         T* tau,
                                                         rocblas_int* d_nev,
                                                         void* nsplit_workArr)
@@ -252,7 +252,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
         = (evect == rocblas_evect_none ? rocblas_eorder_entire : rocblas_eorder_blocks);
     rocsolver_stebz_template<S>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, 0, stride, E,
                                 0, stride, d_nev, (rocblas_int*)nsplit_workArr, W, strideW, iblock,
-                                stride, isplit, stride, info, batch_count, (rocblas_int*)work1,
+                                stride, isplit_map, stride, info, batch_count, (rocblas_int*)work1,
                                 (S*)work2, (S*)work3, (S*)work4, (S*)work5, (rocblas_int*)work6);
 
     if(evect != rocblas_evect_none)
@@ -271,7 +271,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
 
         // compute eigenvectors
         rocsolver_stein_template<T>(handle, n, D, 0, stride, E, 0, stride, d_nev, W, 0, strideW,
-                                    iblock, stride, isplit, stride, A, shiftA, lda, strideA,
+                                    iblock, stride, isplit_map, stride, A, shiftA, lda, strideA,
                                     (rocblas_int*)nullptr, 0, info, batch_count, (S*)work1,
                                     (rocblas_int*)work2);
 
@@ -283,8 +283,8 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
             (T*)work3, (T**)nsplit_workArr);
 
         // sort eigenvalues and eigenvectors
-        ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, d_nev, W,
-                                strideW, A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info);
+        ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, d_nev, W, strideW,
+                                A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info, isplit_map);
     }
 
     // copy nev from device to host

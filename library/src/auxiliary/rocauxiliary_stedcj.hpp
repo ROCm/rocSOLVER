@@ -27,6 +27,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "lapack/roclapack_syevj_heevj.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocauxiliary_stedc.hpp"
@@ -35,20 +37,21 @@
 
 #define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 
-/***************** Device auxiliary functions *****************************************/
+/***************** Device auxiliary functions ******************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
-/** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
-    will be divided during the divide phase of divide & conquer algorithm.
-    i.e. number of sub-blocks = 2^levels **/
+/** STEDC_NUM_LEVELS returns the ideal number of times/levels in which a matrix
+   (or split block) will be divided during the divide phase of divide & conquer
+   algorithm. i.e. number of sub-blocks = 2^levels **/
 template <>
 __host__ __device__ inline rocblas_int
     stedc_num_levels<rocsolver_stedc_mode_jacobi>(const rocblas_int n)
 {
     rocblas_int levels = 0;
-    // return the max number of levels such that the sub-blocks are at least of size 1
-    // (i.e. 2^levels <= n), and there are no more than 256 sub-blocks (i.e. 2^levels <= 256)
+    // return the max number of levels such that the sub-blocks are at least of
+    // size 1 (i.e. 2^levels <= n), and there are no more than 256 sub-blocks
+    // (i.e. 2^levels <= 256)
     if(n <= 2)
         return levels;
 
@@ -95,8 +98,8 @@ __host__ __device__ inline rocblas_int
 }
 
 //--------------------------------------------------------------------------------------//
-/** DE2TRIDIAG generates a tridiagonal matrix from vectors of diagonal entries (D) and
-	off-diagonal entries (E). **/
+/** DE2TRIDIAG generates a tridiagonal matrix from vectors of diagonal entries
+   (D) and off-diagonal entries (E). **/
 template <typename S>
 __device__ inline void de2tridiag(const int numt,
                                   const rocblas_int id,
@@ -120,22 +123,23 @@ __device__ inline void de2tridiag(const int numt,
     }
 }
 
-/*************** Main kernels *********************************************************/
+/*************** Main kernels
+ * *********************************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
 /** STEDC_SOLVE_KERNEL implements the solver phase of the DC algorithm to
-	compute the eigenvalues/eigenvectors of the different sub-blocks of each split-block.
-	A matrix in the batch could have many split-blocks, and each split-block could be
-	divided in a maximum of nn sub-blocks.
-	- Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y
-	  and nn groups in x. Groups are size STEDC_BDIM.
-	- STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will be analysed
-	  in parallel). If there are actually more split-blocks, some groups will work with more
-	  than one split-block sequentially.
-	- An upper bound for the number of sub-blocks (nn) can be estimated from the size n.
-	  If a group has an id larger than the actual number of sub-blocks in a split-block,
-	  it will do nothing. **/
+        compute the eigenvalues/eigenvectors of the different sub-blocks of each
+   split-block. A matrix in the batch could have many split-blocks, and each
+   split-block could be divided in a maximum of nn sub-blocks.
+        - Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS
+   groups in y and nn groups in x. Groups are size STEDC_BDIM.
+        - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
+   be analysed in parallel). If there are actually more split-blocks, some
+   groups will work with more than one split-block sequentially.
+        - An upper bound for the number of sub-blocks (nn) can be estimated from
+   the size n. If a group has an id larger than the actual number of sub-blocks
+   in a split-block, it will do nothing. **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedcj_solve_kernel(const rocblas_int n,
@@ -273,7 +277,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
-/******************* Host functions ********************************************/
+/******************* Host functions *********************************************/
 /*******************************************************************************/
 
 //--------------------------------------------------------------------------------------//
@@ -413,10 +417,10 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     //-----------------------------
     size_t lmemsize = (n + n % 2) * (sizeof(rocblas_int) + sizeof(S));
 
-    ROCSOLVER_LAUNCH_KERNEL((stedcj_solve_kernel<S>),
-                            dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
-                            lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect,
-                            0, ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
+    ROCSOLVER_LAUNCH_KERNEL(
+        (stedcj_solve_kernel<S>), dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count),
+        dim3(STEDC_BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect,
+        0, ldt, strideT, info, static_cast<S*>(work_stack), splits, eps, ssfmin, ssfmax);
 
     // 3. merge phase
     //----------------
@@ -431,10 +435,17 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     //----------------------
     // eigenvectors C <- C*tempvect
     local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
-                                    (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
+                                    static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
+                                    workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                            strideD, C, shiftC, ldc, strideC);
+    {
+        // note reuse storage for splits[] as permutation vector in stedc_sort
+        // -------------------------------------------------------------------
+        rocblas_int* const splits_map = splits;
+        ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
+                                D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count,
+                                splits_map);
+    }
 
     return rocblas_status_success;
 }

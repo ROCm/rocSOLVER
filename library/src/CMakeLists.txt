@@ -310,7 +310,7 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
-set(static_depends PACKAGE rocblas)
+set(static_depends)
 
 if(BUILD_WITH_SPARSE)
   target_link_libraries(rocsolver PRIVATE roc::rocsparse)
@@ -422,6 +422,7 @@ rocm_export_targets(
   TARGETS roc::rocsolver
   DEPENDS
     PACKAGE hip
+    PACKAGE rocblas
   STATIC_DEPENDS
     ${static_depends}
   NAMESPACE roc::
