@@ -1,7 +1,7 @@
 // This file is for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
 
-def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean static=false)
+def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean isStatic=false)
 {
     project.paths.construct_build_prefix()
 
@@ -24,7 +24,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
 
     def getRocBLAS = auxiliary.getLibrary('rocBLAS', platform.jenkinsLabel, null, sameOrg)
     def getRocSPARSE = auxiliary.getLibrary('rocSPARSE', platform.jenkinsLabel, null, sameOrg)
-    def getRocPRIM = static ? auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg) : ''
+    def getRocPRIM = isStatic ? auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg) : ''
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
