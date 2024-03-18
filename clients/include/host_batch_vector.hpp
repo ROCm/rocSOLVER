@@ -30,7 +30,7 @@
 #include <ostream>
 #include <string.h>
 
-#include "rocblas_init.hpp"
+#include "data_initializer.hpp"
 
 //
 // Local declaration of the device batch vector.
