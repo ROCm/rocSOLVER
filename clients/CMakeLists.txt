@@ -70,92 +70,92 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   )
 
   set(rocauxiliary_inst_files
-  common/testing_lacgv.cpp
-    common/testing_laswp.cpp
-    common/testing_larfg.cpp
-    common/testing_larf.cpp
-    common/testing_larft.cpp
-    common/testing_larfb.cpp
-    common/testing_latrd.cpp
-    common/testing_labrd.cpp
-    common/testing_lauum.cpp
-    common/testing_bdsqr.cpp
-    common/testing_bdsvdx.cpp
-    common/testing_steqr.cpp
-    common/testing_stedc.cpp
-    common/testing_stedcj.cpp
-    common/testing_stein.cpp
-    common/testing_lasyf.cpp
-    common/testing_sterf.cpp
-    common/testing_stebz.cpp
-    common/testing_orgxr_ungxr.cpp
-    common/testing_orgxl_ungxl.cpp
-    common/testing_orglx_unglx.cpp
-    common/testing_orgbr_ungbr.cpp
-    common/testing_orgtr_ungtr.cpp
-    common/testing_ormxr_unmxr.cpp
-    common/testing_ormxl_unmxl.cpp
-    common/testing_ormlx_unmlx.cpp
-    common/testing_ormbr_unmbr.cpp
-    common/testing_ormtr_unmtr.cpp
+    testcode/auxiliary/testing_lacgv.cpp
+    testcode/auxiliary/testing_laswp.cpp
+    testcode/auxiliary/testing_larfg.cpp
+    testcode/auxiliary/testing_larf.cpp
+    testcode/auxiliary/testing_larft.cpp
+    testcode/auxiliary/testing_larfb.cpp
+    testcode/auxiliary/testing_latrd.cpp
+    testcode/auxiliary/testing_labrd.cpp
+    testcode/auxiliary/testing_lauum.cpp
+    testcode/auxiliary/testing_bdsqr.cpp
+    testcode/auxiliary/testing_bdsvdx.cpp
+    testcode/auxiliary/testing_steqr.cpp
+    testcode/auxiliary/testing_stedc.cpp
+    testcode/auxiliary/testing_stedcj.cpp
+    testcode/auxiliary/testing_stein.cpp
+    testcode/auxiliary/testing_lasyf.cpp
+    testcode/auxiliary/testing_sterf.cpp
+    testcode/auxiliary/testing_stebz.cpp
+    testcode/auxiliary/testing_orgxr_ungxr.cpp
+    testcode/auxiliary/testing_orgxl_ungxl.cpp
+    testcode/auxiliary/testing_orglx_unglx.cpp
+    testcode/auxiliary/testing_orgbr_ungbr.cpp
+    testcode/auxiliary/testing_orgtr_ungtr.cpp
+    testcode/auxiliary/testing_ormxr_unmxr.cpp
+    testcode/auxiliary/testing_ormxl_unmxl.cpp
+    testcode/auxiliary/testing_ormlx_unmlx.cpp
+    testcode/auxiliary/testing_ormbr_unmbr.cpp
+    testcode/auxiliary/testing_ormtr_unmtr.cpp
   )
 
   set(roclapack_inst_files
-    common/testing_potf2_potrf.cpp
-    common/testing_potrs.cpp
-    common/testing_posv.cpp
-    common/testing_potri.cpp
-    common/testing_getf2_getrf_npvt.cpp
-    common/testing_getf2_getrf.cpp
-    common/testing_geqr2_geqrf.cpp
-    common/testing_gerq2_gerqf.cpp
-    common/testing_geql2_geqlf.cpp
-    common/testing_gelq2_gelqf.cpp
-    common/testing_getrs.cpp
-    common/testing_gesv.cpp
-    common/testing_gesvd.cpp
-    common/testing_gesvdj.cpp
-    common/testing_gesvdx.cpp
-    common/testing_trtri.cpp
-    common/testing_getri.cpp
-    common/testing_getri_npvt.cpp
-    common/testing_getri_outofplace.cpp
-    common/testing_getri_npvt_outofplace.cpp
-    common/testing_gels.cpp
-    common/testing_gebd2_gebrd.cpp
-    common/testing_sytf2_sytrf.cpp
-    common/testing_sytxx_hetxx.cpp
-    common/testing_sygsx_hegsx.cpp
-    common/testing_syev_heev.cpp
-    common/testing_syevd_heevd.cpp
-    common/testing_syevdj_heevdj.cpp
-    common/testing_syevj_heevj.cpp
-    common/testing_syevx_heevx.cpp
-    common/testing_sygv_hegv.cpp
-    common/testing_sygvd_hegvd.cpp
-    common/testing_sygvdj_hegvdj.cpp
-    common/testing_sygvj_hegvj.cpp
-    common/testing_sygvx_hegvx.cpp
-    common/testing_geblttrf_npvt.cpp
-    common/testing_geblttrf_npvt_interleaved.cpp
-    common/testing_geblttrs_npvt.cpp
-    common/testing_geblttrs_npvt_interleaved.cpp
+    testcode/lapack/testing_potf2_potrf.cpp
+    testcode/lapack/testing_potrs.cpp
+    testcode/lapack/testing_posv.cpp
+    testcode/lapack/testing_potri.cpp
+    testcode/lapack/testing_getf2_getrf_npvt.cpp
+    testcode/lapack/testing_getf2_getrf.cpp
+    testcode/lapack/testing_geqr2_geqrf.cpp
+    testcode/lapack/testing_gerq2_gerqf.cpp
+    testcode/lapack/testing_geql2_geqlf.cpp
+    testcode/lapack/testing_gelq2_gelqf.cpp
+    testcode/lapack/testing_getrs.cpp
+    testcode/lapack/testing_gesv.cpp
+    testcode/lapack/testing_gesvd.cpp
+    testcode/lapack/testing_gesvdj.cpp
+    testcode/lapack/testing_gesvdx.cpp
+    testcode/lapack/testing_trtri.cpp
+    testcode/lapack/testing_getri.cpp
+    testcode/lapack/testing_getri_npvt.cpp
+    testcode/lapack/testing_getri_outofplace.cpp
+    testcode/lapack/testing_getri_npvt_outofplace.cpp
+    testcode/lapack/testing_gels.cpp
+    testcode/lapack/testing_gebd2_gebrd.cpp
+    testcode/lapack/testing_sytf2_sytrf.cpp
+    testcode/lapack/testing_sytxx_hetxx.cpp
+    testcode/lapack/testing_sygsx_hegsx.cpp
+    testcode/lapack/testing_syev_heev.cpp
+    testcode/lapack/testing_syevd_heevd.cpp
+    testcode/lapack/testing_syevdj_heevdj.cpp
+    testcode/lapack/testing_syevj_heevj.cpp
+    testcode/lapack/testing_syevx_heevx.cpp
+    testcode/lapack/testing_sygv_hegv.cpp
+    testcode/lapack/testing_sygvd_hegvd.cpp
+    testcode/lapack/testing_sygvdj_hegvdj.cpp
+    testcode/lapack/testing_sygvj_hegvj.cpp
+    testcode/lapack/testing_sygvx_hegvx.cpp
+    testcode/lapack/testing_geblttrf_npvt.cpp
+    testcode/lapack/testing_geblttrf_npvt_interleaved.cpp
+    testcode/lapack/testing_geblttrs_npvt.cpp
+    testcode/lapack/testing_geblttrs_npvt_interleaved.cpp
   )
 
   set(rocrefact_inst_files
-    common/testing_csrrf_analysis.cpp
-    common/testing_csrrf_sumlu.cpp
-    common/testing_csrrf_splitlu.cpp
-    common/testing_csrrf_refactlu.cpp
-    common/testing_csrrf_refactchol.cpp
-    common/testing_csrrf_solve.cpp
+    testcode/refact/testing_csrrf_analysis.cpp
+    testcode/refact/testing_csrrf_sumlu.cpp
+    testcode/refact/testing_csrrf_splitlu.cpp
+    testcode/refact/testing_csrrf_refactlu.cpp
+    testcode/refact/testing_csrrf_refactchol.cpp
+    testcode/refact/testing_csrrf_solve.cpp
   )
 
   set(common_source_files
     common/lapack_host_reference.cpp
     common/rocsolver_test.cpp
-    rocblascommon/clients_utility.cpp
-    rocblascommon/program_options.cpp
+    common/clients_utility.cpp
+    common/program_options.cpp
     ${rocauxiliary_inst_files}
     ${roclapack_inst_files}
     ${rocrefact_inst_files}
