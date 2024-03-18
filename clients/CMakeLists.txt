@@ -156,6 +156,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/rocsolver_test.cpp
     common/clients_utility.cpp
     common/program_options.cpp
+    common/client_environment_helpers.cpp
     ${rocauxiliary_inst_files}
     ${roclapack_inst_files}
     ${rocrefact_inst_files}
