@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,14 +27,8 @@
 
 #pragma once
 
-// common
+#include "clients_utility.hpp"
 #include "common_host_helpers.hpp"
+#include "rocblas_test.hpp"
+#include "rocblas_vector.hpp"
 #include "rocsolver_datatype2string.hpp"
-// rocblas common
-#include "rocblascommon/clients_utility.hpp"
-#include "rocblascommon/rocblas_test.hpp"
-#include "rocblascommon/rocblas_vector.hpp"
-//#include "rocblascommon/device_batch_vector.hpp"
-//#include "rocblascommon/device_strided_batch_vector.hpp"
-//#include "rocblascommon/host_batch_vector.hpp"
-//#include "rocblascommon/host_strided_batch_vector.hpp"
