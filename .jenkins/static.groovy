@@ -19,7 +19,6 @@ def runCI =
     prj.timeout.compile = 600
     prj.timeout.test = 45
     prj.defaults.ccache = true
-    prj.libraryDependencies = ['rocPRIM']
 
     // customize for project
     prj.paths.build_command = './install.sh -c --cmake-arg -DWERROR=ON --static'
@@ -34,7 +33,7 @@ def runCI =
         platform, project->
 
         commonGroovy = load "${project.paths.project_src_prefix}/.jenkins/common.groovy"
-        commonGroovy.runCompileCommand(platform, project, jobName, true)
+        commonGroovy.runCompileCommand(platform, project, jobName, true, true)
     }
 
     def testCommand =
@@ -90,4 +89,3 @@ ci: {
         }
     }
 }
-
