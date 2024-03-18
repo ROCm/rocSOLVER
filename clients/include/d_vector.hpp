@@ -35,7 +35,7 @@
 #include <rocblas/rocblas.h>
 
 #include "common_host_helpers.hpp"
-#include "rocblas_init.hpp"
+#include "data_initializer.hpp"
 #include "rocblas_test.hpp"
 
 /* ============================================================================================
