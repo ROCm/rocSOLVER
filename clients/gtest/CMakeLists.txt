@@ -131,7 +131,7 @@ set(others_test_source
   # rocsolver logging
   logging_gtest.cpp
   # helpers
-  client_environment_helpers.cpp
+  #common/client_environment_helpers.cpp
 )
 
 set(rocsolver_test_source
