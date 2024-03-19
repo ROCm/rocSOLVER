@@ -81,10 +81,10 @@ __host__ __device__ static I cal_wave_size(I avg_nnzM)
 template <typename T>
 ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
                                                                         const rocblas_int nnzM,
-                                                                        rocblas_int* Mp,
-                                                                        rocblas_int* Mi,
-                                                                        rocblas_int* nzLarray,
-                                                                        rocblas_int* nzUarray)
+                                                                        rocblas_int const* const Mp,
+                                                                        rocblas_int const* const Mi,
+                                                                        rocblas_int* const nzLarray,
+                                                                        rocblas_int* const nzUarray)
 {
     rocblas_int wid = 0;
     rocblas_int lid = 0;
@@ -92,30 +92,54 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
     rocblas_int nwaves = 0;
 
     SETUP_THREADS(lid, wid, waveSize, nwaves);
+    auto const lwid = hipThreadIdx_y;
 
     // ------------------------------------------------------------------
     // Note: the code may not work correctly if number of threads in thread block
     // is not a multiple of warpSize
     // ------------------------------------------------------------------
 
+    int constexpr maxthreads = 1024;
+    __shared__ rocblas_int lsum[maxthreads];
+    auto const ld = waveSize;
+    auto idx2D = [=](auto i, auto j, auto ld) { return (i + j * ld); };
+
     for(auto irow = wid; irow < n; irow += nwaves)
     {
         const auto kstart = Mp[irow];
         const auto kend = Mp[irow + 1];
-        // -------------------
-        // find diagonal entry
-        // -------------------
+        const auto nnzTrow = (kend - kstart);
+
+        // -------------------------------------
+        // calculate number of non-zeros per row
+        // -------------------------------------
+
+        rocblas_int lnnzUrow = 0;
+
         for(auto k = kstart + lid; (k < kend); k += waveSize)
         {
             const auto icol = Mi[k];
-            if(icol == irow)
+            bool const is_upper_triangular = (irow <= icol);
+            if(is_upper_triangular)
             {
-                const auto kdiag = k;
-                nzUarray[irow] = kend - kdiag;
-                nzLarray[irow] = (kdiag - kstart) + 1; // add 1 for unit diagonal
+                lnnzUrow += 1;
             }
         }
-    }
+
+        lsum[idx2D(lid, lwid, ld)] = lnnzUrow;
+        for(auto offset = waveSize / 2; offset > 0; offset = offset / 2)
+        {
+            lsum[idx2D(lid, lwid, ld)] += lsum[idx2D(lid + offset, lwid, ld)];
+        };
+
+        if(lid == 0)
+        {
+            auto const nnzUrow = lsum[idx2D(0, lwid, ld)];
+            nzUarray[irow] = nnzUrow;
+            nzLarray[irow] = (nnzTrow - nnzUrow) + 1; // add 1 for unit diagonal
+        }
+
+    } // end for irow
 }
 
 template <typename T>
@@ -146,8 +170,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1)
         const auto nz = (kend - kstart);
 
         const auto nzU = (Up[irow + 1] - Up[irow]);
-        const auto nzL = (kend - kstart) - nzU;
-        const auto kdiag = kstart + nzL;
+        const auto nzL = nz - nzU;
+        const auto kdiag = kend - nzU;
 
         for(auto k = kstart + lid; k < kend; k += waveSize)
         {
@@ -186,15 +210,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1)
 template <typename T>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int n,
                                                                const rocblas_int nnzM,
-                                                               rocblas_int* Mp,
-                                                               rocblas_int* Mi,
-                                                               T* Mx,
-                                                               rocblas_int* Lp,
-                                                               rocblas_int* Li,
-                                                               T* Lx,
-                                                               rocblas_int* Up,
-                                                               rocblas_int* Ui,
-                                                               T* Ux,
+                                                               rocblas_int const* const Mp,
+                                                               rocblas_int const* const Mi,
+                                                               T const* const Mx,
+                                                               rocblas_int* const Lp,
+                                                               rocblas_int* const Li,
+                                                               T* const Lx,
+                                                               rocblas_int* const Up,
+                                                               rocblas_int* const Ui,
+                                                               T* const Ux,
                                                                rocblas_int* work)
 {
     if(hipBlockIdx_x != 0)
@@ -217,32 +241,45 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int
     auto const N_MAX = LDS_MAX_SIZE / sizeof(rocblas_int);
     __shared__ rocblas_int work_lds[N_MAX];
 
-    rocblas_int* const diagpos = (n <= N_MAX) ? &(work_lds[0]) : work;
+    rocblas_int* const nnzUrow = (n <= N_MAX) ? &(work_lds[0]) : work;
 
     // -------------------------------------------------
     // 1st pass to determine number of non-zeros per row
     // and set up Lp and Up
     // -------------------------------------------------
+    __syncthreads();
+    for(auto irow = tid; irow < n; irow += nthreads)
+    {
+        nnzUrow[irow] = 0;
+    };
+    __syncthreads();
 
     for(auto irow = wid; irow < n; irow += nwaves)
     {
         const rocblas_int istart = Mp[irow];
         const rocblas_int iend = Mp[irow + 1];
 
+        rocblas_int lnnzUrow = 0;
         for(auto i = istart + lid; i < iend; i += waveSize)
         {
             const auto icol = Mi[i];
-            if(icol == irow)
+
+            bool const is_upper_triangular = (irow <= icol);
+            if(is_upper_triangular)
             {
-                diagpos[irow] = i;
+                lnnzUrow += 1;
             }
         }
+        atomicAdd(&(nnzUrow[irow]), lnnzUrow);
     }
     __syncthreads();
 
     // ---------------------------------
     // prefix sum to setup Lp[] and Up[]
     // ---------------------------------
+
+    __syncthreads();
+
     if(tid == 0)
     {
         rocblas_int nnzL = 0;
@@ -255,10 +292,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int
 
             const auto istart = Mp[irow];
             const auto iend = Mp[irow + 1];
-            const auto idiag = diagpos[irow];
+            const auto nnzTrow = (iend - istart);
 
-            const auto nzUp_i = iend - idiag;
-            const auto nzLp_i = idiag - istart + 1; // add 1 for unit diagonal
+            const auto nzUp_i = nnzUrow[irow];
+            const auto nzLp_i = (nnzTrow - nzUp_i) + 1; // add 1 for unit diagonal
 
             nnzL += nzLp_i;
             nnzU += nzUp_i;
@@ -268,6 +305,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int
         Up[n] = nnzU;
     }
     __syncthreads();
+    {
+        auto const nnzL = Lp[n] - Lp[0];
+        auto const nnzU = Up[n] - Up[0];
+        auto const nnzT = Mp[n] - Mp[0];
+        assert(nnzT == ((nnzL - n) + nnzU));
+    }
 
     // ------------------------------------
     // 2nd pass to populate Li, Lx, Ui, Ux
@@ -277,37 +320,30 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int
         const auto istart = Mp[irow];
         const auto iend = Mp[irow + 1];
 
-        const auto idiag = diagpos[irow];
-
-        // -----------
-        // copy into L
-        // -----------
+        auto const nnzUrow = Up[irow + 1] - Up[irow];
+        auto const Ustart = (iend - nnzUrow);
+        // --------------
+        // copy into L, U
+        // --------------
+        for(auto k = istart + lid; k < iend; k += waveSize)
         {
-            const auto nzLp_i = idiag - istart + 1; // add 1 for unit diagonal
-            for(auto k = lid; k < nzLp_i; k += waveSize)
+            const auto aij = Mx[k];
+            auto const icol = Mi[k];
+
+            bool const is_upper_triangular = (irow <= icol);
+            if(is_upper_triangular)
             {
-                const auto ip = Lp[irow] + k;
-                const auto icol = Mi[istart + k];
-                const auto aij = Mx[istart + k];
-
-                Li[ip] = icol;
-                Lx[ip] = aij;
-            }
-        }
-
-        // -----------
-        // copy into U
-        // -----------
-        {
-            const auto nzUp_i = iend - idiag;
-            for(auto k = lid; k < nzUp_i; k += waveSize)
-            {
-                const auto ip = Up[irow] + k;
-                const auto icol = Mi[idiag + k];
-                const auto aij = Mx[idiag + k];
-
+                auto const offset = (k - Ustart);
+                auto const ip = Up[irow] + offset;
                 Ui[ip] = icol;
                 Ux[ip] = aij;
+            }
+            else
+            {
+                auto const offset = (k - istart);
+                auto const ip = Lp[irow] + offset;
+                Li[ip] = icol;
+                Lx[ip] = aij;
             }
         }
     }
@@ -322,6 +358,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int
         Li[j] = irow;
         Lx[j] = static_cast<T>(1);
     }
+    __syncthreads();
 }
 
 template <typename T>
