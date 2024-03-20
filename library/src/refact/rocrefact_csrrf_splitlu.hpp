@@ -217,87 +217,44 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1)
 
         const auto nzU = (Up[irow + 1] - Up[irow]);
         const auto nzL = nz - nzU;
-        const auto kdiag = kend - nzU;
+        const auto ubegin = kend - nzU; // start of upper triangular part
 
-        bool constexpr assume_sorted_columns = false;
-        if(assume_sorted_columns)
+        // ------------------------------------------------
+        // Note: assume column indices are in increasing order
+        // ------------------------------------------------
+
+        // ---------------------
+        // lower triangular part
+        // ---------------------
+        for(auto k = kstart + lid; k < ubegin; k += waveSize)
         {
-            // ------------------------------------------------
-            // Assume column indices are in increasing order
-            // ------------------------------------------------
-
-            // ---------------------
-            // lower triangular part
-            // ---------------------
-            for(auto k = kstart + lid; k < kdiag; k += waveSize)
-            {
-                const auto aij = Mx[k];
-                const auto icol = Mi[k];
-                const auto ip = Lp[irow] + (k - kstart);
-                Li[ip] = icol;
-                Lx[ip] = aij;
-            }
-
-            // ------------------------
-            // unit diagonal entry of L
-            // ------------------------
-            if(lid == 0)
-            {
-                const auto ip = Lp[irow + 1] - 1;
-                Li[ip] = irow;
-                Lx[ip] = static_cast<T>(1);
-            }
-
-            // ---------------------
-            // upper triangular part
-            // ---------------------
-            for(auto k = kdiag + lid; k < kend; k += waveSize)
-            {
-                const auto aij = Mx[k];
-                const auto icol = Mi[k];
-                const auto ip = Up[irow] + (k - kdiag);
-                Ui[ip] = icol;
-                Ux[ip] = aij;
-            }
+            const auto aij = Mx[k];
+            const auto icol = Mi[k];
+            const auto ip = Lp[irow] + (k - kstart);
+            Li[ip] = icol;
+            Lx[ip] = aij;
         }
-        else
+
+        // ------------------------
+        // unit diagonal entry of L
+        // ------------------------
+        if(lid == 0)
         {
-            // ------------------------------------------------
-            // more robust code, does not assume column indices
-            // are in sorted increasing order
-            // ------------------------------------------------
+            const auto ip = Lp[irow + 1] - 1;
+            Li[ip] = irow;
+            Lx[ip] = static_cast<T>(1);
+        }
 
-            for(auto k = kstart + lid; k < kend; k += waveSize)
-            {
-                const auto aij = Mx[k];
-                const auto icol = Mi[k];
-
-                const bool is_lower = (icol < irow);
-                if(is_lower)
-                {
-                    const auto ip = Lp[irow] + (k - kstart);
-
-                    Li[ip] = icol;
-                    Lx[ip] = aij;
-                }
-                else
-                {
-                    const auto ip = Up[irow] + (k - kdiag);
-
-                    Ui[ip] = icol;
-                    Ux[ip] = aij;
-                }
-            }
-
-            // -------------------
-            // unit diagonal entry of L
-            // -------------------
-            if(lid == 0)
-            {
-                const auto ip = Lp[irow + 1] - 1;
-                Li[ip] = irow;
-                Lx[ip] = static_cast<T>(1);
-            }
+        // ---------------------
+        // upper triangular part
+        // ---------------------
+        for(auto k = ubegin + lid; k < kend; k += waveSize)
+        {
+            const auto aij = Mx[k];
+            const auto icol = Mi[k];
+            const auto ip = Up[irow] + (k - ubegin);
+            Ui[ip] = icol;
+            Ux[ip] = aij;
         }
     } // end for irow
 }
