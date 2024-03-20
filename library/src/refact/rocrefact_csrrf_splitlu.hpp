@@ -39,8 +39,8 @@
 #define SPLITLU_SWITCH_SIZE 64
 #endif
 
-#ifndef SETUP_THREADS
-#define SETUP_THREADS(lid, wid, waveSize, nwaves)             \
+#ifndef SPLITLU_SETUP_THREADS
+#define SPLITLU_SETUP_THREADS(lid, wid, waveSize, nwaves)     \
     {                                                         \
         waveSize = hipBlockDim_x;                             \
         nwaves = hipBlockDim_y * hipGridDim_x;                \
@@ -75,7 +75,7 @@ __host__ __device__ static I cal_wave_size(I avg_nnzM)
                                 : (avg_nnzM >= ifactor * (warpSize / 8))  ? (warpSize / 8)
                                 : (avg_nnzM >= ifactor * (warpSize / 16)) ? (warpSize / 16)
                                                                           : 1);
-    return (wave_size);
+    return wave_size;
 }
 
 template <typename T>
@@ -115,6 +115,8 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void check_nzLU_kernel(const rocblas_int
         }
         nnzLrow += 1; // add one for unit diagonal
 
+#ifdef NDEBUG
+#else
         {
             bool const isvalid = (nnzUrow == nzUarray[irow]) && (nnzLrow == nzLarray[irow])
                 && (nnzTrow == (nnzLrow - 1) + nnzUrow);
@@ -126,6 +128,7 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void check_nzLU_kernel(const rocblas_int
             }
             assert(isvalid);
         }
+#endif
     }
     __syncthreads();
 }
@@ -143,7 +146,7 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
     rocblas_int waveSize = 0;
     rocblas_int nwaves = 0;
 
-    SETUP_THREADS(lid, wid, waveSize, nwaves);
+    SPLITLU_SETUP_THREADS(lid, wid, waveSize, nwaves);
     auto const lwid = hipThreadIdx_y;
 
     // ------------------------------------------------------------------
@@ -152,7 +155,7 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
     // ------------------------------------------------------------------
 
     auto const ld = waveSize;
-    auto idx2D = [=](auto i, auto j, auto ld) { return (i + j * ld); };
+    auto idx2D = [=](auto i, auto j, auto ld) { return i + j * ld; };
 
     for(auto irow = wid; irow < n; irow += nwaves)
     {
@@ -207,7 +210,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1)
     rocblas_int waveSize = 0;
     rocblas_int nwaves = 0;
 
-    SETUP_THREADS(lid, wid, waveSize, nwaves);
+    SPLITLU_SETUP_THREADS(lid, wid, waveSize, nwaves);
 
     for(auto irow = wid; irow < n; irow += nwaves)
     {
@@ -286,7 +289,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int
     rocblas_int waveSize = 0;
     rocblas_int nwaves = 0;
 
-    SETUP_THREADS(lid, wid, waveSize, nwaves);
+    SPLITLU_SETUP_THREADS(lid, wid, waveSize, nwaves);
 
     auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
@@ -340,7 +343,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) rf_splitLU_kernel(const rocblas_int
         rocblas_int nnzL = 0;
         rocblas_int nnzU = 0;
 
-        for(auto irow = 0 * n; irow < n; irow++)
+        for(rocblas_int irow = 0; irow < n; irow++)
         {
             Lp[irow] = nnzL;
             Up[irow] = nnzU;
@@ -432,7 +435,7 @@ rocblas_status rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
     if(n == 0 || nnzT == 0)
     {
         *size_work = 0;
-        return (rocblas_status_success);
+        return rocblas_status_success;
     }
 
     // space to store the number of non-zeros per row in L and U
@@ -449,7 +452,7 @@ rocblas_status rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
 
     *size_work = (rocprim_size_bytes + size_work_LU);
 
-    return (rocblas_status_success);
+    return rocblas_status_success;
 }
 
 template <typename T>
