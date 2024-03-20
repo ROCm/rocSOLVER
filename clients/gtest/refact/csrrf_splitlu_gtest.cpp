@@ -64,12 +64,11 @@ const vector<int> large_n_range = {
     // normal (valid) samples
     100,
     250,
+    1250,
 };
 const vector<int> large_nnz_range = {
     // normal (valid) samples
-    300,
-    500,
-    700,
+    300, 500, 700, 7000, 70000,
 };
 
 Arguments csrrf_splitlu_setup_arguments(csrrf_splitlu_tuple tup)
