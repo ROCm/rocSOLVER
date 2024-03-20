@@ -219,39 +219,87 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1)
         const auto nzL = nz - nzU;
         const auto kdiag = kend - nzU;
 
-        for(auto k = kstart + lid; k < kend; k += waveSize)
+        bool constexpr assume_sorted_columns = false;
+        if(assume_sorted_columns)
         {
-            const auto aij = Mx[k];
+            // ------------------------------------------------
+            // Assume column indices are in increasing order
+            // ------------------------------------------------
 
-            const auto icol = Mi[k];
-
-            const bool is_lower = (icol < irow);
-            if(is_lower)
+            // ---------------------
+            // lower triangular part
+            // ---------------------
+            for(auto k = kstart + lid; k < kdiag; k += waveSize)
             {
+                const auto aij = Mx[k];
+                const auto icol = Mi[k];
                 const auto ip = Lp[irow] + (k - kstart);
-
                 Li[ip] = icol;
                 Lx[ip] = aij;
             }
-            else
-            {
-                const auto ip = Up[irow] + (k - kdiag);
 
+            // ------------------------
+            // unit diagonal entry of L
+            // ------------------------
+            if(lid == 0)
+            {
+                const auto ip = Lp[irow + 1] - 1;
+                Li[ip] = irow;
+                Lx[ip] = static_cast<T>(1);
+            }
+
+            // ---------------------
+            // upper triangular part
+            // ---------------------
+            for(auto k = kdiag + lid; k < kend; k += waveSize)
+            {
+                const auto aij = Mx[k];
+                const auto icol = Mi[k];
+                const auto ip = Up[irow] + (k - kdiag);
                 Ui[ip] = icol;
                 Ux[ip] = aij;
             }
         }
-
-        // -------------------
-        // unit diagonal entry of L
-        // -------------------
-        const auto ip = Lp[irow + 1] - 1;
-        if(lid == 0)
+        else
         {
-            Li[ip] = irow;
-            Lx[ip] = static_cast<T>(1);
+            // ------------------------------------------------
+            // more robust code, does not assume column indices
+            // are in sorted increasing order
+            // ------------------------------------------------
+
+            for(auto k = kstart + lid; k < kend; k += waveSize)
+            {
+                const auto aij = Mx[k];
+                const auto icol = Mi[k];
+
+                const bool is_lower = (icol < irow);
+                if(is_lower)
+                {
+                    const auto ip = Lp[irow] + (k - kstart);
+
+                    Li[ip] = icol;
+                    Lx[ip] = aij;
+                }
+                else
+                {
+                    const auto ip = Up[irow] + (k - kdiag);
+
+                    Ui[ip] = icol;
+                    Ux[ip] = aij;
+                }
+            }
+
+            // -------------------
+            // unit diagonal entry of L
+            // -------------------
+            if(lid == 0)
+            {
+                const auto ip = Lp[irow + 1] - 1;
+                Li[ip] = irow;
+                Lx[ip] = static_cast<T>(1);
+            }
         }
-    }
+    } // end for irow
 }
 
 // ----------------------------------------------
