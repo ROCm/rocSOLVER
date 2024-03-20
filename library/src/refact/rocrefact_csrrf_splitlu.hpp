@@ -79,6 +79,58 @@ __host__ __device__ static I cal_wave_size(I avg_nnzM)
 }
 
 template <typename T>
+ROCSOLVER_KERNEL __launch_bounds__(BS1) void check_nzLU_kernel(const rocblas_int n,
+                                                               const rocblas_int nnzT,
+                                                               rocblas_int const* const ptrT,
+                                                               rocblas_int const* const indT,
+                                                               rocblas_int* const nzLarray,
+                                                               rocblas_int* const nzUarray)
+{
+    auto const tid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    auto const nthreads = hipBlockDim_x * hipGridDim_x;
+    auto const irow_start = tid;
+    auto const irow_inc = nthreads;
+
+    __syncthreads();
+    for(rocblas_int irow = irow_start; irow < n; irow += irow_inc)
+    {
+        auto const istart = ptrT[irow];
+        auto const iend = ptrT[irow + 1];
+        auto const nnzTrow = (iend - istart);
+
+        rocblas_int nnzLrow = 0;
+        rocblas_int nnzUrow = 0;
+        for(auto i = istart; i < iend; i++)
+        {
+            auto const icol = indT[i];
+            bool const is_upper = (irow <= icol);
+            if(is_upper)
+            {
+                nnzUrow += 1;
+            }
+            else
+            {
+                nnzLrow += 1;
+            }
+        }
+        nnzLrow += 1; // add one for unit diagonal
+
+        bool const isvalid = (nnzUrow == nzUarray[irow]) && (nnzLrow == nzLarray[irow])
+            && (nnzTrow == (nnzLrow - 1) + nnzUrow);
+        if(!isvalid)
+        {
+            printf("irow=%d,nnzUrow=%d,nnzLrow=%d,nnzTrow=%d,nzLarray[irow]=%d,nzUarray[irow]=%d\n",
+                   irow, nnzUrow, nnzLrow, nnzTrow, nzLarray[irow], nzUarray[irow]);
+        }
+
+        // assert(nnzUrow == nzUarray[irow]);
+        // assert(nnzLrow == nzLarray[irow]);
+        // assert(nnzTrow == (nnzLrow - 1) + nnzUrow);
+    }
+    __syncthreads();
+}
+
+template <typename T>
 ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const rocblas_int n,
                                                                         const rocblas_int nnzM,
                                                                         rocblas_int const* const Mp,
@@ -104,6 +156,23 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
     auto const ld = waveSize;
     auto idx2D = [=](auto i, auto j, auto ld) { return (i + j * ld); };
 
+    {
+        // --------------------
+        // zero out lsum[] array
+        // --------------------
+        auto const nthreads = hipBlockDim_x * hipBlockDim_y;
+        auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x;
+        auto const i_start = tid;
+        auto const i_inc = nthreads;
+
+        __syncthreads();
+        for(auto i = i_start; i < maxthreads; i += i_inc)
+        {
+            lsum[i] = 0;
+        }
+        __syncthreads();
+    }
+
     for(auto irow = wid; irow < n; irow += nwaves)
     {
         const auto kstart = Mp[irow];
@@ -115,6 +184,7 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
         // -------------------------------------
 
         rocblas_int lnnzUrow = 0;
+        rocblas_int lnnzLrow = 0;
 
         for(auto k = kstart + lid; (k < kend); k += waveSize)
         {
@@ -124,20 +194,15 @@ ROCSOLVER_KERNEL __launch_bounds__(BS1) void rf_splitLU_gen_nzLU_kernel(const ro
             {
                 lnnzUrow += 1;
             }
+            else
+            {
+                lnnzLrow += 1;
+            }
         }
+        atomicAdd(&(nzUarray[irow]), lnnzUrow);
 
-        lsum[idx2D(lid, lwid, ld)] = lnnzUrow;
-        for(auto offset = waveSize / 2; offset > 0; offset = offset / 2)
-        {
-            lsum[idx2D(lid, lwid, ld)] += lsum[idx2D(lid + offset, lwid, ld)];
-        };
-
-        if(lid == 0)
-        {
-            auto const nnzUrow = lsum[idx2D(0, lwid, ld)];
-            nzUarray[irow] = nnzUrow;
-            nzLarray[irow] = (nnzTrow - nnzUrow) + 1; // add 1 for unit diagonal
-        }
+        // add 1 for unit diagonal
+        atomicAdd(&(nzLarray[irow]), (lid == 0) ? 1 + lnnzLrow : lnnzLrow);
 
     } // end for irow
 }
@@ -175,18 +240,39 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1)
 
         for(auto k = kstart + lid; k < kend; k += waveSize)
         {
-            const auto icol = Mi[k];
             const auto aij = Mx[k];
+
+            const auto icol = Mi[k];
+            bool const is_valid = ((0 <= icol) && (icol < n));
+            if(!is_valid)
+            {
+                printf("irow=%d,icol=%d,n=%d,  k=%d,kstart=%d,kend=%d\n", irow, icol, n, k, kstart,
+                       kend);
+            }
+            assert(is_valid);
+
             const bool is_lower = (icol < irow);
             if(is_lower)
             {
                 const auto ip = Lp[irow] + (k - kstart);
+                bool const is_valid = (Lp[irow] <= ip) && (ip < Lp[irow + 1]);
+                if(!is_valid)
+                {
+                    printf("irow=%d,icol=%d,Lp[irow]=%d,Lp[irow+1]=%d,ip=%d\n", irow, icol,
+                           Lp[irow], Lp[irow + 1], ip);
+                }
+
+                assert(is_valid);
+
                 Li[ip] = icol;
                 Lx[ip] = aij;
             }
             else
             {
                 const auto ip = Up[irow] + (k - kdiag);
+                bool const is_valid = (Up[irow] <= ip) && (ip < Up[irow + 1]);
+                assert(is_valid);
+
                 Ui[ip] = icol;
                 Ux[ip] = aij;
             }
@@ -386,7 +472,7 @@ rocblas_status rocsolver_csrrf_splitlu_getMemorySize(const rocblas_int n,
     HIP_CHECK(rocprim::inclusive_scan(temp_ptr, rocprim_size_bytes, ptrT, ptrT, n,
                                       rocprim::plus<rocblas_int>()));
 
-    *size_work = max(rocprim_size_bytes, size_work_LU);
+    *size_work = (rocprim_size_bytes + size_work_LU);
 
     return (rocblas_status_success);
 }
@@ -500,8 +586,18 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         // setup number of nonzeros in each row of L and U
         // note: reuse arrays Lp[] and Up[]
         // ------------------------------------------------
+        HIP_CHECK(hipMemsetAsync(Lp, 0, sizeof(rocblas_int) * (n + 1), stream));
+        HIP_CHECK(hipMemsetAsync(Up, 0, sizeof(rocblas_int) * (n + 1), stream));
+
         ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_gen_nzLU_kernel<T>, dim3(nblocks, 1, 1), dim3(nx, ny, 1),
                                 0, stream, n, nnzT, ptrT, indT, Lp + 1, Up + 1);
+#ifdef NDEBUG
+#else
+        {
+            ROCSOLVER_LAUNCH_KERNEL(check_nzLU_kernel<T>, dim3((n - 1) / BS1 + 1, 1, 1),
+                                    dim3(BS1, 1, 1), 0, stream, n, nnzT, ptrT, indT, Lp + 1, Up + 1);
+        }
+#endif
 
         // -------------------------------------
         // generate prefix sum for Lp[] and Up[]
@@ -535,6 +631,18 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         // -----------------
         // copy into L and U
         // -----------------
+        assert(ptrT != nullptr);
+        assert(indT != nullptr);
+        assert(valT != nullptr);
+
+        assert(ptrU != nullptr);
+        assert(indU != nullptr);
+        assert(valU != nullptr);
+
+        assert(ptrL != nullptr);
+        assert(indL != nullptr);
+        assert(valL != nullptr);
+
         ROCSOLVER_LAUNCH_KERNEL(rf_splitLU_copy_kernel<T>, dim3(nblocks, 1, 1), dim3(nx, ny, 1), 0,
                                 stream, n, nnzT, ptrT, indT, valT, Lp, indL, valL, Up, indU, valU);
     }
