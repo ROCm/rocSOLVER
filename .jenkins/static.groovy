@@ -14,14 +14,14 @@ def runCI =
 {
     nodeDetails, jobName->
 
-    def prj = new rocProject('rocSOLVER', 'StaticLibrary')
+    def prj = new rocProject('rocSOLVER', 'static')
 
     prj.timeout.compile = 600
     prj.timeout.test = 45
     prj.defaults.ccache = true
 
     // customize for project
-    prj.paths.build_command = './install.sh -a "gfx900;gfx906:xnack-" -c --static'
+    prj.paths.build_command = './install.sh -c --cmake-arg -DWERROR=ON --static'
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(nodeDetails, jobName, prj)
@@ -33,7 +33,7 @@ def runCI =
         platform, project->
 
         commonGroovy = load "${project.paths.project_src_prefix}/.jenkins/common.groovy"
-        commonGroovy.runCompileCommand(platform, project, jobName, true)
+        commonGroovy.runCompileCommand(platform, project, jobName, true, true)
     }
 
     def testCommand =
@@ -58,10 +58,10 @@ def runCI =
 ci: {
     String urlJobName = auxiliary.getTopJobName(env.BUILD_URL)
 
-    def propertyList = ["compute-rocm-dkms-no-npi-hipclang":[pipelineTriggers([cron('0 1 * * 6')])]]
+    def propertyList = ["main":[pipelineTriggers([cron('0 1 * * 6')])]]
     propertyList = auxiliary.appendPropertyList(propertyList)
 
-    def jobNameList = ["compute-rocm-dkms-no-npi-hipclang":([ubuntu18:['gfx900']])]
+    def jobNameList = ["main":([ubuntu22:['gfx90a']])]
     jobNameList = auxiliary.appendJobNameList(jobNameList, 'rocSOLVER')
 
     propertyList.each
@@ -85,8 +85,7 @@ ci: {
     {
         properties(auxiliary.addCommonProperties([pipelineTriggers([cron('0 1 * * *')])]))
         stage(urlJobName) {
-            runCI([ubuntu18:['gfx900']], urlJobName)
+            runCI([ubuntu22:['gfx90a']], urlJobName)
         }
     }
 }
-
