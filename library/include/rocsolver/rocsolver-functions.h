@@ -3626,6 +3626,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmtr(rocblas_handle handle,
 
     Optionally, this function can also compute \f$Q'C\f$ for a given n-by-nc input matrix C.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -11835,6 +11839,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     controls whether the fast algorithm is executed or not. For more details, see
     the "Tuning rocSOLVER performance" and "Memory model" sections of the documentation.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -12007,6 +12015,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     workspace. The parameter fast_alg controls whether the fast algorithm is
     executed or not. For more details, see the "Tuning rocSOLVER performance"
     and "Memory model" sections of the documentation.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -12221,6 +12233,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
     workspace. The parameter fast_alg controls whether the fast algorithm is
     executed or not. For more details, see the "Tuning rocSOLVER performance"
     and "Memory model" sections of the documentation.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -18107,6 +18123,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdj_strided_batched(rocblas_handle
     Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -18203,6 +18223,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A^{(k)}\f$. As \f$off(A^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A^{(k)}\f$ increasingly resemble the eigenvalues of \f$A\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -18298,6 +18322,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj(rocblas_handle handle,
     such that \f$off(A_l^{(k)}) < off(A_l^{(k-1)})\f$, where \f$A_l^{(0)} = A_l\f$ and \f$off(A_l^{(k)})\f$ is the
     Frobenius norm of the off-diagonal elements of \f$A_l^{(k)}\f$. As \f$off(A_l^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_l^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_l\f$.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -18406,6 +18434,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_batched(rocblas_handle handle,
     Frobenius norm of the off-diagonal elements of \f$A_l^{(k)}\f$. As \f$off(A_l^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_l^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_l\f$.
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -18512,6 +18544,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevj_batched(rocblas_handle handle,
     such that \f$off(A_l^{(k)}) < off(A_l^{(k-1)})\f$, where \f$A_l^{(0)} = A_l\f$ and \f$off(A_l^{(k)})\f$ is the
     Frobenius norm of the off-diagonal elements of \f$A_l^{(k)}\f$. As \f$off(A_l^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_l^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_l\f$.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -18625,6 +18661,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevj_strided_batched(rocblas_handle 
     such that \f$off(A_l^{(k)}) < off(A_l^{(k-1)})\f$, where \f$A_l^{(0)} = A_l\f$ and \f$off(A_l^{(k)})\f$ is the
     Frobenius norm of the off-diagonal elements of \f$A_l^{(k)}\f$. As \f$off(A_l^{(k)}) \rightarrow 0\f$, the
     diagonal elements of \f$A_l^{(k)}\f$ increasingly resemble the eigenvalues of \f$A_l\f$.
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -20543,6 +20583,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -20670,6 +20714,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_batched(rocblas_handle handle,
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -20796,6 +20844,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_batched(rocblas_handle handle,
         Z_l^T B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -20935,6 +20987,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvd_strided_batched(rocblas_handle 
         Z_l^H B_l^{-1} Z_l^{}=I & \: \text{if 3rd form.}
         \end{array}
     \f]
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -21076,6 +21132,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvd_strided_batched(rocblas_handle 
         \end{array}
     \f]
 
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -21194,6 +21254,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvj(rocblas_handle handle,
         Z^H B^{-1} Z=I & \: \text{if 3rd form.}
         \end{array}
     \f]
+
+    \note
+    In order to carry out calculations, this method may synchronize the stream contained within the
+    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.

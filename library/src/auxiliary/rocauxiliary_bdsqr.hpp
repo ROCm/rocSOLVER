@@ -278,6 +278,20 @@ __device__ static void bdsqr_permute_swap(const I n,
 }
 
 /********************* Device kernels **************************/
+/** The work array is organized as follows:
+    work[0] is the estimate of the smallest singular value.
+    work[1] is the convergence threshold.
+    work[2] is the number of split blocks identified by BDSQR_INIT.
+    Remaining elements contain the cosines and sines for Givens rotations as 2-tuples.
+
+    The splits array is organized as follows:
+    Each split block is represented by a 4-tuple, which encodes 6 data points.
+    abs(tuple[0]) is the 1-based index of the original start point for the block.
+    sgn(tuple[0]) indicates if the block is t2b (positive sign) or b2t (negative sign).
+    tuple[1] is the 1-based index of the current start point for the block.
+    tuple[2] is the 1-based index of the current end point for the block.
+    abs(tuple[3]) is the number of iterations (+1) applied to the block.
+    sgn(tuple[3]) indicates if the QR step was applied (positive sign) or not. */
 /***************************************************************/
 
 /** BDSQR_INIT kernel checks if there are any NaNs or Infs in the input, calculates the
