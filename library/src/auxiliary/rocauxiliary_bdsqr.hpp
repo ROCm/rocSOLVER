@@ -169,8 +169,8 @@ __device__ void bdsqr_b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nu || nc)
         {
-            rots[(k - 1) * incW + nr] = c;
-            rots[(k - 1) * incW + nr + 1] = s;
+            rots[(k - 1) * incW] = c;
+            rots[(k - 1) * incW + 1] = s;
         }
 
         // then apply rotation by columns
@@ -186,8 +186,8 @@ __device__ void bdsqr_b2tQRstep(const rocblas_int n,
         // save rotations to update singular vectors
         if(nv)
         {
-            rots[(k - 1) * incW] = c;
-            rots[(k - 1) * incW + 1] = s;
+            rots[(k - 1) * incW + nr] = c;
+            rots[(k - 1) * incW + nr + 1] = s;
         }
     }
     E[0] = f;
@@ -457,32 +457,32 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
     if(nu)
     {
         // rotate from the right (forward direction)
-        for(j = 0; j < n - 1; j++)
+        for(i = tid; i < nu; i += hipBlockDim_x)
         {
-            for(i = tid; i < nu; i += hipBlockDim_x)
+            temp1 = U[i + 0 * ldu];
+            for(j = 0; j < n - 1; j++)
             {
-                temp1 = U[i + j * ldu];
                 temp2 = U[i + (j + 1) * ldu];
                 c = rots[2 * j];
                 s = rots[2 * j + 1];
                 U[i + j * ldu] = c * temp1 + s * temp2;
-                U[i + (j + 1) * ldu] = c * temp2 - s * temp1;
+                U[i + (j + 1) * ldu] = temp1 = c * temp2 - s * temp1;
             }
         }
     }
     if(nc)
     {
         // rotate from the left (forward direction)
-        for(i = 0; i < n - 1; i++)
+        for(j = tid; j < nc; j += hipBlockDim_x)
         {
-            for(j = tid; j < nc; j += hipBlockDim_x)
+            temp1 = C[0 + j * ldc];
+            for(i = 0; i < n - 1; i++)
             {
-                temp1 = C[i + j * ldc];
                 temp2 = C[(i + 1) + j * ldc];
                 c = rots[2 * i];
                 s = rots[2 * i + 1];
                 C[i + j * ldc] = c * temp1 + s * temp2;
-                C[(i + 1) + j * ldc] = c * temp2 - s * temp1;
+                C[(i + 1) + j * ldc] = temp1 = c * temp2 - s * temp1;
             }
         }
     }
@@ -791,43 +791,40 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
                 if(tid < nv)
                 {
                     // rotate from the left (forward direction)
-                    rocblas_int j = tid;
-                    for(rocblas_int i = k_start; i < k_end; i++)
+                    temp1 = V[k_start + tid * ldv];
+                    for(rocblas_int k = k_start; k < k_end; k++)
                     {
-                        temp1 = V[i + j * ldv];
-                        temp2 = V[i + 1 + j * ldv];
-                        c = rots[i * incW];
-                        s = rots[i * incW + 1];
-                        V[i + j * ldv] = c * temp1 + s * temp2;
-                        V[i + 1 + j * ldv] = c * temp2 - s * temp1;
+                        temp2 = V[(k + 1) + tid * ldv];
+                        c = rots[k * incW];
+                        s = rots[k * incW + 1];
+                        V[k + tid * ldv] = c * temp1 + s * temp2;
+                        V[(k + 1) + tid * ldv] = temp1 = c * temp2 - s * temp1;
                     }
                 }
                 if(tid < nu)
                 {
                     // rotate from the right (forward direction)
-                    rocblas_int i = tid;
-                    for(rocblas_int j = k_start; j < k_end; j++)
+                    temp1 = U[tid + k_start * ldu];
+                    for(rocblas_int k = k_start; k < k_end; k++)
                     {
-                        temp1 = U[i + j * ldu];
-                        temp2 = U[i + (j + 1) * ldu];
-                        c = rots[j * incW + nr];
-                        s = rots[j * incW + nr + 1];
-                        U[i + j * ldu] = c * temp1 + s * temp2;
-                        U[i + (j + 1) * ldu] = c * temp2 - s * temp1;
+                        temp2 = U[tid + (k + 1) * ldu];
+                        c = rots[k * incW + nr];
+                        s = rots[k * incW + nr + 1];
+                        U[tid + k * ldu] = c * temp1 + s * temp2;
+                        U[tid + (k + 1) * ldu] = temp1 = c * temp2 - s * temp1;
                     }
                 }
                 if(tid < nc)
                 {
                     // rotate from the left (forward direction)
-                    rocblas_int j = tid;
-                    for(rocblas_int i = k_start; i < k_end; i++)
+                    temp1 = C[k_start + tid * ldc];
+                    for(rocblas_int k = k_start; k < k_end; k++)
                     {
-                        temp1 = C[i + j * ldc];
-                        temp2 = C[i + 1 + j * ldc];
-                        c = rots[i * incW + nr];
-                        s = rots[i * incW + nr + 1];
-                        C[i + j * ldc] = c * temp1 + s * temp2;
-                        C[i + 1 + j * ldc] = c * temp2 - s * temp1;
+                        temp2 = C[(k + 1) + tid * ldc];
+                        c = rots[k * incW + nr];
+                        s = rots[k * incW + nr + 1];
+                        C[k + tid * ldc] = c * temp1 + s * temp2;
+                        C[(k + 1) + tid * ldc] = temp1 = c * temp2 - s * temp1;
                     }
                 }
             }
@@ -836,43 +833,40 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
                 if(tid < nv)
                 {
                     // rotate from the left (backward direction)
-                    rocblas_int j = tid;
-                    for(rocblas_int i = k_end; i > k_start; i--)
+                    temp1 = V[k_end + tid * ldv];
+                    for(rocblas_int k = k_end; k > k_start; k--)
                     {
-                        temp1 = V[i + j * ldv];
-                        temp2 = V[i - 1 + j * ldv];
-                        c = rots[(i - 1) * incW];
-                        s = rots[(i - 1) * incW + 1];
-                        V[i + j * ldv] = c * temp1 - s * temp2;
-                        V[i - 1 + j * ldv] = c * temp2 + s * temp1;
+                        temp2 = V[(k - 1) + tid * ldv];
+                        c = rots[(k - 1) * incW + nr];
+                        s = rots[(k - 1) * incW + nr + 1];
+                        V[k + tid * ldv] = c * temp1 - s * temp2;
+                        V[(k - 1) + tid * ldv] = temp1 = c * temp2 + s * temp1;
                     }
                 }
                 if(tid < nu)
                 {
                     // rotate from the right (backward direction)
-                    rocblas_int i = tid;
-                    for(rocblas_int j = k_end; j > k_start; j--)
+                    temp1 = U[tid + k_end * ldu];
+                    for(rocblas_int k = k_end; k > k_start; k--)
                     {
-                        temp1 = U[i + j * ldu];
-                        temp2 = U[i + (j - 1) * ldu];
-                        c = rots[(j - 1) * incW + nr];
-                        s = rots[(j - 1) * incW + nr + 1];
-                        U[i + j * ldu] = c * temp1 - s * temp2;
-                        U[i + (j - 1) * ldu] = c * temp2 + s * temp1;
+                        temp2 = U[tid + (k - 1) * ldu];
+                        c = rots[(k - 1) * incW];
+                        s = rots[(k - 1) * incW + 1];
+                        U[tid + k * ldu] = c * temp1 - s * temp2;
+                        U[tid + (k - 1) * ldu] = temp1 = c * temp2 + s * temp1;
                     }
                 }
                 if(tid < nc)
                 {
                     // rotate from the left (backward direction)
-                    rocblas_int j = tid;
-                    for(rocblas_int i = k_end; i > k_start; i--)
+                    temp1 = C[k_end + tid * ldc];
+                    for(rocblas_int k = k_end; k > k_start; k--)
                     {
-                        temp1 = C[i + j * ldc];
-                        temp2 = C[i - 1 + j * ldc];
-                        c = rots[(i - 1) * incW + nr];
-                        s = rots[(i - 1) * incW + nr + 1];
-                        C[i + j * ldc] = c * temp1 - s * temp2;
-                        C[i - 1 + j * ldc] = c * temp2 + s * temp1;
+                        temp2 = C[(k - 1) + tid * ldc];
+                        c = rots[(k - 1) * incW];
+                        s = rots[(k - 1) * incW + 1];
+                        C[k + tid * ldc] = c * temp1 - s * temp2;
+                        C[(k - 1) + tid * ldc] = temp1 = c * temp2 + s * temp1;
                     }
                 }
             }
