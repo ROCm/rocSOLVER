@@ -8,6 +8,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Changed
 - Renamed install script arguments of the form *_dir to *-path. Arguments of the form *_dir remain functional for
   backwards compatibility.
+- Improved performance of Cholesky factorization.
 
 ### Deprecated
 ### Removed
