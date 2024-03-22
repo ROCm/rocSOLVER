@@ -118,7 +118,7 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n,
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
-    if(n <= POTRF_BLOCKSIZE(T))
+    if(n <= POTF2_MAX_SMALL_SIZE(T))
     {
         *size_work = 0;
         *size_pivots = 0;
@@ -214,9 +214,8 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     else
     {
         // (TODO: When the matrix is detected to be non positive definite, we need
-        // to
-        //  prevent GEMV and SCAL to modify further the input matrix; ideally with
-        //  no synchronizations.)
+        // to prevent GEMV and SCAL to modify further the input matrix; ideally with
+        // no synchronizations.)
 
         if(uplo == rocblas_fill_upper)
         {

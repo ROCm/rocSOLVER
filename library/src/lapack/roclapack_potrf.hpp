@@ -58,27 +58,6 @@ static rocblas_int get_lds_size()
     return (lds_size);
 }
 
-template <typename T>
-static rocblas_int get_potrf_blocksize(rocblas_int n)
-{
-    auto iceil = [](auto n, auto base) { return ((n - 1) / base + 1); };
-
-    rocblas_int const nb_max = POTRF_BLOCKSIZE(T);
-
-#ifdef NDEBUG
-#else
-    {
-        auto const lds_size = get_lds_size();
-        bool const is_ok = ((sizeof(T) * (nb_max * (nb_max + 1)) / 2) <= lds_size);
-        assert(is_ok);
-    }
-#endif
-
-    rocblas_int const npass = iceil(n, nb_max);
-    rocblas_int const nb = iceil(n, npass);
-    return (nb);
-}
-
 template <typename U>
 ROCSOLVER_KERNEL void
     chk_positive(rocblas_int* iinfo, rocblas_int* info, int j, rocblas_int batch_count)
@@ -116,8 +95,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         return;
     }
 
-    // rocblas_int nb = POTRF_BLOCKSIZE(T);
-    rocblas_int nb = get_potrf_blocksize<T>(n);
+    rocblas_int nb = POTRF_BLOCKSIZE(T);
     if(n <= POTRF_POTF2_SWITCHSIZE(T))
     {
         // requirements for calling a single POTF2
@@ -204,8 +182,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
-    // rocblas_int nb = POTRF_BLOCKSIZE(T);
-    rocblas_int nb = get_potrf_blocksize<T>(n);
+    rocblas_int nb = POTRF_BLOCKSIZE(T);
     if(n <= POTRF_POTF2_SWITCHSIZE(T))
         return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
                                            batch_count, scalars, (T*)work1, pivots);
