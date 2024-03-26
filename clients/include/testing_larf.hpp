@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <typename T>
+template <bool API64, typename T>
 void larf_checkBadArgs(const rocblas_handle handle,
                        const rocblas_side side,
                        const rocblas_int m,
@@ -47,31 +47,31 @@ void larf_checkBadArgs(const rocblas_handle handle,
                        const rocblas_int lda)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_larf(nullptr, side, m, n, dx, inc, dt, dA, lda),
+    EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, nullptr, side, m, n, dx, inc, dt, dA, lda),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_larf(handle, rocblas_side_both, m, n, dx, inc, dt, dA, lda),
+    EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, rocblas_side_both, m, n, dx, inc, dt, dA, lda),
                           rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_larf(handle, side, m, n, (T) nullptr, inc, dt, dA, lda),
+    EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, side, m, n, (T) nullptr, inc, dt, dA, lda),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_larf(handle, side, m, n, dx, inc, (T) nullptr, dA, lda),
+    EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, side, m, n, dx, inc, (T) nullptr, dA, lda),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_larf(handle, side, m, n, dx, inc, dt, (T) nullptr, lda),
+    EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, side, m, n, dx, inc, dt, (T) nullptr, lda),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_larf(handle, rocblas_side_left, 0, n, (T) nullptr, inc,
+    EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, rocblas_side_left, 0, n, (T) nullptr, inc,
                                          (T) nullptr, (T) nullptr, lda),
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_larf(handle, rocblas_side_right, m, 0, (T) nullptr, inc,
+    EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, rocblas_side_right, m, 0, (T) nullptr, inc,
                                          (T) nullptr, (T) nullptr, lda),
                           rocblas_status_success);
 }
 
-template <typename T>
+template <bool API64, typename T>
 void testing_larf_bad_arg()
 {
     // safe arguments
@@ -91,7 +91,7 @@ void testing_larf_bad_arg()
     CHECK_HIP_ERROR(dt.memcheck());
 
     // check bad arguments
-    larf_checkBadArgs(handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda);
+    larf_checkBadArgs<API64>(handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda);
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
@@ -137,7 +137,7 @@ void larf_initData(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th>
+template <bool API64, typename T, typename Td, typename Th>
 void larf_getError(const rocblas_handle handle,
                    const rocblas_side side,
                    const rocblas_int m,
@@ -162,7 +162,8 @@ void larf_getError(const rocblas_handle handle,
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_larf(handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda));
+    CHECK_ROCBLAS_ERROR(
+        rocsolver_larf(API64, handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda));
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
@@ -175,7 +176,7 @@ void larf_getError(const rocblas_handle handle,
     *max_err = norm_error('F', m, n, lda, hA[0], hAr[0]);
 }
 
-template <typename T, typename Td, typename Th>
+template <bool API64, typename T, typename Td, typename Th>
 void larf_getPerfData(const rocblas_handle handle,
                       const rocblas_side side,
                       const rocblas_int m,
@@ -217,7 +218,7 @@ void larf_getPerfData(const rocblas_handle handle,
         larf_initData<false, true, T>(handle, side, m, n, dx, inc, dt, dA, lda, xx, hx, ht, hA);
 
         CHECK_ROCBLAS_ERROR(
-            rocsolver_larf(handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda));
+            rocsolver_larf(API64, handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda));
     }
 
     // gpu-lapack performance
@@ -240,13 +241,13 @@ void larf_getPerfData(const rocblas_handle handle,
         larf_initData<false, true, T>(handle, side, m, n, dx, inc, dt, dA, lda, xx, hx, ht, hA);
 
         start = get_time_us_sync(stream);
-        rocsolver_larf(handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda);
+        rocsolver_larf(API64, handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
 
-template <typename T>
+template <bool API64, typename T>
 void testing_larf(Arguments& argus)
 {
     // get arguments
@@ -263,9 +264,9 @@ void testing_larf(Arguments& argus)
     // check non-supported values
     if(side != rocblas_side_left && side != rocblas_side_right)
     {
-        EXPECT_ROCBLAS_STATUS(
-            rocsolver_larf(handle, side, m, n, (T*)nullptr, inc, (T*)nullptr, (T*)nullptr, lda),
-            rocblas_status_invalid_value);
+        EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, side, m, n, (T*)nullptr, inc,
+                                             (T*)nullptr, (T*)nullptr, lda),
+                              rocblas_status_invalid_value);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_args);
@@ -286,9 +287,9 @@ void testing_larf(Arguments& argus)
     bool invalid_size = (m < 0 || n < 0 || !inc || lda < m);
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(
-            rocsolver_larf(handle, side, m, n, (T*)nullptr, inc, (T*)nullptr, (T*)nullptr, lda),
-            rocblas_status_invalid_size);
+        EXPECT_ROCBLAS_STATUS(rocsolver_larf(API64, handle, side, m, n, (T*)nullptr, inc,
+                                             (T*)nullptr, (T*)nullptr, lda),
+                              rocblas_status_invalid_size);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_size);
@@ -300,8 +301,8 @@ void testing_larf(Arguments& argus)
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(
-            rocsolver_larf(handle, side, m, n, (T*)nullptr, inc, (T*)nullptr, (T*)nullptr, lda));
+        CHECK_ALLOC_QUERY(rocsolver_larf(API64, handle, side, m, n, (T*)nullptr, inc, (T*)nullptr,
+                                         (T*)nullptr, lda));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -333,7 +334,7 @@ void testing_larf(Arguments& argus)
     if(n == 0 || m == 0)
     {
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_larf(handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda),
+            rocsolver_larf(API64, handle, side, m, n, dx.data(), inc, dt.data(), dA.data(), lda),
             rocblas_status_success);
 
         if(argus.timing)
@@ -344,13 +345,14 @@ void testing_larf(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        larf_getError<T>(handle, side, m, n, dx, inc, dt, dA, lda, xx, hx, ht, hA, hAr, &max_error);
+        larf_getError<API64, T>(handle, side, m, n, dx, inc, dt, dA, lda, xx, hx, ht, hA, hAr,
+                                &max_error);
 
     // collect performance data
     if(argus.timing)
-        larf_getPerfData<T>(handle, side, m, n, dx, inc, dt, dA, lda, xx, hx, ht, hA,
-                            &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
-                            argus.profile_kernels, argus.perf);
+        larf_getPerfData<API64, T>(handle, side, m, n, dx, inc, dt, dA, lda, xx, hx, ht, hA,
+                                   &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
+                                   argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using size_x * machine_precision as tolerance
@@ -394,4 +396,4 @@ void testing_larf(Arguments& argus)
 
 #define EXTERN_TESTING_LARF(...) extern template void testing_larf<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_LARF, FOREACH_SCALAR_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_LARF, FOREACH_BIT_VARIANT, FOREACH_SCALAR_TYPE, APPLY_STAMP)
