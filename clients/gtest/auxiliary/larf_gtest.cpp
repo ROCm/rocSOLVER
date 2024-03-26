@@ -92,7 +92,8 @@ Arguments larf_setup_arguments(larf_tuple tup)
     return arg;
 }
 
-class LARF : public ::TestWithParam<larf_tuple>
+template <bool API64>
+class LARF_BASE : public ::TestWithParam<larf_tuple>
 {
 protected:
     void TearDown() override
@@ -106,10 +107,18 @@ protected:
         Arguments arg = larf_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("incx") == 0)
-            testing_larf_bad_arg<T>();
+            testing_larf_bad_arg<API64, T>();
 
-        testing_larf<T>(arg);
+        testing_larf<API64, T>(arg);
     }
+};
+
+class LARF : public LARF_BASE<false>
+{
+};
+
+class LARF_64 : public LARF_BASE<true>
+{
 };
 
 // non-batch tests
@@ -134,10 +143,38 @@ TEST_P(LARF, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
+TEST_P(LARF_64, __float)
+{
+    run_tests<float>();
+}
+
+TEST_P(LARF_64, __double)
+{
+    run_tests<double>();
+}
+
+TEST_P(LARF_64, __float_complex)
+{
+    run_tests<rocblas_float_complex>();
+}
+
+TEST_P(LARF_64, __double_complex)
+{
+    run_tests<rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          LARF,
                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(incx_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          LARF,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(incx_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         LARF_64,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(incx_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         LARF_64,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(incx_range)));
