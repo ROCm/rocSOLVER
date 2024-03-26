@@ -36,6 +36,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
 template <typename T, typename U>
 ROCSOLVER_KERNEL void org2r_init_ident(const rocblas_int m,
                                        const rocblas_int n,
@@ -66,6 +67,7 @@ ROCSOLVER_KERNEL void org2r_init_ident(const rocblas_int m,
             Ap[i + j * lda] = 0.0;
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, typename T>
 void rocsolver_org2r_ung2r_getMemorySize(const rocblas_int m,

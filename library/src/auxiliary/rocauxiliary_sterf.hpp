@@ -35,6 +35,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+ROCSOLVER_BEGIN_NAMESPACE
 
 /****************************************************************************
 (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
@@ -304,6 +305,7 @@ ROCSOLVER_KERNEL void sterf_kernel(const rocblas_int n,
         }
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 void rocsolver_sterf_getMemorySize(const rocblas_int n,

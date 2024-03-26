@@ -13,7 +13,7 @@
 #include "rocsolver/rocsolver.h"
 
 #define LASWP_THDS 256 // size of thread-blocks for calling the laswp kernel
-
+ROCSOLVER_BEGIN_NAMESPACE
 template <typename T, typename U>
 ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
                                    U AA,
@@ -63,6 +63,7 @@ ROCSOLVER_KERNEL void laswp_kernel(const rocblas_int n,
         }
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_laswp_argCheck(rocblas_handle handle,

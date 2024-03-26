@@ -39,6 +39,7 @@
 #include "roclapack_geqrf.hpp"
 #include "roclapack_syevj_heevj.hpp"
 #include "rocsolver/rocsolver.h"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename SS>
 ROCSOLVER_KERNEL void gesvdj_finalize(const rocblas_int n,
@@ -77,6 +78,7 @@ ROCSOLVER_KERNEL void gesvdj_finalize(const rocblas_int n,
             B[tid + j * ldb] = -B[tid + j * ldb];
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 /** Argument checking **/
 template <typename T, typename SS, typename W>

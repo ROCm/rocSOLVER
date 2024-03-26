@@ -43,6 +43,7 @@
 /*****************************************************************************/
 
 #define SYEVJ_BDIM 1024 // Max number of threads per thread-block used in syevj_small kernel
+ROCSOLVER_BEGIN_NAMESPACE
 
 /** SYEVJ_SMALL_KERNEL/RUN_SYEVJ applies the Jacobi eigenvalue algorithm to matrices of size
     n <= SYEVJ_BLOCKED_SWITCH. For each off-diagonal element A[i,j], a Jacobi rotation J is
@@ -1288,6 +1289,7 @@ ROCSOLVER_KERNEL void syevj_finalize(const rocblas_esort esort,
         }
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 /****** Template function, workspace size and argument validation **********/
 /***************************************************************************/

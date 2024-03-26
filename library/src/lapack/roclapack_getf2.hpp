@@ -41,6 +41,7 @@
 // number of threads for the iamax reduction kernel
 #define IAMAX_THDS 1024
 
+ROCSOLVER_BEGIN_NAMESPACE
 /** this kernel initializes the permutation array
     which is instrumental for parallel row permutations in GETRF **/
 template <typename T>
@@ -462,6 +463,7 @@ inline void getf2_get_ger_blksize(const rocblas_int m,
     *dimy = dim;
     *dimx = 1024 / dim;
 }
+ROCSOLVER_END_NAMESPACE
 
 /** Return the sizes of the different workspace arrays **/
 template <bool ISBATCHED, typename T>

@@ -36,8 +36,8 @@
 #include "rocsolver/rocsolver.h"
 
 #define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
-
-/***************** Device auxiliary functions ******************************************/
+ROCSOLVER_BEGIN_NAMESPACE
+/***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
@@ -276,6 +276,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         }
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 /******************* Host functions *********************************************/
 /*******************************************************************************/

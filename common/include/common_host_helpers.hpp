@@ -60,6 +60,8 @@
     } while(0)
 
 /* =============================================================================================== */
+
+ROCSOLVER_BEGIN_NAMESPACE
 /* Number properties functions.                                                                    */
 
 template <typename T>
@@ -550,3 +552,4 @@ inline void read_matrix(const std::string filenameS,
             fmt::format("Error: Could not close file {} with test data...", filename));
     }
 }
+ROCSOLVER_END_NAMESPACE

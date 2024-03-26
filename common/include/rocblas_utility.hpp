@@ -32,11 +32,21 @@
 #include <exception>
 #include <new>
 #include <type_traits>
-
 #include <hip/hip_runtime.h>
 #include <rocblas/rocblas.h>
 #include <rocsolver/rocsolver.h>
 
+// Macro for Namespace
+#ifndef ROCSOLVER_BEGIN_NAMESPACE
+#define ROCSOLVER_BEGIN_NAMESPACE    \
+    namespace rocsolver {            \
+    inline namespace v3_26_0{        
+#define ROCSOLVER_END_NAMESPACE      \
+    }                                \
+    }
+#endif
+
+ROCSOLVER_BEGIN_NAMESPACE
 #define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
     (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
 
@@ -466,3 +476,4 @@ catch(...)
 }
 
 #undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+ROCSOLVER_END_NAMESPACE

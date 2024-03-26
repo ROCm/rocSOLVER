@@ -39,6 +39,7 @@
 #include "roclapack_geqrf.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
@@ -61,6 +62,7 @@ ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
         Bp[(i + k1) + j * ldb] = 0;
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_gels_getMemorySize(const rocblas_operation trans,

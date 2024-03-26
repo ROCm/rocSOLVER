@@ -35,6 +35,7 @@
 #include "auxiliary/rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
@@ -97,6 +98,7 @@ ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
         res[id] = 1 / M[loc];
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 void rocsolver_potf2_getMemorySize(const rocblas_int n,

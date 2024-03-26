@@ -40,6 +40,7 @@
 /** thread-block size for calling the sytrf kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
 #define SYTRF_MAX_THDS 256
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
@@ -162,6 +163,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTRF_MAX_THDS)
         k = ktemp;
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 void rocsolver_sytrf_getMemorySize(const rocblas_int n, const rocblas_int batch_count, size_t* size_work)

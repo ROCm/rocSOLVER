@@ -40,6 +40,7 @@
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
 #include "rocsolver/rocsolver.h"
+ROCSOLVER_BEGIN_NAMESPACE
 
 /** wrapper to xxGQR/xxGLQ_TEMPLATE **/
 template <bool BATCHED, bool STRIDED, typename T, typename U>
@@ -100,6 +101,7 @@ void local_geqrlq_template(rocblas_handle handle,
                                                    strideP, batch_count, scalars, work_workArr,
                                                    Abyx_norms_trfact, diag_tmptr, workArr);
 }
+ROCSOLVER_END_NAMESPACE
 
 /** Argument checking **/
 template <typename T, typename TT, typename W>

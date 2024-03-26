@@ -33,6 +33,7 @@
 #include "rocsparse.hpp"
 
 #include "refact_helpers.hpp"
+ROCSOLVER_BEGIN_NAMESPACE
 
 // -------------------------------------------
 // Compute B = beta * B + alpha * (Q * A * Q') as
@@ -110,6 +111,7 @@ ROCSOLVER_KERNEL void rf_add_QAQ_kernel(const rocblas_int n,
         }
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_csrrf_refactchol_argCheck(rocblas_handle handle,

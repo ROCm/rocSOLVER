@@ -29,6 +29,7 @@
 
 #include "common_host_helpers.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
 /***********************************************************************
  * timing functions                                                    *
  ***********************************************************************/
@@ -71,3 +72,4 @@ double get_time_us_sync(hipStream_t stream)
 #endif
     return get_time_us_no_sync();
 }
+ROCSOLVER_END_NAMESPACE

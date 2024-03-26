@@ -50,6 +50,8 @@ typedef enum rocsolver_stedc_mode_
     rocsolver_stedc_mode_bisection
 } rocsolver_stedc_mode;
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <rocsolver_stedc_mode MODE>
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n);
 
@@ -1808,6 +1810,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         *size_tmpz = sizeof(S) * (2 * n) * batch_count;
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 //--------------------------------------------------------------------------------------//
 /** This helper check argument correctness for stedc API **/

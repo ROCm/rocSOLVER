@@ -44,6 +44,7 @@
 #define BS1 256 // generic 1 dimensional thread-block size used to call common kernels
 #define BS2 32 // generic 2 dimensional thread-block size used to call common kernels
 
+ROCSOLVER_BEGIN_NAMESPACE
 // **********************************************************
 // device functions that are used by many kernels
 // **********************************************************
@@ -1233,3 +1234,4 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
     __syncthreads();
 #endif
 }
+ROCSOLVER_END_NAMESPACE

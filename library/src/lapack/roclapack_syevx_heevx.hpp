@@ -38,6 +38,7 @@
 #include "rocblas.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 __device__ static void syevx_permute_swap(rocblas_int n,
@@ -173,6 +174,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) syevx_sort_eigs(const rocblas_int n
     syevx_permute_swap(n, nev, info, map, Z, ldz, ifail);
     __syncthreads();
 }
+ROCSOLVER_END_NAMESPACE
 
 /** Argument checking **/
 template <typename T, typename S>

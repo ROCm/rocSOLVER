@@ -35,6 +35,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
 template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
                                   const rocblas_stride strideP,
@@ -116,6 +117,7 @@ ROCSOLVER_KERNEL void set_taubeta(T* tau,
         t[0] = 0;
     }
 }
+ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 void rocsolver_larfg_getMemorySize(const rocblas_int n,
