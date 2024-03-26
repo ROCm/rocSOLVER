@@ -1839,7 +1839,7 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !D) || (n && !E) || (evect != rocblas_evect_none && n && !C) || !info)
+    if((n && !D) || (n > 1 && !E) || (evect != rocblas_evect_none && n && !C) || !info)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
