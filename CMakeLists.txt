@@ -148,6 +148,32 @@ if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   )
 endif()
 
+#
+# Seperate linking jobs from compiling
+# Too many concurrent linking jobs can break the build
+# Copied from LLVM
+set(ROCSOLVER_PARALLEL_LINK_JOBS "" CACHE STRING
+  "Define the maximum number of concurrent link jobs (Ninja only).")
+if(CMAKE_GENERATOR MATCHES "Ninja")
+  if(ROCSOLVER_PARALLEL_LINK_JOBS)
+    set_property(GLOBAL APPEND PROPERTY JOB_POOLS link_job_pool=${ROCSOLVER_PARALLEL_LINK_JOBS})
+    set(CMAKE_JOB_POOL_LINK link_job_pool)
+  endif()
+elseif(ROCSOLVER_PARALLEL_LINK_JOBS)
+  message(WARNING "Job pooling is only available with Ninja generators.")
+endif()
+# Similar for compiling
+set(ROCSOLVER_PARALLEL_COMPILE_JOBS "" CACHE STRING
+  "Define the maximum number of concurrent compile jobs (Ninja only).")
+if(CMAKE_GENERATOR MATCHES "Ninja")
+  if(ROCSOLVER_PARALLEL_COMPILE_JOBS)
+    set_property(GLOBAL APPEND PROPERTY JOB_POOLS compile_job_pool=${ROCSOLVER_PARALLEL_COMPILE_JOBS})
+    set(CMAKE_JOB_POOL_COMPILE compile_job_pool)
+  endif()
+elseif(ROCSOLVER_PARALLEL_COMPILE_JOBS)
+  message(WARNING "Job pooling is only available with Ninja generators.")
+endif()
+
 
 message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
