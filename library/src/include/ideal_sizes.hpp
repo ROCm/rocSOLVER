@@ -230,7 +230,7 @@
     when using the blocked algorithm (POTRF). It also applies to the
     corresponding batched and strided-batched routines.*/
 #ifndef POTRF_BLOCKSIZE
-#define POTRF_BLOCKSIZE 64
+#define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
 #endif
 
 /*! \brief Determines the size at which rocSOLVER switches from
@@ -241,7 +241,7 @@
     the rest of the matrix has no more than POTRF_POTF2_SWITCHSIZE columns; at this point the last block,
     if any, will be factorized with the unblocked algorithm (POTF2).*/
 #ifndef POTRF_POTF2_SWITCHSIZE
-#define POTRF_POTF2_SWITCHSIZE 128
+#define POTRF_POTF2_SWITCHSIZE(T) POTRF_BLOCKSIZE(T)
 #endif
 
 /************************** syevj/heevj ***************************************
@@ -376,6 +376,13 @@
 #endif
 #ifndef GETRF_NPVT_BATCH_BLKSIZES_COMPLEX
 #define GETRF_NPVT_BATCH_BLKSIZES_COMPLEX 0, -16, -32, -48, 64, 128
+#endif
+
+// ---------------------------------------------------------------
+// size of submatrix that can fit in 64 KBytes of LDS shared memory
+// ---------------------------------------------------------------
+#ifndef GETRF_NOPIV_BLOCKSIZE
+#define GETRF_NOPIV_BLOCKSIZE(T) ((sizeof(T) == 4) ? 128 : (sizeof(T) == 8) ? 90 : 64)
 #endif
 
 /****************************** getri *****************************************
