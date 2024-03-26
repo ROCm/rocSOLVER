@@ -5,7 +5,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ## (Unreleased) rocSOLVER
 ### Added
 - 64-bit APIs for existing functions:
-    - LARF
+    - LARF_64
 
 ### Optimized
 ### Changed

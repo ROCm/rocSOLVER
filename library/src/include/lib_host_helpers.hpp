@@ -41,17 +41,16 @@
  * ===========================================================================
  */
 
-inline rocblas_stride idx2D(const rocblas_stride i, const rocblas_stride j, const rocblas_stride lda)
+template <typename I>
+inline rocblas_stride idx2D(const I i, const I j, const I lda)
 {
-    return j * lda + i;
+    return j * static_cast<rocblas_stride>(lda) + i;
 }
 
-inline rocblas_stride idx2D(const rocblas_stride i,
-                            const rocblas_stride j,
-                            const rocblas_stride inca,
-                            const rocblas_stride lda)
+template <typename I>
+inline rocblas_stride idx2D(const I i, const I j, const I inca, const I lda)
 {
-    return j * lda + i * inca;
+    return j * static_cast<rocblas_stride>(lda) + i * inca;
 }
 
 template <typename T>
