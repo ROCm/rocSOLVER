@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -714,19 +714,19 @@ rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
 
 /** This function determine workspace size for the internal trsm **/
 template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_trsm_mem(const rocblas_side side,
-                        const rocblas_operation trans,
-                        const rocblas_int m,
-                        const rocblas_int n,
-                        const rocblas_int batch_count,
-                        size_t* size_work1,
-                        size_t* size_work2,
-                        size_t* size_work3,
-                        size_t* size_work4,
-                        bool* optim_mem,
-                        bool inblocked,
-                        const rocblas_int inca,
-                        const rocblas_int incb)
+rocblas_status rocsolver_trsm_mem(const rocblas_side side,
+                                  const rocblas_operation trans,
+                                  const rocblas_int m,
+                                  const rocblas_int n,
+                                  const rocblas_int batch_count,
+                                  size_t* size_work1,
+                                  size_t* size_work2,
+                                  size_t* size_work3,
+                                  size_t* size_work4,
+                                  bool* optim_mem,
+                                  bool inblocked,
+                                  const rocblas_int inca,
+                                  const rocblas_int incb)
 {
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
@@ -737,7 +737,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
-        return;
+        return rocblas_status_success;
     }
 
     rocblas_int mm = m;
@@ -757,7 +757,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
             *size_work2 = 0;
             *size_work3 = 0;
             *size_work4 = 0;
-            return;
+            return rocblas_status_success;
         }
         else
             mm = m;
@@ -773,8 +773,8 @@ void rocsolver_trsm_mem(const rocblas_side side,
         mm = (m % 128 != 0) ? m : m + 1;
     }
 
-    rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, batch_count, size_work1, size_work2,
-                                     size_work3, size_work4);
+    return rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, batch_count, size_work1, size_work2,
+                                            size_work3, size_work4);
 }
 
 /** Internal TRSM (lower case):
@@ -1407,7 +1407,7 @@ inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
 *************************************************************/
 
 #define INSTANTIATE_TRSM_MEM(BATCHED, STRIDED, T)                                    \
-    template void rocsolver_trsm_mem<BATCHED, STRIDED, T>(                           \
+    template rocblas_status rocsolver_trsm_mem<BATCHED, STRIDED, T>(                 \
         const rocblas_side side, const rocblas_operation trans, const rocblas_int m, \
         const rocblas_int n, const rocblas_int batch_count, size_t* size_work1,      \
         size_t* size_work2, size_t* size_work3, size_t* size_work4, bool* optim_mem, \
