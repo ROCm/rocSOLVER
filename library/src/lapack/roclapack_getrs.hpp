@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -81,6 +81,8 @@ void rocsolver_getrs_getMemorySize(rocblas_operation trans,
                                    size_t* size_work3,
                                    size_t* size_work4,
                                    bool* optim_mem,
+                                   const rocblas_int lda = 1,
+                                   const rocblas_int ldb = 1,
                                    const rocblas_int inca = 1,
                                    const rocblas_int incb = 1)
 {
@@ -98,7 +100,7 @@ void rocsolver_getrs_getMemorySize(rocblas_operation trans,
     // workspace required for calling TRSM
     rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, trans, n, nrhs, batch_count,
                                             size_work1, size_work2, size_work3, size_work4,
-                                            optim_mem, inca, incb);
+                                            optim_mem, lda, ldb, inca, incb);
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -65,8 +65,9 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
     // size of workspace (for calling TRSM)
     bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
-    rocsolver_getrs_getMemorySize<false, false, T>(
-        trans, n, nrhs, batch_count, &size_work1, &size_work2, &size_work3, &size_work4, &optim_mem);
+    rocsolver_getrs_getMemorySize<false, false, T>(trans, n, nrhs, batch_count, &size_work1,
+                                                   &size_work2, &size_work3, &size_work4,
+                                                   &optim_mem, lda, ldb);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
