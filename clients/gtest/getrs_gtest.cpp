@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -102,7 +102,8 @@ Arguments getrs_setup_arguments(getrs_tuple tup)
     return arg;
 }
 
-class GETRS : public ::TestWithParam<getrs_tuple>
+template <typename I>
+class GETRS_BASE : public ::TestWithParam<getrs_tuple>
 {
 protected:
     void TearDown() override
@@ -116,11 +117,19 @@ protected:
         Arguments arg = getrs_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
-            testing_getrs_bad_arg<BATCHED, STRIDED, T>();
+            testing_getrs_bad_arg<BATCHED, STRIDED, T, I>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
-        testing_getrs<BATCHED, STRIDED, T>(arg);
+        testing_getrs<BATCHED, STRIDED, T, I>(arg);
     }
+};
+
+class GETRS : public GETRS_BASE<rocblas_int>
+{
+};
+
+class GETRS_64 : public GETRS_BASE<int64_t>
+{
 };
 
 // non-batch tests
@@ -141,6 +150,26 @@ TEST_P(GETRS, __float_complex)
 }
 
 TEST_P(GETRS, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(GETRS_64, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GETRS_64, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GETRS_64, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GETRS_64, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -167,6 +196,26 @@ TEST_P(GETRS, batched__double_complex)
     run_tests<true, true, rocblas_double_complex>();
 }
 
+TEST_P(GETRS_64, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(GETRS_64, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(GETRS_64, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(GETRS_64, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
 // strided_batched tests
 
 TEST_P(GETRS, strided_batched__float)
@@ -189,14 +238,40 @@ TEST_P(GETRS, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
-// daily_lapack tests normal execution with medium to large sizes
+TEST_P(GETRS_64, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GETRS_64, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GETRS_64, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GETRS_64, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          GETRS,
                          Combine(ValuesIn(large_matrix_sizeA_range),
                                  ValuesIn(large_matrix_sizeB_range)));
 
-// checkin_lapack tests normal execution with small sizes, invalid sizes,
-// quick returns, and corner cases
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          GETRS,
+                         Combine(ValuesIn(matrix_sizeA_range), ValuesIn(matrix_sizeB_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GETRS_64,
+                         Combine(ValuesIn(large_matrix_sizeA_range),
+                                 ValuesIn(large_matrix_sizeB_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GETRS_64,
                          Combine(ValuesIn(matrix_sizeA_range), ValuesIn(matrix_sizeB_range)));
