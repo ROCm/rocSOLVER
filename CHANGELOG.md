@@ -73,6 +73,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Optimized
 - Improved the performance of BDSQR and GESVD when singular vectors are requested
+- Improved the performance of sorting algorithms used in different eigensolvers
 
 ### Fixed
 - BDSQR and GESVD should no longer hang when the input contains `NaN` or `Inf`
