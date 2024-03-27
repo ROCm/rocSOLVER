@@ -175,8 +175,8 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
 
         rocsolver_getrs_template<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, nb, nrhs, B, shiftB + k * bsb, incb, ldb, strideB,
-            nullptr, 0, X, shiftX + k * bsx, incx, ldx, strideX, batch_count, work1, work2, work3,
-            work4, optim_mem, false);
+            (rocblas_int*)nullptr, 0, X, shiftX + k * bsx, incx, ldx, strideX, batch_count, work1,
+            work2, work3, work4, optim_mem, false);
     }
 
     // backward solve

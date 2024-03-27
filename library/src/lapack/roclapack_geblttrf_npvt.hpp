@@ -217,8 +217,8 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
     {
         rocsolver_getrs_template<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, nb, nb, B, shiftB + k * bsb, incb, ldb, strideB,
-            nullptr, 0, C, shiftC + k * bsc, incc, ldc, strideC, batch_count, work1, work2, work3,
-            work4, optim_mem, false);
+            (rocblas_int*)nullptr, 0, C, shiftC + k * bsc, incc, ldc, strideC, batch_count, work1,
+            work2, work3, work4, optim_mem, false);
 
         rocsolver_gemm<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, rocblas_operation_none, nb, nb, nb, &minone, A,

@@ -27,16 +27,16 @@
 
 #include "roclapack_getrs.hpp"
 
-template <typename T>
+template <typename T, typename I>
 rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
                                     const rocblas_operation trans,
-                                    const rocblas_int n,
-                                    const rocblas_int nrhs,
+                                    const I n,
+                                    const I nrhs,
                                     T* A,
-                                    const rocblas_int lda,
-                                    const rocblas_int* ipiv,
+                                    const I lda,
+                                    const I* ipiv,
                                     T* B,
-                                    const rocblas_int ldb)
+                                    const I ldb)
 {
     ROCSOLVER_ENTER_TOP("getrs", "--trans", trans, "-n", n, "--nrhs", nrhs, "--lda", lda, "--ldb",
                         ldb);
@@ -50,16 +50,16 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
-    rocblas_int shiftB = 0;
+    rocblas_stride shiftA = 0;
+    rocblas_stride shiftB = 0;
 
     // normal (non-batched non-strided) execution
-    rocblas_int inca = 1;
-    rocblas_int incb = 1;
+    I inca = 1;
+    I incb = 1;
     rocblas_stride strideA = 0;
     rocblas_stride strideB = 0;
     rocblas_stride strideP = 0;
-    rocblas_int batch_count = 1;
+    I batch_count = 1;
 
     // memory workspace sizes:
     // size of workspace (for calling TRSM)
@@ -97,54 +97,110 @@ rocblas_status rocsolver_getrs_impl(rocblas_handle handle,
  * ===========================================================================
  */
 
-extern "C" rocblas_status rocsolver_sgetrs(rocblas_handle handle,
-                                           const rocblas_operation trans,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           float* A,
-                                           const rocblas_int lda,
-                                           const rocblas_int* ipiv,
-                                           float* B,
-                                           const rocblas_int ldb)
+extern "C" {
+
+rocblas_status rocsolver_sgetrs(rocblas_handle handle,
+                                const rocblas_operation trans,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                float* A,
+                                const rocblas_int lda,
+                                const rocblas_int* ipiv,
+                                float* B,
+                                const rocblas_int ldb)
 {
     return rocsolver_getrs_impl<float>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
 }
 
-extern "C" rocblas_status rocsolver_dgetrs(rocblas_handle handle,
-                                           const rocblas_operation trans,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           double* A,
-                                           const rocblas_int lda,
-                                           const rocblas_int* ipiv,
-                                           double* B,
-                                           const rocblas_int ldb)
+rocblas_status rocsolver_dgetrs(rocblas_handle handle,
+                                const rocblas_operation trans,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                double* A,
+                                const rocblas_int lda,
+                                const rocblas_int* ipiv,
+                                double* B,
+                                const rocblas_int ldb)
 {
     return rocsolver_getrs_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
 }
 
-extern "C" rocblas_status rocsolver_cgetrs(rocblas_handle handle,
-                                           const rocblas_operation trans,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           rocblas_float_complex* A,
-                                           const rocblas_int lda,
-                                           const rocblas_int* ipiv,
-                                           rocblas_float_complex* B,
-                                           const rocblas_int ldb)
+rocblas_status rocsolver_cgetrs(rocblas_handle handle,
+                                const rocblas_operation trans,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                rocblas_float_complex* A,
+                                const rocblas_int lda,
+                                const rocblas_int* ipiv,
+                                rocblas_float_complex* B,
+                                const rocblas_int ldb)
 {
     return rocsolver_getrs_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
 }
 
-extern "C" rocblas_status rocsolver_zgetrs(rocblas_handle handle,
-                                           const rocblas_operation trans,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           rocblas_double_complex* A,
-                                           const rocblas_int lda,
-                                           const rocblas_int* ipiv,
-                                           rocblas_double_complex* B,
-                                           const rocblas_int ldb)
+rocblas_status rocsolver_zgetrs(rocblas_handle handle,
+                                const rocblas_operation trans,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                rocblas_double_complex* A,
+                                const rocblas_int lda,
+                                const rocblas_int* ipiv,
+                                rocblas_double_complex* B,
+                                const rocblas_int ldb)
 {
     return rocsolver_getrs_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
 }
+
+rocblas_status rocsolver_sgetrs_64(rocblas_handle handle,
+                                   const rocblas_operation trans,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   float* A,
+                                   const int64_t lda,
+                                   const int64_t* ipiv,
+                                   float* B,
+                                   const int64_t ldb)
+{
+    return rocsolver_getrs_impl<float>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+rocblas_status rocsolver_dgetrs_64(rocblas_handle handle,
+                                   const rocblas_operation trans,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   double* A,
+                                   const int64_t lda,
+                                   const int64_t* ipiv,
+                                   double* B,
+                                   const int64_t ldb)
+{
+    return rocsolver_getrs_impl<double>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+rocblas_status rocsolver_cgetrs_64(rocblas_handle handle,
+                                   const rocblas_operation trans,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   rocblas_float_complex* A,
+                                   const int64_t lda,
+                                   const int64_t* ipiv,
+                                   rocblas_float_complex* B,
+                                   const int64_t ldb)
+{
+    return rocsolver_getrs_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+rocblas_status rocsolver_zgetrs_64(rocblas_handle handle,
+                                   const rocblas_operation trans,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   rocblas_double_complex* A,
+                                   const int64_t lda,
+                                   const int64_t* ipiv,
+                                   rocblas_double_complex* B,
+                                   const int64_t ldb)
+{
+    return rocsolver_getrs_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+} // extern C
