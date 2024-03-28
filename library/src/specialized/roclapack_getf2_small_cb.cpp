@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,4 +31,4 @@
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETF2_SMALL(rocblas_float_complex, rocblas_float_complex* const*);
+INSTANTIATE_GETF2_SMALL(rocblas_float_complex, rocblas_int, rocblas_int, rocblas_float_complex* const*);

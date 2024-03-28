@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,15 +43,14 @@
 
 /** this kernel initializes the permutation array
     which is instrumental for parallel row permutations in GETRF **/
-template <typename T>
-ROCSOLVER_KERNEL void
-    getf2_permut_init(const rocblas_int m, rocblas_int* permutA, const rocblas_stride stridePI)
+template <typename T, typename I>
+ROCSOLVER_KERNEL void getf2_permut_init(const I m, I* permutA, const rocblas_stride stridePI)
 {
-    int id = hipBlockIdx_y;
-    int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I id = hipBlockIdx_y;
+    I i = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
 
     // batch instance
-    rocblas_int* permut = permutA + id * stridePI;
+    I* permut = permutA + id * stridePI;
 
     // initialize
     if(i < m)
@@ -60,50 +59,50 @@ ROCSOLVER_KERNEL void
 
 /** This kernel updates the chosen pivot, checks singularity and
     interchanges rows all at once (pivoting + laswp)**/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
-                                              const rocblas_int j,
+template <typename T, typename I, typename INFO, typename U>
+ROCSOLVER_KERNEL void getf2_check_singularity(const I n,
+                                              const I j,
                                               U AA,
-                                              const rocblas_int shiftA,
-                                              const rocblas_int inca,
-                                              const rocblas_int lda,
+                                              const rocblas_stride shiftA,
+                                              const I inca,
+                                              const I lda,
                                               const rocblas_stride strideA,
-                                              rocblas_int* ipivA,
-                                              const rocblas_int shiftP,
+                                              I* ipivA,
+                                              const rocblas_stride shiftP,
                                               const rocblas_stride strideP,
                                               T* pivot_val,
-                                              rocblas_int* pivot_idxA,
-                                              rocblas_int* info,
-                                              const rocblas_int offset,
-                                              rocblas_int* permut_idx,
+                                              I* pivot_idxA,
+                                              INFO* info,
+                                              const I offset,
+                                              I* permut_idx,
                                               const rocblas_stride stridePI)
 {
     using S = decltype(std::real(T{}));
 
-    const int id = hipBlockIdx_y;
-    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    const I id = hipBlockIdx_y;
+    I tid = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
 
     if(tid < n)
     {
         // batch instance
         T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-        rocblas_int pivot_idx = pivot_idxA[id] + j;
+        I pivot_idx = pivot_idxA[id] + j;
 
         // swap rows
-        rocblas_int exch = pivot_idx - 1;
+        I exch = pivot_idx - 1;
         if(exch != j)
             swap(A[j * inca + tid * lda], A[exch * inca + tid * lda]);
 
         if(tid == j)
         {
             // update pivot index
-            rocblas_int* ipiv = ipivA + id * strideP + shiftP;
+            I* ipiv = ipivA + id * strideP + shiftP;
             ipiv[j] = pivot_idx + offset;
 
             // update row order of final permutated matrix
             if(permut_idx)
             {
-                rocblas_int* permut = permut_idx + id * stridePI;
+                I* permut = permut_idx + id * stridePI;
                 if(exch != j)
                     swap(permut[j], permut[exch]);
             }
@@ -113,7 +112,7 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
             {
                 pivot_val[id] = 1;
                 if(info[id] == 0)
-                    info[id] = j + 1 + offset; // use Fortran 1-based indexing
+                    info[id] = static_cast<INFO>(j + 1 + offset); // use Fortran 1-based indexing
             }
             else
                 pivot_val[id] = S(1) / A[j * inca + j * lda];
@@ -122,20 +121,20 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const rocblas_int n,
 }
 
 /** Non-pivoting version **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
+template <typename T, typename I, typename INFO, typename U>
+ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const I j,
                                                    U AA,
-                                                   const rocblas_int shiftA,
-                                                   const rocblas_int inca,
-                                                   const rocblas_int lda,
+                                                   const rocblas_stride shiftA,
+                                                   const I inca,
+                                                   const I lda,
                                                    const rocblas_stride strideA,
                                                    T* pivot_val,
-                                                   rocblas_int* info,
-                                                   const rocblas_int offset)
+                                                   INFO* info,
+                                                   const I offset)
 {
     using S = decltype(std::real(T{}));
 
-    const int id = hipBlockIdx_y;
+    const I id = hipBlockIdx_y;
 
     // batch instance
     T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
@@ -145,7 +144,7 @@ ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
     {
         pivot_val[id] = 1;
         if(info[id] == 0)
-            info[id] = j + 1 + offset; // use Fortran 1-based indexing
+            info[id] = static_cast<INFO>(j + 1 + offset); // use Fortran 1-based indexing
     }
     else
         pivot_val[id] = S(1) / A[j * inca + j * lda];
@@ -153,24 +152,24 @@ ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const rocblas_int j,
 
 /** This kernel executes an optimized reduction to find the index of the
     maximum element of a given vector (iamax) **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_int m,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const I m,
                                                                 U xx,
-                                                                const rocblas_int shiftx,
-                                                                const rocblas_int incx,
+                                                                const rocblas_stride shiftx,
+                                                                const I incx,
                                                                 const rocblas_stride stridex,
-                                                                rocblas_int* pivotidx)
+                                                                I* pivotidx)
 {
     using S = decltype(std::real(T{}));
 
     // batch instance
-    const int bid = hipBlockIdx_y;
-    const int tid = hipThreadIdx_x;
+    const I bid = hipBlockIdx_y;
+    const I tid = hipThreadIdx_x;
     T* x = load_ptr_batch<T>(xx, bid, shiftx, stridex);
 
     // shared memory setup
     __shared__ S sval[IAMAX_THDS];
-    __shared__ rocblas_int sidx[IAMAX_THDS];
+    __shared__ I sidx[IAMAX_THDS];
 
     iamax<IAMAX_THDS>(tid, m, x, incx, sval, sidx);
 
@@ -181,9 +180,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(IAMAX_THDS) getf2_iamax(const rocblas_in
 }
 
 /** Returns the thread block sizes used for the singularity check and pivot update**/
-inline rocblas_int getf2_get_checksingularity_blksize(const rocblas_int n)
+template <typename I>
+inline I getf2_get_checksingularity_blksize(const I n)
 {
-    rocblas_int singular_thds;
+    I singular_thds;
 
     if(n < 1024)
         singular_thds = 64;
@@ -203,10 +203,13 @@ inline rocblas_int getf2_get_checksingularity_blksize(const rocblas_int n)
     Returns 1 when the use of the small kernel will give better performance,
     Returns 2 when the use of the panel kernel will give better performance,
     Returns 0 when it would be better to use the normal code. **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+int select_spkernel(const I m, const I n, const I inca, const bool pivot)
 {
     int ker = 0;
+
+    if(m > GETF2_SPKER_MAX_M || n > GETF2_SPKER_MAX_N || inca != 1)
+        return ker;
 
     if(ISBATCHED)
     {
@@ -301,10 +304,13 @@ int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
 }
 
 /** Complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+int select_spkernel(const I m, const I n, const I inca, const bool pivot)
 {
     int ker = 0;
+
+    if(m > GETF2_SPKER_MAX_M || n > GETF2_SPKER_MAX_N || inca != 1)
+        return ker;
 
     if(ISBATCHED)
     {
@@ -401,15 +407,12 @@ int select_spkernel(const rocblas_int m, const rocblas_int n, const bool pivot)
     return ker;
 }
 
-/** Returns the thread block sizes used for the scale+update of trailing matrix**/
-inline void getf2_get_ger_blksize(const rocblas_int m,
-                                  const rocblas_int n,
-                                  rocblas_int* dimx,
-                                  rocblas_int* dimy)
+/** Returns the thread block sizes used for the scale+update of trailing matrix **/
+template <typename I>
+inline void getf2_get_ger_blksize(const I m, const I n, I* dimx, I* dimy)
 {
-    rocblas_int dim = 1024;
+    I dim = 1024;
 
-#ifdef OPTIMAL
     if(n == 0 || n > 256 || m == 0)
     {
         dim = 1024;
@@ -457,23 +460,22 @@ inline void getf2_get_ger_blksize(const rocblas_int m,
         else
             dim = 4;
     }
-#endif
 
     *dimy = dim;
-    *dimx = 1024 / dim;
+    *dimx = I(1024) / dim;
 }
 
 /** Return the sizes of the different workspace arrays **/
-template <bool ISBATCHED, typename T>
-void rocsolver_getf2_getMemorySize(const rocblas_int m,
-                                   const rocblas_int n,
+template <bool ISBATCHED, typename T, typename I>
+void rocsolver_getf2_getMemorySize(const I m,
+                                   const I n,
                                    const bool pivot,
-                                   const rocblas_int batch_count,
+                                   const I batch_count,
                                    size_t* size_scalars,
                                    size_t* size_pivotval,
                                    size_t* size_pivotidx,
                                    bool inblocked = false,
-                                   const rocblas_int inca = 1)
+                                   const I inca = 1)
 {
     // if quick return no workspace needed
     if(m == 0 || n == 0 || batch_count == 0)
@@ -485,8 +487,8 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     }
 
 #ifdef OPTIMAL
-    bool nomem = (inca == 1 && m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N
-                  && select_spkernel<ISBATCHED, T>(m, n, pivot) && !inblocked);
+    bool nomem = (std::is_same<I, rocblas_int>::value
+                  && select_spkernel<ISBATCHED, T>(m, n, inca, pivot) && !inblocked);
 
     // no workspace needed if using optimized kernel for small sizes
     if(nomem)
@@ -507,20 +509,20 @@ void rocsolver_getf2_getMemorySize(const rocblas_int m,
     *size_pivotval = sizeof(T) * batch_count;
 
     // for pivot indices
-    *size_pivotidx = pivot ? sizeof(rocblas_int) * batch_count : 0;
+    *size_pivotidx = pivot ? sizeof(I) * batch_count : 0;
 }
 
 /** argument checking **/
-template <typename T>
+template <typename T, typename I>
 rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
-                                              const rocblas_int m,
-                                              const rocblas_int n,
-                                              const rocblas_int lda,
+                                              const I m,
+                                              const I n,
+                                              const I lda,
                                               T A,
-                                              rocblas_int* ipiv,
-                                              rocblas_int* info,
+                                              I* ipiv,
+                                              I* info,
                                               const bool pivot,
-                                              const rocblas_int batch_count = 1)
+                                              const I batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -542,26 +544,26 @@ rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool ISBATCHED, typename T, typename U>
+template <bool ISBATCHED, typename T, typename I, typename INFO, typename U>
 rocblas_status rocsolver_getf2_template(rocblas_handle handle,
-                                        const rocblas_int m,
-                                        const rocblas_int n,
+                                        const I m,
+                                        const I n,
                                         U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int inca,
-                                        const rocblas_int lda,
+                                        const rocblas_stride shiftA,
+                                        const I inca,
+                                        const I lda,
                                         const rocblas_stride strideA,
-                                        rocblas_int* ipiv,
-                                        const rocblas_int shiftP,
+                                        I* ipiv,
+                                        const rocblas_stride shiftP,
                                         const rocblas_stride strideP,
-                                        rocblas_int* info,
-                                        const rocblas_int batch_count,
+                                        INFO* info,
+                                        const I batch_count,
                                         T* scalars,
                                         T* pivotval,
-                                        rocblas_int* pivotidx,
+                                        I* pivotidx,
                                         const bool pivot,
-                                        const rocblas_int offset = 0,
-                                        rocblas_int* permut_idx = nullptr,
+                                        const I offset = 0,
+                                        I* permut_idx = nullptr,
                                         const rocblas_stride stridePI = 0)
 {
     ROCSOLVER_ENTER("getf2", "m:", m, "n:", n, "shiftA:", shiftA, "inca:", inca, "lda:", lda,
@@ -574,10 +576,10 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    I blocks = (batch_count - 1) / 256 + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(256, 1, 1);
-    rocblas_int dim = min(m, n); // total number of pivots
+    I dim = min(m, n); // total number of pivots
 
     // info=0 (starting with a nonsingular matrix)
     if(offset == 0)
@@ -598,10 +600,9 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     }
 
 #ifdef OPTIMAL
-    if(m <= GETF2_SPKER_MAX_M && n <= GETF2_SPKER_MAX_N && inca == 1)
+    int spker = select_spkernel<ISBATCHED, T>(m, n, inca, pivot);
+    if(std::is_same<I, rocblas_int>::value && spker > 0)
     {
-        int spker = select_spkernel<ISBATCHED, T>(m, n, pivot);
-
         // Use specialized kernels for small matrices
         if(spker == 1)
         {
@@ -624,16 +625,15 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     // prepare kernels
-    rocblas_int singular_thds = getf2_get_checksingularity_blksize(n);
+    I singular_thds = getf2_get_checksingularity_blksize(n);
     dim3 gridMax(1, batch_count, 1);
     dim3 threadsMax(IAMAX_THDS, 1, 1);
     blocks = pivot ? (n - 1) / singular_thds + 1 : 1;
     dim3 threadsPivot((pivot ? singular_thds : 1), 1, 1);
     dim3 gridPivot(blocks, batch_count, 1);
-    rocblas_int c, mm, nn;
-    rocblas_int sger_thds_x = 1, sger_thds_y = 1024;
+    I c, mm, nn;
 
-    for(rocblas_int j = 0; j < dim; ++j)
+    for(I j = 0; j < dim; ++j)
     {
         if(pivot)
         {
@@ -654,37 +654,32 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
         mm = m - j - 1;
         nn = n - j - 1;
 
-        // get thread block size for matrix update
-        if(inca == 1)
-            getf2_get_ger_blksize(mm, nn, &sger_thds_x, &sger_thds_y);
-
-        //if working with a general matrix or without optimizations:
-        if(sger_thds_x == 1)
-        {
-            // Scale J'th column
-            rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, inca, lda),
-                                inca, strideA, batch_count);
-
-            // update trailing submatrix
-            if(j < dim - 1)
-            {
-                rocsolver_ger<false, T>(handle, mm, nn, scalars, 0, A,
-                                        shiftA + idx2D(j + 1, j, inca, lda), inca, strideA, A,
-                                        shiftA + idx2D(j, j + 1, inca, lda), lda, strideA, A,
-                                        shiftA + idx2D(j + 1, j + 1, inca, lda), inca, lda, strideA,
-                                        batch_count, nullptr);
-            }
-        }
-
         //if working with optimizations and matrix with few columns
 #ifdef OPTIMAL
-        else
+        I sger_thds_x = 1, sger_thds_y = 1024;
+        if(inca == 1)
+            getf2_get_ger_blksize(mm, nn, &sger_thds_x, &sger_thds_y);
+        if(sger_thds_x > 1)
         {
             // scale and update trailing matrix with local function
             getf2_run_scale_update(handle, mm, nn, pivotval, A, shiftA + idx2D(j, j, lda), lda,
                                    strideA, batch_count, sger_thds_x, sger_thds_y);
+            continue;
         }
 #endif
+
+        // Scale J'th column
+        rocblasCall_scal<T>(handle, mm, pivotval, 1, A, shiftA + idx2D(j + 1, j, inca, lda), inca,
+                            strideA, batch_count);
+
+        // update trailing submatrix
+        if(j < dim - 1)
+        {
+            rocsolver_ger<false, T>(
+                handle, mm, nn, scalars, 0, A, shiftA + idx2D(j + 1, j, inca, lda), inca, strideA,
+                A, shiftA + idx2D(j, j + 1, inca, lda), lda, strideA, A,
+                shiftA + idx2D(j + 1, j + 1, inca, lda), inca, lda, strideA, batch_count, nullptr);
+        }
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
