@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -96,7 +96,7 @@ Arguments getrf_setup_arguments(getrf_tuple tup)
     return arg;
 }
 
-template <bool BLOCKED>
+template <bool BLOCKED, typename I>
 class GETF2_GETRF : public ::TestWithParam<getrf_tuple>
 {
 protected:
@@ -111,18 +111,18 @@ protected:
         Arguments arg = getrf_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
-            testing_getf2_getrf_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+            testing_getf2_getrf_bad_arg<BATCHED, STRIDED, BLOCKED, T, I>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         if(arg.singular == 1)
-            testing_getf2_getrf<BATCHED, STRIDED, BLOCKED, T>(arg);
+            testing_getf2_getrf<BATCHED, STRIDED, BLOCKED, T, I>(arg);
 
         arg.singular = 0;
-        testing_getf2_getrf<BATCHED, STRIDED, BLOCKED, T>(arg);
+        testing_getf2_getrf<BATCHED, STRIDED, BLOCKED, T, I>(arg);
     }
 };
 
-template <bool BLOCKED>
+template <bool BLOCKED, typename I>
 class GETF2_GETRF_NPVT : public ::TestWithParam<getrf_tuple>
 {
 protected:
@@ -137,32 +137,48 @@ protected:
         Arguments arg = getrf_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("n") == 0)
-            testing_getf2_getrf_npvt_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+            testing_getf2_getrf_npvt_bad_arg<BATCHED, STRIDED, BLOCKED, T, I>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         if(arg.singular == 1)
-            testing_getf2_getrf_npvt<BATCHED, STRIDED, BLOCKED, T>(arg);
+            testing_getf2_getrf_npvt<BATCHED, STRIDED, BLOCKED, T, I>(arg);
 
         arg.singular = 0;
-        testing_getf2_getrf_npvt<BATCHED, STRIDED, BLOCKED, T>(arg);
+        testing_getf2_getrf_npvt<BATCHED, STRIDED, BLOCKED, T, I>(arg);
     }
 };
 
-class GETF2 : public GETF2_GETRF<false>
+class GETF2 : public GETF2_GETRF<false, rocblas_int>
 {
 };
 
-class GETRF : public GETF2_GETRF<true>
+class GETRF : public GETF2_GETRF<true, rocblas_int>
 {
 };
 
-class GETF2_NPVT : public GETF2_GETRF_NPVT<false>
+class GETF2_NPVT : public GETF2_GETRF_NPVT<false, rocblas_int>
 {
 };
 
-class GETRF_NPVT : public GETF2_GETRF_NPVT<true>
+class GETRF_NPVT : public GETF2_GETRF_NPVT<true, rocblas_int>
 {
 };
+
+class GETF2_64 : public GETF2_GETRF<false, int64_t>
+{
+};
+
+// class GETRF_64 : public GETF2_GETRF<true, int64_t>
+// {
+// };
+
+class GETF2_NPVT_64 : public GETF2_GETRF_NPVT<false, int64_t>
+{
+};
+
+// class GETRF_NPVT_64 : public GETF2_GETRF_NPVT<true, int64_t>
+// {
+// };
 
 // non-batch tests
 TEST_P(GETF2_NPVT, __float)
@@ -245,6 +261,86 @@ TEST_P(GETRF, __double_complex)
     run_tests<false, false, rocblas_double_complex>();
 }
 
+TEST_P(GETF2_NPVT_64, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GETF2_NPVT_64, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GETF2_NPVT_64, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GETF2_NPVT_64, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+// TEST_P(GETRF_NPVT_64, __float)
+// {
+//     run_tests<false, false, float>();
+// }
+
+// TEST_P(GETRF_NPVT_64, __double)
+// {
+//     run_tests<false, false, double>();
+// }
+
+// TEST_P(GETRF_NPVT_64, __float_complex)
+// {
+//     run_tests<false, false, rocblas_float_complex>();
+// }
+
+// TEST_P(GETRF_NPVT_64, __double_complex)
+// {
+//     run_tests<false, false, rocblas_double_complex>();
+// }
+
+TEST_P(GETF2_64, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GETF2_64, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GETF2_64, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GETF2_64, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+// TEST_P(GETRF_64, __float)
+// {
+//     run_tests<false, false, float>();
+// }
+
+// TEST_P(GETRF_64, __double)
+// {
+//     run_tests<false, false, double>();
+// }
+
+// TEST_P(GETRF_64, __float_complex)
+// {
+//     run_tests<false, false, rocblas_float_complex>();
+// }
+
+// TEST_P(GETRF_64, __double_complex)
+// {
+//     run_tests<false, false, rocblas_double_complex>();
+// }
+
 // batched tests
 TEST_P(GETF2_NPVT, batched__float)
 {
@@ -325,6 +421,86 @@ TEST_P(GETRF, batched__double_complex)
 {
     run_tests<true, true, rocblas_double_complex>();
 }
+
+TEST_P(GETF2_NPVT_64, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(GETF2_NPVT_64, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(GETF2_NPVT_64, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(GETF2_NPVT_64, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
+// TEST_P(GETRF_NPVT_64, batched__float)
+// {
+//     run_tests<true, true, float>();
+// }
+
+// TEST_P(GETRF_NPVT_64, batched__double)
+// {
+//     run_tests<true, true, double>();
+// }
+
+// TEST_P(GETRF_NPVT_64, batched__float_complex)
+// {
+//     run_tests<true, true, rocblas_float_complex>();
+// }
+
+// TEST_P(GETRF_NPVT_64, batched__double_complex)
+// {
+//     run_tests<true, true, rocblas_double_complex>();
+// }
+
+TEST_P(GETF2_64, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(GETF2_64, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(GETF2_64, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(GETF2_64, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
+// TEST_P(GETRF_64, batched__float)
+// {
+//     run_tests<true, true, float>();
+// }
+
+// TEST_P(GETRF_64, batched__double)
+// {
+//     run_tests<true, true, double>();
+// }
+
+// TEST_P(GETRF_64, batched__float_complex)
+// {
+//     run_tests<true, true, rocblas_float_complex>();
+// }
+
+// TEST_P(GETRF_64, batched__double_complex)
+// {
+//     run_tests<true, true, rocblas_double_complex>();
+// }
 
 // strided_batched cases
 TEST_P(GETF2_NPVT, strided_batched__float)
@@ -407,6 +583,86 @@ TEST_P(GETRF, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+TEST_P(GETF2_NPVT_64, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GETF2_NPVT_64, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GETF2_NPVT_64, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GETF2_NPVT_64, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
+// TEST_P(GETRF_NPVT_64, strided_batched__float)
+// {
+//     run_tests<false, true, float>();
+// }
+
+// TEST_P(GETRF_NPVT_64, strided_batched__double)
+// {
+//     run_tests<false, true, double>();
+// }
+
+// TEST_P(GETRF_NPVT_64, strided_batched__float_complex)
+// {
+//     run_tests<false, true, rocblas_float_complex>();
+// }
+
+// TEST_P(GETRF_NPVT_64, strided_batched__double_complex)
+// {
+//     run_tests<false, true, rocblas_double_complex>();
+// }
+
+TEST_P(GETF2_64, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GETF2_64, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GETF2_64, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GETF2_64, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
+// TEST_P(GETRF_64, strided_batched__float)
+// {
+//     run_tests<false, true, float>();
+// }
+
+// TEST_P(GETRF_64, strided_batched__double)
+// {
+//     run_tests<false, true, double>();
+// }
+
+// TEST_P(GETRF_64, strided_batched__float_complex)
+// {
+//     run_tests<false, true, rocblas_float_complex>();
+// }
+
+// TEST_P(GETRF_64, strided_batched__double_complex)
+// {
+//     run_tests<false, true, rocblas_double_complex>();
+// }
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          GETF2_NPVT,
                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
@@ -438,3 +694,35 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          GETRF,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GETF2_NPVT_64,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GETF2_NPVT_64,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
+
+// INSTANTIATE_TEST_SUITE_P(daily_lapack,
+//                          GETRF_NPVT_64,
+//                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
+
+// INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+//                          GETRF_NPVT_64,
+//                          Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GETF2_64,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GETF2_64,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
+
+// INSTANTIATE_TEST_SUITE_P(daily_lapack,
+//                          GETRF_64,
+//                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
+
+// INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+//                          GETRF_64,
+//                          Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
