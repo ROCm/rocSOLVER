@@ -4562,6 +4562,86 @@ inline rocblas_status rocsolver_getrs(bool STRIDED,
                    : rocsolver_zgetrs(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
 }
 
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      float* A,
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      float* B,
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return STRIDED ? rocsolver_sgetrs_strided_batched_64(handle, trans, n, nrhs, A, lda, stA, ipiv,
+                                                         stP, B, ldb, stB, bc)
+                   : rocsolver_sgetrs_64(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      double* A,
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      double* B,
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return STRIDED ? rocsolver_dgetrs_strided_batched_64(handle, trans, n, nrhs, A, lda, stA, ipiv,
+                                                         stP, B, ldb, stB, bc)
+                   : rocsolver_dgetrs_64(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      rocblas_float_complex* A,
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      rocblas_float_complex* B,
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return STRIDED ? rocsolver_cgetrs_strided_batched_64(handle, trans, n, nrhs, A, lda, stA, ipiv,
+                                                         stP, B, ldb, stB, bc)
+                   : rocsolver_cgetrs_64(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      rocblas_double_complex* A,
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      rocblas_double_complex* B,
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return STRIDED ? rocsolver_zgetrs_strided_batched_64(handle, trans, n, nrhs, A, lda, stA, ipiv,
+                                                         stP, B, ldb, stB, bc)
+                   : rocsolver_zgetrs_64(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+}
+
 // batched
 inline rocblas_status rocsolver_getrs(bool STRIDED,
                                       rocblas_handle handle,
@@ -4633,6 +4713,78 @@ inline rocblas_status rocsolver_getrs(bool STRIDED,
                                       rocblas_int bc)
 {
     return rocsolver_zgetrs_batched(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      float* const A[],
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      float* const B[],
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return rocsolver_sgetrs_batched_64(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      double* const A[],
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      double* const B[],
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return rocsolver_dgetrs_batched_64(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      rocblas_float_complex* const A[],
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      rocblas_float_complex* const B[],
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return rocsolver_cgetrs_batched_64(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
+}
+
+inline rocblas_status rocsolver_getrs(bool STRIDED,
+                                      rocblas_handle handle,
+                                      rocblas_operation trans,
+                                      int64_t n,
+                                      int64_t nrhs,
+                                      rocblas_double_complex* const A[],
+                                      int64_t lda,
+                                      rocblas_stride stA,
+                                      int64_t* ipiv,
+                                      rocblas_stride stP,
+                                      rocblas_double_complex* const B[],
+                                      int64_t ldb,
+                                      rocblas_stride stB,
+                                      int64_t bc)
+{
+    return rocsolver_zgetrs_batched_64(handle, trans, n, nrhs, A, lda, ipiv, stP, B, ldb, bc);
 }
 /********************************************************/
 

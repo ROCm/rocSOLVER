@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -553,6 +553,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    size_t* size_iipiv,
                                    size_t* size_iinfo,
                                    bool* optim_mem,
+                                   const rocblas_int lda = 1,
                                    const rocblas_int inca = 1)
 {
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
@@ -605,13 +606,13 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         // extra workspace for calling largest possible TRSM
         rocsolver_trsm_mem<BATCHED, STRIDED, T>(
             rocblas_side_left, rocblas_operation_none, min(dim, 512), n, batch_count, size_work1,
-            size_work2, size_work3, size_work4, optim_mem, true, inca, inca);
+            size_work2, size_work3, size_work4, optim_mem, true, lda, lda, inca, inca);
         if(!pivot)
         {
             size_t w1, w2, w3, w4;
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, rocblas_operation_none, m,
                                                     min(dim, 512), batch_count, &w1, &w2, &w3, &w4,
-                                                    optim_mem, true, inca, inca);
+                                                    optim_mem, true, lda, lda, inca, inca);
             *size_work1 = std::max(*size_work1, w1);
             *size_work2 = std::max(*size_work2, w2);
             *size_work3 = std::max(*size_work3, w3);

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -172,7 +172,8 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
     }
     else
     {
-        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n, blk,
+        rocblas_int nn = (n % 128 != 0) ? n : n + 1;
+        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, nn, blk, 1, 1,
                                          batch_count, &w1b, size_work2, &w3b, size_work4);
         *size_work1 = max(w1a, w1b);
         *size_work3 = max(w3a, w3b);
