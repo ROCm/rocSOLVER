@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -199,47 +199,47 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                               T** work);
 
 // ger
-template <bool CONJ, typename T, typename U>
+template <bool CONJ, typename T, typename I, typename U>
 rocblas_status rocsolver_ger(rocblas_handle handle,
-                             rocblas_int m,
-                             rocblas_int n,
+                             I m,
+                             I n,
                              const T* alpha,
                              rocblas_stride stridea,
                              U x,
                              rocblas_stride shiftX,
-                             rocblas_int incx,
+                             I incx,
                              rocblas_stride strideX,
                              U y,
                              rocblas_stride shiftY,
-                             rocblas_int incy,
+                             I incy,
                              rocblas_stride strideY,
                              U A,
                              rocblas_stride shiftA,
-                             rocblas_int lda,
+                             I lda,
                              rocblas_stride strideA,
-                             rocblas_int batch_count,
+                             I batch_count,
                              T** work);
 
-template <bool CONJ, typename T, typename U>
+template <bool CONJ, typename T, typename I, typename U>
 rocblas_status rocsolver_ger(rocblas_handle handle,
-                             rocblas_int m,
-                             rocblas_int n,
+                             I m,
+                             I n,
                              const T* alpha,
                              rocblas_stride stridea,
                              U x,
                              rocblas_stride shiftX,
-                             rocblas_int incx,
+                             I incx,
                              rocblas_stride strideX,
                              U y,
                              rocblas_stride shiftY,
-                             rocblas_int incy,
+                             I incy,
                              rocblas_stride strideY,
                              U A,
                              rocblas_stride shiftA,
-                             rocblas_int inca,
-                             rocblas_int lda,
+                             I inca,
+                             I lda,
                              rocblas_stride strideA,
-                             rocblas_int batch_count,
+                             I batch_count,
                              T** work);
 
 #ifdef OPTIMAL
