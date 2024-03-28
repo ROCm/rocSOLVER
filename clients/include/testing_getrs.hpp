@@ -35,17 +35,17 @@
 #include "rocsolver_arguments.hpp"
 #include "rocsolver_test.hpp"
 
-template <bool STRIDED, typename T, typename I, typename U>
+template <bool STRIDED, typename I, typename Td, typename Id>
 void getrs_checkBadArgs(const rocblas_handle handle,
                         const rocblas_operation trans,
                         const I n,
                         const I nrhs,
-                        T dA,
+                        Td dA,
                         const I lda,
                         const rocblas_stride stA,
-                        U dIpiv,
+                        Id dIpiv,
                         const rocblas_stride stP,
-                        T dB,
+                        Td dB,
                         const I ldb,
                         const rocblas_stride stB,
                         const I bc)
@@ -67,22 +67,22 @@ void getrs_checkBadArgs(const rocblas_handle handle,
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, trans, n, nrhs, (T) nullptr, lda, stA,
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, trans, n, nrhs, (Td) nullptr, lda, stA,
                                           dIpiv, stP, dB, ldb, stB, bc),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, trans, n, nrhs, dA, lda, stA,
-                                          (U) nullptr, stP, dB, ldb, stB, bc),
+                                          (Id) nullptr, stP, dB, ldb, stB, bc),
                           rocblas_status_invalid_pointer);
     EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, trans, n, nrhs, dA, lda, stA, dIpiv, stP,
-                                          (T) nullptr, ldb, stB, bc),
+                                          (Td) nullptr, ldb, stB, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, trans, 0, nrhs, (T) nullptr, lda, stA,
-                                          (U) nullptr, stP, (T) nullptr, ldb, stB, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, trans, 0, nrhs, (Td) nullptr, lda, stA,
+                                          (Id) nullptr, stP, (Td) nullptr, ldb, stB, bc),
                           rocblas_status_success);
     EXPECT_ROCBLAS_STATUS(rocsolver_getrs(STRIDED, handle, trans, n, 0, dA, lda, stA, dIpiv, stP,
-                                          (T) nullptr, ldb, stB, bc),
+                                          (Td) nullptr, ldb, stB, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
@@ -137,7 +137,7 @@ void testing_getrs_bad_arg()
     }
 }
 
-template <bool CPU, bool GPU, typename T, typename I, typename Td, typename Ud, typename Th, typename Uh, typename Vh>
+template <bool CPU, bool GPU, typename T, typename I, typename Td, typename Id, typename Th, typename Ih, typename Uh>
 void getrs_initData(const rocblas_handle handle,
                     const rocblas_operation trans,
                     const I n,
@@ -145,15 +145,15 @@ void getrs_initData(const rocblas_handle handle,
                     Td& dA,
                     const I lda,
                     const rocblas_stride stA,
-                    Ud& dIpiv,
+                    Id& dIpiv,
                     const rocblas_stride stP,
                     Td& dB,
                     const I ldb,
                     const rocblas_stride stB,
                     const I bc,
                     Th& hA,
-                    Uh& hIpiv,
-                    Vh& hIpiv_cpu,
+                    Ih& hIpiv,
+                    Uh& hIpiv_cpu,
                     Th& hB)
 {
     if(CPU)
@@ -196,7 +196,7 @@ void getrs_initData(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, typename T, typename I, typename Td, typename Ud, typename Th, typename Uh, typename Vh>
+template <bool STRIDED, typename T, typename I, typename Td, typename Id, typename Th, typename Ih, typename Uh>
 void getrs_getError(const rocblas_handle handle,
                     const rocblas_operation trans,
                     const I n,
@@ -204,15 +204,15 @@ void getrs_getError(const rocblas_handle handle,
                     Td& dA,
                     const I lda,
                     const rocblas_stride stA,
-                    Ud& dIpiv,
+                    Id& dIpiv,
                     const rocblas_stride stP,
                     Td& dB,
                     const I ldb,
                     const rocblas_stride stB,
                     const I bc,
                     Th& hA,
-                    Uh& hIpiv,
-                    Vh& hIpiv_cpu,
+                    Ih& hIpiv,
+                    Uh& hIpiv_cpu,
                     Th& hB,
                     Th& hBRes,
                     double* max_err)
@@ -246,7 +246,7 @@ void getrs_getError(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, typename T, typename I, typename Td, typename Ud, typename Th, typename Uh, typename Vh>
+template <bool STRIDED, typename T, typename I, typename Td, typename Id, typename Th, typename Ih, typename Uh>
 void getrs_getPerfData(const rocblas_handle handle,
                        const rocblas_operation trans,
                        const I n,
@@ -254,19 +254,19 @@ void getrs_getPerfData(const rocblas_handle handle,
                        Td& dA,
                        const I lda,
                        const rocblas_stride stA,
-                       Ud& dIpiv,
+                       Id& dIpiv,
                        const rocblas_stride stP,
                        Td& dB,
                        const I ldb,
                        const rocblas_stride stB,
                        const I bc,
                        Th& hA,
-                       Uh& hIpiv,
-                       Vh& hIpiv_cpu,
+                       Ih& hIpiv,
+                       Uh& hIpiv_cpu,
                        Th& hB,
                        double* gpu_time_used,
                        double* cpu_time_used,
-                       const rocblas_int hot_calls,
+                       const int hot_calls,
                        const int profile,
                        const bool profile_kernels,
                        const bool perf)
@@ -289,7 +289,7 @@ void getrs_getPerfData(const rocblas_handle handle,
                                    bc, hA, hIpiv, hIpiv_cpu, hB);
 
     // cold calls
-    for(I iter = 0; iter < 2; iter++)
+    for(int iter = 0; iter < 2; iter++)
     {
         getrs_initData<false, true, T>(handle, trans, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb,
                                        stB, bc, hA, hIpiv, hIpiv_cpu, hB);
@@ -313,7 +313,7 @@ void getrs_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(I iter = 0; iter < hot_calls; iter++)
+    for(int iter = 0; iter < hot_calls; iter++)
     {
         getrs_initData<false, true, T>(handle, trans, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb,
                                        stB, bc, hA, hIpiv, hIpiv_cpu, hB);
@@ -342,7 +342,7 @@ void testing_getrs(Arguments& argus)
 
     rocblas_operation trans = char2rocblas_operation(transC);
     I bc = argus.batch_count;
-    I hot_calls = argus.iters;
+    int hot_calls = argus.iters;
 
     rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
 
