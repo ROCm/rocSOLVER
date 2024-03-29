@@ -36,7 +36,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#define SPLIT_THDS 256
+#define STEBZ_SPLIT_THDS 256
 #define IBISEC_BLKS 64
 #define IBISEC_THDS 128
 
@@ -188,8 +188,8 @@ ROCSOLVER_KERNEL void stebz_case1_kernel(const rocblas_erange range,
     for the computations in the iterative bisection.
     Call the kernel with batch_count groups in Y, of DIM threads in X direction.
     Each thread will work with as many elements of the diagonal as needed.
-    Call the device function with do_split=false when it is sure that matrix has
-    only one split block -the case with calls from stedcx- **/
+    Call the device function with compact = true to get the output IS = [0, IS, nsplit]
+    as needed by stedcx. **/
 template <int DIM, typename T>
 __device__ void run_stebz_splitting(const int tid,
                                     const rocblas_erange range,
@@ -213,7 +213,7 @@ __device__ void run_stebz_splitting(const int tid,
                                     rocblas_int* sidx,
                                     T eps,
                                     T sfmin,
-                                    bool do_split = true)
+                                    bool compact = false)
 {
     // the number of elements worked by this thread is nn
     rocblas_int nn = (n - 1) / DIM;
@@ -233,65 +233,52 @@ __device__ void run_stebz_splitting(const int tid,
     rocblas_int tmpns = 0; //temporary number of blocks found
 
     // this thread find its split-off blocks if necessary
-    if(do_split)
+    // tmpIS stores the block indices found by this thread
+    tmpIS += offset;
+    for(rocblas_int i = 0; i < nn; ++i)
     {
-        // tmpIS stores the block indices found by this thread
-        tmpIS += offset;
+        j = i + offset;
 
-        for(rocblas_int i = 0; i < nn; ++i)
+        tmp = E[j];
+        tmp2 = tmp * tmp;
+
+        if(std::abs(D[j] * D[j + 1]) * eps * eps + sfmin > tmp2)
         {
-            j = i + offset;
-
-            tmp = E[j];
-            tmp2 = tmp * tmp;
-
-            if(std::abs(D[j] * D[j + 1]) * eps * eps + sfmin > tmp2)
-            {
-                // found split
-                tmpIS[tmpns] = j;
-                tmpns++;
-                Esqr[j] = 0;
-                W[j] = 0;
-            }
-            else
-            {
-                // no split; E[j] can be pivot
-                Esqr[j] = tmp2;
-                W[j] = tmp;
-            }
+            // found split
+            tmpIS[tmpns] = j;
+            tmpns++;
+            Esqr[j] = 0;
+            W[j] = 0;
         }
-        sidx[tid] = tmpns;
-    }
-    // otherwise only compute pivots
-    else
-    {
-        for(rocblas_int i = 0; i < nn; ++i)
+        else
         {
-            j = i + offset;
-            tmp = E[j];
-            tmp2 = tmp * tmp;
+            // no split; E[j] can be pivot
             Esqr[j] = tmp2;
             W[j] = tmp;
         }
     }
+    sidx[tid] = tmpns;
     __syncthreads();
 
     // find split-off blocks in entire matrix
-    if(do_split)
-    {
-        offset = 0;
-        for(int i = 0; i < tid; ++i)
-            offset += sidx[i];
-        for(int i = 0; i < tmpns; ++i)
-            IS[i + offset] = tmpIS[i] + 1;
-    }
+    offset = compact ? 1 : 0;
+    for(int i = 0; i < tid; ++i)
+        offset += sidx[i];
+    for(int i = 0; i < tmpns; ++i)
+        IS[i + offset] = tmpIS[i] + 1;
 
     // total number of split blocks
     if(tid == DIM - 1)
     {
         offset += tmpns;
-        *nsplit = offset + 1;
         IS[offset] = n;
+        if(compact)
+        {
+            IS[0] = 0;
+            IS[n + 1] = offset;
+        }
+        else
+            *nsplit = offset + 1;
     }
     __syncthreads();
 
@@ -408,7 +395,7 @@ __device__ void run_stebz_splitting(const int tid,
 }
 
 template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
+ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
     stebz_splitting_kernel(const rocblas_erange range,
                            const rocblas_int n,
                            const T vlow,
@@ -457,11 +444,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
 
     // shared memory setup for iamax.
     // (sidx also temporarily stores the number of blocks found by each thread)
-    __shared__ T sval[SPLIT_THDS];
-    __shared__ rocblas_int sidx[SPLIT_THDS];
+    __shared__ T sval[STEBZ_SPLIT_THDS];
+    __shared__ rocblas_int sidx[STEBZ_SPLIT_THDS];
 
-    run_stebz_splitting<SPLIT_THDS>(tid, range, n, vlow, vup, ilow, iup, D, E, nsplit, W, IS, tmpIS,
-                                    pivmin, Esqr, bounds, inter, ninter, sval, sidx, eps, sfmin);
+    run_stebz_splitting<STEBZ_SPLIT_THDS>(tid, range, n, vlow, vup, ilow, iup, D, E, nsplit, W, IS,
+                                          tmpIS, pivmin, Esqr, bounds, inter, ninter, sval, sidx,
+                                          eps, sfmin);
 }
 
 /** STEBZ_BISECTION implements the iterative bisection.
@@ -1156,10 +1144,10 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
     T atol = (abstol == 0) ? 2 * sfmin : abstol;
 
     // split matrix into independent blocks and prepare for iterative bisection
-    ROCSOLVER_LAUNCH_KERNEL(stebz_splitting_kernel<T>, dim3(1, batch_count), dim3(SPLIT_THDS), 0,
-                            stream, range, n, vlow, vup, ilow, iup, D, shiftD, strideD, E, shiftE,
-                            strideE, nsplit, W, strideW, IS, strideIS, work, pivmin, Esqr, bounds,
-                            inter, ninter, eps, sfmin);
+    ROCSOLVER_LAUNCH_KERNEL(stebz_splitting_kernel<T>, dim3(1, batch_count), dim3(STEBZ_SPLIT_THDS),
+                            0, stream, range, n, vlow, vup, ilow, iup, D, shiftD, strideD, E,
+                            shiftE, strideE, nsplit, W, strideW, IS, strideIS, work, pivmin, Esqr,
+                            bounds, inter, ninter, eps, sfmin);
 
     // Implement iterative bisection on each split block.
     // The next kernel has IBISEC_BLKS thread-blocks with IBISEC_THDS threads.

@@ -109,7 +109,7 @@ rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
     // execution
     return rocsolver_stedcx_template<false, false, T>(
         handle, erange, n, vl, vu, il, iu, D, strideD, E, strideE, nev, W, strideW, C, shiftC, ldc,
-        strideC, info, batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz,
+        strideC, info, batch_count, (S*)work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz,
         (rocblas_int*)splits, (S**)workArr);
 }
 

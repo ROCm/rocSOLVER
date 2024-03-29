@@ -97,6 +97,68 @@ __host__ __device__ inline rocblas_int
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
+/** STEDCX_SPLIT_KERNEL implements the solver phase of the DC algorithm to
+    **/
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
+    stedcx_split_kernel(const rocblas_erange range,
+                        const rocblas_int n,
+                        const S vl,
+                        const S vu,
+                        const rocblas_int il,
+                        const rocblas_int iu,
+                        S* DD,
+                        const rocblas_stride strideD,
+                        S* EE,
+                        const rocblas_stride strideE,
+                        S* WW,
+                        const rocblas_stride strideW,
+                        rocblas_int* splitsA,
+                        S* workA,
+                        const S eps,
+                        const S ssfmin)
+{
+    // batch instance
+    const int tid = hipThreadIdx_x;
+    const int bid = hipBlockIdx_y;
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
+    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    // workspace
+    rocblas_int* ninter = splits + n + 2;
+    rocblas_int* tmpIS = ninter + 2 * n;
+    // using W as temp array to store the spit off-diagonal
+    // (to use in case range = index)
+    S* W = WW + bid * strideW;
+    //nsplit is not needed; the number of split blocks goes into last entry
+    //of splits when compact = true
+    bool compact = true;
+    rocblas_int* nsplit = nullptr;
+    // range bounds
+    S* bounds = workA + bid * (3 * n + 2);
+    S* pivmin = bounds + 2;
+    S* Esqr = pivmin + 1;
+    S* inter = Esqr + n - 1;
+
+    /*    T* pivmin = pivminA + bid;
+    T* Esqr = EsqrA + bid * (n - 1);
+    T* bounds = boundsA + 2 * bid;
+    rocblas_int* tmpIS = tmpISA + (bid * n);
+    T* inter = interA + bid * (2 * n);
+    rocblas_int* ninter = ninterA + bid * (2 * n);
+*/
+
+    // shared memory setup for iamax.
+    // (sidx also temporarily stores the number of blocks found by each thread)
+    __shared__ S sval[STEBZ_SPLIT_THDS];
+    __shared__ rocblas_int sidx[STEBZ_SPLIT_THDS];
+
+    run_stebz_splitting<STEBZ_SPLIT_THDS>(tid, range, n, vl, vu, il, iu, D, E, nsplit, W, splits,
+                                          tmpIS, pivmin, Esqr, bounds, inter, ninter, sval, sidx,
+                                          eps, ssfmin, compact);
+}
+
+//--------------------------------------------------------------------------------------//
 /** STEDCX_SOLVE_KERNEL implements the solver phase of the DC algorithm to
 	compute the eigenvalues/eigenvectors of the different sub-blocks of each split-block.
 	A matrix in the batch could have many split-blocks, and each split-block could be
@@ -282,10 +344,11 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
         return;
     }
 
-    size_t s1, s2;
+    size_t s1, s2, sq;
 
     // requirements for solver of small independent blocks
-    s1 = sizeof(S) * (n * n + 2) * batch_count;
+    rocsolver_steqr_getMemorySize<T, S>(rocblas_evect_tridiagonal, n, batch_count, &sq);
+    s1 = sizeof(S) * (n + 2) * batch_count + std::max(sq, sizeof(S) * n * 2 * batch_count);
 
     // extra requirements for original eigenvectors of small independent blocks
     *size_tempvect = (n * n) * batch_count * sizeof(S);
@@ -298,7 +361,7 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
         *size_workArr = sizeof(S*) * batch_count;
     else
         *size_workArr = 0;
-    *size_work_stack = max(s1, s2);
+    *size_work_stack = std::max(s1, s2);
 
     // size for split blocks and sub-blocks positions
     *size_splits = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
@@ -375,7 +438,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                          const rocblas_stride strideC,
                                          rocblas_int* info,
                                          const rocblas_int batch_count,
-                                         void* work_stack,
+                                         S* work_stack,
                                          S* tempvect,
                                          S* tempgemm,
                                          S* tmpz,
@@ -414,6 +477,9 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     ssfmax = sqrt(ssfmax) / S(3.0);
     rocblas_int blocksn = (n - 1) / BS2 + 1;
 
+    //print_device_matrix(std::cout,"D",1,n,D,1);
+    //print_device_matrix(std::cout,"E",1,n-1,E,1);
+
     // initialize identity matrix in C if required
     ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2), 0,
                             stream, n, n, C, shiftC, ldc, strideC);
@@ -427,28 +493,39 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     // find max number of sub-blocks to consider during the divide phase
     rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_bisection>(n);
 
-    // find independent split blocks in matrix
-    ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D, strideD, E,
-                            strideE, splits, eps);
+    // find independent split blocks in matrix and prepare range for partial decomposition
+    ROCSOLVER_LAUNCH_KERNEL(stedcx_split_kernel, dim3(1, batch_count), dim3(STEBZ_SPLIT_THDS), 0,
+                            stream, erange, n, vl, vu, il, iu, D, strideD, E, strideE, W, strideW,
+                            splits, work_stack, eps, ssfmin);
+    //printf("after splits\n");
+    //print_device_matrix(std::cout,"D",1,n,D,1);
+    //print_device_matrix(std::cout,"E",1,n-1,E,1);
+    //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
 
     // 1. divide phase
     //-----------------------------
     ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_bisection, S>),
                             dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D, strideD, E,
                             strideE, splits);
+    //printf("after divide\n");
+    //print_device_matrix(std::cout,"D",1,n,D,1);
+    //print_device_matrix(std::cout,"E",1,n-1,E,1);
+    //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
 
     // 2. solve phase
     //-----------------------------
-    size_t lmemsize = (n + n % 2) * (sizeof(rocblas_int) + sizeof(S));
+    ROCSOLVER_LAUNCH_KERNEL((stedc_solve_kernel<S>), dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count),
+                            dim3(1), 0, stream, n, D, strideD, E, strideE, tempvect, 0, ldt,
+                            strideT, info, work_stack + n + 2, splits, eps, ssfmin, ssfmax);
+    //printf("after solve\n");
+    //print_device_matrix(std::cout,"D",1,n,D,1);
+    //print_device_matrix(std::cout,"E",1,n-1,E,1);
+    //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
+    //print_device_matrix(std::cout,"C",n,n,tempvect,ldt);
 
-    /*    ROCSOLVER_LAUNCH_KERNEL((stedcx_solve_kernel<S>),
-                            dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
-                            lmemsize, stream, n, D, strideD, E, strideE, tempvect,
-                            0, ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
-*/
     // 3. merge phase
     //----------------
-    lmemsize = sizeof(S) * STEDC_BDIM;
+    size_t lmemsize = sizeof(S) * STEDC_BDIM;
 
     ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_bisection, S>),
                             dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
@@ -459,10 +536,13 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     //----------------------
     // eigenvectors C <- C*tempvect
     local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
-                                    (S*)work_stack, 0, ldt, strideT, batch_count, workArr);
+                                    work_stack, 0, ldt, strideT, batch_count, workArr);
 
     ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D, strideD,
                             C, shiftC, ldc, strideC);
+
+    //print_device_matrix(std::cout,"W",1,n,D,1);
+    //print_device_matrix(std::cout,"C",n,n,C,ldc);
 
     return rocblas_status_success;
 }
