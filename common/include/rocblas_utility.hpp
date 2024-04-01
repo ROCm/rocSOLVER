@@ -122,7 +122,7 @@ __forceinline__ __device__ __host__ T load_scalar(T x, rocblas_int idx, rocblas_
 // For device pointers
 template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T* p, I block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T* p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p + block * stride + offset;
 }
@@ -130,14 +130,14 @@ __forceinline__ __device__ __host__ T*
 // For device array of device pointers
 template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T* const* p, I block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T* const* p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p[block] + offset;
 }
 
 template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T** p, I block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T** p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p[block] + offset;
 }

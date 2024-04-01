@@ -293,18 +293,18 @@ rocblas_status getf2_run_small(rocblas_handle handle,
                                I* permut_idx,
                                const rocblas_stride stride);
 
-template <typename T, typename I, typename INFO, typename U>
+template <typename T, typename U>
 rocblas_status getri_run_small(rocblas_handle handle,
-                               const I n,
+                               const rocblas_int n,
                                U A,
-                               const rocblas_stride shiftA,
-                               const I lda,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
                                const rocblas_stride strideA,
-                               I* ipiv,
-                               const rocblas_stride shiftP,
+                               rocblas_int* ipiv,
+                               const rocblas_int shiftP,
                                const rocblas_stride strideP,
-                               INFO* info,
-                               const I batch_count,
+                               rocblas_int* info,
+                               const rocblas_int batch_count,
                                const bool complete,
                                const bool pivot);
 

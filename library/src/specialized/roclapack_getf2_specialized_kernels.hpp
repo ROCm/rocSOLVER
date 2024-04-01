@@ -46,10 +46,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SSKER_MAX_M)
 
     // batch instance
     T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-    I *ipiv, *permut;
-    ipiv = load_ptr_batch<I>(ipivA, id, shiftP, strideP);
-    if(permut_idx)
-        permut = permut_idx + id * stridePI;
+    I* ipiv = load_ptr_batch<I>(ipivA, id, shiftP, strideP);
+    I* permut = (permut_idx != nullptr ? permut_idx + id * stridePI : nullptr);
     INFO* info = infoA + id;
 
     // shared memory (for communication between threads in group)
@@ -241,10 +239,8 @@ ROCSOLVER_KERNEL void getf2_panel_kernel(const I m,
 
     // batch instance
     T* A = load_ptr_batch<T>(AA, id, shiftA, strideA);
-    I *ipiv, *permut;
-    ipiv = load_ptr_batch<I>(ipivA, id, shiftP, strideP);
-    if(permut_idx)
-        permut = permut_idx + id * stridePI;
+    I* ipiv = load_ptr_batch<I>(ipivA, id, shiftP, strideP);
+    I* permut = (permut_idx != nullptr ? permut_idx + id * stridePI : nullptr);
     INFO* info = infoA + id;
 
     // shared memory (for communication between threads in group)
