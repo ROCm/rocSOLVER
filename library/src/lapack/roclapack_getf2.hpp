@@ -513,14 +513,14 @@ void rocsolver_getf2_getMemorySize(const I m,
 }
 
 /** argument checking **/
-template <typename T, typename I>
+template <typename T, typename I, typename INFO>
 rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
                                               const I m,
                                               const I n,
                                               const I lda,
                                               T A,
                                               I* ipiv,
-                                              I* info,
+                                              INFO* info,
                                               const bool pivot,
                                               const I batch_count = 1)
 {
