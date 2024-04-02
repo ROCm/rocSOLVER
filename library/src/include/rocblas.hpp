@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1879,28 +1879,32 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 
 // trsm memory sizes
 template <bool BATCHED, typename T>
-void rocblasCall_trsm_mem(rocblas_side side,
-                          rocblas_operation transA,
-                          rocblas_int m,
-                          rocblas_int n,
-                          rocblas_int batch_count,
-                          size_t* x_temp,
-                          size_t* x_temp_arr,
-                          size_t* invA,
-                          size_t* invA_arr)
+rocblas_status rocblasCall_trsm_mem(rocblas_side side,
+                                    rocblas_operation transA,
+                                    rocblas_int m,
+                                    rocblas_int n,
+                                    rocblas_int batch_count,
+                                    size_t* x_temp,
+                                    size_t* x_temp_arr,
+                                    size_t* invA,
+                                    size_t* invA_arr)
 {
-    size_t no_opt_size;
+    size_t no_opt_size = 0;
     /** TODO: For now, we always request the size for optimal performance.
         no_opt_size could be used in the future if we generalize the use of
         rocblas_workmode parameter **/
 
     // can't infer batched based on input params
     if constexpr(BATCHED)
-        rocblas_internal_trsm_batched_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
-                                                        x_temp_arr, invA, invA_arr, &no_opt_size);
+    {
+        return rocblas_internal_trsm_batched_workspace_size<T>(
+            side, transA, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
+    }
     else
-        rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
-                                                x_temp_arr, invA, invA_arr, &no_opt_size);
+    {
+        return rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
+                                                       x_temp_arr, invA, invA_arr, &no_opt_size);
+    }
 }
 
 // trsm
