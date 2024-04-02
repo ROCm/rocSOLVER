@@ -1897,7 +1897,7 @@ void rocblasCall_trsm_mem(rocblas_side side,
         rocblas_workmode parameter **/
 
     // can't infer batched based on input params
-    if(std::is_same<I, rocblas_int>::value)
+    if constexpr(std::is_same<I, rocblas_int>::value)
     {
         if constexpr(BATCHED)
             rocblas_internal_trsm_batched_workspace_size<T>(side, transA, m, n, batch_count, 0,
@@ -1952,7 +1952,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     const T* supplied_invA = nullptr;
-    if(std::is_same<I, rocblas_int>::value)
+    if constexpr(std::is_same<I, rocblas_int>::value)
         return rocblas_internal_trsm_template(handle, side, uplo, transA, diag, m, n, alpha, A,
                                               offset_A, lda, stride_A, B, offset_B, ldb, stride_B,
                                               batch_count, optimal_mem, x_temp, x_temp_arr, invA,
@@ -1996,7 +1996,7 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     const T* const* supplied_invA = nullptr;
-    if(std::is_same<I, rocblas_int>::value)
+    if constexpr(std::is_same<I, rocblas_int>::value)
         return rocblas_internal_trsm_batched_template(handle, side, uplo, transA, diag, m, n, alpha,
                                                       A, offset_A, lda, stride_A, B, offset_B, ldb,
                                                       stride_B, batch_count, optimal_mem, x_temp,
@@ -2044,12 +2044,12 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    I blocks = (batch_count - 1) / 256 + 1;
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, stride_A,
                             batch_count);
 
     U supplied_invA = nullptr;
-    if(std::is_same<I, rocblas_int>::value)
+    if constexpr(std::is_same<I, rocblas_int>::value)
         return rocblas_internal_trsm_batched_template(
             handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A,
             lda, stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr,
