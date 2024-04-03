@@ -54,15 +54,6 @@ if(WIN32)
   )
 endif()
 
-# hipcc adds these options automatically. These options might have an effect
-# on performance, so add them when building with clang directly, just in case.
-if(CMAKE_CXX_COMPILER MATCHES ".*clang++.*")
-  target_compile_options(rocsolver-common INTERFACE
-    "SHELL:-mllvm -amdgpu-early-inline-all=true"
-    "SHELL:-mllvm -amdgpu-function-calls=false"
-  )
-endif()
-
 if(WERROR)
   target_compile_options(rocsolver-common INTERFACE
     -Werror=vla
