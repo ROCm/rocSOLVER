@@ -70,7 +70,7 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
     rocsolver_sytd2_hetd2_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, size_work,
                                                     size_norms, &s2, size_workArr);
 
-    *size_tmptau_W = max(s1, s2);
+    *size_tmptau_W = std::max(s1, s2);
 }
 
 template <typename T, typename S, typename U>

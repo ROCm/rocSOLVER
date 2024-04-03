@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -105,7 +105,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
                 rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb, batch_count,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
 
-        *size_work1 = max(s1, s2);
+        *size_work1 = std::max(s1, s2);
     }
 }
 
@@ -178,7 +178,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         while(j < n - POTRF_POTF2_SWITCHSIZE)
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, nb); // number of columns in the block
+            jb = std::min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
@@ -210,7 +210,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         while(j < n - POTRF_POTF2_SWITCHSIZE)
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, nb); // number of columns in the block
+            jb = std::min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);

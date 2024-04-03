@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -62,7 +62,7 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
     else if(side == rocblas_side_right)
         *size_Abyx = m;
     else
-        *size_Abyx = max(m, n);
+        *size_Abyx = std::max(m, n);
     *size_Abyx *= sizeof(T) * batch_count;
 
     // size of array of pointers to workspace
@@ -99,7 +99,7 @@ rocblas_status rocsolver_larf_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((m * n && !A) || (left && m && (!alpha || !x)) || (!left && n && (!alpha || !x)))
+    if((m && n && !A) || (left && m && (!alpha || !x)) || (!left && n && (!alpha || !x)))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

@@ -260,7 +260,7 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
         {
             // 1. generate Householder reflector to annihilate A(j+2:n-1,j)
             rocsolver_larfg_template<T>(handle, n - 1 - j, A, shiftA + idx2D(j + 1, j, lda), A,
-                                        shiftA + idx2D(min(j + 2, n - 1), j, lda), 1, strideA,
+                                        shiftA + idx2D(std::min(j + 2, n - 1), j, lda), 1, strideA,
                                         tmptau, stridet, batch_count, work, norms);
 
             // 2. copy to E(j) the corresponding off-diagonal element of A, which is set to 1

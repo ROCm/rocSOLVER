@@ -112,7 +112,7 @@ rocblas_status rocsolver_ormtr_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((nq > 0 && !A) || (nq > 1 && !ipiv) || (m * n && !C))
+    if((nq > 0 && !A) || (nq > 1 && !ipiv) || (m && n && !C))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

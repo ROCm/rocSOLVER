@@ -75,7 +75,7 @@ void rocsolver_orgtr_ungtr_getMemorySize(const rocblas_fill uplo,
                                                         size_scalars, &w2, size_Abyx_tmptr,
                                                         size_trfact, size_workArr);
     }
-    *size_work = max(w1, w2);
+    *size_work = std::max(w1, w2);
 }
 
 template <typename T, typename U>
