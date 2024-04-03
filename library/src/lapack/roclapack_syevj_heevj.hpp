@@ -166,6 +166,7 @@ __device__ void run_syevj(const rocblas_int dimx,
         local_diag += std::real(sines_diag[i]);
     }
     S tolerance = (local_res + local_diag) * abstol * abstol;
+    S small_num = get_safemin<S>()/eps;
 
     // execute sweeps
     rocblas_int count = (half_n - 1) / dimx + 1;
@@ -187,7 +188,7 @@ __device__ void run_syevj(const rocblas_int dimx,
                     aij = Acpy[i + j * n];
                     mag = std::abs(aij);
 
-                    if(mag < eps)
+                    if(mag*mag < small_num)
                     {
                         c = 1;
                         s1 = 0;
@@ -651,6 +652,8 @@ ROCSOLVER_KERNEL void syevj_diag_kernel(const rocblas_int n,
         sh_bottom[tix] = x2;
     }
 
+    S small_num = get_safemin<S>()/eps;
+
     // for each off-diagonal element (indexed using top/bottom pairs), calculate the Jacobi rotation and apply it to A
     i = x1;
     j = x2;
@@ -662,7 +665,7 @@ ROCSOLVER_KERNEL void syevj_diag_kernel(const rocblas_int n,
             mag = std::abs(aij);
 
             // calculate rotation J
-            if(mag < eps)
+            if(mag*mag < small_num)
             {
                 c = 1;
                 s1 = 0;
@@ -908,6 +911,8 @@ ROCSOLVER_KERNEL void syevj_offd_kernel(const rocblas_int blocks,
         J[xx2 + yy2 * ldj] = (xx2 == yy2 ? 1 : 0);
     }
 
+    S small_num = get_safemin<S>()/eps;
+
     // for each element, calculate the Jacobi rotation and apply it to A
     for(k = 0; k < nb_max; k++)
     {
@@ -921,7 +926,7 @@ ROCSOLVER_KERNEL void syevj_offd_kernel(const rocblas_int blocks,
             mag = std::abs(aij);
 
             // calculate rotation J
-            if(mag < eps)
+            if(mag*mag < small_num)
             {
                 c = 1;
                 s1 = 0;
