@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -81,7 +81,7 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
         }
         __syncthreads();
 
-        if(max(absakk, colmax) == 0)
+        if(std::max(absakk, colmax) == 0)
         {
             // singularity found
             if(tid == 0 && _info == 0)
@@ -104,7 +104,7 @@ __device__ void sytf2_device_upper(const rocblas_int tid,
                 {
                     iamax<MAX_THDS>(tid, imax, A + imax * lda, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, sval[0]);
+                        rowmax = std::max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -252,7 +252,7 @@ __device__ void sytf2_device_lower(const rocblas_int tid,
         }
         __syncthreads();
 
-        if(max(absakk, colmax) == 0)
+        if(std::max(absakk, colmax) == 0)
         {
             // singularity found
             if(tid == 0 && _info == 0)
@@ -275,7 +275,7 @@ __device__ void sytf2_device_lower(const rocblas_int tid,
                 {
                     iamax<MAX_THDS>(tid, n - imax - 1, A + (imax + 1) + imax * lda, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, sval[0]);
+                        rowmax = std::max(rowmax, sval[0]);
                 }
                 __syncthreads();
 

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -74,7 +74,7 @@ void rocsolver_orgqr_ungqr_getMemorySize(const rocblas_int m,
     {
         rocblas_int jb = xxGQx_BLOCKSIZE;
         rocblas_int j = ((k - xxGQx_xxGQx2_SWITCHSIZE - 1) / jb) * jb;
-        rocblas_int kk = min(k, j + jb);
+        rocblas_int kk = std::min(k, j + jb);
 
         // size of workspace is maximum of what is needed by larft and larfb.
         // size of Abyx_tmptr is maximum of what is needed by org2r/ung2r and larfb.
@@ -130,7 +130,7 @@ rocblas_status rocsolver_orgqr_ungqr_template(rocblas_handle handle,
     rocblas_int j = ((k - xxGQx_xxGQx2_SWITCHSIZE - 1) / jb) * jb;
 
     // start of the unblocked block
-    rocblas_int kk = min(k, j + jb);
+    rocblas_int kk = std::min(k, j + jb);
 
     rocblas_int blocksy, blocksx;
 

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -76,7 +76,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
             rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m - 1, m - 1, m - 1, batch_count,
                                                             size_scalars, &s2, size_Abyx_tmptr,
                                                             size_trfact, size_workArr);
-            *size_work = max(s1, s2);
+            *size_work = std::max(s1, s2);
         }
     }
 
@@ -96,7 +96,7 @@ void rocsolver_orgbr_ungbr_getMemorySize(const rocblas_storev storev,
             rocsolver_orglq_unglq_getMemorySize<BATCHED, T>(n - 1, n - 1, n - 1, batch_count,
                                                             size_scalars, &s2, size_Abyx_tmptr,
                                                             size_trfact, size_workArr);
-            *size_work = max(s1, s2);
+            *size_work = std::max(s1, s2);
         }
     }
 }
@@ -121,9 +121,9 @@ rocblas_status rocsolver_orgbr_argCheck(rocblas_handle handle,
     // 2. invalid size
     if(m < 0 || n < 0 || k < 0 || lda < m)
         return rocblas_status_invalid_size;
-    if(!row && (n > m || n < min(m, k)))
+    if(!row && (n > m || n < std::min(m, k)))
         return rocblas_status_invalid_size;
-    if(row && (m > n || m < min(n, k)))
+    if(row && (m > n || m < std::min(n, k)))
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -131,7 +131,8 @@ rocblas_status rocsolver_orgbr_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((m * n && !A) || (row && min(n, k) > 0 && !ipiv) || (!row && min(m, k) > 0 && !ipiv))
+    if((m && n && !A) || (row && std::min(n, k) > 0 && !ipiv)
+       || (!row && std::min(m, k) > 0 && !ipiv))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
