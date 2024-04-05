@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -536,7 +536,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((m * n && !A) || (m * n && pivot && !ipiv) || (batch_count && !info))
+    if((m && n && !A) || (m && n && pivot && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -577,7 +577,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_int blocks = (batch_count - 1) / 256 + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(256, 1, 1);
-    rocblas_int dim = min(m, n); // total number of pivots
+    rocblas_int dim = std::min(m, n); // total number of pivots
 
     // info=0 (starting with a nonsingular matrix)
     if(offset == 0)

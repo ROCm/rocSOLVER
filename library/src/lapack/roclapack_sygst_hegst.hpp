@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -103,10 +103,10 @@ void rocsolver_sygst_hegst_getMemorySize(const rocblas_fill uplo,
                     batch_count, &temp5, &temp6, &temp7, &temp8, optim_mem);
             }
 
-            *size_work_x_temp = max(*size_work_x_temp, max(temp1, temp5));
-            *size_workArr_temp_arr = max(*size_workArr_temp_arr, max(temp2, temp6));
-            *size_store_wcs_invA = max(*size_store_wcs_invA, max(temp3, temp7));
-            *size_invA_arr = max(*size_invA_arr, max(temp4, temp8));
+            *size_work_x_temp = std::max(*size_work_x_temp, std::max(temp1, temp5));
+            *size_workArr_temp_arr = std::max(*size_workArr_temp_arr, std::max(temp2, temp6));
+            *size_store_wcs_invA = std::max(*size_store_wcs_invA, std::max(temp3, temp7));
+            *size_invA_arr = std::max(*size_invA_arr, std::max(temp4, temp8));
         }
         else
             *optim_mem = true;
@@ -170,7 +170,7 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
             // Compute inv(U')*A*inv(U)
             for(rocblas_int k = 0; k < n; k += nb)
             {
-                rocblas_int kb = min(n - k, nb);
+                rocblas_int kb = std::min(n - k, nb);
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
@@ -214,7 +214,7 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
             // Compute inv(L)*A*inv(L')
             for(rocblas_int k = 0; k < n; k += nb)
             {
-                rocblas_int kb = min(n - k, nb);
+                rocblas_int kb = std::min(n - k, nb);
 
                 rocsolver_sygs2_hegs2_template<BATCHED, T>(
                     handle, itype, uplo, kb, A, shiftA + idx2D(k, k, lda), lda, strideA, B,
@@ -261,7 +261,7 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
             // Compute U*A*U'
             for(rocblas_int k = 0; k < n; k += nb)
             {
-                rocblas_int kb = min(n - k, nb);
+                rocblas_int kb = std::min(n - k, nb);
 
                 rocblasCall_trmm(handle, rocblas_side_left, uplo, rocblas_operation_none,
                                  rocblas_diagonal_non_unit, k, kb, &t_one, 0, B, shiftB, ldb,
@@ -300,7 +300,7 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
             // Compute L'*A*L
             for(rocblas_int k = 0; k < n; k += nb)
             {
-                rocblas_int kb = min(n - k, nb);
+                rocblas_int kb = std::min(n - k, nb);
 
                 rocblasCall_trmm(handle, rocblas_side_right, uplo, rocblas_operation_none,
                                  rocblas_diagonal_non_unit, kb, k, &t_one, 0, B, shiftB, ldb,

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -103,7 +103,7 @@ rocblas_status rocsolver_latrd_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !E) || (n && !tau) || (n * k && !W))
+    if((n && !A) || (n && !E) || (n && !tau) || (n && k && !W))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -191,7 +191,7 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
 
             // generate Householder reflector to work on column j
             rocsolver_larfg_template(handle, n - j - 1, A, shiftA + idx2D(j + 1, j, lda), A,
-                                     shiftA + idx2D(min(j + 2, n - 1), j, lda), 1, strideA,
+                                     shiftA + idx2D(std::min(j + 2, n - 1), j, lda), 1, strideA,
                                      (tau + j), strideP, batch_count, work, norms);
 
             // copy to E(j) the corresponding off-diagonal element of A, which is set to 1

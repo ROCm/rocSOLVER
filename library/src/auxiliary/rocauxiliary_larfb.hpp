@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2013
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -163,7 +163,7 @@ rocblas_status rocsolver_larfb_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((left && m && !V) || (!left && n && !V) || (m * n && !A) || !F)
+    if((left && m && !V) || (!left && n && !V) || (m && n && !A) || !F)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

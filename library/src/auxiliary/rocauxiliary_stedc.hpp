@@ -257,8 +257,8 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
     else
     {
         // update bounds
-        lowb = (fx <= 0) ? max(lowb, tau) : lowb;
-        uppb = (fx > 0) ? min(uppb, tau) : uppb;
+        lowb = (fx <= 0) ? std::max(lowb, tau) : lowb;
+        uppb = (fx > 0) ? std::min(uppb, tau) : uppb;
 
         // calculate first step correction with fixed weight method
         ddk = D[k];
@@ -340,8 +340,8 @@ __device__ rocblas_int seq_solve(const rocblas_int dd,
             }
 
             // update bounds
-            lowb = (fx <= 0) ? max(lowb, tau) : lowb;
-            uppb = (fx > 0) ? min(uppb, tau) : uppb;
+            lowb = (fx <= 0) ? std::max(lowb, tau) : lowb;
+            uppb = (fx > 0) ? std::min(uppb, tau) : uppb;
 
             // calculate next step correction with either fixed weight method or
             // simple interpolation
@@ -522,8 +522,8 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     else
     {
         // update bounds
-        lowb = (fx <= 0) ? max(lowb, tau) : lowb;
-        uppb = (fx > 0) ? min(uppb, tau) : uppb;
+        lowb = (fx <= 0) ? std::max(lowb, tau) : lowb;
+        uppb = (fx > 0) ? std::min(uppb, tau) : uppb;
 
         // calculate first step correction with fixed weight method
         ddk = D[k];
@@ -583,8 +583,8 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             }
 
             // update bounds
-            lowb = (fx <= 0) ? max(lowb, tau) : lowb;
-            uppb = (fx > 0) ? min(uppb, tau) : uppb;
+            lowb = (fx <= 0) ? std::max(lowb, tau) : lowb;
+            uppb = (fx > 0) ? std::min(uppb, tau) : uppb;
 
             // calculate step correction
             ddk = D[k];
@@ -1799,7 +1799,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
             *size_workArr = sizeof(S*) * batch_count;
         else
             *size_workArr = 0;
-        *size_work_stack = max(s1, s2);
+        *size_work_stack = std::max(s1, s2);
 
         // size for split blocks and sub-blocks positions
         *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
@@ -1839,7 +1839,7 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !D) || (n && !E) || (evect != rocblas_evect_none && n && !C) || !info)
+    if((n && !D) || (n > 1 && !E) || (evect != rocblas_evect_none && n && !C) || !info)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -150,7 +150,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
         }
         __syncthreads();
 
-        if(max(absakk, colmax) == 0)
+        if(std::max(absakk, colmax) == 0)
         {
             // singularity found
             if(tid == 0 && _info == 0)
@@ -186,7 +186,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
                 {
                     iamax<MAX_THDS>(tid, imax, W + (kw - 1) * ldw, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, sval[0]);
+                        rowmax = std::max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -294,7 +294,7 @@ __device__ void lasyf_device_upper(const rocblas_int tid,
     // update A from [0,0] to [k,k], nb columns at a time
     for(j = (k / nb) * nb; j >= 0; j -= nb)
     {
-        int jb = min(nb, k - j + 1);
+        int jb = std::min(nb, k - j + 1);
         for(i = j; i < j + jb; i++)
             lasyf_gemv<MAX_THDS>(tid, i - j + 1, n - k - 1, minone, A + j + (k + 1) * lda, lda,
                                  W + i + (kw + 1) * ldw, ldw, one, A + j + i * lda, 1);
@@ -381,7 +381,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
         }
         __syncthreads();
 
-        if(max(absakk, colmax) == 0)
+        if(std::max(absakk, colmax) == 0)
         {
             // singularity found
             if(tid == 0 && _info == 0)
@@ -414,7 +414,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
                 {
                     iamax<MAX_THDS>(tid, n - imax - 1, W + (imax + 1) + (k + 1) * ldw, 1, sval, sidx);
                     if(tid == 0)
-                        rowmax = max(rowmax, sval[0]);
+                        rowmax = std::max(rowmax, sval[0]);
                 }
                 __syncthreads();
 
@@ -520,7 +520,7 @@ __device__ void lasyf_device_lower(const rocblas_int tid,
     // update A from [k,k] to [n-1,n-1], nb columns at a time
     for(j = k; j < n; j += nb)
     {
-        int jb = min(nb, n - j);
+        int jb = std::min(nb, n - j);
         for(i = j; i < j + jb; i++)
             lasyf_gemv<MAX_THDS>(tid, j + jb - i, k, minone, A + i, lda, W + i, ldw, one,
                                  A + i + i * lda, 1);

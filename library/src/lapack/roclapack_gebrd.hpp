@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2017
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,14 +71,14 @@ void rocsolver_gebrd_getMemorySize(const rocblas_int m,
     {
         size_t s1, s2, w1, w2, unused;
         rocblas_int k = GEBRD_GEBD2_SWITCHSIZE;
-        rocblas_int d = min(m / k, n / k);
+        rocblas_int d = std::min(m / k, n / k);
 
         // sizes are maximum of what is required by GEBD2 and LABRD
         rocsolver_gebd2_getMemorySize<BATCHED, T>(m - d * k, n - d * k, batch_count, &unused, &w1,
                                                   &s1);
         rocsolver_labrd_getMemorySize<BATCHED, T>(m, n, k, batch_count, size_scalars, &w2, &s2);
-        *size_work_workArr = max(w1, w2);
-        *size_Abyx_norms = max(s1, s2);
+        *size_work_workArr = std::max(w1, w2);
+        *size_Abyx_norms = std::max(s1, s2);
 
         // size of matrix X
         *size_X = m * k;
@@ -132,7 +132,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
     T one = 1;
     rocblas_int nb = GEBRD_BLOCKSIZE;
     rocblas_int k = GEBRD_GEBD2_SWITCHSIZE;
-    rocblas_int dim = min(m, n); // total number of pivots
+    rocblas_int dim = std::min(m, n); // total number of pivots
     rocblas_int jb, j = 0;
     rocblas_int blocks;
 
@@ -150,7 +150,7 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
     while(j < dim - k)
     {
         // Reduce block to bidiagonal form
-        jb = min(dim - j, nb); // number of rows and columns in the block
+        jb = std::min(dim - j, nb); // number of rows and columns in the block
         rocsolver_labrd_template<T>(handle, m - j, n - j, jb, A, shiftA + idx2D(j, j, lda), lda,
                                     strideA, D + j, strideD, E + j, strideE, tauq + j, strideQ,
                                     taup + j, strideP, X, shiftX, ldx, strideX, Y, shiftY, ldy,

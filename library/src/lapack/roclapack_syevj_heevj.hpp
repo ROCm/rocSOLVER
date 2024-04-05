@@ -390,8 +390,8 @@ __host__ __device__ inline void
 
     rocblas_int even_n = n + n % 2;
     rocblas_int half_n = even_n / 2;
-    rocblas_int y = min(bdim / 4, half_n);
-    rocblas_int x = min(bdim / y, half_n);
+    rocblas_int y = std::min(bdim / 4, half_n);
+    rocblas_int x = std::min(bdim / y, half_n);
     *ddx = x;
     *ddy = y;
 }
@@ -474,6 +474,7 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
 {
     rocblas_int tid = hipThreadIdx_x;
     rocblas_int bid = hipBlockIdx_y;
+    rocblas_int dimx = hipBlockDim_x;
 
     // local variables
     T temp;
@@ -488,7 +489,7 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
     // shared memory
     extern __shared__ double lmem[];
     S* sh_res = reinterpret_cast<S*>(lmem);
-    S* sh_diag = sh_res + hipBlockDim_x;
+    S* sh_diag = sh_res + dimx;
 
     // copy A to Acpy, set A to identity (if calculating eigenvectors), and calculate off-diagonal
     // squared Frobenius norm (by column/row)
@@ -496,7 +497,7 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
     S local_diag = 0;
     if(uplo == rocblas_fill_upper)
     {
-        for(i = tid; i < n; i += hipBlockDim_x)
+        for(i = tid; i < n; i += dimx)
         {
             temp = A[i + i * lda];
             local_diag += std::norm(temp);
@@ -522,7 +523,7 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
     }
     else
     {
-        for(i = tid; i < n; i += hipBlockDim_x)
+        for(i = tid; i < n; i += dimx)
         {
             temp = A[i + i * lda];
             local_diag += std::norm(temp);
@@ -552,7 +553,7 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
 
     if(tid == 0)
     {
-        for(i = 1; i < min(n, hipBlockDim_x); i++)
+        for(i = 1; i < std::min(n, dimx); i++)
         {
             local_res += sh_res[i];
             local_diag += sh_diag[i];
@@ -570,7 +571,7 @@ ROCSOLVER_KERNEL void syevj_init(const rocblas_evect evect,
     // initialize top/bottom pairs
     if(bid == 0 && top && bottom)
     {
-        for(i = tid; i < half_blocks; i += hipBlockDim_x)
+        for(i = tid; i < half_blocks; i += dimx)
         {
             top[i] = 2 * i;
             bottom[i] = 2 * i + 1;
@@ -618,7 +619,7 @@ ROCSOLVER_KERNEL void syevj_diag_kernel(const rocblas_int n,
     rocblas_int y1 = yy1 + offset, y2 = y1 + 1;
 
     rocblas_int half_n = (n - 1) / 2 + 1;
-    rocblas_int nb = min(2 * half_n - offset, nb_max);
+    rocblas_int nb = std::min(2 * half_n - offset, nb_max);
     rocblas_int half_nb = nb / 2;
 
     if(tix >= half_nb || tiy >= half_nb)
@@ -804,7 +805,7 @@ ROCSOLVER_KERNEL void syevj_diag_rotate(const bool skip_block,
     rocblas_int x = tix + offsetx;
     rocblas_int y = tiy + offsety;
 
-    rocblas_int nb = min(n - offsetx, nb_max);
+    rocblas_int nb = std::min(n - offsetx, nb_max);
 
     if(x >= n || y >= n)
         return;
@@ -1057,7 +1058,7 @@ ROCSOLVER_KERNEL void syevj_offd_rotate(const bool skip_block,
     rocblas_int x = tix + offsetx;
     rocblas_int y = tiy + offsety;
 
-    rocblas_int nb = min(n - offsetj, nb_max);
+    rocblas_int nb = std::min(n - offsetj, nb_max);
 
     if(x >= n || y >= n)
         return;
@@ -1160,6 +1161,7 @@ ROCSOLVER_KERNEL void syevj_calc_norm(const rocblas_int n,
 {
     rocblas_int tid = hipThreadIdx_x;
     rocblas_int bid = hipBlockIdx_y;
+    rocblas_int dimx = hipBlockDim_x;
 
     if(completed[bid + 1])
         return;
@@ -1175,7 +1177,7 @@ ROCSOLVER_KERNEL void syevj_calc_norm(const rocblas_int n,
     S* sh_res = reinterpret_cast<S*>(lmem);
 
     S local_res = 0;
-    for(i = tid; i < n; i += hipBlockDim_x)
+    for(i = tid; i < n; i += dimx)
     {
         for(j = 0; j < i; j++)
             local_res += 2 * std::norm(Acpy[i + j * n]);
@@ -1185,7 +1187,7 @@ ROCSOLVER_KERNEL void syevj_calc_norm(const rocblas_int n,
 
     if(tid == 0)
     {
-        for(i = 1; i < min(n, hipBlockDim_x); i++)
+        for(i = 1; i < std::min(n, dimx); i++)
             local_res += sh_res[i];
 
         residual[bid] = local_res;

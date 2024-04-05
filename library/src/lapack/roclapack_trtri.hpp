@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -174,8 +174,8 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
     {
         rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n, blk,
                                          batch_count, &w1b, size_work2, &w3b, size_work4);
-        *size_work1 = max(w1a, w1b);
-        *size_work3 = max(w3a, w3b);
+        *size_work1 = std::max(w1a, w1b);
+        *size_work3 = std::max(w3a, w3b);
 
         // always allocate all required memory for TRSM optimal performance
         *optim_mem = true;
@@ -373,7 +373,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
         {
             for(rocblas_int j = 0; j < n; j += blk)
             {
-                jb = min(n - j, blk);
+                jb = std::min(n - j, blk);
 
                 // update current block column
                 rocblasCall_trmm(handle, rocblas_side_left, uplo, rocblas_operation_none, diag, j,
@@ -394,7 +394,7 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
             rocblas_int nn = ((n - 1) / blk) * blk + 1;
             for(rocblas_int j = nn - 1; j >= 0; j -= blk)
             {
-                jb = min(n - j, blk);
+                jb = std::min(n - j, blk);
 
                 // update current block column
                 rocblasCall_trmm(handle, rocblas_side_left, uplo, rocblas_operation_none, diag,

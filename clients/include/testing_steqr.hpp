@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -77,8 +77,8 @@ void testing_steqr_bad_arg()
     // safe arguments
     rocblas_local_handle handle;
     rocblas_evect evect = rocblas_evect_original;
-    rocblas_int n = 1;
-    rocblas_int ldc = 1;
+    rocblas_int n = 2;
+    rocblas_int ldc = 2;
 
     // memory allocations
     device_strided_batch_vector<S> dD(1, 1, 1, 1);

@@ -998,7 +998,7 @@ rocblas_status rocsolver_bdsqr_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !D) || (n > 1 && !E) || (n * nv && !V) || (n * nu && !U) || (n * nc && !C) || !info)
+    if((n && !D) || (n > 1 && !E) || (n && nv && !V) || (n && nu && !U) || (n && nc && !C) || !info)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -1064,14 +1064,14 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     rocblas_stride strideW = 2 + incW * n;
 
     // grid dimensions
-    rocblas_int nuc_max = max(nu, nc);
-    rocblas_int nvuc_max = max(nv, nuc_max);
+    rocblas_int nuc_max = std::max(nu, nc);
+    rocblas_int nvuc_max = std::max(nv, nuc_max);
 
     dim3 grid1(1, batch_count, 1);
     dim3 grid2(1, BDSQR_SPLIT_GROUPS, batch_count);
     dim3 threads1(1, 1, 1);
-    dim3 threads2((nu || nc ? min(nuc_max, BS1) : 1), 1, 1);
-    dim3 threads3((nv || nu || nc ? min(nvuc_max, BS1) : 1), 1, 1);
+    dim3 threads2((nu || nc ? std::min(nuc_max, BS1) : 1), 1, 1);
+    dim3 threads3((nv || nu || nc ? std::min(nvuc_max, BS1) : 1), 1, 1);
 
     // check for NaNs and Infs in input
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), grid1, threads1, 0, stream, n, D, strideD, E, strideE,
