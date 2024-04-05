@@ -38,6 +38,27 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 #include <type_traits>
 
+static rocblas_int get_lds_size()
+{
+    rocblas_int const default_lds_size = 64 * 1024;
+
+    int lds_size = 0;
+    int deviceId = 0;
+    auto istat_device = hipGetDevice(&deviceId);
+    if(istat_device != hipSuccess)
+    {
+        return (default_lds_size);
+    };
+    auto const attr = hipDeviceAttributeMaxSharedMemoryPerBlock;
+    auto istat_attr = hipDeviceGetAttribute(&lds_size, attr, deviceId);
+    if(istat_attr != hipSuccess)
+    {
+        return (default_lds_size);
+    };
+
+    return (lds_size);
+}
+
 template <typename U>
 ROCSOLVER_KERNEL void
     chk_positive(rocblas_int* iinfo, rocblas_int* info, int j, rocblas_int batch_count)
@@ -75,7 +96,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         return;
     }
 
-    rocblas_int jb = POTRF_BLOCKSIZE(T);
+    rocblas_int const nb = POTRF_BLOCKSIZE(T);
     if(n <= POTRF_POTF2_SWITCHSIZE(T))
     {
         // requirements for calling a single POTF2
@@ -88,7 +109,8 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     }
     else
     {
-        size_t s1, s2;
+        rocblas_int const jb = nb;
+        size_t s1 = 0; size_t s2 = 0;
 
         // size to store info about positiveness of each subblock
         *size_iinfo = sizeof(rocblas_int) * batch_count;
@@ -98,13 +120,17 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
 
         // extra requirements for calling TRSM
         if(uplo == rocblas_fill_upper)
+        {
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(
                 rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb, batch_count,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
+        }
         else
+        {
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(
                 rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb, batch_count,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
+        }
 
         *size_work1 = max(s1, s2);
 
@@ -223,7 +249,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         while(j < n - POTRF_POTF2_SWITCHSIZE(T))
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, nb); // number of columns in the block
+            jb = std::min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
@@ -272,7 +298,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
         while(j < n - POTRF_POTF2_SWITCHSIZE(T))
         {
             // Factor diagonal and subdiagonal blocks
-            jb = min(n - j, nb); // number of columns in the block
+            jb = std::min(n - j, nb); // number of columns in the block
             ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
             rocsolver_potf2_template<T>(handle, uplo, jb, A, shiftA + idx2D(j, j, lda), lda,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);

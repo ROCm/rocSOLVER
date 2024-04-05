@@ -244,6 +244,15 @@
 #define POTRF_POTF2_SWITCHSIZE(T) POTRF_BLOCKSIZE(T)
 #endif
 
+/*! \brief Determines the maximum size at which rocSOLVER can use POTF2
+    \details 
+    POTF2 will attempt to factorize a small symmetric matrix that can fit entirely
+    within the LDS share memory using compact storage.  
+    The amount of LDS shared memory is assumed to be at least (64 * 1024) bytes. */
+#ifndef POTF2_MAX_SMALL_SIZE
+#define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
+#endif
+
 /************************** syevj/heevj ***************************************
 *******************************************************************************/
 /*! \brief Determines the size at which rocSOLVER switches from
