@@ -22,14 +22,12 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
         }
     }
 
-    def getRocPRIM = auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg)
     def getRocBLAS = auxiliary.getLibrary('rocBLAS', platform.jenkinsLabel, null, sameOrg)
     def getRocSPARSE = auxiliary.getLibrary('rocSPARSE', platform.jenkinsLabel, null, sameOrg)
-    def getRocPRIM = isStatic ? auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg) : ''
+    def getRocPRIM = auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg)
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
-                ${getRocPRIM}
                 ${getRocBLAS}
                 ${getRocSPARSE}
                 ${getRocPRIM}
