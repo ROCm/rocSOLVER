@@ -62,15 +62,10 @@ const vector<int> nnz_range = {
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
-    100,
-    250,
-};
+    100, 250, 3000, 8000};
 const vector<int> large_nnz_range = {
     // normal (valid) samples
-    300,
-    500,
-    700,
-};
+    300, 500, 700000, 2000000};
 
 Arguments csrrf_splitlu_setup_arguments(csrrf_splitlu_tuple tup)
 {

@@ -64,14 +64,14 @@ const vector<vector<int>> nnz_range = {
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
-    100,
-    250,
-};
+    100, 250, 5000, 7000};
 const vector<vector<int>> large_nnz_range = {
     // normal (valid) samples
     {300, 1000},
     {5000, 350},
-    {1700, 1700}};
+    {1700, 1700},
+    {10000, 50000},
+    {2000000, 100000}};
 
 Arguments csrrf_sumlu_setup_arguments(csrrf_sumlu_tuple tup)
 {
