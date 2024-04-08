@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -101,8 +101,8 @@ void testing_sytxx_hetxx_bad_arg()
     // safe arguments
     rocblas_local_handle handle;
     rocblas_fill uplo = rocblas_fill_upper;
-    rocblas_int n = 1;
-    rocblas_int lda = 1;
+    rocblas_int n = 2;
+    rocblas_int lda = 2;
     rocblas_stride stA = 1;
     rocblas_stride stD = 1;
     rocblas_stride stE = 1;

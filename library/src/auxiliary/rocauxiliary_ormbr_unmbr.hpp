@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -65,12 +65,12 @@ void rocsolver_ormbr_unmbr_getMemorySize(const rocblas_storev storev,
 
     // requirements for calling ORMQR/UNMQR or ORMLQ/UNMLQ
     if(storev == rocblas_column_wise)
-        rocsolver_ormqr_unmqr_getMemorySize<BATCHED, T>(side, m, n, min(nq, k), batch_count,
+        rocsolver_ormqr_unmqr_getMemorySize<BATCHED, T>(side, m, n, std::min(nq, k), batch_count,
                                                         size_scalars, size_AbyxORwork,
                                                         size_diagORtmptr, size_trfact, size_workArr);
 
     else
-        rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(side, m, n, min(nq, k), batch_count,
+        rocsolver_ormlq_unmlq_getMemorySize<BATCHED, T>(side, m, n, std::min(nq, k), batch_count,
                                                         size_scalars, size_AbyxORwork,
                                                         size_diagORtmptr, size_trfact, size_workArr);
 }
@@ -111,7 +111,7 @@ rocblas_status rocsolver_ormbr_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_size;
     if(!row && lda < nq)
         return rocblas_status_invalid_size;
-    if(row && lda < min(nq, k))
+    if(row && lda < std::min(nq, k))
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -119,7 +119,7 @@ rocblas_status rocsolver_ormbr_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((min(nq, k) > 0 && !A) || (min(nq, k) > 0 && !ipiv) || (m * n && !C))
+    if((std::min(nq, k) > 0 && !A) || (std::min(nq, k) > 0 && !ipiv) || (m && n && !C))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
