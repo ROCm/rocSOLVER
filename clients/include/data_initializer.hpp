@@ -331,7 +331,13 @@ typedef enum rocsolver_diagonal_mode_
     rocsolver_diagonal_mode_unit
 } rocsolver_diagonal_mode;
 
-/** RANDOM_SPARSE_MATRIX **/
+/** RANDOM_SPARSE_MATRIX generates a sparse matrix with random non-zero positions/values.
+    The matrix could be lower/upper triangular depending on the value of fill, and the
+    elements in the diagonal could be all 1, non-zero or random depending on the value of diag.
+    (TODO: The number and positions of the non-zeros are chosen randomly per
+    row depending on the matrix shape, and directly in csr format. It might be good
+    to explore other methods such as generating a random permutation of nnz positions in [0, n*n)
+    and mapping it to csr format, for example.) **/
 template <typename T>
 void random_sparse_matrix(rocblas_int n,
                           rocblas_int nnzA,
@@ -372,7 +378,6 @@ void random_sparse_matrix(rocblas_int n,
             op = (fullmatrix) ? n : (lowertriang) ? i + 1 : n - i;
             if(nnz < nnzA)
             {
-                //                nn = rand() % (op + ptrA[i] - ptrA[i+1] + 1);
                 nn = random_generator<rocblas_int>(0, op + ptrA[i] - ptrA[i + 1]);
                 if(nn > 0)
                     nn = 1; // take only one non-zero at a time to ensure good distribution
@@ -438,7 +443,6 @@ void random_sparse_matrix(rocblas_int n,
             op = (fullmatrix) ? n : (lowertriang) ? i + 1 : n - i;
             for(rocblas_int j = in; j < nn; ++j)
             {
-                //                pp = rand() % op;
                 pp = random_generator<rocblas_int>(0, op - 1);
                 p = pp;
                 x = ops[p];
@@ -483,7 +487,8 @@ void random_sparse_matrix(rocblas_int n,
     }
 }
 
-/** CPU_SUMLU **/
+/** CPU_SUMLU Computes the bunddle matrix T = L - I + U given lower and upper
+    factors L and U. **/
 template <typename T>
 void cpu_sumlu(const rocblas_int n,
                rocblas_int* ptrL,
