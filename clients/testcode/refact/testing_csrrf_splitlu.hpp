@@ -156,6 +156,8 @@ void csrrf_splitlu_initData(rocblas_handle handle,
                             Uh& hindU,
                             Th& hvalU)
 {
+    // As the bundle matrix T = L - I + U, nnzT = 0 indicates that the
+    // factorized matrix is the matrix zero, i.e. L = I and U = 0
     bool mat_zero = (nnzT == 0);
 
     // if not matrix zero, generate input data
@@ -414,8 +416,8 @@ void testing_csrrf_splitlu(Arguments& argus)
         // assign a random number of nonzeros to L and U
         rocblas_seedrand();
         rocblas_int high, low;
-        low = max(0, nnzT - n * (n - 1) / 2);
-        high = min(nnzT, n * (n + 1) / 2);
+        low = std::max(0, nnzT - n * (n - 1) / 2);
+        high = std::min(nnzT, n * (n + 1) / 2);
         nnzU = random_generator<rocblas_int>(low, high);
         nnzL += nnzT - nnzU;
     }

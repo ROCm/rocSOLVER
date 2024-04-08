@@ -157,9 +157,11 @@ void csrrf_sumlu_initData(rocblas_handle handle,
                           Uh& hindT,
                           Th& hvalT)
 {
+    // As the bundle matrix T = L - I + U, nnzT = 0 indicates that the
+    // factorized matrix is the matrix zero, i.e. L = I and U = 0
     bool mat_zero = (nnzT == 0);
 
-    // if not matrix zero, read data from files
+    // if not matrix zero, generate input data
     if(!mat_zero)
     {
         if(CPU)

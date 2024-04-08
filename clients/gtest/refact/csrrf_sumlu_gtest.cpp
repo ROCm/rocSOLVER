@@ -35,7 +35,7 @@ using namespace std;
 
 typedef std::tuple<int, int> csrrf_sumlu_tuple;
 
-// case when n = 0 and nnz = 0 also execute the bad arguments test
+// case when n = 0, nnzU = 0, and nnzL = n also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests

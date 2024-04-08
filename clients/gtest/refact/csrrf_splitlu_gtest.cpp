@@ -81,8 +81,6 @@ Arguments csrrf_splitlu_setup_arguments(csrrf_splitlu_tuple tup)
 
     arg.set<rocblas_int>("n", n);
     arg.set<rocblas_int>("nnzT", nnz);
-    // note: the clients will take nnzA = nnzT
-    // and determine the test case with n and nnzA.
 
     arg.timing = 0;
 
