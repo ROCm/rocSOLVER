@@ -107,9 +107,9 @@ void testing_gebd2_gebrd_bad_arg()
 
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_int m = 1;
-    rocblas_int n = 1;
-    rocblas_int lda = 1;
+    rocblas_int m = 2;
+    rocblas_int n = 2;
+    rocblas_int lda = 2;
     rocblas_stride stA = 1;
     rocblas_stride stD = 1;
     rocblas_stride stE = 1;

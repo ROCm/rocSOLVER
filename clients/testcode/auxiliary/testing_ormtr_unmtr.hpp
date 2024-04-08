@@ -101,10 +101,10 @@ void testing_ormtr_unmtr_bad_arg()
     rocblas_side side = rocblas_side_left;
     rocblas_fill uplo = rocblas_fill_upper;
     rocblas_operation trans = rocblas_operation_none;
-    rocblas_int m = 1;
-    rocblas_int n = 1;
-    rocblas_int lda = 1;
-    rocblas_int ldc = 1;
+    rocblas_int m = 2;
+    rocblas_int n = 2;
+    rocblas_int lda = 2;
+    rocblas_int ldc = 2;
 
     // memory allocation
     device_strided_batch_vector<T> dA(1, 1, 1, 1);

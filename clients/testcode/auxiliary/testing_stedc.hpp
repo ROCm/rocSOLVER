@@ -77,8 +77,8 @@ void testing_stedc_bad_arg()
     // safe arguments
     rocblas_local_handle handle;
     rocblas_evect evect = rocblas_evect_original;
-    rocblas_int n = 1;
-    rocblas_int ldc = 1;
+    rocblas_int n = 2;
+    rocblas_int ldc = 2;
 
     // memory allocations
     device_strided_batch_vector<S> dD(1, 1, 1, 1);

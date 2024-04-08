@@ -62,7 +62,7 @@ void testing_sterf_bad_arg()
 {
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_int n = 1;
+    rocblas_int n = 2;
 
     // memory allocations
     device_strided_batch_vector<T> dD(1, 1, 1, 1);
