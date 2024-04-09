@@ -290,7 +290,7 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
                                     size_t* size_tempvect,
                                     size_t* size_tempgemm,
                                     size_t* size_tmpz,
-                                    size_t* size_splits,
+                                    size_t* size_splits_map,
                                     size_t* size_workArr)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
@@ -302,7 +302,7 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_tmpz = 0;
         return;
     }
@@ -326,7 +326,7 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
     *size_work_stack = max(s1, s2);
 
     // size for split blocks and sub-blocks positions
-    *size_splits = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
+    *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
 
     // size for temporary diagonal and rank-1 modif vector
     *size_tmpz = sizeof(S) * (2 * n) * batch_count;
@@ -354,7 +354,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                          S* tempvect,
                                          S* tempgemm,
                                          S* tmpz,
-                                         rocblas_int* splits,
+                                         rocblas_int* splits_map,
                                          S** workArr)
 {
     ROCSOLVER_ENTER("stedcj", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
@@ -405,13 +405,13 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
 
     // find independent split blocks in matrix
     ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                            strideD, E + shiftE, strideE, splits, eps);
+                            strideD, E + shiftE, strideE, splits_map, eps);
 
     // 1. divide phase
     //-----------------------------
     ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_jacobi, S>),
                             dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD, strideD,
-                            E + shiftE, strideE, splits);
+                            E + shiftE, strideE, splits_map);
 
     // 2. solve phase
     //-----------------------------
@@ -420,7 +420,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(
         (stedcj_solve_kernel<S>), dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count),
         dim3(STEDC_BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect,
-        0, ldt, strideT, info, static_cast<S*>(work_stack), splits, eps, ssfmin, ssfmax);
+        0, ldt, strideT, info, static_cast<S*>(work_stack), splits_map, eps, ssfmin, ssfmax);
 
     // 3. merge phase
     //----------------
@@ -429,7 +429,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
                             dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
                             stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
-                            strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+                            strideT, tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
 
     // 4. update and sort
     //----------------------
@@ -438,14 +438,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                     static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
                                     workArr);
 
-    {
-        // note reuse storage for splits[] as permutation vector in stedc_sort
-        // -------------------------------------------------------------------
-        rocblas_int* const splits_map = splits;
-        ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
-                                D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count,
-                                splits_map);
-    }
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
+                            D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count, splits_map);
 
     return rocblas_status_success;
 }
