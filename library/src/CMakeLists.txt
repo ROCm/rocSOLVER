@@ -329,6 +329,15 @@ target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
 # Ignore loop unrolling failures
 target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
 
+# hipcc adds these options automatically. These options might have an effect
+# on performance, so add them when building with clang directly, just in case.
+if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+.*")
+  target_compile_options(rocsolver PRIVATE
+    "SHELL:-mllvm -amdgpu-early-inline-all=true"
+    "SHELL:-mllvm -amdgpu-function-calls=false"
+  )
+endif()
+
 target_include_directories(rocsolver
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
