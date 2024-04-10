@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_sytf2_sytrf.hpp"
+#include "common/lapack/testing_sytf2_sytrf.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

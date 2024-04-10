@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_gelq2_gelqf.hpp"
+#include "common/lapack/testing_gelq2_gelqf.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

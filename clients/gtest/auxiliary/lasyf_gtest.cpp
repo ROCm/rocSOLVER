@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_lasyf.hpp"
+#include "common/auxiliary/testing_lasyf.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_sygvd_hegvd.hpp"
+#include "common/lapack/testing_sygvd_hegvd.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

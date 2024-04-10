@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_getrs.hpp"
+#include "common/lapack/testing_getrs.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

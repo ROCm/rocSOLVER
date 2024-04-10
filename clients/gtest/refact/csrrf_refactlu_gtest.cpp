@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/refact/testing_csrrf_refactlu.hpp"
+#include "common/refact/testing_csrrf_refactlu.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

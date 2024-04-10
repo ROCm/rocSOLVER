@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_orgtr_ungtr.hpp"
+#include "common/auxiliary/testing_orgtr_ungtr.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

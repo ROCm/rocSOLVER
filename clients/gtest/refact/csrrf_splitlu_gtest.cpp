@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/refact/testing_csrrf_splitlu.hpp"
+#include "common/refact/testing_csrrf_splitlu.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

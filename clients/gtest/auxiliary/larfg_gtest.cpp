@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_larfg.hpp"
+#include "common/auxiliary/testing_larfg.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
