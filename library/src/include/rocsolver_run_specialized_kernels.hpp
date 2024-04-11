@@ -40,19 +40,19 @@
 
 // trsm
 template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_trsm_mem(const rocblas_side side,
-                        const rocblas_operation trans,
-                        const rocblas_int m,
-                        const rocblas_int n,
-                        const rocblas_int batch_count,
-                        size_t* size_work1,
-                        size_t* size_work2,
-                        size_t* size_work3,
-                        size_t* size_work4,
-                        bool* optim_mem,
-                        bool inblocked = false,
-                        const rocblas_int inca = 1,
-                        const rocblas_int incb = 1);
+rocblas_status rocsolver_trsm_mem(const rocblas_side side,
+                                  const rocblas_operation trans,
+                                  const rocblas_int m,
+                                  const rocblas_int n,
+                                  const rocblas_int batch_count,
+                                  size_t* size_work1,
+                                  size_t* size_work2,
+                                  size_t* size_work3,
+                                  size_t* size_work4,
+                                  bool* optim_mem,
+                                  bool inblocked = false,
+                                  const rocblas_int inca = 1,
+                                  const rocblas_int incb = 1);
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
@@ -242,6 +242,18 @@ rocblas_status rocsolver_ger(rocblas_handle handle,
                              I batch_count,
                              T** work);
 
+// potf2
+template <typename T, typename U>
+rocblas_status potf2_run_small(rocblas_handle handle,
+                               const rocblas_fill uplo,
+                               const rocblas_int n,
+                               U AA,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               rocblas_int* info,
+                               const rocblas_int batch_count);
+
 #ifdef OPTIMAL
 
 template <typename T, typename I, typename INFO, typename U>
@@ -308,6 +320,7 @@ rocblas_status getri_run_small(rocblas_handle handle,
                                const bool complete,
                                const bool pivot);
 
+// trti2
 template <typename T, typename U>
 void trti2_run_small(rocblas_handle handle,
                      const rocblas_fill uplo,

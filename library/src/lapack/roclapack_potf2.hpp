@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +35,7 @@
 #include "auxiliary/rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
@@ -117,6 +118,13 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n,
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
+    if(n <= POTF2_MAX_SMALL_SIZE(T))
+    {
+        *size_work = 0;
+        *size_pivots = 0;
+        return;
+    }
+
     // size of workspace
     // TODO: replace with rocBLAS call
     constexpr int ROCBLAS_DOT_NB = 512;
@@ -196,77 +204,87 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
-    // (TODO: When the matrix is detected to be non positive definite, we need to
-    //  prevent GEMV and SCAL to modify further the input matrix; ideally with no
-    //  synchronizations.)
-
-    if(uplo == rocblas_fill_upper)
+    if(n <= POTRF_BLOCKSIZE(T))
     {
-        // Compute the Cholesky factorization A = U'*U.
-        for(rocblas_int j = 0; j < n; ++j)
-        {
-            // Compute U(J,J) and test for non-positive-definiteness.
-            rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA, A,
-                                        shiftA + idx2D(0, j, lda), 1, strideA, batch_count, pivots,
-                                        work);
-
-            ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
-                                    shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
-
-            // Compute elements J+1:N of row J
-            if(j < n - 1)
-            {
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA,
-                                                batch_count);
-
-                rocblasCall_gemv<T>(handle, rocblas_operation_transpose, j, n - j - 1, scalars, 0,
-                                    A, shiftA + idx2D(0, j + 1, lda), lda, strideA, A,
-                                    shiftA + idx2D(0, j, lda), 1, strideA, scalars + 2, 0, A,
-                                    shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count,
-                                    nullptr);
-
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA,
-                                                batch_count);
-
-                rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A, shiftA + idx2D(j, j + 1, lda),
-                                    lda, strideA, batch_count);
-            }
-        }
+        // ----------------------
+        // use specialized kernel
+        // ----------------------
+        potf2_run_small<T>(handle, uplo, n, A, shiftA, lda, strideA, info, batch_count);
     }
-
     else
     {
-        // Compute the Cholesky factorization A = L'*L.
-        for(rocblas_int j = 0; j < n; ++j)
+        // (TODO: When the matrix is detected to be non positive definite, we need
+        // to prevent GEMV and SCAL to modify further the input matrix; ideally with
+        // no synchronizations.)
+
+        if(uplo == rocblas_fill_upper)
         {
-            // Compute L(J,J) and test for non-positive-definiteness.
-            rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA, A,
-                                        shiftA + idx2D(j, 0, lda), lda, strideA, batch_count,
-                                        pivots, work);
-
-            ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
-                                    shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
-
-            // Compute elements J+1:N of column J
-            if(j < n - 1)
+            // Compute the Cholesky factorization A = U'*U.
+            for(rocblas_int j = 0; j < n; ++j)
             {
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda,
-                                                strideA, batch_count);
+                // Compute U(J,J) and test for non-positive-definiteness.
+                rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA, A,
+                                            shiftA + idx2D(0, j, lda), 1, strideA, batch_count,
+                                            pivots, work);
 
-                rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j, scalars, 0, A,
-                                    shiftA + idx2D(j + 1, 0, lda), lda, strideA, A,
-                                    shiftA + idx2D(j, 0, lda), lda, strideA, scalars + 2, 0, A,
-                                    shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count, nullptr);
+                ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
+                                        shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
 
-                if(COMPLEX)
-                    rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda,
-                                                strideA, batch_count);
+                // Compute elements J+1:N of row J
+                if(j < n - 1)
+                {
+                    if(COMPLEX)
+                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), 1,
+                                                    strideA, batch_count);
 
-                rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A, shiftA + idx2D(j + 1, j, lda),
-                                    1, strideA, batch_count);
+                    rocblasCall_gemv<T>(handle, rocblas_operation_transpose, j, n - j - 1, scalars,
+                                        0, A, shiftA + idx2D(0, j + 1, lda), lda, strideA, A,
+                                        shiftA + idx2D(0, j, lda), 1, strideA, scalars + 2, 0, A,
+                                        shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count,
+                                        nullptr);
+
+                    if(COMPLEX)
+                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), 1,
+                                                    strideA, batch_count);
+
+                    rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A,
+                                        shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count);
+                }
+            }
+        }
+        else
+        {
+            // Compute the Cholesky factorization A = L'*L.
+            for(rocblas_int j = 0; j < n; ++j)
+            {
+                // Compute L(J,J) and test for non-positive-definiteness.
+                rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
+                                            A, shiftA + idx2D(j, 0, lda), lda, strideA, batch_count,
+                                            pivots, work);
+
+                ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
+                                        shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
+
+                // Compute elements J+1:N of column J
+                if(j < n - 1)
+                {
+                    if(COMPLEX)
+                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda,
+                                                    strideA, batch_count);
+
+                    rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j, scalars, 0, A,
+                                        shiftA + idx2D(j + 1, 0, lda), lda, strideA, A,
+                                        shiftA + idx2D(j, 0, lda), lda, strideA, scalars + 2, 0, A,
+                                        shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count,
+                                        nullptr);
+
+                    if(COMPLEX)
+                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda,
+                                                    strideA, batch_count);
+
+                    rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A,
+                                        shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count);
+                }
             }
         }
     }

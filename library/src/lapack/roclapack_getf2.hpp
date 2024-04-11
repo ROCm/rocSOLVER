@@ -538,7 +538,7 @@ rocblas_status rocsolver_getf2_getrf_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((m * n && !A) || (m * n && pivot && !ipiv) || (batch_count && !info))
+    if((m && n && !A) || (m && n && pivot && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -579,7 +579,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     I blocks = (batch_count - 1) / 256 + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(256, 1, 1);
-    I dim = min(m, n); // total number of pivots
+    I dim = std::min(m, n); // total number of pivots
 
     // info=0 (starting with a nonsingular matrix)
     if(offset == 0)

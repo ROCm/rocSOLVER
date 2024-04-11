@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -95,10 +95,10 @@ void rocsolver_geblttrf_npvt_getMemorySize(const rocblas_int nb,
     rocsolver_getrs_getMemorySize<BATCHED, STRIDED, T>(rocblas_operation_none, nb, nb, batch_count,
                                                        &a2, &b2, &c2, &d2, &unused, incb, incc);
 
-    *size_work1 = max(a1, a2);
-    *size_work2 = max(b1, b2);
-    *size_work3 = max(c1, c2);
-    *size_work4 = max(d1, d2);
+    *size_work1 = std::max(a1, a2);
+    *size_work2 = std::max(b1, b2);
+    *size_work3 = std::max(c1, c2);
+    *size_work4 = std::max(d1, d2);
 
     // size for temporary info storage
     *size_iinfo2 = sizeof(rocblas_int) * batch_count;

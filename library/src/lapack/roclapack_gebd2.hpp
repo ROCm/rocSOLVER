@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,9 +60,9 @@ void rocsolver_gebd2_getMemorySize(const rocblas_int m,
     size_t s1, s2, w1, w2;
     rocsolver_larf_getMemorySize<BATCHED, T>(rocblas_side_both, m, n, batch_count, size_scalars,
                                              &s1, &w1);
-    rocsolver_larfg_getMemorySize<T>(max(m, n), batch_count, &w2, &s2);
-    *size_work_workArr = max(w1, w2);
-    *size_Abyx_norms = max(s1, s2);
+    rocsolver_larfg_getMemorySize<T>(std::max(m, n), batch_count, &w2, &s2);
+    *size_work_workArr = std::max(w1, w2);
+    *size_Abyx_norms = std::max(s1, s2);
 }
 
 template <typename T, typename S, typename U>
@@ -91,7 +91,7 @@ rocblas_status rocsolver_gebd2_gebrd_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((m * n && !A) || (m * n && !D) || (m * n && !E) || (m * n && !tauq) || (m * n && !taup))
+    if((m && n && (!A || !D || !tauq || !taup)) || (std::min(m, n) > 1 && !E))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -127,7 +127,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int dim = min(m, n); // total number of pivots
+    rocblas_int dim = std::min(m, n); // total number of pivots
 
     if(m >= n)
     {
@@ -136,7 +136,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
         {
             // generate Householder reflector H(j)
             rocsolver_larfg_template(handle, m - j, A, shiftA + idx2D(j, j, lda), A,
-                                     shiftA + idx2D(min(j + 1, m - 1), j, lda), 1, strideA,
+                                     shiftA + idx2D(std::min(j + 1, m - 1), j, lda), 1, strideA,
                                      (tauq + j), strideQ, batch_count, (T*)work_workArr, Abyx_norms);
 
             // copy A(j,j) to D and insert one to build/apply the householder matrix
@@ -173,9 +173,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
 
                 // generate Householder reflector G(j)
                 rocsolver_larfg_template(handle, n - j - 1, A, shiftA + idx2D(j, j + 1, lda), A,
-                                         shiftA + idx2D(j, min(j + 2, n - 1), lda), lda, strideA,
-                                         (taup + j), strideP, batch_count, (T*)work_workArr,
-                                         Abyx_norms);
+                                         shiftA + idx2D(j, std::min(j + 2, n - 1), lda), lda,
+                                         strideA, (taup + j), strideP, batch_count,
+                                         (T*)work_workArr, Abyx_norms);
 
                 // copy A(j,j+1) to E and insert one to build/apply the householder
                 // matrix
@@ -217,7 +217,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
 
             // generate Householder reflector G(j)
             rocsolver_larfg_template(handle, n - j, A, shiftA + idx2D(j, j, lda), A,
-                                     shiftA + idx2D(j, min(j + 1, n - 1), lda), lda, strideA,
+                                     shiftA + idx2D(j, std::min(j + 1, n - 1), lda), lda, strideA,
                                      (taup + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
             // copy A(j,j) to D and insert one to build/apply the householder matrix
@@ -246,7 +246,7 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
             {
                 // generate Householder reflector H(j)
                 rocsolver_larfg_template(handle, m - j - 1, A, shiftA + idx2D(j + 1, j, lda), A,
-                                         shiftA + idx2D(min(j + 2, m - 1), j, lda), 1, strideA,
+                                         shiftA + idx2D(std::min(j + 2, m - 1), j, lda), 1, strideA,
                                          (tauq + j), strideQ, batch_count, (T*)work_workArr,
                                          Abyx_norms);
 
