@@ -76,7 +76,7 @@ T* const* cast2constPointer(T** array)
 }
 
 template <typename I>
-inline I get_index(I* intervals, I max, I dim)
+I get_index(I* intervals, I max, I dim)
 {
     I i;
 
