@@ -355,6 +355,7 @@ void random_sparse_matrix(rocblas_int n,
     bool unitdiag = (diag == rocsolver_diagonal_mode_unit);
     bool fullmatrix = (fill == rocblas_fill_full);
     bool lowertriang = (fill == rocblas_fill_lower);
+    bool uppertriang = (fill == rocblas_fill_upper);
 
     // seed random generator
     rocblas_seedrand();
@@ -433,7 +434,7 @@ void random_sparse_matrix(rocblas_int n,
             if(!randomdiag)
             {
                 z[0] = i;
-                op = (fill == 2) ? 0 : i;
+                op = uppertriang ? 0 : i;
                 ops[op] = -1;
                 in = 1;
             }
