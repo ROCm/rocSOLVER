@@ -41,20 +41,20 @@
 // trsm
 template <bool BATCHED, bool STRIDED, typename T, typename I>
 rocblas_status rocsolver_trsm_mem(const rocblas_side side,
-                        const rocblas_operation trans,
-                        const I m,
-                        const I n,
-                        const I batch_count,
-                        size_t* size_work1,
-                        size_t* size_work2,
-                        size_t* size_work3,
-                        size_t* size_work4,
-                        bool* optim_mem,
-                        bool inblocked = false,
-                        const I lda = 1,
-                        const I ldb = 1,
-                        const I inca = 1,
-                        const I incb = 1);
+                                  const rocblas_operation trans,
+                                  const I m,
+                                  const I n,
+                                  const I batch_count,
+                                  size_t* size_work1,
+                                  size_t* size_work2,
+                                  size_t* size_work3,
+                                  size_t* size_work4,
+                                  bool* optim_mem,
+                                  bool inblocked = false,
+                                  const I lda = 1,
+                                  const I ldb = 1,
+                                  const I inca = 1,
+                                  const I incb = 1);
 
 template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_trsm_lower(rocblas_handle handle,

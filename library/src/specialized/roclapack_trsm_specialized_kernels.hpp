@@ -715,20 +715,20 @@ I rocsolver_trsm_blksize(const I m, const I n)
 /** This function determine workspace size for the internal trsm **/
 template <bool BATCHED, bool STRIDED, typename T, typename I>
 rocblas_status rocsolver_trsm_mem(const rocblas_side side,
-                        const rocblas_operation trans,
-                        const I m,
-                        const I n,
-                        const I batch_count,
-                        size_t* size_work1,
-                        size_t* size_work2,
-                        size_t* size_work3,
-                        size_t* size_work4,
-                        bool* optim_mem,
-                        bool inblocked,
-                        const I lda,
-                        const I ldb,
-                        const I inca,
-                        const I incb)
+                                  const rocblas_operation trans,
+                                  const I m,
+                                  const I n,
+                                  const I batch_count,
+                                  size_t* size_work1,
+                                  size_t* size_work2,
+                                  size_t* size_work3,
+                                  size_t* size_work4,
+                                  bool* optim_mem,
+                                  bool inblocked,
+                                  const I lda,
+                                  const I ldb,
+                                  const I inca,
+                                  const I incb)
 {
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
@@ -776,7 +776,7 @@ rocblas_status rocsolver_trsm_mem(const rocblas_side side,
     }
 
     return rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count, size_work1,
-                                     size_work2, size_work3, size_work4);
+                                            size_work2, size_work3, size_work4);
 }
 
 /** Internal TRSM (lower case):
