@@ -487,7 +487,7 @@ void rocsolver_getf2_getMemorySize(const I m,
     }
 
 #ifdef OPTIMAL
-    bool nomem = (std::is_same<I, rocblas_int>::value
+    bool nomem = (!std::is_same<I, int64_t>::value
                   && select_spkernel<ISBATCHED, T>(m, n, inca, pivot) && !inblocked);
 
     // no workspace needed if using optimized kernel for small sizes
@@ -601,7 +601,7 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
 
 #ifdef OPTIMAL
     int spker = select_spkernel<ISBATCHED, T>(m, n, inca, pivot);
-    if(std::is_same<I, rocblas_int>::value && spker > 0)
+    if(!std::is_same<I, int64_t>::value && spker > 0)
     {
         // Use specialized kernels for small matrices
         if(spker == 1)

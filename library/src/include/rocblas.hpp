@@ -181,12 +181,12 @@ rocblas_status rocblasCall_scal(rocblas_handle handle,
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    if constexpr(std::is_same<I, rocblas_int>::value)
-        return rocblas_internal_scal_template(handle, n, alpha, stridea, x, offsetx, incx, stridex,
-                                              batch_count);
-    else
+    if constexpr(std::is_same<I, int64_t>::value)
         return rocblas_internal_scal_template_64(handle, n, alpha, stridea, x, offsetx, incx,
                                                  stridex, batch_count);
+    else
+        return rocblas_internal_scal_template(handle, n, alpha, stridea, x, offsetx, incx, stridex,
+                                              batch_count);
 }
 
 // batched scal
@@ -204,12 +204,12 @@ rocblas_status rocblasCall_scal(rocblas_handle handle,
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    if constexpr(std::is_same<I, rocblas_int>::value)
-        return rocblas_internal_scal_batched_template(handle, n, alpha, stridea, x, offsetx, incx,
-                                                      stridex, batch_count);
-    else
+    if constexpr(std::is_same<I, int64_t>::value)
         return rocblas_internal_scal_batched_template_64(handle, n, alpha, stridea, x, offsetx,
                                                          incx, stridex, batch_count);
+    else
+        return rocblas_internal_scal_batched_template(handle, n, alpha, stridea, x, offsetx, incx,
+                                                      stridex, batch_count);
 }
 
 // dot
@@ -332,18 +332,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
                   "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
 
-    if constexpr(std::is_same<I, rocblas_int>::value)
-    {
-        if constexpr(CONJ)
-            return rocblas_internal_gerc_template(handle, m, n, alpha, stridea, x, offsetx, incx,
-                                                  stridex, y, offsety, incy, stridey, A, offsetA,
-                                                  lda, strideA, batch_count);
-        else
-            return rocblas_internal_ger_template(handle, m, n, alpha, stridea, x, offsetx, incx,
-                                                 stridex, y, offsety, incy, stridey, A, offsetA,
-                                                 lda, strideA, batch_count);
-    }
-    else
+    if constexpr(std::is_same<I, int64_t>::value)
     {
         if constexpr(CONJ)
             return rocblas_internal_gerc_template_64(handle, m, n, alpha, stridea, x, offsetx, incx,
@@ -353,6 +342,17 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
             return rocblas_internal_ger_template_64(handle, m, n, alpha, stridea, x, offsetx, incx,
                                                     stridex, y, offsety, incy, stridey, A, offsetA,
                                                     lda, strideA, batch_count);
+    }
+    else
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_template(handle, m, n, alpha, stridea, x, offsetx, incx,
+                                                  stridex, y, offsety, incy, stridey, A, offsetA,
+                                                  lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_template(handle, m, n, alpha, stridea, x, offsetx, incx,
+                                                 stridex, y, offsety, incy, stridey, A, offsetA,
+                                                 lda, strideA, batch_count);
     }
 }
 
@@ -382,18 +382,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
                   "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
 
-    if constexpr(std::is_same<I, rocblas_int>::value)
-    {
-        if constexpr(CONJ)
-            return rocblas_internal_gerc_batched_template(handle, m, n, alpha, stridea, x, offsetx,
-                                                          incx, stridex, y, offsety, incy, stridey,
-                                                          A, offsetA, lda, strideA, batch_count);
-        else
-            return rocblas_internal_ger_batched_template(handle, m, n, alpha, stridea, x, offsetx,
-                                                         incx, stridex, y, offsety, incy, stridey,
-                                                         A, offsetA, lda, strideA, batch_count);
-    }
-    else
+    if constexpr(std::is_same<I, int64_t>::value)
     {
         if constexpr(CONJ)
             return rocblas_internal_gerc_batched_template_64(
@@ -403,6 +392,17 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
             return rocblas_internal_ger_batched_template_64(handle, m, n, alpha, stridea, x, offsetx,
                                                             incx, stridex, y, offsety, incy, stridey,
                                                             A, offsetA, lda, strideA, batch_count);
+    }
+    else
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template(handle, m, n, alpha, stridea, x, offsetx,
+                                                          incx, stridex, y, offsety, incy, stridey,
+                                                          A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template(handle, m, n, alpha, stridea, x, offsetx,
+                                                         incx, stridex, y, offsety, incy, stridey,
+                                                         A, offsetA, lda, strideA, batch_count);
     }
 }
 
@@ -439,18 +439,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
                             batch_count);
 
-    if constexpr(std::is_same<I, rocblas_int>::value)
-    {
-        if constexpr(CONJ)
-            return rocblas_internal_gerc_batched_template(
-                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
-                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
-        else
-            return rocblas_internal_ger_batched_template(
-                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
-                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
-    }
-    else
+    if constexpr(std::is_same<I, int64_t>::value)
     {
         if constexpr(CONJ)
             return rocblas_internal_gerc_batched_template_64(
@@ -458,6 +447,17 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                 offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
         else
             return rocblas_internal_ger_batched_template_64(
+                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    }
+    else
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template(
+                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template(
                 handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
                 offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
     }
@@ -496,18 +496,7 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
                             batch_count);
 
-    if constexpr(std::is_same<I, rocblas_int>::value)
-    {
-        if constexpr(CONJ)
-            return rocblas_internal_gerc_batched_template(
-                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
-                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
-        else
-            return rocblas_internal_ger_batched_template(
-                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
-                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
-    }
-    else
+    if constexpr(std::is_same<I, int64_t>::value)
     {
         if constexpr(CONJ)
             return rocblas_internal_gerc_batched_template_64(
@@ -515,6 +504,17 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
                 offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
         else
             return rocblas_internal_ger_batched_template_64(
+                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    }
+    else
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template(
+                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template(
                 handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
                 offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
     }
