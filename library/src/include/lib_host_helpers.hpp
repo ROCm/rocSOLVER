@@ -75,7 +75,8 @@ T* const* cast2constPointer(T** array)
     return array;
 }
 
-inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_int dim)
+template <typename I>
+I get_index(I* intervals, I max, I dim)
 {
     rocblas_int i;
 
