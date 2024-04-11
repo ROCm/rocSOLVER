@@ -31,7 +31,7 @@
 #include <rocblas/rocblas.h>
 #include <rocsolver/rocsolver.h>
 
-#include "client_environment_helpers.hpp"
+#include "common/misc/client_environment_helpers.hpp"
 
 class checkin_misc_MEMORY_MODEL : public ::testing::Test
 {
