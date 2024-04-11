@@ -33,7 +33,7 @@
 #include <gtest/gtest.h>
 #include <rocsolver/rocsolver.h>
 
-#include "clientcommon.hpp"
+#include "common/misc/clientcommon.hpp"
 
 static std::string rocblas_version()
 {

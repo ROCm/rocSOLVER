@@ -42,8 +42,8 @@ namespace fs = std::experimental::filesystem;
 #include <rocblas/rocblas.h>
 #include <rocsolver/rocsolver.h>
 
-#include "client_environment_helpers.hpp"
-#include "clientcommon.hpp"
+#include "common/misc/client_environment_helpers.hpp"
+#include "common/misc/clientcommon.hpp"
 
 using ::testing::Matcher;
 using ::testing::MatchesRegex;

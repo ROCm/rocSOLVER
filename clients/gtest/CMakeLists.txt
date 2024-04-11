@@ -29,98 +29,98 @@ find_package(GTest REQUIRED)
 
 set(roclapack_test_source
   # linear systems solvers
-  getri_gtest.cpp
-  getrs_gtest.cpp
-  gesv_gtest.cpp
-  potrs_gtest.cpp
-  posv_gtest.cpp
-  potri_gtest.cpp
-  trtri_gtest.cpp
-  geblttrs_gtest.cpp
+  lapack/getri_gtest.cpp
+  lapack/getrs_gtest.cpp
+  lapack/gesv_gtest.cpp
+  lapack/potrs_gtest.cpp
+  lapack/posv_gtest.cpp
+  lapack/potri_gtest.cpp
+  lapack/trtri_gtest.cpp
+  lapack/geblttrs_gtest.cpp
   # least squares solvers
-  gels_gtest.cpp
+  lapack/gels_gtest.cpp
   # triangular factorizations
-  getf2_getrf_gtest.cpp
-  getrf_large_gtest.cpp
-  potf2_potrf_gtest.cpp
-  sytf2_sytrf_gtest.cpp
-  geblttrf_gtest.cpp
+  lapack/getf2_getrf_gtest.cpp
+  lapack/getrf_large_gtest.cpp
+  lapack/potf2_potrf_gtest.cpp
+  lapack/sytf2_sytrf_gtest.cpp
+  lapack/geblttrf_gtest.cpp
   # orthogonal factorizations
-  geqr2_geqrf_gtest.cpp
-  gerq2_gerqf_gtest.cpp
-  geql2_geqlf_gtest.cpp
-  gelq2_gelqf_gtest.cpp
+  lapack/geqr2_geqrf_gtest.cpp
+  lapack/gerq2_gerqf_gtest.cpp
+  lapack/geql2_geqlf_gtest.cpp
+  lapack/gelq2_gelqf_gtest.cpp
   # problem and matrix reductions (diagonalizations)
-  gebd2_gebrd_gtest.cpp
-  sytxx_hetxx_gtest.cpp
-  sygsx_hegsx_gtest.cpp
+  lapack/gebd2_gebrd_gtest.cpp
+  lapack/sytxx_hetxx_gtest.cpp
+  lapack/sygsx_hegsx_gtest.cpp
   # singular value decomposition
-  gesvd_gtest.cpp
-  gesvdj_gtest.cpp
-  gesvdx_gtest.cpp
+  lapack/gesvd_gtest.cpp
+  lapack/gesvdj_gtest.cpp
+  lapack/gesvdx_gtest.cpp
   # symmetric eigensolvers
-  syev_heev_gtest.cpp
-  syevd_heevd_gtest.cpp
-  syevj_heevj_gtest.cpp
-  syevx_heevx_gtest.cpp
-  syevdx_heevdx_gtest.cpp
-  sygv_hegv_gtest.cpp
-  sygvd_hegvd_gtest.cpp
-  sygvj_hegvj_gtest.cpp
-  sygvx_hegvx_gtest.cpp
-  sygvdx_hegvdx_gtest.cpp
-  syevdj_heevdj_gtest.cpp
-  sygvdj_hegvdj_gtest.cpp
+  lapack/syev_heev_gtest.cpp
+  lapack/syevd_heevd_gtest.cpp
+  lapack/syevj_heevj_gtest.cpp
+  lapack/syevx_heevx_gtest.cpp
+  lapack/syevdx_heevdx_gtest.cpp
+  lapack/sygv_hegv_gtest.cpp
+  lapack/sygvd_hegvd_gtest.cpp
+  lapack/sygvj_hegvj_gtest.cpp
+  lapack/sygvx_hegvx_gtest.cpp
+  lapack/sygvdx_hegvdx_gtest.cpp
+  lapack/syevdj_heevdj_gtest.cpp
+  lapack/sygvdj_hegvdj_gtest.cpp
 )
 
 set(rocauxiliary_test_source
   # vector & matrix manipulations
-  lacgv_gtest.cpp
-  laswp_gtest.cpp
+  auxiliary/lacgv_gtest.cpp
+  auxiliary/laswp_gtest.cpp
   # householder reflections
-  larf_gtest.cpp
-  larfg_gtest.cpp
-  larft_gtest.cpp
-  larfb_gtest.cpp
+  auxiliary/larf_gtest.cpp
+  auxiliary/larfg_gtest.cpp
+  auxiliary/larft_gtest.cpp
+  auxiliary/larfb_gtest.cpp
   # orthonormal/unitary matrices
-  orgxr_ungxr_gtest.cpp
-  orglx_unglx_gtest.cpp
-  orgxl_ungxl_gtest.cpp
-  orgbr_ungbr_gtest.cpp
-  orgtr_ungtr_gtest.cpp
-  ormxr_unmxr_gtest.cpp
-  ormlx_unmlx_gtest.cpp
-  ormxl_unmxl_gtest.cpp
-  ormbr_unmbr_gtest.cpp
-  ormtr_unmtr_gtest.cpp
+  auxiliary/orgxr_ungxr_gtest.cpp
+  auxiliary/orglx_unglx_gtest.cpp
+  auxiliary/orgxl_ungxl_gtest.cpp
+  auxiliary/orgbr_ungbr_gtest.cpp
+  auxiliary/orgtr_ungtr_gtest.cpp
+  auxiliary/ormxr_unmxr_gtest.cpp
+  auxiliary/ormlx_unmlx_gtest.cpp
+  auxiliary/ormxl_unmxl_gtest.cpp
+  auxiliary/ormbr_unmbr_gtest.cpp
+  auxiliary/ormtr_unmtr_gtest.cpp
   # bidiagonal matrices
-  labrd_gtest.cpp
-  bdsqr_gtest.cpp
-  bdsvdx_gtest.cpp
+  auxiliary/labrd_gtest.cpp
+  auxiliary/bdsqr_gtest.cpp
+  auxiliary/bdsvdx_gtest.cpp
   # tridiagonal matrices
-  sterf_gtest.cpp
-  steqr_gtest.cpp
-  stedc_gtest.cpp
-  stebz_gtest.cpp
-  stein_gtest.cpp
-  latrd_gtest.cpp
+  auxiliary/sterf_gtest.cpp
+  auxiliary/steqr_gtest.cpp
+  auxiliary/stedc_gtest.cpp
+  auxiliary/stebz_gtest.cpp
+  auxiliary/stein_gtest.cpp
+  auxiliary/latrd_gtest.cpp
   # symmetric matrices
-  lasyf_gtest.cpp
+  auxiliary/lasyf_gtest.cpp
   # triangular matrices
-  lauum_gtest.cpp
+  auxiliary/lauum_gtest.cpp
 )
 
 set(rocrefact_test_source
   # rfinfo analysis
-  csrrf_analysis_gtest.cpp
-  csrrf_workflow_gtest.cpp
+  refact/csrrf_analysis_gtest.cpp
+  refact/csrrf_workflow_gtest.cpp
   # lu refactorization
-  csrrf_sumlu_gtest.cpp
-  csrrf_splitlu_gtest.cpp
-  csrrf_refactlu_gtest.cpp
-  csrrf_refactchol_gtest.cpp
+  refact/csrrf_sumlu_gtest.cpp
+  refact/csrrf_splitlu_gtest.cpp
+  refact/csrrf_refactlu_gtest.cpp
+  refact/csrrf_refactchol_gtest.cpp
   # sparse solver
-  csrrf_solve_gtest.cpp
+  refact/csrrf_solve_gtest.cpp
 )
 
 set(others_test_source
@@ -131,7 +131,7 @@ set(others_test_source
   # rocsolver logging
   logging_gtest.cpp
   # helpers
-  client_environment_helpers.cpp
+  #common/client_environment_helpers.cpp
 )
 
 set(rocsolver_test_source
