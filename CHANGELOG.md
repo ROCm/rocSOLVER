@@ -8,9 +8,12 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - GETRS_64 (with batched and strided\_batched versions)
 
 ### Optimized
+- Improved performance of Cholesky factorization.
+
 ### Changed
 - Renamed install script arguments of the form *_dir to *-path. Arguments of the form *_dir remain functional for
   backwards compatibility.
+- Functions working with arrays of size n - 1 can now accept null pointers when n = 1.
 
 ### Deprecated
 ### Removed

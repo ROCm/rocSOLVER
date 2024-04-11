@@ -493,7 +493,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
     // Main loop
     for(rocblas_int k = 0; k < nn; k += blk)
     {
-        jb = min(nn - k, blk); // number of columns/pivots in the inner block
+        jb = std::min(nn - k, blk); // number of columns/pivots in the inner block
 
         // factorize inner panel block
         rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, inca, lda),
@@ -574,7 +574,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         return;
     }
 
-    rocblas_int dim = min(m, n);
+    rocblas_int dim = std::min(m, n);
     rocblas_int blk = getrf_get_blksize<ISBATCHED, T>(dim, pivot);
 
     if(blk == 0)
@@ -595,7 +595,7 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     {
         // requirements for largest possible GETF2 for the sub blocks
         // (largest block panel dimension is 512)
-        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, min(dim, 512), pivot, batch_count,
+        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, std::min(dim, 512), pivot, batch_count,
                                                     size_scalars, size_pivotval, size_pivotidx,
                                                     true, inca);
 
@@ -605,13 +605,13 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
 
         // extra workspace for calling largest possible TRSM
         rocsolver_trsm_mem<BATCHED, STRIDED, T>(
-            rocblas_side_left, rocblas_operation_none, min(dim, 512), n, batch_count, size_work1,
+            rocblas_side_left, rocblas_operation_none, std::min(dim, 512), n, batch_count, size_work1,
             size_work2, size_work3, size_work4, optim_mem, true, lda, lda, inca, inca);
         if(!pivot)
         {
             size_t w1, w2, w3, w4;
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, rocblas_operation_none, m,
-                                                    min(dim, 512), batch_count, &w1, &w2, &w3, &w4,
+                                                    std::min(dim, 512), batch_count, &w1, &w2, &w3, &w4,
                                                     optim_mem, true, lda, lda, inca, inca);
             *size_work1 = std::max(*size_work1, w1);
             *size_work2 = std::max(*size_work2, w2);
@@ -657,7 +657,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    rocblas_int dim = min(m, n);
+    rocblas_int dim = std::min(m, n);
     rocblas_int blocks, blocksy;
     dim3 grid, threads;
 
@@ -703,7 +703,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     // MAIN LOOP
     for(rocblas_int j = 0; j < dim; j += blk)
     {
-        jb = min(dim - j, blk);
+        jb = std::min(dim - j, blk);
 
         if(pivot || panel)
         {

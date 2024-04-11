@@ -714,7 +714,7 @@ I rocsolver_trsm_blksize(const I m, const I n)
 
 /** This function determine workspace size for the internal trsm **/
 template <bool BATCHED, bool STRIDED, typename T, typename I>
-void rocsolver_trsm_mem(const rocblas_side side,
+rocblas_status rocsolver_trsm_mem(const rocblas_side side,
                         const rocblas_operation trans,
                         const I m,
                         const I n,
@@ -739,7 +739,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
-        return;
+        return rocblas_status_success;
     }
 
     I mm = m;
@@ -759,7 +759,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
             *size_work2 = 0;
             *size_work3 = 0;
             *size_work4 = 0;
-            return;
+            return rocblas_status_success;
         }
         else
             mm = m;
@@ -775,7 +775,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
         mm = (m % 128 != 0) ? m : m + 1;
     }
 
-    rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count, size_work1,
+    return rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count, size_work1,
                                      size_work2, size_work3, size_work4);
 }
 
@@ -1409,7 +1409,7 @@ inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
 *************************************************************/
 
 #define INSTANTIATE_TRSM_MEM(BATCHED, STRIDED, T, I)                                     \
-    template void rocsolver_trsm_mem<BATCHED, STRIDED, T, I>(                            \
+    template rocblas_status rocsolver_trsm_mem<BATCHED, STRIDED, T, I>(                  \
         const rocblas_side side, const rocblas_operation trans, const I m, const I n,    \
         const I batch_count, size_t* size_work1, size_t* size_work2, size_t* size_work3, \
         size_t* size_work4, bool* optim_mem, bool inblocked, const I lda, const I ldb,   \

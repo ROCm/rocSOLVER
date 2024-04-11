@@ -65,7 +65,7 @@ rocblas_status rocsolver_getrs_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !ipiv) || (nrhs * n && !B))
+    if((n && !A) || (n && !ipiv) || (nrhs && n && !B))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

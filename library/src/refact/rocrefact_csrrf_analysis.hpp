@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -65,7 +65,7 @@ rocblas_status rocsolver_csrrf_analysis_argCheck(rocblas_handle handle,
 
     // 3. invalid pointers
     if(!rfinfo || !ptrM || !ptrT || (nnzM && (!indM || !valM)) || (nnzT && (!indT || !valT))
-       || (n * nrhs && !B))
+       || (n && nrhs && !B))
         return rocblas_status_invalid_pointer;
     if(n && ((rfinfo->mode == rocsolver_rfinfo_mode_lu && !pivP) || !pivQ))
         return rocblas_status_invalid_pointer;
