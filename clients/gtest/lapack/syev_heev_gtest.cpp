@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_syev_heev.hpp"
+#include "common/lapack/testing_syev_heev.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

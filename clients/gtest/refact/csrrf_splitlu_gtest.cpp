@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/refact/testing_csrrf_splitlu.hpp"
+#include "common/refact/testing_csrrf_splitlu.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -62,14 +62,10 @@ const vector<int> nnz_range = {
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
-    100,
-    250,
-    1250,
-};
+    100, 250, 3000, 8000};
 const vector<int> large_nnz_range = {
     // normal (valid) samples
-    300, 500, 700, 7000, 70000,
-};
+    300, 500, 700000, 2000000};
 
 Arguments csrrf_splitlu_setup_arguments(csrrf_splitlu_tuple tup)
 {
@@ -80,8 +76,6 @@ Arguments csrrf_splitlu_setup_arguments(csrrf_splitlu_tuple tup)
 
     arg.set<rocblas_int>("n", n);
     arg.set<rocblas_int>("nnzT", nnz);
-    // note: the clients will take nnzA = nnzT
-    // and determine the test case with n and nnzA.
 
     arg.timing = 0;
 

@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_potf2_potrf.hpp"
+#include "common/lapack/testing_potf2_potrf.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

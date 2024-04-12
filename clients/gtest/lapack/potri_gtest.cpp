@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_potri.hpp"
+#include "common/lapack/testing_potri.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

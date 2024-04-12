@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_bdsqr.hpp"
+#include "common/auxiliary/testing_bdsqr.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

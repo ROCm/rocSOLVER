@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_lacgv.hpp"
+#include "common/auxiliary/testing_lacgv.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

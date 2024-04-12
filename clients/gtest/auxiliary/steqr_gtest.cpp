@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_steqr.hpp"
+#include "common/auxiliary/testing_steqr.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

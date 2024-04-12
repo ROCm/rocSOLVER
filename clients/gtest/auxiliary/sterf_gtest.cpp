@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_sterf.hpp"
+#include "common/auxiliary/testing_sterf.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

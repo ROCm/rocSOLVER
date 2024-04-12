@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/auxiliary/testing_latrd.hpp"
+#include "common/auxiliary/testing_latrd.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;

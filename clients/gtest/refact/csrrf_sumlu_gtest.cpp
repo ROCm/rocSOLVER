@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/refact/testing_csrrf_sumlu.hpp"
+#include "common/refact/testing_csrrf_sumlu.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -33,9 +33,10 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<int, int> csrrf_sumlu_tuple;
+typedef std::tuple<int, vector<int>> csrrf_sumlu_tuple;
 
-// case when n = 0 and nnz = 0 also execute the bad arguments test
+// each nnz_range is a {nnzL, nnzU}
+// case when n = 0, nnzU = 10, and nnzL = 10 also execute the bad arguments test
 // (null handle, null pointers and invalid values)
 
 // for checkin_lapack tests
@@ -48,42 +49,44 @@ const vector<int> n_range = {
     20,
     50,
 };
-const vector<int> nnz_range = {
+const vector<vector<int>> nnz_range = {
     // matrix zero
-    0,
+    {-1, 0},
     // invalid
-    -1,
+    {-10, 10},
+    {10, -10},
+    {10, 10},
     // normal (valid) samples
-    60,
-    100,
-    140,
-};
+    {60, 30},
+    {100, 120},
+    {140, 80}};
 
 // for daily_lapack tests
 const vector<int> large_n_range = {
     // normal (valid) samples
-    100,
-    250,
-};
-const vector<int> large_nnz_range = {
+    100, 250, 5000, 7000};
+const vector<vector<int>> large_nnz_range = {
     // normal (valid) samples
-    300,
-    500,
-    700,
-};
+    {300, 1000},
+    {5000, 350},
+    {1700, 1700},
+    {10000, 50000},
+    {2000000, 100000}};
 
 Arguments csrrf_sumlu_setup_arguments(csrrf_sumlu_tuple tup)
 {
     int n = std::get<0>(tup);
-    int nnz = std::get<1>(tup);
+    vector<int> nnz = std::get<1>(tup);
+
+    // for matrix zero:
+    if(nnz[0] == -1)
+        nnz[0] = n;
 
     Arguments arg;
 
     arg.set<rocblas_int>("n", n);
-    arg.set<rocblas_int>("nnzU", nnz);
-    arg.set<rocblas_int>("nnzL", n);
-    // note: the clients will take nnzA = nnzU + nnzL - n
-    // and determine the test case with n and nnzA.
+    arg.set<rocblas_int>("nnzU", nnz[1]);
+    arg.set<rocblas_int>("nnzL", nnz[0]);
 
     arg.timing = 0;
 
@@ -108,7 +111,8 @@ protected:
     {
         Arguments arg = csrrf_sumlu_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nnzU") == 0)
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nnzU") == 10
+           && arg.peek<rocblas_int>("nnzL") == 10)
             testing_csrrf_sumlu_bad_arg<T>();
 
         testing_csrrf_sumlu<T>(arg);

@@ -28,8 +28,8 @@
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
-#include "program_options.hpp"
-#include "rocsolver_dispatcher.hpp"
+#include "common/misc/program_options.hpp"
+#include "common/misc/rocsolver_dispatcher.hpp"
 
 using namespace roc;
 

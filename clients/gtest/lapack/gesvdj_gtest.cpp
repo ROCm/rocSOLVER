@@ -25,8 +25,8 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "testcode/lapack/testing_gesvdj.hpp"
-#include "testcode/lapack/testing_gesvdj_notransv.hpp"
+#include "common/lapack/testing_gesvdj.hpp"
+#include "common/lapack/testing_gesvdj_notransv.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
