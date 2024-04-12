@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,12 +41,12 @@
  * ===========================================================================
  */
 
-inline size_t idx2D(const size_t i, const size_t j, const size_t lda)
+inline int64_t idx2D(const int64_t i, const int64_t j, const int64_t lda)
 {
     return j * lda + i;
 }
 
-inline size_t idx2D(const size_t i, const size_t j, const size_t inca, const size_t lda)
+inline int64_t idx2D(const int64_t i, const int64_t j, const int64_t inca, const int64_t lda)
 {
     return j * lda + i * inca;
 }
@@ -75,9 +75,10 @@ T* const* cast2constPointer(T** array)
     return array;
 }
 
-inline rocblas_int get_index(rocblas_int* intervals, rocblas_int max, rocblas_int dim)
+template <typename I>
+I get_index(I* intervals, I max, I dim)
 {
-    rocblas_int i;
+    I i;
 
     for(i = 0; i < max; ++i)
     {

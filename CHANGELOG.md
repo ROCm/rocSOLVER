@@ -4,6 +4,9 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ## (Unreleased) rocSOLVER
 ### Added
+- 64-bit APIs for existing functions:
+    - GETRS_64 (with batched and strided\_batched versions)
+
 ### Optimized
 - Improved performance of Cholesky factorization.
 
