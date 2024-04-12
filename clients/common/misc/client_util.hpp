@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -56,6 +56,9 @@
 #define FOREACH_BLOCKED_VARIANT(STAMP, F, ...) \
     F(STAMP, ##__VA_ARGS__, false)             \
     F(STAMP, ##__VA_ARGS__, true)
+#define FOREACH_INT_TYPE(STAMP, F, ...)  \
+    F(STAMP, ##__VA_ARGS__, rocblas_int) \
+    F(STAMP, ##__VA_ARGS__, int64_t)
 #define FOREACH_REAL_TYPE(STAMP, F, ...) \
     F(STAMP, ##__VA_ARGS__, float)       \
     F(STAMP, ##__VA_ARGS__, double)

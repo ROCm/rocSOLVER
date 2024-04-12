@@ -64,7 +64,7 @@ void rocblas_init_template(U& that, bool seedReset = false)
         rocblas_seedrand();
     }
 
-    for(rocblas_int batch_index = 0; batch_index < that.batch_count(); ++batch_index)
+    for(int64_t batch_index = 0; batch_index < that.batch_count(); ++batch_index)
     {
         auto batched_data = that[batch_index];
         auto inc = std::abs(that.inc());
@@ -74,7 +74,7 @@ void rocblas_init_template(U& that, bool seedReset = false)
             batched_data -= (n - 1) * inc;
         }
 
-        for(rocblas_int i = 0; i < n; ++i)
+        for(int64_t i = 0; i < n; ++i)
         {
             random_generator(batched_data[i * inc]);
         }
@@ -95,7 +95,7 @@ void rocblas_init_nan_template(U& that, bool seedReset = false)
         rocblas_seedrand();
     }
 
-    for(rocblas_int batch_index = 0; batch_index < that.batch_count(); ++batch_index)
+    for(int64_t batch_index = 0; batch_index < that.batch_count(); ++batch_index)
     {
         auto batched_data = that[batch_index];
         auto inc = std::abs(that.inc());
@@ -105,7 +105,7 @@ void rocblas_init_nan_template(U& that, bool seedReset = false)
             batched_data -= (n - 1) * inc;
         }
 
-        for(rocblas_int i = 0; i < n; ++i)
+        for(int64_t i = 0; i < n; ++i)
         {
             random_nan_generator(batched_data[i * inc]);
         }

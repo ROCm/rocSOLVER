@@ -61,6 +61,8 @@ void rocsolver_geblttrf_npvt_getMemorySize(const rocblas_int nb,
                                            size_t* size_iinfo1,
                                            size_t* size_iinfo2,
                                            bool* optim_mem,
+                                           const rocblas_int ldb = 1,
+                                           const rocblas_int ldc = 1,
                                            const rocblas_int incb = 1,
                                            const rocblas_int incc = 1)
 {
@@ -87,13 +89,14 @@ void rocsolver_geblttrf_npvt_getMemorySize(const rocblas_int nb,
     size_t d1 = 0, d2 = 0;
 
     // size requirements for getrf
-    rocsolver_getrf_getMemorySize<BATCHED, STRIDED, T>(nb, nb, false, batch_count, size_scalars, &a1,
-                                                       &b1, &c1, &d1, size_pivotval, size_pivotidx,
-                                                       size_iipiv, size_iinfo1, optim_mem, incb);
+    rocsolver_getrf_getMemorySize<BATCHED, STRIDED, T>(
+        nb, nb, false, batch_count, size_scalars, &a1, &b1, &c1, &d1, size_pivotval, size_pivotidx,
+        size_iipiv, size_iinfo1, optim_mem, ldb, incb);
 
     // size requirements for getrs
     rocsolver_getrs_getMemorySize<BATCHED, STRIDED, T>(rocblas_operation_none, nb, nb, batch_count,
-                                                       &a2, &b2, &c2, &d2, &unused, incb, incc);
+                                                       &a2, &b2, &c2, &d2, &unused, ldb, ldc, incb,
+                                                       incc);
 
     *size_work1 = std::max(a1, a2);
     *size_work2 = std::max(b1, b2);
@@ -214,8 +217,8 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
     {
         rocsolver_getrs_template<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, nb, nb, B, shiftB + k * bsb, incb, ldb, strideB,
-            nullptr, 0, C, shiftC + k * bsc, incc, ldc, strideC, batch_count, work1, work2, work3,
-            work4, optim_mem, false);
+            (rocblas_int*)nullptr, 0, C, shiftC + k * bsc, incc, ldc, strideC, batch_count, work1,
+            work2, work3, work4, optim_mem, false);
 
         rocsolver_gemm<BATCHED, STRIDED, T>(
             handle, rocblas_operation_none, rocblas_operation_none, nb, nb, nb, &minone, A,

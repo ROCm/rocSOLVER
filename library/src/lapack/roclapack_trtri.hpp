@@ -172,7 +172,8 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
     }
     else
     {
-        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n, blk,
+        rocblas_int nn = (n % 128 != 0) ? n : n + 1;
+        rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, nn, blk, 1, 1,
                                          batch_count, &w1b, size_work2, &w3b, size_work4);
         *size_work1 = std::max(w1a, w1b);
         *size_work3 = std::max(w3a, w3b);

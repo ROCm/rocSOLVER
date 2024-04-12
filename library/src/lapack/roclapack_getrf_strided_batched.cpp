@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -75,7 +75,7 @@ rocblas_status rocsolver_getrf_strided_batched_impl(rocblas_handle handle,
 
     rocsolver_getrf_getMemorySize<false, true, T>(
         m, n, pivot, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3, &size_work4,
-        &size_pivotval, &size_pivotidx, &size_iipiv, &size_iinfo, &optim_mem);
+        &size_pivotval, &size_pivotidx, &size_iipiv, &size_iinfo, &optim_mem, lda);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
