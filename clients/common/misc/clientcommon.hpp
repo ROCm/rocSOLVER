@@ -31,6 +31,4 @@
 #include "common/misc/clients_utility.hpp"
 #include "common/misc/rocblas_test.hpp"
 #include "common_host_helpers.hpp"
-#include "rocblas_test.hpp"
-#include "rocblas_vector.hpp"
 #include "rocsolver_datatype2string.hpp"
