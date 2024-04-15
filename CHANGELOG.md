@@ -9,6 +9,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Optimized
 - Improved performance of Cholesky factorization.
+- Improved performance of splitlu to extract the L and U triangular matrices from the result of sparse factorization matrix M, where M = (L - eye) + U.
 
 ### Changed
 - Renamed install script arguments of the form *_dir to *-path. Arguments of the form *_dir remain functional for
