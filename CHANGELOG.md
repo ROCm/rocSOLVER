@@ -4,6 +4,9 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ## (Unreleased) rocSOLVER
 ### Added
+- 64-bit APIs for existing functions:
+    - GETRS_64 (with batched and strided\_batched versions)
+
 ### Optimized
 - Improved performance of Cholesky factorization.
 - Improved performance of splitlu to extract the L and U triangular matrices from the result of sparse factorization matrix M, where M = (L - eye) + U.
