@@ -160,14 +160,14 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
             // -----------------------------------------------------------
             {
                 // upper triangular case
-                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_left,
+                rocsolver_trsm_mem<BATCHED, T>(rocblas_side_left,
                                                  rocblas_operation_conjugate_transpose, jb, n - jb,
                                                  batch_count, &w1a, &w2a, &w3a, &w4a);
             }
 
             {
                 // lower triangular case
-                rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right,
+                rocsolver_trsm_mem<BATCHED, T>(rocblas_side_right,
                                                  rocblas_operation_conjugate_transpose, n - jb, jb,
                                                  batch_count, &w1b, &w2b, &w3b, &w4b);
             }
@@ -311,8 +311,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             {
                 // update trailing submatrix
 
-                bool const use_rocblas_trsm = std::is_same<T, double>::value
-                    || std::is_same<T, rocblas_double_complex>::value;
+                bool const use_rocblas_trsm =  (batch_count <= 1);
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower,
