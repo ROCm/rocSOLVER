@@ -389,19 +389,19 @@ ROCSOLVER_KERNEL void reset_batch_info(U info, const rocblas_stride stride, cons
         inf[idx] = T(val);
 }
 
-template <typename T>
-ROCSOLVER_KERNEL void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch)
+template <typename T, typename I>
+ROCSOLVER_KERNEL void get_array(T** out, T* in, rocblas_stride stride, I batch)
 {
-    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I b = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
 
     if(b < batch)
         out[b] = in + b * stride;
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch)
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void shift_array(T** out, U in, rocblas_stride shift, I batch)
 {
-    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I b = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
 
     if(b < batch)
         out[b] = in[b] + shift;
