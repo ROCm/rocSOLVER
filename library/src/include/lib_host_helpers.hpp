@@ -78,7 +78,7 @@ T* const* cast2constPointer(T** array)
 template <typename I>
 I get_index(I* intervals, I max, I dim)
 {
-    rocblas_int i;
+    I i;
 
     for(i = 0; i < max; ++i)
     {

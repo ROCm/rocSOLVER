@@ -211,9 +211,12 @@ class rocsolver_dispatcher
             {"gelqf_batched", testing_gelq2_gelqf<true, true, 1, T>},
             {"gelqf_strided_batched", testing_gelq2_gelqf<false, true, 1, T>},
             // getrs
-            {"getrs", testing_getrs<false, false, T>},
-            {"getrs_batched", testing_getrs<true, true, T>},
-            {"getrs_strided_batched", testing_getrs<false, true, T>},
+            {"getrs", testing_getrs<false, false, T, rocblas_int>},
+            {"getrs_batched", testing_getrs<true, true, T, rocblas_int>},
+            {"getrs_strided_batched", testing_getrs<false, true, T, rocblas_int>},
+            {"getrs_64", testing_getrs<false, false, T, int64_t>},
+            {"getrs_batched_64", testing_getrs<true, true, T, int64_t>},
+            {"getrs_strided_batched_64", testing_getrs<false, true, T, int64_t>},
             // gesv
             {"gesv", testing_gesv<false, false, T>},
             {"gesv_batched", testing_gesv<true, true, T>},

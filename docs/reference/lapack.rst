@@ -851,6 +851,14 @@ rocsolver_<type>getri_strided_batched()
 
 rocsolver_<type>getrs()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrs_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrs_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrs_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrs_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrs
    :outline:
 .. doxygenfunction:: rocsolver_cgetrs
@@ -861,6 +869,14 @@ rocsolver_<type>getrs()
 
 rocsolver_<type>getrs_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrs_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrs_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrs_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrs_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrs_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrs_batched
@@ -871,6 +887,14 @@ rocsolver_<type>getrs_batched()
 
 rocsolver_<type>getrs_strided_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrs_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrs_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrs_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrs_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrs_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrs_strided_batched
