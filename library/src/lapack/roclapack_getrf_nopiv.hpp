@@ -357,7 +357,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     // constants for rocblas functions calls
     T t_one = 1;
     T t_minone = -1;
-    bool const use_rocblas = (batch_count == 1);
+    bool const use_rocblas = false;
 
     // [ L11      ] * [ U11   U12 ] = [A11   A12]
     // [ L21  L22 ]   [       U22 ]   [A21   A22]
