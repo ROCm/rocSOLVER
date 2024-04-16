@@ -447,3 +447,12 @@
 #ifndef TRTRI_BATCH_BLKSIZES
 #define TRTRI_BATCH_BLKSIZES 0, 16, 32, 0
 #endif
+
+/************************** splitlu ***************************************
+*******************************************************************************/
+/*! \brief Determines the size at which rocSOLVER switches from
+    the kernel using a single thread block or using faster algorithm using rocPRIM */
+
+#ifndef SPLITLU_SWITCH_SIZE
+#define SPLITLU_SWITCH_SIZE 64
+#endif
