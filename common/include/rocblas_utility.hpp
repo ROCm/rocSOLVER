@@ -36,11 +36,29 @@
 #include <rocblas/rocblas.h>
 #include <rocsolver/rocsolver.h>
 
-// Macro for Namespace
+// concaternate the two arguments, evaluating them first if they are macros
+#define ROCSOLVER_CONCAT2_HELPER(a, b) a ## b
+#define ROCSOLVER_CONCAT2(a, b) ROCSOLVER_CONCAT2_HELPER(a, b)
+
+#define ROCSOLVER_CONCAT4_HELPER(a, b, c, d) a ## b ## c ## d
+#define ROCSOLVER_CONCAT4(a, b, c, d) ROCSOLVER_CONCAT4_HELPER(a, b, c, d)
+
+#if ROCSOLVER_VERSION_MINOR < 10
+#define ROCSOLVER_VERSION_MINOR_PADDED ROCSOLVER_CONCAT2(0, ROCSOLVER_VERSION_MINOR)
+#else
+#define ROCSOLVER_VERSION_MINOR_PADDED ROCSOLVER_VERSION_MINOR
+#endif
+
+#if ROCSOLVER_VERSION_PATCH < 10
+#define ROCSOLVER_VERSION_PATCH_PADDED ROCSOLVER_CONCAT2(0, ROCSOLVER_VERSION_PATCH)
+#else
+#define ROCSOLVER_VERSION_PATCH_PADDED ROCSOLVER_VERSION_PATCH
+#endif
+
 #ifndef ROCSOLVER_BEGIN_NAMESPACE
 #define ROCSOLVER_BEGIN_NAMESPACE    \
     namespace rocsolver {            \
-    inline namespace v3_26_0{        
+    inline namespace ROCSOLVER_CONCAT4(v, ROCSOLVER_VERSION_MAJOR, ROCSOLVER_VERSION_MINOR_PADDED, ROCSOLVER_VERSION_PATCH_PADDED) {
 #define ROCSOLVER_END_NAMESPACE      \
     }                                \
     }
