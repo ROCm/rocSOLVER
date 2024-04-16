@@ -118,6 +118,14 @@ rocsolver_<type>potrf_strided_batched()
 
 rocsolver_<type>getf2()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2
@@ -128,6 +136,14 @@ rocsolver_<type>getf2()
 
 rocsolver_<type>getf2_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2_batched
@@ -138,6 +154,14 @@ rocsolver_<type>getf2_batched()
 
 rocsolver_<type>getf2_strided_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2_strided_batched

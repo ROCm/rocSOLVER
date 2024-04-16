@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,8 +31,18 @@
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETF2_PANEL(rocblas_double_complex, rocblas_double_complex*);
-INSTANTIATE_GETF2_PANEL(rocblas_double_complex, rocblas_double_complex* const*);
+INSTANTIATE_GETF2_PANEL(rocblas_double_complex, rocblas_int, rocblas_int, rocblas_double_complex*);
+INSTANTIATE_GETF2_PANEL(rocblas_double_complex,
+                        rocblas_int,
+                        rocblas_int,
+                        rocblas_double_complex* const*);
 
-INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_double_complex, rocblas_double_complex*);
-INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_double_complex, rocblas_double_complex* const*);
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_double_complex, rocblas_int, rocblas_double_complex*);
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_double_complex, rocblas_int, rocblas_double_complex* const*);
+
+// 64-bit APIs
+INSTANTIATE_GETF2_PANEL(rocblas_double_complex, int64_t, int64_t, rocblas_double_complex*);
+INSTANTIATE_GETF2_PANEL(rocblas_double_complex, int64_t, int64_t, rocblas_double_complex* const*);
+
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_double_complex, int64_t, rocblas_double_complex*);
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_double_complex, int64_t, rocblas_double_complex* const*);
