@@ -110,7 +110,8 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     else
     {
         rocblas_int const jb = nb;
-        size_t s1 = 0; size_t s2 = 0;
+        size_t s1 = 0;
+        size_t s2 = 0;
 
         // size to store info about positiveness of each subblock
         *size_iinfo = sizeof(rocblas_int) * batch_count;
@@ -160,16 +161,16 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
             // -----------------------------------------------------------
             {
                 // upper triangular case
-                rocsolver_trsm_mem<BATCHED, T>(rocblas_side_left,
-                                                 rocblas_operation_conjugate_transpose, jb, n - jb,
-                                                 batch_count, &w1a, &w2a, &w3a, &w4a);
+                rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left,
+                                                        rocblas_operation_conjugate_transpose, jb,
+                                                        n - jb, batch_count, &w1a, &w2a, &w3a, &w4a);
             }
 
             {
                 // lower triangular case
-                rocsolver_trsm_mem<BATCHED, T>(rocblas_side_right,
-                                                 rocblas_operation_conjugate_transpose, n - jb, jb,
-                                                 batch_count, &w1b, &w2b, &w3b, &w4b);
+                rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right,
+                                                        rocblas_operation_conjugate_transpose, n - jb,
+                                                        jb, batch_count, &w1b, &w2b, &w3b, &w4b);
             }
 
             *size_work1 = max(*size_work1, max(w1a, w1b));
@@ -311,7 +312,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
             {
                 // update trailing submatrix
 
-                bool const use_rocblas_trsm =  (batch_count <= 1);
+                bool const use_rocblas_trsm = (batch_count <= 1);
                 if(use_rocblas_trsm)
                 {
                     rocblasCall_trsm(handle, rocblas_side_right, rocblas_fill_lower,
