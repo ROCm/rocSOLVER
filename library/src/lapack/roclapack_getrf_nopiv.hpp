@@ -38,7 +38,7 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 #include <type_traits>
 
-static rocblas_int get_lds_size()
+static size_t get_lds_size()
 {
     rocblas_int const default_lds_size = 64 * 1024;
 
@@ -163,8 +163,8 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 rocblas_int const nn = is_even(nb) ? nb + 1 : nb;
 
                 {
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1a, &w2a, &w3a, &w4a);
+                    rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
+                                                            &w2a, &w3a, &w4a, optim_mem);
                     w1_max = std::max(w1_max, w1a);
                     w2_max = std::max(w2_max, w2a);
                     w3_max = std::max(w3_max, w3a);
@@ -197,8 +197,8 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 if(has_work)
                 {
                     {
-                        rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                    &w1a, &w2a, &w3a, &w4a);
+                        rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a, optim_mem);
 
                         w1_max = std::max(w1_max, w1a);
                         w2_max = std::max(w2_max, w2a);
@@ -236,8 +236,8 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 rocblas_int const nn = is_even(n) ? n + 1 : n;
 
                 {
-                    rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                &w1a, &w2a, &w3a, &w4a);
+                    rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count, &w1a,
+                                                            &w2a, &w3a, &w4a, optim_mem);
 
                     w1_max = std::max(w1_max, w1a);
                     w2_max = std::max(w2_max, w2a);
@@ -271,8 +271,8 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                 if(has_work)
                 {
                     {
-                        rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                    &w1a, &w2a, &w3a, &w4a);
+                        rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a, optim_mem);
 
                         w1_max = std::max(w1_max, w1a);
                         w2_max = std::max(w2_max, w2a);
@@ -281,8 +281,8 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
                     }
 
                     {
-                        rocblasCall_trsm_mem<BATCHED || STRIDED, T>(side, trans, mm, nn, batch_count,
-                                                                    &w1a, &w2a, &w3a, &w4a);
+                        rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count,
+                                                                &w1a, &w2a, &w3a, &w4a, optim_mem);
 
                         bool const inblocked = true;
                         const rocblas_int inca = 1;
@@ -307,21 +307,21 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
-                                              const rocblas_int m,
-                                              const rocblas_int n,
+                                              const I m,
+                                              const I n,
                                               U A,
-                                              const rocblas_int shiftA,
-                                              const rocblas_int lda,
+                                              const I shiftA,
+                                              const I lda,
                                               const rocblas_stride strideA,
-                                              rocblas_int* info,
-                                              const rocblas_int batch_count,
+                                              I* info,
+                                              const I batch_count,
                                               void* work1,
                                               void* work2,
                                               void* work3,
                                               void* work4,
-                                              rocblas_int* iinfo,
+                                              I* iinfo,
                                               bool optim_mem)
 {
     ROCSOLVER_ENTER("getrf_nopiv", "n:", n, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
@@ -334,7 +334,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int const blocksReset = std::max(1, (batch_count - 1) / BS1 + 1);
+    I const blocksReset = std::max(1, (batch_count - 1) / BS1 + 1);
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
@@ -352,7 +352,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
-    rocblas_int const nb = get_getrf_nopiv_blocksize<T>(n);
+    I const nb = get_getrf_nopiv_blocksize<T>(n);
 
     // constants for rocblas functions calls
     T t_one = 1;
@@ -370,11 +370,11 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     // (4a)  A22 = A22 - L21 * U12,   GEMM
     // (4b)  L22 * U22 = A22,  factorize remaining using tail recursion
 
-    rocblas_int const min_mn = std::min(m, n);
-    for(rocblas_int j = 0; j < min_mn; j += nb)
+    I const min_mn = std::min(m, n);
+    for(I j = 0; j < min_mn; j += nb)
     {
         // Factor diagonal and subdiagonal blocks
-        rocblas_int const jb = std::min(min_mn - j, nb); // number of columns in the block
+        I const jb = std::min(min_mn - j, nb); // number of columns in the block
 
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
 
@@ -385,8 +385,8 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
                                           iinfo, batch_count);
 
         // test for singular submatrix
-        ROCSOLVER_LAUNCH_KERNEL(chk_singular<rocblas_int>, gridReset, threads, 0, stream, iinfo,
-                                info, j, batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info, j,
+                                batch_count);
         // --------------------------------------
         // (2) L21 * U11 = A21 => L21 = A21 / U11
         // --------------------------------------
@@ -396,8 +396,8 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
             rocblas_operation const trans = rocblas_operation_none;
             rocblas_diagonal const diag = rocblas_diagonal_non_unit;
 
-            rocblas_int const mm = (m - (j + jb));
-            rocblas_int const nn = jb;
+            I const mm = (m - (j + jb));
+            I const nn = jb;
 
             const T* alpha = &t_one;
 
@@ -413,7 +413,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
                 }
                 else
                 {
-                    rocsolver_trsm_upper<BATCHED, STRIDED, T, U>(
+                    rocsolver_trsm_upper<BATCHED, STRIDED, T, I, U>(
                         handle, side, trans, diag, mm, nn, A, shiftA + idx2D(j, j, lda), lda,
                         strideA, A, shiftA + idx2D(j + jb, j, lda), lda, strideA, batch_count,
                         optim_mem, work1, work2, work3, work4);
@@ -430,8 +430,8 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
             rocblas_operation const trans = rocblas_operation_none;
             rocblas_diagonal const diag = rocblas_diagonal_unit;
 
-            rocblas_int const mm = jb;
-            rocblas_int const nn = (n - (j + jb));
+            I const mm = jb;
+            I const nn = (n - (j + jb));
 
             const T* alpha = &t_one;
 
@@ -447,7 +447,7 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
                 }
                 else
                 {
-                    rocsolver_trsm_lower<BATCHED, STRIDED, T, U>(
+                    rocsolver_trsm_lower<BATCHED, STRIDED, T, I, U>(
                         handle, side, trans, diag, mm, nn, A, shiftA + idx2D(j, j, lda), lda,
                         strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, batch_count,
                         optim_mem, work1, work2, work3, work4);
@@ -462,9 +462,9 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
             rocblas_operation const trans_a = rocblas_operation_none;
             rocblas_operation const trans_b = rocblas_operation_none;
 
-            rocblas_int const mm = (m - (j + jb));
-            rocblas_int const nn = (n - (j + jb));
-            rocblas_int const kk = jb;
+            I const mm = (m - (j + jb));
+            I const nn = (n - (j + jb));
+            I const kk = jb;
 
             const T* alpha = &t_minone;
             const T* beta = &t_one;
