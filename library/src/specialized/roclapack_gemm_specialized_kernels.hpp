@@ -73,8 +73,8 @@ ROCSOLVER_KERNEL void gemm_noconj_kernel(const I m,
     T temp = 0;
     if(i < m && j < n)
     {
-        for(I l = 0; l < k; l++)
-            temp += A[i * inca + l * lda] * B[l * incb + j * ldb];
+        for(I idx = 0; idx < k; idx++)
+            temp += A[i * inca + idx * lda] * B[idx * incb + j * ldb];
         C[i * incc + j * ldc] = a * temp + b * C[i * incc + j * ldc];
     }
 }
@@ -180,8 +180,8 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
     if(m == 0 || n == 0 || k == 0 || batch_count == 0)
         return rocblas_status_success;
 
-    bool is_inc1 = (inca == 1 && incb == 1 && incc == 1);
-    bool is_32bit
+    const bool is_inc1 = (inca == 1 && incb == 1 && incc == 1);
+    const bool is_32bit
         = (!std::is_same<I, int64_t>::value
            || (lda * k < INT_MAX && ldb * n < INT_MAX && ldc * n < INT_MAX && batch_count < INT_MAX));
     if(is_inc1 && is_32bit)
