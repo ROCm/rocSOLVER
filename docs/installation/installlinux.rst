@@ -221,7 +221,7 @@ information on CMake options).
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install ../..
     make install
 
 This is equivalent to ``./install.sh``.
@@ -229,7 +229,7 @@ This is equivalent to ``./install.sh``.
 .. code-block:: bash
 
     mkdir -p buildoutput/release && cd buildoutput/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=/home/user/rocsolverlib ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=/home/user/rocsolverlib ../..
     make install
 
 This is equivalent to ``./install.sh --lib_dir /home/user/rocsolverlib --build_dir buildoutput``.
@@ -237,7 +237,7 @@ This is equivalent to ``./install.sh --lib_dir /home/user/rocsolverlib --build_d
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_WITH_SPARSE=OFF ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_WITH_SPARSE=OFF ../..
     make install
 
 This is equivalent to ``./install.sh --no-sparse``.
@@ -245,7 +245,7 @@ This is equivalent to ``./install.sh --no-sparse``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -Drocblas_DIR=/alternative/rocblas/location ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -Drocblas_DIR=/alternative/rocblas/location ../..
     make install
 
 This is equivalent to ``./install.sh --rocblas_dir /alternative/rocblas/location``.
@@ -253,7 +253,7 @@ This is equivalent to ``./install.sh --rocblas_dir /alternative/rocblas/location
 .. code-block:: bash
 
     mkdir -p build/debug && cd build/debug
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCMAKE_BUILD_TYPE=Debug ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCMAKE_BUILD_TYPE=Debug ../..
     make install
 
 This is equivalent to ``./install.sh -g``.
@@ -261,7 +261,7 @@ This is equivalent to ``./install.sh -g``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_SHARED_LIBS=OFF ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_SHARED_LIBS=OFF ../..
     make install
 
 This is equivalent to ``./install.sh -s``.
@@ -269,7 +269,7 @@ This is equivalent to ``./install.sh -s``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON ../..
     make install
 
 This is equivalent to ``./install.sh -c``.
@@ -277,7 +277,7 @@ This is equivalent to ``./install.sh -c``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
     make install
     make package
 
@@ -286,7 +286,7 @@ This is equivalent to ``./install.sh -p``.
 .. code-block:: bash
 
     mkdir -p build/release && cd build/release
-    CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/package/install/path ../..
+    cmake --toolchain=toolchain-linux.cmake -DCMAKE_INSTALL_PREFIX=rocsolver-install -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/package/install/path ../..
     make install
     make package
     sudo dpkg -i rocsolver[-\_]*.deb
