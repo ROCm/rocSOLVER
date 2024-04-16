@@ -50,6 +50,14 @@ Triangular factorizations
 
 rocsolver_<type>getf2_npvt()
 --------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_npvt_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_npvt_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_npvt_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_npvt_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2_npvt
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2_npvt
@@ -60,6 +68,14 @@ rocsolver_<type>getf2_npvt()
 
 rocsolver_<type>getf2_npvt_batched()
 --------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_npvt_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_npvt_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_npvt_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_npvt_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2_npvt_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2_npvt_batched
@@ -70,6 +86,14 @@ rocsolver_<type>getf2_npvt_batched()
 
 rocsolver_<type>getf2_npvt_strided_batched()
 --------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_npvt_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_npvt_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_npvt_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_npvt_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2_npvt_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2_npvt_strided_batched
