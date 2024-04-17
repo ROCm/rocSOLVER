@@ -34,13 +34,6 @@
 #define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
     (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
 
-typedef enum rocblas_initialization_ : int
-{
-    rocblas_initialization_random_int = 111,
-    rocblas_initialization_trig_float = 222,
-    rocblas_initialization_hpl = 333,
-} rocblas_initialization;
-
 // return char from type
 template <typename>
 static constexpr char rocblas2char_precision = '\0';
@@ -231,17 +224,6 @@ constexpr auto rocblas2string_datatype(rocblas_datatype type)
     case rocblas_datatype_f8_r: return "f8_r";
     case rocblas_datatype_bf8_r: return "bf8_r";
 #endif
-    }
-    return "invalid";
-}
-
-constexpr auto rocblas2string_initialization(rocblas_initialization init)
-{
-    switch(init)
-    {
-    case rocblas_initialization_random_int: return "rand_int";
-    case rocblas_initialization_trig_float: return "trig_float";
-    case rocblas_initialization_hpl: return "hpl";
     }
     return "invalid";
 }
@@ -442,15 +424,6 @@ inline rocblas_datatype string2rocblas_datatype(const std::string& value)
         value == "bf8_r"                 ? rocblas_datatype_bf8_r :
 #endif
         rocblas_datatype_invalid;
-}
-
-inline rocblas_initialization string2rocblas_initialization(const std::string& value)
-{
-    return
-        value == "rand_int"   ? rocblas_initialization_random_int :
-        value == "trig_float" ? rocblas_initialization_trig_float :
-        value == "hpl"        ? rocblas_initialization_hpl        :
-        static_cast<rocblas_initialization>(0);
 }
 // clang-format on
 

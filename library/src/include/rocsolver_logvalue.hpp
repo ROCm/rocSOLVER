@@ -229,14 +229,4 @@ struct formatter<rocsolver_logvalue<rocblas_datatype>> : formatter<string_view>
     }
 };
 
-template <>
-struct formatter<rocsolver_logvalue<rocblas_initialization>> : formatter<string_view>
-{
-    template <typename FormatCtx>
-    auto format(rocsolver_logvalue<rocblas_initialization> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
-    {
-        return formatter<string_view>::format(rocblas2string_initialization(wrapper.value), ctx);
-    }
-};
-
 } // namespace
