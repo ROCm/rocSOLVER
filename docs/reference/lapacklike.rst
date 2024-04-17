@@ -106,6 +106,14 @@ rocsolver_<type>getf2_npvt_strided_batched()
 
 rocsolver_<type>getrf_npvt()
 --------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrf_npvt_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrf_npvt_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrf_npvt_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrf_npvt_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrf_npvt
    :outline:
 .. doxygenfunction:: rocsolver_cgetrf_npvt
@@ -116,6 +124,14 @@ rocsolver_<type>getrf_npvt()
 
 rocsolver_<type>getrf_npvt_batched()
 --------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrf_npvt_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrf_npvt_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrf_npvt_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrf_npvt_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrf_npvt_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrf_npvt_batched
@@ -126,6 +142,14 @@ rocsolver_<type>getrf_npvt_batched()
 
 rocsolver_<type>getrf_npvt_strided_batched()
 --------------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrf_npvt_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrf_npvt_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrf_npvt_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrf_npvt_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrf_npvt_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrf_npvt_strided_batched
