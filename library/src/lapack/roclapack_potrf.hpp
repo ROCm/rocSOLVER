@@ -136,27 +136,24 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
-rocblas_status rocsolver_potrf_template(rocblas_handle handle,
-                                        const rocblas_fill uplo,
-                                        const rocblas_int n,
-                                        U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
-                                        const rocblas_stride strideA,
-                                        rocblas_int* info,
-                                        const rocblas_int batch_count,
-                                        T* scalars,
-                                        void* work1,
-                                        void* work2,
-                                        void* work3,
-                                        void* work4,
-                                        T* pivots,
-                                        rocblas_int* iinfo,
-                                        bool optim_mem)
+rocblas_status rocsolver_potrf_rightlooking_template(rocblas_handle handle,
+                                                     const rocblas_fill uplo,
+                                                     const rocblas_int n,
+                                                     U A,
+                                                     const rocblas_int shiftA,
+                                                     const rocblas_int lda,
+                                                     const rocblas_stride strideA,
+                                                     rocblas_int* info,
+                                                     const rocblas_int batch_count,
+                                                     T* scalars,
+                                                     void* work1,
+                                                     void* work2,
+                                                     void* work3,
+                                                     void* work4,
+                                                     T* pivots,
+                                                     rocblas_int* iinfo,
+                                                     bool optim_mem)
 {
-    ROCSOLVER_ENTER("potrf", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
-                    "bc:", batch_count);
-
     // quick return
     if(batch_count == 0)
         return rocblas_status_success;
@@ -168,17 +165,9 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
-    // info=0 (starting with a positive definite matrix)
-    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
-
     // quick return
     if(n == 0)
         return rocblas_status_success;
-
-    // everything must be executed with scalars on the host
-    rocblas_pointer_mode old_mode;
-    rocblas_get_pointer_mode(handle, &old_mode);
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
@@ -272,6 +261,298 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                 batch_count);
     }
 
-    rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
+}
+
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
+rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
+                                                  const rocblas_fill uplo,
+                                                  const rocblas_int n,
+                                                  U A,
+                                                  const rocblas_int shiftA,
+                                                  const rocblas_int lda,
+                                                  const rocblas_stride strideA,
+                                                  rocblas_int* info,
+                                                  const rocblas_int batch_count,
+                                                  T* scalars,
+                                                  void* work1,
+                                                  void* work2,
+                                                  void* work3,
+                                                  void* work4,
+                                                  T* pivots,
+                                                  rocblas_int* iinfo,
+                                                  bool optim_mem)
+{
+    // quick return
+    if(batch_count == 0)
+        return rocblas_status_success;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
+    dim3 gridReset(blocksReset, 1, 1);
+    dim3 threads(BS1, 1, 1);
+
+    // constants for rocblas functions calls
+    T t_one = 1;
+    S s_one = 1;
+    S s_minone = -1;
+
+    // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
+    // algorithm
+    auto const STOPPING_NB = (sizeof(T) == 16) ? 512 : 1024;
+    if(n <= STOPPING_NB)
+    {
+        return rocsolver_potrf_rightlooking_template<BATCHED, STRIDED, T, S, U>(
+            handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2,
+            work3, work4, pivots, iinfo, optim_mem);
+    }
+    else
+    {
+        if(uplo == rocblas_fill_lower)
+        {
+            // ------------------------------------------------
+            // [A11  A21'] = [L11   0  ] * [L11'  L21']
+            // [A21  A22 ]   [L21   L22]   [0     L22']
+            //
+            // where A11 is n1 by n1,  A22 is n2 by n2,  n == (n1 + n2)
+            //
+            // (1)  A11 = L11 * L11'     Cholesky factorization
+            //
+            // (2)  L21 * L11' = A21 or
+            //      L21 = A21 / L11'     TRSM triangular solve
+            //
+            // (3)  L22 * L22' = (A22 - L21 * L21')
+            // or
+            // (3a)  A22 <-  A22 - L21 * L21',   SYRK
+            // (3b)  L22 * L22' = A22    Cholesky factorization
+            // ------------------------------------------------
+
+            auto n1 = n / 2;
+            auto n2 = n - n1;
+
+            // --------------------
+            // (1)  A11 = L11 * L11'
+            // --------------------
+            {
+                ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo,
+                                        batch_count, 0);
+                rocblas_status istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, S, U>(
+                    handle, uplo, n1, A, shiftA, lda, strideA, info, batch_count, scalars, work1,
+                    work2, work3, work4, pivots, iinfo, optim_mem);
+
+                // test for non-positive-definiteness.
+                auto const j = 0;
+                ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
+                                        j, batch_count);
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                };
+            }
+
+            // -------------------
+            // (2) L21 = A21 / L11'
+            // -------------------
+
+            {
+                // update trailing submatrix
+                rocblas_int const mm = n2;
+                rocblas_int const nn = n1;
+                rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_right, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, mm, nn, A, shiftA, lda, strideA, A,
+                    shiftA + idx2D(n1, 0, lda), lda, strideA, batch_count, optim_mem, work1, work2,
+                    work3, work4);
+            }
+
+            // --------------------------------------
+            // (3a)  A22 <-  A22 - L21 * L21',   SYRK
+            // --------------------------------------
+            {
+                rocblas_int const mm = n2;
+                rocblas_int const nn = n1;
+
+                rocblasCall_syrk_herk<BATCHED, T>(handle, uplo, rocblas_operation_none, mm, nn,
+                                                  &s_minone, A, shiftA + idx2D(n1, 0, lda), lda,
+                                                  strideA, &s_one, A, shiftA + idx2D(n1, n1, lda),
+                                                  lda, strideA, batch_count);
+            }
+
+            // ------------------------------------------------
+            // (3b)  L22 * L22' = A22    Cholesky factorization
+            // ------------------------------------------------
+            {
+                auto const nn = n2;
+                ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo,
+                                        batch_count, 0);
+                rocblas_status istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, S, U>(
+                    handle, uplo, nn, A, shiftA + idx2D(n1, n1, lda), lda, strideA, info,
+                    batch_count, scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem);
+
+                {
+                    // test for non-positive-definiteness.
+                    auto const j = n1;
+                    ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo,
+                                            info, j, batch_count);
+                }
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                };
+            }
+        }
+        else
+        {
+            // -------------------------------------------------
+            // A = U' * U
+            // [A11  A12] = [ U11'  0   ] * [U11  U12]
+            // [A12' A22]   [ U12'  U22']   [0    U22]
+            //
+            // where A11 is n1 by n1,  A22 is n2 by n2,  n == (n1 + n2)
+            //
+            // (1) A11 = U11' * U11,     Cholesky factorization
+            //
+            // (2) U11' * U12 = A12,     TRSM triangular solve
+            //
+            // (3) U22' * U22 = (A22 - U12' * U12]
+            // or
+            // (3a)  A22 <- A22 - U12' * U12     SYRK
+            // (3b)  U22' * U22 = A22    Cholesky factorization
+            // -------------------------------------------------
+
+            auto const n1 = n / 2;
+            auto const n2 = n - n1;
+            // -------------------------------------
+            // (1) A11 = U11' * U11,     Cholesky factorization
+            // -------------------------------------
+            {
+                auto const j = 0;
+                auto const nn = n1;
+                ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo,
+                                        batch_count, j);
+                rocblas_status istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, S, U>(
+                    handle, uplo, nn, A, shiftA, lda, strideA, info, batch_count, scalars, work1,
+                    work2, work3, work4, pivots, iinfo, optim_mem);
+
+                // test for non-positive-definiteness.
+                ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
+                                        j, batch_count);
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                }
+            }
+
+            // -----------------------------------------------
+            // (2) U11' * U12 = A12,     TRSM triangular solve
+            // -----------------------------------------------
+            {
+                auto const mm = n1;
+                auto const nn = n2;
+                rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+                    handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
+                    rocblas_diagonal_non_unit, mm, nn, A, shiftA, lda, strideA, A,
+                    shiftA + idx2D(0, n1, lda), lda, strideA, batch_count, optim_mem, work1, work2,
+                    work3, work4);
+            }
+
+            // ---------------------------------------
+            // (3a)  A22 <- A22 - U12' * U12     SYRK
+            // ---------------------------------------
+            {
+                auto const mm = n2;
+                auto const nn = n1;
+                rocblasCall_syrk_herk<BATCHED, T>(handle, uplo, rocblas_operation_conjugate_transpose,
+                                                  mm, nn, &s_minone, A, shiftA, lda, strideA,
+                                                  &s_one, A, shiftA + idx2D(n1, n1, lda), lda,
+                                                  strideA, batch_count);
+            }
+
+            // -------------------------------------------------
+            // (3b)  U22' * U22 = A22    Cholesky factorization
+            // -------------------------------------------------
+            {
+                auto const j = n1;
+                auto const nn = n2;
+                ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo,
+                                        batch_count, 0);
+                rocblas_status istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, S, U>(
+                    handle, uplo, nn, A, shiftA + idx2D(n1, n1, lda), lda, strideA, info,
+                    batch_count, scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem);
+
+                // test for non-positive-definiteness.
+                ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
+                                        j, batch_count);
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                }
+            }
+        }
+    }
+
+    return rocblas_status_success;
+}
+
+template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
+rocblas_status rocsolver_potrf_template(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        U A,
+                                        const rocblas_int shiftA,
+                                        const rocblas_int lda,
+                                        const rocblas_stride strideA,
+                                        rocblas_int* info,
+                                        const rocblas_int batch_count,
+                                        T* scalars,
+                                        void* work1,
+                                        void* work2,
+                                        void* work3,
+                                        void* work4,
+                                        T* pivots,
+                                        rocblas_int* iinfo,
+                                        bool optim_mem)
+{
+    ROCSOLVER_ENTER("potrf", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
+                    "bc:", batch_count);
+
+    // quick return
+    if(batch_count == 0)
+        return rocblas_status_success;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle, &old_mode);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+
+    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
+    dim3 gridReset(blocksReset, 1, 1);
+    dim3 threads(BS1, 1, 1);
+
+    // info=0 (starting with a positive definite matrix)
+    ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
+
+    // quick return
+    if(n == 0)
+        return rocblas_status_success;
+
+    bool const use_recursive = false;
+    rocblas_status const istat = (use_recursive)
+        ? rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, S, U>(
+            handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2,
+            work3, work4, pivots, iinfo, optim_mem)
+        : rocsolver_potrf_rightlooking_template<BATCHED, STRIDED, T, S, U>(
+            handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2,
+            work3, work4, pivots, iinfo, optim_mem);
+
+    rocblas_set_pointer_mode(handle, old_mode);
+    return istat;
 }
