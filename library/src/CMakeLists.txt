@@ -69,6 +69,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
   lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrf_info32.cpp
   lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getrf_strided_batched.cpp
   lapack/roclapack_potf2.cpp
@@ -338,6 +339,15 @@ target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
 
 # Ignore loop unrolling failures
 target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
+
+# hipcc adds these options automatically. These options might have an effect
+# on performance, so add them when building with clang directly, just in case.
+if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+.*")
+  target_compile_options(rocsolver PRIVATE
+    "SHELL:-mllvm -amdgpu-early-inline-all=true"
+    "SHELL:-mllvm -amdgpu-function-calls=false"
+  )
+endif()
 
 target_include_directories(rocsolver
   PUBLIC
