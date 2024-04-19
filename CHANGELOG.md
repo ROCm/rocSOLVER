@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
-## (Unreleased) rocSOLVER
+## rocSOLVER 3.26.0 for ROCm 6.2.0
 ### Added
 - 64-bit APIs for existing functions:
     - GETF2_64 (with batched and strided\_batched versions)
@@ -18,11 +18,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
   backwards compatibility.
 - Functions working with arrays of size n - 1 can now accept null pointers when n = 1.
 
-### Deprecated
-### Removed
 ### Fixed
-### Known Issues
-### Security
+- Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
