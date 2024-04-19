@@ -37,6 +37,9 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Changed
 - Relaxed array length requirements for GESVDX with `rocblas_srange_index`.
 
+### Removed
+- Removed gfx803 and gfx900 from default build targets.
+
 ### Fixed
 - Corrected singular vector normalization in BDSVDX and GESVDX
 - Fixed potential memory access fault in STEIN, SYEVX/HEEVX, SYGVX/HEGVX, BDSVDX and GESVDX
