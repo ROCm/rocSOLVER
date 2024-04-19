@@ -2,6 +2,17 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
+## (Unreleased) rocSOLVER
+### Added
+### Optimized
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Known Issues
+### Security
+
+
 ## rocSOLVER 3.26.0 for ROCm 6.2.0
 ### Added
 - 64-bit APIs for existing functions:
