@@ -171,76 +171,76 @@ void rocsolver_potrf_recursive_getMemorySize(const rocblas_int n,
         *size_work4 = std::max(*size_work4, lsize_work4);
         *size_pivots = std::max(*size_pivots, lsize_pivots);
         *size_iinfo = std::max(*size_iinfo, lsize_iinfo);
-
-        return;
-    }
-
-    auto const n2 = n / 2;
-    auto const n1 = n - n2;
-
-    if(uplo == rocblas_fill_upper)
-    {
-        // -----------------------------------------------
-        // (2) U11' * U12 = A12,     TRSM triangular solve
-        // or  U12 = A12/U11'
-        // -----------------------------------------------
-        auto const mm = n1;
-        auto const nn = n2;
-        rocsolver_trsm_mem<BATCHED, STRIDED, T>(
-            rocblas_side_left, rocblas_operation_conjugate_transpose, mm, nn, batch_count,
-            &lsize_work1, &lsize_work2, &lsize_work3, &lsize_work4, optim_mem);
-
-        *size_work1 = std::max(*size_work1, lsize_work1);
-        *size_work2 = std::max(*size_work2, lsize_work2);
-        *size_work3 = std::max(*size_work3, lsize_work3);
-        *size_work4 = std::max(*size_work4, lsize_work4);
     }
     else
     {
-        // ------------------------------------------
-        // (2)  L21 * L11' = A21 or
-        //      L21 = A21 / L11'     TRSM triangular solve
-        // ------------------------------------------
-        auto const mm = n2;
-        auto const nn = n1;
-        rocsolver_trsm_mem<BATCHED, STRIDED, T>(
-            rocblas_side_right, rocblas_operation_conjugate_transpose, mm, nn, batch_count,
-            &lsize_work1, &lsize_work2, &lsize_work3, &lsize_work4, optim_mem);
+        auto const n2 = n / 2;
+        auto const n1 = n - n2;
 
-        *size_work1 = std::max(*size_work1, lsize_work1);
-        *size_work2 = std::max(*size_work2, lsize_work2);
-        *size_work3 = std::max(*size_work3, lsize_work3);
-        *size_work4 = std::max(*size_work4, lsize_work4);
-    }
+        if(uplo == rocblas_fill_upper)
+        {
+            // -----------------------------------------------
+            // (2) U11' * U12 = A12,     TRSM triangular solve
+            // or  U12 = A12/U11'
+            // -----------------------------------------------
+            auto const mm = n1;
+            auto const nn = n2;
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(
+                rocblas_side_left, rocblas_operation_conjugate_transpose, mm, nn, batch_count,
+                &lsize_work1, &lsize_work2, &lsize_work3, &lsize_work4, optim_mem);
 
-    {
-        auto const nn = n1;
-        rocsolver_potrf_recursive_getMemorySize<BATCHED, STRIDED, T>(
-            nn, uplo, batch_count, &lsize_scalars, &lsize_work1, &lsize_work2, &lsize_work3,
-            &lsize_work4, &lsize_pivots, &lsize_iinfo, optim_mem);
+            *size_work1 = std::max(*size_work1, lsize_work1);
+            *size_work2 = std::max(*size_work2, lsize_work2);
+            *size_work3 = std::max(*size_work3, lsize_work3);
+            *size_work4 = std::max(*size_work4, lsize_work4);
+        }
+        else
+        {
+            // ------------------------------------------
+            // (2)  L21 * L11' = A21 or
+            //      L21 = A21 / L11'     TRSM triangular solve
+            // ------------------------------------------
+            auto const mm = n2;
+            auto const nn = n1;
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(
+                rocblas_side_right, rocblas_operation_conjugate_transpose, mm, nn, batch_count,
+                &lsize_work1, &lsize_work2, &lsize_work3, &lsize_work4, optim_mem);
 
-        *size_scalars = std::max(*size_scalars, lsize_scalars);
-        *size_work1 = std::max(*size_work1, lsize_work1);
-        *size_work2 = std::max(*size_work2, lsize_work2);
-        *size_work3 = std::max(*size_work3, lsize_work3);
-        *size_work4 = std::max(*size_work4, lsize_work4);
-        *size_pivots = std::max(*size_pivots, lsize_pivots);
-        *size_iinfo = std::max(*size_iinfo, lsize_iinfo);
-    }
+            *size_work1 = std::max(*size_work1, lsize_work1);
+            *size_work2 = std::max(*size_work2, lsize_work2);
+            *size_work3 = std::max(*size_work3, lsize_work3);
+            *size_work4 = std::max(*size_work4, lsize_work4);
+        }
 
-    {
-        auto const nn = n2;
-        rocsolver_potrf_recursive_getMemorySize<BATCHED, STRIDED, T>(
-            nn, uplo, batch_count, &lsize_scalars, &lsize_work1, &lsize_work2, &lsize_work3,
-            &lsize_work4, &lsize_pivots, &lsize_iinfo, optim_mem);
+        {
+            auto const nn = n1;
+            rocsolver_potrf_recursive_getMemorySize<BATCHED, STRIDED, T>(
+                nn, uplo, batch_count, &lsize_scalars, &lsize_work1, &lsize_work2, &lsize_work3,
+                &lsize_work4, &lsize_pivots, &lsize_iinfo, optim_mem);
 
-        *size_scalars = std::max(*size_scalars, lsize_scalars);
-        *size_work1 = std::max(*size_work1, lsize_work1);
-        *size_work2 = std::max(*size_work2, lsize_work2);
-        *size_work3 = std::max(*size_work3, lsize_work3);
-        *size_work4 = std::max(*size_work4, lsize_work4);
-        *size_pivots = std::max(*size_pivots, lsize_pivots);
-        *size_iinfo = std::max(*size_iinfo, lsize_iinfo);
+            *size_scalars = std::max(*size_scalars, lsize_scalars);
+            *size_work1 = std::max(*size_work1, lsize_work1);
+            *size_work2 = std::max(*size_work2, lsize_work2);
+            *size_work3 = std::max(*size_work3, lsize_work3);
+            *size_work4 = std::max(*size_work4, lsize_work4);
+            *size_pivots = std::max(*size_pivots, lsize_pivots);
+            *size_iinfo = std::max(*size_iinfo, lsize_iinfo);
+        }
+
+        {
+            auto const nn = n2;
+            rocsolver_potrf_recursive_getMemorySize<BATCHED, STRIDED, T>(
+                nn, uplo, batch_count, &lsize_scalars, &lsize_work1, &lsize_work2, &lsize_work3,
+                &lsize_work4, &lsize_pivots, &lsize_iinfo, optim_mem);
+
+            *size_scalars = std::max(*size_scalars, lsize_scalars);
+            *size_work1 = std::max(*size_work1, lsize_work1);
+            *size_work2 = std::max(*size_work2, lsize_work2);
+            *size_work3 = std::max(*size_work3, lsize_work3);
+            *size_work4 = std::max(*size_work4, lsize_work4);
+            *size_pivots = std::max(*size_pivots, lsize_pivots);
+            *size_iinfo = std::max(*size_iinfo, lsize_iinfo);
+        }
     }
 }
 
@@ -264,23 +264,21 @@ rocblas_status rocsolver_potrf_rightlooking_template(rocblas_handle handle,
                                                      bool optim_mem)
 {
     // quick return
-    if(batch_count == 0)
+    if((batch_count == 0) || (n == 0))
+    {
         return rocblas_status_success;
+    }
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    I blocksReset = (batch_count - 1) / BS1 + 1;
+    auto const blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
-    // quick return
-    if(n == 0)
-        return rocblas_status_success;
-
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
-    I const nb = POTRF_BLOCKSIZE(T);
+    auto const nb = POTRF_BLOCKSIZE(T);
     if(n <= POTRF_POTF2_SWITCHSIZE(T))
         return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
                                            batch_count, scalars, (T*)work1, pivots);
@@ -420,8 +418,9 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     *size_work3 = 0;
     *size_work4 = 0;
     *size_pivots = 0;
-    *size_iinfo = batch_count;
+    *size_iinfo = 0;
     *optim_mem = true;
+
     // if quick return no need of workspace
     if(n == 0 || batch_count == 0)
     {
@@ -434,13 +433,14 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     size_t lsize_work3 = 0;
     size_t lsize_work4 = 0;
     size_t lsize_pivots = 0;
-    size_t lsize_iinfo = 0;
+    size_t lsize_iinfo = std::max(1, batch_count) * sizeof(rocblas_int);
 
+    if(use_recursive)
     {
-        // -----------------------
-        // right looking algorithm
-        // -----------------------
-        rocsolver_potrf_rightlooking_getMemorySize<BATCHED, STRIDED, T>(
+        // -------------------
+        // recursive algorithm
+        // -------------------
+        rocsolver_potrf_recursive_getMemorySize<BATCHED, STRIDED, T>(
             n, uplo, batch_count, &lsize_scalars, &lsize_work1, &lsize_work2, &lsize_work3,
             &lsize_work4, &lsize_pivots, &lsize_iinfo, optim_mem);
 
@@ -452,12 +452,12 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
         *size_pivots = std::max(*size_pivots, lsize_pivots);
         *size_iinfo = std::max(*size_iinfo, lsize_iinfo);
     }
-
+    else
     {
-        // -------------------
-        // recursive algorithm
-        // -------------------
-        rocsolver_potrf_recursive_getMemorySize<BATCHED, STRIDED, T>(
+        // -----------------------
+        // right-looking algorithm
+        // -----------------------
+        rocsolver_potrf_rightlooking_getMemorySize<BATCHED, STRIDED, T>(
             n, uplo, batch_count, &lsize_scalars, &lsize_work1, &lsize_work2, &lsize_work3,
             &lsize_work4, &lsize_pivots, &lsize_iinfo, optim_mem);
 
@@ -489,11 +489,13 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
                                                   T* pivots,
                                                   I* iinfo,
                                                   bool optim_mem,
-                                                  I joffset)
+                                                  const I row_offset)
 {
     // quick return
-    if(batch_count == 0)
+    if((n == 0) || (batch_count == 0))
+    {
         return rocblas_status_success;
+    }
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -509,6 +511,10 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
 
     auto const nsmall = POTRF_BLOCKSIZE(T);
     bool const is_nsmall = (n <= nsmall);
+
+    // ----------------------------------------------
+    // terminate recursion when n is considered small
+    // ----------------------------------------------
     if(is_nsmall)
     {
         if(iinfo != nullptr)
@@ -525,7 +531,7 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
         {
             I const j = 0;
             ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
-                                    j + joffset, batch_count);
+                                    j + row_offset, batch_count);
         }
 
         return (istat);
@@ -563,16 +569,12 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
             // (1)  A11 = L11 * L11'
             // --------------------
             {
-                // ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
                 auto const nn = n1;
 
                 I const j = 0;
                 auto const istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, I, S, U>(
                     handle, uplo, nn, A, shiftA + A11_offset, lda, strideA, info, batch_count,
-                    scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem, joffset + j);
-
-                // test for non-positive-definiteness.
-                // ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j + joffset, batch_count);
+                    scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem, row_offset + j);
 
                 if(istat != rocblas_status_success)
                 {
@@ -586,8 +588,8 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
 
             {
                 // update trailing submatrix
-                I const mm = n2;
-                I const nn = n1;
+                auto const mm = n2;
+                auto const nn = n1;
                 auto const istat = rocsolver_trsm_lower<BATCHED, STRIDED, T>(
                     handle, rocblas_side_right, rocblas_operation_conjugate_transpose,
                     rocblas_diagonal_non_unit, mm, nn, A, shiftA + A11_offset, lda, strideA, A,
@@ -604,8 +606,8 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
             // (3a)  A22 <-  A22 - L21 * L21',   SYRK
             // --------------------------------------
             {
-                I const nn = n2;
-                I const kk = n1;
+                auto const nn = n2;
+                auto const kk = n1;
 
                 auto const istat = rocblasCall_syrk_herk<BATCHED, T>(
                     handle, uplo, rocblas_operation_none, nn, kk, &s_minone, A, shiftA + A21_offset,
@@ -621,20 +623,14 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
             // (3b)  L22 * L22' = A22    Cholesky factorization
             // ------------------------------------------------
             {
-                I const nn = n2;
-                I const j = n1;
+                auto const nn = n2;
+                auto const j = n1;
 
-                // ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
                 auto const istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, I, S, U>(
                     handle, uplo, nn, A, shiftA + A22_offset, lda, strideA, info, batch_count,
-                    scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem, joffset + j);
+                    scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem, row_offset + j);
 
-                // test for non-positive-definiteness.
-                // ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, joffset + j, batch_count);
-
-                {
-                    return (istat);
-                };
+                return (istat);
             }
         }
         else
@@ -661,17 +657,13 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
             // (1) A11 = U11' * U11,     Cholesky factorization
             // -------------------------------------
             {
-                // ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
-
                 auto const nn = n1;
                 I const j = 0;
                 rocblas_status const istat
                     = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, I, S, U>(
                         handle, uplo, nn, A, shiftA + A11_offset, lda, strideA, info, batch_count,
-                        scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem, joffset + j);
-
-                // test for non-positive-definiteness.
-                // ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, j + joffset, batch_count);
+                        scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem,
+                        row_offset + j);
 
                 if(istat != rocblas_status_success)
                 {
@@ -719,20 +711,14 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
             // (3b)  U22' * U22 = A22    Cholesky factorization
             // -------------------------------------------------
             {
-                I const nn = n2;
-                I const j = n1;
-                // ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
+                auto const nn = n2;
+                auto const j = n1;
                 //
                 auto const istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, I, S, U>(
                     handle, uplo, nn, A, shiftA + A22_offset, lda, strideA, info, batch_count,
-                    scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem, joffset + j);
+                    scalars, work1, work2, work3, work4, pivots, iinfo, optim_mem, row_offset + j);
 
-                // test for non-positive-definiteness.
-                // ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info, joffset + j, batch_count);
-
-                {
-                    return (istat);
-                }
+                return (istat);
             }
         }
     }
@@ -766,12 +752,12 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     if(batch_count == 0)
         return rocblas_status_success;
 
+    // quick return
+    if(n == 0)
+        return rocblas_status_success;
+
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
-
-    rocblas_pointer_mode old_mode;
-    rocblas_get_pointer_mode(handle, &old_mode);
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
     auto const blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
@@ -780,17 +766,17 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     // info=0 (starting with a positive definite matrix)
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
-    // quick return
-    if(n == 0)
-        return rocblas_status_success;
+    rocblas_pointer_mode old_mode;
+    rocblas_get_pointer_mode(handle, &old_mode);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
     rocblas_status istat = rocblas_status_success;
     if(use_recursive)
     {
-        rocblas_int const joffset = 0;
+        rocblas_int const row_offset = 0;
         istat = rocsolver_potrf_recursive_template<BATCHED, STRIDED, T, rocblas_int, S, U>(
             handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2,
-            work3, work4, pivots, iinfo, optim_mem, joffset);
+            work3, work4, pivots, iinfo, optim_mem, row_offset);
     }
     else
     {
