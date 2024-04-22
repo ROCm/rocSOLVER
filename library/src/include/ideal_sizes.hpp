@@ -253,6 +253,15 @@
 #define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
 #endif
 
+/*! \brief Determines the size at which recusive algorithm can terminate
+    \details 
+    Assume there is MALL that is at least 4 MBytes, so terminate recursion
+    at this level.  */
+#ifndef POTRF_STOPPING_NB
+// #define POTRF_STOPPING_NB(T) ((sizeof(T) == 16) ? 512 : (sizeof(T) == 8) ? 724 : 1024)
+#define POTRF_STOPPING_NB(T) POTRF_BLOCKSIZE(T)
+#endif
+
 /************************** syevj/heevj ***************************************
 *******************************************************************************/
 /*! \brief Determines the size at which rocSOLVER switches from
