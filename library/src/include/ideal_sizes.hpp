@@ -255,11 +255,10 @@
 
 /*! \brief Determines the size at which recusive algorithm can terminate
     \details 
-    Assume there is MALL that is at least 4 MBytes, so terminate recursion
+    Assume there is last level cache that is at least 8 MBytes, so terminate recursion
     at this level.  */
 #ifndef POTRF_STOPPING_NB
-// #define POTRF_STOPPING_NB(T) ((sizeof(T) == 16) ? 512 : (sizeof(T) == 8) ? 724 : 1024)
-#define POTRF_STOPPING_NB(T) POTRF_BLOCKSIZE(T)
+#define POTRF_STOPPING_NB(T) ((sizeof(T) == 4) ? 1408 : (sizeof(T) == 8) ? 1024 : 704)
 #endif
 
 /************************** syevj/heevj ***************************************

@@ -37,8 +37,6 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
-bool constexpr use_recursive = true;
-
 static rocblas_int get_lds_size()
 {
     rocblas_int const default_lds_size = 64 * 1024;
@@ -163,6 +161,20 @@ void rocsolver_potrf_recursive_getMemorySize(const rocblas_int n,
     if(is_nsmall)
     {
         rocsolver_potf2_getMemorySize<T>(n, batch_count, &lsize_scalars, &lsize_work1, &lsize_pivots);
+
+        *size_scalars = std::max(*size_scalars, lsize_scalars);
+        *size_work1 = std::max(*size_work1, lsize_work1);
+        *size_work2 = std::max(*size_work2, lsize_work2);
+        *size_work3 = std::max(*size_work3, lsize_work3);
+        *size_work4 = std::max(*size_work4, lsize_work4);
+        *size_pivots = std::max(*size_pivots, lsize_pivots);
+        *size_iinfo = std::max(*size_iinfo, lsize_iinfo);
+    }
+    else if(n <= POTRF_STOPPING_NB(T))
+    {
+        rocsolver_potrf_rightlooking_getMemorySize<BATCHED, STRIDED, T>(
+            n, uplo, batch_count, &lsize_scalars, &lsize_work1, &lsize_work2, &lsize_work3,
+            &lsize_work4, &lsize_pivots, &lsize_iinfo, optim_mem);
 
         *size_scalars = std::max(*size_scalars, lsize_scalars);
         *size_work1 = std::max(*size_work1, lsize_work1);
@@ -435,6 +447,7 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     size_t lsize_pivots = 0;
     size_t lsize_iinfo = std::max(1, batch_count) * sizeof(rocblas_int);
 
+    bool const use_recursive = (n > POTRF_STOPPING_NB(T));
     if(use_recursive)
     {
         // -------------------
@@ -528,6 +541,30 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
 
         // test for non-positive-definiteness.
         if(iinfo != nullptr)
+        {
+            I const j = 0;
+            ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
+                                    j + row_offset, batch_count);
+        }
+
+        return (istat);
+    }
+    else if(n <= POTRF_STOPPING_NB(T))
+    {
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
+
+        auto const istat = rocsolver_potrf_rightlooking_template<BATCHED, STRIDED, T, I, S, U>(
+            handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2,
+            work3, work4, pivots, iinfo, optim_mem);
+
+        {
+            void* dst = (void*)iinfo;
+            void* src = (void*)info;
+            size_t nbytes = sizeof(rocblas_int) * std::max(1, batch_count);
+
+            HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, hipMemcpyHostToDevice, stream));
+        }
+
         {
             I const j = 0;
             ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
@@ -771,6 +808,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
     rocblas_status istat = rocblas_status_success;
+    bool const use_recursive = (n > POTRF_STOPPING_NB(T));
     if(use_recursive)
     {
         rocblas_int const row_offset = 0;
