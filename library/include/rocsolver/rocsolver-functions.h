@@ -3645,7 +3645,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmtr(rocblas_handle handle,
     nu          rocblas_int. nu >= 0.
                 The number of rows of matrix U.
     @param[in]
-    nc          rocblas_int. nu >= 0.
+    nc          rocblas_int. nc >= 0.
                 The number of columns of matrix C.
     @param[inout]
     D           pointer to real type. Array on the GPU of dimension n.
