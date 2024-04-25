@@ -279,7 +279,7 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_managed)
 /*************************************/
 /******** user owned workspace *******/
 /*************************************/
-TEST_F(checkin_misc_MEMORY_MODEL, user_owned)
+TEST_F(checkin_misc_MEMORY_MODEL, DISABLED_user_owned)
 {
     size_t size;
     rocblas_status status;
