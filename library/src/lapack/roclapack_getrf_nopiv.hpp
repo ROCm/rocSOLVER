@@ -38,6 +38,13 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 #include <type_traits>
 
+template <typename I>
+static I partition_mn(I const m, I const n)
+{
+    auto const nb = std::min(m, n) / 2;
+    return (nb);
+}
+
 static size_t get_lds_size()
 {
     rocblas_int const default_lds_size = 64 * 1024;
@@ -306,7 +313,7 @@ void rocsolver_getrf_nopiv_recursive_getMemorySize(const rocblas_int m,
     size_t lsize_iinfo = 0;
 
     auto const nsmall = GETRF_NOPIV_STOPPING_NB(T);
-    bool const is_nsmall = (n <= nsmall);
+    bool const is_nsmall = (std::min(m, n) <= nsmall);
 
     if(is_nsmall)
     {
@@ -322,25 +329,29 @@ void rocsolver_getrf_nopiv_recursive_getMemorySize(const rocblas_int m,
     }
     else
     {
-        auto const n2 = n / 2;
-        auto const n1 = n - n2;
-        auto const m2 = m / 2;
-        auto const m1 = m - m2;
+        auto const nb = partition_mn(m, n);
+        auto const m1 = nb;
+        auto const n1 = nb;
+
+        auto const m2 = m - m1;
+        auto const n2 = n - n1;
 
         // -----------------------------------------------
         // [A11  A12] = [L11   0 ] * [U11  U12]
         // [A21  A22]   [L21  L22]   [0    U22]
         //
         // (1) A11 = L11 * U11,   recursive factorization
-        // (2) L11 * U12 = A12,   triangular solve
-        // or
-        // (2) U12 = L11 \ A12
         //
-        // (3) L21 * U11 = A21,   triangular solve
+        // (2) L21 * U11 = A21,   triangular solve
         // or
-        // (3) L21 = A21 / U11
+        // (2) L21 = A21 / U11
+        //
+        // (3) L11 * U12 = A12,   triangular solve
+        // or
+        // (3) U12 = L11 \ A12
         //
         // (4) (A22 - L21 * U12) = L22 * U22
+        // or
         // (4a) A22 <- A22 - L21 * U12
         // (4b) A22 = L22 * U22,  recursive factorization
         // -----------------------------------------------
@@ -365,13 +376,15 @@ void rocsolver_getrf_nopiv_recursive_getMemorySize(const rocblas_int m,
 
         {
             // -------------------
-            // (2) U12 = L11 \ A12
+            // (2) L21 = A21 / U11
             // -------------------
-            rocblas_side const side = rocblas_side_left;
+
+            rocblas_side const side = rocblas_side_right;
             rocblas_operation const trans = rocblas_operation_none;
 
-            auto const mm = m1;
-            auto const nn = n2;
+            auto const mm = m2;
+            auto const nn = n1;
+
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count, &lsize_work1,
                                                     &lsize_work2, &lsize_work3, &lsize_work4,
                                                     optim_mem);
@@ -384,15 +397,13 @@ void rocsolver_getrf_nopiv_recursive_getMemorySize(const rocblas_int m,
 
         {
             // -------------------
-            // (3) L21 = A21 / U11
+            // (3) U12 = L11 \ A12
             // -------------------
-
-            rocblas_side const side = rocblas_side_right;
+            rocblas_side const side = rocblas_side_left;
             rocblas_operation const trans = rocblas_operation_none;
 
-            auto const mm = m2;
-            auto const nn = n1;
-
+            auto const mm = m1;
+            auto const nn = n2;
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, trans, mm, nn, batch_count, &lsize_work1,
                                                     &lsize_work2, &lsize_work3, &lsize_work4,
                                                     optim_mem);
@@ -454,11 +465,21 @@ void rocsolver_getrf_nopiv_getMemorySize(const rocblas_int m,
     }
 
     auto const nsmall = GETRF_NOPIV_STOPPING_NB(T);
-    bool const use_recursive = (n > nsmall);
+    bool const use_recursive = true;
     if(use_recursive)
     {
         rocsolver_getrf_nopiv_recursive_getMemorySize<BATCHED, STRIDED, T>(
             m, n, batch_count, size_work1, size_work2, size_work3, size_work4, size_iinfo, optim_mem);
+
+        {
+            // debug
+            size_t const lmem = 64 * 1024 * 1024;
+            *size_work1 = std::max(*size_work1, lmem);
+            *size_work2 = std::max(*size_work2, lmem);
+            *size_work3 = std::max(*size_work3, lmem);
+            *size_work4 = std::max(*size_work4, lmem);
+            *size_iinfo = std::max(*size_iinfo, lmem);
+        }
     }
     else
     {
@@ -662,30 +683,38 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
-    auto const nsmall = GETRF_NOPIV_STOPPING_NB(T);
+    // auto const nsmall = GETRF_NOPIV_STOPPING_NB(T);
+    auto const nsmall = 2;
     bool const is_nsmall = (std::min(m, n) <= nsmall);
 
     if(is_nsmall)
     {
-        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
+        if(iinfo != nullptr)
+        {
+            ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
+        }
 
-        rocblas_status const istat
-            = rocsolver_getrf_nopiv_rightlooking_template<BATCHED, STRIDED, T, I, U>(
-                handle, m, n, A, shiftA, lda, strideA, info, batch_count, work1, work2, work3,
-                work4, iinfo, optim_mem);
+        auto const istat = rocsolver_getrf_nopiv_rightlooking_template<BATCHED, STRIDED, T, I, U>(
+            handle, m, n, A, shiftA, lda, strideA, info, batch_count, work1, work2, work3, work4,
+            (iinfo != nullptr) ? iinfo : info, optim_mem);
 
-        auto const j = 0;
-        ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
-                                row_offset + j, batch_count);
+        if(iinfo != nullptr)
+        {
+            auto const j = 0;
+            ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
+                                    row_offset + j, batch_count);
+        }
 
         return (istat);
     }
     else
     {
-        auto const n2 = n / 2;
-        auto const n1 = n - n2;
-        auto const m2 = m / 2;
-        auto const m1 = m - m2;
+        auto const nb = partition_mn(m, n);
+        auto const m1 = nb;
+        auto const n1 = nb;
+
+        auto const m2 = m - m1;
+        auto const n2 = n - n1;
 
         auto const A11_offset = idx2D(0, 0, lda);
         auto const A21_offset = idx2D(m1, 0, lda);
@@ -718,22 +747,37 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             // (1) L11 * U11 = A11 => factorize diagonal block
             // -----------------------------------------------
 
-            ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
-
             auto const mm = m1;
             auto const nn = n1;
-            auto const j = 0;
-            rocblas_status const istat
-                = rocsolver_getrf_nopiv_recursive_template<BATCHED, STRIDED, T, I, U>(
-                    handle, mm, nn, A, shiftA + A11_offset, lda, strideA, info, batch_count, work1,
-                    work2, work3, work4, iinfo, optim_mem, j + row_offset);
-
-            ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
-                                    row_offset + j, batch_count);
-
-            if(istat != rocblas_status_success)
+            bool const has_work = (mm >= 1) && (nn >= 1);
+            if(has_work)
             {
-                return (istat);
+                ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo,
+                                        batch_count, 0);
+
+                rocblas_status istat = rocblas_status_success;
+                auto const j = 0;
+                bool const use_rightlooking = true;
+                if(use_rightlooking)
+                {
+                    istat = rocsolver_getrf_nopiv_rightlooking_template<BATCHED, STRIDED, T, I, U>(
+                        handle, mm, nn, A, shiftA + A11_offset, lda, strideA, info, batch_count,
+                        work1, work2, work3, work4, iinfo, optim_mem);
+                }
+                else
+                {
+                    istat = rocsolver_getrf_nopiv_recursive_template<BATCHED, STRIDED, T, I, U>(
+                        handle, mm, nn, A, shiftA + A11_offset, lda, strideA, info, batch_count,
+                        work1, work2, work3, work4, iinfo, optim_mem, j + row_offset);
+                }
+
+                ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
+                                        row_offset + j, batch_count);
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                }
             }
         }
 
@@ -743,20 +787,36 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             // --------------------------------------
             auto const mm = m2;
             auto const nn = n1;
-
-            rocblas_side const side = rocblas_side_right;
-            rocblas_fill const uplo = rocblas_fill_upper;
-            rocblas_operation const trans = rocblas_operation_none;
-            rocblas_diagonal const diag = rocblas_diagonal_non_unit;
-
-            auto const istat = rocsolver_trsm_upper<BATCHED, STRIDED, T, I, U>(
-                handle, side, trans, diag, mm, nn, A, shiftA + U11_offset, lda, strideA, A,
-                shiftA + A21_offset, lda, strideA, batch_count, optim_mem, work1, work2, work3,
-                work4);
-
-            if(istat != rocblas_status_success)
+            bool const has_work = (mm >= 1) && (nn >= 1);
+            if(has_work)
             {
-                return (istat);
+                rocblas_side const side = rocblas_side_right;
+                rocblas_fill const uplo = rocblas_fill_upper;
+                rocblas_operation const trans = rocblas_operation_none;
+                rocblas_diagonal const diag = rocblas_diagonal_non_unit;
+
+                rocblas_status istat = rocblas_status_success;
+                bool const use_rocblas = false;
+                if(use_rocblas)
+                {
+                    T* alpha = &t_one;
+                    istat = rocblasCall_trsm<T, I>(handle, side, uplo, trans, diag, mm, nn, alpha,
+                                                   A, shiftA + U11_offset, lda, strideA, A,
+                                                   shiftA + A21_offset, lda, strideA, batch_count,
+                                                   optim_mem, work1, work2, work3, work4);
+                }
+                else
+                {
+                    istat = rocsolver_trsm_upper<BATCHED, STRIDED, T, I, U>(
+                        handle, side, trans, diag, mm, nn, A, shiftA + U11_offset, lda, strideA, A,
+                        shiftA + A21_offset, lda, strideA, batch_count, optim_mem, work1, work2,
+                        work3, work4);
+                }
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                }
             }
         }
 
@@ -766,20 +826,36 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             // --------------------------------------
             auto const mm = m1;
             auto const nn = n2;
-
-            rocblas_side const side = rocblas_side_left;
-            rocblas_fill const uplo = rocblas_fill_lower;
-            rocblas_operation const trans = rocblas_operation_none;
-            rocblas_diagonal const diag = rocblas_diagonal_unit;
-
-            auto const istat = rocsolver_trsm_upper<BATCHED, STRIDED, T, I, U>(
-                handle, side, trans, diag, mm, nn, A, shiftA + L11_offset, lda, strideA, A,
-                shiftA + A12_offset, lda, strideA, batch_count, optim_mem, work1, work2, work3,
-                work4);
-
-            if(istat != rocblas_status_success)
+            bool const has_work = (mm >= 1) && (nn >= 1);
+            if(has_work)
             {
-                return (istat);
+                rocblas_side const side = rocblas_side_left;
+                rocblas_fill const uplo = rocblas_fill_lower;
+                rocblas_operation const trans = rocblas_operation_none;
+                rocblas_diagonal const diag = rocblas_diagonal_unit;
+
+                rocblas_status istat = rocblas_status_success;
+                bool const use_rocblas = false;
+                if(use_rocblas)
+                {
+                    T* alpha = &t_one;
+                    istat = rocblasCall_trsm<T, I>(handle, side, uplo, trans, diag, mm, nn, alpha,
+                                                   A, shiftA + L11_offset, lda, strideA, A,
+                                                   shiftA + A12_offset, lda, strideA, batch_count,
+                                                   optim_mem, work1, work2, work3, work4);
+                }
+                else
+                {
+                    istat = rocsolver_trsm_lower<BATCHED, STRIDED, T, I, U>(
+                        handle, side, trans, diag, mm, nn, A, shiftA + L11_offset, lda, strideA, A,
+                        shiftA + A12_offset, lda, strideA, batch_count, optim_mem, work1, work2,
+                        work3, work4);
+                }
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                }
             }
         }
 
@@ -787,24 +863,41 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             // ------------------------------------
             // (4a)  A22 = A22 - L21 * U12,   GEMM
             // ------------------------------------
-            T* const alpha = &t_minone;
-            T* const beta = &t_one;
 
             auto const mm = m2;
             auto const nn = n2;
             auto const kk = n1;
 
-            rocblas_operation const trans_a = rocblas_operation_none;
-            rocblas_operation const trans_b = rocblas_operation_none;
-
-            auto const istat = rocsolver_gemm<BATCHED, STRIDED, T, U>(
-                handle, trans_a, trans_b, mm, nn, kk, alpha, A, shiftA + L21_offset, lda, strideA,
-                A, shiftA + U12_offset, lda, strideA, beta, A, shiftA + A22_offset, lda, strideA,
-                batch_count, (T**)nullptr);
-
-            if(istat != rocblas_status_success)
+            bool const has_work = (mm >= 1) && (nn >= 1) && (kk >= 1);
+            if(has_work)
             {
-                return (istat);
+                T* const alpha = &t_minone;
+                T* const beta = &t_one;
+
+                rocblas_operation const trans_a = rocblas_operation_none;
+                rocblas_operation const trans_b = rocblas_operation_none;
+
+                rocblas_status istat = rocblas_status_success;
+                bool const use_rocblas = true;
+                if(use_rocblas)
+                {
+                    istat = rocblasCall_gemm(
+                        handle, trans_a, trans_b, mm, nn, kk, alpha, A, shiftA + L21_offset, lda,
+                        strideA, A, shiftA + U12_offset, lda, strideA, beta, A, shiftA + A22_offset,
+                        lda, strideA, batch_count, (T**)nullptr);
+                }
+                else
+                {
+                    istat = rocsolver_gemm<BATCHED, STRIDED, T, U>(
+                        handle, trans_a, trans_b, mm, nn, kk, alpha, A, shiftA + L21_offset, lda,
+                        strideA, A, shiftA + U12_offset, lda, strideA, beta, A, shiftA + A22_offset,
+                        lda, strideA, batch_count, (T**)nullptr);
+                }
+
+                if(istat != rocblas_status_success)
+                {
+                    return (istat);
+                }
             }
         }
 
@@ -813,20 +906,37 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             // (4b)  L22 * U22 = A22,  recursive factorization
             // --------------------------------------------------
 
-            ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo, batch_count, 0);
-
             I const mm = m2;
             I const nn = n2;
-            auto const j = m1;
-            rocblas_status const istat
-                = rocsolver_getrf_nopiv_recursive_template<BATCHED, STRIDED, T, I, U>(
-                    handle, mm, nn, A, shiftA + A22_offset, lda, strideA, info, batch_count, work1,
-                    work2, work3, work4, iinfo, optim_mem, row_offset + j);
 
-            ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
-                                    row_offset + j, batch_count);
+            bool const has_work = (mm >= 1) && (nn >= 1);
+            if(has_work)
+            {
+                ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, iinfo,
+                                        batch_count, 0);
 
-            return (istat);
+                rocblas_status istat = rocblas_status_success;
+
+                auto const j = m1;
+                bool const use_rightlooking = true;
+                if(use_rightlooking)
+                {
+                    istat = rocsolver_getrf_nopiv_rightlooking_template<BATCHED, STRIDED, T, I, U>(
+                        handle, mm, nn, A, shiftA + A22_offset, lda, strideA, info, batch_count,
+                        work1, work2, work3, work4, iinfo, optim_mem);
+                }
+                else
+                {
+                    istat = rocsolver_getrf_nopiv_recursive_template<BATCHED, STRIDED, T, I, U>(
+                        handle, mm, nn, A, shiftA + A22_offset, lda, strideA, info, batch_count,
+                        work1, work2, work3, work4, iinfo, optim_mem, row_offset + j);
+                }
+
+                ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
+                                        row_offset + j, batch_count);
+
+                return (istat);
+            }
         }
     }
     return (rocblas_status_success);
