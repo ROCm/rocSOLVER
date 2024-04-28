@@ -394,6 +394,14 @@
 #define GETRF_NOPIV_BLOCKSIZE(T) ((sizeof(T) == 4) ? 128 : (sizeof(T) == 8) ? 90 : 64)
 #endif
 
+// --------------------------------------------
+// assume there is at least 8 MBytes of last level cache
+// terminate recursion if matrix can fit in cache
+// --------------------------------------------
+#ifndef GETRF_NOPIV_STOPPING_NB
+#define GETRF_NOPIV_STOPPING_NB(T) ((sizeof(T) == 4) ? 1408 : (sizeof(T) == 8) ? 1024 : 704)
+#endif
+
 /****************************** getri *****************************************
 *******************************************************************************/
 #ifndef GETRI_MAX_COLS
