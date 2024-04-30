@@ -33,7 +33,9 @@
 #pragma once
 
 #include "rocsolver_run_specialized_kernels.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Templated kernels are instantiated in separate cpp
     files in order to improve compilation times and reduce
@@ -225,7 +227,7 @@ void trti2_run_small(rocblas_handle handle,
     default: ROCSOLVER_UNREACHABLE();
     }
 }
-ROCSOLVER_END_NAMESPACE
+
 /*************************************************************
     Instantiation macros
 *************************************************************/
@@ -235,3 +237,5 @@ ROCSOLVER_END_NAMESPACE
                                         const rocblas_diagonal diag, const rocblas_int n, U A, \
                                         const rocblas_int shiftA, const rocblas_int lda,       \
                                         const rocblas_stride strideA, const rocblas_int batch_count)
+
+ROCSOLVER_END_NAMESPACE

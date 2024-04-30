@@ -27,6 +27,8 @@
 
 #include "roclapack_getf2.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_getf2_impl(rocblas_handle handle,
                                     const rocblas_int m,
@@ -92,6 +94,8 @@ rocblas_status rocsolver_getf2_impl(rocblas_handle handle,
                                               (T*)pivotval, (rocblas_int*)pivotidx, pivot);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -108,7 +112,7 @@ rocblas_status rocsolver_sgetf2(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_getf2_impl<float>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<float>(handle, m, n, A, lda, ipiv, info, true);
 }
 
 rocblas_status rocsolver_dgetf2(rocblas_handle handle,
@@ -119,7 +123,7 @@ rocblas_status rocsolver_dgetf2(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, true);
 }
 
 rocblas_status rocsolver_cgetf2(rocblas_handle handle,
@@ -130,7 +134,7 @@ rocblas_status rocsolver_cgetf2(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, true);
 }
 
 rocblas_status rocsolver_zgetf2(rocblas_handle handle,
@@ -141,7 +145,7 @@ rocblas_status rocsolver_zgetf2(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, true);
 }
 
 rocblas_status rocsolver_sgetf2_npvt(rocblas_handle handle,
@@ -152,7 +156,7 @@ rocblas_status rocsolver_sgetf2_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_impl<float>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<float>(handle, m, n, A, lda, ipiv, info, false);
 }
 
 rocblas_status rocsolver_dgetf2_npvt(rocblas_handle handle,
@@ -163,7 +167,7 @@ rocblas_status rocsolver_dgetf2_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, false);
 }
 
 rocblas_status rocsolver_cgetf2_npvt(rocblas_handle handle,
@@ -174,7 +178,7 @@ rocblas_status rocsolver_cgetf2_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
 }
 
 rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
@@ -185,7 +189,7 @@ rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
 }
 
 } // extern C

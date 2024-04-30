@@ -38,6 +38,7 @@
 #include "rocblas.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 /** Set results for the scalar case (n=1) **/
@@ -82,7 +83,6 @@ ROCSOLVER_KERNEL void scalar_case(const rocblas_evect evect,
             A[0] = T(1);
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 /** Helper to calculate workspace sizes **/
 template <bool BATCHED, typename T, typename S>
@@ -253,3 +253,5 @@ rocblas_status rocsolver_syev_heev_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

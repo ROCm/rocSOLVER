@@ -36,6 +36,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
@@ -182,7 +183,6 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         *optim_mem = true;
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_trtri_argCheck(rocblas_handle handle,
@@ -217,7 +217,6 @@ rocblas_status rocsolver_trtri_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-ROCSOLVER_BEGIN_NAMESPACE
 template <typename T, typename U>
 void trti2(rocblas_handle handle,
            const rocblas_fill uplo,
@@ -281,7 +280,6 @@ void trti2(rocblas_handle handle,
 
     rocblas_set_pointer_mode(handle, old_mode);
 }
-ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, bool STRIDED, typename T, typename U>
 rocblas_status rocsolver_trtri_template(rocblas_handle handle,
@@ -429,3 +427,5 @@ rocblas_status rocsolver_trtri_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -43,6 +43,8 @@
 #include "roclapack_gesvd.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Argument checking **/
 template <typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
@@ -540,3 +542,5 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

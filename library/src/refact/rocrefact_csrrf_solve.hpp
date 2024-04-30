@@ -31,6 +31,7 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_rfinfo.hpp"
 #include "rocsparse.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 /**************** Solver Kernels and methods *********************/
@@ -172,7 +173,7 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
 
     return rocblas_status_success;
 }
-ROCSOLVER_END_NAMESPACE
+
 /************************************************************************/
 
 /************** Argument checking and buffer size auxiliaries *************/
@@ -344,3 +345,5 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
     return rocblas_status_success;
 }
 /**************************************************************************/
+
+ROCSOLVER_END_NAMESPACE

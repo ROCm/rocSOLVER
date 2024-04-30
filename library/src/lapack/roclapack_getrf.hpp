@@ -37,6 +37,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Constants for inner block size of getrf **/
 // clang-format off
 #define GETRF_NUMROWS_REAL 20
@@ -189,7 +191,6 @@
     {1, 8, 16, 16}
 // clang-format on
 
-ROCSOLVER_BEGIN_NAMESPACE
 /** Execute all permutations dictated by the panel factorization
     in parallel (concurrency by rows and columns) **/
 template <typename T, typename U>
@@ -537,7 +538,6 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
     return rocblas_status_success;
 }
-ROCSOLVER_END_NAMESPACE
 
 /** Return the sizes of the different workspace arrays **/
 template <bool BATCHED, bool STRIDED, typename T>
@@ -757,3 +757,5 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

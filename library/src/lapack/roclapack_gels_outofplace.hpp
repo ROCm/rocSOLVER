@@ -40,6 +40,8 @@
 #include "roclapack_geqrf.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_gels_outofplace_getMemorySize(const rocblas_operation trans,
                                              const rocblas_int m,
@@ -351,3 +353,5 @@ rocblas_status rocsolver_gels_outofplace_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

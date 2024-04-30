@@ -28,7 +28,9 @@
 #pragma once
 
 #include "rocsolver_run_specialized_kernels.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
+
 /** Call this kernel with 'batch_count' groups in z, and enough
     groups in x and y to cover all the 'm' rows and 'n' columns of C. **/
 template <typename T, typename V, typename U1, typename U2, typename U3>
@@ -66,7 +68,7 @@ ROCSOLVER_KERNEL void ger_kernel(rocblas_int m,
         A[i * inca + j * lda] += a * x[i * incx] * y[j * incy];
     }
 }
-ROCSOLVER_END_NAMESPACE
+
 /*************************************************************
     Launchers of specialized kernels
 *************************************************************/
@@ -175,3 +177,5 @@ inline rocblas_status rocsolver_ger(rocblas_handle handle,
         rocblas_stride strideX, U y, rocblas_stride shiftY, rocblas_int incy, \
         rocblas_stride strideY, U A, rocblas_stride shiftA, rocblas_int lda,  \
         rocblas_stride strideA, rocblas_int batch_count, T** work)
+
+ROCSOLVER_END_NAMESPACE

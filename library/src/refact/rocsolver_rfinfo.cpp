@@ -45,15 +45,15 @@
         }                                               \
     } while(0)
 
-#define GOTO_IF_ROCSPARSE_ERROR(fcn, result, error_label) \
-    do                                                    \
-    {                                                     \
-        rocsparse_status _status = (fcn);                 \
-        if(_status != rocsparse_status_success)           \
-        {                                                 \
-            result = rocsparse2rocblas_status(_status);   \
-            goto error_label;                             \
-        }                                                 \
+#define GOTO_IF_ROCSPARSE_ERROR(fcn, result, error_label)            \
+    do                                                               \
+    {                                                                \
+        rocsparse_status _status = (fcn);                            \
+        if(_status != rocsparse_status_success)                      \
+        {                                                            \
+            result = rocsolver::rocsparse2rocblas_status(_status);   \
+            goto error_label;                                        \
+        }                                                            \
     } while(0)
 
 extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocblas_handle handle)

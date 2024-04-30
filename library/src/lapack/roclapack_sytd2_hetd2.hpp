@@ -35,6 +35,7 @@
 #include "auxiliary/rocauxiliary_larfg.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 /** set_tau kernel copies to tau the corresponding Householder scalars **/
@@ -133,7 +134,6 @@ ROCSOLVER_KERNEL void set_tridiag(const rocblas_fill uplo,
         }
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, typename T>
 void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
@@ -353,3 +353,5 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

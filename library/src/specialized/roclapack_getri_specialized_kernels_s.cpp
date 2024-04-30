@@ -27,9 +27,13 @@
 
 #include "roclapack_getri_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
 INSTANTIATE_GETRI_SMALL(float, float*);
 INSTANTIATE_GETRI_SMALL(float, float* const*);
+
+ROCSOLVER_END_NAMESPACE

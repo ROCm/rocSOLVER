@@ -32,6 +32,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
                                              const rocblas_int n,
@@ -89,6 +91,8 @@ rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
 #endif
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -111,7 +115,7 @@ rocblas_status rocsolver_scsrrf_refactlu(rocblas_handle handle,
                                          rocblas_int* pivQ,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_csrrf_refactlu_impl<float>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
+    return rocsolver::rocsolver_csrrf_refactlu_impl<float>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
                                                 valT, pivP, pivQ, rfinfo);
 }
 
@@ -129,7 +133,7 @@ rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
                                          rocblas_int* pivQ,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_csrrf_refactlu_impl<double>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
+    return rocsolver::rocsolver_csrrf_refactlu_impl<double>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
                                                  indT, valT, pivP, pivQ, rfinfo);
 }
 

@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_stein.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S>
 rocblas_status rocsolver_stein_impl(rocblas_handle handle,
                                     const rocblas_int n,
@@ -92,6 +94,8 @@ rocblas_status rocsolver_stein_impl(rocblas_handle handle,
                                        batch_count, (S*)work, (rocblas_int*)iwork);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -113,7 +117,7 @@ rocblas_status rocsolver_sstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<float, float>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
+    return rocsolver::rocsolver_stein_impl<float, float>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
                                               ifail, info);
 }
 
@@ -130,7 +134,7 @@ rocblas_status rocsolver_dstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<double, double>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
+    return rocsolver::rocsolver_stein_impl<double, double>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
                                                 ifail, info);
 }
 
@@ -147,7 +151,7 @@ rocblas_status rocsolver_cstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<rocblas_float_complex, float>(handle, n, D, E, nev, W, iblock,
+    return rocsolver::rocsolver_stein_impl<rocblas_float_complex, float>(handle, n, D, E, nev, W, iblock,
                                                               isplit, Z, ldz, ifail, info);
 }
 
@@ -164,7 +168,7 @@ rocblas_status rocsolver_zstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<rocblas_double_complex, double>(handle, n, D, E, nev, W, iblock,
+    return rocsolver::rocsolver_stein_impl<rocblas_double_complex, double>(handle, n, D, E, nev, W, iblock,
                                                                 isplit, Z, ldz, ifail, info);
 }
 

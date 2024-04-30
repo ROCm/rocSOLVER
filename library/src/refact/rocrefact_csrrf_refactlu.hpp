@@ -33,6 +33,7 @@
 #include "rocsparse.hpp"
 
 #include "refact_helpers.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 // -------------------------------------------
@@ -90,7 +91,6 @@ ROCSOLVER_KERNEL void rf_add_PAQ_kernel(const rocblas_int n,
         }
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_csrrf_refactlu_argCheck(rocblas_handle handle,
@@ -205,3 +205,5 @@ rocblas_status rocsolver_csrrf_refactlu_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

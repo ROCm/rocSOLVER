@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_lasyf.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_lasyf_impl(rocblas_handle handle,
                                     const rocblas_fill uplo,
@@ -78,6 +80,8 @@ rocblas_status rocsolver_lasyf_impl(rocblas_handle handle,
                                        strideP, info, batch_count, (T*)work);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -96,7 +100,7 @@ rocblas_status rocsolver_slasyf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_lasyf_impl<float>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+    return rocsolver::rocsolver_lasyf_impl<float>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
 }
 
 rocblas_status rocsolver_dlasyf(rocblas_handle handle,
@@ -109,7 +113,7 @@ rocblas_status rocsolver_dlasyf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_lasyf_impl<double>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+    return rocsolver::rocsolver_lasyf_impl<double>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
 }
 
 rocblas_status rocsolver_clasyf(rocblas_handle handle,
@@ -122,7 +126,7 @@ rocblas_status rocsolver_clasyf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_lasyf_impl<rocblas_float_complex>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+    return rocsolver::rocsolver_lasyf_impl<rocblas_float_complex>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
 }
 
 rocblas_status rocsolver_zlasyf(rocblas_handle handle,
@@ -135,7 +139,7 @@ rocblas_status rocsolver_zlasyf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_lasyf_impl<rocblas_double_complex>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
+    return rocsolver::rocsolver_lasyf_impl<rocblas_double_complex>(handle, uplo, n, nb, kb, A, lda, ipiv, info);
 }
 
 } // extern C

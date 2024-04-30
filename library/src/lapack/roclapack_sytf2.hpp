@@ -36,10 +36,11 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** thread-block size for calling the sytf2 kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
 #define SYTF2_MAX_THDS 256
-ROCSOLVER_BEGIN_NAMESPACE
 
 template <int MAX_THDS, typename T, typename S>
 __device__ void sytf2_device_upper(const rocblas_int tid,
@@ -442,7 +443,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(SYTF2_MAX_THDS)
 
     sytf2_device_lower<SYTF2_MAX_THDS>(tid, n, A, lda, ipiv, infoA + bid, sidx, sval);
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_sytf2_sytrf_argCheck(rocblas_handle handle,
@@ -522,3 +522,5 @@ rocblas_status rocsolver_sytf2_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

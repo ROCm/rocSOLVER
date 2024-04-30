@@ -27,6 +27,8 @@
 
 #include "roclapack_gerq2.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_gerq2_impl(rocblas_handle handle,
                                     const rocblas_int m,
@@ -89,6 +91,8 @@ rocblas_status rocsolver_gerq2_impl(rocblas_handle handle,
                                        (T*)diag);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -104,7 +108,7 @@ rocblas_status rocsolver_sgerq2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 float* ipiv)
 {
-    return rocsolver_gerq2_impl<float>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_gerq2_impl<float>(handle, m, n, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_dgerq2(rocblas_handle handle,
@@ -114,7 +118,7 @@ rocblas_status rocsolver_dgerq2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 double* ipiv)
 {
-    return rocsolver_gerq2_impl<double>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_gerq2_impl<double>(handle, m, n, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_cgerq2(rocblas_handle handle,
@@ -124,7 +128,7 @@ rocblas_status rocsolver_cgerq2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_float_complex* ipiv)
 {
-    return rocsolver_gerq2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_gerq2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_zgerq2(rocblas_handle handle,
@@ -134,7 +138,7 @@ rocblas_status rocsolver_zgerq2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_double_complex* ipiv)
 {
-    return rocsolver_gerq2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_gerq2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
 }
 
 } // extern C

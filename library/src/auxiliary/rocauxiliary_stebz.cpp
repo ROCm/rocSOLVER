@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_stebz.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
                                     const rocblas_erange erange,
@@ -100,6 +102,8 @@ rocblas_status rocsolver_stebz_impl(rocblas_handle handle,
         (rocblas_int*)work, (T*)pivmin, (T*)Esqr, (T*)bounds, (T*)inter, (rocblas_int*)ninter);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -126,7 +130,7 @@ rocblas_status rocsolver_sstebz(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 rocblas_int* info)
 {
-    return rocsolver_stebz_impl<float>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, E, nev,
+    return rocsolver::rocsolver_stebz_impl<float>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, E, nev,
                                        nsplit, W, iblock, isplit, info);
 }
 
@@ -148,7 +152,7 @@ rocblas_status rocsolver_dstebz(rocblas_handle handle,
                                 rocblas_int* isplit,
                                 rocblas_int* info)
 {
-    return rocsolver_stebz_impl<double>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, E,
+    return rocsolver::rocsolver_stebz_impl<double>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, E,
                                         nev, nsplit, W, iblock, isplit, info);
 }
 

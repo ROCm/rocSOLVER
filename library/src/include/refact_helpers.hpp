@@ -26,7 +26,9 @@
  * *************************************************************************/
 
 #pragma once
+
 ROCSOLVER_BEGIN_NAMESPACE
+
 // -------------------------------------------------
 // function to perform search in array
 // -------------------------------------------------
@@ -81,4 +83,5 @@ ROCSOLVER_KERNEL void rf_ipvec_kernel(rocblas_int n, rocblas_int* pivQ, rocblas_
         inv_pivQ[iold] = tid;
     }
 }
+
 ROCSOLVER_END_NAMESPACE

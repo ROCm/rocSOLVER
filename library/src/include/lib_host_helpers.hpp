@@ -34,6 +34,7 @@
 #include <rocblas/rocblas.h>
 
 ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    common location for functions that are used across several rocSOLVER
@@ -149,4 +150,5 @@ extern "C" [[noreturn]] void __assert_fail(const char* assertion,
 #else
 #define ROCSOLVER_ASSUME_X(invariant, msg) __builtin_assume(invariant)
 #endif
+
 ROCSOLVER_END_NAMESPACE

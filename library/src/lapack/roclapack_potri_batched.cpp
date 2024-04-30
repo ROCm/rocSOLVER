@@ -27,6 +27,8 @@
 
 #include "roclapack_potri.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_potri_batched_impl(rocblas_handle handle,
                                             const rocblas_fill uplo,
@@ -88,6 +90,8 @@ rocblas_status rocsolver_potri_batched_impl(rocblas_handle handle,
                                                     (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -104,7 +108,7 @@ rocblas_status rocsolver_spotri_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potri_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver::rocsolver_potri_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
 }
 
 rocblas_status rocsolver_dpotri_batched(rocblas_handle handle,
@@ -115,7 +119,7 @@ rocblas_status rocsolver_dpotri_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potri_batched_impl<double>(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver::rocsolver_potri_batched_impl<double>(handle, uplo, n, A, lda, info, batch_count);
 }
 
 rocblas_status rocsolver_cpotri_batched(rocblas_handle handle,
@@ -126,7 +130,7 @@ rocblas_status rocsolver_cpotri_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potri_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info,
+    return rocsolver::rocsolver_potri_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info,
                                                                batch_count);
 }
 
@@ -138,7 +142,7 @@ rocblas_status rocsolver_zpotri_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potri_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info,
+    return rocsolver::rocsolver_potri_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info,
                                                                 batch_count);
 }
 }

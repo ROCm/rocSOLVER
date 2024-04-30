@@ -31,4 +31,6 @@
     Instantiate template methods using macros
 *************************************************************/
 
+ROCSOLVER_BEGIN_NAMESPACE
 INSTANTIATE_GETF2_SMALL(float, float*);
+ROCSOLVER_END_NAMESPACE

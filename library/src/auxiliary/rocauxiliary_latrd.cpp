@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_latrd.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
                                     const rocblas_fill uplo,
@@ -94,6 +96,8 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
                                        (T*)work, (T*)norms, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -113,7 +117,7 @@ rocblas_status rocsolver_slatrd(rocblas_handle handle,
                                 float* W,
                                 const rocblas_int ldw)
 {
-    return rocsolver_latrd_impl<float>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+    return rocsolver::rocsolver_latrd_impl<float>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
 }
 
 rocblas_status rocsolver_dlatrd(rocblas_handle handle,
@@ -127,7 +131,7 @@ rocblas_status rocsolver_dlatrd(rocblas_handle handle,
                                 double* W,
                                 const rocblas_int ldw)
 {
-    return rocsolver_latrd_impl<double>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+    return rocsolver::rocsolver_latrd_impl<double>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
 }
 
 rocblas_status rocsolver_clatrd(rocblas_handle handle,
@@ -141,7 +145,7 @@ rocblas_status rocsolver_clatrd(rocblas_handle handle,
                                 rocblas_float_complex* W,
                                 const rocblas_int ldw)
 {
-    return rocsolver_latrd_impl<rocblas_float_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+    return rocsolver::rocsolver_latrd_impl<rocblas_float_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
 }
 
 rocblas_status rocsolver_zlatrd(rocblas_handle handle,
@@ -155,7 +159,7 @@ rocblas_status rocsolver_zlatrd(rocblas_handle handle,
                                 rocblas_double_complex* W,
                                 const rocblas_int ldw)
 {
-    return rocsolver_latrd_impl<rocblas_double_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
+    return rocsolver::rocsolver_latrd_impl<rocblas_double_complex>(handle, uplo, n, k, A, lda, E, tau, W, ldw);
 }
 
 } // extern C

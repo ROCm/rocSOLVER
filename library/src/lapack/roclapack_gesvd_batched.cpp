@@ -27,6 +27,8 @@
 
 #include "roclapack_gesvd.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
                                             const rocblas_svect left_svect,
@@ -123,6 +125,8 @@ rocblas_status rocsolver_gesvd_batched_impl(rocblas_handle handle,
         (T*)tempArrayT, (T*)tempArrayC, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -152,7 +156,7 @@ rocblas_status rocsolver_sgesvd_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_gesvd_batched_impl<float>(handle, left_svect, right_svect, m, n, A, lda, S,
+    return rocsolver::rocsolver_gesvd_batched_impl<float>(handle, left_svect, right_svect, m, n, A, lda, S,
                                                strideS, U, ldu, strideU, V, ldv, strideV, E,
                                                strideE, fast_alg, info, batch_count);
 }
@@ -178,7 +182,7 @@ rocblas_status rocsolver_dgesvd_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_gesvd_batched_impl<double>(handle, left_svect, right_svect, m, n, A, lda, S,
+    return rocsolver::rocsolver_gesvd_batched_impl<double>(handle, left_svect, right_svect, m, n, A, lda, S,
                                                 strideS, U, ldu, strideU, V, ldv, strideV, E,
                                                 strideE, fast_alg, info, batch_count);
 }
@@ -204,7 +208,7 @@ rocblas_status rocsolver_cgesvd_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_gesvd_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_gesvd_batched_impl<rocblas_float_complex>(
         handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu, strideU, V, ldv, strideV,
         E, strideE, fast_alg, info, batch_count);
 }
@@ -230,7 +234,7 @@ rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_gesvd_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_gesvd_batched_impl<rocblas_double_complex>(
         handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu, strideU, V, ldv, strideV,
         E, strideE, fast_alg, info, batch_count);
 }

@@ -27,6 +27,8 @@
 
 #include "roclapack_sytrd_hetrd.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
                                                   const rocblas_fill uplo,
@@ -96,6 +98,8 @@ rocblas_status rocsolver_sytrd_hetrd_batched_impl(rocblas_handle handle,
         (T*)scalars, (T*)work, (T*)norms, (T*)tmptau_W, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -117,7 +121,7 @@ rocblas_status rocsolver_ssytrd_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_batched_impl<float>(handle, uplo, n, A, lda, D, strideD, E,
+    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<float>(handle, uplo, n, A, lda, D, strideD, E,
                                                      strideE, tau, strideP, batch_count);
 }
 
@@ -134,7 +138,7 @@ rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_batched_impl<double>(handle, uplo, n, A, lda, D, strideD, E,
+    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<double>(handle, uplo, n, A, lda, D, strideD, E,
                                                       strideE, tau, strideP, batch_count);
 }
 
@@ -151,7 +155,7 @@ rocblas_status rocsolver_chetrd_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<rocblas_float_complex>(
         handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
@@ -168,7 +172,7 @@ rocblas_status rocsolver_zhetrd_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytrd_hetrd_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<rocblas_double_complex>(
         handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 

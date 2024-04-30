@@ -27,6 +27,8 @@
 
 #include "roclapack_getf2_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
@@ -36,3 +38,5 @@ INSTANTIATE_GETF2_PANEL(double, double* const*);
 
 INSTANTIATE_GETF2_SCALE_UPDATE(double, double*);
 INSTANTIATE_GETF2_SCALE_UPDATE(double, double* const*);
+
+ROCSOLVER_END_NAMESPACE

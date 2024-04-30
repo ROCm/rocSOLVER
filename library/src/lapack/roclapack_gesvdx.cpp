@@ -27,6 +27,8 @@
 
 #include "roclapack_gesvdx.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvdx_impl(rocblas_handle handle,
                                      const rocblas_svect left_svect,
@@ -180,6 +182,8 @@ rocblas_status rocsolver_gesvdx_impl(rocblas_handle handle,
         (TT*)tmpDE, (T*)tauqp, (TT*)tmpZ, (T*)tau, (T*)tmpT, (T**)workArr, (T**)workArr2);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -209,7 +213,7 @@ rocblas_status rocsolver_sgesvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdx_impl<float>(handle, left_svect, right_svect, srange, m, n, A, lda, vl,
+    return rocsolver::rocsolver_gesvdx_impl<float>(handle, left_svect, right_svect, srange, m, n, A, lda, vl,
                                         vu, il, iu, nsv, S, U, ldu, V, ldv, ifail, info);
 }
 
@@ -234,7 +238,7 @@ rocblas_status rocsolver_dgesvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdx_impl<double>(handle, left_svect, right_svect, srange, m, n, A, lda, vl,
+    return rocsolver::rocsolver_gesvdx_impl<double>(handle, left_svect, right_svect, srange, m, n, A, lda, vl,
                                          vu, il, iu, nsv, S, U, ldu, V, ldv, ifail, info);
 }
 
@@ -259,7 +263,7 @@ rocblas_status rocsolver_cgesvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdx_impl<rocblas_float_complex>(handle, left_svect, right_svect, srange, m,
+    return rocsolver::rocsolver_gesvdx_impl<rocblas_float_complex>(handle, left_svect, right_svect, srange, m,
                                                         n, A, lda, vl, vu, il, iu, nsv, S, U, ldu,
                                                         V, ldv, ifail, info);
 }
@@ -285,7 +289,7 @@ rocblas_status rocsolver_zgesvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdx_impl<rocblas_double_complex>(handle, left_svect, right_svect, srange, m,
+    return rocsolver::rocsolver_gesvdx_impl<rocblas_double_complex>(handle, left_svect, right_svect, srange, m,
                                                          n, A, lda, vl, vu, il, iu, nsv, S, U, ldu,
                                                          V, ldv, ifail, info);
 }

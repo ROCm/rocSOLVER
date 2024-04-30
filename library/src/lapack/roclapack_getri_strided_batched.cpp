@@ -27,6 +27,8 @@
 
 #include "roclapack_getri.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_int n,
@@ -92,6 +94,8 @@ rocblas_status rocsolver_getri_strided_batched_impl(rocblas_handle handle,
         work3, work4, (T*)tmpcopy, (T**)workArr, optim_mem, pivot);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -110,7 +114,7 @@ rocblas_status rocsolver_sgetri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getri_strided_batched_impl<float>(handle, n, A, lda, strideA, ipiv, strideP,
+    return rocsolver::rocsolver_getri_strided_batched_impl<float>(handle, n, A, lda, strideA, ipiv, strideP,
                                                        info, true, batch_count);
 }
 
@@ -124,7 +128,7 @@ rocblas_status rocsolver_dgetri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getri_strided_batched_impl<double>(handle, n, A, lda, strideA, ipiv, strideP,
+    return rocsolver::rocsolver_getri_strided_batched_impl<double>(handle, n, A, lda, strideA, ipiv, strideP,
                                                         info, true, batch_count);
 }
 
@@ -138,7 +142,7 @@ rocblas_status rocsolver_cgetri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getri_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_getri_strided_batched_impl<rocblas_float_complex>(
         handle, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 }
 
@@ -152,7 +156,7 @@ rocblas_status rocsolver_zgetri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getri_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_getri_strided_batched_impl<rocblas_double_complex>(
         handle, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 }
 
@@ -165,7 +169,7 @@ rocblas_status rocsolver_sgetri_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_strided_batched_impl<float>(handle, n, A, lda, strideA, ipiv, 0, info,
+    return rocsolver::rocsolver_getri_strided_batched_impl<float>(handle, n, A, lda, strideA, ipiv, 0, info,
                                                        false, batch_count);
 }
 
@@ -178,7 +182,7 @@ rocblas_status rocsolver_dgetri_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_strided_batched_impl<double>(handle, n, A, lda, strideA, ipiv, 0, info,
+    return rocsolver::rocsolver_getri_strided_batched_impl<double>(handle, n, A, lda, strideA, ipiv, 0, info,
                                                         false, batch_count);
 }
 
@@ -191,7 +195,7 @@ rocblas_status rocsolver_cgetri_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_getri_strided_batched_impl<rocblas_float_complex>(
         handle, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
 }
 
@@ -204,7 +208,7 @@ rocblas_status rocsolver_zgetri_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_getri_strided_batched_impl<rocblas_double_complex>(
         handle, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
 }
 

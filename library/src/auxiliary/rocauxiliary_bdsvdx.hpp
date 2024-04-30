@@ -40,6 +40,7 @@
 #include "rocsolver/rocsolver.h"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 ROCSOLVER_KERNEL void bdsvdx_abs_eigs(const rocblas_int n,
                                       rocblas_int* nsvA,
@@ -125,7 +126,6 @@ ROCSOLVER_KERNEL void bdsvdx_reorder_vect(const rocblas_fill uplo,
         __syncthreads();
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 // Helper to calculate workspace size requirements
 template <typename T>
@@ -358,3 +358,5 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -36,10 +36,12 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** thread-block size for calling the lasyf kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
 #define LASYF_MAX_THDS 256
-ROCSOLVER_BEGIN_NAMESPACE
+
 /** GEMV device function to compute y = alpha * A * x + beta * y **/
 template <int MAX_THDS, typename T>
 __device__ void lasyf_gemv(const rocblas_int tid,
@@ -619,7 +621,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(LASYF_MAX_THDS)
     lasyf_device_lower<LASYF_MAX_THDS>(tid, n, nb, kbA + bid, A, lda, ipiv, infoA + bid, W, sidx,
                                        sval);
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 void rocsolver_lasyf_getMemorySize(const rocblas_int n,
@@ -722,3 +723,5 @@ rocblas_status rocsolver_lasyf_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

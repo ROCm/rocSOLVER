@@ -27,6 +27,8 @@
 
 #include "roclapack_syevdj_heevdj.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename W>
 rocblas_status rocsolver_syevdj_heevdj_impl(rocblas_handle handle,
                                             const rocblas_evect evect,
@@ -112,6 +114,8 @@ rocblas_status rocsolver_syevdj_heevdj_impl(rocblas_handle handle,
         workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -129,7 +133,7 @@ rocblas_status rocsolver_ssyevdj(rocblas_handle handle,
                                  float* D,
                                  rocblas_int* info)
 {
-    return rocsolver_syevdj_heevdj_impl<float>(handle, evect, uplo, n, A, lda, D, info);
+    return rocsolver::rocsolver_syevdj_heevdj_impl<float>(handle, evect, uplo, n, A, lda, D, info);
 }
 
 rocblas_status rocsolver_dsyevdj(rocblas_handle handle,
@@ -141,7 +145,7 @@ rocblas_status rocsolver_dsyevdj(rocblas_handle handle,
                                  double* D,
                                  rocblas_int* info)
 {
-    return rocsolver_syevdj_heevdj_impl<double>(handle, evect, uplo, n, A, lda, D, info);
+    return rocsolver::rocsolver_syevdj_heevdj_impl<double>(handle, evect, uplo, n, A, lda, D, info);
 }
 
 rocblas_status rocsolver_cheevdj(rocblas_handle handle,
@@ -153,7 +157,7 @@ rocblas_status rocsolver_cheevdj(rocblas_handle handle,
                                  float* D,
                                  rocblas_int* info)
 {
-    return rocsolver_syevdj_heevdj_impl<rocblas_float_complex>(handle, evect, uplo, n, A, lda, D,
+    return rocsolver::rocsolver_syevdj_heevdj_impl<rocblas_float_complex>(handle, evect, uplo, n, A, lda, D,
                                                                info);
 }
 
@@ -166,7 +170,7 @@ rocblas_status rocsolver_zheevdj(rocblas_handle handle,
                                  double* D,
                                  rocblas_int* info)
 {
-    return rocsolver_syevdj_heevdj_impl<rocblas_double_complex>(handle, evect, uplo, n, A, lda, D,
+    return rocsolver::rocsolver_syevdj_heevdj_impl<rocblas_double_complex>(handle, evect, uplo, n, A, lda, D,
                                                                 info);
 }
 

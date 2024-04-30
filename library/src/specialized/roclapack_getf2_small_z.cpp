@@ -31,4 +31,6 @@
     Instantiate template methods using macros
 *************************************************************/
 
+ROCSOLVER_BEGIN_NAMESPACE
 INSTANTIATE_GETF2_SMALL(rocblas_double_complex, rocblas_double_complex*);
+ROCSOLVER_END_NAMESPACE

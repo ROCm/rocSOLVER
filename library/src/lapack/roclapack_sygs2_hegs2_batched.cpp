@@ -27,6 +27,8 @@
 
 #include "roclapack_sygs2_hegs2.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_sygs2_hegs2_batched_impl(rocblas_handle handle,
                                                   const rocblas_eform itype,
@@ -93,6 +95,8 @@ rocblas_status rocsolver_sygs2_hegs2_batched_impl(rocblas_handle handle,
                                                    (T*)scalars, work, store_wcs, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -111,7 +115,7 @@ rocblas_status rocsolver_ssygs2_batched(rocblas_handle handle,
                                         const rocblas_int ldb,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sygs2_hegs2_batched_impl<float>(handle, itype, uplo, n, A, lda, B, ldb,
+    return rocsolver::rocsolver_sygs2_hegs2_batched_impl<float>(handle, itype, uplo, n, A, lda, B, ldb,
                                                      batch_count);
 }
 
@@ -125,7 +129,7 @@ rocblas_status rocsolver_dsygs2_batched(rocblas_handle handle,
                                         const rocblas_int ldb,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sygs2_hegs2_batched_impl<double>(handle, itype, uplo, n, A, lda, B, ldb,
+    return rocsolver::rocsolver_sygs2_hegs2_batched_impl<double>(handle, itype, uplo, n, A, lda, B, ldb,
                                                       batch_count);
 }
 
@@ -139,7 +143,7 @@ rocblas_status rocsolver_chegs2_batched(rocblas_handle handle,
                                         const rocblas_int ldb,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sygs2_hegs2_batched_impl<rocblas_float_complex>(handle, itype, uplo, n, A, lda,
+    return rocsolver::rocsolver_sygs2_hegs2_batched_impl<rocblas_float_complex>(handle, itype, uplo, n, A, lda,
                                                                      B, ldb, batch_count);
 }
 
@@ -153,7 +157,7 @@ rocblas_status rocsolver_zhegs2_batched(rocblas_handle handle,
                                         const rocblas_int ldb,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sygs2_hegs2_batched_impl<rocblas_double_complex>(handle, itype, uplo, n, A,
+    return rocsolver::rocsolver_sygs2_hegs2_batched_impl<rocblas_double_complex>(handle, itype, uplo, n, A,
                                                                       lda, B, ldb, batch_count);
 }
 

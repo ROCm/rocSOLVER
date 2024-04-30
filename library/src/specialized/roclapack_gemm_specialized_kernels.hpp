@@ -30,6 +30,7 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
 /** GEMM device function to compute C = alpha * A * B + beta * C.
 
     Call this kernel with 'batch_count' groups in z, and enough
@@ -77,7 +78,6 @@ ROCSOLVER_KERNEL void gemm_noconj_kernel(const rocblas_int m,
         C[i * incc + j * ldc] = a * temp + b * C[i * incc + j * ldc];
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 // /** Optimized kernel that executes a simple gemm A = BC
 //     where A, B and C are sub blocks of the same matrix MM with
@@ -272,9 +272,11 @@ inline rocblas_status rocsolver_gemm(rocblas_handle handle,
 *************************************************************/
 
 #define INSTANTIATE_GEMM(BATCHED, STRIDED, T, U)                                                   \
-    template rocblas_status rocsolver_gemm<BATCHED, STRIDED, T, U>(                                \
+    template rocblas_status rocsolver_gemm<BATCHED, STRIDED, T, U>(                     \
         rocblas_handle handle, rocblas_operation transA, rocblas_operation transB, rocblas_int m,  \
         rocblas_int n, rocblas_int k, const T* alpha, U A, rocblas_stride shiftA, rocblas_int lda, \
         rocblas_stride strideA, U B, rocblas_stride shiftB, rocblas_int ldb,                       \
         rocblas_stride strideB, const T* beta, U C, rocblas_stride shiftC, rocblas_int ldc,        \
         rocblas_stride strideC, rocblas_int batch_count, T** work)
+
+ROCSOLVER_END_NAMESPACE

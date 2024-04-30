@@ -27,6 +27,8 @@
 
 #include "roclapack_gels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
                                                    rocblas_operation trans,
@@ -102,6 +104,8 @@ rocblas_status rocsolver_gels_strided_batched_impl(rocblas_handle handle,
         (T**)trfact_workTrmm_invA_arr, (T*)ipiv_savedB, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -124,7 +128,7 @@ rocblas_status rocsolver_sgels_strided_batched(rocblas_handle handle,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gels_strided_batched_impl<float>(handle, trans, m, n, nrhs, A, lda, strideA, B,
+    return rocsolver::rocsolver_gels_strided_batched_impl<float>(handle, trans, m, n, nrhs, A, lda, strideA, B,
                                                       ldb, strideB, info, batch_count);
 }
 
@@ -142,7 +146,7 @@ rocblas_status rocsolver_dgels_strided_batched(rocblas_handle handle,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gels_strided_batched_impl<double>(handle, trans, m, n, nrhs, A, lda, strideA,
+    return rocsolver::rocsolver_gels_strided_batched_impl<double>(handle, trans, m, n, nrhs, A, lda, strideA,
                                                        B, ldb, strideB, info, batch_count);
 }
 
@@ -160,7 +164,7 @@ rocblas_status rocsolver_cgels_strided_batched(rocblas_handle handle,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gels_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_gels_strided_batched_impl<rocblas_float_complex>(
         handle, trans, m, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }
 
@@ -178,7 +182,7 @@ rocblas_status rocsolver_zgels_strided_batched(rocblas_handle handle,
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gels_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_gels_strided_batched_impl<rocblas_double_complex>(
         handle, trans, m, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }
 

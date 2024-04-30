@@ -42,6 +42,10 @@
 #include "fmt_rocblas_types.hpp"
 #include "rocblas_utility.hpp"
 
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
+
 /*
  * ===========================================================================
  *    common location for functions that are used by both the rocSOLVER
@@ -61,7 +65,6 @@
 
 /* =============================================================================================== */
 
-ROCSOLVER_BEGIN_NAMESPACE
 /* Number properties functions.                                                                    */
 
 template <typename T>
@@ -552,4 +555,7 @@ inline void read_matrix(const std::string filenameS,
             fmt::format("Error: Could not close file {} with test data...", filename));
     }
 }
+
+#ifdef ROCSOLVER_LIBRARY
 ROCSOLVER_END_NAMESPACE
+#endif

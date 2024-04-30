@@ -36,6 +36,7 @@
 #include "rocsolver/rocsolver.h"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
                                     const rocblas_int n,
@@ -64,7 +65,6 @@ ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
     if(i < m && j < n)
         Ap[i + j * lda] = conj(Ap[i + j * lda]);
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 rocblas_status
@@ -118,3 +118,5 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

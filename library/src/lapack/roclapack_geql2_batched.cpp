@@ -27,6 +27,8 @@
 
 #include "roclapack_geql2.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_geql2_batched_impl(rocblas_handle handle,
                                             const rocblas_int m,
@@ -90,6 +92,8 @@ rocblas_status rocsolver_geql2_batched_impl(rocblas_handle handle,
                                        (T*)diag);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -107,7 +111,7 @@ rocblas_status rocsolver_sgeql2_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_geql2_batched_impl<float>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver::rocsolver_geql2_batched_impl<float>(handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
 rocblas_status rocsolver_dgeql2_batched(rocblas_handle handle,
@@ -119,7 +123,7 @@ rocblas_status rocsolver_dgeql2_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_geql2_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver::rocsolver_geql2_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
 rocblas_status rocsolver_cgeql2_batched(rocblas_handle handle,
@@ -131,7 +135,7 @@ rocblas_status rocsolver_cgeql2_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_geql2_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, stridep,
+    return rocsolver::rocsolver_geql2_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, stridep,
                                                                batch_count);
 }
 
@@ -144,7 +148,7 @@ rocblas_status rocsolver_zgeql2_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_geql2_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, stridep,
+    return rocsolver::rocsolver_geql2_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, stridep,
                                                                 batch_count);
 }
 

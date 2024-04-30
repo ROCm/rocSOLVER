@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_orm2l_unm2l.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_orm2l_unm2l_impl(rocblas_handle handle,
                                           const rocblas_side side,
@@ -98,6 +100,8 @@ rocblas_status rocsolver_orm2l_unm2l_impl(rocblas_handle handle,
                                              (T*)scalars, (T*)Abyx, (T*)diag, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -118,7 +122,7 @@ rocblas_status rocsolver_sorm2l(rocblas_handle handle,
                                 float* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orm2l_unm2l_impl<float>(handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+    return rocsolver::rocsolver_orm2l_unm2l_impl<float>(handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
 rocblas_status rocsolver_dorm2l(rocblas_handle handle,
@@ -133,7 +137,7 @@ rocblas_status rocsolver_dorm2l(rocblas_handle handle,
                                 double* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orm2l_unm2l_impl<double>(handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+    return rocsolver::rocsolver_orm2l_unm2l_impl<double>(handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
 }
 
 rocblas_status rocsolver_cunm2l(rocblas_handle handle,
@@ -148,7 +152,7 @@ rocblas_status rocsolver_cunm2l(rocblas_handle handle,
                                 rocblas_float_complex* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orm2l_unm2l_impl<rocblas_float_complex>(handle, side, trans, m, n, k, A, lda,
+    return rocsolver::rocsolver_orm2l_unm2l_impl<rocblas_float_complex>(handle, side, trans, m, n, k, A, lda,
                                                              ipiv, C, ldc);
 }
 
@@ -164,7 +168,7 @@ rocblas_status rocsolver_zunm2l(rocblas_handle handle,
                                 rocblas_double_complex* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orm2l_unm2l_impl<rocblas_double_complex>(handle, side, trans, m, n, k, A, lda,
+    return rocsolver::rocsolver_orm2l_unm2l_impl<rocblas_double_complex>(handle, side, trans, m, n, k, A, lda,
                                                               ipiv, C, ldc);
 }
 

@@ -35,6 +35,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 /****************************************************************************
@@ -305,7 +306,6 @@ ROCSOLVER_KERNEL void sterf_kernel(const rocblas_int n,
         }
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T>
 void rocsolver_sterf_getMemorySize(const rocblas_int n,
@@ -390,3 +390,5 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

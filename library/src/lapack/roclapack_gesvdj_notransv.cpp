@@ -27,6 +27,8 @@
 
 #include "roclapack_gesvdj_notransv.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    gesvdj_notransv is not intended for inclusion in the public API. It
@@ -121,6 +123,8 @@ rocblas_status rocsolver_gesvdj_notransv_impl(rocblas_handle handle,
         (T*)scalars, (T*)VUtmp, work1_UVtmp, work2, work3, work4, work5_ipiv, work6_workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -147,7 +151,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdj_notransv(rocblas_handle handle
                                                            const rocblas_int ldv,
                                                            rocblas_int* info)
 {
-    return rocsolver_gesvdj_notransv_impl<float>(handle, left_svect, right_svect, m, n, A, lda,
+    return rocsolver::rocsolver_gesvdj_notransv_impl<float>(handle, left_svect, right_svect, m, n, A, lda,
                                                  abstol, residual, max_sweeps, n_sweeps, S, U, ldu,
                                                  V, ldv, info);
 }
@@ -170,7 +174,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdj_notransv(rocblas_handle handle
                                                            const rocblas_int ldv,
                                                            rocblas_int* info)
 {
-    return rocsolver_gesvdj_notransv_impl<double>(handle, left_svect, right_svect, m, n, A, lda,
+    return rocsolver::rocsolver_gesvdj_notransv_impl<double>(handle, left_svect, right_svect, m, n, A, lda,
                                                   abstol, residual, max_sweeps, n_sweeps, S, U, ldu,
                                                   V, ldv, info);
 }
@@ -193,7 +197,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdj_notransv(rocblas_handle handle
                                                            const rocblas_int ldv,
                                                            rocblas_int* info)
 {
-    return rocsolver_gesvdj_notransv_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_gesvdj_notransv_impl<rocblas_float_complex>(
         handle, left_svect, right_svect, m, n, A, lda, abstol, residual, max_sweeps, n_sweeps, S, U,
         ldu, V, ldv, info);
 }
@@ -216,7 +220,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvdj_notransv(rocblas_handle handle
                                                            const rocblas_int ldv,
                                                            rocblas_int* info)
 {
-    return rocsolver_gesvdj_notransv_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_gesvdj_notransv_impl<rocblas_double_complex>(
         handle, left_svect, right_svect, m, n, A, lda, abstol, residual, max_sweeps, n_sweeps, S, U,
         ldu, V, ldv, info);
 }

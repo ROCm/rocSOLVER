@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_larf.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 rocblas_status rocsolver_larf_impl(rocblas_handle handle,
                                    const rocblas_side side,
@@ -89,6 +91,8 @@ rocblas_status rocsolver_larf_impl(rocblas_handle handle,
                                       (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -107,7 +111,7 @@ rocblas_status rocsolver_slarf(rocblas_handle handle,
                                float* A,
                                const rocblas_int lda)
 {
-    return rocsolver_larf_impl<float>(handle, side, m, n, x, incx, alpha, A, lda);
+    return rocsolver::rocsolver_larf_impl<float>(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
 rocblas_status rocsolver_dlarf(rocblas_handle handle,
@@ -120,7 +124,7 @@ rocblas_status rocsolver_dlarf(rocblas_handle handle,
                                double* A,
                                const rocblas_int lda)
 {
-    return rocsolver_larf_impl<double>(handle, side, m, n, x, incx, alpha, A, lda);
+    return rocsolver::rocsolver_larf_impl<double>(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
 rocblas_status rocsolver_clarf(rocblas_handle handle,
@@ -133,7 +137,7 @@ rocblas_status rocsolver_clarf(rocblas_handle handle,
                                rocblas_float_complex* A,
                                const rocblas_int lda)
 {
-    return rocsolver_larf_impl<rocblas_float_complex>(handle, side, m, n, x, incx, alpha, A, lda);
+    return rocsolver::rocsolver_larf_impl<rocblas_float_complex>(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
 rocblas_status rocsolver_zlarf(rocblas_handle handle,
@@ -146,7 +150,7 @@ rocblas_status rocsolver_zlarf(rocblas_handle handle,
                                rocblas_double_complex* A,
                                const rocblas_int lda)
 {
-    return rocsolver_larf_impl<rocblas_double_complex>(handle, side, m, n, x, incx, alpha, A, lda);
+    return rocsolver::rocsolver_larf_impl<rocblas_double_complex>(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
 } // extern C

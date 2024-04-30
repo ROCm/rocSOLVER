@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_lacgv.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 rocblas_status
     rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n, T* x, const rocblas_int incx)
@@ -56,6 +58,8 @@ rocblas_status
     return rocsolver_lacgv_template<T>(handle, n, x, shiftx, incx, stridex, batch_count);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -69,7 +73,7 @@ rocblas_status rocsolver_clacgv(rocblas_handle handle,
                                 rocblas_float_complex* x,
                                 const rocblas_int incx)
 {
-    return rocsolver_lacgv_impl<rocblas_float_complex>(handle, n, x, incx);
+    return rocsolver::rocsolver_lacgv_impl<rocblas_float_complex>(handle, n, x, incx);
 }
 
 rocblas_status rocsolver_zlacgv(rocblas_handle handle,
@@ -77,7 +81,7 @@ rocblas_status rocsolver_zlacgv(rocblas_handle handle,
                                 rocblas_double_complex* x,
                                 const rocblas_int incx)
 {
-    return rocsolver_lacgv_impl<rocblas_double_complex>(handle, n, x, incx);
+    return rocsolver::rocsolver_lacgv_impl<rocblas_double_complex>(handle, n, x, incx);
 }
 
 } // extern C

@@ -38,6 +38,7 @@
 #include "rocsolver/rocsolver.h"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 ROCSOLVER_KERNEL void orgl2_init_ident(const rocblas_int m,
                                        const rocblas_int n,
@@ -90,7 +91,6 @@ void rocsolver_orgl2_ungl2_getMemorySize(const rocblas_int m,
     rocsolver_larf_getMemorySize<BATCHED, T>(rocblas_side_right, m, n, batch_count, size_scalars,
                                              size_Abyx, size_workArr);
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_orgl2_orglq_argCheck(rocblas_handle handle,
@@ -201,3 +201,5 @@ rocblas_status rocsolver_orgl2_ungl2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

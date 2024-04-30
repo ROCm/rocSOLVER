@@ -27,6 +27,8 @@
 
 #include "roclapack_trtri.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_trtri_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_fill uplo,
@@ -89,6 +91,8 @@ rocblas_status rocsolver_trtri_strided_batched_impl(rocblas_handle handle,
                                                     (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -107,7 +111,7 @@ rocblas_status rocsolver_strtri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_trtri_strided_batched_impl<float>(handle, uplo, diag, n, A, lda, strideA, info,
+    return rocsolver::rocsolver_trtri_strided_batched_impl<float>(handle, uplo, diag, n, A, lda, strideA, info,
                                                        batch_count);
 }
 
@@ -121,7 +125,7 @@ rocblas_status rocsolver_dtrtri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_trtri_strided_batched_impl<double>(handle, uplo, diag, n, A, lda, strideA,
+    return rocsolver::rocsolver_trtri_strided_batched_impl<double>(handle, uplo, diag, n, A, lda, strideA,
                                                         info, batch_count);
 }
 
@@ -135,7 +139,7 @@ rocblas_status rocsolver_ctrtri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_trtri_strided_batched_impl<rocblas_float_complex>(handle, uplo, diag, n, A, lda,
+    return rocsolver::rocsolver_trtri_strided_batched_impl<rocblas_float_complex>(handle, uplo, diag, n, A, lda,
                                                                        strideA, info, batch_count);
 }
 
@@ -149,7 +153,7 @@ rocblas_status rocsolver_ztrtri_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_trtri_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_trtri_strided_batched_impl<rocblas_double_complex>(
         handle, uplo, diag, n, A, lda, strideA, info, batch_count);
 }
 

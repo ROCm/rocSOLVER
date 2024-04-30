@@ -27,6 +27,8 @@
 
 #include "roclapack_gels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_gels_impl(rocblas_handle handle,
                                    rocblas_operation trans,
@@ -103,6 +105,8 @@ rocblas_status rocsolver_gels_impl(rocblas_handle handle,
         (T**)trfact_workTrmm_invA_arr, (T*)ipiv_savedB, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -122,7 +126,7 @@ rocblas_status rocsolver_sgels(rocblas_handle handle,
                                const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<float>(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
+    return rocsolver::rocsolver_gels_impl<float>(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
 }
 
 rocblas_status rocsolver_dgels(rocblas_handle handle,
@@ -136,7 +140,7 @@ rocblas_status rocsolver_dgels(rocblas_handle handle,
                                const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<double>(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
+    return rocsolver::rocsolver_gels_impl<double>(handle, trans, m, n, nrhs, A, lda, B, ldb, info);
 }
 
 rocblas_status rocsolver_cgels(rocblas_handle handle,
@@ -150,7 +154,7 @@ rocblas_status rocsolver_cgels(rocblas_handle handle,
                                const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda, B, ldb,
+    return rocsolver::rocsolver_gels_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda, B, ldb,
                                                       info);
 }
 
@@ -165,7 +169,7 @@ rocblas_status rocsolver_zgels(rocblas_handle handle,
                                const rocblas_int ldb,
                                rocblas_int* info)
 {
-    return rocsolver_gels_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda, B, ldb,
+    return rocsolver::rocsolver_gels_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda, B, ldb,
                                                        info);
 }
 

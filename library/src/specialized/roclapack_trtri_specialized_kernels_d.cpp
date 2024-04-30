@@ -27,9 +27,13 @@
 
 #include "roclapack_trtri_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
 INSTANTIATE_TRTI2_SMALL(double, double*);
 INSTANTIATE_TRTI2_SMALL(double, double* const*);
+
+ROCSOLVER_END_NAMESPACE

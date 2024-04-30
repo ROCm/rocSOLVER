@@ -27,6 +27,8 @@
 
 #include "roclapack_trsm_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
@@ -42,3 +44,5 @@ INSTANTIATE_TRSM_UPPER(0, 1, rocblas_float_complex, rocblas_float_complex*);
 INSTANTIATE_TRSM_MEM(1, 0, rocblas_float_complex);
 INSTANTIATE_TRSM_LOWER(1, 0, rocblas_float_complex, rocblas_float_complex* const*);
 INSTANTIATE_TRSM_UPPER(1, 0, rocblas_float_complex, rocblas_float_complex* const*);
+
+ROCSOLVER_END_NAMESPACE

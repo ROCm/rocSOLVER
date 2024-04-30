@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_labrd.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
                                     const rocblas_int m,
@@ -103,6 +105,8 @@ rocblas_status rocsolver_labrd_impl(rocblas_handle handle,
                                        work_workArr, (T*)norms);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -126,7 +130,7 @@ rocblas_status rocsolver_slabrd(rocblas_handle handle,
                                 float* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<float>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
+    return rocsolver::rocsolver_labrd_impl<float>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 
 rocblas_status rocsolver_dlabrd(rocblas_handle handle,
@@ -144,7 +148,7 @@ rocblas_status rocsolver_dlabrd(rocblas_handle handle,
                                 double* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<double>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
+    return rocsolver::rocsolver_labrd_impl<double>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
 }
 
 rocblas_status rocsolver_clabrd(rocblas_handle handle,
@@ -162,7 +166,7 @@ rocblas_status rocsolver_clabrd(rocblas_handle handle,
                                 rocblas_float_complex* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<rocblas_float_complex>(handle, m, n, k, A, lda, D, E, tauq, taup, X,
+    return rocsolver::rocsolver_labrd_impl<rocblas_float_complex>(handle, m, n, k, A, lda, D, E, tauq, taup, X,
                                                        ldx, Y, ldy);
 }
 
@@ -181,7 +185,7 @@ rocblas_status rocsolver_zlabrd(rocblas_handle handle,
                                 rocblas_double_complex* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver_labrd_impl<rocblas_double_complex>(handle, m, n, k, A, lda, D, E, tauq, taup,
+    return rocsolver::rocsolver_labrd_impl<rocblas_double_complex>(handle, m, n, k, A, lda, D, E, tauq, taup,
                                                         X, ldx, Y, ldy);
 }
 

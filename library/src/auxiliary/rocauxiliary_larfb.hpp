@@ -36,6 +36,7 @@
 #include "rocsolver/rocsolver.h"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 ROCSOLVER_KERNEL void copymatA1(const rocblas_int ldw,
                                 const rocblas_int order,
@@ -87,7 +88,6 @@ ROCSOLVER_KERNEL void addmatA1(const rocblas_int ldw,
         Ap[i + j * lda] -= Wp[i + j * ldw];
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, typename T>
 void rocsolver_larfb_getMemorySize(const rocblas_side side,
@@ -373,3 +373,5 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

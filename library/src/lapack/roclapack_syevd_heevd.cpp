@@ -4,6 +4,8 @@
 
 #include "roclapack_syevd_heevd.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename W>
 rocblas_status rocsolver_syevd_heevd_impl(rocblas_handle handle,
                                           const rocblas_evect evect,
@@ -86,6 +88,8 @@ rocblas_status rocsolver_syevd_heevd_impl(rocblas_handle handle,
         (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -104,7 +108,7 @@ rocblas_status rocsolver_ssyevd(rocblas_handle handle,
                                 float* E,
                                 rocblas_int* info)
 {
-    return rocsolver_syevd_heevd_impl<float>(handle, evect, uplo, n, A, lda, D, E, info);
+    return rocsolver::rocsolver_syevd_heevd_impl<float>(handle, evect, uplo, n, A, lda, D, E, info);
 }
 
 rocblas_status rocsolver_dsyevd(rocblas_handle handle,
@@ -117,7 +121,7 @@ rocblas_status rocsolver_dsyevd(rocblas_handle handle,
                                 double* E,
                                 rocblas_int* info)
 {
-    return rocsolver_syevd_heevd_impl<double>(handle, evect, uplo, n, A, lda, D, E, info);
+    return rocsolver::rocsolver_syevd_heevd_impl<double>(handle, evect, uplo, n, A, lda, D, E, info);
 }
 
 rocblas_status rocsolver_cheevd(rocblas_handle handle,
@@ -130,7 +134,7 @@ rocblas_status rocsolver_cheevd(rocblas_handle handle,
                                 float* E,
                                 rocblas_int* info)
 {
-    return rocsolver_syevd_heevd_impl<rocblas_float_complex>(handle, evect, uplo, n, A, lda, D, E,
+    return rocsolver::rocsolver_syevd_heevd_impl<rocblas_float_complex>(handle, evect, uplo, n, A, lda, D, E,
                                                              info);
 }
 
@@ -144,7 +148,7 @@ rocblas_status rocsolver_zheevd(rocblas_handle handle,
                                 double* E,
                                 rocblas_int* info)
 {
-    return rocsolver_syevd_heevd_impl<rocblas_double_complex>(handle, evect, uplo, n, A, lda, D, E,
+    return rocsolver::rocsolver_syevd_heevd_impl<rocblas_double_complex>(handle, evect, uplo, n, A, lda, D, E,
                                                               info);
 }
 

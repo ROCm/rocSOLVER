@@ -36,6 +36,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
@@ -431,4 +432,5 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
 ROCSOLVER_END_NAMESPACE

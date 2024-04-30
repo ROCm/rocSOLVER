@@ -27,6 +27,8 @@
 
 #include "roclapack_trtri.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_trtri_impl(rocblas_handle handle,
                                     const rocblas_fill uplo,
@@ -90,6 +92,8 @@ rocblas_status rocsolver_trtri_impl(rocblas_handle handle,
                                                      (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -106,7 +110,7 @@ rocblas_status rocsolver_strtri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_trtri_impl<float>(handle, uplo, diag, n, A, lda, info);
+    return rocsolver::rocsolver_trtri_impl<float>(handle, uplo, diag, n, A, lda, info);
 }
 
 rocblas_status rocsolver_dtrtri(rocblas_handle handle,
@@ -117,7 +121,7 @@ rocblas_status rocsolver_dtrtri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_trtri_impl<double>(handle, uplo, diag, n, A, lda, info);
+    return rocsolver::rocsolver_trtri_impl<double>(handle, uplo, diag, n, A, lda, info);
 }
 
 rocblas_status rocsolver_ctrtri(rocblas_handle handle,
@@ -128,7 +132,7 @@ rocblas_status rocsolver_ctrtri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_trtri_impl<rocblas_float_complex>(handle, uplo, diag, n, A, lda, info);
+    return rocsolver::rocsolver_trtri_impl<rocblas_float_complex>(handle, uplo, diag, n, A, lda, info);
 }
 
 rocblas_status rocsolver_ztrtri(rocblas_handle handle,
@@ -139,7 +143,7 @@ rocblas_status rocsolver_ztrtri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_trtri_impl<rocblas_double_complex>(handle, uplo, diag, n, A, lda, info);
+    return rocsolver::rocsolver_trtri_impl<rocblas_double_complex>(handle, uplo, diag, n, A, lda, info);
 }
 
 } // extern C

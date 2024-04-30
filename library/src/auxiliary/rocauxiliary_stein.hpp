@@ -36,6 +36,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** thread-block size for calling the stein kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
 #define STEIN_MAX_THDS 256
@@ -43,7 +45,6 @@
 #define STEIN_MAX_ITERS 5
 
 #define STEIN_MAX_NRMCHK 2
-ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void stein_reorthogonalize(rocblas_int i,
@@ -312,7 +313,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEIN_MAX_THDS)
         iblock + (bid * strideIblock), isplit + (bid * strideIsplit), Z, ldz, ifail, info + bid,
         work + (bid * stride_work), iwork + (bid * stride_iwork), sval1, sval2, sidx, eps, ssfmin);
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T, typename S>
 void rocsolver_stein_getMemorySize(const rocblas_int n,
@@ -432,3 +432,5 @@ rocblas_status rocsolver_stein_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

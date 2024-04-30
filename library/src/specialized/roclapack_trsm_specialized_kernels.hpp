@@ -29,6 +29,8 @@
 
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Constants for block size of trsm **/
 // clang-format off
 #define TRSM_NUMROWS_REAL 12
@@ -157,7 +159,6 @@
                                     strideA, B, ldb1, ldb2, shiftB + offB, strideB);               \
     }
 
-ROCSOLVER_BEGIN_NAMESPACE
 /*************************************************************
     Templated kernels are instantiated in separate cpp
     files in order to improve compilation times and reduce
@@ -645,7 +646,7 @@ ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_in
         B[idb] = c;
     }
 }
-ROCSOLVER_END_NAMESPACE
+
 /*************************************************************
     Launchers of specilized  kernels
 *************************************************************/
@@ -1429,3 +1430,5 @@ inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
         const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB,      \
         const rocblas_int batch_count, const bool optim_mem, void* work1, void* work2,      \
         void* work3, void* work4)
+
+ROCSOLVER_END_NAMESPACE

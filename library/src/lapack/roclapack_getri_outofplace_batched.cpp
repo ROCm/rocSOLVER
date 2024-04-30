@@ -27,6 +27,8 @@
 
 #include "roclapack_getri_outofplace.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
                                                        const rocblas_int n,
@@ -91,6 +93,8 @@ rocblas_status rocsolver_getri_outofplace_batched_impl(rocblas_handle handle,
         batch_count, work1, work2, work3, work4, optim_mem, pivot);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -110,7 +114,7 @@ rocblas_status rocsolver_sgetri_outofplace_batched(rocblas_handle handle,
                                                    rocblas_int* info,
                                                    const rocblas_int batch_count)
 {
-    return rocsolver_getri_outofplace_batched_impl<float>(handle, n, A, lda, ipiv, strideP, C, ldc,
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<float>(handle, n, A, lda, ipiv, strideP, C, ldc,
                                                           info, true, batch_count);
 }
 
@@ -125,7 +129,7 @@ rocblas_status rocsolver_dgetri_outofplace_batched(rocblas_handle handle,
                                                    rocblas_int* info,
                                                    const rocblas_int batch_count)
 {
-    return rocsolver_getri_outofplace_batched_impl<double>(handle, n, A, lda, ipiv, strideP, C, ldc,
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<double>(handle, n, A, lda, ipiv, strideP, C, ldc,
                                                            info, true, batch_count);
 }
 
@@ -140,7 +144,7 @@ rocblas_status rocsolver_cgetri_outofplace_batched(rocblas_handle handle,
                                                    rocblas_int* info,
                                                    const rocblas_int batch_count)
 {
-    return rocsolver_getri_outofplace_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<rocblas_float_complex>(
         handle, n, A, lda, ipiv, strideP, C, ldc, info, true, batch_count);
 }
 
@@ -155,7 +159,7 @@ rocblas_status rocsolver_zgetri_outofplace_batched(rocblas_handle handle,
                                                    rocblas_int* info,
                                                    const rocblas_int batch_count)
 {
-    return rocsolver_getri_outofplace_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<rocblas_double_complex>(
         handle, n, A, lda, ipiv, strideP, C, ldc, info, true, batch_count);
 }
 
@@ -169,7 +173,7 @@ rocblas_status rocsolver_sgetri_npvt_outofplace_batched(rocblas_handle handle,
                                                         const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_outofplace_batched_impl<float>(handle, n, A, lda, ipiv, 0, C, ldc, info,
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<float>(handle, n, A, lda, ipiv, 0, C, ldc, info,
                                                           false, batch_count);
 }
 
@@ -183,7 +187,7 @@ rocblas_status rocsolver_dgetri_npvt_outofplace_batched(rocblas_handle handle,
                                                         const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_outofplace_batched_impl<double>(handle, n, A, lda, ipiv, 0, C, ldc, info,
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<double>(handle, n, A, lda, ipiv, 0, C, ldc, info,
                                                            false, batch_count);
 }
 
@@ -197,7 +201,7 @@ rocblas_status rocsolver_cgetri_npvt_outofplace_batched(rocblas_handle handle,
                                                         const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_outofplace_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<rocblas_float_complex>(
         handle, n, A, lda, ipiv, 0, C, ldc, info, false, batch_count);
 }
 
@@ -211,7 +215,7 @@ rocblas_status rocsolver_zgetri_npvt_outofplace_batched(rocblas_handle handle,
                                                         const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getri_outofplace_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_getri_outofplace_batched_impl<rocblas_double_complex>(
         handle, n, A, lda, ipiv, 0, C, ldc, info, false, batch_count);
 }
 

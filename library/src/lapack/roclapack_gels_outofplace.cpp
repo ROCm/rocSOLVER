@@ -27,6 +27,8 @@
 
 #include "roclapack_gels_outofplace.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    gels_outofplace is not intended for inclusion in the public API. It
@@ -117,6 +119,8 @@ rocblas_status rocsolver_gels_outofplace_impl(rocblas_handle handle,
         (T*)diag_trfac_invA, (T**)trfact_workTrmm_invA_arr, (T*)ipiv, (T*)savedB, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -138,7 +142,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver_gels_outofplace_impl<float>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
+    return rocsolver::rocsolver_gels_outofplace_impl<float>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
                                                  info);
 }
 
@@ -155,7 +159,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver_gels_outofplace_impl<double>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
+    return rocsolver::rocsolver_gels_outofplace_impl<double>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
                                                   info);
 }
 
@@ -172,7 +176,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver_gels_outofplace_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda,
+    return rocsolver::rocsolver_gels_outofplace_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda,
                                                                  B, ldb, X, ldx, info);
 }
 
@@ -189,7 +193,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver_gels_outofplace_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda,
+    return rocsolver::rocsolver_gels_outofplace_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda,
                                                                   B, ldb, X, ldx, info);
 }
 

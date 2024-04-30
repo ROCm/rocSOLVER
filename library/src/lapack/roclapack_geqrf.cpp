@@ -27,6 +27,8 @@
 
 #include "roclapack_geqrf.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_geqrf_impl(rocblas_handle handle,
                                     const rocblas_int m,
@@ -92,6 +94,8 @@ rocblas_status rocsolver_geqrf_impl(rocblas_handle handle,
         work_workArr, (T*)Abyx_norms_trfact, (T*)diag_tmptr, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -107,7 +111,7 @@ rocblas_status rocsolver_sgeqrf(rocblas_handle handle,
                                 const rocblas_int lda,
                                 float* ipiv)
 {
-    return rocsolver_geqrf_impl<float>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_geqrf_impl<float>(handle, m, n, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_dgeqrf(rocblas_handle handle,
@@ -117,7 +121,7 @@ rocblas_status rocsolver_dgeqrf(rocblas_handle handle,
                                 const rocblas_int lda,
                                 double* ipiv)
 {
-    return rocsolver_geqrf_impl<double>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_geqrf_impl<double>(handle, m, n, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_cgeqrf(rocblas_handle handle,
@@ -127,7 +131,7 @@ rocblas_status rocsolver_cgeqrf(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_float_complex* ipiv)
 {
-    return rocsolver_geqrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_geqrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
@@ -137,7 +141,7 @@ rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_double_complex* ipiv)
 {
-    return rocsolver_geqrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
+    return rocsolver::rocsolver_geqrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
 }
 
 } // extern C

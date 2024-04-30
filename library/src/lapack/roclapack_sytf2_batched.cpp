@@ -27,6 +27,8 @@
 
 #include "roclapack_sytf2.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_sytf2_batched_impl(rocblas_handle handle,
                                             const rocblas_fill uplo,
@@ -65,6 +67,8 @@ rocblas_status rocsolver_sytf2_batched_impl(rocblas_handle handle,
                                        info, batch_count);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -83,7 +87,7 @@ rocblas_status rocsolver_ssytf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytf2_batched_impl<float>(handle, uplo, n, A, lda, ipiv, strideP, info,
+    return rocsolver::rocsolver_sytf2_batched_impl<float>(handle, uplo, n, A, lda, ipiv, strideP, info,
                                                batch_count);
 }
 
@@ -97,7 +101,7 @@ rocblas_status rocsolver_dsytf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytf2_batched_impl<double>(handle, uplo, n, A, lda, ipiv, strideP, info,
+    return rocsolver::rocsolver_sytf2_batched_impl<double>(handle, uplo, n, A, lda, ipiv, strideP, info,
                                                 batch_count);
 }
 
@@ -111,7 +115,7 @@ rocblas_status rocsolver_csytf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytf2_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda, ipiv,
+    return rocsolver::rocsolver_sytf2_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda, ipiv,
                                                                strideP, info, batch_count);
 }
 
@@ -125,7 +129,7 @@ rocblas_status rocsolver_zsytf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytf2_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda, ipiv,
+    return rocsolver::rocsolver_sytf2_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda, ipiv,
                                                                 strideP, info, batch_count);
 }
 

@@ -27,6 +27,8 @@
 
 #include "roclapack_gesvdj_notransv.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    gesvdj_notransv is not intended for inclusion in the public API. It
@@ -121,6 +123,8 @@ rocblas_status rocsolver_gesvdj_notransv_strided_batched_impl(rocblas_handle han
         (T*)scalars, (T*)VUtmp, work1_UVtmp, work2, work3, work4, work5_ipiv, work6_workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -153,7 +157,7 @@ ROCSOLVER_EXPORT rocblas_status
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gesvdj_notransv_strided_batched_impl<float>(
+    return rocsolver::rocsolver_gesvdj_notransv_strided_batched_impl<float>(
         handle, left_svect, right_svect, m, n, A, lda, strideA, abstol, residual, max_sweeps,
         n_sweeps, S, strideS, U, ldu, strideU, V, ldv, strideV, info, batch_count);
 }
@@ -182,7 +186,7 @@ ROCSOLVER_EXPORT rocblas_status
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gesvdj_notransv_strided_batched_impl<double>(
+    return rocsolver::rocsolver_gesvdj_notransv_strided_batched_impl<double>(
         handle, left_svect, right_svect, m, n, A, lda, strideA, abstol, residual, max_sweeps,
         n_sweeps, S, strideS, U, ldu, strideU, V, ldv, strideV, info, batch_count);
 }
@@ -211,7 +215,7 @@ ROCSOLVER_EXPORT rocblas_status
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gesvdj_notransv_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_gesvdj_notransv_strided_batched_impl<rocblas_float_complex>(
         handle, left_svect, right_svect, m, n, A, lda, strideA, abstol, residual, max_sweeps,
         n_sweeps, S, strideS, U, ldu, strideU, V, ldv, strideV, info, batch_count);
 }
@@ -240,7 +244,7 @@ ROCSOLVER_EXPORT rocblas_status
                                                rocblas_int* info,
                                                const rocblas_int batch_count)
 {
-    return rocsolver_gesvdj_notransv_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_gesvdj_notransv_strided_batched_impl<rocblas_double_complex>(
         handle, left_svect, right_svect, m, n, A, lda, strideA, abstol, residual, max_sweeps,
         n_sweeps, S, strideS, U, ldu, strideU, V, ldv, strideV, info, batch_count);
 }

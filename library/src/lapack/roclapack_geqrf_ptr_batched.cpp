@@ -27,6 +27,8 @@
 
 #include "roclapack_geqrf.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    geqrf_ptr_batched is not intended for inclusion in the public API. It
@@ -128,6 +130,8 @@ rocblas_status rocsolver_geqrf_ptr_batched_impl(rocblas_handle handle,
     return status;
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -144,7 +148,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_ptr_batched(rocblas_handle hand
                                                              float* const ipiv[],
                                                              const rocblas_int batch_count)
 {
-    return rocsolver_geqrf_ptr_batched_impl<float>(handle, m, n, A, lda, ipiv, batch_count);
+    return rocsolver::rocsolver_geqrf_ptr_batched_impl<float>(handle, m, n, A, lda, ipiv, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_ptr_batched(rocblas_handle handle,
@@ -155,7 +159,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_ptr_batched(rocblas_handle hand
                                                              double* const ipiv[],
                                                              const rocblas_int batch_count)
 {
-    return rocsolver_geqrf_ptr_batched_impl<double>(handle, m, n, A, lda, ipiv, batch_count);
+    return rocsolver::rocsolver_geqrf_ptr_batched_impl<double>(handle, m, n, A, lda, ipiv, batch_count);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_ptr_batched(rocblas_handle handle,
@@ -166,7 +170,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_ptr_batched(rocblas_handle hand
                                                              rocblas_float_complex* const ipiv[],
                                                              const rocblas_int batch_count)
 {
-    return rocsolver_geqrf_ptr_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv,
+    return rocsolver::rocsolver_geqrf_ptr_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv,
                                                                    batch_count);
 }
 
@@ -178,7 +182,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_ptr_batched(rocblas_handle hand
                                                              rocblas_double_complex* const ipiv[],
                                                              const rocblas_int batch_count)
 {
-    return rocsolver_geqrf_ptr_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv,
+    return rocsolver::rocsolver_geqrf_ptr_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv,
                                                                     batch_count);
 }
 

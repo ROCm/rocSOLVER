@@ -27,6 +27,8 @@
 
 #include "roclapack_syevdx_heevdx_inplace.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    syevdx/heevdx_inplace is not intended for inclusion in the public API. It
@@ -130,6 +132,8 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_impl(rocblas_handle handle,
         nsplit_workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -154,7 +158,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<float>(handle, evect, erange, uplo, n, A, lda, vl,
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<float>(handle, evect, erange, uplo, n, A, lda, vl,
                                                        vu, il, iu, abstol, h_nev, W, info);
 }
 
@@ -174,7 +178,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<double>(handle, evect, erange, uplo, n, A, lda, vl,
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<double>(handle, evect, erange, uplo, n, A, lda, vl,
                                                         vu, il, iu, abstol, h_nev, W, info);
 }
 
@@ -194,7 +198,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<rocblas_float_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 
@@ -214,7 +218,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<rocblas_double_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 

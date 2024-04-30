@@ -32,6 +32,8 @@
 #include "roclapack_getrs.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_getri_outofplace_getMemorySize(const rocblas_int n,
                                               const rocblas_int batch_count,
@@ -148,3 +150,5 @@ rocblas_status rocsolver_getri_outofplace_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -41,6 +41,8 @@
 #include "roclapack_syevj_heevj.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Argument checking **/
 template <typename T, typename SS, typename W>
 rocblas_status rocsolver_gesvdj_notransv_argCheck(rocblas_handle handle,
@@ -358,3 +360,5 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

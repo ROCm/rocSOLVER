@@ -27,6 +27,8 @@
 
 #include "roclapack_sygvj_hegvj.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_sygvj_hegvj_impl(rocblas_handle handle,
                                           const rocblas_eform itype,
@@ -110,6 +112,8 @@ rocblas_status rocsolver_sygvj_hegvj_impl(rocblas_handle handle,
         work3, work4, work5, work6, (rocblas_int*)iinfo, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -134,7 +138,7 @@ rocblas_status rocsolver_ssygvj(rocblas_handle handle,
                                 float* W,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvj_hegvj_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol,
+    return rocsolver::rocsolver_sygvj_hegvj_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol,
                                              residual, max_sweeps, n_sweeps, W, info);
 }
 
@@ -154,7 +158,7 @@ rocblas_status rocsolver_dsygvj(rocblas_handle handle,
                                 double* W,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvj_hegvj_impl<double>(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol,
+    return rocsolver::rocsolver_sygvj_hegvj_impl<double>(handle, itype, evect, uplo, n, A, lda, B, ldb, abstol,
                                               residual, max_sweeps, n_sweeps, W, info);
 }
 
@@ -174,7 +178,7 @@ rocblas_status rocsolver_chegvj(rocblas_handle handle,
                                 float* W,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvj_hegvj_impl<rocblas_float_complex>(handle, itype, evect, uplo, n, A, lda,
+    return rocsolver::rocsolver_sygvj_hegvj_impl<rocblas_float_complex>(handle, itype, evect, uplo, n, A, lda,
                                                              B, ldb, abstol, residual, max_sweeps,
                                                              n_sweeps, W, info);
 }
@@ -195,7 +199,7 @@ rocblas_status rocsolver_zhegvj(rocblas_handle handle,
                                 double* W,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvj_hegvj_impl<rocblas_double_complex>(handle, itype, evect, uplo, n, A, lda,
+    return rocsolver::rocsolver_sygvj_hegvj_impl<rocblas_double_complex>(handle, itype, evect, uplo, n, A, lda,
                                                               B, ldb, abstol, residual, max_sweeps,
                                                               n_sweeps, W, info);
 }

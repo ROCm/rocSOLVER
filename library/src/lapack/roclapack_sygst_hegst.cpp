@@ -27,6 +27,8 @@
 
 #include "roclapack_sygst_hegst.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
                                           const rocblas_eform itype,
@@ -96,6 +98,8 @@ rocblas_status rocsolver_sygst_hegst_impl(rocblas_handle handle,
         (T*)scalars, work_x_temp, workArr_temp_arr, store_wcs_invA, invA_arr, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -113,7 +117,7 @@ rocblas_status rocsolver_ssygst(rocblas_handle handle,
                                 float* B,
                                 const rocblas_int ldb)
 {
-    return rocsolver_sygst_hegst_impl<float>(handle, itype, uplo, n, A, lda, B, ldb);
+    return rocsolver::rocsolver_sygst_hegst_impl<float>(handle, itype, uplo, n, A, lda, B, ldb);
 }
 
 rocblas_status rocsolver_dsygst(rocblas_handle handle,
@@ -125,7 +129,7 @@ rocblas_status rocsolver_dsygst(rocblas_handle handle,
                                 double* B,
                                 const rocblas_int ldb)
 {
-    return rocsolver_sygst_hegst_impl<double>(handle, itype, uplo, n, A, lda, B, ldb);
+    return rocsolver::rocsolver_sygst_hegst_impl<double>(handle, itype, uplo, n, A, lda, B, ldb);
 }
 
 rocblas_status rocsolver_chegst(rocblas_handle handle,
@@ -137,7 +141,7 @@ rocblas_status rocsolver_chegst(rocblas_handle handle,
                                 rocblas_float_complex* B,
                                 const rocblas_int ldb)
 {
-    return rocsolver_sygst_hegst_impl<rocblas_float_complex>(handle, itype, uplo, n, A, lda, B, ldb);
+    return rocsolver::rocsolver_sygst_hegst_impl<rocblas_float_complex>(handle, itype, uplo, n, A, lda, B, ldb);
 }
 
 rocblas_status rocsolver_zhegst(rocblas_handle handle,
@@ -149,7 +153,7 @@ rocblas_status rocsolver_zhegst(rocblas_handle handle,
                                 rocblas_double_complex* B,
                                 const rocblas_int ldb)
 {
-    return rocsolver_sygst_hegst_impl<rocblas_double_complex>(handle, itype, uplo, n, A, lda, B, ldb);
+    return rocsolver::rocsolver_sygst_hegst_impl<rocblas_double_complex>(handle, itype, uplo, n, A, lda, B, ldb);
 }
 
 } // extern C

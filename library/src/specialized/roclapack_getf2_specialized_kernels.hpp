@@ -10,7 +10,9 @@
 #pragma once
 
 #include "rocsolver_run_specialized_kernels.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Templated kernels are instantiated in separate cpp
     files in order to improve compilation times and reduce
@@ -751,7 +753,7 @@ void getf2_run_scale_update(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL((getf2_scale_update_kernel<T>), grid, threads, lmemsize, stream, m, n,
                             pivotval, A, shiftA, lda, strideA);
 }
-ROCSOLVER_END_NAMESPACE
+
 /*************************************************************
     Instantiation macros
 *************************************************************/
@@ -775,3 +777,5 @@ ROCSOLVER_END_NAMESPACE
         rocblas_handle handle, const rocblas_int m, const rocblas_int n, T* pivotval, U A, \
         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA,     \
         const rocblas_int batch_count, const rocblas_int dimx, const rocblas_int dimy)
+
+ROCSOLVER_END_NAMESPACE

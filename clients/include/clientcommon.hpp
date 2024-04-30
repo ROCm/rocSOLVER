@@ -38,4 +38,3 @@
 //#include "rocblascommon/device_strided_batch_vector.hpp"
 //#include "rocblascommon/host_batch_vector.hpp"
 //#include "rocblascommon/host_strided_batch_vector.hpp"
-using namespace rocsolver;

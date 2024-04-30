@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_orgql_ungql.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 rocblas_status rocsolver_orgql_ungql_impl(rocblas_handle handle,
                                           const rocblas_int m,
@@ -94,6 +96,8 @@ rocblas_status rocsolver_orgql_ungql_impl(rocblas_handle handle,
         (T*)Abyx_tmptr, (T*)trfact, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -110,7 +114,7 @@ rocblas_status rocsolver_sorgql(rocblas_handle handle,
                                 const rocblas_int lda,
                                 float* ipiv)
 {
-    return rocsolver_orgql_ungql_impl<float>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgql_ungql_impl<float>(handle, m, n, k, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_dorgql(rocblas_handle handle,
@@ -121,7 +125,7 @@ rocblas_status rocsolver_dorgql(rocblas_handle handle,
                                 const rocblas_int lda,
                                 double* ipiv)
 {
-    return rocsolver_orgql_ungql_impl<double>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgql_ungql_impl<double>(handle, m, n, k, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_cungql(rocblas_handle handle,
@@ -132,7 +136,7 @@ rocblas_status rocsolver_cungql(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_float_complex* ipiv)
 {
-    return rocsolver_orgql_ungql_impl<rocblas_float_complex>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgql_ungql_impl<rocblas_float_complex>(handle, m, n, k, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_zungql(rocblas_handle handle,
@@ -143,7 +147,7 @@ rocblas_status rocsolver_zungql(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_double_complex* ipiv)
 {
-    return rocsolver_orgql_ungql_impl<rocblas_double_complex>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgql_ungql_impl<rocblas_double_complex>(handle, m, n, k, A, lda, ipiv);
 }
 
 } // extern C

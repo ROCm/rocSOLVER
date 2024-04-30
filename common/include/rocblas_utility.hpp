@@ -64,7 +64,10 @@
     }
 #endif
 
+#ifdef ROCSOLVER_LIBRARY
 ROCSOLVER_BEGIN_NAMESPACE
+#endif
+
 #define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
     (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
 
@@ -441,7 +444,12 @@ __device__ __host__ inline rocblas_half rocblas_abs(rocblas_half x)
     return t.x;
 }
 
-// Get base types from complex types.
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_END_NAMESPACE
+#endif
+
+// Get base types from complex types. These should be moved into the rocsolver
+// namespace, but they are used by rocBLAS headers.
 template <typename T, typename = void>
 struct rocblas_real_t_impl
 {
@@ -462,6 +470,10 @@ struct rocblas_real_t_impl<std::complex<T>>
 
 template <typename T>
 using real_t = typename rocblas_real_t_impl<T>::type;
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
 
 // Output rocblas_half value
 inline std::ostream& operator<<(std::ostream& os, rocblas_half x)
@@ -494,4 +506,7 @@ catch(...)
 }
 
 #undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+
+#ifdef ROCSOLVER_LIBRARY
 ROCSOLVER_END_NAMESPACE
+#endif

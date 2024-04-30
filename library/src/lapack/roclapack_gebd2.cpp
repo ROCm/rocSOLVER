@@ -27,6 +27,8 @@
 
 #include "roclapack_gebd2.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_gebd2_impl(rocblas_handle handle,
                                     const rocblas_int m,
@@ -92,6 +94,8 @@ rocblas_status rocsolver_gebd2_impl(rocblas_handle handle,
                                        (T*)scalars, work_workArr, (T*)Abyx_norms);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -110,7 +114,7 @@ rocblas_status rocsolver_sgebd2(rocblas_handle handle,
                                 float* tauq,
                                 float* taup)
 {
-    return rocsolver_gebd2_impl<float>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebd2_impl<float>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_dgebd2(rocblas_handle handle,
@@ -123,7 +127,7 @@ rocblas_status rocsolver_dgebd2(rocblas_handle handle,
                                 double* tauq,
                                 double* taup)
 {
-    return rocsolver_gebd2_impl<double>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebd2_impl<double>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_cgebd2(rocblas_handle handle,
@@ -136,7 +140,7 @@ rocblas_status rocsolver_cgebd2(rocblas_handle handle,
                                 rocblas_float_complex* tauq,
                                 rocblas_float_complex* taup)
 {
-    return rocsolver_gebd2_impl<rocblas_float_complex>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebd2_impl<rocblas_float_complex>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_zgebd2(rocblas_handle handle,
@@ -149,7 +153,7 @@ rocblas_status rocsolver_zgebd2(rocblas_handle handle,
                                 rocblas_double_complex* tauq,
                                 rocblas_double_complex* taup)
 {
-    return rocsolver_gebd2_impl<rocblas_double_complex>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebd2_impl<rocblas_double_complex>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 } // extern C

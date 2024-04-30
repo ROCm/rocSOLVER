@@ -32,6 +32,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_geblttrs_npvt_getMemorySize(const rocblas_int nb,
                                            const rocblas_int nblocks,
@@ -188,3 +190,5 @@ rocblas_status rocsolver_geblttrs_npvt_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

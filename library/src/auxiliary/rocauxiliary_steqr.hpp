@@ -38,6 +38,7 @@
 #include "rocsolver/rocsolver.h"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
 /****************************************************************************
 (TODO:THIS IS BASIC IMPLEMENTATION. THE ONLY PARALLELISM INTRODUCED HERE IS
   FOR THE BATCHED VERSIONS (A DIFFERENT THREAD WORKS ON EACH INSTANCE OF THE
@@ -356,7 +357,6 @@ void rocsolver_steqr_getMemorySize(const rocblas_evect evect,
     else
         *size_work_stack = sizeof(S) * (2 * n) * batch_count;
 }
-ROCSOLVER_END_NAMESPACE
 
 template <typename T, typename S>
 rocblas_status rocsolver_steqr_argCheck(rocblas_handle handle,
@@ -459,3 +459,5 @@ rocblas_status rocsolver_steqr_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

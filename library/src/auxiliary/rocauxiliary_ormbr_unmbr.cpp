@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_ormbr_unmbr.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
                                           const rocblas_storev storev,
@@ -99,6 +101,8 @@ rocblas_status rocsolver_ormbr_unmbr_impl(rocblas_handle handle,
         strideC, batch_count, (T*)scalars, (T*)AbyxORwork, (T*)diagORtmptr, (T*)trfact, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -120,7 +124,7 @@ rocblas_status rocsolver_sormbr(rocblas_handle handle,
                                 float* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_ormbr_unmbr_impl<float>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C,
+    return rocsolver::rocsolver_ormbr_unmbr_impl<float>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C,
                                              ldc);
 }
 
@@ -137,7 +141,7 @@ rocblas_status rocsolver_dormbr(rocblas_handle handle,
                                 double* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_ormbr_unmbr_impl<double>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C,
+    return rocsolver::rocsolver_ormbr_unmbr_impl<double>(handle, storev, side, trans, m, n, k, A, lda, ipiv, C,
                                               ldc);
 }
 
@@ -154,7 +158,7 @@ rocblas_status rocsolver_cunmbr(rocblas_handle handle,
                                 rocblas_float_complex* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_ormbr_unmbr_impl<rocblas_float_complex>(handle, storev, side, trans, m, n, k,
+    return rocsolver::rocsolver_ormbr_unmbr_impl<rocblas_float_complex>(handle, storev, side, trans, m, n, k,
                                                              A, lda, ipiv, C, ldc);
 }
 
@@ -171,7 +175,7 @@ rocblas_status rocsolver_zunmbr(rocblas_handle handle,
                                 rocblas_double_complex* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_ormbr_unmbr_impl<rocblas_double_complex>(handle, storev, side, trans, m, n, k,
+    return rocsolver::rocsolver_ormbr_unmbr_impl<rocblas_double_complex>(handle, storev, side, trans, m, n, k,
                                                               A, lda, ipiv, C, ldc);
 }
 

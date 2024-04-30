@@ -27,6 +27,8 @@
 
 #include "roclapack_sygvd_hegvd.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
                                           const rocblas_eform itype,
@@ -115,6 +117,8 @@ rocblas_status rocsolver_sygvd_hegvd_impl(rocblas_handle handle,
         (rocblas_int*)splits, (T*)tau, pivots_workArr, (rocblas_int*)iinfo, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -136,7 +140,7 @@ rocblas_status rocsolver_ssygvd(rocblas_handle handle,
                                 float* E,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvd_hegvd_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E,
+    return rocsolver::rocsolver_sygvd_hegvd_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E,
                                              info);
 }
 
@@ -153,7 +157,7 @@ rocblas_status rocsolver_dsygvd(rocblas_handle handle,
                                 double* E,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvd_hegvd_impl<double>(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E,
+    return rocsolver::rocsolver_sygvd_hegvd_impl<double>(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E,
                                               info);
 }
 
@@ -170,7 +174,7 @@ rocblas_status rocsolver_chegvd(rocblas_handle handle,
                                 float* E,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvd_hegvd_impl<rocblas_float_complex>(handle, itype, evect, uplo, n, A, lda,
+    return rocsolver::rocsolver_sygvd_hegvd_impl<rocblas_float_complex>(handle, itype, evect, uplo, n, A, lda,
                                                              B, ldb, D, E, info);
 }
 
@@ -187,7 +191,7 @@ rocblas_status rocsolver_zhegvd(rocblas_handle handle,
                                 double* E,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvd_hegvd_impl<rocblas_double_complex>(handle, itype, evect, uplo, n, A, lda,
+    return rocsolver::rocsolver_sygvd_hegvd_impl<rocblas_double_complex>(handle, itype, evect, uplo, n, A, lda,
                                                               B, ldb, D, E, info);
 }
 

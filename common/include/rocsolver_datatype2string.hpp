@@ -31,6 +31,10 @@
 #include "rocsolver/rocsolver.h"
 #include <string>
 
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
+
 #define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
     (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
 
@@ -438,3 +442,7 @@ constexpr rocsolver_rfinfo_mode char2rocsolver_rfinfo_mode(char value)
 }
 
 #undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_END_NAMESPACE
+#endif

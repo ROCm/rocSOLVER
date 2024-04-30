@@ -37,6 +37,7 @@
 #include "roclapack_trtri.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
@@ -163,7 +164,6 @@ rocblas_int getri_get_blksize(const rocblas_int dim)
 
     return blk;
 }
-ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_getri_getMemorySize(const rocblas_int n,
@@ -401,3 +401,5 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

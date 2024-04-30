@@ -32,6 +32,7 @@
 #include "roclapack_getrs.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
@@ -46,7 +47,6 @@ ROCSOLVER_KERNEL void
             info[b] = iinfo[b] + k_shift;
     }
 }
-ROCSOLVER_END_NAMESPACE
 
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_geblttrf_npvt_getMemorySize(const rocblas_int nb,
@@ -235,3 +235,5 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE
