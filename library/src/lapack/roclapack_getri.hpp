@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -241,14 +241,15 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     t1 = n * blk * sizeof(T) * batch_count;
 
     // requirements for calling TRSM
-    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, n, blk + 1,
+    rocblas_int nn = (n % 128 != 0) ? n : n + 1;
+    rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, nn, blk + 1, 1, 1,
                                      batch_count, &w1a, &w2a, &w3a, &w4a);
 
-    *size_work1 = max(w1a, w1b);
-    *size_work2 = max(w2a, w2b);
-    *size_work3 = max(w3a, w3b);
-    *size_work4 = max(w4a, w4b);
-    *size_tmpcopy = max(t1, t2);
+    *size_work1 = std::max(w1a, w1b);
+    *size_work2 = std::max(w2a, w2b);
+    *size_work3 = std::max(w3a, w3b);
+    *size_work4 = std::max(w4a, w4b);
+    *size_tmpcopy = std::max(t1, t2);
 
     // always allocate all required memory for TRSM optimal performance
     opt2 = true;
@@ -353,7 +354,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     }
 #endif
 
-    rocblas_int threads = min(((n - 1) / 64 + 1) * 64, BS1);
+    rocblas_int threads = std::min(((n - 1) / 64 + 1) * 64, BS1);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
 
@@ -374,7 +375,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     rocblas_int nn = ((n - 1) / blk) * blk + 1;
     for(rocblas_int j = nn - 1; j >= 0; j -= blk)
     {
-        jb = min(n - j, blk);
+        jb = std::min(n - j, blk);
 
         // copy and zero entries in case info is nonzero
         ROCSOLVER_LAUNCH_KERNEL(getri_kernel_large1<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1),

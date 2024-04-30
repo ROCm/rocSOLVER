@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,8 +33,13 @@ ROCSOLVER_BEGIN_NAMESPACE
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GEMM(0, 0, rocblas_float_complex, rocblas_float_complex*);
-INSTANTIATE_GEMM(0, 1, rocblas_float_complex, rocblas_float_complex*);
-INSTANTIATE_GEMM(1, 0, rocblas_float_complex, rocblas_float_complex* const*);
+INSTANTIATE_GEMM(0, 0, rocblas_float_complex, rocblas_int, rocblas_float_complex*);
+INSTANTIATE_GEMM(0, 1, rocblas_float_complex, rocblas_int, rocblas_float_complex*);
+INSTANTIATE_GEMM(1, 0, rocblas_float_complex, rocblas_int, rocblas_float_complex* const*);
+
+// 64-bit APIs
+INSTANTIATE_GEMM(0, 0, rocblas_float_complex, int64_t, rocblas_float_complex*);
+INSTANTIATE_GEMM(0, 1, rocblas_float_complex, int64_t, rocblas_float_complex*);
+INSTANTIATE_GEMM(1, 0, rocblas_float_complex, int64_t, rocblas_float_complex* const*);
 
 ROCSOLVER_END_NAMESPACE

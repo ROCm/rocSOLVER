@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -167,25 +167,25 @@ void rocsolver_sygvx_hegvx_getMemorySize(const rocblas_eform itype,
     rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars,
                                                        size_work1, size_work2, size_work3, size_work4,
                                                        size_work7_workArr, size_iinfo, &opt1);
-    *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
+    *size_iinfo = std::max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
     rocsolver_sygst_hegst_getMemorySize<BATCHED, STRIDED, T>(uplo, itype, n, batch_count, &unused,
                                                              &temp1, &temp2, &temp3, &temp4, &opt2);
-    *size_work1 = max(*size_work1, temp1);
-    *size_work2 = max(*size_work2, temp2);
-    *size_work3 = max(*size_work3, temp3);
-    *size_work4 = max(*size_work4, temp4);
+    *size_work1 = std::max(*size_work1, temp1);
+    *size_work2 = std::max(*size_work2, temp2);
+    *size_work3 = std::max(*size_work3, temp3);
+    *size_work4 = std::max(*size_work4, temp4);
 
     // requirements for calling SYEVX/HEEVX
     rocsolver_syevx_heevx_getMemorySize<BATCHED, T, S>(
         evect, uplo, n, batch_count, &unused, &temp1, &temp2, &temp3, &temp4, size_work5,
         size_work6, size_D, size_E, size_iblock, size_isplit, size_tau, &temp5);
-    *size_work1 = max(*size_work1, temp1);
-    *size_work2 = max(*size_work2, temp2);
-    *size_work3 = max(*size_work3, temp3);
-    *size_work4 = max(*size_work4, temp4);
-    *size_work7_workArr = max(*size_work7_workArr, temp5);
+    *size_work1 = std::max(*size_work1, temp1);
+    *size_work2 = std::max(*size_work2, temp2);
+    *size_work3 = std::max(*size_work3, temp3);
+    *size_work4 = std::max(*size_work4, temp4);
+    *size_work7_workArr = std::max(*size_work7_workArr, temp5);
 
     if(evect == rocblas_evect_original)
     {
@@ -197,10 +197,10 @@ void rocsolver_sygvx_hegvx_getMemorySize(const rocblas_eform itype,
             // requirements for calling TRSM
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, trans, n, n, batch_count,
                                                     &temp1, &temp2, &temp3, &temp4, &opt3);
-            *size_work1 = max(*size_work1, temp1);
-            *size_work2 = max(*size_work2, temp2);
-            *size_work3 = max(*size_work3, temp3);
-            *size_work4 = max(*size_work4, temp4);
+            *size_work1 = std::max(*size_work1, temp1);
+            *size_work2 = std::max(*size_work2, temp2);
+            *size_work3 = std::max(*size_work3, temp3);
+            *size_work4 = std::max(*size_work4, temp4);
         }
     }
 

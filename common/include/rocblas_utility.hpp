@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2016-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2016-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -151,24 +151,24 @@ __forceinline__ __device__ __host__ T load_scalar(T x, rocblas_int idx, rocblas_
 // For device array of device pointers
 
 // For device pointers
-template <typename T>
+template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T* p, rocblas_int block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T* p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p + block * stride + offset;
 }
 
 // For device array of device pointers
-template <typename T>
+template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T* const* p, rocblas_int block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T* const* p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p[block] + offset;
 }
 
-template <typename T>
+template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T** p, rocblas_int block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T** p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p[block] + offset;
 }

@@ -69,6 +69,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
   lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrf_info32.cpp
   lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getrf_strided_batched.cpp
   lapack/roclapack_potf2.cpp
@@ -254,6 +255,11 @@ set(rocsolver_specialized_source
   specialized/roclapack_trsm_specialized_kernels_d.cpp
   specialized/roclapack_trsm_specialized_kernels_c.cpp
   specialized/roclapack_trsm_specialized_kernels_z.cpp
+  # potf2
+  specialized/roclapack_potf2_specialized_kernels_s.cpp
+  specialized/roclapack_potf2_specialized_kernels_d.cpp
+  specialized/roclapack_potf2_specialized_kernels_c.cpp
+  specialized/roclapack_potf2_specialized_kernels_z.cpp
 )
 
 if(OPTIMAL)
@@ -304,6 +310,7 @@ target_link_libraries(rocsolver
     roc::rocblas
   PRIVATE
     $<BUILD_INTERFACE:rocsolver-common> # https://gitlab.kitware.com/cmake/cmake/-/issues/15415
+    roc::rocprim
     hip::device
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
@@ -332,6 +339,15 @@ target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
 
 # Ignore loop unrolling failures
 target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
+
+# hipcc adds these options automatically. These options might have an effect
+# on performance, so add them when building with clang directly, just in case.
+if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+.*")
+  target_compile_options(rocsolver PRIVATE
+    "SHELL:-mllvm -amdgpu-early-inline-all=true"
+    "SHELL:-mllvm -amdgpu-function-calls=false"
+  )
+endif()
 
 target_include_directories(rocsolver
   PUBLIC

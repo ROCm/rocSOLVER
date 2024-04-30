@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -158,7 +158,7 @@ void rocsolver_sygs2_hegs2_getMemorySize(const rocblas_eform itype,
     if(itype == rocblas_eform_ax)
     {
         // extra workspace (for calling TRSV)
-        *size_store_wcs = max(*size_store_wcs, sizeof(rocblas_int) * batch_count);
+        *size_store_wcs = std::max(*size_store_wcs, sizeof(rocblas_int) * batch_count);
         *size_work = 0;
     }
     else
@@ -239,7 +239,7 @@ rocblas_status rocsolver_sygs2_hegs2_template(rocblas_handle handle,
     rocblas_int blocks_batch = (batch_count - 1) / BS1 + 1;
     rocblas_int waves_batch = (batch_count - 1) / warpSize + 1;
     dim3 blocks(blocks_batch, 1, 1);
-    dim3 threads(min(BS1, warpSize * waves_batch), 1, 1);
+    dim3 threads(std::min(BS1, warpSize * waves_batch), 1, 1);
 
     if(itype == rocblas_eform_ax)
     {

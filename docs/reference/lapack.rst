@@ -24,13 +24,13 @@ in the following categories:
 
     * i, j, and k are used as general purpose indices. In some legacy LAPACK APIs, k could be
       a parameter indicating some problem/matrix dimension.
-    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices, 
-      i is assigned to rows, j to columns and k to blocks. :math:`l` is always used to index 
-      matrices/problems in a batch. 
+    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices,
+      i is assigned to rows, j to columns and k to blocks. :math:`l` is always used to index
+      matrices/problems in a batch.
     * x[i] stands for the i-th element of vector x, while A[i,j] represents the element
       in the i-th row and j-th column of matrix A. Indices are 1-based, i.e. x[1] is the first
       element of x.
-    * To identify a block in a matrix or a matrix in the batch, k and :math:`l` are used as sub-indices 
+    * To identify a block in a matrix or a matrix in the batch, k and :math:`l` are used as sub-indices
     * x_i :math:`=x_i`; we sometimes use both notations, :math:`x_i` when displaying mathematical
       equations, and x_i in the text describing the function parameters.
     * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then
@@ -118,6 +118,14 @@ rocsolver_<type>potrf_strided_batched()
 
 rocsolver_<type>getf2()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2
@@ -128,6 +136,14 @@ rocsolver_<type>getf2()
 
 rocsolver_<type>getf2_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2_batched
@@ -138,6 +154,14 @@ rocsolver_<type>getf2_batched()
 
 rocsolver_<type>getf2_strided_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetf2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetf2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetf2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetf2_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetf2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetf2_strided_batched
@@ -150,6 +174,14 @@ rocsolver_<type>getf2_strided_batched()
 
 rocsolver_<type>getrf()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrf_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrf_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrf_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrf_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrf
    :outline:
 .. doxygenfunction:: rocsolver_cgetrf
@@ -160,6 +192,14 @@ rocsolver_<type>getrf()
 
 rocsolver_<type>getrf_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrf_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrf_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrf_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrf_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrf_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrf_batched
@@ -170,6 +210,14 @@ rocsolver_<type>getrf_batched()
 
 rocsolver_<type>getrf_strided_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrf_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrf_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrf_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrf_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrf_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrf_strided_batched
@@ -827,6 +875,14 @@ rocsolver_<type>getri_strided_batched()
 
 rocsolver_<type>getrs()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrs_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrs_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrs_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrs_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrs
    :outline:
 .. doxygenfunction:: rocsolver_cgetrs
@@ -837,6 +893,14 @@ rocsolver_<type>getrs()
 
 rocsolver_<type>getrs_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrs_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrs_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrs_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrs_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrs_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrs_batched
@@ -847,6 +911,14 @@ rocsolver_<type>getrs_batched()
 
 rocsolver_<type>getrs_strided_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgetrs_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgetrs_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgetrs_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgetrs_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgetrs_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgetrs_strided_batched

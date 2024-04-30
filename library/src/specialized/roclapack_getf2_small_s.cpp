@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,10 +27,12 @@
 
 #include "roclapack_getf2_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
-ROCSOLVER_BEGIN_NAMESPACE
-INSTANTIATE_GETF2_SMALL(float, float*);
+INSTANTIATE_GETF2_SMALL(float, rocblas_int, rocblas_int, float*);
+
 ROCSOLVER_END_NAMESPACE

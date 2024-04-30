@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -188,24 +188,24 @@ ROCSOLVER_BEGIN_NAMESPACE
     There are 4 different forward substitution kernels; each one deals with
     a combination of unit and conjugate. In the non-unit case, the kernels DO NOT
     verify whether the diagonal element of L/U is non-zero.**/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const rocblas_int nx,
-                                                       const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const I nx,
+                                                       const I ny,
                                                        U AA,
-                                                       const rocblas_int lda1,
-                                                       const rocblas_int lda2,
-                                                       const rocblas_int shiftA,
+                                                       const I lda1,
+                                                       const I lda2,
+                                                       const rocblas_stride shiftA,
                                                        const rocblas_stride strideA,
                                                        U BB,
-                                                       const rocblas_int ldb1,
-                                                       const rocblas_int ldb2,
-                                                       const rocblas_int shiftB,
+                                                       const I ldb1,
+                                                       const I ldb2,
+                                                       const rocblas_stride shiftB,
                                                        const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -218,14 +218,14 @@ ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const rocblas_int nx,
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = 0; k < nx - 1; ++k)
+        for(I k = 0; k < nx - 1; ++k)
         {
             __syncthreads();
             if(x == k)
@@ -240,24 +240,24 @@ ROCSOLVER_KERNEL void unit_forward_substitution_kernel(const rocblas_int nx,
     }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void conj_unit_forward_substitution_kernel(const rocblas_int nx,
-                                                            const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void conj_unit_forward_substitution_kernel(const I nx,
+                                                            const I ny,
                                                             U AA,
-                                                            const rocblas_int lda1,
-                                                            const rocblas_int lda2,
-                                                            const rocblas_int shiftA,
+                                                            const I lda1,
+                                                            const I lda2,
+                                                            const rocblas_stride shiftA,
                                                             const rocblas_stride strideA,
                                                             U BB,
-                                                            const rocblas_int ldb1,
-                                                            const rocblas_int ldb2,
-                                                            const rocblas_int shiftB,
+                                                            const I ldb1,
+                                                            const I ldb2,
+                                                            const rocblas_stride shiftB,
                                                             const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -270,14 +270,14 @@ ROCSOLVER_KERNEL void conj_unit_forward_substitution_kernel(const rocblas_int nx
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = 0; k < nx - 1; ++k)
+        for(I k = 0; k < nx - 1; ++k)
         {
             __syncthreads();
             if(x == k)
@@ -292,24 +292,24 @@ ROCSOLVER_KERNEL void conj_unit_forward_substitution_kernel(const rocblas_int nx
     }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const rocblas_int nx,
-                                                          const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const I nx,
+                                                          const I ny,
                                                           U AA,
-                                                          const rocblas_int lda1,
-                                                          const rocblas_int lda2,
-                                                          const rocblas_int shiftA,
+                                                          const I lda1,
+                                                          const I lda2,
+                                                          const rocblas_stride shiftA,
                                                           const rocblas_stride strideA,
                                                           U BB,
-                                                          const rocblas_int ldb1,
-                                                          const rocblas_int ldb2,
-                                                          const rocblas_int shiftB,
+                                                          const I ldb1,
+                                                          const I ldb2,
+                                                          const rocblas_stride shiftB,
                                                           const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -322,14 +322,14 @@ ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const rocblas_int nx,
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = 0; k < nx - 1; ++k)
+        for(I k = 0; k < nx - 1; ++k)
         {
             __syncthreads();
             if(x == k)
@@ -349,24 +349,24 @@ ROCSOLVER_KERNEL void nonunit_forward_substitution_kernel(const rocblas_int nx,
     }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int nx,
-                                                               const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const I nx,
+                                                               const I ny,
                                                                U AA,
-                                                               const rocblas_int lda1,
-                                                               const rocblas_int lda2,
-                                                               const rocblas_int shiftA,
+                                                               const I lda1,
+                                                               const I lda2,
+                                                               const rocblas_stride shiftA,
                                                                const rocblas_stride strideA,
                                                                U BB,
-                                                               const rocblas_int ldb1,
-                                                               const rocblas_int ldb2,
-                                                               const rocblas_int shiftB,
+                                                               const I ldb1,
+                                                               const I ldb2,
+                                                               const rocblas_stride shiftB,
                                                                const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -379,14 +379,14 @@ ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = 0; k < nx - 1; ++k)
+        for(I k = 0; k < nx - 1; ++k)
         {
             __syncthreads();
             if(x == k)
@@ -429,24 +429,24 @@ ROCSOLVER_KERNEL void conj_nonunit_forward_substitution_kernel(const rocblas_int
     There are 4 different backward substitution kernels; each one deals with
     a combination of unit and conjugate. In the non-unit case, the kernels DO NOT
     verify whether the diagonal element of L/U is non-zero.**/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const rocblas_int nx,
-                                                        const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const I nx,
+                                                        const I ny,
                                                         U AA,
-                                                        const rocblas_int lda1,
-                                                        const rocblas_int lda2,
-                                                        const rocblas_int shiftA,
+                                                        const I lda1,
+                                                        const I lda2,
+                                                        const rocblas_stride shiftA,
                                                         const rocblas_stride strideA,
                                                         U BB,
-                                                        const rocblas_int ldb1,
-                                                        const rocblas_int ldb2,
-                                                        const rocblas_int shiftB,
+                                                        const I ldb1,
+                                                        const I ldb2,
+                                                        const rocblas_stride shiftB,
                                                         const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -459,14 +459,14 @@ ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const rocblas_int nx,
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = nx - 1; k > 0; --k)
+        for(I k = nx - 1; k > 0; --k)
         {
             __syncthreads();
             if(x == k)
@@ -481,24 +481,24 @@ ROCSOLVER_KERNEL void unit_backward_substitution_kernel(const rocblas_int nx,
     }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void conj_unit_backward_substitution_kernel(const rocblas_int nx,
-                                                             const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void conj_unit_backward_substitution_kernel(const I nx,
+                                                             const I ny,
                                                              U AA,
-                                                             const rocblas_int lda1,
-                                                             const rocblas_int lda2,
-                                                             const rocblas_int shiftA,
+                                                             const I lda1,
+                                                             const I lda2,
+                                                             const rocblas_stride shiftA,
                                                              const rocblas_stride strideA,
                                                              U BB,
-                                                             const rocblas_int ldb1,
-                                                             const rocblas_int ldb2,
-                                                             const rocblas_int shiftB,
+                                                             const I ldb1,
+                                                             const I ldb2,
+                                                             const rocblas_stride shiftB,
                                                              const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -511,14 +511,14 @@ ROCSOLVER_KERNEL void conj_unit_backward_substitution_kernel(const rocblas_int n
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = nx - 1; k > 0; --k)
+        for(I k = nx - 1; k > 0; --k)
         {
             __syncthreads();
             if(x == k)
@@ -533,24 +533,24 @@ ROCSOLVER_KERNEL void conj_unit_backward_substitution_kernel(const rocblas_int n
     }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const rocblas_int nx,
-                                                           const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const I nx,
+                                                           const I ny,
                                                            U AA,
-                                                           const rocblas_int lda1,
-                                                           const rocblas_int lda2,
-                                                           const rocblas_int shiftA,
+                                                           const I lda1,
+                                                           const I lda2,
+                                                           const rocblas_stride shiftA,
                                                            const rocblas_stride strideA,
                                                            U BB,
-                                                           const rocblas_int ldb1,
-                                                           const rocblas_int ldb2,
-                                                           const rocblas_int shiftB,
+                                                           const I ldb1,
+                                                           const I ldb2,
+                                                           const rocblas_stride shiftB,
                                                            const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -563,14 +563,14 @@ ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const rocblas_int nx,
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = nx - 1; k > 0; --k)
+        for(I k = nx - 1; k > 0; --k)
         {
             __syncthreads();
             if(x == k)
@@ -590,24 +590,24 @@ ROCSOLVER_KERNEL void nonunit_backward_substitution_kernel(const rocblas_int nx,
     }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_int nx,
-                                                                const rocblas_int ny,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const I nx,
+                                                                const I ny,
                                                                 U AA,
-                                                                const rocblas_int lda1,
-                                                                const rocblas_int lda2,
-                                                                const rocblas_int shiftA,
+                                                                const I lda1,
+                                                                const I lda2,
+                                                                const rocblas_stride shiftA,
                                                                 const rocblas_stride strideA,
                                                                 U BB,
-                                                                const rocblas_int ldb1,
-                                                                const rocblas_int ldb2,
-                                                                const rocblas_int shiftB,
+                                                                const I ldb1,
+                                                                const I ldb2,
+                                                                const rocblas_stride shiftB,
                                                                 const rocblas_stride strideB)
 {
-    int bid = hipBlockIdx_z;
-    int x = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int y = hipBlockIdx_y * hipBlockDim_y + ty;
+    I bid = hipBlockIdx_z;
+    I x = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I y = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
 
     // batch instance
     T* A = load_ptr_batch(AA, bid, shiftA, strideA);
@@ -620,14 +620,14 @@ ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_in
 
     if(y < ny)
     {
-        int ida = x * lda1;
-        int idb = x * ldb1 + y * ldb2;
+        I ida = x * lda1;
+        I idb = x * ldb1 + y * ldb2;
 
         // read data
         c = B[idb];
 
         // solve for all y's
-        for(int k = nx - 1; k > 0; --k)
+        for(I k = nx - 1; k > 0; --k)
         {
             __syncthreads();
             if(x == k)
@@ -653,82 +653,84 @@ ROCSOLVER_KERNEL void conj_nonunit_backward_substitution_kernel(const rocblas_in
 
 /** This function returns the block size for the internal
     (blocked) trsm implementation **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+I rocsolver_trsm_blksize(const I m, const I n)
 {
-    rocblas_int blk;
+    I blk;
 
     if(ISBATCHED)
     {
-        rocblas_int M = TRSM_BATCH_NUMROWS_REAL - 1;
-        rocblas_int N = TRSM_BATCH_NUMCOLS_REAL - 1;
-        rocblas_int intervalsM[] = {TRSM_BATCH_INTERVALSROW_REAL};
-        rocblas_int intervalsN[] = {TRSM_BATCH_INTERVALSCOL_REAL};
-        rocblas_int size[][TRSM_BATCH_NUMCOLS_REAL] = {TRSM_BATCH_BLKSIZES_REAL};
+        I M = TRSM_BATCH_NUMROWS_REAL - 1;
+        I N = TRSM_BATCH_NUMCOLS_REAL - 1;
+        I intervalsM[] = {TRSM_BATCH_INTERVALSROW_REAL};
+        I intervalsN[] = {TRSM_BATCH_INTERVALSCOL_REAL};
+        I size[][TRSM_BATCH_NUMCOLS_REAL] = {TRSM_BATCH_BLKSIZES_REAL};
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
     else
     {
-        rocblas_int M = TRSM_NUMROWS_REAL - 1;
-        rocblas_int N = TRSM_NUMCOLS_REAL - 1;
-        rocblas_int intervalsM[] = {TRSM_INTERVALSROW_REAL};
-        rocblas_int intervalsN[] = {TRSM_INTERVALSCOL_REAL};
-        rocblas_int size[][TRSM_NUMCOLS_REAL] = {TRSM_BLKSIZES_REAL};
+        I M = TRSM_NUMROWS_REAL - 1;
+        I N = TRSM_NUMCOLS_REAL - 1;
+        I intervalsM[] = {TRSM_INTERVALSROW_REAL};
+        I intervalsN[] = {TRSM_INTERVALSCOL_REAL};
+        I size[][TRSM_NUMCOLS_REAL] = {TRSM_BLKSIZES_REAL};
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
 
     if(blk == 1)
-        blk = std::min(m, 512);
+        blk = std::min(m, I(512));
 
     return blk;
 }
 
 /** complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-rocblas_int rocsolver_trsm_blksize(const rocblas_int m, const rocblas_int n)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+I rocsolver_trsm_blksize(const I m, const I n)
 {
-    rocblas_int blk;
+    I blk;
 
     if(ISBATCHED)
     {
-        rocblas_int M = TRSM_BATCH_NUMROWS_COMPLEX - 1;
-        rocblas_int N = TRSM_BATCH_NUMCOLS_COMPLEX - 1;
-        rocblas_int intervalsM[] = {TRSM_BATCH_INTERVALSROW_COMPLEX};
-        rocblas_int intervalsN[] = {TRSM_BATCH_INTERVALSCOL_COMPLEX};
-        rocblas_int size[][TRSM_BATCH_NUMCOLS_COMPLEX] = {TRSM_BATCH_BLKSIZES_COMPLEX};
+        I M = TRSM_BATCH_NUMROWS_COMPLEX - 1;
+        I N = TRSM_BATCH_NUMCOLS_COMPLEX - 1;
+        I intervalsM[] = {TRSM_BATCH_INTERVALSROW_COMPLEX};
+        I intervalsN[] = {TRSM_BATCH_INTERVALSCOL_COMPLEX};
+        I size[][TRSM_BATCH_NUMCOLS_COMPLEX] = {TRSM_BATCH_BLKSIZES_COMPLEX};
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
     else
     {
-        rocblas_int M = TRSM_NUMROWS_COMPLEX - 1;
-        rocblas_int N = TRSM_NUMCOLS_COMPLEX - 1;
-        rocblas_int intervalsM[] = {TRSM_INTERVALSROW_COMPLEX};
-        rocblas_int intervalsN[] = {TRSM_INTERVALSCOL_COMPLEX};
-        rocblas_int size[][TRSM_NUMCOLS_COMPLEX] = {TRSM_BLKSIZES_COMPLEX};
+        I M = TRSM_NUMROWS_COMPLEX - 1;
+        I N = TRSM_NUMCOLS_COMPLEX - 1;
+        I intervalsM[] = {TRSM_INTERVALSROW_COMPLEX};
+        I intervalsN[] = {TRSM_INTERVALSCOL_COMPLEX};
+        I size[][TRSM_NUMCOLS_COMPLEX] = {TRSM_BLKSIZES_COMPLEX};
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
 
     if(blk == 1)
-        blk = std::min(m, 512);
+        blk = std::min(m, I(512));
 
     return blk;
 }
 
 /** This function determine workspace size for the internal trsm **/
-template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_trsm_mem(const rocblas_side side,
-                        const rocblas_operation trans,
-                        const rocblas_int m,
-                        const rocblas_int n,
-                        const rocblas_int batch_count,
-                        size_t* size_work1,
-                        size_t* size_work2,
-                        size_t* size_work3,
-                        size_t* size_work4,
-                        bool* optim_mem,
-                        bool inblocked,
-                        const rocblas_int inca,
-                        const rocblas_int incb)
+template <bool BATCHED, bool STRIDED, typename T, typename I>
+rocblas_status rocsolver_trsm_mem(const rocblas_side side,
+                                  const rocblas_operation trans,
+                                  const I m,
+                                  const I n,
+                                  const I batch_count,
+                                  size_t* size_work1,
+                                  size_t* size_work2,
+                                  size_t* size_work3,
+                                  size_t* size_work4,
+                                  bool* optim_mem,
+                                  bool inblocked,
+                                  const I lda,
+                                  const I ldb,
+                                  const I inca,
+                                  const I incb)
 {
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
@@ -739,10 +741,10 @@ void rocsolver_trsm_mem(const rocblas_side side,
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
-        return;
+        return rocblas_status_success;
     }
 
-    rocblas_int mm = m;
+    I mm = m;
 
     if(!inblocked)
     {
@@ -750,8 +752,8 @@ void rocsolver_trsm_mem(const rocblas_side side,
 
         // determine type of system and block size
         const bool isleft = (side == rocblas_side_left);
-        rocblas_int blk = isleft ? rocsolver_trsm_blksize<ISBATCHED, T>(m, n)
-                                 : rocsolver_trsm_blksize<ISBATCHED, T>(n, m);
+        I blk = isleft ? rocsolver_trsm_blksize<ISBATCHED, T, I>(m, n)
+                       : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
 
         if(blk > 0)
         {
@@ -759,7 +761,7 @@ void rocsolver_trsm_mem(const rocblas_side side,
             *size_work2 = 0;
             *size_work3 = 0;
             *size_work4 = 0;
-            return;
+            return rocblas_status_success;
         }
         else
             mm = m;
@@ -775,8 +777,8 @@ void rocsolver_trsm_mem(const rocblas_side side,
         mm = (m % 128 != 0) ? m : m + 1;
     }
 
-    rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, batch_count, size_work1, size_work2,
-                                     size_work3, size_work4);
+    return rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count, size_work1,
+                                            size_work2, size_work3, size_work4);
 }
 
 /** Internal TRSM (lower case):
@@ -788,24 +790,24 @@ void rocsolver_trsm_mem(const rocblas_side side,
 
     This is blocked implementation that calls the internal forward/backward subtitution kernels
     to solve the diagonal blocks, and uses gemm to update the right/left -hand-sides **/
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                                     const rocblas_side side,
                                     const rocblas_operation trans,
                                     const rocblas_diagonal diag,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
+                                    const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int inca,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shiftA,
+                                    const I inca,
+                                    const I lda,
                                     const rocblas_stride strideA,
                                     U B,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int incb,
-                                    const rocblas_int ldb,
+                                    const rocblas_stride shiftB,
+                                    const I incb,
+                                    const I ldb,
                                     const rocblas_stride strideB,
-                                    const rocblas_int batch_count,
+                                    const I batch_count,
                                     const bool optim_mem,
                                     void* work1,
                                     void* work2,
@@ -823,7 +825,7 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
 
-    rocblas_int dimx, dimy, blocks, nextpiv;
+    I dimx, dimy, blocks, nextpiv;
     dim3 grid, threads;
     size_t lmemsize;
 
@@ -832,14 +834,14 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
     const bool notrans = (trans == rocblas_operation_none);
     const bool isunit = (diag == rocblas_diagonal_unit);
     const bool conj = (trans == rocblas_operation_conjugate_transpose);
-    rocblas_int lda1, lda2, ldb1, ldb2, offA, offB, nx, ny, j = 0;
+    I lda1, lda2, ldb1, ldb2, offA, offB, nx, ny, j = 0;
 
     // determine block size
-    rocblas_int blk = std::min(isleft ? m : n, 512);
+    I blk = std::min(isleft ? m : n, I(512));
     if(inca == 1 && incb == 1)
     {
-        blk = isleft ? rocsolver_trsm_blksize<ISBATCHED, T>(m, n)
-                     : rocsolver_trsm_blksize<ISBATCHED, T>(n, m);
+        blk = isleft ? rocsolver_trsm_blksize<ISBATCHED, T, I>(m, n)
+                     : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
     if(blk == 0)
@@ -1071,24 +1073,24 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
     B <- B = XU'
     This is blocked implementation that calls the internal forward/backward subtitution kernels
     to solve the diagonal blocks, and uses gemm to update the right/left -hand-sides **/
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                     const rocblas_side side,
                                     const rocblas_operation trans,
                                     const rocblas_diagonal diag,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
+                                    const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int inca,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shiftA,
+                                    const I inca,
+                                    const I lda,
                                     const rocblas_stride strideA,
                                     U B,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int incb,
-                                    const rocblas_int ldb,
+                                    const rocblas_stride shiftB,
+                                    const I incb,
+                                    const I ldb,
                                     const rocblas_stride strideB,
-                                    const rocblas_int batch_count,
+                                    const I batch_count,
                                     const bool optim_mem,
                                     void* work1,
                                     void* work2,
@@ -1106,7 +1108,7 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
     T one = 1; // constant 1 in host
     T minone = -1; // constant -1 in host
 
-    rocblas_int dimx, dimy, blocks, nextpiv;
+    I dimx, dimy, blocks, nextpiv;
     dim3 grid, threads;
     size_t lmemsize;
 
@@ -1115,14 +1117,14 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
     const bool notrans = (trans == rocblas_operation_none);
     const bool isunit = (diag == rocblas_diagonal_unit);
     const bool conj = (trans == rocblas_operation_conjugate_transpose);
-    rocblas_int lda1, lda2, ldb1, ldb2, offA, offB, nx, ny, j = 0;
+    I lda1, lda2, ldb1, ldb2, offA, offB, nx, ny, j = 0;
 
     // determine block size
-    rocblas_int blk = std::min(isleft ? m : n, 512);
+    I blk = std::min(isleft ? m : n, I(512));
     if(inca == 1 && incb == 1)
     {
-        blk = isleft ? rocsolver_trsm_blksize<ISBATCHED, T>(m, n)
-                     : rocsolver_trsm_blksize<ISBATCHED, T>(n, m);
+        blk = isleft ? rocsolver_trsm_blksize<ISBATCHED, T, I>(m, n)
+                     : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
     if(blk == 0)
@@ -1350,56 +1352,56 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
     Non-interleaved wrappers
 *************************************************************/
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 inline rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                                            const rocblas_side side,
                                            const rocblas_operation trans,
                                            const rocblas_diagonal diag,
-                                           const rocblas_int m,
-                                           const rocblas_int n,
+                                           const I m,
+                                           const I n,
                                            U A,
-                                           const rocblas_int shiftA,
-                                           const rocblas_int lda,
+                                           const rocblas_stride shiftA,
+                                           const I lda,
                                            const rocblas_stride strideA,
                                            U B,
-                                           const rocblas_int shiftB,
-                                           const rocblas_int ldb,
+                                           const rocblas_stride shiftB,
+                                           const I ldb,
                                            const rocblas_stride strideB,
-                                           const rocblas_int batch_count,
+                                           const I batch_count,
                                            const bool optim_mem,
                                            void* work1,
                                            void* work2,
                                            void* work3,
                                            void* work4)
 {
-    return rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+    return rocsolver_trsm_lower<BATCHED, STRIDED, T, I>(
         handle, side, trans, diag, m, n, A, shiftA, 1, lda, strideA, B, shiftB, 1, ldb, strideB,
         batch_count, optim_mem, work1, work2, work3, work4);
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                            const rocblas_side side,
                                            const rocblas_operation trans,
                                            const rocblas_diagonal diag,
-                                           const rocblas_int m,
-                                           const rocblas_int n,
+                                           const I m,
+                                           const I n,
                                            U A,
-                                           const rocblas_int shiftA,
-                                           const rocblas_int lda,
+                                           const rocblas_stride shiftA,
+                                           const I lda,
                                            const rocblas_stride strideA,
                                            U B,
-                                           const rocblas_int shiftB,
-                                           const rocblas_int ldb,
+                                           const rocblas_stride shiftB,
+                                           const I ldb,
                                            const rocblas_stride strideB,
-                                           const rocblas_int batch_count,
+                                           const I batch_count,
                                            const bool optim_mem,
                                            void* work1,
                                            void* work2,
                                            void* work3,
                                            void* work4)
 {
-    return rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+    return rocsolver_trsm_upper<BATCHED, STRIDED, T, I>(
         handle, side, trans, diag, m, n, A, shiftA, 1, lda, strideA, B, shiftB, 1, ldb, strideB,
         batch_count, optim_mem, work1, work2, work3, work4);
 }
@@ -1408,27 +1410,25 @@ inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_TRSM_MEM(BATCHED, STRIDED, T)                                    \
-    template void rocsolver_trsm_mem<BATCHED, STRIDED, T>(                           \
-        const rocblas_side side, const rocblas_operation trans, const rocblas_int m, \
-        const rocblas_int n, const rocblas_int batch_count, size_t* size_work1,      \
-        size_t* size_work2, size_t* size_work3, size_t* size_work4, bool* optim_mem, \
-        bool inblocked, const rocblas_int, const rocblas_int)
-#define INSTANTIATE_TRSM_LOWER(BATCHED, STRIDED, T, U)                                      \
-    template rocblas_status rocsolver_trsm_lower<BATCHED, STRIDED, T, U>(                   \
-        rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,      \
-        const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, U A,         \
-        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, U B, \
-        const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB,      \
-        const rocblas_int batch_count, const bool optim_mem, void* work1, void* work2,      \
-        void* work3, void* work4)
-#define INSTANTIATE_TRSM_UPPER(BATCHED, STRIDED, T, U)                                      \
-    template rocblas_status rocsolver_trsm_upper<BATCHED, STRIDED, T, U>(                   \
-        rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,      \
-        const rocblas_diagonal diag, const rocblas_int m, const rocblas_int n, U A,         \
-        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, U B, \
-        const rocblas_int shiftB, const rocblas_int ldb, const rocblas_stride strideB,      \
-        const rocblas_int batch_count, const bool optim_mem, void* work1, void* work2,      \
-        void* work3, void* work4)
+#define INSTANTIATE_TRSM_MEM(BATCHED, STRIDED, T, I)                                     \
+    template rocblas_status rocsolver_trsm_mem<BATCHED, STRIDED, T, I>(                  \
+        const rocblas_side side, const rocblas_operation trans, const I m, const I n,    \
+        const I batch_count, size_t* size_work1, size_t* size_work2, size_t* size_work3, \
+        size_t* size_work4, bool* optim_mem, bool inblocked, const I lda, const I ldb,   \
+        const I inca, const I incb)
+#define INSTANTIATE_TRSM_LOWER(BATCHED, STRIDED, T, I, U)                                         \
+    template rocblas_status rocsolver_trsm_lower<BATCHED, STRIDED, T, I, U>(                      \
+        rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,            \
+        const rocblas_diagonal diag, const I m, const I n, U A, const rocblas_stride shiftA,      \
+        const I lda, const rocblas_stride strideA, U B, const rocblas_stride shiftB, const I ldb, \
+        const rocblas_stride strideB, const I batch_count, const bool optim_mem, void* work1,     \
+        void* work2, void* work3, void* work4)
+#define INSTANTIATE_TRSM_UPPER(BATCHED, STRIDED, T, I, U)                                         \
+    template rocblas_status rocsolver_trsm_upper<BATCHED, STRIDED, T, I, U>(                      \
+        rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,            \
+        const rocblas_diagonal diag, const I m, const I n, U A, const rocblas_stride shiftA,      \
+        const I lda, const rocblas_stride strideA, U B, const rocblas_stride shiftB, const I ldb, \
+        const rocblas_stride strideB, const I batch_count, const bool optim_mem, void* work1,     \
+        void* work2, void* work3, void* work4)
 
 ROCSOLVER_END_NAMESPACE

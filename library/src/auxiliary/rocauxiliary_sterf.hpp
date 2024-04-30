@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -340,7 +340,7 @@ rocblas_status
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !D) || (n && !E) || !info)
+    if((n && !D) || (n > 1 && !E) || !info)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;

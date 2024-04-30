@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,29 +33,29 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 /** Call this kernel with 'batch_count' groups in z, and enough
     groups in x and y to cover all the 'm' rows and 'n' columns of C. **/
-template <typename T, typename V, typename U1, typename U2, typename U3>
-ROCSOLVER_KERNEL void ger_kernel(rocblas_int m,
-                                 rocblas_int n,
+template <typename T, typename I, typename V, typename U1, typename U2, typename U3>
+ROCSOLVER_KERNEL void ger_kernel(I m,
+                                 I n,
                                  V alpha,
                                  rocblas_stride stridea,
                                  U1 xx,
                                  rocblas_stride shiftX,
-                                 rocblas_int incx,
+                                 I incx,
                                  rocblas_stride strideX,
                                  U2 yy,
                                  rocblas_stride shiftY,
-                                 rocblas_int incy,
+                                 I incy,
                                  rocblas_stride strideY,
                                  U3 AA,
                                  rocblas_stride shiftA,
-                                 rocblas_int inca,
-                                 rocblas_int lda,
+                                 I inca,
+                                 I lda,
                                  rocblas_stride strideA)
 {
     // indices
-    int bid = hipBlockIdx_z;
-    int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    int j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    I bid = hipBlockIdx_z;
+    I i = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
+    I j = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + hipThreadIdx_y;
 
     // batch instance
     T a = load_scalar(alpha, bid, stridea);
@@ -73,26 +73,26 @@ ROCSOLVER_KERNEL void ger_kernel(rocblas_int m,
     Launchers of specialized kernels
 *************************************************************/
 
-template <bool CONJ, typename T, typename U>
+template <bool CONJ, typename T, typename I, typename U>
 rocblas_status rocsolver_ger(rocblas_handle handle,
-                             rocblas_int m,
-                             rocblas_int n,
+                             I m,
+                             I n,
                              const T* alpha,
                              rocblas_stride stridea,
                              U x,
                              rocblas_stride shiftX,
-                             rocblas_int incx,
+                             I incx,
                              rocblas_stride strideX,
                              U y,
                              rocblas_stride shiftY,
-                             rocblas_int incy,
+                             I incy,
                              rocblas_stride strideY,
                              U A,
                              rocblas_stride shiftA,
-                             rocblas_int inca,
-                             rocblas_int lda,
+                             I inca,
+                             I lda,
                              rocblas_stride strideA,
-                             rocblas_int batch_count,
+                             I batch_count,
                              T** work)
 {
     ROCSOLVER_ENTER("ger", "m:", m, "n:", n, "shiftX:", shiftX, "incx:", incx, "shiftY:", shiftY,
@@ -117,8 +117,8 @@ rocblas_status rocsolver_ger(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &pmode);
 
     // launch specialized kernel
-    rocblas_int blocksx = (m - 1) / BS2 + 1;
-    rocblas_int blocksy = (n - 1) / BS2 + 1;
+    I blocksx = (m - 1) / BS2 + 1;
+    I blocksy = (n - 1) / BS2 + 1;
     dim3 grid(blocksx, blocksy, batch_count);
     dim3 threads(BS2, BS2, 1);
     if(pmode == rocblas_pointer_mode_device)
@@ -141,41 +141,41 @@ rocblas_status rocsolver_ger(rocblas_handle handle,
     Non-interleaved wrappers
 *************************************************************/
 
-template <bool CONJ, typename T, typename U>
+template <bool CONJ, typename T, typename I, typename U>
 inline rocblas_status rocsolver_ger(rocblas_handle handle,
-                                    rocblas_int m,
-                                    rocblas_int n,
+                                    I m,
+                                    I n,
                                     const T* alpha,
                                     rocblas_stride stridea,
                                     U x,
                                     rocblas_stride shiftX,
-                                    rocblas_int incx,
+                                    I incx,
                                     rocblas_stride strideX,
                                     U y,
                                     rocblas_stride shiftY,
-                                    rocblas_int incy,
+                                    I incy,
                                     rocblas_stride strideY,
                                     U A,
                                     rocblas_stride shiftA,
-                                    rocblas_int lda,
+                                    I lda,
                                     rocblas_stride strideA,
-                                    rocblas_int batch_count,
+                                    I batch_count,
                                     T** work)
 {
-    return rocsolver_ger<CONJ, T>(handle, m, n, alpha, stridea, x, shiftX, incx, strideX, y, shiftY,
-                                  incy, strideY, A, shiftA, 1, lda, strideA, batch_count, work);
+    return rocsolver_ger<CONJ, T, I>(handle, m, n, alpha, stridea, x, shiftX, incx, strideX, y,
+                                     shiftY, incy, strideY, A, shiftA, 1, lda, strideA, batch_count,
+                                     work);
 }
 
 /*************************************************************
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_GER(CONJ, T, U)                                           \
-    template rocblas_status rocsolver_ger<CONJ, T, U>(                        \
-        rocblas_handle handle, rocblas_int m, rocblas_int n, const T* alpha,  \
-        rocblas_stride stridea, U x, rocblas_stride shiftX, rocblas_int incx, \
-        rocblas_stride strideX, U y, rocblas_stride shiftY, rocblas_int incy, \
-        rocblas_stride strideY, U A, rocblas_stride shiftA, rocblas_int lda,  \
-        rocblas_stride strideA, rocblas_int batch_count, T** work)
+#define INSTANTIATE_GER(CONJ, T, I, U)                                                             \
+    template rocblas_status rocsolver_ger<CONJ, T, I, U>(                                          \
+        rocblas_handle handle, I m, I n, const T* alpha, rocblas_stride stridea, U x,              \
+        rocblas_stride shiftX, I incx, rocblas_stride strideX, U y, rocblas_stride shiftY, I incy, \
+        rocblas_stride strideY, U A, rocblas_stride shiftA, I lda, rocblas_stride strideA,         \
+        I batch_count, T** work)
 
 ROCSOLVER_END_NAMESPACE

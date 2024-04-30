@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -68,7 +68,7 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
     // size to store number of non-zeros per row
     size_t size_work = 0;
 
-    rocsolver_csrrf_splitlu_getMemorySize<T>(n, nnzT, &size_work);
+    ROCBLAS_CHECK(rocsolver_csrrf_splitlu_getMemorySize<T>(n, nnzT, ptrT, &size_work));
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work);
@@ -84,7 +84,8 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_csrrf_splitlu_template<T>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
-                                               ptrU, indU, valU, (rocblas_int*)work);
+                                               ptrU, indU, valU, static_cast<rocblas_int*>(work),
+                                               size_work);
 #else
     return rocblas_status_not_implemented;
 #endif

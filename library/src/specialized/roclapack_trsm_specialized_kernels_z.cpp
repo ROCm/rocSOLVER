@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,16 +33,29 @@ ROCSOLVER_BEGIN_NAMESPACE
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_TRSM_MEM(0, 0, rocblas_double_complex);
-INSTANTIATE_TRSM_LOWER(0, 0, rocblas_double_complex, rocblas_double_complex*);
-INSTANTIATE_TRSM_UPPER(0, 0, rocblas_double_complex, rocblas_double_complex*);
+INSTANTIATE_TRSM_MEM(0, 0, rocblas_double_complex, rocblas_int);
+INSTANTIATE_TRSM_LOWER(0, 0, rocblas_double_complex, rocblas_int, rocblas_double_complex*);
+INSTANTIATE_TRSM_UPPER(0, 0, rocblas_double_complex, rocblas_int, rocblas_double_complex*);
 
-INSTANTIATE_TRSM_MEM(0, 1, rocblas_double_complex);
-INSTANTIATE_TRSM_LOWER(0, 1, rocblas_double_complex, rocblas_double_complex*);
-INSTANTIATE_TRSM_UPPER(0, 1, rocblas_double_complex, rocblas_double_complex*);
+INSTANTIATE_TRSM_MEM(0, 1, rocblas_double_complex, rocblas_int);
+INSTANTIATE_TRSM_LOWER(0, 1, rocblas_double_complex, rocblas_int, rocblas_double_complex*);
+INSTANTIATE_TRSM_UPPER(0, 1, rocblas_double_complex, rocblas_int, rocblas_double_complex*);
 
-INSTANTIATE_TRSM_MEM(1, 0, rocblas_double_complex);
-INSTANTIATE_TRSM_LOWER(1, 0, rocblas_double_complex, rocblas_double_complex* const*);
-INSTANTIATE_TRSM_UPPER(1, 0, rocblas_double_complex, rocblas_double_complex* const*);
+INSTANTIATE_TRSM_MEM(1, 0, rocblas_double_complex, rocblas_int);
+INSTANTIATE_TRSM_LOWER(1, 0, rocblas_double_complex, rocblas_int, rocblas_double_complex* const*);
+INSTANTIATE_TRSM_UPPER(1, 0, rocblas_double_complex, rocblas_int, rocblas_double_complex* const*);
+
+// 64-bit
+INSTANTIATE_TRSM_MEM(0, 0, rocblas_double_complex, int64_t);
+INSTANTIATE_TRSM_LOWER(0, 0, rocblas_double_complex, int64_t, rocblas_double_complex*);
+INSTANTIATE_TRSM_UPPER(0, 0, rocblas_double_complex, int64_t, rocblas_double_complex*);
+
+INSTANTIATE_TRSM_MEM(0, 1, rocblas_double_complex, int64_t);
+INSTANTIATE_TRSM_LOWER(0, 1, rocblas_double_complex, int64_t, rocblas_double_complex*);
+INSTANTIATE_TRSM_UPPER(0, 1, rocblas_double_complex, int64_t, rocblas_double_complex*);
+
+INSTANTIATE_TRSM_MEM(1, 0, rocblas_double_complex, int64_t);
+INSTANTIATE_TRSM_LOWER(1, 0, rocblas_double_complex, int64_t, rocblas_double_complex* const*);
+INSTANTIATE_TRSM_UPPER(1, 0, rocblas_double_complex, int64_t, rocblas_double_complex* const*);
 
 ROCSOLVER_END_NAMESPACE

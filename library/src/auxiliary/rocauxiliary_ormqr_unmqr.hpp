@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -72,11 +72,11 @@ void rocsolver_ormqr_unmqr_getMemorySize(const rocblas_side side,
         rocblas_int jb = xxMQx_BLOCKSIZE;
 
         // requirements for calling larft
-        rocsolver_larft_getMemorySize<BATCHED, T>(max(m, n), min(jb, k), batch_count, &unused,
-                                                  size_AbyxORwork, &unused);
+        rocsolver_larft_getMemorySize<BATCHED, T>(std::max(m, n), std::min(jb, k), batch_count,
+                                                  &unused, size_AbyxORwork, &unused);
 
         // requirements for calling larfb
-        rocsolver_larfb_getMemorySize<BATCHED, T>(side, m, n, min(jb, k), batch_count,
+        rocsolver_larfb_getMemorySize<BATCHED, T>(side, m, n, std::min(jb, k), batch_count,
                                                   size_diagORtmptr, &unused);
 
         // size of temporary array for triangular factor
@@ -172,7 +172,7 @@ rocblas_status rocsolver_ormqr_unmqr_template(rocblas_handle handle,
     for(rocblas_int j = 0; j < k; j += ldw)
     {
         i = start + step * j; // current householder block
-        ib = min(ldw, k - i);
+        ib = std::min(ldw, k - i);
         if(left)
         {
             nrow = m - i;

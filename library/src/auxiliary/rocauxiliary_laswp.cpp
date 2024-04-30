@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,15 +29,15 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
-                                    const rocblas_int n,
+                                    const I n,
                                     U A,
-                                    const rocblas_int lda,
-                                    const rocblas_int k1,
-                                    const rocblas_int k2,
-                                    const rocblas_int* ipiv,
-                                    const rocblas_int incp)
+                                    const I lda,
+                                    const I k1,
+                                    const I k2,
+                                    const I* ipiv,
+                                    const I incp)
 {
     ROCSOLVER_ENTER_TOP("laswp", "-n", n, "--lda", lda, "--k1", k1, "--k2", k2);
 
@@ -50,14 +50,14 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
-    rocblas_int shiftP = 0;
+    rocblas_stride shiftA = 0;
+    rocblas_stride shiftP = 0;
 
     // normal (non-batched non-strided) execution
-    rocblas_int inca = 1;
+    I inca = 1;
     rocblas_stride strideA = 0;
     rocblas_stride strideP = 0;
-    rocblas_int batch_count = 1;
+    I batch_count = 1;
 
     // this function does not require memory work space
     if(rocblas_is_device_memory_size_query(handle))

@@ -2,18 +2,24 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
-## (Unreleased) rocSOLVER
+## rocSOLVER 3.26.0 for ROCm 6.2.0
 ### Added
+- 64-bit APIs for existing functions:
+    - GETF2_64 (with batched and strided\_batched versions)
+    - GETRF_64 (with batched and strided\_batched versions)
+    - GETRS_64 (with batched and strided\_batched versions)
+
 ### Optimized
+- Improved performance of Cholesky factorization.
+- Improved performance of splitlu to extract the L and U triangular matrices from the result of sparse factorization matrix M, where M = (L - eye) + U.
+
 ### Changed
 - Renamed install script arguments of the form *_dir to *-path. Arguments of the form *_dir remain functional for
   backwards compatibility.
+- Functions working with arrays of size n - 1 can now accept null pointers when n = 1.
 
-### Deprecated
-### Removed
 ### Fixed
-### Known Issues
-### Security
+- Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
@@ -27,6 +33,9 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Changed
 - Relaxed array length requirements for GESVDX with `rocblas_srange_index`.
+
+### Removed
+- Removed gfx803 and gfx900 from default build targets.
 
 ### Fixed
 - Corrected singular vector normalization in BDSVDX and GESVDX

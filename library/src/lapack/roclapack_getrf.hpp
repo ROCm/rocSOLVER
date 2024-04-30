@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -193,23 +193,23 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 /** Execute all permutations dictated by the panel factorization
     in parallel (concurrency by rows and columns) **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
-                                          const rocblas_int offset,
-                                          const rocblas_int blk,
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void getrf_row_permutate(const I n,
+                                          const I offset,
+                                          const I blk,
                                           U AA,
-                                          const rocblas_int shiftA,
-                                          const rocblas_int inca,
-                                          const rocblas_int lda,
+                                          const rocblas_stride shiftA,
+                                          const I inca,
+                                          const I lda,
                                           const rocblas_stride strideA,
-                                          rocblas_int* pividx,
+                                          I* pividx,
                                           const rocblas_stride stridePI)
 {
-    int id = hipBlockIdx_z;
-    int tx = hipThreadIdx_x;
-    int ty = hipThreadIdx_y;
-    int bdx = hipBlockDim_x;
-    int j = hipBlockIdx_y * hipBlockDim_y + ty;
+    I id = hipBlockIdx_z;
+    I tx = hipThreadIdx_x;
+    I ty = hipThreadIdx_y;
+    I bdx = hipBlockDim_x;
+    I j = hipBlockIdx_y * static_cast<I>(hipBlockDim_y) + ty;
     if(j >= offset)
         j += blk;
 
@@ -217,15 +217,15 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
     {
         // batch instance
         T* A = load_ptr_batch(AA, id, shiftA, strideA);
-        rocblas_int* piv = pividx + id * stridePI;
+        I* piv = pividx + id * stridePI;
 
         // shared mem for temporary values
         extern __shared__ double lmem[];
         T* temp = reinterpret_cast<T*>(lmem);
 
         // do permutations in parallel (each tx perform a row swap)
-        rocblas_int idx1 = piv[tx];
-        rocblas_int idx2 = piv[idx1];
+        I idx1 = piv[tx];
+        I idx2 = piv[idx1];
         temp[tx + ty * bdx] = A[idx1 * inca + j * lda];
         A[idx1 * inca + j * lda] = A[idx2 * inca + j * lda];
         __syncthreads();
@@ -237,25 +237,25 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const rocblas_int n,
 
 /** This function returns the outer block size based on defined variables
     tunable by the user (defined in ideal_sizes.hpp) **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+I getrf_get_blksize(I dim, const bool pivot)
 {
-    rocblas_int blk;
+    I blk;
 
     if(ISBATCHED)
     {
         if(pivot)
         {
-            rocblas_int size[] = {GETRF_BATCH_BLKSIZES_REAL};
-            rocblas_int intervals[] = {GETRF_BATCH_INTERVALS_REAL};
-            rocblas_int max = GETRF_BATCH_NUM_INTERVALS_REAL;
+            I size[] = {GETRF_BATCH_BLKSIZES_REAL};
+            I intervals[] = {GETRF_BATCH_INTERVALS_REAL};
+            I max = GETRF_BATCH_NUM_INTERVALS_REAL;
             blk = size[get_index(intervals, max, dim)];
         }
         else
         {
-            rocblas_int size[] = {GETRF_NPVT_BATCH_BLKSIZES_REAL};
-            rocblas_int intervals[] = {GETRF_NPVT_BATCH_INTERVALS_REAL};
-            rocblas_int max = GETRF_NPVT_BATCH_NUM_INTERVALS_REAL;
+            I size[] = {GETRF_NPVT_BATCH_BLKSIZES_REAL};
+            I intervals[] = {GETRF_NPVT_BATCH_INTERVALS_REAL};
+            I max = GETRF_NPVT_BATCH_NUM_INTERVALS_REAL;
             blk = size[get_index(intervals, max, dim)];
         }
     }
@@ -263,16 +263,16 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
     {
         if(pivot)
         {
-            rocblas_int size[] = {GETRF_BLKSIZES_REAL};
-            rocblas_int intervals[] = {GETRF_INTERVALS_REAL};
-            rocblas_int max = GETRF_NUM_INTERVALS_REAL;
+            I size[] = {GETRF_BLKSIZES_REAL};
+            I intervals[] = {GETRF_INTERVALS_REAL};
+            I max = GETRF_NUM_INTERVALS_REAL;
             blk = size[get_index(intervals, max, dim)];
         }
         else
         {
-            rocblas_int size[] = {GETRF_NPVT_BLKSIZES_REAL};
-            rocblas_int intervals[] = {GETRF_NPVT_INTERVALS_REAL};
-            rocblas_int max = GETRF_NPVT_NUM_INTERVALS_REAL;
+            I size[] = {GETRF_NPVT_BLKSIZES_REAL};
+            I intervals[] = {GETRF_NPVT_INTERVALS_REAL};
+            I max = GETRF_NPVT_NUM_INTERVALS_REAL;
             blk = size[get_index(intervals, max, dim)];
         }
     }
@@ -284,25 +284,25 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
 }
 
 /** Complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+I getrf_get_blksize(I dim, const bool pivot)
 {
-    rocblas_int blk;
+    I blk;
 
     if(ISBATCHED)
     {
         if(pivot)
         {
-            rocblas_int size[] = {GETRF_BATCH_BLKSIZES_COMPLEX};
-            rocblas_int intervals[] = {GETRF_BATCH_INTERVALS_COMPLEX};
-            rocblas_int max = GETRF_BATCH_NUM_INTERVALS_COMPLEX;
+            I size[] = {GETRF_BATCH_BLKSIZES_COMPLEX};
+            I intervals[] = {GETRF_BATCH_INTERVALS_COMPLEX};
+            I max = GETRF_BATCH_NUM_INTERVALS_COMPLEX;
             blk = size[get_index(intervals, max, dim)];
         }
         else
         {
-            rocblas_int size[] = {GETRF_NPVT_BATCH_BLKSIZES_COMPLEX};
-            rocblas_int intervals[] = {GETRF_NPVT_BATCH_INTERVALS_COMPLEX};
-            rocblas_int max = GETRF_NPVT_BATCH_NUM_INTERVALS_COMPLEX;
+            I size[] = {GETRF_NPVT_BATCH_BLKSIZES_COMPLEX};
+            I intervals[] = {GETRF_NPVT_BATCH_INTERVALS_COMPLEX};
+            I max = GETRF_NPVT_BATCH_NUM_INTERVALS_COMPLEX;
             blk = size[get_index(intervals, max, dim)];
         }
     }
@@ -310,16 +310,16 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
     {
         if(pivot)
         {
-            rocblas_int size[] = {GETRF_BLKSIZES_COMPLEX};
-            rocblas_int intervals[] = {GETRF_INTERVALS_COMPLEX};
-            rocblas_int max = GETRF_NUM_INTERVALS_COMPLEX;
+            I size[] = {GETRF_BLKSIZES_COMPLEX};
+            I intervals[] = {GETRF_INTERVALS_COMPLEX};
+            I max = GETRF_NUM_INTERVALS_COMPLEX;
             blk = size[get_index(intervals, max, dim)];
         }
         else
         {
-            rocblas_int size[] = {GETRF_NPVT_BLKSIZES_COMPLEX};
-            rocblas_int intervals[] = {GETRF_NPVT_INTERVALS_COMPLEX};
-            rocblas_int max = GETRF_NPVT_NUM_INTERVALS_COMPLEX;
+            I size[] = {GETRF_NPVT_BLKSIZES_COMPLEX};
+            I intervals[] = {GETRF_NPVT_INTERVALS_COMPLEX};
+            I max = GETRF_NPVT_NUM_INTERVALS_COMPLEX;
             blk = size[get_index(intervals, max, dim)];
         }
     }
@@ -333,29 +333,29 @@ rocblas_int getrf_get_blksize(rocblas_int dim, const bool pivot)
 /** This function returns the inner block size. This has been tuned based on
     experiments with panel matrices; it is not expected to change a lot.
     (not tunable by the user for now) **/
-template <bool ISBATCHED, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivot)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+I getrf_get_innerBlkSize(I m, I n, const bool pivot)
 {
-    rocblas_int blk;
+    I blk;
 
     if(ISBATCHED)
     {
         if(pivot)
         {
-            rocblas_int M = GETRF_BATCH_NUMROWS_REAL - 1;
-            rocblas_int N = GETRF_BATCH_NUMCOLS_REAL - 1;
-            rocblas_int intervalsM[] = {GETRF_BATCH_INTERVALSROW_REAL};
-            rocblas_int intervalsN[] = {GETRF_BATCH_INTERVALSCOL_REAL};
-            rocblas_int size[][GETRF_BATCH_NUMCOLS_REAL] = {GETRF_BATCH_INNBLKSIZES_REAL};
+            I M = GETRF_BATCH_NUMROWS_REAL - 1;
+            I N = GETRF_BATCH_NUMCOLS_REAL - 1;
+            I intervalsM[] = {GETRF_BATCH_INTERVALSROW_REAL};
+            I intervalsN[] = {GETRF_BATCH_INTERVALSCOL_REAL};
+            I size[][GETRF_BATCH_NUMCOLS_REAL] = {GETRF_BATCH_INNBLKSIZES_REAL};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
         else
         {
-            rocblas_int M = GETRF_NPVT_BATCH_NUMROWS_REAL - 1;
-            rocblas_int N = GETRF_NPVT_BATCH_NUMCOLS_REAL - 1;
-            rocblas_int intervalsM[] = {GETRF_NPVT_BATCH_INTERVALSROW_REAL};
-            rocblas_int intervalsN[] = {GETRF_NPVT_BATCH_INTERVALSCOL_REAL};
-            rocblas_int size[][GETRF_NPVT_BATCH_NUMCOLS_REAL] = {GETRF_NPVT_BATCH_INNBLKSIZES_REAL};
+            I M = GETRF_NPVT_BATCH_NUMROWS_REAL - 1;
+            I N = GETRF_NPVT_BATCH_NUMCOLS_REAL - 1;
+            I intervalsM[] = {GETRF_NPVT_BATCH_INTERVALSROW_REAL};
+            I intervalsN[] = {GETRF_NPVT_BATCH_INTERVALSCOL_REAL};
+            I size[][GETRF_NPVT_BATCH_NUMCOLS_REAL] = {GETRF_NPVT_BATCH_INNBLKSIZES_REAL};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
     }
@@ -363,20 +363,20 @@ rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivo
     {
         if(pivot)
         {
-            rocblas_int M = GETRF_NUMROWS_REAL - 1;
-            rocblas_int N = GETRF_NUMCOLS_REAL - 1;
-            rocblas_int intervalsM[] = {GETRF_INTERVALSROW_REAL};
-            rocblas_int intervalsN[] = {GETRF_INTERVALSCOL_REAL};
-            rocblas_int size[][GETRF_NUMCOLS_REAL] = {GETRF_INNBLKSIZES_REAL};
+            I M = GETRF_NUMROWS_REAL - 1;
+            I N = GETRF_NUMCOLS_REAL - 1;
+            I intervalsM[] = {GETRF_INTERVALSROW_REAL};
+            I intervalsN[] = {GETRF_INTERVALSCOL_REAL};
+            I size[][GETRF_NUMCOLS_REAL] = {GETRF_INNBLKSIZES_REAL};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
         else
         {
-            rocblas_int M = GETRF_NPVT_NUMROWS_REAL - 1;
-            rocblas_int N = GETRF_NPVT_NUMCOLS_REAL - 1;
-            rocblas_int intervalsM[] = {GETRF_NPVT_INTERVALSROW_REAL};
-            rocblas_int intervalsN[] = {GETRF_NPVT_INTERVALSCOL_REAL};
-            rocblas_int size[][GETRF_NPVT_NUMCOLS_REAL] = {GETRF_NPVT_INNBLKSIZES_REAL};
+            I M = GETRF_NPVT_NUMROWS_REAL - 1;
+            I N = GETRF_NPVT_NUMCOLS_REAL - 1;
+            I intervalsM[] = {GETRF_NPVT_INTERVALSROW_REAL};
+            I intervalsN[] = {GETRF_NPVT_INTERVALSCOL_REAL};
+            I size[][GETRF_NPVT_NUMCOLS_REAL] = {GETRF_NPVT_INNBLKSIZES_REAL};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
     }
@@ -388,30 +388,29 @@ rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivo
 }
 
 /** complex type version **/
-template <bool ISBATCHED, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivot)
+template <bool ISBATCHED, typename T, typename I, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+I getrf_get_innerBlkSize(I m, I n, const bool pivot)
 {
-    rocblas_int blk;
+    I blk;
 
     if(ISBATCHED)
     {
         if(pivot)
         {
-            rocblas_int M = GETRF_BATCH_NUMROWS_COMPLEX - 1;
-            rocblas_int N = GETRF_BATCH_NUMCOLS_COMPLEX - 1;
-            rocblas_int intervalsM[] = {GETRF_BATCH_INTERVALSROW_COMPLEX};
-            rocblas_int intervalsN[] = {GETRF_BATCH_INTERVALSCOL_COMPLEX};
-            rocblas_int size[][GETRF_BATCH_NUMCOLS_COMPLEX] = {GETRF_BATCH_INNBLKSIZES_COMPLEX};
+            I M = GETRF_BATCH_NUMROWS_COMPLEX - 1;
+            I N = GETRF_BATCH_NUMCOLS_COMPLEX - 1;
+            I intervalsM[] = {GETRF_BATCH_INTERVALSROW_COMPLEX};
+            I intervalsN[] = {GETRF_BATCH_INTERVALSCOL_COMPLEX};
+            I size[][GETRF_BATCH_NUMCOLS_COMPLEX] = {GETRF_BATCH_INNBLKSIZES_COMPLEX};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
         else
         {
-            rocblas_int M = GETRF_NPVT_BATCH_NUMROWS_COMPLEX - 1;
-            rocblas_int N = GETRF_NPVT_BATCH_NUMCOLS_COMPLEX - 1;
-            rocblas_int intervalsM[] = {GETRF_NPVT_BATCH_INTERVALSROW_COMPLEX};
-            rocblas_int intervalsN[] = {GETRF_NPVT_BATCH_INTERVALSCOL_COMPLEX};
-            rocblas_int size[][GETRF_NPVT_BATCH_NUMCOLS_COMPLEX]
-                = {GETRF_NPVT_BATCH_INNBLKSIZES_COMPLEX};
+            I M = GETRF_NPVT_BATCH_NUMROWS_COMPLEX - 1;
+            I N = GETRF_NPVT_BATCH_NUMCOLS_COMPLEX - 1;
+            I intervalsM[] = {GETRF_NPVT_BATCH_INTERVALSROW_COMPLEX};
+            I intervalsN[] = {GETRF_NPVT_BATCH_INTERVALSCOL_COMPLEX};
+            I size[][GETRF_NPVT_BATCH_NUMCOLS_COMPLEX] = {GETRF_NPVT_BATCH_INNBLKSIZES_COMPLEX};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
     }
@@ -419,20 +418,20 @@ rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivo
     {
         if(pivot)
         {
-            rocblas_int M = GETRF_NUMROWS_COMPLEX - 1;
-            rocblas_int N = GETRF_NUMCOLS_COMPLEX - 1;
-            rocblas_int intervalsM[] = {GETRF_INTERVALSROW_COMPLEX};
-            rocblas_int intervalsN[] = {GETRF_INTERVALSCOL_COMPLEX};
-            rocblas_int size[][GETRF_NUMCOLS_COMPLEX] = {GETRF_INNBLKSIZES_COMPLEX};
+            I M = GETRF_NUMROWS_COMPLEX - 1;
+            I N = GETRF_NUMCOLS_COMPLEX - 1;
+            I intervalsM[] = {GETRF_INTERVALSROW_COMPLEX};
+            I intervalsN[] = {GETRF_INTERVALSCOL_COMPLEX};
+            I size[][GETRF_NUMCOLS_COMPLEX] = {GETRF_INNBLKSIZES_COMPLEX};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
         else
         {
-            rocblas_int M = GETRF_NPVT_NUMROWS_COMPLEX - 1;
-            rocblas_int N = GETRF_NPVT_NUMCOLS_COMPLEX - 1;
-            rocblas_int intervalsM[] = {GETRF_NPVT_INTERVALSROW_COMPLEX};
-            rocblas_int intervalsN[] = {GETRF_NPVT_INTERVALSCOL_COMPLEX};
-            rocblas_int size[][GETRF_NPVT_NUMCOLS_COMPLEX] = {GETRF_NPVT_INNBLKSIZES_COMPLEX};
+            I M = GETRF_NPVT_NUMROWS_COMPLEX - 1;
+            I N = GETRF_NPVT_NUMCOLS_COMPLEX - 1;
+            I intervalsM[] = {GETRF_NPVT_INTERVALSROW_COMPLEX};
+            I intervalsN[] = {GETRF_NPVT_INTERVALSCOL_COMPLEX};
+            I size[][GETRF_NPVT_NUMCOLS_COMPLEX] = {GETRF_NPVT_INNBLKSIZES_COMPLEX};
             blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
         }
     }
@@ -445,21 +444,21 @@ rocblas_int getrf_get_innerBlkSize(rocblas_int m, rocblas_int n, const bool pivo
 
 /** This is the implementation of the factorization of the
     panel blocks in getrf **/
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename INFO, typename U>
 rocblas_status getrf_panelLU(rocblas_handle handle,
-                             const rocblas_int mm,
-                             const rocblas_int nn,
-                             const rocblas_int n,
+                             const I mm,
+                             const I nn,
+                             const I n,
                              U A,
-                             const rocblas_int r_shiftA,
-                             const rocblas_int inca,
-                             const rocblas_int lda,
+                             const rocblas_stride r_shiftA,
+                             const I inca,
+                             const I lda,
                              const rocblas_stride strideA,
-                             rocblas_int* ipiv,
-                             const rocblas_int shiftP,
+                             I* ipiv,
+                             const rocblas_stride shiftP,
                              const rocblas_stride strideP,
-                             rocblas_int* info,
-                             const rocblas_int batch_count,
+                             INFO* info,
+                             const I batch_count,
                              const bool pivot,
                              T* scalars,
                              void* work1,
@@ -468,9 +467,9 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                              void* work4,
                              const bool optim_mem,
                              T* pivotval,
-                             rocblas_int* pivotidx,
-                             const rocblas_int offset,
-                             rocblas_int* permut_idx,
+                             I* pivotidx,
+                             const I offset,
+                             I* permut_idx,
                              const rocblas_stride stridePI)
 {
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
@@ -484,18 +483,18 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 
     // r_shiftA is the row where the panel-block starts,
     // the actual position of the panel-block in the matrix is:
-    rocblas_int shiftA = r_shiftA + idx2D(0, offset, inca, lda);
+    rocblas_stride shiftA = r_shiftA + idx2D(0, offset, inca, lda);
 
-    rocblas_int blk = getrf_get_innerBlkSize<ISBATCHED, T>(mm, nn, pivot);
-    rocblas_int jb;
-    rocblas_int dimx, dimy, blocks, blocksy;
+    I blk = getrf_get_innerBlkSize<ISBATCHED, T>(mm, nn, pivot);
+    I jb;
+    I dimx, dimy, blocks, blocksy;
     dim3 grid, threads;
     size_t lmemsize;
 
     // Main loop
-    for(rocblas_int k = 0; k < nn; k += blk)
+    for(I k = 0; k < nn; k += blk)
     {
-        jb = min(nn - k, blk); // number of columns/pivots in the inner block
+        jb = std::min(nn - k, blk); // number of columns/pivots in the inner block
 
         // factorize inner panel block
         rocsolver_getf2_template<ISBATCHED, T>(handle, mm - k, jb, A, shiftA + idx2D(k, k, inca, lda),
@@ -505,7 +504,7 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
         if(pivot)
         {
             dimx = jb;
-            dimy = 1024 / dimx;
+            dimy = I(1024) / dimx;
             blocks = (n - jb - 1) / dimy + 1;
             grid = dim3(1, blocks, batch_count);
             threads = dim3(dimx, dimy, 1);
@@ -540,11 +539,11 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
 }
 
 /** Return the sizes of the different workspace arrays **/
-template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_getrf_getMemorySize(const rocblas_int m,
-                                   const rocblas_int n,
+template <bool BATCHED, bool STRIDED, typename T, typename I>
+void rocsolver_getrf_getMemorySize(const I m,
+                                   const I n,
                                    const bool pivot,
-                                   const rocblas_int batch_count,
+                                   const I batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work1,
                                    size_t* size_work2,
@@ -555,7 +554,8 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
                                    size_t* size_iipiv,
                                    size_t* size_iinfo,
                                    bool* optim_mem,
-                                   const rocblas_int inca = 1)
+                                   const I lda = 1,
+                                   const I inca = 1)
 {
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
@@ -575,8 +575,8 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
         return;
     }
 
-    rocblas_int dim = min(m, n);
-    rocblas_int blk = getrf_get_blksize<ISBATCHED, T>(dim, pivot);
+    I dim = std::min(m, n);
+    I blk = getrf_get_blksize<ISBATCHED, T>(dim, pivot);
 
     if(blk == 0)
     {
@@ -594,26 +594,27 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
     else
     {
+        // largest block panel dimension is 512
+        dim = min(dim, I(512));
+
         // requirements for largest possible GETF2 for the sub blocks
-        // (largest block panel dimension is 512)
-        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, min(dim, 512), pivot, batch_count,
-                                                    size_scalars, size_pivotval, size_pivotidx,
-                                                    true, inca);
+        rocsolver_getf2_getMemorySize<ISBATCHED, T>(m, dim, pivot, batch_count, size_scalars,
+                                                    size_pivotval, size_pivotidx, true, inca);
 
         // extra workspace to store info about singularity and pivots of sub blocks
-        *size_iinfo = sizeof(rocblas_int) * batch_count;
-        *size_iipiv = pivot ? m * sizeof(rocblas_int) * batch_count : 0;
+        *size_iinfo = sizeof(I) * batch_count;
+        *size_iipiv = pivot ? m * sizeof(I) * batch_count : 0;
 
         // extra workspace for calling largest possible TRSM
-        rocsolver_trsm_mem<BATCHED, STRIDED, T>(
-            rocblas_side_left, rocblas_operation_none, min(dim, 512), n, batch_count, size_work1,
-            size_work2, size_work3, size_work4, optim_mem, true, inca, inca);
+        rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, rocblas_operation_none, dim, n,
+                                                batch_count, size_work1, size_work2, size_work3,
+                                                size_work4, optim_mem, true, lda, lda, inca, inca);
         if(!pivot)
         {
             size_t w1, w2, w3, w4;
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right, rocblas_operation_none, m,
-                                                    min(dim, 512), batch_count, &w1, &w2, &w3, &w4,
-                                                    optim_mem, true, inca, inca);
+                                                    dim, batch_count, &w1, &w2, &w3, &w4, optim_mem,
+                                                    true, lda, lda, inca, inca);
             *size_work1 = std::max(*size_work1, w1);
             *size_work2 = std::max(*size_work2, w2);
             *size_work3 = std::max(*size_work3, w3);
@@ -622,29 +623,29 @@ void rocsolver_getrf_getMemorySize(const rocblas_int m,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename INFO, typename U>
 rocblas_status rocsolver_getrf_template(rocblas_handle handle,
-                                        const rocblas_int m,
-                                        const rocblas_int n,
+                                        const I m,
+                                        const I n,
                                         U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int inca,
-                                        const rocblas_int lda,
+                                        const rocblas_stride shiftA,
+                                        const I inca,
+                                        const I lda,
                                         const rocblas_stride strideA,
-                                        rocblas_int* ipiv,
-                                        const rocblas_int shiftP,
+                                        I* ipiv,
+                                        const rocblas_stride shiftP,
                                         const rocblas_stride strideP,
-                                        rocblas_int* info,
-                                        const rocblas_int batch_count,
+                                        INFO* info,
+                                        const I batch_count,
                                         T* scalars,
                                         void* work1,
                                         void* work2,
                                         void* work3,
                                         void* work4,
                                         T* pivotval,
-                                        rocblas_int* pivotidx,
-                                        rocblas_int* iipiv,
-                                        rocblas_int* iinfo,
+                                        I* pivotidx,
+                                        I* iipiv,
+                                        INFO* iinfo,
                                         const bool optim_mem,
                                         const bool pivot)
 {
@@ -658,8 +659,8 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
-    rocblas_int dim = min(m, n);
-    rocblas_int blocks, blocksy;
+    I dim = std::min(m, n);
+    I blocks, blocksy;
     dim3 grid, threads;
 
     // quick return if no dimensions
@@ -673,7 +674,7 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     }
 
     // size of outer blocks
-    rocblas_int blk = getrf_get_blksize<ISBATCHED, T>(dim, pivot);
+    I blk = getrf_get_blksize<ISBATCHED, T>(dim, pivot);
 
     if(blk == 0)
         return rocsolver_getf2_template<ISBATCHED, T>(handle, m, n, A, shiftA, inca, lda, strideA,
@@ -687,10 +688,10 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     T one = 1;
     T minone = -1;
 
-    rocblas_int jb, dimx, dimy;
-    rocblas_int nextpiv, mm, nn;
+    I jb, dimx, dimy;
+    I nextpiv, mm, nn;
     size_t lmemsize;
-    rocblas_int j = 0;
+    I j = 0;
 
     // in the npvt cases, panel determines whether the whole block-panel or only the
     // diagonal block is factorized
@@ -702,9 +703,9 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     }
 
     // MAIN LOOP
-    for(rocblas_int j = 0; j < dim; j += blk)
+    for(I j = 0; j < dim; j += blk)
     {
-        jb = min(dim - j, blk);
+        jb = std::min(dim - j, blk);
 
         if(pivot || panel)
         {

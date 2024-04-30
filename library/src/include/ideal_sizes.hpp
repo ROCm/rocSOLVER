@@ -230,7 +230,7 @@
     when using the blocked algorithm (POTRF). It also applies to the
     corresponding batched and strided-batched routines.*/
 #ifndef POTRF_BLOCKSIZE
-#define POTRF_BLOCKSIZE 64
+#define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
 #endif
 
 /*! \brief Determines the size at which rocSOLVER switches from
@@ -241,7 +241,16 @@
     the rest of the matrix has no more than POTRF_POTF2_SWITCHSIZE columns; at this point the last block,
     if any, will be factorized with the unblocked algorithm (POTF2).*/
 #ifndef POTRF_POTF2_SWITCHSIZE
-#define POTRF_POTF2_SWITCHSIZE 128
+#define POTRF_POTF2_SWITCHSIZE(T) POTRF_BLOCKSIZE(T)
+#endif
+
+/*! \brief Determines the maximum size at which rocSOLVER can use POTF2
+    \details 
+    POTF2 will attempt to factorize a small symmetric matrix that can fit entirely
+    within the LDS share memory using compact storage.  
+    The amount of LDS shared memory is assumed to be at least (64 * 1024) bytes. */
+#ifndef POTF2_MAX_SMALL_SIZE
+#define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
 #endif
 
 /************************** syevj/heevj ***************************************
@@ -430,4 +439,13 @@
 #endif
 #ifndef TRTRI_BATCH_BLKSIZES
 #define TRTRI_BATCH_BLKSIZES 0, 16, 32, 0
+#endif
+
+/************************** splitlu ***************************************
+*******************************************************************************/
+/*! \brief Determines the size at which rocSOLVER switches from
+    the kernel using a single thread block or using faster algorithm using rocPRIM */
+
+#ifndef SPLITLU_SWITCH_SIZE
+#define SPLITLU_SWITCH_SIZE 64
 #endif

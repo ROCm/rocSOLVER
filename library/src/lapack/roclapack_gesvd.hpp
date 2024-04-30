@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -137,7 +137,7 @@ rocblas_status rocsolver_gesvd_argCheck(rocblas_handle handle,
     if((left_svect == rocblas_svect_all || left_svect == rocblas_svect_singular) && ldu < m)
         return rocblas_status_invalid_size;
     if((right_svect == rocblas_svect_all && ldv < n)
-       || (right_svect == rocblas_svect_singular && ldv < min(m, n)))
+       || (right_svect == rocblas_svect_singular && ldv < std::min(m, n)))
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -145,10 +145,11 @@ rocblas_status rocsolver_gesvd_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n * m && !A) || (min(m, n) > 1 && !E) || (min(m, n) && !S) || (batch_count && !info))
+    if((n && m && !A) || (std::min(m, n) > 1 && !E) || (std::min(m, n) && !S)
+       || (batch_count && !info))
         return rocblas_status_invalid_pointer;
     if((left_svect == rocblas_svect_all && m && !U)
-       || (left_svect == rocblas_svect_singular && min(m, n) && !U))
+       || (left_svect == rocblas_svect_singular && std::min(m, n) && !U))
         return rocblas_status_invalid_pointer;
     if((right_svect == rocblas_svect_all || right_svect == rocblas_svect_singular) && n && !V)
         return rocblas_status_invalid_pointer;
@@ -217,8 +218,8 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
     const bool fast_thinSVD = (thinSVD && fast_alg == rocblas_outofplace);
 
     // auxiliary sizes and variables
-    const rocblas_int k = min(m, n);
-    const rocblas_int kk = max(m, n);
+    const rocblas_int k = std::min(m, n);
+    const rocblas_int kk = std::max(m, n);
     const rocblas_int nu = leftvN ? 0 : ((fast_thinSVD || (thinSVD && leadvN)) ? k : m);
     const rocblas_int nv = rightvN ? 0 : ((fast_thinSVD || (thinSVD && leadvN)) ? k : n);
     const rocblas_storev storev_lead = row ? rocblas_column_wise : rocblas_row_wise;
@@ -251,7 +252,7 @@ void rocsolver_gesvd_getMemorySize(const rocblas_svect left_svect,
 
     // size of array tau to store householder scalars on intermediate
     // orthonormal/unitary matrices
-    *size_tau_splits = max(*size_tau_splits, 2 * sizeof(T) * min(m, n) * batch_count);
+    *size_tau_splits = std::max(*size_tau_splits, 2 * sizeof(T) * std::min(m, n) * batch_count);
 
     // extra requirements for QR/LQ factorization
     if(thinSVD)
@@ -405,8 +406,8 @@ rocblas_status rocsolver_gesvd_template(rocblas_handle handle,
     const bool fast_thinSVD = (thinSVD && fast_alg == rocblas_outofplace);
 
     // auxiliary sizes and variables
-    const rocblas_int k = min(m, n);
-    const rocblas_int kk = max(m, n);
+    const rocblas_int k = std::min(m, n);
+    const rocblas_int kk = std::max(m, n);
     const rocblas_int shiftX = 0;
     const rocblas_int shiftY = 0;
     const rocblas_int shiftUV = 0;
