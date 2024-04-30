@@ -70,11 +70,14 @@ const vector<int> n_size_range = {
 const vector<vector<int>> large_matrix_size_range = {
     {192, 192, 0},
     {640, 640, 1},
+    {4225, 640, 1},
+    {640, 4225, 1},
+    {4225,  4225, 1},
     {1000, 1024, 0},
 };
 
 const vector<int> large_n_size_range = {
-    45, 64, 520, 1024, 2000,
+    45, 64, 520, 1024, 2000, 5000
 };
 
 Arguments getrf_setup_arguments(getrf_tuple tup)
