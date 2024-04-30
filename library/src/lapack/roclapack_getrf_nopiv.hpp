@@ -759,7 +759,7 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             I const nn = n1;
             rocblas_status istat = rocblas_status_success;
 
-            bool const use_rightlooking = false;
+            bool const use_rightlooking = true;
             if(use_rightlooking)
             {
                 istat = rocsolver_getrf_nopiv_rightlooking_template<BATCHED, STRIDED, T, I, U>(
@@ -779,6 +779,9 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             I const j = 0;
             ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
                                     row_offset + j, batch_count);
+
+            assert(istat == rocblas_status_success);
+
             if(istat != rocblas_status_success)
             {
                 return (istat);
@@ -806,6 +809,8 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
                     handle, side, trans, diag, mm, nn, A, shiftA + U11_offset, lda, strideA, A,
                     shiftA + A21_offset, lda, strideA, batch_count, optim_mem, work1, work2, work3,
                     work4);
+
+                assert(istat == rocblas_status_success);
 
                 if(istat != rocblas_status_success)
                 {
@@ -835,6 +840,8 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
                     handle, side, trans, diag, mm, nn, A, shiftA + L11_offset, lda, strideA, A,
                     shiftA + A12_offset, lda, strideA, batch_count, optim_mem, work1, work2, work3,
                     work4);
+
+                assert(istat == rocblas_status_success);
 
                 if(istat != rocblas_status_success)
                 {
@@ -867,6 +874,8 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
                     strideA, A, shiftA + U12_offset, lda, strideA, beta, A, shiftA + A22_offset,
                     lda, strideA, batch_count, (T**)nullptr);
 
+                assert(istat == rocblas_status_success);
+
                 if(istat != rocblas_status_success)
                 {
                     return (istat);
@@ -887,7 +896,7 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             I const mm = m2;
             I const nn = n2;
             I const j = m1;
-            bool const use_rightlooking = false;
+            bool const use_rightlooking = true;
             rocblas_status istat = rocblas_status_success;
             if(use_rightlooking)
             {
@@ -908,6 +917,9 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
 
             ROCSOLVER_LAUNCH_KERNEL(chk_singular<I>, gridReset, threads, 0, stream, iinfo, info,
                                     row_offset + j, batch_count);
+
+            assert(istat == rocblas_status_success);
+
             if(istat != rocblas_status_success)
             {
                 return (istat);
