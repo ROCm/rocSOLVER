@@ -108,8 +108,9 @@ void rocsolver_potrf_rightlooking_getMemorySize(const rocblas_int n,
     }
     else
     {
-        rocblas_int jb = nb;
-        size_t s1, s2;
+        rocblas_int const jb = nb;
+        size_t s1 = 0;
+        size_t s2 = 0;
 
         // size to store info about positiveness of each subblock
         *size_iinfo = sizeof(rocblas_int) * batch_count;
@@ -292,9 +293,11 @@ rocblas_status rocsolver_potrf_rightlooking_template(rocblas_handle handle,
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
     auto const nb = POTRF_BLOCKSIZE(T);
-    if(n <= POTRF_POTF2_SWITCHSIZE(T))
+    if(n <= nb)
+    {
         return rocsolver_potf2_template<T>(handle, uplo, n, A, shiftA, lda, strideA, info,
                                            batch_count, scalars, (T*)work1, pivots);
+    }
 
     // constants for rocblas functions calls
     T t_one = 1;
@@ -403,10 +406,15 @@ rocblas_status rocsolver_potrf_rightlooking_template(rocblas_handle handle,
     // factor last block
     if(j < n)
     {
-        rocsolver_potf2_template<T>(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
-                                    iinfo, batch_count, scalars, (T*)work1, pivots);
-        ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
-                                j + row_offset, batch_count);
+        auto const nn = n - j;
+        bool const has_work = (nn >= 1);
+        if(has_work)
+        {
+            rocsolver_potf2_template<T>(handle, uplo, nn, A, shiftA + idx2D(j, j, lda), lda,
+                                        strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
+            ROCSOLVER_LAUNCH_KERNEL(chk_positive<U>, gridReset, threads, 0, stream, iinfo, info,
+                                    j + row_offset, batch_count);
+        }
     }
 
     return rocblas_status_success;
