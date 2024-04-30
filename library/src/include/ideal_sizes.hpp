@@ -399,8 +399,7 @@
 // terminate recursion if matrix can fit in cache
 // --------------------------------------------
 #ifndef GETRF_NOPIV_STOPPING_NB
-// #define GETRF_NOPIV_STOPPING_NB(T) ((sizeof(T) == 4) ? 1408 : (sizeof(T) == 8) ? 1024 : 704)
-#define GETRF_NOPIV_STOPPING_NB(T) GETRF_NOPIV_BLOCKSIZE(T)
+#define GETRF_NOPIV_STOPPING_NB(T) ((sizeof(T) == 4) ? 1408 : (sizeof(T) == 8) ? 1024 : 704)
 #endif
 
 /****************************** getri *****************************************
