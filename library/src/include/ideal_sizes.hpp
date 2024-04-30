@@ -153,6 +153,18 @@
 
 /******************************* bdsqr ****************************************
 *******************************************************************************/
+/*! \brief Determines the size at which rocSOLVER switches from
+    the single-kernel to the multi-kernel algorithm when executing BSDQR. It also applies to the
+    corresponding batched and strided-batched routines.
+
+    \details When nv, nu, and nc are less than or equal to BDSQR_SWITCH_SIZE, BDSQR will launch
+    a single kernel with BDSQR_SPLIT_GROUPS thread groups to perform all computations. Otherwise,
+    BDSQR will launch multiple kernels in a loop, requiring synchronization with the device in
+    order to determine when the loop should terminate.*/
+#ifndef BDSQR_SWITCH_SIZE
+#define BDSQR_SWITCH_SIZE 512
+#endif
+
 /*! \brief Determines the maximum number of split diagonal blocks that BDSQR can process in parallel.
     Must be at least 1.
 
@@ -245,9 +257,9 @@
 #endif
 
 /*! \brief Determines the maximum size at which rocSOLVER can use POTF2
-    \details 
+    \details
     POTF2 will attempt to factorize a small symmetric matrix that can fit entirely
-    within the LDS share memory using compact storage.  
+    within the LDS share memory using compact storage.
     The amount of LDS shared memory is assumed to be at least (64 * 1024) bytes. */
 #ifndef POTF2_MAX_SMALL_SIZE
 #define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
