@@ -277,21 +277,11 @@ inline rocblas_status rocsolver_gemm(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-<<<<<<< HEAD
-#define INSTANTIATE_GEMM(BATCHED, STRIDED, T, U)                                                   \
-    template rocblas_status rocsolver_gemm<BATCHED, STRIDED, T, U>(                     \
-        rocblas_handle handle, rocblas_operation transA, rocblas_operation transB, rocblas_int m,  \
-        rocblas_int n, rocblas_int k, const T* alpha, U A, rocblas_stride shiftA, rocblas_int lda, \
-        rocblas_stride strideA, U B, rocblas_stride shiftB, rocblas_int ldb,                       \
-        rocblas_stride strideB, const T* beta, U C, rocblas_stride shiftC, rocblas_int ldc,        \
-        rocblas_stride strideC, rocblas_int batch_count, T** work)
-
-ROCSOLVER_END_NAMESPACE
-=======
 #define INSTANTIATE_GEMM(BATCHED, STRIDED, T, I, U)                                               \
     template rocblas_status rocsolver_gemm<BATCHED, STRIDED, T, I, U>(                            \
         rocblas_handle handle, rocblas_operation transA, rocblas_operation transB, I m, I n, I k, \
         const T* alpha, U A, rocblas_stride shiftA, I lda, rocblas_stride strideA, U B,           \
         rocblas_stride shiftB, I ldb, rocblas_stride strideB, const T* beta, U C,                 \
         rocblas_stride shiftC, I ldc, rocblas_stride strideC, I batch_count, T** work)
->>>>>>> release-staging/rocm-rel-6.2
+
+ROCSOLVER_END_NAMESPACE
