@@ -70,6 +70,12 @@ static size_t get_lds_size()
 template <typename T, typename I>
 static I get_getrf_nopiv_blocksize(I n)
 {
+    return (GETRF_NOPIV_BLOCKSIZE(T));
+}
+
+template <typename T, typename I>
+static I get_getrf_nopiv_blocksize_org(I n)
+{
     auto iceil = [](auto n, auto base) { return ((n - 1) / base + 1); };
     // ---------------------------------------------
     // want  nb_max * nb_max * sizeof(T) <= lds_size
