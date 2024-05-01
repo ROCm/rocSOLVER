@@ -3005,13 +3005,11 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t bc)
 {
     if(STRIDED)
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_sgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
-            : rocsolver_sgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
+        return GETRF ? rocsolver_sgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
+                     : rocsolver_sgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_sgetrf_npvt_64(handle, m, n, A, lda, info)
-            : rocsolver_sgetf2_npvt_64(handle, m, n, A, lda, info);
+        return GETRF ? rocsolver_sgetrf_npvt_64(handle, m, n, A, lda, info)
+                     : rocsolver_sgetf2_npvt_64(handle, m, n, A, lda, info);
 }
 
 inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
@@ -3026,13 +3024,11 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t bc)
 {
     if(STRIDED)
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_dgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
-            : rocsolver_dgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
+        return GETRF ? rocsolver_dgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
+                     : rocsolver_dgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_dgetrf_npvt_64(handle, m, n, A, lda, info)
-            : rocsolver_dgetf2_npvt_64(handle, m, n, A, lda, info);
+        return GETRF ? rocsolver_dgetrf_npvt_64(handle, m, n, A, lda, info)
+                     : rocsolver_dgetf2_npvt_64(handle, m, n, A, lda, info);
 }
 
 inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
@@ -3047,13 +3043,11 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t bc)
 {
     if(STRIDED)
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_cgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
-            : rocsolver_cgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
+        return GETRF ? rocsolver_cgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
+                     : rocsolver_cgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_cgetrf_npvt_64(handle, m, n, A, lda, info)
-            : rocsolver_cgetf2_npvt_64(handle, m, n, A, lda, info);
+        return GETRF ? rocsolver_cgetrf_npvt_64(handle, m, n, A, lda, info)
+                     : rocsolver_cgetf2_npvt_64(handle, m, n, A, lda, info);
 }
 
 inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
@@ -3068,13 +3062,11 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t bc)
 {
     if(STRIDED)
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_zgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
-            : rocsolver_zgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
+        return GETRF ? rocsolver_zgetrf_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc)
+                     : rocsolver_zgetf2_npvt_strided_batched_64(handle, m, n, A, lda, stA, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_zgetrf_npvt_64(handle, m, n, A, lda, info)
-            : rocsolver_zgetf2_npvt_64(handle, m, n, A, lda, info);
+        return GETRF ? rocsolver_zgetrf_npvt_64(handle, m, n, A, lda, info)
+                     : rocsolver_zgetf2_npvt_64(handle, m, n, A, lda, info);
 }
 
 // batched
@@ -3149,9 +3141,8 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t* info,
                                                  int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_sgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
-        : rocsolver_sgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
+    return GETRF ? rocsolver_sgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
+                 : rocsolver_sgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
 }
 
 inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
@@ -3165,9 +3156,8 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t* info,
                                                  int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_dgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
-        : rocsolver_dgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
+    return GETRF ? rocsolver_dgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
+                 : rocsolver_dgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
 }
 
 inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
@@ -3181,9 +3171,8 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t* info,
                                                  int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_cgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
-        : rocsolver_cgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
+    return GETRF ? rocsolver_cgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
+                 : rocsolver_cgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
 }
 
 inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
@@ -3197,9 +3186,8 @@ inline rocblas_status rocsolver_getf2_getrf_npvt(bool STRIDED,
                                                  int64_t* info,
                                                  int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_zgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
-        : rocsolver_zgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
+    return GETRF ? rocsolver_zgetrf_npvt_batched_64(handle, m, n, A, lda, info, bc)
+                 : rocsolver_zgetf2_npvt_batched_64(handle, m, n, A, lda, info, bc);
 }
 /********************************************************/
 
@@ -3308,12 +3296,11 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
 {
     if(STRIDED)
         return GETRF
-            ? rocblas_status_not_implemented // rocsolver_sgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
+            ? rocsolver_sgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
             : rocsolver_sgetf2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_sgetrf_64(handle, m, n, A, lda, ipiv, info)
-            : rocsolver_sgetf2_64(handle, m, n, A, lda, ipiv, info);
+        return GETRF ? rocsolver_sgetrf_64(handle, m, n, A, lda, ipiv, info)
+                     : rocsolver_sgetf2_64(handle, m, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
@@ -3331,12 +3318,11 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
 {
     if(STRIDED)
         return GETRF
-            ? rocblas_status_not_implemented // rocsolver_dgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
+            ? rocsolver_dgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
             : rocsolver_dgetf2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_dgetrf_64(handle, m, n, A, lda, ipiv, info)
-            : rocsolver_dgetf2_64(handle, m, n, A, lda, ipiv, info);
+        return GETRF ? rocsolver_dgetrf_64(handle, m, n, A, lda, ipiv, info)
+                     : rocsolver_dgetf2_64(handle, m, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
@@ -3354,12 +3340,11 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
 {
     if(STRIDED)
         return GETRF
-            ? rocblas_status_not_implemented // rocsolver_cgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
+            ? rocsolver_cgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
             : rocsolver_cgetf2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_cgetrf_64(handle, m, n, A, lda, ipiv, info)
-            : rocsolver_cgetf2_64(handle, m, n, A, lda, ipiv, info);
+        return GETRF ? rocsolver_cgetrf_64(handle, m, n, A, lda, ipiv, info)
+                     : rocsolver_cgetf2_64(handle, m, n, A, lda, ipiv, info);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
@@ -3377,12 +3362,11 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
 {
     if(STRIDED)
         return GETRF
-            ? rocblas_status_not_implemented // rocsolver_zgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
+            ? rocsolver_zgetrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc)
             : rocsolver_zgetf2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, info, bc);
     else
-        return GETRF
-            ? rocblas_status_not_implemented // rocsolver_zgetrf_64(handle, m, n, A, lda, ipiv, info)
-            : rocsolver_zgetf2_64(handle, m, n, A, lda, ipiv, info);
+        return GETRF ? rocsolver_zgetrf_64(handle, m, n, A, lda, ipiv, info)
+                     : rocsolver_zgetf2_64(handle, m, n, A, lda, ipiv, info);
 }
 
 // batched
@@ -3467,9 +3451,8 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
                                             int64_t* info,
                                             int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_sgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
-        : rocsolver_sgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
+    return GETRF ? rocsolver_sgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
+                 : rocsolver_sgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
@@ -3485,9 +3468,8 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
                                             int64_t* info,
                                             int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_dgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
-        : rocsolver_dgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
+    return GETRF ? rocsolver_dgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
+                 : rocsolver_dgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
@@ -3503,9 +3485,8 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
                                             int64_t* info,
                                             int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_cgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
-        : rocsolver_cgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
+    return GETRF ? rocsolver_cgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
+                 : rocsolver_cgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
 }
 
 inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
@@ -3521,9 +3502,8 @@ inline rocblas_status rocsolver_getf2_getrf(bool STRIDED,
                                             int64_t* info,
                                             int64_t bc)
 {
-    return GETRF
-        ? rocblas_status_not_implemented // rocsolver_zgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
-        : rocsolver_zgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
+    return GETRF ? rocsolver_zgetrf_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc)
+                 : rocsolver_zgetf2_batched_64(handle, m, n, A, lda, ipiv, stP, info, bc);
 }
 /********************************************************/
 
