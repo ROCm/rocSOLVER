@@ -111,7 +111,8 @@ rocblas_status rocsolver_claswp(rocblas_handle handle,
                                 const rocblas_int* ipiv,
                                 const rocblas_int incp)
 {
-    return rocsolver::rocsolver_laswp_impl<rocblas_float_complex>(handle, n, A, lda, k1, k2, ipiv, incp);
+    return rocsolver::rocsolver_laswp_impl<rocblas_float_complex>(handle, n, A, lda, k1, k2, ipiv,
+                                                                  incp);
 }
 
 rocblas_status rocsolver_zlaswp(rocblas_handle handle,
@@ -123,7 +124,8 @@ rocblas_status rocsolver_zlaswp(rocblas_handle handle,
                                 const rocblas_int* ipiv,
                                 const rocblas_int incp)
 {
-    return rocsolver::rocsolver_laswp_impl<rocblas_double_complex>(handle, n, A, lda, k1, k2, ipiv, incp);
+    return rocsolver::rocsolver_laswp_impl<rocblas_double_complex>(handle, n, A, lda, k1, k2, ipiv,
+                                                                   incp);
 }
 
 } // extern C

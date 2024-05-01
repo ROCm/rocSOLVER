@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -167,9 +167,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<float>(handle, itype, evect, erange, uplo, n, A,
-                                                       lda, B, ldb, vl, vu, il, iu, abstol, h_nev,
-                                                       W, info);
+    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<float>(handle, itype, evect, erange,
+                                                                  uplo, n, A, lda, B, ldb, vl, vu,
+                                                                  il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_inplace(rocblas_handle handle,
@@ -191,9 +191,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<double>(handle, itype, evect, erange, uplo, n, A,
-                                                        lda, B, ldb, vl, vu, il, iu, abstol, h_nev,
-                                                        W, info);
+    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<double>(handle, itype, evect, erange,
+                                                                   uplo, n, A, lda, B, ldb, vl, vu,
+                                                                   il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdx_inplace(rocblas_handle handle,

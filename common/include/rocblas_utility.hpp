@@ -32,15 +32,16 @@
 #include <exception>
 #include <new>
 #include <type_traits>
+
 #include <hip/hip_runtime.h>
 #include <rocblas/rocblas.h>
 #include <rocsolver/rocsolver.h>
 
 // concaternate the two arguments, evaluating them first if they are macros
-#define ROCSOLVER_CONCAT2_HELPER(a, b) a ## b
+#define ROCSOLVER_CONCAT2_HELPER(a, b) a##b
 #define ROCSOLVER_CONCAT2(a, b) ROCSOLVER_CONCAT2_HELPER(a, b)
 
-#define ROCSOLVER_CONCAT4_HELPER(a, b, c, d) a ## b ## c ## d
+#define ROCSOLVER_CONCAT4_HELPER(a, b, c, d) a##b##c##d
 #define ROCSOLVER_CONCAT4(a, b, c, d) ROCSOLVER_CONCAT4_HELPER(a, b, c, d)
 
 #if ROCSOLVER_VERSION_MINOR < 10
@@ -56,11 +57,16 @@
 #endif
 
 #ifndef ROCSOLVER_BEGIN_NAMESPACE
-#define ROCSOLVER_BEGIN_NAMESPACE    \
-    namespace rocsolver {            \
-    inline namespace ROCSOLVER_CONCAT4(v, ROCSOLVER_VERSION_MAJOR, ROCSOLVER_VERSION_MINOR_PADDED, ROCSOLVER_VERSION_PATCH_PADDED) {
-#define ROCSOLVER_END_NAMESPACE      \
-    }                                \
+#define ROCSOLVER_BEGIN_NAMESPACE                                      \
+    namespace rocsolver                                                \
+    {                                                                  \
+    inline namespace ROCSOLVER_CONCAT4(v,                              \
+                                       ROCSOLVER_VERSION_MAJOR,        \
+                                       ROCSOLVER_VERSION_MINOR_PADDED, \
+                                       ROCSOLVER_VERSION_PATCH_PADDED) \
+    {
+#define ROCSOLVER_END_NAMESPACE \
+    }                           \
     }
 #endif
 

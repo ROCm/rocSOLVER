@@ -114,8 +114,8 @@ rocblas_status rocsolver_scsrrf_splitlu(rocblas_handle handle,
                                         rocblas_int* indU,
                                         float* valU)
 {
-    return rocsolver::rocsolver_csrrf_splitlu_impl<float>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
-                                               ptrU, indU, valU);
+    return rocsolver::rocsolver_csrrf_splitlu_impl<float>(handle, n, nnzT, ptrT, indT, valT, ptrL,
+                                                          indL, valL, ptrU, indU, valU);
 }
 
 rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
@@ -131,8 +131,8 @@ rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
                                         rocblas_int* indU,
                                         double* valU)
 {
-    return rocsolver::rocsolver_csrrf_splitlu_impl<double>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
-                                                ptrU, indU, valU);
+    return rocsolver::rocsolver_csrrf_splitlu_impl<double>(handle, n, nnzT, ptrT, indT, valT, ptrL,
+                                                           indL, valL, ptrU, indU, valU);
 }
 
 } // extern C

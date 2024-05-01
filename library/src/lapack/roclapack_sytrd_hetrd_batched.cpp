@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -121,8 +121,8 @@ rocblas_status rocsolver_ssytrd_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<float>(handle, uplo, n, A, lda, D, strideD, E,
-                                                     strideE, tau, strideP, batch_count);
+    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<float>(
+        handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
@@ -138,8 +138,8 @@ rocblas_status rocsolver_dsytrd_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<double>(handle, uplo, n, A, lda, D, strideD, E,
-                                                      strideE, tau, strideP, batch_count);
+    return rocsolver::rocsolver_sytrd_hetrd_batched_impl<double>(
+        handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 rocblas_status rocsolver_chetrd_batched(rocblas_handle handle,

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -134,7 +134,8 @@ rocblas_status rocsolver_ssygv(rocblas_handle handle,
                                float* E,
                                rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygv_hegv_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E, info);
+    return rocsolver::rocsolver_sygv_hegv_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb,
+                                                      D, E, info);
 }
 
 rocblas_status rocsolver_dsygv(rocblas_handle handle,
@@ -150,8 +151,8 @@ rocblas_status rocsolver_dsygv(rocblas_handle handle,
                                double* E,
                                rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygv_hegv_impl<double>(handle, itype, evect, uplo, n, A, lda, B, ldb, D, E,
-                                            info);
+    return rocsolver::rocsolver_sygv_hegv_impl<double>(handle, itype, evect, uplo, n, A, lda, B,
+                                                       ldb, D, E, info);
 }
 
 rocblas_status rocsolver_chegv(rocblas_handle handle,
@@ -167,8 +168,8 @@ rocblas_status rocsolver_chegv(rocblas_handle handle,
                                float* E,
                                rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygv_hegv_impl<rocblas_float_complex>(handle, itype, evect, uplo, n, A, lda, B,
-                                                           ldb, D, E, info);
+    return rocsolver::rocsolver_sygv_hegv_impl<rocblas_float_complex>(handle, itype, evect, uplo, n,
+                                                                      A, lda, B, ldb, D, E, info);
 }
 
 rocblas_status rocsolver_zhegv(rocblas_handle handle,
@@ -184,8 +185,8 @@ rocblas_status rocsolver_zhegv(rocblas_handle handle,
                                double* E,
                                rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygv_hegv_impl<rocblas_double_complex>(handle, itype, evect, uplo, n, A, lda,
-                                                            B, ldb, D, E, info);
+    return rocsolver::rocsolver_sygv_hegv_impl<rocblas_double_complex>(handle, itype, evect, uplo, n,
+                                                                       A, lda, B, ldb, D, E, info);
 }
 
 } // extern C

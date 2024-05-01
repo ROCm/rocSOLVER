@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -151,9 +151,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesvdj_notransv(rocblas_handle handle
                                                            const rocblas_int ldv,
                                                            rocblas_int* info)
 {
-    return rocsolver::rocsolver_gesvdj_notransv_impl<float>(handle, left_svect, right_svect, m, n, A, lda,
-                                                 abstol, residual, max_sweeps, n_sweeps, S, U, ldu,
-                                                 V, ldv, info);
+    return rocsolver::rocsolver_gesvdj_notransv_impl<float>(handle, left_svect, right_svect, m, n,
+                                                            A, lda, abstol, residual, max_sweeps,
+                                                            n_sweeps, S, U, ldu, V, ldv, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdj_notransv(rocblas_handle handle,
@@ -174,9 +174,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesvdj_notransv(rocblas_handle handle
                                                            const rocblas_int ldv,
                                                            rocblas_int* info)
 {
-    return rocsolver::rocsolver_gesvdj_notransv_impl<double>(handle, left_svect, right_svect, m, n, A, lda,
-                                                  abstol, residual, max_sweeps, n_sweeps, S, U, ldu,
-                                                  V, ldv, info);
+    return rocsolver::rocsolver_gesvdj_notransv_impl<double>(handle, left_svect, right_svect, m, n,
+                                                             A, lda, abstol, residual, max_sweeps,
+                                                             n_sweeps, S, U, ldu, V, ldv, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgesvdj_notransv(rocblas_handle handle,

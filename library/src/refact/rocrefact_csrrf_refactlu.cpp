@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -115,8 +115,8 @@ rocblas_status rocsolver_scsrrf_refactlu(rocblas_handle handle,
                                          rocblas_int* pivQ,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver::rocsolver_csrrf_refactlu_impl<float>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
-                                                valT, pivP, pivQ, rfinfo);
+    return rocsolver::rocsolver_csrrf_refactlu_impl<float>(handle, n, nnzA, ptrA, indA, valA, nnzT,
+                                                           ptrT, indT, valT, pivP, pivQ, rfinfo);
 }
 
 rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
@@ -133,8 +133,8 @@ rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
                                          rocblas_int* pivQ,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver::rocsolver_csrrf_refactlu_impl<double>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
-                                                 indT, valT, pivP, pivQ, rfinfo);
+    return rocsolver::rocsolver_csrrf_refactlu_impl<double>(handle, n, nnzA, ptrA, indA, valA, nnzT,
+                                                            ptrT, indT, valT, pivP, pivQ, rfinfo);
 }
 
 } // extern C

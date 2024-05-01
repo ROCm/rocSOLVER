@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -142,8 +142,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver::rocsolver_gels_outofplace_impl<float>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
-                                                 info);
+    return rocsolver::rocsolver_gels_outofplace_impl<float>(handle, trans, m, n, nrhs, A, lda, B,
+                                                            ldb, X, ldx, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgels_outofplace(rocblas_handle handle,
@@ -159,8 +159,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver::rocsolver_gels_outofplace_impl<double>(handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx,
-                                                  info);
+    return rocsolver::rocsolver_gels_outofplace_impl<double>(handle, trans, m, n, nrhs, A, lda, B,
+                                                             ldb, X, ldx, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgels_outofplace(rocblas_handle handle,
@@ -176,8 +176,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver::rocsolver_gels_outofplace_impl<rocblas_float_complex>(handle, trans, m, n, nrhs, A, lda,
-                                                                 B, ldb, X, ldx, info);
+    return rocsolver::rocsolver_gels_outofplace_impl<rocblas_float_complex>(
+        handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_outofplace(rocblas_handle handle,
@@ -193,8 +193,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgels_outofplace(rocblas_handle handle
                                                            const rocblas_int ldx,
                                                            rocblas_int* info)
 {
-    return rocsolver::rocsolver_gels_outofplace_impl<rocblas_double_complex>(handle, trans, m, n, nrhs, A, lda,
-                                                                  B, ldb, X, ldx, info);
+    return rocsolver::rocsolver_gels_outofplace_impl<rocblas_double_complex>(
+        handle, trans, m, n, nrhs, A, lda, B, ldb, X, ldx, info);
 }
 
 } // extern C

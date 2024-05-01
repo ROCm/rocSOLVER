@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc.
  * *************************************************************************/
 
 #include "roclapack_syevd_heevd.hpp"
@@ -134,8 +134,8 @@ rocblas_status rocsolver_cheevd(rocblas_handle handle,
                                 float* E,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_syevd_heevd_impl<rocblas_float_complex>(handle, evect, uplo, n, A, lda, D, E,
-                                                             info);
+    return rocsolver::rocsolver_syevd_heevd_impl<rocblas_float_complex>(handle, evect, uplo, n, A,
+                                                                        lda, D, E, info);
 }
 
 rocblas_status rocsolver_zheevd(rocblas_handle handle,
@@ -148,8 +148,8 @@ rocblas_status rocsolver_zheevd(rocblas_handle handle,
                                 double* E,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_syevd_heevd_impl<rocblas_double_complex>(handle, evect, uplo, n, A, lda, D, E,
-                                                              info);
+    return rocsolver::rocsolver_syevd_heevd_impl<rocblas_double_complex>(handle, evect, uplo, n, A,
+                                                                         lda, D, E, info);
 }
 
 } // extern C

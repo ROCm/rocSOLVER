@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -146,7 +146,8 @@ extern "C" rocblas_status rocsolver_cposv(rocblas_handle handle,
                                           const rocblas_int ldb,
                                           rocblas_int* info)
 {
-    return rocsolver::rocsolver_posv_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A, lda, B, ldb, info);
+    return rocsolver::rocsolver_posv_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A, lda, B,
+                                                                 ldb, info);
 }
 
 extern "C" rocblas_status rocsolver_zposv(rocblas_handle handle,
@@ -159,5 +160,6 @@ extern "C" rocblas_status rocsolver_zposv(rocblas_handle handle,
                                           const rocblas_int ldb,
                                           rocblas_int* info)
 {
-    return rocsolver::rocsolver_posv_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A, lda, B, ldb, info);
+    return rocsolver::rocsolver_posv_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A, lda, B,
+                                                                  ldb, info);
 }

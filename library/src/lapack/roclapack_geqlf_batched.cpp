@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -114,7 +114,8 @@ rocblas_status rocsolver_sgeqlf_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_geqlf_batched_impl<float>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver::rocsolver_geqlf_batched_impl<float>(handle, m, n, A, lda, ipiv, stridep,
+                                                          batch_count);
 }
 
 rocblas_status rocsolver_dgeqlf_batched(rocblas_handle handle,
@@ -126,7 +127,8 @@ rocblas_status rocsolver_dgeqlf_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_geqlf_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep, batch_count);
+    return rocsolver::rocsolver_geqlf_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep,
+                                                           batch_count);
 }
 
 rocblas_status rocsolver_cgeqlf_batched(rocblas_handle handle,
@@ -138,8 +140,8 @@ rocblas_status rocsolver_cgeqlf_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_geqlf_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, stridep,
-                                                               batch_count);
+    return rocsolver::rocsolver_geqlf_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv,
+                                                                          stridep, batch_count);
 }
 
 rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
@@ -151,8 +153,8 @@ rocblas_status rocsolver_zgeqlf_batched(rocblas_handle handle,
                                         const rocblas_stride stridep,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_geqlf_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, stridep,
-                                                                batch_count);
+    return rocsolver::rocsolver_geqlf_batched_impl<rocblas_double_complex>(
+        handle, m, n, A, lda, ipiv, stridep, batch_count);
 }
 
 } // extern C

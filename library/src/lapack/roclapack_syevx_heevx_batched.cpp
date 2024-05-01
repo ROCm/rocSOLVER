@@ -160,9 +160,9 @@ rocblas_status rocsolver_ssyevx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_syevx_heevx_batched_impl<float>(handle, evect, erange, uplo, n, A, lda, vl, vu,
-                                                     il, iu, abstol, nev, W, strideW, Z, ldz, ifail,
-                                                     strideF, info, batch_count);
+    return rocsolver::rocsolver_syevx_heevx_batched_impl<float>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, strideW, Z, ldz,
+        ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
@@ -187,9 +187,9 @@ rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_syevx_heevx_batched_impl<double>(handle, evect, erange, uplo, n, A, lda, vl,
-                                                      vu, il, iu, abstol, nev, W, strideW, Z, ldz,
-                                                      ifail, strideF, info, batch_count);
+    return rocsolver::rocsolver_syevx_heevx_batched_impl<double>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, strideW, Z, ldz,
+        ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_cheevx_batched(rocblas_handle handle,

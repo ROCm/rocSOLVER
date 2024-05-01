@@ -144,8 +144,8 @@ rocblas_status rocsolver_sbdsvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver::rocsolver_bdsvdx_impl<float>(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv,
-                                        S, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_bdsvdx_impl<float>(handle, uplo, svect, srange, n, D, E, vl, vu, il,
+                                                   iu, nsv, S, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
@@ -166,8 +166,8 @@ rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver::rocsolver_bdsvdx_impl<double>(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv,
-                                         S, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_bdsvdx_impl<double>(handle, uplo, svect, srange, n, D, E, vl, vu,
+                                                    il, iu, nsv, S, Z, ldz, ifail, info);
 }
 
 } // extern C

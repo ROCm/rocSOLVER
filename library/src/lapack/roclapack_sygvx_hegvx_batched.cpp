@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -173,9 +173,9 @@ rocblas_status rocsolver_ssygvx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_sygvx_hegvx_batched_impl<float>(handle, itype, evect, erange, uplo, n, A, lda,
-                                                     B, ldb, vl, vu, il, iu, abstol, nev, W, strideW,
-                                                     Z, ldz, ifail, strideF, info, batch_count);
+    return rocsolver::rocsolver_sygvx_hegvx_batched_impl<float>(
+        handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W,
+        strideW, Z, ldz, ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_dsygvx_batched(rocblas_handle handle,
@@ -203,9 +203,9 @@ rocblas_status rocsolver_dsygvx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_sygvx_hegvx_batched_impl<double>(handle, itype, evect, erange, uplo, n, A, lda,
-                                                      B, ldb, vl, vu, il, iu, abstol, nev, W, strideW,
-                                                      Z, ldz, ifail, strideF, info, batch_count);
+    return rocsolver::rocsolver_sygvx_hegvx_batched_impl<double>(
+        handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W,
+        strideW, Z, ldz, ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_chegvx_batched(rocblas_handle handle,

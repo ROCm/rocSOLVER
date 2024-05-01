@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -107,8 +107,8 @@ extern "C" rocblas_status rocsolver_spotrs_strided_batched(rocblas_handle handle
                                                            const rocblas_stride strideB,
                                                            const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_potrs_strided_batched_impl<float>(handle, uplo, n, nrhs, A, lda, strideA, B,
-                                                       ldb, strideB, batch_count);
+    return rocsolver::rocsolver_potrs_strided_batched_impl<float>(
+        handle, uplo, n, nrhs, A, lda, strideA, B, ldb, strideB, batch_count);
 }
 
 extern "C" rocblas_status rocsolver_dpotrs_strided_batched(rocblas_handle handle,
@@ -123,8 +123,8 @@ extern "C" rocblas_status rocsolver_dpotrs_strided_batched(rocblas_handle handle
                                                            const rocblas_stride strideB,
                                                            const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_potrs_strided_batched_impl<double>(handle, uplo, n, nrhs, A, lda, strideA, B,
-                                                        ldb, strideB, batch_count);
+    return rocsolver::rocsolver_potrs_strided_batched_impl<double>(
+        handle, uplo, n, nrhs, A, lda, strideA, B, ldb, strideB, batch_count);
 }
 
 extern "C" rocblas_status rocsolver_cpotrs_strided_batched(rocblas_handle handle,

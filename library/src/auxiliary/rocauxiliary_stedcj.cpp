@@ -151,7 +151,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cstedcj(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedcj_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedcj_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc,
+                                                                   info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zstedcj(rocblas_handle handle,
@@ -163,7 +164,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedcj(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedcj_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedcj_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc,
+                                                                    info);
 }
 
 } // extern C

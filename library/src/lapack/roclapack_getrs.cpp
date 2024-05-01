@@ -139,7 +139,8 @@ rocblas_status rocsolver_cgetrs(rocblas_handle handle,
                                 rocblas_float_complex* B,
                                 const rocblas_int ldb)
 {
-    return rocsolver::rocsolver_getrs_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+    return rocsolver::rocsolver_getrs_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda,
+                                                                  ipiv, B, ldb);
 }
 
 rocblas_status rocsolver_zgetrs(rocblas_handle handle,
@@ -152,7 +153,8 @@ rocblas_status rocsolver_zgetrs(rocblas_handle handle,
                                 rocblas_double_complex* B,
                                 const rocblas_int ldb)
 {
-    return rocsolver::rocsolver_getrs_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+    return rocsolver::rocsolver_getrs_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda,
+                                                                   ipiv, B, ldb);
 }
 
 rocblas_status rocsolver_sgetrs_64(rocblas_handle handle,
@@ -191,7 +193,8 @@ rocblas_status rocsolver_cgetrs_64(rocblas_handle handle,
                                    rocblas_float_complex* B,
                                    const int64_t ldb)
 {
-    return rocsolver::rocsolver_getrs_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+    return rocsolver::rocsolver_getrs_impl<rocblas_float_complex>(handle, trans, n, nrhs, A, lda,
+                                                                  ipiv, B, ldb);
 }
 
 rocblas_status rocsolver_zgetrs_64(rocblas_handle handle,
@@ -204,7 +207,8 @@ rocblas_status rocsolver_zgetrs_64(rocblas_handle handle,
                                    rocblas_double_complex* B,
                                    const int64_t ldb)
 {
-    return rocsolver::rocsolver_getrs_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda, ipiv, B, ldb);
+    return rocsolver::rocsolver_getrs_impl<rocblas_double_complex>(handle, trans, n, nrhs, A, lda,
+                                                                   ipiv, B, ldb);
 }
 
 } // extern C

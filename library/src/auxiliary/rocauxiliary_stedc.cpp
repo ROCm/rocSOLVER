@@ -144,7 +144,8 @@ rocblas_status rocsolver_cstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedc_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc,
+                                                                  info);
 }
 
 rocblas_status rocsolver_zstedc(rocblas_handle handle,
@@ -156,7 +157,8 @@ rocblas_status rocsolver_zstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedc_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc,
+                                                                   info);
 }
 
 } // extern C

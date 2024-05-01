@@ -145,8 +145,8 @@ rocblas_status rocsolver_ssygvdj_batched(rocblas_handle handle,
                                          rocblas_int* info,
                                          const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_sygvdj_hegvdj_batched_impl<float>(handle, itype, evect, uplo, n, A, lda, B,
-                                                       ldb, D, strideD, info, batch_count);
+    return rocsolver::rocsolver_sygvdj_hegvdj_batched_impl<float>(
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, info, batch_count);
 }
 
 rocblas_status rocsolver_dsygvdj_batched(rocblas_handle handle,
@@ -163,8 +163,8 @@ rocblas_status rocsolver_dsygvdj_batched(rocblas_handle handle,
                                          rocblas_int* info,
                                          const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_sygvdj_hegvdj_batched_impl<double>(handle, itype, evect, uplo, n, A, lda, B,
-                                                        ldb, D, strideD, info, batch_count);
+    return rocsolver::rocsolver_sygvdj_hegvdj_batched_impl<double>(
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, strideD, info, batch_count);
 }
 
 rocblas_status rocsolver_chegvdj_batched(rocblas_handle handle,

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -137,8 +137,8 @@ rocblas_status rocsolver_ssyevdj_batched(rocblas_handle handle,
                                          rocblas_int* info,
                                          const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_syevdj_heevdj_batched_impl<float>(handle, evect, uplo, n, A, lda, D, strideD,
-                                                       info, batch_count);
+    return rocsolver::rocsolver_syevdj_heevdj_batched_impl<float>(handle, evect, uplo, n, A, lda, D,
+                                                                  strideD, info, batch_count);
 }
 
 rocblas_status rocsolver_dsyevdj_batched(rocblas_handle handle,
@@ -152,8 +152,8 @@ rocblas_status rocsolver_dsyevdj_batched(rocblas_handle handle,
                                          rocblas_int* info,
                                          const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_syevdj_heevdj_batched_impl<double>(handle, evect, uplo, n, A, lda, D, strideD,
-                                                        info, batch_count);
+    return rocsolver::rocsolver_syevdj_heevdj_batched_impl<double>(handle, evect, uplo, n, A, lda,
+                                                                   D, strideD, info, batch_count);
 }
 
 rocblas_status rocsolver_cheevdj_batched(rocblas_handle handle,

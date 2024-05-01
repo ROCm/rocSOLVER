@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -130,7 +130,8 @@ rocblas_status rocsolver_slabrd(rocblas_handle handle,
                                 float* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver::rocsolver_labrd_impl<float>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
+    return rocsolver::rocsolver_labrd_impl<float>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx,
+                                                  Y, ldy);
 }
 
 rocblas_status rocsolver_dlabrd(rocblas_handle handle,
@@ -148,7 +149,8 @@ rocblas_status rocsolver_dlabrd(rocblas_handle handle,
                                 double* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver::rocsolver_labrd_impl<double>(handle, m, n, k, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
+    return rocsolver::rocsolver_labrd_impl<double>(handle, m, n, k, A, lda, D, E, tauq, taup, X,
+                                                   ldx, Y, ldy);
 }
 
 rocblas_status rocsolver_clabrd(rocblas_handle handle,
@@ -166,8 +168,8 @@ rocblas_status rocsolver_clabrd(rocblas_handle handle,
                                 rocblas_float_complex* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver::rocsolver_labrd_impl<rocblas_float_complex>(handle, m, n, k, A, lda, D, E, tauq, taup, X,
-                                                       ldx, Y, ldy);
+    return rocsolver::rocsolver_labrd_impl<rocblas_float_complex>(handle, m, n, k, A, lda, D, E,
+                                                                  tauq, taup, X, ldx, Y, ldy);
 }
 
 rocblas_status rocsolver_zlabrd(rocblas_handle handle,
@@ -185,8 +187,8 @@ rocblas_status rocsolver_zlabrd(rocblas_handle handle,
                                 rocblas_double_complex* Y,
                                 const rocblas_int ldy)
 {
-    return rocsolver::rocsolver_labrd_impl<rocblas_double_complex>(handle, m, n, k, A, lda, D, E, tauq, taup,
-                                                        X, ldx, Y, ldy);
+    return rocsolver::rocsolver_labrd_impl<rocblas_double_complex>(handle, m, n, k, A, lda, D, E,
+                                                                   tauq, taup, X, ldx, Y, ldy);
 }
 
 } // extern C

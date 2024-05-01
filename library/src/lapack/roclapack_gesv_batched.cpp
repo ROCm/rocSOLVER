@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -129,8 +129,8 @@ extern "C" rocblas_status rocsolver_sgesv_batched(rocblas_handle handle,
                                                   rocblas_int* info,
                                                   const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_gesv_batched_impl<float>(handle, n, nrhs, A, lda, ipiv, strideP, B, ldb, info,
-                                              batch_count);
+    return rocsolver::rocsolver_gesv_batched_impl<float>(handle, n, nrhs, A, lda, ipiv, strideP, B,
+                                                         ldb, info, batch_count);
 }
 
 extern "C" rocblas_status rocsolver_dgesv_batched(rocblas_handle handle,
@@ -145,8 +145,8 @@ extern "C" rocblas_status rocsolver_dgesv_batched(rocblas_handle handle,
                                                   rocblas_int* info,
                                                   const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_gesv_batched_impl<double>(handle, n, nrhs, A, lda, ipiv, strideP, B, ldb, info,
-                                               batch_count);
+    return rocsolver::rocsolver_gesv_batched_impl<double>(handle, n, nrhs, A, lda, ipiv, strideP, B,
+                                                          ldb, info, batch_count);
 }
 
 extern "C" rocblas_status rocsolver_cgesv_batched(rocblas_handle handle,
@@ -161,8 +161,8 @@ extern "C" rocblas_status rocsolver_cgesv_batched(rocblas_handle handle,
                                                   rocblas_int* info,
                                                   const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_gesv_batched_impl<rocblas_float_complex>(handle, n, nrhs, A, lda, ipiv,
-                                                              strideP, B, ldb, info, batch_count);
+    return rocsolver::rocsolver_gesv_batched_impl<rocblas_float_complex>(
+        handle, n, nrhs, A, lda, ipiv, strideP, B, ldb, info, batch_count);
 }
 
 extern "C" rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
@@ -177,6 +177,6 @@ extern "C" rocblas_status rocsolver_zgesv_batched(rocblas_handle handle,
                                                   rocblas_int* info,
                                                   const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_gesv_batched_impl<rocblas_double_complex>(handle, n, nrhs, A, lda, ipiv,
-                                                               strideP, B, ldb, info, batch_count);
+    return rocsolver::rocsolver_gesv_batched_impl<rocblas_double_complex>(
+        handle, n, nrhs, A, lda, ipiv, strideP, B, ldb, info, batch_count);
 }

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -123,8 +123,8 @@ rocblas_status rocsolver_scsrrf_analysis(rocblas_handle handle,
                                          const rocblas_int ldb,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver::rocsolver_csrrf_analysis_impl<float>(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT,
-                                                indT, valT, pivP, pivQ, B, ldb, rfinfo);
+    return rocsolver::rocsolver_csrrf_analysis_impl<float>(
+        handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo);
 }
 
 rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
@@ -144,8 +144,8 @@ rocblas_status rocsolver_dcsrrf_analysis(rocblas_handle handle,
                                          const rocblas_int ldb,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver::rocsolver_csrrf_analysis_impl<double>(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT,
-                                                 ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo);
+    return rocsolver::rocsolver_csrrf_analysis_impl<double>(
+        handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo);
 }
 
 } // extern C

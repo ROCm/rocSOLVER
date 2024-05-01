@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -156,9 +156,9 @@ rocblas_status rocsolver_sgesvd_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_gesvd_batched_impl<float>(handle, left_svect, right_svect, m, n, A, lda, S,
-                                               strideS, U, ldu, strideU, V, ldv, strideV, E,
-                                               strideE, fast_alg, info, batch_count);
+    return rocsolver::rocsolver_gesvd_batched_impl<float>(
+        handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu, strideU, V, ldv, strideV,
+        E, strideE, fast_alg, info, batch_count);
 }
 
 rocblas_status rocsolver_dgesvd_batched(rocblas_handle handle,
@@ -182,9 +182,9 @@ rocblas_status rocsolver_dgesvd_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver::rocsolver_gesvd_batched_impl<double>(handle, left_svect, right_svect, m, n, A, lda, S,
-                                                strideS, U, ldu, strideU, V, ldv, strideV, E,
-                                                strideE, fast_alg, info, batch_count);
+    return rocsolver::rocsolver_gesvd_batched_impl<double>(
+        handle, left_svect, right_svect, m, n, A, lda, S, strideS, U, ldu, strideU, V, ldv, strideV,
+        E, strideE, fast_alg, info, batch_count);
 }
 
 rocblas_status rocsolver_cgesvd_batched(rocblas_handle handle,

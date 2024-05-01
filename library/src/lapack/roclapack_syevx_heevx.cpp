@@ -155,8 +155,8 @@ rocblas_status rocsolver_ssyevx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_syevx_heevx_impl<float>(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu,
-                                             abstol, nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_syevx_heevx_impl<float>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dsyevx(rocblas_handle handle,
@@ -178,8 +178,8 @@ rocblas_status rocsolver_dsyevx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_syevx_heevx_impl<double>(handle, evect, erange, uplo, n, A, lda, vl, vu, il,
-                                              iu, abstol, nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_syevx_heevx_impl<double>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_cheevx(rocblas_handle handle,

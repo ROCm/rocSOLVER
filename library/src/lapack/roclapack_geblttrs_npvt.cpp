@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -126,8 +126,8 @@ rocblas_status rocsolver_sgeblttrs_npvt(rocblas_handle handle,
                                         float* X,
                                         const rocblas_int ldx)
 {
-    return rocsolver::rocsolver_geblttrs_npvt_impl<float>(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X,
-                                               ldx);
+    return rocsolver::rocsolver_geblttrs_npvt_impl<float>(handle, nb, nblocks, nrhs, A, lda, B, ldb,
+                                                          C, ldc, X, ldx);
 }
 
 rocblas_status rocsolver_dgeblttrs_npvt(rocblas_handle handle,
@@ -143,8 +143,8 @@ rocblas_status rocsolver_dgeblttrs_npvt(rocblas_handle handle,
                                         double* X,
                                         const rocblas_int ldx)
 {
-    return rocsolver::rocsolver_geblttrs_npvt_impl<double>(handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc,
-                                                X, ldx);
+    return rocsolver::rocsolver_geblttrs_npvt_impl<double>(handle, nb, nblocks, nrhs, A, lda, B,
+                                                           ldb, C, ldc, X, ldx);
 }
 
 rocblas_status rocsolver_cgeblttrs_npvt(rocblas_handle handle,
@@ -160,8 +160,8 @@ rocblas_status rocsolver_cgeblttrs_npvt(rocblas_handle handle,
                                         rocblas_float_complex* X,
                                         const rocblas_int ldx)
 {
-    return rocsolver::rocsolver_geblttrs_npvt_impl<rocblas_float_complex>(handle, nb, nblocks, nrhs, A, lda, B,
-                                                               ldb, C, ldc, X, ldx);
+    return rocsolver::rocsolver_geblttrs_npvt_impl<rocblas_float_complex>(
+        handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
 }
 
 rocblas_status rocsolver_zgeblttrs_npvt(rocblas_handle handle,
@@ -177,8 +177,8 @@ rocblas_status rocsolver_zgeblttrs_npvt(rocblas_handle handle,
                                         rocblas_double_complex* X,
                                         const rocblas_int ldx)
 {
-    return rocsolver::rocsolver_geblttrs_npvt_impl<rocblas_double_complex>(handle, nb, nblocks, nrhs, A, lda,
-                                                                B, ldb, C, ldc, X, ldx);
+    return rocsolver::rocsolver_geblttrs_npvt_impl<rocblas_double_complex>(
+        handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx);
 }
 
 } // extern C

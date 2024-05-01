@@ -134,7 +134,8 @@ rocblas_status rocsolver_cgetf2(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  true);
 }
 
 rocblas_status rocsolver_zgetf2(rocblas_handle handle,
@@ -145,7 +146,8 @@ rocblas_status rocsolver_zgetf2(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   true);
 }
 
 rocblas_status rocsolver_sgetf2_64(rocblas_handle handle,
@@ -178,7 +180,8 @@ rocblas_status rocsolver_cgetf2_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  true);
 }
 
 rocblas_status rocsolver_zgetf2_64(rocblas_handle handle,
@@ -189,7 +192,8 @@ rocblas_status rocsolver_zgetf2_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   true);
 }
 
 rocblas_status rocsolver_sgetf2_npvt(rocblas_handle handle,
@@ -222,7 +226,8 @@ rocblas_status rocsolver_cgetf2_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  false);
 }
 
 rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
@@ -233,7 +238,8 @@ rocblas_status rocsolver_zgetf2_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   false);
 }
 
 rocblas_status rocsolver_sgetf2_npvt_64(rocblas_handle handle,
@@ -266,7 +272,8 @@ rocblas_status rocsolver_cgetf2_npvt_64(rocblas_handle handle,
                                         int64_t* info)
 {
     int64_t* ipiv = nullptr;
-    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  false);
 }
 
 rocblas_status rocsolver_zgetf2_npvt_64(rocblas_handle handle,
@@ -277,7 +284,8 @@ rocblas_status rocsolver_zgetf2_npvt_64(rocblas_handle handle,
                                         int64_t* info)
 {
     int64_t* ipiv = nullptr;
-    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   false);
 }
 
 } // extern C

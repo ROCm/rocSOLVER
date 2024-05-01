@@ -158,8 +158,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<float>(handle, evect, erange, uplo, n, A, lda, vl,
-                                                       vu, il, iu, abstol, h_nev, W, info);
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<float>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_inplace(rocblas_handle handle,
@@ -178,8 +178,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<double>(handle, evect, erange, uplo, n, A, lda, vl,
-                                                        vu, il, iu, abstol, h_nev, W, info);
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<double>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdx_inplace(rocblas_handle handle,

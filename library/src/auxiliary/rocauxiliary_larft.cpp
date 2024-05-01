@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -141,8 +141,8 @@ rocblas_status rocsolver_clarft(rocblas_handle handle,
                                 rocblas_float_complex* T,
                                 const rocblas_int ldt)
 {
-    return rocsolver::rocsolver_larft_impl<rocblas_float_complex>(handle, direct, storev, n, k, V, ldv, tau, T,
-                                                       ldt);
+    return rocsolver::rocsolver_larft_impl<rocblas_float_complex>(handle, direct, storev, n, k, V,
+                                                                  ldv, tau, T, ldt);
 }
 
 rocblas_status rocsolver_zlarft(rocblas_handle handle,
@@ -156,8 +156,8 @@ rocblas_status rocsolver_zlarft(rocblas_handle handle,
                                 rocblas_double_complex* T,
                                 const rocblas_int ldt)
 {
-    return rocsolver::rocsolver_larft_impl<rocblas_double_complex>(handle, direct, storev, n, k, V, ldv, tau,
-                                                        T, ldt);
+    return rocsolver::rocsolver_larft_impl<rocblas_double_complex>(handle, direct, storev, n, k, V,
+                                                                   ldv, tau, T, ldt);
 }
 
 } // extern C

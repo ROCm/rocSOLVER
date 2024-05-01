@@ -149,7 +149,8 @@ rocblas_status rocsolver_cgetrf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  true);
 }
 
 rocblas_status rocsolver_zgetrf(rocblas_handle handle,
@@ -160,7 +161,8 @@ rocblas_status rocsolver_zgetrf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   true);
 }
 
 rocblas_status rocsolver_sgetrf_64(rocblas_handle handle,
@@ -193,7 +195,8 @@ rocblas_status rocsolver_cgetrf_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  true);
 }
 
 rocblas_status rocsolver_zgetrf_64(rocblas_handle handle,
@@ -204,7 +207,8 @@ rocblas_status rocsolver_zgetrf_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, true);
+    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   true);
 }
 
 rocblas_status rocsolver_sgetrf_npvt(rocblas_handle handle,
@@ -237,7 +241,8 @@ rocblas_status rocsolver_cgetrf_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  false);
 }
 
 rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
@@ -248,7 +253,8 @@ rocblas_status rocsolver_zgetrf_npvt(rocblas_handle handle,
                                      rocblas_int* info)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   false);
 }
 
 rocblas_status rocsolver_sgetrf_npvt_64(rocblas_handle handle,
@@ -281,7 +287,8 @@ rocblas_status rocsolver_cgetrf_npvt_64(rocblas_handle handle,
                                         int64_t* info)
 {
     int64_t* ipiv = nullptr;
-    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getrf_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                  false);
 }
 
 rocblas_status rocsolver_zgetrf_npvt_64(rocblas_handle handle,
@@ -292,7 +299,8 @@ rocblas_status rocsolver_zgetrf_npvt_64(rocblas_handle handle,
                                         int64_t* info)
 {
     int64_t* ipiv = nullptr;
-    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info, false);
+    return rocsolver::rocsolver_getrf_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
+                                                                   false);
 }
 
 } // extern C
