@@ -252,9 +252,7 @@ rocblas_status rocsolver_zgetrf_batched(rocblas_handle handle,
                                                                 info, true, batch_count);
 }
 
-<<<<<<< HEAD
 static constexpr bool use_getrf_nopiv = true;
-=======
 rocblas_status rocsolver_sgetrf_batched_64(rocblas_handle handle,
                                            const int64_t m,
                                            const int64_t n,
@@ -310,7 +308,6 @@ rocblas_status rocsolver_zgetrf_batched_64(rocblas_handle handle,
     return rocsolver_getrf_batched_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, strideP,
                                                                 info, true, batch_count);
 }
->>>>>>> rocm_develop
 
 rocblas_status rocsolver_sgetrf_npvt_batched(rocblas_handle handle,
                                              const rocblas_int m,
