@@ -36,6 +36,7 @@
 #include "roclapack_getf2_nopiv.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+#include <cmath>
 #include <type_traits>
 
 template <typename I>
@@ -66,22 +67,25 @@ static size_t get_lds_size()
     return (lds_size);
 }
 
-template <typename T>
-static rocblas_int get_getrf_nopiv_blocksize(rocblas_int n)
+template <typename T, typename I>
+static I get_getrf_nopiv_blocksize(I n)
 {
     auto iceil = [](auto n, auto base) { return ((n - 1) / base + 1); };
-    rocblas_int const nb_max = GETRF_NOPIV_BLOCKSIZE(T);
+    // ---------------------------------------------
+    // want  nb_max * nb_max * sizeof(T) <= lds_size
+    // ---------------------------------------------
+    auto const lds_size = get_lds_size();
+    I const nb_max = std::sqrt(lds_size / sizeof(T));
 #if NDEBUG
 #else
     {
-        auto const lds_size = get_lds_size();
         bool const isok = (sizeof(T) * (nb_max * nb_max) <= lds_size);
         assert(isok);
     }
 #endif
-    rocblas_int const npass = iceil(n, nb_max);
-    rocblas_int nb = iceil(n, npass);
-    nb = std::max(1, std::min(nb_max, nb));
+    auto const npass = iceil(n, nb_max);
+    auto const nb0 = iceil(n, npass);
+    auto const nb = std::max(1, std::min(nb_max, nb0));
     return (nb);
 }
 
@@ -313,7 +317,7 @@ void rocsolver_getrf_nopiv_recursive_getMemorySize(const rocblas_int m,
     size_t lsize_iinfo = 0;
 
     auto const nsmall = GETRF_NOPIV_STOPPING_NB(T);
-    bool const is_nsmall = (std::min(m, n) <= nsmall);
+    bool const is_nsmall = (std::max(m, n) <= nsmall);
 
     if(is_nsmall)
     {
@@ -759,10 +763,8 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
     // (4b)  L22 * U22 = A22,  factorize remaining using tail recursion
     // -------------------------------------------
 
-    I const min_mn = std::min(m, n);
-
     I const n_stopping_nb = GETRF_NOPIV_STOPPING_NB(T);
-    bool const is_small = (min_mn <= n_stopping_nb);
+    bool const is_small = (std::max(m, n) <= n_stopping_nb);
     if(is_small)
     {
         // -----------------------------------------------
@@ -833,7 +835,7 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             I const nn = n1;
             rocblas_status istat = rocblas_status_success;
 
-            bool const use_rightlooking = true;
+            bool const use_rightlooking = (std::max(mm, nn) <= n_stopping_nb);
             if(use_rightlooking)
             {
                 istat = rocsolver_getrf_nopiv_rightlooking_template<BATCHED, STRIDED, T, I, U>(
@@ -964,7 +966,7 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             I const mm = m2;
             I const nn = n2;
             I const j = m1;
-            bool const use_rightlooking = true;
+            bool const use_rightlooking = (std::max(mm, nn) <= n_stopping_nb);
             rocblas_status istat = rocblas_status_success;
             if(use_rightlooking)
             {
@@ -1042,15 +1044,19 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
     rocblas_status istat = rocblas_status_success;
-    bool const use_recursive = true;
+
+    I const n_stopping_nb = GETRF_NOPIV_STOPPING_NB(T);
 
     I const min_mn = std::min(m, n);
     {
         // -------------------------------
-        // factorize diagonal square block
+        // factorize SQUARE diagonal block
+        // of size min_mn by min_mn
         // -------------------------------
         auto const mm = min_mn;
         auto const nn = min_mn;
+
+        bool const use_recursive = (min_mn > n_stopping_nb);
         if(use_recursive)
         {
             I const row_offset = 0;
