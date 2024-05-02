@@ -38,6 +38,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 __device__ void copy_and_zero(const rocblas_int m,
                               const rocblas_int n,
@@ -400,3 +402,5 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

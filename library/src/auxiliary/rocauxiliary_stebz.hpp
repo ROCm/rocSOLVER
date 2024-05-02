@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,6 +39,8 @@
 #define SPLIT_THDS 256
 #define IBISEC_BLKS 64
 #define IBISEC_THDS 128
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /************** Kernels and device functions *********************************/
 /*****************************************************************************/
@@ -1068,3 +1070,5 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

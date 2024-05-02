@@ -38,6 +38,8 @@
 
 #include <cmath>
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /************** Kernels and device functions *******************/
 /***************************************************************/
 
@@ -1101,3 +1103,5 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

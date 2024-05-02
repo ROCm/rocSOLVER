@@ -37,6 +37,8 @@
 #include "roclapack_sytd2_hetd2.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, typename T>
 void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
                                          const rocblas_int batch_count,
@@ -226,3 +228,5 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

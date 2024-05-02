@@ -27,6 +27,8 @@
 
 #include "roclapack_ger_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
@@ -47,3 +49,5 @@ INSTANTIATE_GER(true, rocblas_float_complex, int64_t, rocblas_float_complex*);
 // batched
 INSTANTIATE_GER(false, rocblas_float_complex, int64_t, rocblas_float_complex* const*);
 INSTANTIATE_GER(true, rocblas_float_complex, int64_t, rocblas_float_complex* const*);
+
+ROCSOLVER_END_NAMESPACE

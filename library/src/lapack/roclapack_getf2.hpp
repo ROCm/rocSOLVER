@@ -38,6 +38,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 // number of threads for the iamax reduction kernel
 #define IAMAX_THDS 1024
 
@@ -685,3 +687,5 @@ rocblas_status rocsolver_getf2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE
