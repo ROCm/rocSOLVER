@@ -73,9 +73,7 @@ const vector<vector<int>> large_matrix_size_range = {
     {1000, 1024, 0},
 };
 
-const vector<int> large_n_size_range = {
-    45, 64, 520, 1024, 2000 
-};
+const vector<int> large_n_size_range = {45, 64, 520, 1024, 2000};
 
 Arguments getrf_setup_arguments(getrf_tuple tup)
 {
