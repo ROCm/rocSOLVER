@@ -775,7 +775,7 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
         }
 
         // -------------------------------------------------
-        // Perform factorization of  jb by jb diagonal block
+        // Perform factorization of  diagonal block
         // -------------------------------------------------
         I const mm = m;
         I const nn = n;
@@ -883,7 +883,6 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
                     shiftA + A21_offset, lda, strideA, batch_count, optim_mem, work1, work2, work3,
                     work4);
 
-                assert(istat == rocblas_status_success);
 
                 if(istat != rocblas_status_success)
                 {
