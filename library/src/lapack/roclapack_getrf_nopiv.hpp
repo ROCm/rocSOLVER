@@ -70,28 +70,21 @@ static size_t get_lds_size()
 template <typename T, typename I>
 static I get_getrf_nopiv_blocksize(I n)
 {
-    return (GETRF_NOPIV_BLOCKSIZE(T));
-}
-
-template <typename T, typename I>
-static I get_getrf_nopiv_blocksize_org(I n)
-{
-    auto iceil = [](auto n, auto base) { return ((n - 1) / base + 1); };
-    // ---------------------------------------------
-    // want  nb_max * nb_max * sizeof(T) <= lds_size
-    // ---------------------------------------------
-    auto const lds_size = get_lds_size();
-    I const nb_max = std::sqrt(lds_size / sizeof(T));
-#if NDEBUG
-#else
+    bool const use_fixed = true;
+    I nb = 64;
+    if(use_fixed)
     {
-        bool const isok = (sizeof(T) * (nb_max * nb_max) <= lds_size);
-        assert(isok);
+        nb = GETRF_NOPIV_BLOCKSIZE(T);
     }
-#endif
-    auto const npass = iceil(n, nb_max);
-    auto const nb0 = iceil(n, npass);
-    auto const nb = std::max(1, std::min(nb_max, nb0));
+    else
+    {
+        // ---------------------------------------------
+        // want  nb * nb * sizeof(T) <= lds_size
+        // ---------------------------------------------
+        auto const lds_size = get_lds_size();
+        nb = std::sqrt(lds_size / sizeof(T));
+    }
+
     return (nb);
 }
 
@@ -711,7 +704,7 @@ rocblas_status rocsolver_getrf_nopiv_rightlooking_template(rocblas_handle handle
             bool const has_work = (mm >= 1) && (nn >= 1) && (kk >= 1);
             if(has_work)
             {
-                auto const istat = rocsolver_gemm<BATCHED, STRIDED, T, U>(
+                auto const istat = rocsolver_gemm<BATCHED, STRIDED, T, I, U>(
                     handle, trans_a, trans_b, mm, nn, kk, alpha, A, shiftA + idx2D(j + jb, j, lda),
                     lda, strideA, A, shiftA + idx2D(j, j + jb, lda), lda, strideA, beta, A,
                     shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count, (T**)nullptr);
@@ -947,7 +940,7 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
             bool const has_work = (mm >= 1) && (nn >= 1) && (kk >= 1);
             if(has_work)
             {
-                auto const istat = rocsolver_gemm<BATCHED, STRIDED, T, U>(
+                auto const istat = rocsolver_gemm<BATCHED, STRIDED, T, I, U>(
                     handle, trans_a, trans_b, mm, nn, kk, alpha, A, shiftA + L21_offset, lda,
                     strideA, A, shiftA + U12_offset, lda, strideA, beta, A, shiftA + A22_offset,
                     lda, strideA, batch_count, (T**)nullptr);
