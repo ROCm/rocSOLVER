@@ -51,7 +51,6 @@ typedef enum rocsolver_stedc_mode_
 template <rocsolver_stedc_mode MODE>
 __host__ __device__ inline rocblas_int stedc_num_levels(const rocblas_int n);
 
-
 /***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 
@@ -445,6 +444,9 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     dk = D[k];
     dkm1 = D[km1];
     x = dk + p / 2;
+
+    //printf(">>> xo = %2.15f\n",x);
+
     S pinv = 1 / p;
 
     // find bounds and initial guess
@@ -489,6 +491,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         }
     }
     x = dk + tau; // initial guess
+    //printf(">>> xInit = %2.15f\n",x);
 
     // evaluate secular eq and get input values to calculate step correction
     seq_eval(0, km1, dd, D, z, pinv, dk, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
@@ -545,6 +548,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         // take the step
         tau += eta;
         x = dk + tau;
+        //printf(">>> x0 = %2.15f\n",x);
 
         // evaluate secular eq and get input values to calculate step correction
         seq_eval(0, km1, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
@@ -556,9 +560,11 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         // ==============================================
         for(int i = 1; i < MAXITERS; ++i)
         {
+            //printf(">>> fx = %2.15f\n",abs(fx));
             // if the value of secular eq is small enough, no point to continue; converged!!!
             if(abs(fx) <= tol * er)
             {
+                //printf(">>> CONVERGED <<<\n");
                 converged = true;
                 break;
             }
@@ -597,6 +603,7 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             // take the step
             tau += eta;
             x = dk + tau;
+            //printf(">>> x%d = %2.15f\n",i,x);
 
             // evaluate secular eq and get input values to calculate step correction
             seq_eval(0, km1, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
@@ -948,13 +955,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
 	eigenvalues/eigenvectors of the different sub-blocks of each split-block.
 	A matrix in the batch could have many split-blocks, and each split-block could be
 	divided in a maximum of nn sub-blocks.
-	- Call this kernel with batch_count groups in y, and STEDC_NUM_SPLIT_BLKS groups in x.
-	  Groups are size STEDC_BDIM.
+	- Call this kernel with batch_count groups in z, and STEDC_NUM_SPLIT_BLKS groups in y and
+      and enough groups in x to work with the sub-blocks at the corresponding level k in the
+      merge tree. Each group merge 2 sub-blocks. Groups are size STEDC_BDIM.
 	- STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will be analysed
 	  in parallel). If there are actually more split-blocks, some groups will work with more
 	  than one split-block sequentially. **/
 template <rocsolver_stedc_mode MODE, typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const rocblas_int n,
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const rocblas_int k,
+                                                                       const rocblas_int n,
                                                                        S* DD,
                                                                        const rocblas_stride strideD,
                                                                        S* EE,
@@ -968,17 +977,26 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                                                                        rocblas_int* splitsA,
                                                                        const S eps,
                                                                        const S ssfmin,
-                                                                       const S ssfmax)
+                                                                       const S ssfmax,
+                                                                       int sID,
+                                                                       int mID,
+                                                                       int ID)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
     // batch instance id
-    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int bid = hipBlockIdx_z;
     // split block id
-    rocblas_int sid = hipBlockIdx_x;
+    rocblas_int sid = hipBlockIdx_y;
+    // merge sub-block id
+    rocblas_int mid = hipBlockIdx_x;
     rocblas_int id = hipThreadIdx_x;
     rocblas_int tid, tidb;
     /* --------------------------------------------------- */
+
+    //if(id==0 && sid==0)
+    //printf(">> hello from group %d\n",mid);
+    //__syncthreads();
 
     // select batch instance to work with
     /* --------------------------------------------------- */
@@ -1032,7 +1050,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
     rocblas_int blks;
     // number of level of division
     rocblas_int levs;
-    // number of threads working in sub-block
+    // number of working thread-groups
     rocblas_int tn;
     // other aux variables
     S p;
@@ -1052,37 +1070,51 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
         ns = nsA + p1;
         ps = psA + p1;
 
-        // determine ideal number of sub-blocks
+        // determine ideal number of sub-blocks and working thread-groups
         levs = stedc_num_levels<MODE>(bs);
+        blks = levs - 1 - k;
+        tn = (blks < 0) ? 0 : 1 << blks;
         blks = 1 << levs;
 
-        // arrange threads so that a group of bdim/blks threads works with each sub-block
-        // tn is the number of threads associated with each sub-block
-        tn = STEDC_BDIM / blks;
-        // tid indexes the sub-block
-        tid = id / tn;
-        p2 = ps[tid];
-        // tidb indexes the threads in each sub-block
-        tidb = id % tn;
+        /*if(id==0 && sid==sID)
+{
+    printf(">>>>>> hello from group %d: there are %d blocks in %d levels.\n",mid,blks,levs);
+    if(mid < tn)
+        printf(">>>>>> hello from group %d: only %d groups are needed so I go.\n",mid,tn);
+    else
+        printf(">>>>>> hello from group %d: only %d groups are needed so I am done.\n",mid,tn);
+}
+__syncthreads();*/
 
         // 3. MERGE PHASE
         /* ----------------------------------------------------------------- */
-        rocblas_int iam, sz, bdm;
+        rocblas_int iam, sz, bdm, dim;
         S* ptz;
 
-        // main loop to work with merges on each level
-        // (once two leaves in the merge tree are identified, all related threads
-        // work together to solve the secular equation and update eiegenvectors)
-        for(int k = 0; k < levs; ++k)
+        // Work with merges on level k. A thread-group works with two leaves in the merge tree;
+        // all threads work together to solve the secular equation and update eiegenvectors.
+        if(mid < tn)
         {
+            rocblas_int bd = 1 << k;
+            bdm = bd << 1;
+            dim = hipBlockDim_x / bdm;
+            /*if(id==0 && sid==sID)
+printf(">>>>>>>>>>>> so here I am group %d with all my threds for db=%d, bdm=%d and dim=%d\n",mid,bd,bdm,dim);
+__syncthreads();*/
+
+            // iam indexes the sub-blocks in the context of the merge
+            // (according to its level in the merge tree)
+            iam = id / dim;
+            // tid indexes the sub-blocks in the entire split block
+            tid = mid * bdm + iam;
+            p2 = ps[tid];
+            // tidb indexes the threads associated with each sub-block
+            tidb = id % dim;
+            //if(sid==0)
+            //printf("%d %d %d %d %d %d\n",mid,id,tidb,iam,tid,p2);
+
             // 3a. find rank-1 modification components (z and p) for this merge
             /* ----------------------------------------------------------------- */
-            // iam indexes the sub-blocks according to its level in the merge tree
-            rocblas_int bd = 1 << k;
-            rocblas_int ss = 1;
-            bdm = bd << 1;
-            iam = tid % bdm;
-
             // Threads with iam < bd work with components above the merge point;
             //  threads with iam >= bd work below the merge point
             if(iam < bd && tid < blks)
@@ -1113,8 +1145,26 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                     z[p2 + j] = ptz[(p2 + j) * ldc] / sqrt(2);
             }
             __syncthreads();
-
             /* ----------------------------------------------------------------- */
+
+            /*if(sid==sID && mid==mID)
+{
+    if(id==0)
+    {
+        printf("\nz viene de C1\n");
+        for(int y=0;y<n/2;++y)
+            printf("%2.15f ",z[y]);
+        printf("\n");
+        for(int y=0;y<n/2;++y)
+        {
+            for(int yy=0;yy<n/2;++yy)
+                printf("%2.15f ",C[y+ldc*yy]);
+            printf("\n");
+        }
+        printf("\n");
+    }
+}
+__syncthreads();*/
 
             // 3b. calculate deflation tolerance
             /* ----------------------------------------------------------------- */
@@ -1157,6 +1207,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             maxd = inrms[tid - iam];
             maxz = inrms[tid - iam + blks];
             maxd = maxz > maxd ? maxz : maxd;
+
             S tol = 8 * eps * maxd;
             /* ----------------------------------------------------------------- */
 
@@ -1164,7 +1215,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             /* ----------------------------------------------------------------- */
             S f, g, c, s, r;
 
-            // first deflate each thread sub-block
+            // first deflate each sub-block
             // (only the first thread of each sub-block works as this is
             // a sequential process)
             if(tidb == 0)
@@ -1273,6 +1324,22 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 __syncthreads();
             }
             /* ----------------------------------------------------------------- */
+            /*if(sid==sID && id==0 && mid==mID)
+{
+    printf("\nidd for deflated\n");
+    for(int y=0;y<n/2;++y)
+        printf("%d ",idd[y]);
+    printf("\n");
+}
+__syncthreads();
+if(sid==sID && id==0 && mid==mID)
+{
+    printf("\nz deflated\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",z[y]);
+    printf("\n");
+}
+__syncthreads();*/
 
             // 3d. Organize data with non-deflated values to prepare secular equation
             /* ----------------------------------------------------------------- */
@@ -1286,10 +1353,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             for(int i = bdm - 1 - iam; i > 0; --i)
                 sz += ns[tid + i];
 
-            // All threads of the participating merging blocks will work together
+            // All threads of the group participating in the merge will work together
             // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
-            iam = iam * tn + tidb;
-            bdm *= tn;
+            iam = id;
+            bdm = hipBlockDim_x;
+            //if(sid==0)
+            //    printf("%d %d %d %d\n",iam,bdm,in,sz);
 
             // define shifted arrays
             S* tmpd = temps + in * n;
@@ -1318,6 +1387,21 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 }
             }
             __syncthreads();
+
+            /*if(sid==sID && iam==0 && mid==mID)
+{
+    printf("\nz y tmpd\n");
+    for(int y=0;y<n/2;++y)
+        printf("%d ",per[y]);
+    printf("\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",tmpd[y]);
+    printf("\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",zz[y]);
+    printf("\n");
+}
+__syncthreads();*/
 
             // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
             // This will allow us to find initial intervals for eigenvalue guesses
@@ -1366,6 +1450,20 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 }
                 __syncthreads();
             }
+            /*if(sid==sID && iam==0 && mid==mID)
+{
+    printf("\nz y tmpd ordenados\n");
+    for(int y=0;y<n/2;++y)
+        printf("%d ",per[y]);
+    printf("\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",tmpd[y]);
+    printf("\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",zz[y]);
+    printf("\n");
+}
+__syncthreads();*/
 
             // make dd copies of the non-deflated ordered diagonal elements
             // (i.e. the poles of the secular eqn) so that the distances to the
@@ -1384,6 +1482,22 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 ev[i] = diag[i];
             __syncthreads();
             /* ----------------------------------------------------------------- */
+            /*if(sid==sID && iam==0 && mid==mID)
+{
+    printf("\nfinal tmpd and ev\n");
+    printf("tmpd:\n");
+    for(int y=0;y<n/2;++y)
+    {
+        for(int yy=0;yy<n/2;++yy)
+            printf("%2.15f ",tmpd[y+yy*n]);
+        printf("\n");
+    }
+    printf("ev:\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",ev[y]);
+    printf("\n");
+}
+__syncthreads();*/
 
             // 3e. Solve secular eqns, i.e. find the dd zeros
             // corresponding to non-deflated new eigenvalues of the merged block
@@ -1404,6 +1518,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                         else
                             cc++;
                     }
+                    //if(sid==sID && mid==mID)
+                    //    printf("i am %d solving for %d\n",iam,cc);
 
                     // computed zero will overwrite 'ev' at the corresponding position.
                     // 'tmpd' will be updated with the distances D - lambda_i.
@@ -1420,6 +1536,23 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 }
             }
             __syncthreads();
+
+            /*if(sid==sID && iam==0 && mid==mID)
+{
+    printf("\ntmpd and ev despues de secular\n");
+    printf("tmpd2:\n");
+    for(int y=0;y<n/2;++y)
+    {
+        for(int yy=0;yy<n/2;++yy)
+            printf("%2.15f ",tmpd[y+yy*n]);
+        printf("\n");
+    }
+    printf("ev2:\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",ev[y]);
+    printf("\n");
+}
+__syncthreads();*/
 
             // Re-scale vector Z to avoid bad numerics when an eigenvalue
             // is too close to a pole
@@ -1442,38 +1575,67 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             }
             __syncthreads();
             /* ----------------------------------------------------------------- */
+            /*if(sid==0 && id==0 && mid==mm)
+{
+    printf("\nidd for deflated\n");
+    for(int y=0;y<8;++y)
+        printf("%d ",idd[y]);
+    printf("\n");
+}
+__syncthreads();*/
+
+            /*if(sid==sID && iam==0 && mid==mID)
+{
+    printf("\nz scaled 1\n");
+    for(int y=0;y<n/2;++y)
+        printf("%2.15f ",zz[y]);
+    printf("\n");
+}
+__syncthreads();*/
 
             // 3f. Compute vectors corresponding to non-deflated values
             /* ----------------------------------------------------------------- */
-            S temp, nrm, evj;
+            //            tn = dim;//bdm/2;
+            S temp, nrm;
             rocblas_int nn = (bs - 1) / blks + 1;
+
+            //if(sid==0 && iam==0 && mid==mm)
+            //    printf("\nnn is %d\n",nn);
+
             bool go;
             for(int j = 0; j < nn; ++j)
             {
+                //if(sid==0 && mid==mm && id==mmi)
+                //    printf("id %d working column %d rows >> ",iam,j+p2);
+
                 go = (j < ns[tid] && idd[p2 + j] == 1);
 
                 // compute vectors of rank-1 perturbed system and their norms
                 nrm = 0;
                 if(go)
                 {
-                    evj = evs[p2 + j];
-                    for(int i = tidb; i < dd; i += tn)
+                    for(int i = tidb; i < dd; i += dim)
                     {
+                        //if(sid==0 && mid==mm && id==mmi)
+                        //    printf("%d ",i);
                         valf = zz[i] / temps[i + (p2 + j) * n];
                         nrm += valf * valf;
                         temps[i + (p2 + j) * n] = valf;
                     }
                 }
-                inrms[tid * tn + tidb] = nrm;
+                //if(sid==0 && mid==mm && id==mmi)
+                //    printf("\n(%d, %d) my nrm goes to %d\n",tid,tidb,iam);
+
+                inrms[iam] = nrm;
                 __syncthreads();
 
                 // reduction (for the norms)
-                for(int r = tn / 2; r > 0; r /= 2)
+                for(int r = dim / 2; r > 0; r /= 2)
                 {
                     if(go && tidb < r)
                     {
-                        nrm += inrms[tid * tn + tidb + r];
-                        inrms[tid * tn + tidb] = nrm;
+                        nrm += inrms[iam + r];
+                        inrms[iam] = nrm;
                     }
                     __syncthreads();
                 }
@@ -1489,19 +1651,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                     temp = 0;
                     if(go)
                     {
-                        for(int kk = tidb; kk < dd; kk += tn)
+                        for(int kk = tidb; kk < dd; kk += dim)
                             temp += C[i + (per[kk] + in) * ldc] * temps[kk + (p2 + j) * n];
                     }
-                    inrms[tid * tn + tidb] = temp;
+                    inrms[iam] = temp;
                     __syncthreads();
 
                     // reduction
-                    for(int r = tn / 2; r > 0; r /= 2)
+                    for(int r = dim / 2; r > 0; r /= 2)
                     {
                         if(go && tidb < r)
                         {
-                            temp += inrms[tid * tn + tidb + r];
-                            inrms[tid * tn + tidb] = temp;
+                            temp += inrms[iam + r];
+                            inrms[iam] = temp;
                         }
                         __syncthreads();
                     }
@@ -1515,6 +1677,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
             __syncthreads();
             /* ----------------------------------------------------------------- */
 
+            /*if(sid==0 && iam==0 && mid==mm)
+{
+    printf("\nvecs to form C 1\n");
+    for(int y=0;y<8;++y)
+    {
+        for(int yy=0;yy<8;++yy)
+            printf("%2.15f ",vecs[y+n*yy]);
+        printf("\n");
+    }
+    printf("\n");
+}
+__syncthreads();*/
+
             // 3g. update D and C with computed values and vectors
             /* ----------------------------------------------------------------- */
             for(int j = 0; j < nn; ++j)
@@ -1523,14 +1698,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_merge_kernel(const roc
                 {
                     if(tidb == 0)
                         D[p2 + j] = evs[p2 + j];
-                    for(int i = in + tidb; i < in + sz; i += tn)
+                    for(int i = in + tidb; i < in + sz; i += dim)
                         C[i + (p2 + j) * ldc] = vecs[i + (p2 + j) * n];
                 }
                 __syncthreads();
             }
             /* ----------------------------------------------------------------- */
 
-        } // end of main loop in merge phase of divide & conquer
+        } // end of merge of level k
 
     } // end of for-loop for the independent split blocks
 }
@@ -1877,6 +2052,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     // otherwise use divide and conquer algorithm:
     else
     {
+        //print_device_matrix(std::cout,"D",1,n,D,1);
+        //print_device_matrix(std::cout,"E",1,n-1,E,1);
         // constants
         S eps = get_epsilon<S>();
         S ssfmin = get_safemin<S>();
@@ -1897,17 +2074,26 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 0, stream, n, n, tempvect, 0, ldt, strideT);
 
         // find max number of sub-blocks to consider during the divide phase
-        rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_qr>(n);
+        rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
+        rocblas_int maxblks = 1 << maxlevs;
+
+        //printf("max levels: %d\n", maxlevs);
+        //printf("max blocks: %d\n", maxblks);
 
         // find independent split blocks in matrix
         ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
                                 strideD, E + shiftE, strideE, splits, eps);
+
+        //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
 
         // 1. divide phase
         //-----------------------------
         ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_qr, S>),
                                 dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD,
                                 strideD, E + shiftE, strideE, splits);
+        //print_device_matrix(std::cout,"divideD",1,n,D,1);
+        //print_device_matrix(std::cout,"divideE",1,n-1,E,1);
+        //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
 
         // 2. solve phase
         //-----------------------------
@@ -1916,14 +2102,38 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0,
                                 ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
 
+        //print_device_matrix(std::cout,"solveD",1,n,D,1);
+        //print_device_matrix(std::cout,"solveE",1,n-1,E,1);
+        //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
+
+        int mID = atoi(std::getenv("MID"));
+        int sID = atoi(std::getenv("SID"));
+        int ID = atoi(std::getenv("ID"));
+        //printf("mm ===== %d\n",mm);
+        //printf("mmi ===== %d\n\n\n",mmi);
+
         // 3. merge phase
         //----------------
         size_t lmemsize = sizeof(S) * STEDC_BDIM;
+        for(rocblas_int k = 0; k < maxlevs; ++k)
+        {
+            //hipDeviceSynchronize();
+            //printf("\n\nfor k = %d\n",k);
 
-        ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_qr, S>),
-                                dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
-                                stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0,
-                                ldt, strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+            // at level k numgrps thread-groups are needed
+            rocblas_int numgrps = 1 << (maxlevs - 1 - k);
+            //printf("numgrps = %d per split block\n",numgrps);
+
+            // launch merge for level k
+            ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_qr, S>),
+                                    dim3(numgrps, STEDC_NUM_SPLIT_BLKS, batch_count),
+                                    dim3(STEDC_BDIM), lmemsize, stream, k, n, D + shiftD, strideD,
+                                    E + shiftE, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm,
+                                    splits, eps, ssfmin, ssfmax, sID, mID, ID);
+            //print_device_matrix(std::cout,"mergeD",1,n,D,1);
+            //print_device_matrix(std::cout,"mergeE",1,n-1,E,1);
+            //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
+        }
 
         // 4. update and sort
         //----------------------

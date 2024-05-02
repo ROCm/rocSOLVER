@@ -391,7 +391,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                             stream, n, n, tempvect, 0, ldt, strideT);
 
     // find max number of sub-blocks to consider during the divide phase
-    rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_jacobi>(n);
+    rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_jacobi>(n);
+    rocblas_int maxblks = 1 << maxlevs;
 
     // find independent split blocks in matrix
     ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D, strideD, E,
@@ -414,11 +415,17 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     // 3. merge phase
     //----------------
     lmemsize = sizeof(S) * STEDC_BDIM;
+    for(rocblas_int k = 0; k < maxlevs; ++k)
+    {
+        // at level k numgrps thread-groups are needed
+        rocblas_int numgrps = 1 << (maxlevs - 1 - k);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
-                            dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
-                            stream, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT, tmpz,
-                            tempgemm, splits, eps, ssfmin, ssfmax);
+        // launch merge for level k
+        /*        ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
+                            dim3(numgrps, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
+                            stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT, tmpz,
+                            tempgemm, splits, eps, ssfmin, ssfmax);*/
+    }
 
     // 4. update and sort
     //----------------------

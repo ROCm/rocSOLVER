@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -198,7 +198,7 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_fill uplo = rocblas_fill_full,
                          const rocblas_int inca = 1)
 {
-    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+    size_t to_read = lda * n; //max(inca * (m - 1) + m, lda * (n - 1) + n);
 
     std::vector<T> hA(to_read);
     THROW_IF_HIP_ERROR(
