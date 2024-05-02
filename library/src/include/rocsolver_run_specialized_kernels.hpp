@@ -30,6 +30,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    common location for declarations of specialized kernel launchers.
@@ -335,3 +337,5 @@ void trti2_run_small(rocblas_handle handle,
                      const rocblas_int batch_count);
 
 #endif // OPTIMAL
+
+ROCSOLVER_END_NAMESPACE

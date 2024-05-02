@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_gebd2.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_gebd2_strided_batched_impl(rocblas_handle handle,
@@ -93,6 +95,8 @@ rocblas_status rocsolver_gebd2_strided_batched_impl(rocblas_handle handle,
                                        (T*)scalars, work_workArr, (T*)Abyx_norms);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -117,9 +121,9 @@ rocblas_status rocsolver_sgebd2_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebd2_strided_batched_impl<float>(handle, m, n, A, lda, strideA, D, strideD, E,
-                                                       strideE, tauq, strideQ, taup, strideP,
-                                                       batch_count);
+    return rocsolver::rocsolver_gebd2_strided_batched_impl<float>(handle, m, n, A, lda, strideA, D,
+                                                                  strideD, E, strideE, tauq, strideQ,
+                                                                  taup, strideP, batch_count);
 }
 
 rocblas_status rocsolver_dgebd2_strided_batched(rocblas_handle handle,
@@ -138,9 +142,9 @@ rocblas_status rocsolver_dgebd2_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebd2_strided_batched_impl<double>(handle, m, n, A, lda, strideA, D, strideD,
-                                                        E, strideE, tauq, strideQ, taup, strideP,
-                                                        batch_count);
+    return rocsolver::rocsolver_gebd2_strided_batched_impl<double>(handle, m, n, A, lda, strideA, D,
+                                                                   strideD, E, strideE, tauq, strideQ,
+                                                                   taup, strideP, batch_count);
 }
 
 rocblas_status rocsolver_cgebd2_strided_batched(rocblas_handle handle,
@@ -159,7 +163,7 @@ rocblas_status rocsolver_cgebd2_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebd2_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_gebd2_strided_batched_impl<rocblas_float_complex>(
         handle, m, n, A, lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
         batch_count);
 }
@@ -180,7 +184,7 @@ rocblas_status rocsolver_zgebd2_strided_batched(rocblas_handle handle,
                                                 const rocblas_stride strideP,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_gebd2_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_gebd2_strided_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, strideA, D, strideD, E, strideE, tauq, strideQ, taup, strideP,
         batch_count);
 }

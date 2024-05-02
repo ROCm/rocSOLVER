@@ -33,6 +33,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 ROCSOLVER_KERNEL void
     geblttrf_update_info(T* info, T* iinfo, const rocblas_int k_shift, const rocblas_int bc)
@@ -237,3 +239,5 @@ rocblas_status rocsolver_geblttrf_npvt_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +36,8 @@
 
 #define STRINGIFY(s) STRINGIFY_HELPER(s)
 #define STRINGIFY_HELPER(s) #s
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 // initialize the static variable
 rocsolver_logger* rocsolver_logger::_instance = nullptr;
@@ -161,58 +163,7 @@ void rocsolver_logger::append_profile(std::string& str,
     }
 }
 
-rocblas_status rocsolver_log_write_profile(void)
-{
-    const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
-
-    // if there is an active logger:
-    if(rocsolver_logger::_instance == nullptr)
-        return rocblas_status_internal_error;
-
-    auto logger = rocsolver_logger::_instance;
-
-    // print profile logging results
-    if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
-    {
-        std::string profile_str;
-        logger->append_profile(profile_str, logger->profile.begin(), logger->profile.end());
-        fmt::print(*logger->profile_os, "------- PROFILE -------\n{}\n", profile_str);
-        logger->profile_os->flush();
-    }
-    return rocblas_status_success;
-}
-
-rocblas_status rocsolver_log_flush_profile(void)
-{
-    const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
-
-    // if there is an active logger:
-    if(rocsolver_logger::_instance == nullptr)
-        return rocblas_status_internal_error;
-
-    auto logger = rocsolver_logger::_instance;
-
-    // print and clear profile logging results
-    if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
-    {
-        std::string profile_str;
-        logger->append_profile(profile_str, logger->profile.begin(), logger->profile.end());
-        fmt::print(*logger->profile_os, "------- PROFILE -------\n{}\n", profile_str);
-        logger->profile_os->flush();
-
-        logger->profile.clear();
-    }
-    return rocblas_status_success;
-}
-
-/***************************************************************************
- * Logging set-up and tear-down
- ***************************************************************************/
-
-extern "C" {
-
-rocblas_status rocsolver_log_begin()
-try
+rocblas_status rocsolver_log_begin_impl()
 {
     const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
 
@@ -257,13 +208,8 @@ try
     else
         return rocblas_status_internal_error;
 }
-catch(...)
-{
-    return exception_to_rocblas_status();
-}
 
-rocblas_status rocsolver_log_end()
-try
+rocblas_status rocsolver_log_end_impl()
 {
     const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
 
@@ -292,13 +238,8 @@ try
 
     return rocblas_status_success;
 }
-catch(...)
-{
-    return exception_to_rocblas_status();
-}
 
-rocblas_status rocsolver_log_set_layer_mode(const rocblas_layer_mode_flags layer_mode)
-try
+rocblas_status rocsolver_log_set_layer_mode_impl(const rocblas_layer_mode_flags layer_mode)
 {
     const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
 
@@ -314,13 +255,8 @@ try
 
     return rocblas_status_success;
 }
-catch(...)
-{
-    return exception_to_rocblas_status();
-}
 
-rocblas_status rocsolver_log_set_max_levels(const rocblas_int max_levels)
-try
+rocblas_status rocsolver_log_set_max_levels_impl(const rocblas_int max_levels)
 {
     const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
 
@@ -338,13 +274,8 @@ try
 
     return rocblas_status_success;
 }
-catch(...)
-{
-    return exception_to_rocblas_status();
-}
 
-rocblas_status rocsolver_log_restore_defaults(void)
-try
+rocblas_status rocsolver_log_restore_defaults_impl()
 {
     const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
 
@@ -360,8 +291,126 @@ try
 
     return rocblas_status_success;
 }
+
+rocblas_status rocsolver_log_write_profile_impl()
+{
+    const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
+
+    // if there is an active logger:
+    if(rocsolver_logger::_instance == nullptr)
+        return rocblas_status_internal_error;
+
+    auto logger = rocsolver_logger::_instance;
+
+    // print profile logging results
+    if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
+    {
+        std::string profile_str;
+        logger->append_profile(profile_str, logger->profile.begin(), logger->profile.end());
+        fmt::print(*logger->profile_os, "------- PROFILE -------\n{}\n", profile_str);
+        logger->profile_os->flush();
+    }
+    return rocblas_status_success;
+}
+
+rocblas_status rocsolver_log_flush_profile_impl()
+{
+    const std::lock_guard<std::mutex> lock(rocsolver_logger::_mutex);
+
+    // if there is an active logger:
+    if(rocsolver_logger::_instance == nullptr)
+        return rocblas_status_internal_error;
+
+    auto logger = rocsolver_logger::_instance;
+
+    // print and clear profile logging results
+    if(logger->layer_mode & rocblas_layer_mode_log_profile && !logger->profile.empty())
+    {
+        std::string profile_str;
+        logger->append_profile(profile_str, logger->profile.begin(), logger->profile.end());
+        fmt::print(*logger->profile_os, "------- PROFILE -------\n{}\n", profile_str);
+        logger->profile_os->flush();
+
+        logger->profile.clear();
+    }
+    return rocblas_status_success;
+}
+
+ROCSOLVER_END_NAMESPACE
+
+/***************************************************************************
+ * Logging set-up and tear-down
+ ***************************************************************************/
+
+extern "C" {
+
+rocblas_status rocsolver_log_begin()
+try
+{
+    return rocsolver::rocsolver_log_begin_impl();
+}
 catch(...)
 {
-    return exception_to_rocblas_status();
+    return rocsolver::exception_to_rocblas_status();
+}
+
+rocblas_status rocsolver_log_end()
+try
+{
+    return rocsolver::rocsolver_log_end_impl();
+}
+catch(...)
+{
+    return rocsolver::exception_to_rocblas_status();
+}
+
+rocblas_status rocsolver_log_set_layer_mode(const rocblas_layer_mode_flags layer_mode)
+try
+{
+    return rocsolver::rocsolver_log_set_layer_mode_impl(layer_mode);
+}
+catch(...)
+{
+    return rocsolver::exception_to_rocblas_status();
+}
+
+rocblas_status rocsolver_log_set_max_levels(const rocblas_int max_levels)
+try
+{
+    return rocsolver::rocsolver_log_set_max_levels_impl(max_levels);
+}
+catch(...)
+{
+    return rocsolver::exception_to_rocblas_status();
+}
+
+rocblas_status rocsolver_log_restore_defaults(void)
+try
+{
+    return rocsolver::rocsolver_log_restore_defaults_impl();
+}
+catch(...)
+{
+    return rocsolver::exception_to_rocblas_status();
+}
+
+rocblas_status rocsolver_log_write_profile(void)
+try
+{
+    return rocsolver::rocsolver_log_write_profile_impl();
+}
+catch(...)
+{
+    return rocsolver::exception_to_rocblas_status();
+}
+
+rocblas_status rocsolver_log_flush_profile(void)
+try
+{
+    return rocsolver::rocsolver_log_flush_profile_impl();
+}
+catch(...)
+{
+    return rocsolver::exception_to_rocblas_status();
 }
 }

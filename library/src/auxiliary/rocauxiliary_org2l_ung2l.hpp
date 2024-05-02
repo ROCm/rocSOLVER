@@ -37,6 +37,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 ROCSOLVER_KERNEL void org2l_init_ident(const rocblas_int m,
                                        const rocblas_int n,
@@ -180,3 +182,5 @@ rocblas_status rocsolver_org2l_ung2l_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

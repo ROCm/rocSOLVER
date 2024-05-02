@@ -40,6 +40,8 @@
 
 #include <algorithm>
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
 #define MAXITERS 50 // Max number of iterations for root finding method
 
@@ -1977,3 +1979,5 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_sygvdx_hegvdx_inplace.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /*
  * ===========================================================================
@@ -136,6 +138,8 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_impl(rocblas_handle handle,
         (rocblas_int*)d_nev, work7_workArr, (rocblas_int*)iinfo, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -163,9 +167,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssygvdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_sygvdx_hegvdx_inplace_impl<float>(handle, itype, evect, erange, uplo, n, A,
-                                                       lda, B, ldb, vl, vu, il, iu, abstol, h_nev,
-                                                       W, info);
+    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<float>(handle, itype, evect, erange,
+                                                                  uplo, n, A, lda, B, ldb, vl, vu,
+                                                                  il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_inplace(rocblas_handle handle,
@@ -187,9 +191,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsygvdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_sygvdx_hegvdx_inplace_impl<double>(handle, itype, evect, erange, uplo, n, A,
-                                                        lda, B, ldb, vl, vu, il, iu, abstol, h_nev,
-                                                        W, info);
+    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<double>(handle, itype, evect, erange,
+                                                                   uplo, n, A, lda, B, ldb, vl, vu,
+                                                                   il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdx_inplace(rocblas_handle handle,
@@ -211,7 +215,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_chegvdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_sygvdx_hegvdx_inplace_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<rocblas_float_complex>(
         handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, h_nev, W,
         info);
 }
@@ -235,7 +239,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zhegvdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_sygvdx_hegvdx_inplace_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_sygvdx_hegvdx_inplace_impl<rocblas_double_complex>(
         handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, h_nev, W,
         info);
 }

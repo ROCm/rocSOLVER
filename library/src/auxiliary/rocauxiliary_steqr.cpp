@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_steqr.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S>
 rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
@@ -79,6 +81,8 @@ rocblas_status rocsolver_steqr_impl(rocblas_handle handle,
                                        shiftC, ldc, strideC, info, batch_count, work_stack);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -96,7 +100,7 @@ rocblas_status rocsolver_ssteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<float>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_steqr_impl<float>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_dsteqr(rocblas_handle handle,
@@ -108,7 +112,7 @@ rocblas_status rocsolver_dsteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<double>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_steqr_impl<double>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_csteqr(rocblas_handle handle,
@@ -120,7 +124,8 @@ rocblas_status rocsolver_csteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_steqr_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc,
+                                                                  info);
 }
 
 rocblas_status rocsolver_zsteqr(rocblas_handle handle,
@@ -132,7 +137,8 @@ rocblas_status rocsolver_zsteqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_steqr_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_steqr_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc,
+                                                                   info);
 }
 
 } // extern C

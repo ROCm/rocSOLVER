@@ -35,6 +35,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, typename T>
 void rocsolver_larf_getMemorySize(const rocblas_side side,
                                   const rocblas_int m,
@@ -175,3 +177,5 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

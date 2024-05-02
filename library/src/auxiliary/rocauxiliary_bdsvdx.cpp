@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_bdsvdx.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 rocblas_status rocsolver_bdsvdx_impl(rocblas_handle handle,
                                      const rocblas_fill uplo,
@@ -114,6 +116,8 @@ rocblas_status rocsolver_bdsvdx_impl(rocblas_handle handle,
         (rocblas_int*)iblock, (rocblas_int*)isplit_map, (T*)Dtgk, (T*)Etgk, (T*)Stmp);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -140,8 +144,8 @@ rocblas_status rocsolver_sbdsvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_bdsvdx_impl<float>(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv,
-                                        S, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_bdsvdx_impl<float>(handle, uplo, svect, srange, n, D, E, vl, vu, il,
+                                                   iu, nsv, S, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
@@ -162,8 +166,8 @@ rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_bdsvdx_impl<double>(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv,
-                                         S, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_bdsvdx_impl<double>(handle, uplo, svect, srange, n, D, E, vl, vu,
+                                                    il, iu, nsv, S, Z, ldz, ifail, info);
 }
 
 } // extern C

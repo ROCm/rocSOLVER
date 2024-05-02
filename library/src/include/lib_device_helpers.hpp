@@ -33,6 +33,8 @@
 #include "lib_macros.hpp"
 #include "libcommon.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    common location for device functions and kernels that are used across
@@ -1233,3 +1235,5 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
     __syncthreads();
 #endif
 }
+
+ROCSOLVER_END_NAMESPACE

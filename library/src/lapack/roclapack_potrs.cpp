@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_potrs.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_potrs_impl(rocblas_handle handle,
@@ -85,6 +87,8 @@ rocblas_status rocsolver_potrs_impl(rocblas_handle handle,
                                                      work2, work3, work4, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -100,7 +104,7 @@ extern "C" rocblas_status rocsolver_spotrs(rocblas_handle handle,
                                            float* B,
                                            const rocblas_int ldb)
 {
-    return rocsolver_potrs_impl<float>(handle, uplo, n, nrhs, A, lda, B, ldb);
+    return rocsolver::rocsolver_potrs_impl<float>(handle, uplo, n, nrhs, A, lda, B, ldb);
 }
 
 extern "C" rocblas_status rocsolver_dpotrs(rocblas_handle handle,
@@ -112,7 +116,7 @@ extern "C" rocblas_status rocsolver_dpotrs(rocblas_handle handle,
                                            double* B,
                                            const rocblas_int ldb)
 {
-    return rocsolver_potrs_impl<double>(handle, uplo, n, nrhs, A, lda, B, ldb);
+    return rocsolver::rocsolver_potrs_impl<double>(handle, uplo, n, nrhs, A, lda, B, ldb);
 }
 
 extern "C" rocblas_status rocsolver_cpotrs(rocblas_handle handle,
@@ -124,7 +128,8 @@ extern "C" rocblas_status rocsolver_cpotrs(rocblas_handle handle,
                                            rocblas_float_complex* B,
                                            const rocblas_int ldb)
 {
-    return rocsolver_potrs_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A, lda, B, ldb);
+    return rocsolver::rocsolver_potrs_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A, lda, B,
+                                                                  ldb);
 }
 
 extern "C" rocblas_status rocsolver_zpotrs(rocblas_handle handle,
@@ -136,5 +141,6 @@ extern "C" rocblas_status rocsolver_zpotrs(rocblas_handle handle,
                                            rocblas_double_complex* B,
                                            const rocblas_int ldb)
 {
-    return rocsolver_potrs_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A, lda, B, ldb);
+    return rocsolver::rocsolver_potrs_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A, lda, B,
+                                                                   ldb);
 }

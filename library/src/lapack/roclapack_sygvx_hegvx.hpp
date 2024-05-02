@@ -38,6 +38,8 @@
 #include "roclapack_sygst_hegst.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 ROCSOLVER_KERNEL void
     sygvx_update_info(T* info, T* iinfo, T* nev, const rocblas_int n, const rocblas_int bc)
@@ -345,3 +347,5 @@ rocblas_status rocsolver_sygvx_hegvx_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

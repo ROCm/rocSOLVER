@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_stein.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S>
 rocblas_status rocsolver_stein_impl(rocblas_handle handle,
@@ -92,6 +94,8 @@ rocblas_status rocsolver_stein_impl(rocblas_handle handle,
                                        batch_count, (S*)work, (rocblas_int*)iwork);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -113,8 +117,8 @@ rocblas_status rocsolver_sstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<float, float>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
-                                              ifail, info);
+    return rocsolver::rocsolver_stein_impl<float, float>(handle, n, D, E, nev, W, iblock, isplit, Z,
+                                                         ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dstein(rocblas_handle handle,
@@ -130,8 +134,8 @@ rocblas_status rocsolver_dstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<double, double>(handle, n, D, E, nev, W, iblock, isplit, Z, ldz,
-                                                ifail, info);
+    return rocsolver::rocsolver_stein_impl<double, double>(handle, n, D, E, nev, W, iblock, isplit,
+                                                           Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_cstein(rocblas_handle handle,
@@ -147,8 +151,8 @@ rocblas_status rocsolver_cstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<rocblas_float_complex, float>(handle, n, D, E, nev, W, iblock,
-                                                              isplit, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_stein_impl<rocblas_float_complex, float>(
+        handle, n, D, E, nev, W, iblock, isplit, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_zstein(rocblas_handle handle,
@@ -164,8 +168,8 @@ rocblas_status rocsolver_zstein(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_stein_impl<rocblas_double_complex, double>(handle, n, D, E, nev, W, iblock,
-                                                                isplit, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_stein_impl<rocblas_double_complex, double>(
+        handle, n, D, E, nev, W, iblock, isplit, Z, ldz, ifail, info);
 }
 
 } // extern C

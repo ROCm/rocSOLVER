@@ -37,6 +37,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, bool STRIDED, typename T>
 void rocsolver_sygst_hegst_getMemorySize(const rocblas_fill uplo,
                                          const rocblas_eform itype,
@@ -339,3 +341,5 @@ rocblas_status rocsolver_sygst_hegst_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

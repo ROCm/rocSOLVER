@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,8 @@
 #include "rocsparse.hpp"
 
 #include "refact_helpers.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 // -------------------------------------------
 // Compute B = beta * B + alpha * (Q * A * Q') as
@@ -221,3 +223,5 @@ rocblas_status rocsolver_csrrf_refactchol_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE
