@@ -883,7 +883,6 @@ rocblas_status rocsolver_getrf_nopiv_recursive_template(rocblas_handle handle,
                     shiftA + A21_offset, lda, strideA, batch_count, optim_mem, work1, work2, work3,
                     work4);
 
-
                 if(istat != rocblas_status_success)
                 {
                     return (istat);
