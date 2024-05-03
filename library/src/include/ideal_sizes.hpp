@@ -174,6 +174,15 @@
 #define BDSQR_SPLIT_GROUPS 5
 #endif
 
+/*! \brief Determines the number of iterations that BDSQR will execute between device synchronizations
+    in the multi-kernel algorithm.
+
+    \details BDSQR will run the loop that launches multiple kernels BDSQR_ITERS_PER_SYNC at a time,
+    before synchronizing with the device to check if the stopping criterion has been met. */
+#ifndef BDSQR_ITERS_PER_SYNC
+#define BDSQR_ITERS_PER_SYNC 5
+#endif
+
 /******************************* gesvd ****************************************
 *******************************************************************************/
 /*! \brief Determines the factor by which one dimension of a matrix should exceed

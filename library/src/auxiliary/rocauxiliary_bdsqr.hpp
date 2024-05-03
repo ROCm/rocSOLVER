@@ -1497,21 +1497,26 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                 if(h_completed == batch_count)
                     break;
 
-                // main computation of SVD
-                ROCSOLVER_LAUNCH_KERNEL((bdsqr_single_iter<T>), grid2, threads1, 0, stream, n, nv,
-                                        nu, nc, D, strideD, E, strideE, maxiter, eps, sfm, tol,
-                                        minshift, splits_map, work, incW, strideW, completed);
+                for(rocblas_int inner_iters = 0; inner_iters < BDSQR_ITERS_PER_SYNC; inner_iters++)
+                {
+                    // main computation of SVD
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_single_iter<T>), grid2, threads1, 0, stream, n, nv,
+                                            nu, nc, D, strideD, E, strideE, maxiter, eps, sfm, tol,
+                                            minshift, splits_map, work, incW, strideW, completed);
 
-                // update singular vectors
-                ROCSOLVER_LAUNCH_KERNEL((bdsqr_rotate<T>), grid3, threads3, 0, stream, n, nv, nu,
-                                        nc, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C,
-                                        shiftC, ldc, strideC, maxiter, splits_map, work, incW,
-                                        strideW, completed);
+                    // update singular vectors
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_rotate<T>), grid3, threads3, 0, stream, n, nv,
+                                            nu, nc, V, shiftV, ldv, strideV, U, shiftU, ldu,
+                                            strideU, C, shiftC, ldc, strideC, maxiter, splits_map,
+                                            work, incW, strideW, completed);
+
+                    // update split block endpoints
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_update_endpoints<T>), grid2, threads1, 0, stream,
+                                            n, E, strideE, splits_map, work, strideW, completed);
+                }
 
                 // check for completion
-                h_iter++;
-                ROCSOLVER_LAUNCH_KERNEL((bdsqr_update_endpoints<T>), grid2, threads1, 0, stream, n,
-                                        E, strideE, splits_map, work, strideW, completed);
+                h_iter += BDSQR_ITERS_PER_SYNC;
                 ROCSOLVER_LAUNCH_KERNEL((bdsqr_chk_completed<T>), grid1, threads1, 0, stream, n,
                                         maxiter, splits_map, work, strideW, completed);
             }
