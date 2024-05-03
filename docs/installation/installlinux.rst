@@ -12,11 +12,11 @@ Prerequisites
 =================
 
 rocSOLVER requires a ROCm-enabled platform. For more information, see the
-`ROCm install guide <https://rocm.docs.amd.com/en/latest/deploy/linux/index.html>`_.
+:doc:`ROCm install guide <rocm-install-on-linux:index>`.
 
 rocSOLVER also requires compatible versions of rocBLAS and rocSPARSE installed on the system.
-For more information, see the `rocBLAS install guide <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/Linux_Install_Guide.html>`_
-and `rocSPARSE install guide <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/install.html>`_.
+For more information, see the :doc:`rocBLAS install guide <rocblas:install/Linux_Install_Guide>`
+and :doc:`rocSPARSE install guide <rocsparse:install/install>`.
 
 rocBLAS, rocSPARSE, and rocSOLVER are still under active development, and it is hard to define minimal
 compatibility versions. For now, a good rule of thumb is to always use rocSOLVER together with the
@@ -43,7 +43,7 @@ rocSOLVER can be installed using a package manager. On Ubuntu, for example, use 
 Building & installing from source
 =====================================
 
-The `rocSOLVER source code <https://github.com/ROCmSoftwarePlatform/rocSOLVER.git>`_ is hosted
+The `rocSOLVER source code <https://github.com/ROCm/rocSOLVER.git>`_ is hosted
 on GitHub. Download the code and checkout the desired branch using:
 
 .. code-block:: bash

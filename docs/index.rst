@@ -8,12 +8,12 @@
 rocSOLVER documentation
 ********************************************************************
 
-rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
-on top of `AMD's open source ROCm platform <https://rocm.docs.amd.com/>`_. rocSOLVER is implemented in the
-`HIP programming language <https://rocm.docs.amd.com/projects/HIP/>`_ and optimized for AMD's
+rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_ 
+on top of :doc:`AMD's open source ROCm platform <rocm:index>`. rocSOLVER is implemented in the
+:doc:`HIP programming language <hip:index>` and optimized for AMD's
 latest discrete GPUs.
 
-The code is open and hosted at: https://github.com/ROCm/rocSOLVER
+The code is open and hosted at: `<https://github.com/ROCm/rocSOLVER>`__
 
 The rocSOLVER documentation is structured as follows:
 
@@ -24,7 +24,7 @@ The rocSOLVER documentation is structured as follows:
 
     * :ref:`install-linux`
 
-  .. grid-item-card:: How-to
+  .. grid-item-card:: How to
 
     * :ref:`using`
     * :ref:`memory`
@@ -44,7 +44,7 @@ The rocSOLVER documentation is structured as follows:
     * :ref:`tuning_label`
     * :ref:`deprecated`
 
-To contribute to the documentation refer to `Contributing to ROCm  <https://rocm.docs.amd.com/en/latest/contribute/index.html>`_.
+To contribute to the documentation refer to :doc:`Contributing to ROCm <rocm:contribute/contributing>`.
 
-You can find licensing information on the `Licensing <https://rocm.docs.amd.com/en/latest/about/license.html>`_ page.
+You can find licensing information on the :doc:`Licensing <rocm:about/license>` page.
 
