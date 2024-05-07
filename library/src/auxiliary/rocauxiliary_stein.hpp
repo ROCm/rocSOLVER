@@ -32,6 +32,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
@@ -88,6 +90,190 @@ __device__ void stein_reorthogonalize(rocblas_int i,
     }
 }
 
+namespace detail {
+//!
+//! @brief Pseudorandom number generator
+//!
+//! Generates pseudorandom numbers 0 < X < 2^31 - 1, 
+//! U = X/(2^31 - 1) in [0, 1) using the sequence
+//!
+//! X_n = Y_n - Z_n, (*)
+//!
+//! where Y_n, Z_n are the following linear congruential generators
+//! - Y_n = 48271 * Y_{n-1} mod (2^31 - 1);
+//! - Z_n = 40692 * Z_{n-1} mod (2^31 - 249).
+//!
+//! Sequence X_n (*) has the following properties:
+//! - it can be computed with 32-bit signed integer arithmetic;
+//! - its period length size (2^31 - 2)(2^31 - 250)/62 ~ 2^56
+//!   renders it useful for generating significantly more than 2^32
+//!   pseudorandom numbers per run;
+//! - it achieves good ratings on the spectral test.
+//!
+//! This generator appears on Eq. 3.4.4-(38) of Donald Knuth, The Art 
+//! of Computer Programming Volume 2 -- Seminumerical Algorithms,
+//! 3rd ed. See book and references therein for facts about Xn (*),
+//! (in particular, see entries 20, 21 and 24 in Table 1, pg. 106,
+//! and the discussion found in Subsection 3.3.4 near Eq. 3.4.4-(38)).
+//!
+//! \tparam I Type used for input and output of numbers Xn, Yn, Zn.
+//!         Must be an integer and, at least, 32-bit wide.
+//! 
+template <typename I, typename = typename std::enable_if<std::is_integral<I>::value && sizeof(I) >= 4>::type>
+struct pseudorandom_number_generator
+{
+    static constexpr int32_t m_m31_mXY = (1LL<<31) - 1; //!< Modulus of Xn and Yn, Mersenne prime M_31 = 2^31 - 1
+    static constexpr int32_t m_mZ = (1LL<<31) - 249; //!< Modulus of Zn sequence, another prime
+
+    //!
+    //! Range check Y0, such that 0 < Y0 < m_m31_mXY = 2^31 - 1.
+    //!
+    //! The number Y' = range_check_Y(Y0) yields next_Y(Y') != 0, 
+    //! for all Y0. Hence, this method is meant to be used only
+    //! when seeding the Zn generator.
+    //!
+    //! \param Z0 Input: number to check, output: 0 < Y' < 2^31 - 1.
+    //! 
+    //! \return Number Y' lying strictly between 0 and m_mZ = 2^31 - 1.
+    //!
+    template<typename K = I, typename = typename std::enable_if<std::is_same<std::decay_t<K>, I>::value>::type>
+    __device__ __host__ static auto range_check_Y(K&& Y0) -> I
+    {
+        Y0 = std::max(Y0 % static_cast<I>(m_m31_mXY), static_cast<I>(1));
+        return Y0;
+    }
+
+    //!
+    //! Range check Z0, such that 0 < Z0 < m_mZ = 2^31 - 249.
+    //!
+    //! The number Z' = range_check_Z(Z0) yields next_Z(Z') != 0, 
+    //! for all Z0. Hence, this method is meant to be used only
+    //! when seeding the Zn generator.
+    //!
+    //! \param Z0 Input: number to check, output: 0 < Z' < 2^31 - 249.
+    //! 
+    //! \return Number Z' lying strictly between 0 and m_mZ = 2^31 - 249.
+    //!
+    template<typename K = I, typename = typename std::enable_if<std::is_same<std::decay_t<K>, I>::value>::type>
+    __device__ __host__ static auto range_check_Z(K&& Z0) -> I
+    {
+        Z0 = std::max(Z0 % static_cast<I>(m_mZ), static_cast<I>(1));
+        return Z0;
+    }
+
+    //!
+    //! Iterates Y, Z and computes U = (Y - Z)/(2^31 - 1) \in [0., 1.).
+    //!
+    //! \tparam S Output type, typically a floating point number.
+    //!
+    //! \param Y Input: iterate n-1 of Yn, output: next_Y(Y).
+    //! 
+    //! \param Z [Optional] Input: iterate n-1 of Zn, output: next_Z(Z).
+    //
+    //! \return Number (Y - Z)/(2^31 - 1) cast to type S.
+    //!
+    template<typename S, typename K = I, typename = typename std::enable_if<std::is_same<std::decay_t<K>, I>::value>::type>
+    __device__ __host__ static auto uniform(K&& Y, K&& Z = 0) -> S
+    {
+        constexpr double range = static_cast<double>(m_m31_mXY);
+        I Xnext = next_X(Y, Z);
+        double U = static_cast<double>(Xnext)/range;
+        return static_cast<S>(U);
+    }
+
+    //!
+    //! Computes next iterate of sequence Xn.
+    //!
+    //! \param Y Input: iterate n-1 of Yn, output: next_Y(Y).
+    //!
+    //! \param Z [Optional] Input: iterate n-1 of Zn, output: next_Z(Z).
+    //! 
+    //! \return Next iterate of Xn, 0 <= Xnext < m_m31_mXY = 2^31 - 1.
+    //!
+    template<typename K = I, typename = typename std::enable_if<std::is_same<std::decay_t<K>, I>::value>::type>
+    __device__ __host__ static auto next_X(K&& Y, K&& Z = 0) -> I
+    {
+        int32_t Xnext, Ynext, Znext;
+
+        Ynext = static_cast<int32_t>(next_Y(Y));
+        Znext = static_cast<int32_t>(next_Z(Z));
+
+        Xnext = Ynext - Znext;
+        Xnext += std::max(-Xnext, 0) * m_m31_mXY;
+
+        return static_cast<I>(Xnext);
+    }
+
+    //!
+    //! Computes next iterate of sequence Yn.
+    //!
+    //! Facts:
+    //! - Yn has period m_m31_mXY = 2^31 - 2;
+    //! - next_Y(0) == 0;
+    //! - if 0 < Y' < 2^31 - 1, next_Y(Y') != 0,
+    //!   thus, for all integers k, next_Y(range_check_Y(k)) != 0.
+    //!
+    //! \param Y Input: iterate n-1 of Yn, output: next_Y(Y).
+    //!
+    //! \return Next iterate of Yn, 0 <= Ynext < m_m31_mXY = 2^31 - 1.
+    //!
+    template<typename K = I, typename = typename std::enable_if<std::is_same<std::decay_t<K>, I>::value>::type>
+    __device__ __host__ static auto next_Y(K&& Y) -> I
+    {
+        int32_t Ynext = static_cast<int32_t>(Y);
+
+        constexpr int32_t ay = 48271;
+        constexpr int32_t qy = 44488; // qy = floor(m_m31_mXY/ay)
+        constexpr int32_t ry = 3399;  // ry = m_m31_mXY % ay
+
+        // Ynext = (ay * Y) % m_m31_mXY;
+        Ynext = ay * (Ynext % qy) - ry * static_cast<int32_t>(Ynext/qy);
+        Ynext += std::max(-Ynext, 0) * m_m31_mXY;
+
+        Y = static_cast<I>(Ynext);
+        return Y;
+    }
+
+    //!
+    //! Computes next iterate of sequence Zn.
+    //!
+    //! Facts:
+    //! - Zn has period m_Z = 2^31 - 250;
+    //! - next_Z(0) == 0;
+    //! - if 0 < Z' < 2^31 - 249, next_Z(Z') != 0,
+    //!   thus, for all integers k, next_Z(range_check_Z(k)) != 0.
+    //!
+    //! \param Z Input: iterate n-1 of Zn, output: next_Z(Z).
+    //!
+    //! \return Next iterate of Zn, 0 <= Znext < m_Z = 2^31 - 249.
+    //!
+    template<typename K = I, typename = typename std::enable_if<std::is_same<std::decay_t<K>, I>::value>::type>
+    __device__ __host__ static auto next_Z(K&& Z) -> I
+    {
+        int32_t Znext = static_cast<int32_t>(Z);
+
+        constexpr int32_t az = 40692;
+        constexpr int32_t qz = 52774; // qz = floor(m_mZ/az)
+        constexpr int32_t rz = 3791;  // rz = m_mZ % az
+
+        // Znext = (az * Z) % m_mZ;
+        Znext = az * (Znext % qz) - rz * static_cast<int32_t>(Znext/qz);
+        Znext += std::max(-Znext, 0) * m_mZ;
+
+        Z = static_cast<I>(Znext);
+        return Z;
+    }
+};
+} // namespace detail
+
+//!
+//! @brief Alias to pseudorandom number generator
+//!
+//! See @detail::pseudorandom_number_generator.
+//!
+template<typename I>
+using rocsolver_prng = detail::pseudorandom_number_generator<I>;
+
 template <int MAX_THDS, typename T, typename S>
 __device__ void run_stein(const int tid,
                           const rocblas_int n,
@@ -110,8 +296,9 @@ __device__ void run_stein(const int tid,
                           S ssfmin)
 {
     __shared__ rocblas_int _info;
-    rocblas_int i, j, j1 = 0, b1, bn, blksize, gpind;
+    rocblas_int i, j, j1 = 0, b1, bn, blksize, gpind, Ytid, Ztid;
     S scl, onenrm, ortol, stpcrt, xj, xjm;
+    using prng = rocsolver_prng<rocblas_int>;
 
     // zero info and ifail
     if(tid == 0)
@@ -168,9 +355,14 @@ __device__ void run_stein(const int tid,
                 rocblas_int nrmchk = 0;
 
                 // initialize starting eigenvector
-                // TODO: how to make it random?
+                Ytid = Ztid = tid + (j + nblk*nev)*MAX_THDS + 1;
+                prng::range_check_Y(Ytid);
+                prng::range_check_Z(Ztid);
                 for(i = tid; i < blksize; i += MAX_THDS)
-                    work[i] = (i == j - j1 ? S(1) : S(-1) / (blksize - 1));
+                {
+                    // work[i] lies in the interval [-1, 1)
+                    work[i] = 2*(prng::uniform<S>(Ytid, Ztid) - 1.0/2);
+                }
 
                 // copy the matrix so it won't be destroyed by factorization
                 for(i = tid; i < blksize - 1; i += MAX_THDS)
