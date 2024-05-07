@@ -414,17 +414,37 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
 
     // 3. merge phase
     //----------------
-    lmemsize = sizeof(S) * STEDC_BDIM;
+    size_t lmemsize1 = sizeof(S) * maxblks;
+    size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
+    rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
+
+    // launch merge for level k
     for(rocblas_int k = 0; k < maxlevs; ++k)
     {
-        // at level k numgrps thread-groups are needed
-        rocblas_int numgrps = 1 << (maxlevs - 1 - k);
+        // a. prepare secular equations
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(1, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(maxblks),
+                                lmemsize1, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
+                                strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
-        // launch merge for level k
-        /*        ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
-                            dim3(numgrps, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
-                            stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT, tmpz,
-                            tempgemm, splits, eps, ssfmin, ssfmax);*/
+        // b. solve to find merged eigen values
+        rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                0, stream, k, n, D, strideD, E, strideE, tmpz, tempgemm, splits,
+                                eps, ssfmin, ssfmax);
+
+        // c. find merged eigen vectors
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                lmemsize3, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
+                                strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+
+        // c. update level
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                lmemsize3, stream, k, n, D, strideD, tempvect, 0, ldt, strideT,
+                                tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
     }
 
     // 4. update and sort
