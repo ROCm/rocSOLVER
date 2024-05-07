@@ -1314,34 +1314,35 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     // grid dimensions
     rocblas_int nuc_max = std::max(nu, nc);
     rocblas_int nvuc_max = std::max(nv, nuc_max);
-    rocblas_int blocksReset = batch_count / BS1 + 1;
+    rocblas_int split_groups = BDSQR_SPLIT_GROUPS;
 
-    dim3 grid1(1, batch_count, 1);
-    dim3 grid2(1, BDSQR_SPLIT_GROUPS, batch_count);
-    dim3 grid3((nvuc_max - 1) / BS1 + 1, BDSQR_SPLIT_GROUPS, batch_count);
-    dim3 threads1(1, 1, 1);
-    dim3 threads2((nuc_max ? std::min(nuc_max, BS1) : 1), 1, 1);
-    dim3 threads3((nvuc_max ? std::min(nvuc_max, BS1) : 1), 1, 1);
-
-    dim3 gridReset(blocksReset, 1, 1);
+    dim3 gridReset(batch_count / BS1 + 1, 1, 1);
+    dim3 gridBasic(1, batch_count, 1);
+    dim3 gridSplits(1, split_groups, batch_count);
     dim3 threadsReset(BS1, 1, 1);
+    dim3 threadsBasic(1, 1, 1);
+
+    dim3 gridVUC((nvuc_max - 1) / BS1 + 1, split_groups, batch_count);
+    dim3 threadsUC((nuc_max ? std::min(nuc_max, BS1) : 1), 1, 1);
+    dim3 threadsVUC((nvuc_max ? std::min(nvuc_max, BS1) : 1), 1, 1);
 
     // set completed = 0
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, completed,
                             batch_count + 1, 0);
 
     // check for NaNs and Infs in input
-    ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), grid1, threads1, 0, stream, n, D, strideD, E, strideE,
-                            info, maxiter, sfm, tol, splits_map, work, incW, strideW, completed);
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), gridBasic, threadsBasic, 0, stream, n, D, strideD, E,
+                            strideE, info, maxiter, sfm, tol, splits_map, work, incW, strideW,
+                            completed);
 
     if(n > 1)
     {
         // rotate to upper bidiagonal if necessary
         if(uplo == rocblas_fill_lower)
         {
-            ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), grid1, threads2, 0, stream, n, nu, nc,
-                                    D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc,
-                                    strideC, info, work, strideW, completed);
+            ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), gridBasic, threadsUC, 0, stream, n, nu,
+                                    nc, D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC,
+                                    ldc, strideC, info, work, strideW, completed);
         }
 
         if(nvuc_max <= BDSQR_SWITCH_SIZE)
@@ -1349,10 +1350,10 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
             // *** NO SINGULAR VECTORS OR SMALL SIZE: USE SINGLE KERNEL ***
 
             // main computation of SVD
-            ROCSOLVER_LAUNCH_KERNEL((bdsqr_multi_iter<T>), grid2, threads3, 0, stream, n, nv, nu,
-                                    nc, D, strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU,
-                                    ldu, strideU, C, shiftC, ldc, strideC, maxiter, eps, sfm, tol,
-                                    minshift, splits_map, work, incW, strideW, completed);
+            ROCSOLVER_LAUNCH_KERNEL((bdsqr_multi_iter<T>), gridSplits, threadsVUC, 0, stream, n, nv,
+                                    nu, nc, D, strideD, E, strideE, V, shiftV, ldv, strideV, U,
+                                    shiftU, ldu, strideU, C, shiftC, ldc, strideC, maxiter, eps,
+                                    sfm, tol, minshift, splits_map, work, incW, strideW, completed);
         }
         else
         {
@@ -1373,31 +1374,33 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                 for(rocblas_int inner_iters = 0; inner_iters < BDSQR_ITERS_PER_SYNC; inner_iters++)
                 {
                     // main computation of SVD
-                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_single_iter<T>), grid2, threads1, 0, stream, n, nv,
-                                            nu, nc, D, strideD, E, strideE, maxiter, eps, sfm, tol,
-                                            minshift, splits_map, work, incW, strideW, completed);
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_single_iter<T>), gridSplits, threadsBasic, 0,
+                                            stream, n, nv, nu, nc, D, strideD, E, strideE, maxiter,
+                                            eps, sfm, tol, minshift, splits_map, work, incW,
+                                            strideW, completed);
 
                     // update singular vectors
-                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_rotate<T>), grid3, threads3, 0, stream, n, nv,
-                                            nu, nc, V, shiftV, ldv, strideV, U, shiftU, ldu,
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_rotate<T>), gridVUC, threadsVUC, 0, stream, n,
+                                            nv, nu, nc, V, shiftV, ldv, strideV, U, shiftU, ldu,
                                             strideU, C, shiftC, ldc, strideC, maxiter, splits_map,
                                             work, incW, strideW, completed);
 
                     // update split block endpoints
-                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_update_endpoints<T>), grid2, threads1, 0, stream,
-                                            n, E, strideE, splits_map, work, strideW, completed);
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_update_endpoints<T>), gridSplits, threadsBasic,
+                                            0, stream, n, E, strideE, splits_map, work, strideW,
+                                            completed);
                 }
 
                 // check for completion
                 h_iter += BDSQR_ITERS_PER_SYNC;
-                ROCSOLVER_LAUNCH_KERNEL((bdsqr_chk_completed<T>), grid1, threads1, 0, stream, n,
-                                        maxiter, splits_map, work, strideW, completed);
+                ROCSOLVER_LAUNCH_KERNEL((bdsqr_chk_completed<T>), gridBasic, threadsBasic, 0,
+                                        stream, n, maxiter, splits_map, work, strideW, completed);
             }
         }
     }
 
     // sort the singular values and vectors
-    ROCSOLVER_LAUNCH_KERNEL((bdsqr_finalize<T>), grid1, threads3, 0, stream, n, nv, nu, nc, D,
+    ROCSOLVER_LAUNCH_KERNEL((bdsqr_finalize<T>), gridBasic, threadsVUC, 0, stream, n, nv, nu, nc, D,
                             strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU,
                             C, shiftC, ldc, strideC, info, splits_map, completed);
 

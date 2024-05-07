@@ -171,7 +171,7 @@
     \details BDSQR will use BDSQR_SPLIT_GROUPS thread groups in order to process diagonal blocks
     in parallel. */
 #ifndef BDSQR_SPLIT_GROUPS
-#define BDSQR_SPLIT_GROUPS 5
+#define BDSQR_SPLIT_GROUPS sqrt(n)
 #endif
 
 /*! \brief Determines the number of iterations that BDSQR will execute between device synchronizations
