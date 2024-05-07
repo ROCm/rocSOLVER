@@ -97,12 +97,14 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
 
     const rocblas_int b2t = 1 - t2b;
     const rocblas_int dir = t2b - b2t; // +1 for t2b, -1 for b2t
+    const rocblas_int dirW = dir * incW;
     const rocblas_int nr = nv ? 2 : 0;
 
     if(tid == 0)
     {
         rocblas_int dk = (t2b ? 0 : n - 1);
         rocblas_int ek = dk - b2t;
+        rocblas_int rk = ek * incW;
 
         int sgn = (S(0) < D[dk]) - (D[dk] < S(0));
         if(D[dk] == 0)
@@ -113,9 +115,6 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
 
         for(rocblas_int kk = 0; kk < n - 1; kk++)
         {
-            dk = (t2b ? kk : n - kk - 1);
-            ek = dk - b2t;
-
             // first apply rotation by columns (t2b) or rows (b2t)
             lartg(f, g, c, s, r);
             if(kk > 0)
@@ -128,8 +127,8 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             // save rotations to update singular vectors
             if((t2b && nv) || (b2t && (nu || nc)))
             {
-                rots[ek * incW] = c;
-                rots[ek * incW + 1] = s;
+                rots[rk] = c;
+                rots[rk + 1] = s;
             }
 
             // then apply rotation by rows (t2b) or columns (b2t)
@@ -146,9 +145,13 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             // save rotations to update singular vectors
             if((t2b && (nu || nc)) || (b2t && nv))
             {
-                rots[ek * incW + nr] = c;
-                rots[ek * incW + nr + 1] = s;
+                rots[rk + nr] = c;
+                rots[rk + nr + 1] = s;
             }
+
+            dk += dir;
+            ek += dir;
+            rk += dirW;
         }
 
         ek = (t2b ? n - 2 : 0);
@@ -157,105 +160,69 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
     __syncthreads();
 
     // update singular vectors
-    if(t2b)
+    if(V && nv)
     {
-        if(V && nv)
+        // rotate from the left
+        for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
         {
-            // rotate from the left (forward direction)
-            for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
+            rocblas_int k = (t2b ? 0 : n - 1);
+            rocblas_int rk = (t2b ? 0 : (n - 2) * incW + nr);
+
+            temp1 = V[k + j * ldv];
+            for(rocblas_int kk = 0; kk < n - 1; kk++)
             {
-                temp1 = V[0 + j * ldv];
-                for(rocblas_int i = 0; i < n - 1; i++)
-                {
-                    temp2 = V[i + 1 + j * ldv];
-                    c = rots[i * incW];
-                    s = rots[i * incW + 1];
-                    V[i + j * ldv] = c * temp1 - s * temp2;
-                    V[i + 1 + j * ldv] = temp1 = c * temp2 + s * temp1;
-                }
-            }
-        }
-        if(U && nu)
-        {
-            // rotate from the right (forward direction)
-            for(rocblas_int i = tid; i < nu; i += hipBlockDim_x)
-            {
-                temp1 = U[i + 0 * ldu];
-                for(rocblas_int j = 0; j < n - 1; j++)
-                {
-                    temp2 = U[i + (j + 1) * ldu];
-                    c = rots[j * incW + nr];
-                    s = rots[j * incW + nr + 1];
-                    U[i + j * ldu] = c * temp1 - s * temp2;
-                    U[i + (j + 1) * ldu] = temp1 = c * temp2 + s * temp1;
-                }
-            }
-        }
-        if(C && nc)
-        {
-            // rotate from the left (forward direction)
-            for(rocblas_int j = tid; j < nc; j += hipBlockDim_x)
-            {
-                temp1 = C[0 + j * ldc];
-                for(rocblas_int i = 0; i < n - 1; i++)
-                {
-                    temp2 = C[i + 1 + j * ldc];
-                    c = rots[i * incW + nr];
-                    s = rots[i * incW + nr + 1];
-                    C[i + j * ldc] = c * temp1 - s * temp2;
-                    C[i + 1 + j * ldc] = temp1 = c * temp2 + s * temp1;
-                }
+                temp2 = V[(k + dir) + j * ldv];
+                c = rots[rk];
+                s = rots[rk + 1];
+                V[k + j * ldv] = c * temp1 - s * temp2;
+                V[(k + dir) + j * ldv] = temp1 = c * temp2 + s * temp1;
+
+                k += dir;
+                rk += dirW;
             }
         }
     }
-    else
+    if(U && nu)
     {
-        if(V && nv)
+        // rotate from the right
+        for(rocblas_int i = tid; i < nu; i += hipBlockDim_x)
         {
-            // rotate from the left (backward direction)
-            for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
+            rocblas_int k = (t2b ? 0 : n - 1);
+            rocblas_int rk = (t2b ? nr : (n - 2) * incW);
+
+            temp1 = U[i + k * ldu];
+            for(rocblas_int kk = 0; kk < n - 1; kk++)
             {
-                temp1 = V[(n - 1) + j * ldv];
-                for(rocblas_int i = n - 1; i > 0; i--)
-                {
-                    temp2 = V[i - 1 + j * ldv];
-                    c = rots[(i - 1) * incW + nr];
-                    s = rots[(i - 1) * incW + nr + 1];
-                    V[i + j * ldv] = c * temp1 - s * temp2;
-                    V[i - 1 + j * ldv] = temp1 = c * temp2 + s * temp1;
-                }
+                temp2 = U[i + (k + dir) * ldu];
+                c = rots[rk];
+                s = rots[rk + 1];
+                U[i + k * ldu] = c * temp1 - s * temp2;
+                U[i + (k + dir) * ldu] = temp1 = c * temp2 + s * temp1;
+
+                k += dir;
+                rk += dirW;
             }
         }
-        if(U && nu)
+    }
+    if(C && nc)
+    {
+        // rotate from the left
+        for(rocblas_int j = tid; j < nc; j += hipBlockDim_x)
         {
-            // rotate from the right (backward direction)
-            for(rocblas_int i = tid; i < nu; i += hipBlockDim_x)
+            rocblas_int k = (t2b ? 0 : n - 1);
+            rocblas_int rk = (t2b ? nr : (n - 2) * incW);
+
+            temp1 = C[k + j * ldc];
+            for(rocblas_int kk = 0; kk < n - 1; kk++)
             {
-                temp1 = U[i + (n - 1) * ldu];
-                for(rocblas_int j = n - 1; j > 0; j--)
-                {
-                    temp2 = U[i + (j - 1) * ldu];
-                    c = rots[(j - 1) * incW];
-                    s = rots[(j - 1) * incW + 1];
-                    U[i + j * ldu] = c * temp1 - s * temp2;
-                    U[i + (j - 1) * ldu] = temp1 = c * temp2 + s * temp1;
-                }
-            }
-        }
-        if(C && nc)
-        {
-            // rotate from the left (backward direction)
-            for(rocblas_int j = tid; j < nc; j += hipBlockDim_x)
-            {
-                temp1 = C[(n - 1) + j * ldc];
-                for(rocblas_int i = n - 1; i > 0; i--)
-                {
-                    temp2 = C[i - 1 + j * ldc];
-                    c = rots[(i - 1) * incW];
-                    s = rots[(i - 1) * incW + 1];
-                    C[i + j * ldc] = c * temp1 - s * temp2;
-                    C[i - 1 + j * ldc] = temp1 = c * temp2 + s * temp1;
-                }
+                temp2 = C[(k + dir) + j * ldc];
+                c = rots[rk];
+                s = rots[rk + 1];
+                C[k + j * ldc] = c * temp1 - s * temp2;
+                C[(k + dir) + j * ldc] = temp1 = c * temp2 + s * temp1;
+
+                k += dir;
+                rk += dirW;
             }
         }
     }
@@ -502,13 +469,10 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
 
     // select batch instance to work with
     // (avoiding arithmetics with possible nullptrs)
-    T *U, *C;
     S* D = DD + bid * strideD;
     S* E = EE + bid * strideE;
-    if(UU)
-        U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-    if(CC)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+    T* U = (UU ? load_ptr_batch<T>(UU, bid, shiftU, strideU) : nullptr);
+    T* C = (CC ? load_ptr_batch<T>(CC, bid, shiftC, strideC) : nullptr);
     S* rots = workA + bid * strideW + 3;
 
     if(tid == 0)
@@ -862,20 +826,15 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
 
     // select batch instance to work with
     // (avoiding arithmetics with possible nullptrs)
-    T *V, *U, *C;
-    if(VV)
-        V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
-    if(UU)
-        U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-    if(CC)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+    T* V = (VV ? load_ptr_batch<T>(VV, bid, shiftV, strideV) : nullptr);
+    T* U = (UU ? load_ptr_batch<T>(UU, bid, shiftU, strideU) : nullptr);
+    T* C = (CC ? load_ptr_batch<T>(CC, bid, shiftC, strideC) : nullptr);
     rocblas_int* splits = splitsA + bid * (2 * n);
     S* work = workA + bid * strideW;
     S* rots = work + 3;
 
     // local variables
-    bool applyqr;
-    int t2b;
+    rocblas_int t2b, b2t, dir, dirW;
     rocblas_int start_t2b, k_start, k_end;
     rocblas_int num_splits, iter_applyqr;
 
@@ -903,88 +862,66 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
         // apply QR step
         if(iter_applyqr > 0)
         {
-            if(start_t2b > 0)
+            t2b = (start_t2b > 0 ? 1 : 0);
+            b2t = 1 - t2b;
+            dir = t2b - b2t;
+            dirW = dir * incW;
+
+            if(V && tid < nv)
             {
-                if(tid < nv)
+                // rotate from the left
+                rocblas_int k = (t2b ? k_start : k_end);
+                rocblas_int rk = (t2b ? k_start * incW : (k_end - 1) * incW + nr);
+
+                temp1 = V[k + tid * ldv];
+                for(rocblas_int kk = k_start; kk < k_end; kk++)
                 {
-                    // rotate from the left (forward direction)
-                    temp1 = V[k_start + tid * ldv];
-                    for(rocblas_int k = k_start; k < k_end; k++)
-                    {
-                        temp2 = V[(k + 1) + tid * ldv];
-                        c = rots[k * incW];
-                        s = rots[k * incW + 1];
-                        V[k + tid * ldv] = c * temp1 - s * temp2;
-                        V[(k + 1) + tid * ldv] = temp1 = c * temp2 + s * temp1;
-                    }
-                }
-                if(tid < nu)
-                {
-                    // rotate from the right (forward direction)
-                    temp1 = U[tid + k_start * ldu];
-                    for(rocblas_int k = k_start; k < k_end; k++)
-                    {
-                        temp2 = U[tid + (k + 1) * ldu];
-                        c = rots[k * incW + nr];
-                        s = rots[k * incW + nr + 1];
-                        U[tid + k * ldu] = c * temp1 - s * temp2;
-                        U[tid + (k + 1) * ldu] = temp1 = c * temp2 + s * temp1;
-                    }
-                }
-                if(tid < nc)
-                {
-                    // rotate from the left (forward direction)
-                    temp1 = C[k_start + tid * ldc];
-                    for(rocblas_int k = k_start; k < k_end; k++)
-                    {
-                        temp2 = C[(k + 1) + tid * ldc];
-                        c = rots[k * incW + nr];
-                        s = rots[k * incW + nr + 1];
-                        C[k + tid * ldc] = c * temp1 - s * temp2;
-                        C[(k + 1) + tid * ldc] = temp1 = c * temp2 + s * temp1;
-                    }
+                    temp2 = V[(k + dir) + tid * ldv];
+                    c = rots[rk];
+                    s = rots[rk + 1];
+                    V[k + tid * ldv] = c * temp1 - s * temp2;
+                    V[(k + dir) + tid * ldv] = temp1 = c * temp2 + s * temp1;
+
+                    k += dir;
+                    rk += dirW;
                 }
             }
-            else
+            if(U && tid < nu)
             {
-                if(tid < nv)
+                // rotate from the right
+                rocblas_int k = (t2b ? k_start : k_end);
+                rocblas_int rk = (t2b ? k_start * incW + nr : (k_end - 1) * incW);
+
+                temp1 = U[tid + k * ldu];
+                for(rocblas_int kk = k_start; kk < k_end; kk++)
                 {
-                    // rotate from the left (backward direction)
-                    temp1 = V[k_end + tid * ldv];
-                    for(rocblas_int k = k_end; k > k_start; k--)
-                    {
-                        temp2 = V[(k - 1) + tid * ldv];
-                        c = rots[(k - 1) * incW + nr];
-                        s = rots[(k - 1) * incW + nr + 1];
-                        V[k + tid * ldv] = c * temp1 - s * temp2;
-                        V[(k - 1) + tid * ldv] = temp1 = c * temp2 + s * temp1;
-                    }
+                    temp2 = U[tid + (k + dir) * ldu];
+                    c = rots[rk];
+                    s = rots[rk + 1];
+                    U[tid + k * ldu] = c * temp1 - s * temp2;
+                    U[tid + (k + dir) * ldu] = temp1 = c * temp2 + s * temp1;
+
+                    k += dir;
+                    rk += dirW;
                 }
-                if(tid < nu)
+            }
+            if(C && tid < nc)
+            {
+                // rotate from the left
+                rocblas_int k = (t2b ? k_start : k_end);
+                rocblas_int rk = (t2b ? k_start * incW + nr : (k_end - 1) * incW);
+
+                temp1 = C[k + tid * ldc];
+                for(rocblas_int kk = k_start; kk < k_end; kk++)
                 {
-                    // rotate from the right (backward direction)
-                    temp1 = U[tid + k_end * ldu];
-                    for(rocblas_int k = k_end; k > k_start; k--)
-                    {
-                        temp2 = U[tid + (k - 1) * ldu];
-                        c = rots[(k - 1) * incW];
-                        s = rots[(k - 1) * incW + 1];
-                        U[tid + k * ldu] = c * temp1 - s * temp2;
-                        U[tid + (k - 1) * ldu] = temp1 = c * temp2 + s * temp1;
-                    }
-                }
-                if(tid < nc)
-                {
-                    // rotate from the left (backward direction)
-                    temp1 = C[k_end + tid * ldc];
-                    for(rocblas_int k = k_end; k > k_start; k--)
-                    {
-                        temp2 = C[(k - 1) + tid * ldc];
-                        c = rots[(k - 1) * incW];
-                        s = rots[(k - 1) * incW + 1];
-                        C[k + tid * ldc] = c * temp1 - s * temp2;
-                        C[(k - 1) + tid * ldc] = temp1 = c * temp2 + s * temp1;
-                    }
+                    temp2 = C[(k + dir) + tid * ldc];
+                    c = rots[rk];
+                    s = rots[rk + 1];
+                    C[k + tid * ldc] = c * temp1 - s * temp2;
+                    C[(k + dir) + tid * ldc] = temp1 = c * temp2 + s * temp1;
+
+                    k += dir;
+                    rk += dirW;
                 }
             }
         }
@@ -1138,9 +1075,9 @@ ROCSOLVER_KERNEL void bdsqr_finalize(const rocblas_int n,
     // array pointers
     S* const D = DD + bid * strideD;
     S* const E = EE + bid * strideE;
-    T* const V = (nv > 0) ? load_ptr_batch<T>(VV, bid, shiftV, strideV) : nullptr;
-    T* const U = (nu > 0) ? load_ptr_batch<T>(UU, bid, shiftU, strideU) : nullptr;
-    T* const C = (nc > 0) ? load_ptr_batch<T>(CC, bid, shiftC, strideC) : nullptr;
+    T* const V = (VV ? load_ptr_batch<T>(VV, bid, shiftV, strideV) : nullptr);
+    T* const U = (UU ? load_ptr_batch<T>(UU, bid, shiftU, strideU) : nullptr);
+    T* const C = (CC ? load_ptr_batch<T>(CC, bid, shiftC, strideC) : nullptr);
     rocblas_int* map = (splits_map ? splits_map + bid * (2 * n) : nullptr);
 
     // ensure all singular values converged and are positive
