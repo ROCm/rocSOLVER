@@ -167,6 +167,7 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1102
   )
   set(AMDGPU_TARGETS_INIT
+    gfx900
     gfx906:xnack-
     gfx908:xnack-
     gfx1010
