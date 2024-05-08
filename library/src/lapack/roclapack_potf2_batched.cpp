@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_potf2.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle,
@@ -83,6 +85,8 @@ rocblas_status rocsolver_potf2_batched_impl(rocblas_handle handle,
                                        (T*)scalars, (T*)work, (T*)pivots);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -99,7 +103,7 @@ rocblas_status rocsolver_spotf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potf2_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver::rocsolver_potf2_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
 }
 
 rocblas_status rocsolver_dpotf2_batched(rocblas_handle handle,
@@ -110,7 +114,8 @@ rocblas_status rocsolver_dpotf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potf2_batched_impl<double>(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver::rocsolver_potf2_batched_impl<double>(handle, uplo, n, A, lda, info,
+                                                           batch_count);
 }
 
 rocblas_status rocsolver_cpotf2_batched(rocblas_handle handle,
@@ -121,8 +126,8 @@ rocblas_status rocsolver_cpotf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potf2_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info,
-                                                               batch_count);
+    return rocsolver::rocsolver_potf2_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda,
+                                                                          info, batch_count);
 }
 
 rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
@@ -133,7 +138,7 @@ rocblas_status rocsolver_zpotf2_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potf2_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info,
-                                                                batch_count);
+    return rocsolver::rocsolver_potf2_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda,
+                                                                           info, batch_count);
 }
 }

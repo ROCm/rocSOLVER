@@ -36,6 +36,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** thread-block size for calling the stein kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
 #define STEIN_MAX_THDS 256
@@ -430,3 +432,5 @@ rocblas_status rocsolver_stein_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -40,6 +40,8 @@
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Argument checking **/
 template <typename T, typename S>
 rocblas_status rocsolver_syevdx_heevdx_inplace_argCheck(rocblas_handle handle,
@@ -297,3 +299,5 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

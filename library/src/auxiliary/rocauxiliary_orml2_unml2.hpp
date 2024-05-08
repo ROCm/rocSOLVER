@@ -37,6 +37,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, typename T>
 void rocsolver_orml2_unml2_getMemorySize(const rocblas_side side,
                                          const rocblas_int m,
@@ -230,3 +232,5 @@ rocblas_status rocsolver_orml2_unml2_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_gebrd.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_gebrd_impl(rocblas_handle handle,
@@ -103,6 +105,8 @@ rocblas_status rocsolver_gebrd_impl(rocblas_handle handle,
         work_workArr, (T*)Abyx_norms);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -121,7 +125,7 @@ rocblas_status rocsolver_sgebrd(rocblas_handle handle,
                                 float* tauq,
                                 float* taup)
 {
-    return rocsolver_gebrd_impl<float>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebrd_impl<float>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_dgebrd(rocblas_handle handle,
@@ -134,7 +138,7 @@ rocblas_status rocsolver_dgebrd(rocblas_handle handle,
                                 double* tauq,
                                 double* taup)
 {
-    return rocsolver_gebrd_impl<double>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebrd_impl<double>(handle, m, n, A, lda, D, E, tauq, taup);
 }
 
 rocblas_status rocsolver_cgebrd(rocblas_handle handle,
@@ -147,7 +151,8 @@ rocblas_status rocsolver_cgebrd(rocblas_handle handle,
                                 rocblas_float_complex* tauq,
                                 rocblas_float_complex* taup)
 {
-    return rocsolver_gebrd_impl<rocblas_float_complex>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebrd_impl<rocblas_float_complex>(handle, m, n, A, lda, D, E, tauq,
+                                                                  taup);
 }
 
 rocblas_status rocsolver_zgebrd(rocblas_handle handle,
@@ -160,7 +165,8 @@ rocblas_status rocsolver_zgebrd(rocblas_handle handle,
                                 rocblas_double_complex* tauq,
                                 rocblas_double_complex* taup)
 {
-    return rocsolver_gebrd_impl<rocblas_double_complex>(handle, m, n, A, lda, D, E, tauq, taup);
+    return rocsolver::rocsolver_gebrd_impl<rocblas_double_complex>(handle, m, n, A, lda, D, E, tauq,
+                                                                   taup);
 }
 
 } // extern C

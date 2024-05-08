@@ -39,6 +39,8 @@
 #include "roclapack_syev_heev.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /************** Kernels and device functions for small size*******************/
 /*****************************************************************************/
 
@@ -1606,3 +1608,5 @@ rocblas_status rocsolver_syevj_heevj_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE
