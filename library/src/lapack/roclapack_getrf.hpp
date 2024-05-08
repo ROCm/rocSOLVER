@@ -37,6 +37,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Constants for inner block size of getrf **/
 // clang-format off
 #define GETRF_NUMROWS_REAL 20
@@ -756,3 +758,5 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

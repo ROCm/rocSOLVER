@@ -37,6 +37,8 @@
 #include "rocblas/internal/rocblas_device_malloc.hpp"
 #include "rocsolver_logger.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 constexpr auto rocblas2string_status(rocblas_status status)
 {
     switch(status)
@@ -2262,3 +2264,5 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
         handle, uplo, diag, n, A, offset_A, lda, stride_A, 0, cast2constPointer(workArr),
         offset_invA, ldinvA, stride_invA, 0, batch_count, 1, cast2constPointer(c_temp_arr));
 }
+
+ROCSOLVER_END_NAMESPACE

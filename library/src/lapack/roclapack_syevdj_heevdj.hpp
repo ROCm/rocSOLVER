@@ -34,6 +34,8 @@
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Helper to calculate workspace sizes **/
 template <bool BATCHED, typename T, typename S>
 void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
@@ -260,3 +262,5 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

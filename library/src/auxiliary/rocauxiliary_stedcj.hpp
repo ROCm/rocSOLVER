@@ -35,9 +35,11 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 #define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 
-/***************** Device auxiliary functions ******************************************/
+/***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
@@ -443,3 +445,5 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

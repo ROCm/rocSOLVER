@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +31,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_rfinfo.hpp"
 #include "rocsparse.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /**************** Solver Kernels and methods *********************/
 // ---------------------
@@ -171,6 +173,7 @@ rocblas_status rf_lusolve(rocsolver_rfinfo rfinfo,
 
     return rocblas_status_success;
 }
+
 /************************************************************************/
 
 /************** Argument checking and buffer size auxiliaries *************/
@@ -342,3 +345,5 @@ rocblas_status rocsolver_csrrf_solve_template(rocblas_handle handle,
     return rocblas_status_success;
 }
 /**************************************************************************/
+
+ROCSOLVER_END_NAMESPACE
