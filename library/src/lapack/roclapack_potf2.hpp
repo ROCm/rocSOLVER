@@ -37,6 +37,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
                                      const rocblas_int shiftA,
@@ -292,3 +294,5 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

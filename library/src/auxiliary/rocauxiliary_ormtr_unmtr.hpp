@@ -37,6 +37,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, typename T>
 void rocsolver_ormtr_unmtr_getMemorySize(const rocblas_side side,
                                          const rocblas_fill uplo,
@@ -225,3 +227,5 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
         cast2constType(workArr), shiftC, ldc, strideC, batch_count, scalars, AbyxORwork,
         diagORtmptr, trfact, workArr + batch_count);
 }
+
+ROCSOLVER_END_NAMESPACE

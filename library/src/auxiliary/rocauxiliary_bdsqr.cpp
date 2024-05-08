@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_bdsqr.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename W>
 rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                     const rocblas_fill uplo,
@@ -93,6 +95,8 @@ rocblas_status rocsolver_bdsqr_impl(rocblas_handle handle,
                                        (S*)work);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -117,8 +121,8 @@ rocblas_status rocsolver_sbdsqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_bdsqr_impl<float>(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu, C, ldc,
-                                       info);
+    return rocsolver::rocsolver_bdsqr_impl<float>(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu,
+                                                  C, ldc, info);
 }
 
 rocblas_status rocsolver_dbdsqr(rocblas_handle handle,
@@ -137,8 +141,8 @@ rocblas_status rocsolver_dbdsqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_bdsqr_impl<double>(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U, ldu, C, ldc,
-                                        info);
+    return rocsolver::rocsolver_bdsqr_impl<double>(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U,
+                                                   ldu, C, ldc, info);
 }
 
 rocblas_status rocsolver_cbdsqr(rocblas_handle handle,
@@ -157,8 +161,8 @@ rocblas_status rocsolver_cbdsqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_bdsqr_impl<rocblas_float_complex>(handle, uplo, n, nv, nu, nc, D, E, V, ldv, U,
-                                                       ldu, C, ldc, info);
+    return rocsolver::rocsolver_bdsqr_impl<rocblas_float_complex>(handle, uplo, n, nv, nu, nc, D, E,
+                                                                  V, ldv, U, ldu, C, ldc, info);
 }
 
 rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
@@ -177,8 +181,8 @@ rocblas_status rocsolver_zbdsqr(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_bdsqr_impl<rocblas_double_complex>(handle, uplo, n, nv, nu, nc, D, E, V, ldv,
-                                                        U, ldu, C, ldc, info);
+    return rocsolver::rocsolver_bdsqr_impl<rocblas_double_complex>(handle, uplo, n, nv, nu, nc, D,
+                                                                   E, V, ldv, U, ldu, C, ldc, info);
 }
 
 } // extern C

@@ -32,6 +32,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
                                             const rocblas_int n,
@@ -89,6 +91,8 @@ rocblas_status rocsolver_csrrf_splitlu_impl(rocblas_handle handle,
 #endif
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -110,8 +114,8 @@ rocblas_status rocsolver_scsrrf_splitlu(rocblas_handle handle,
                                         rocblas_int* indU,
                                         float* valU)
 {
-    return rocsolver_csrrf_splitlu_impl<float>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
-                                               ptrU, indU, valU);
+    return rocsolver::rocsolver_csrrf_splitlu_impl<float>(handle, n, nnzT, ptrT, indT, valT, ptrL,
+                                                          indL, valL, ptrU, indU, valU);
 }
 
 rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
@@ -127,8 +131,8 @@ rocblas_status rocsolver_dcsrrf_splitlu(rocblas_handle handle,
                                         rocblas_int* indU,
                                         double* valU)
 {
-    return rocsolver_csrrf_splitlu_impl<double>(handle, n, nnzT, ptrT, indT, valT, ptrL, indL, valL,
-                                                ptrU, indU, valU);
+    return rocsolver::rocsolver_csrrf_splitlu_impl<double>(handle, n, nnzT, ptrT, indT, valT, ptrL,
+                                                           indL, valL, ptrU, indU, valU);
 }
 
 } // extern C

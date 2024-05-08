@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_orml2_unml2.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle,
@@ -98,6 +100,8 @@ rocblas_status rocsolver_orml2_unml2_impl(rocblas_handle handle,
                                              (T*)scalars, (T*)Abyx, (T*)diag, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -118,7 +122,8 @@ rocblas_status rocsolver_sorml2(rocblas_handle handle,
                                 float* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orml2_unml2_impl<float>(handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+    return rocsolver::rocsolver_orml2_unml2_impl<float>(handle, side, trans, m, n, k, A, lda, ipiv,
+                                                        C, ldc);
 }
 
 rocblas_status rocsolver_dorml2(rocblas_handle handle,
@@ -133,7 +138,8 @@ rocblas_status rocsolver_dorml2(rocblas_handle handle,
                                 double* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orml2_unml2_impl<double>(handle, side, trans, m, n, k, A, lda, ipiv, C, ldc);
+    return rocsolver::rocsolver_orml2_unml2_impl<double>(handle, side, trans, m, n, k, A, lda, ipiv,
+                                                         C, ldc);
 }
 
 rocblas_status rocsolver_cunml2(rocblas_handle handle,
@@ -148,8 +154,8 @@ rocblas_status rocsolver_cunml2(rocblas_handle handle,
                                 rocblas_float_complex* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orml2_unml2_impl<rocblas_float_complex>(handle, side, trans, m, n, k, A, lda,
-                                                             ipiv, C, ldc);
+    return rocsolver::rocsolver_orml2_unml2_impl<rocblas_float_complex>(handle, side, trans, m, n,
+                                                                        k, A, lda, ipiv, C, ldc);
 }
 
 rocblas_status rocsolver_zunml2(rocblas_handle handle,
@@ -164,8 +170,8 @@ rocblas_status rocsolver_zunml2(rocblas_handle handle,
                                 rocblas_double_complex* C,
                                 const rocblas_int ldc)
 {
-    return rocsolver_orml2_unml2_impl<rocblas_double_complex>(handle, side, trans, m, n, k, A, lda,
-                                                              ipiv, C, ldc);
+    return rocsolver::rocsolver_orml2_unml2_impl<rocblas_double_complex>(handle, side, trans, m, n,
+                                                                         k, A, lda, ipiv, C, ldc);
 }
 
 } // extern C

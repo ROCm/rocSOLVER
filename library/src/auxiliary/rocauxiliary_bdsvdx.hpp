@@ -39,6 +39,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 ROCSOLVER_KERNEL void bdsvdx_abs_eigs(const rocblas_int n,
                                       rocblas_int* nsvA,
@@ -356,3 +358,5 @@ rocblas_status rocsolver_bdsvdx_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

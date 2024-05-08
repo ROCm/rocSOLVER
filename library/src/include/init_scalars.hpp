@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc.
  * ************************************************************************/
 
 #pragma once
@@ -11,6 +11,8 @@
 
 #include "lib_macros.hpp"
 #include "rocsolver_logger.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 #define IOTA_MAX_THDS 32
 
@@ -36,3 +38,5 @@ void init_scalars(rocblas_handle handle, T* scalars)
     rocblas_get_stream(handle, &stream);
     ROCSOLVER_LAUNCH_KERNEL(iota_n<T>, dim3(1), dim3(IOTA_MAX_THDS), 0, stream, scalars, 3, -1);
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -27,6 +27,8 @@
 
 #include "roclapack_syevx_heevx.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_syevx_heevx_impl(rocblas_handle handle,
                                           const rocblas_evect evect,
@@ -124,6 +126,8 @@ rocblas_status rocsolver_syevx_heevx_impl(rocblas_handle handle,
         (rocblas_int*)isplit_map, (T*)tau, nsplit_workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -151,8 +155,8 @@ rocblas_status rocsolver_ssyevx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_syevx_heevx_impl<float>(handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu,
-                                             abstol, nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_syevx_heevx_impl<float>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dsyevx(rocblas_handle handle,
@@ -174,8 +178,8 @@ rocblas_status rocsolver_dsyevx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_syevx_heevx_impl<double>(handle, evect, erange, uplo, n, A, lda, vl, vu, il,
-                                              iu, abstol, nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_syevx_heevx_impl<double>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_cheevx(rocblas_handle handle,
@@ -197,7 +201,7 @@ rocblas_status rocsolver_cheevx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_syevx_heevx_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_syevx_heevx_impl<rocblas_float_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 
@@ -220,7 +224,7 @@ rocblas_status rocsolver_zheevx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_syevx_heevx_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_syevx_heevx_impl<rocblas_double_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
 }
 

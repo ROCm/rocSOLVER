@@ -36,6 +36,8 @@
 #include <algorithm>
 #include <cmath>
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /**
  * indexing for packed storage
  * for upper triangular
@@ -426,3 +428,5 @@ rocblas_status potf2_run_small(rocblas_handle handle,
         rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n, U A,      \
         const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, \
         rocblas_int* info, const rocblas_int batch_count)
+
+ROCSOLVER_END_NAMESPACE
