@@ -5,6 +5,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ## (Unreleased) rocSOLVER
 ### Added
 ### Optimized
+- Improved the performance of BDSQR and GESVD
+
 ### Changed
 ### Deprecated
 ### Removed
