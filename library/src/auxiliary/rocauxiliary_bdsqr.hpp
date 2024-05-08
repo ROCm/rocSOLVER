@@ -326,7 +326,14 @@ __device__ static void bdsqr_permute_swap(const I n,
     tuple[1] is the 1-based index of the current start point for the block.
     tuple[2] is the 1-based index of the current end point for the block.
     abs(tuple[3]) is the number of iterations (+1) applied to the block.
-    sgn(tuple[3]) indicates if the QR step was applied (positive sign) or not. */
+    sgn(tuple[3]) indicates if the QR step was applied (positive sign) or not.
+
+    The completed array is organized as follows:
+    completed[0] is the number of batch instances that have finished all computations.
+    completed[1] is the maximum number of split blocks identified across all batch instances.
+    Remaining elements contain values indicating if each batch instance has finished all
+        computations. 0 means computations are ongoing, 1 means computations are finished,
+        and 2 means the input is invalid. */
 /***************************************************************/
 
 /** BDSQR_INIT kernel checks if there are any NaNs or Infs in the input, calculates the
@@ -423,13 +430,19 @@ ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
         D[n - 1] = nan("");
 
         info[bid] = n;
-        completed[bid + 1] = 2; // use 2 to indicate bad input, 1 to indicate normal completion
+        completed[bid + 2] = 2; // 2 indicates bad input
         atomicAdd(completed, 1);
     }
     else
     {
-        work[2] = ii + 1; // number of split blocks
+        rocblas_int num_splits = ii + 1; // number of split blocks
+        work[2] = num_splits;
         info[bid] = 0;
+
+        // store largest number of split blocks in completed[1]
+        rocblas_int temp_splits = 0;
+        while(temp_splits < num_splits)
+            temp_splits = atomicCAS(completed + 1, temp_splits, num_splits);
     }
 }
 
@@ -459,7 +472,7 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
     rocblas_int tid = hipThreadIdx_x;
     rocblas_int bid = hipBlockIdx_y;
 
-    if(completed[bid + 1])
+    if(completed[bid + 2])
         return;
 
     // local variables
@@ -572,7 +585,7 @@ ROCSOLVER_KERNEL void bdsqr_multi_iter(const rocblas_int n,
     rocblas_int sid_start = hipBlockIdx_y;
     rocblas_int bid = hipBlockIdx_z;
 
-    if(completed[bid + 1])
+    if(completed[bid + 2])
         return;
 
     // select batch instance
@@ -713,7 +726,7 @@ ROCSOLVER_KERNEL void bdsqr_single_iter(const rocblas_int n,
     rocblas_int sid_start = hipBlockIdx_y;
     rocblas_int bid = hipBlockIdx_z;
 
-    if(completed[bid + 1])
+    if(completed[bid + 2])
         return;
 
     // select batch instance to work with
@@ -821,7 +834,7 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
     rocblas_int sid_start = hipBlockIdx_y;
     rocblas_int bid = hipBlockIdx_z;
 
-    if(completed[bid + 1])
+    if(completed[bid + 2])
         return;
 
     // select batch instance to work with
@@ -941,7 +954,7 @@ ROCSOLVER_KERNEL void bdsqr_update_endpoints(const rocblas_int n,
     rocblas_int sid_start = hipBlockIdx_y;
     rocblas_int bid = hipBlockIdx_z;
 
-    if(completed[bid + 1])
+    if(completed[bid + 2])
         return;
 
     // select batch instance to work with
@@ -1001,7 +1014,7 @@ ROCSOLVER_KERNEL void bdsqr_chk_completed(const rocblas_int n,
 {
     rocblas_int bid = hipBlockIdx_y;
 
-    if(completed[bid + 1])
+    if(completed[bid + 2])
         return;
 
     // array pointers
@@ -1025,7 +1038,7 @@ ROCSOLVER_KERNEL void bdsqr_chk_completed(const rocblas_int n,
     }
 
     // mark as completed
-    completed[bid + 1] = 1;
+    completed[bid + 2] = 1;
     atomicAdd(completed, 1);
 }
 
@@ -1065,7 +1078,7 @@ ROCSOLVER_KERNEL void bdsqr_finalize(const rocblas_int n,
     rocblas_int bid = hipBlockIdx_y;
 
     // if a NaN or Inf was detected in the input, return
-    if(completed[bid + 1] > 1)
+    if(completed[bid + 2] > 1)
         return;
 
     // local variables
@@ -1207,7 +1220,7 @@ void rocsolver_bdsqr_getMemorySize(const rocblas_int n,
     *size_work = sizeof(T) * (3 + incW * n) * batch_count;
 
     // size of temporary workspace to indicate problem completion
-    *size_completed = sizeof(rocblas_int) * (batch_count + 1);
+    *size_completed = sizeof(rocblas_int) * (batch_count + 2);
 }
 
 template <typename S, typename W>
@@ -1314,21 +1327,19 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     // grid dimensions
     rocblas_int nuc_max = std::max(nu, nc);
     rocblas_int nvuc_max = std::max(nv, nuc_max);
-    rocblas_int split_groups = BDSQR_SPLIT_GROUPS;
+    rocblas_int split_groups;
 
     dim3 gridReset(batch_count / BS1 + 1, 1, 1);
     dim3 gridBasic(1, batch_count, 1);
-    dim3 gridSplits(1, split_groups, batch_count);
     dim3 threadsReset(BS1, 1, 1);
     dim3 threadsBasic(1, 1, 1);
 
-    dim3 gridVUC((nvuc_max - 1) / BS1 + 1, split_groups, batch_count);
     dim3 threadsUC((nuc_max ? std::min(nuc_max, BS1) : 1), 1, 1);
     dim3 threadsVUC((nvuc_max ? std::min(nvuc_max, BS1) : 1), 1, 1);
 
     // set completed = 0
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, completed,
-                            batch_count + 1, 0);
+                            batch_count + 2, 0);
 
     // check for NaNs and Infs in input
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), gridBasic, threadsBasic, 0, stream, n, D, strideD, E,
@@ -1337,6 +1348,14 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     if(n > 1)
     {
+        // get number of split groups
+        HIP_CHECK(hipMemcpyAsync(&split_groups, completed + 1, sizeof(rocblas_int),
+                                 hipMemcpyDeviceToHost, stream));
+        HIP_CHECK(hipStreamSynchronize(stream));
+
+        dim3 gridSplits(1, split_groups, batch_count);
+        dim3 gridVUC((nvuc_max - 1) / BS1 + 1, split_groups, batch_count);
+
         // rotate to upper bidiagonal if necessary
         if(uplo == rocblas_fill_lower)
         {
