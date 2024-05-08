@@ -617,6 +617,79 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
     }
 }
 
+/** IAMAX finds the maximum element of a given vector.
+    MAX_THDS should be 128, 256, 512, or 1024, and sval should
+    be a shared array of size MAX_THDS. **/
+template <int MAX_THDS, typename T, typename I, typename S>
+__device__ void iamax(const I tid, const I n, T* A, const I incA, S* sval)
+{
+    // local memory setup
+    S val1, val2;
+
+    // read into shared memory while doing initial step
+    // (each thread reduce as many elements as needed to cover the original array)
+    val1 = 0;
+    for(I i = tid; i < n; i += MAX_THDS)
+    {
+        val2 = aabs<S>(A[i * incA]);
+        if(val1 < val2)
+            val1 = val2;
+    }
+    sval[tid] = val1;
+    __syncthreads();
+
+    if(n <= 1)
+        return;
+
+        /** <========= Next do the reduction on the shared memory array =========>
+        (We halve the number of active threads at each step
+        reducing two elements in the shared array. **/
+
+#pragma unroll
+    for(I i = MAX_THDS / 2; i > warpSize; i /= 2)
+    {
+        if(tid < i)
+        {
+            val2 = sval[tid + i];
+            if(val1 < val2)
+                sval[tid] = val1 = val2;
+        }
+        __syncthreads();
+    }
+
+    // from this point, as all the active threads will form a single wavefront
+    // and work in lock-step, there is no need for synchronizations and barriers
+    if(tid < warpSize)
+    {
+        if(warpSize >= 64)
+        {
+            val2 = sval[tid + 64];
+            if(val1 < val2)
+                sval[tid] = val1 = val2;
+        }
+        val2 = sval[tid + 32];
+        if(val1 < val2)
+            sval[tid] = val1 = val2;
+        val2 = sval[tid + 16];
+        if(val1 < val2)
+            sval[tid] = val1 = val2;
+        val2 = sval[tid + 8];
+        if(val1 < val2)
+            sval[tid] = val1 = val2;
+        val2 = sval[tid + 4];
+        if(val1 < val2)
+            sval[tid] = val1 = val2;
+        val2 = sval[tid + 2];
+        if(val1 < val2)
+            sval[tid] = val1 = val2;
+        val2 = sval[tid + 1];
+        if(val1 < val2)
+            sval[tid] = val1 = val2;
+    }
+
+    // after the reduction, the maximum of the elements is in sval[0]
+}
+
 /** IAMAX finds the maximum element of a given vector and its index.
     MAX_THDS should be 128, 256, 512, or 1024, and sval and sidx should
     be shared arrays of size MAX_THDS. **/

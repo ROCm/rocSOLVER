@@ -58,7 +58,7 @@ __device__ T bdsqr_estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int
     {
         jd = t2b ? i : n - 1 - i;
         je = jd - t2b;
-        if((std::abs(E[je]) <= tol * t) && conver)
+        if(conver && (std::abs(E[je]) <= tol * t))
         {
             E[je] = 0;
             smin = -1;
@@ -548,7 +548,7 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
 
 /** BDSQR_COMPUTE implements one iteration of the main loop of the
     BDSQR algorithm to compute the SVD of an upper bidiagonal matrix given by D and E **/
-template <typename T, typename S, typename W1, typename W2, typename W3>
+template <int MAX_THDS, typename T, typename S, typename W1, typename W2, typename W3>
 ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
                                     const rocblas_int nv,
                                     const rocblas_int nu,
@@ -602,6 +602,7 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
     __shared__ int t2b;
     __shared__ bool applyqr;
     __shared__ S smin, smax, sh;
+    __shared__ S sval[MAX_THDS + 1];
 
     // local variables
     rocblas_int i, k;
@@ -623,6 +624,12 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
         if(i >= k || iter >= maxiter)
             continue;
 
+        // find largest value of D and E
+        iamax<MAX_THDS>(tid, k - i + 1, D + i, 1, sval);
+        __syncthreads();
+        iamax<MAX_THDS>(tid, k - i, E + i, 1, sval + 1);
+        __syncthreads();
+
         if(tid == 0)
         {
             // current block goes from i until k
@@ -634,7 +641,7 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
             // shift
             smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1);
             // estimate of the largest singular value in the block
-            smax = find_max_tridiag(i, k, D, E);
+            smax = std::max(sval[0], sval[1]);
 
             // check for gaps, if none then continue
             applyqr = false;
@@ -1221,6 +1228,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     dim3 gridBasic(1, batch_count, 1);
     dim3 threadsReset(BS1, 1, 1);
     dim3 threadsBasic(1, 1, 1);
+    dim3 threadsBS1(BS1, 1, 1);
 
     dim3 threadsUC((nuc_max ? std::min(nuc_max, BS1) : 1), 1, 1);
     dim3 threadsVUC((nvuc_max ? std::min(nvuc_max, BS1) : 1), 1, 1);
@@ -1269,18 +1277,18 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                 if(nvuc_max <= BDSQR_SWITCH_SIZE)
                 {
                     // main computation of SVD
-                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_compute<T>), gridSplits, threadsVUC, 0, stream,
-                                            n, nv, nu, nc, D, strideD, E, strideE, V, shiftV, ldv,
-                                            strideV, U, shiftU, ldu, strideU, C, shiftC, ldc,
-                                            strideC, maxiter, eps, sfm, tol, minshift, splits_map,
-                                            work, incW, strideW, completed);
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_compute<BS1, T>), gridSplits, threadsBS1, 0,
+                                            stream, n, nv, nu, nc, D, strideD, E, strideE, V,
+                                            shiftV, ldv, strideV, U, shiftU, ldu, strideU, C,
+                                            shiftC, ldc, strideC, maxiter, eps, sfm, tol, minshift,
+                                            splits_map, work, incW, strideW, completed);
                 }
                 else
                 {
                     // main computation of SVD
                     ROCSOLVER_LAUNCH_KERNEL(
-                        (bdsqr_compute<T>), gridSplits, threadsBasic, 0, stream, n, nv, nu, nc, D,
-                        strideD, E, strideE, (W1) nullptr, shiftV, ldv, strideV, (W2) nullptr,
+                        (bdsqr_compute<BS1, T>), gridSplits, threadsBS1, 0, stream, n, nv, nu, nc,
+                        D, strideD, E, strideE, (W1) nullptr, shiftV, ldv, strideV, (W2) nullptr,
                         shiftU, ldu, strideU, (W3) nullptr, shiftC, ldc, strideC, maxiter, eps, sfm,
                         tol, minshift, splits_map, work, incW, strideW, completed);
 
