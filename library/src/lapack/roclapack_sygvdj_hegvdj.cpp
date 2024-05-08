@@ -27,6 +27,8 @@
 
 #include "roclapack_sygvdj_hegvdj.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_sygvdj_hegvdj_impl(rocblas_handle handle,
                                             const rocblas_eform itype,
@@ -119,6 +121,8 @@ rocblas_status rocsolver_sygvdj_hegvdj_impl(rocblas_handle handle,
         (T*)workVec, (rocblas_int*)workSplits, (rocblas_int*)iinfo, workArr, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -139,8 +143,8 @@ rocblas_status rocsolver_ssygvdj(rocblas_handle handle,
                                  float* D,
                                  rocblas_int* info)
 {
-    return rocsolver_sygvdj_hegvdj_impl<float>(handle, itype, evect, uplo, n, A, lda, B, ldb, D,
-                                               info);
+    return rocsolver::rocsolver_sygvdj_hegvdj_impl<float>(handle, itype, evect, uplo, n, A, lda, B,
+                                                          ldb, D, info);
 }
 
 rocblas_status rocsolver_dsygvdj(rocblas_handle handle,
@@ -155,8 +159,8 @@ rocblas_status rocsolver_dsygvdj(rocblas_handle handle,
                                  double* D,
                                  rocblas_int* info)
 {
-    return rocsolver_sygvdj_hegvdj_impl<double>(handle, itype, evect, uplo, n, A, lda, B, ldb, D,
-                                                info);
+    return rocsolver::rocsolver_sygvdj_hegvdj_impl<double>(handle, itype, evect, uplo, n, A, lda, B,
+                                                           ldb, D, info);
 }
 
 rocblas_status rocsolver_chegvdj(rocblas_handle handle,
@@ -171,8 +175,8 @@ rocblas_status rocsolver_chegvdj(rocblas_handle handle,
                                  float* D,
                                  rocblas_int* info)
 {
-    return rocsolver_sygvdj_hegvdj_impl<rocblas_float_complex>(handle, itype, evect, uplo, n, A,
-                                                               lda, B, ldb, D, info);
+    return rocsolver::rocsolver_sygvdj_hegvdj_impl<rocblas_float_complex>(
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, info);
 }
 
 rocblas_status rocsolver_zhegvdj(rocblas_handle handle,
@@ -187,8 +191,8 @@ rocblas_status rocsolver_zhegvdj(rocblas_handle handle,
                                  double* D,
                                  rocblas_int* info)
 {
-    return rocsolver_sygvdj_hegvdj_impl<rocblas_double_complex>(handle, itype, evect, uplo, n, A,
-                                                                lda, B, ldb, D, info);
+    return rocsolver::rocsolver_sygvdj_hegvdj_impl<rocblas_double_complex>(
+        handle, itype, evect, uplo, n, A, lda, B, ldb, D, info);
 }
 
 } // extern C

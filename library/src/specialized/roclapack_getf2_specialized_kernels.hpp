@@ -11,6 +11,8 @@
 
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Templated kernels are instantiated in separate cpp
     files in order to improve compilation times and reduce
@@ -769,3 +771,5 @@ void getf2_run_scale_update(rocblas_handle handle,
                                                   T* pivotval, U A, const rocblas_stride shiftA, \
                                                   const I lda, const rocblas_stride strideA,     \
                                                   const I batch_count, const I dimx, const I dimy)
+
+ROCSOLVER_END_NAMESPACE

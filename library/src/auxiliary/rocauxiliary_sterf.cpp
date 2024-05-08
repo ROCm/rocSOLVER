@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_sterf.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status
@@ -71,6 +73,8 @@ rocblas_status
                                        batch_count, (rocblas_int*)stack);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -82,7 +86,7 @@ extern "C" {
 rocblas_status
     rocsolver_ssterf(rocblas_handle handle, const rocblas_int n, float* D, float* E, rocblas_int* info)
 {
-    return rocsolver_sterf_impl<float>(handle, n, D, E, info);
+    return rocsolver::rocsolver_sterf_impl<float>(handle, n, D, E, info);
 }
 
 rocblas_status rocsolver_dsterf(rocblas_handle handle,
@@ -91,7 +95,7 @@ rocblas_status rocsolver_dsterf(rocblas_handle handle,
                                 double* E,
                                 rocblas_int* info)
 {
-    return rocsolver_sterf_impl<double>(handle, n, D, E, info);
+    return rocsolver::rocsolver_sterf_impl<double>(handle, n, D, E, info);
 }
 
 } // extern C

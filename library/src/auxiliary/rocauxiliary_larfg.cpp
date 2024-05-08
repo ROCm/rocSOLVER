@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_larfg.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
@@ -79,6 +81,8 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
                                        strideP, batch_count, (T*)work, (T*)norms);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -94,7 +98,7 @@ rocblas_status rocsolver_slarfg(rocblas_handle handle,
                                 const rocblas_int incx,
                                 float* tau)
 {
-    return rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
+    return rocsolver::rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
 }
 
 rocblas_status rocsolver_dlarfg(rocblas_handle handle,
@@ -104,7 +108,7 @@ rocblas_status rocsolver_dlarfg(rocblas_handle handle,
                                 const rocblas_int incx,
                                 double* tau)
 {
-    return rocsolver_larfg_impl<double>(handle, n, alpha, x, incx, tau);
+    return rocsolver::rocsolver_larfg_impl<double>(handle, n, alpha, x, incx, tau);
 }
 
 rocblas_status rocsolver_clarfg(rocblas_handle handle,
@@ -114,7 +118,7 @@ rocblas_status rocsolver_clarfg(rocblas_handle handle,
                                 const rocblas_int incx,
                                 rocblas_float_complex* tau)
 {
-    return rocsolver_larfg_impl<rocblas_float_complex>(handle, n, alpha, x, incx, tau);
+    return rocsolver::rocsolver_larfg_impl<rocblas_float_complex>(handle, n, alpha, x, incx, tau);
 }
 
 rocblas_status rocsolver_zlarfg(rocblas_handle handle,
@@ -124,7 +128,7 @@ rocblas_status rocsolver_zlarfg(rocblas_handle handle,
                                 const rocblas_int incx,
                                 rocblas_double_complex* tau)
 {
-    return rocsolver_larfg_impl<rocblas_double_complex>(handle, n, alpha, x, incx, tau);
+    return rocsolver::rocsolver_larfg_impl<rocblas_double_complex>(handle, n, alpha, x, incx, tau);
 }
 
 } // extern C

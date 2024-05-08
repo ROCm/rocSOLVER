@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,8 @@
 
 #include <rocblas/rocblas.h>
 #include <rocsparse/rocsparse.h>
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 constexpr auto rocsparse2string_status(rocsparse_status status)
 {
@@ -67,17 +69,17 @@ constexpr auto rocsparse2rocblas_status(rocsparse_status status)
     }
 }
 
-#define ROCSPARSE_CHECK(...)                          \
-    {                                                 \
-        rocsparse_status _status = (__VA_ARGS__);     \
-        if(_status != rocsparse_status_success)       \
-            return rocsparse2rocblas_status(_status); \
+#define ROCSPARSE_CHECK(...)                                     \
+    {                                                            \
+        rocsparse_status _status = (__VA_ARGS__);                \
+        if(_status != rocsparse_status_success)                  \
+            return rocsolver::rocsparse2rocblas_status(_status); \
     }
-#define THROW_IF_ROCSPARSE_ERROR(...)                \
-    {                                                \
-        rocsparse_status _status = (__VA_ARGS__);    \
-        if(_status != rocsparse_status_success)      \
-            throw rocsparse2rocblas_status(_status); \
+#define THROW_IF_ROCSPARSE_ERROR(...)                           \
+    {                                                           \
+        rocsparse_status _status = (__VA_ARGS__);               \
+        if(_status != rocsparse_status_success)                 \
+            throw rocsolver::rocsparse2rocblas_status(_status); \
     }
 
 // csrilu0 buffer
@@ -388,3 +390,5 @@ inline rocsparse_status rocsparseCall_csrsm_solve(rocsparse_handle sphandle,
     return rocsparse_dcsrsm_solve(sphandle, transA, transB, n, nrhs, nnz, alpha, descr, val, ptr,
                                   ind, B, ldb, info, solve, buffer);
 }
+
+ROCSOLVER_END_NAMESPACE

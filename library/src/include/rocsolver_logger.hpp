@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,6 +43,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_datatype2string.hpp"
 #include "rocsolver_logvalue.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /***************************************************************************
  * rocSOLVER logging macros
@@ -385,11 +387,13 @@ public:
         scope_guard& operator=(const scope_guard&) = delete;
     };
 
-    friend rocblas_status rocsolver_log_begin(void);
-    friend rocblas_status rocsolver_log_end(void);
-    friend rocblas_status rocsolver_log_set_layer_mode(const rocblas_layer_mode_flags layer_mode);
-    friend rocblas_status rocsolver_log_set_max_levels(const rocblas_int max_levels);
-    friend rocblas_status rocsolver_log_restore_defaults(void);
-    friend rocblas_status rocsolver_log_write_profile(void);
-    friend rocblas_status rocsolver_log_flush_profile(void);
+    friend rocblas_status rocsolver_log_begin_impl(void);
+    friend rocblas_status rocsolver_log_end_impl(void);
+    friend rocblas_status rocsolver_log_set_layer_mode_impl(const rocblas_layer_mode_flags layer_mode);
+    friend rocblas_status rocsolver_log_set_max_levels_impl(const rocblas_int max_levels);
+    friend rocblas_status rocsolver_log_restore_defaults_impl(void);
+    friend rocblas_status rocsolver_log_write_profile_impl(void);
+    friend rocblas_status rocsolver_log_flush_profile_impl(void);
 };
+
+ROCSOLVER_END_NAMESPACE

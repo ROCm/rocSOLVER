@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_potrf.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
@@ -98,6 +100,8 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
         work3, work4, (T*)pivots, (rocblas_int*)iinfo, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -114,7 +118,7 @@ rocblas_status rocsolver_spotrf_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potrf_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver::rocsolver_potrf_batched_impl<float>(handle, uplo, n, A, lda, info, batch_count);
 }
 
 rocblas_status rocsolver_dpotrf_batched(rocblas_handle handle,
@@ -125,7 +129,8 @@ rocblas_status rocsolver_dpotrf_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potrf_batched_impl<double>(handle, uplo, n, A, lda, info, batch_count);
+    return rocsolver::rocsolver_potrf_batched_impl<double>(handle, uplo, n, A, lda, info,
+                                                           batch_count);
 }
 
 rocblas_status rocsolver_cpotrf_batched(rocblas_handle handle,
@@ -136,8 +141,8 @@ rocblas_status rocsolver_cpotrf_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potrf_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info,
-                                                               batch_count);
+    return rocsolver::rocsolver_potrf_batched_impl<rocblas_float_complex>(handle, uplo, n, A, lda,
+                                                                          info, batch_count);
 }
 
 rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
@@ -148,7 +153,7 @@ rocblas_status rocsolver_zpotrf_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_potrf_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info,
-                                                                batch_count);
+    return rocsolver::rocsolver_potrf_batched_impl<rocblas_double_complex>(handle, uplo, n, A, lda,
+                                                                           info, batch_count);
 }
 }

@@ -29,6 +29,8 @@
 
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Call this kernel with 'batch_count' groups in z, and enough
     groups in x and y to cover all the 'm' rows and 'n' columns of C. **/
 template <typename T, typename I, typename V, typename U1, typename U2, typename U3>
@@ -175,3 +177,5 @@ inline rocblas_status rocsolver_ger(rocblas_handle handle,
         rocblas_stride shiftX, I incx, rocblas_stride strideX, U y, rocblas_stride shiftY, I incy, \
         rocblas_stride strideY, U A, rocblas_stride shiftA, I lda, rocblas_stride strideA,         \
         I batch_count, T** work)
+
+ROCSOLVER_END_NAMESPACE

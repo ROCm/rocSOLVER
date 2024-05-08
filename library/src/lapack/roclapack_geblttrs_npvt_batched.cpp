@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_geblttrs_npvt.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_geblttrs_npvt_batched_impl(rocblas_handle handle,
@@ -102,6 +104,8 @@ rocblas_status rocsolver_geblttrs_npvt_batched_impl(rocblas_handle handle,
         work4, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -124,8 +128,8 @@ rocblas_status rocsolver_sgeblttrs_npvt_batched(rocblas_handle handle,
                                                 const rocblas_int ldx,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_batched_impl<float>(handle, nb, nblocks, nrhs, A, lda, B, ldb, C,
-                                                       ldc, X, ldx, batch_count);
+    return rocsolver::rocsolver_geblttrs_npvt_batched_impl<float>(
+        handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, batch_count);
 }
 
 rocblas_status rocsolver_dgeblttrs_npvt_batched(rocblas_handle handle,
@@ -142,8 +146,8 @@ rocblas_status rocsolver_dgeblttrs_npvt_batched(rocblas_handle handle,
                                                 const rocblas_int ldx,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_batched_impl<double>(handle, nb, nblocks, nrhs, A, lda, B, ldb,
-                                                        C, ldc, X, ldx, batch_count);
+    return rocsolver::rocsolver_geblttrs_npvt_batched_impl<double>(
+        handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, batch_count);
 }
 
 rocblas_status rocsolver_cgeblttrs_npvt_batched(rocblas_handle handle,
@@ -160,7 +164,7 @@ rocblas_status rocsolver_cgeblttrs_npvt_batched(rocblas_handle handle,
                                                 const rocblas_int ldx,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_geblttrs_npvt_batched_impl<rocblas_float_complex>(
         handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, batch_count);
 }
 
@@ -178,7 +182,7 @@ rocblas_status rocsolver_zgeblttrs_npvt_batched(rocblas_handle handle,
                                                 const rocblas_int ldx,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_geblttrs_npvt_batched_impl<rocblas_double_complex>(
         handle, nb, nblocks, nrhs, A, lda, B, ldb, C, ldc, X, ldx, batch_count);
 }
 

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_sygvx_hegvx.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_sygvx_hegvx_impl(rocblas_handle handle,
@@ -135,6 +137,8 @@ rocblas_status rocsolver_sygvx_hegvx_impl(rocblas_handle handle,
         optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -165,8 +169,9 @@ rocblas_status rocsolver_ssygvx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvx_hegvx_impl<float>(handle, itype, evect, erange, uplo, n, A, lda, B, ldb,
-                                             vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_sygvx_hegvx_impl<float>(handle, itype, evect, erange, uplo, n, A,
+                                                        lda, B, ldb, vl, vu, il, iu, abstol, nev, W,
+                                                        Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dsygvx(rocblas_handle handle,
@@ -191,8 +196,9 @@ rocblas_status rocsolver_dsygvx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvx_hegvx_impl<double>(handle, itype, evect, erange, uplo, n, A, lda, B, ldb,
-                                              vl, vu, il, iu, abstol, nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_sygvx_hegvx_impl<double>(handle, itype, evect, erange, uplo, n, A,
+                                                         lda, B, ldb, vl, vu, il, iu, abstol, nev,
+                                                         W, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_chegvx(rocblas_handle handle,
@@ -217,9 +223,9 @@ rocblas_status rocsolver_chegvx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvx_hegvx_impl<rocblas_float_complex>(handle, itype, evect, erange, uplo, n,
-                                                             A, lda, B, ldb, vl, vu, il, iu, abstol,
-                                                             nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_sygvx_hegvx_impl<rocblas_float_complex>(
+        handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, Z,
+        ldz, ifail, info);
 }
 
 rocblas_status rocsolver_zhegvx(rocblas_handle handle,
@@ -244,9 +250,9 @@ rocblas_status rocsolver_zhegvx(rocblas_handle handle,
                                 rocblas_int* ifail,
                                 rocblas_int* info)
 {
-    return rocsolver_sygvx_hegvx_impl<rocblas_double_complex>(handle, itype, evect, erange, uplo, n,
-                                                              A, lda, B, ldb, vl, vu, il, iu,
-                                                              abstol, nev, W, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_sygvx_hegvx_impl<rocblas_double_complex>(
+        handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, abstol, nev, W, Z,
+        ldz, ifail, info);
 }
 
 } // extern C

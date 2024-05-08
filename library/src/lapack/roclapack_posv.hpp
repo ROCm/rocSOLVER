@@ -36,6 +36,8 @@
 #include "roclapack_potrs.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 rocblas_status rocsolver_posv_argCheck(rocblas_handle handle,
                                        const rocblas_fill uplo,
@@ -190,3 +192,5 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

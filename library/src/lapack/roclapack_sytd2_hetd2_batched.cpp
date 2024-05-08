@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_sytd2_hetd2.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_sytd2_hetd2_batched_impl(rocblas_handle handle,
@@ -97,6 +99,8 @@ rocblas_status rocsolver_sytd2_hetd2_batched_impl(rocblas_handle handle,
                                              (T*)work, (T*)norms, (T*)tmptau, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -118,8 +122,8 @@ rocblas_status rocsolver_ssytd2_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytd2_hetd2_batched_impl<float>(handle, uplo, n, A, lda, D, strideD, E,
-                                                     strideE, tau, strideP, batch_count);
+    return rocsolver::rocsolver_sytd2_hetd2_batched_impl<float>(
+        handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
@@ -135,8 +139,8 @@ rocblas_status rocsolver_dsytd2_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytd2_hetd2_batched_impl<double>(handle, uplo, n, A, lda, D, strideD, E,
-                                                      strideE, tau, strideP, batch_count);
+    return rocsolver::rocsolver_sytd2_hetd2_batched_impl<double>(
+        handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
 rocblas_status rocsolver_chetd2_batched(rocblas_handle handle,
@@ -152,7 +156,7 @@ rocblas_status rocsolver_chetd2_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytd2_hetd2_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_sytd2_hetd2_batched_impl<rocblas_float_complex>(
         handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 
@@ -169,7 +173,7 @@ rocblas_status rocsolver_zhetd2_batched(rocblas_handle handle,
                                         const rocblas_stride strideP,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_sytd2_hetd2_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_sytd2_hetd2_batched_impl<rocblas_double_complex>(
         handle, uplo, n, A, lda, D, strideD, E, strideE, tau, strideP, batch_count);
 }
 

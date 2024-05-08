@@ -34,6 +34,8 @@
 #include "roclapack_sygv_hegv.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S>
 rocblas_status rocsolver_sygvdj_hegvdj_argCheck(rocblas_handle handle,
                                                 const rocblas_eform itype,
@@ -271,3 +273,5 @@ rocblas_status rocsolver_sygvdj_hegvdj_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

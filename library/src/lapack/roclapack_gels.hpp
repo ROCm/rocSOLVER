@@ -40,6 +40,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename U>
 ROCSOLVER_KERNEL void gels_set_zero(const rocblas_int k1,
                                     const rocblas_int k2,
@@ -393,3 +395,5 @@ rocblas_status rocsolver_gels_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

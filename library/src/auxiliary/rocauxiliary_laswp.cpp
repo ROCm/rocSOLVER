@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_laswp.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename I, typename U>
 rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
                                     const I n,
@@ -66,6 +68,8 @@ rocblas_status rocsolver_laswp_impl(rocblas_handle handle,
                                        shiftP, incp, strideP, batch_count);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -83,7 +87,7 @@ rocblas_status rocsolver_slaswp(rocblas_handle handle,
                                 const rocblas_int* ipiv,
                                 const rocblas_int incp)
 {
-    return rocsolver_laswp_impl<float>(handle, n, A, lda, k1, k2, ipiv, incp);
+    return rocsolver::rocsolver_laswp_impl<float>(handle, n, A, lda, k1, k2, ipiv, incp);
 }
 
 rocblas_status rocsolver_dlaswp(rocblas_handle handle,
@@ -95,7 +99,7 @@ rocblas_status rocsolver_dlaswp(rocblas_handle handle,
                                 const rocblas_int* ipiv,
                                 const rocblas_int incp)
 {
-    return rocsolver_laswp_impl<double>(handle, n, A, lda, k1, k2, ipiv, incp);
+    return rocsolver::rocsolver_laswp_impl<double>(handle, n, A, lda, k1, k2, ipiv, incp);
 }
 
 rocblas_status rocsolver_claswp(rocblas_handle handle,
@@ -107,7 +111,8 @@ rocblas_status rocsolver_claswp(rocblas_handle handle,
                                 const rocblas_int* ipiv,
                                 const rocblas_int incp)
 {
-    return rocsolver_laswp_impl<rocblas_float_complex>(handle, n, A, lda, k1, k2, ipiv, incp);
+    return rocsolver::rocsolver_laswp_impl<rocblas_float_complex>(handle, n, A, lda, k1, k2, ipiv,
+                                                                  incp);
 }
 
 rocblas_status rocsolver_zlaswp(rocblas_handle handle,
@@ -119,7 +124,8 @@ rocblas_status rocsolver_zlaswp(rocblas_handle handle,
                                 const rocblas_int* ipiv,
                                 const rocblas_int incp)
 {
-    return rocsolver_laswp_impl<rocblas_double_complex>(handle, n, A, lda, k1, k2, ipiv, incp);
+    return rocsolver::rocsolver_laswp_impl<rocblas_double_complex>(handle, n, A, lda, k1, k2, ipiv,
+                                                                   incp);
 }
 
 } // extern C

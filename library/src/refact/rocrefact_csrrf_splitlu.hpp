@@ -35,6 +35,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 #ifndef SPLITLU_SWITCH_SIZE
 #define SPLITLU_SWITCH_SIZE 64
 #endif
@@ -619,3 +621,5 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

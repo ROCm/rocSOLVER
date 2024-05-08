@@ -27,9 +27,13 @@
 
 #include "roclapack_potf2_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
 INSTANTIATE_POTF2_SMALL(rocblas_float_complex, rocblas_float_complex*);
 INSTANTIATE_POTF2_SMALL(rocblas_float_complex, rocblas_float_complex* const*);
+
+ROCSOLVER_END_NAMESPACE

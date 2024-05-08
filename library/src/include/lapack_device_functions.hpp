@@ -31,6 +31,8 @@
 #include "lib_macros.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    common location for device functions and kernels that reproduce LAPACK
@@ -969,3 +971,5 @@ ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
         y[i * incy] = a[0] * x[i * incx] + y[i * incy];
     }
 }
+
+ROCSOLVER_END_NAMESPACE

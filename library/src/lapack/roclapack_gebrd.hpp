@@ -37,6 +37,8 @@
 #include "roclapack_gebd2.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, typename T>
 void rocsolver_gebrd_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
@@ -201,3 +203,5 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

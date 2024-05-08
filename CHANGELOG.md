@@ -19,6 +19,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - GETF2_64 (with batched and strided\_batched versions)
     - GETRF_64 (with batched and strided\_batched versions)
     - GETRS_64 (with batched and strided\_batched versions)
+- Added gfx900 to default build targets.
 
 ### Optimized
 - Improved performance of Cholesky factorization.
