@@ -546,39 +546,39 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
     }
 }
 
-/** BDSQR_MULTI_ITER implements the main loop of the BDSQR algorithm
-    to compute the SVD of an upper bidiagonal matrix given by D and E **/
+/** BDSQR_COMPUTE implements one iteration of the main loop of the
+    BDSQR algorithm to compute the SVD of an upper bidiagonal matrix given by D and E **/
 template <typename T, typename S, typename W1, typename W2, typename W3>
-ROCSOLVER_KERNEL void bdsqr_multi_iter(const rocblas_int n,
-                                       const rocblas_int nv,
-                                       const rocblas_int nu,
-                                       const rocblas_int nc,
-                                       S* DD,
-                                       const rocblas_stride strideD,
-                                       S* EE,
-                                       const rocblas_stride strideE,
-                                       W1 VV,
-                                       const rocblas_int shiftV,
-                                       const rocblas_int ldv,
-                                       const rocblas_stride strideV,
-                                       W2 UU,
-                                       const rocblas_int shiftU,
-                                       const rocblas_int ldu,
-                                       const rocblas_stride strideU,
-                                       W3 CC,
-                                       const rocblas_int shiftC,
-                                       const rocblas_int ldc,
-                                       const rocblas_stride strideC,
-                                       const rocblas_int maxiter,
-                                       const S eps,
-                                       const S sfm,
-                                       const S tol,
-                                       const S minshift,
-                                       rocblas_int* splitsA,
-                                       S* workA,
-                                       const rocblas_int incW,
-                                       const rocblas_stride strideW,
-                                       rocblas_int* completed)
+ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
+                                    const rocblas_int nv,
+                                    const rocblas_int nu,
+                                    const rocblas_int nc,
+                                    S* DD,
+                                    const rocblas_stride strideD,
+                                    S* EE,
+                                    const rocblas_stride strideE,
+                                    W1 VV,
+                                    const rocblas_int shiftV,
+                                    const rocblas_int ldv,
+                                    const rocblas_stride strideV,
+                                    W2 UU,
+                                    const rocblas_int shiftU,
+                                    const rocblas_int ldu,
+                                    const rocblas_stride strideU,
+                                    W3 CC,
+                                    const rocblas_int shiftC,
+                                    const rocblas_int ldc,
+                                    const rocblas_stride strideC,
+                                    const rocblas_int maxiter,
+                                    const S eps,
+                                    const S sfm,
+                                    const S tol,
+                                    const S minshift,
+                                    rocblas_int* splitsA,
+                                    S* workA,
+                                    const rocblas_int incW,
+                                    const rocblas_stride strideW,
+                                    rocblas_int* completed)
 {
     rocblas_int tid = hipThreadIdx_x;
     rocblas_int sid_start = hipBlockIdx_y;
@@ -599,156 +599,17 @@ ROCSOLVER_KERNEL void bdsqr_multi_iter(const rocblas_int n,
     S* rots = work + 4;
 
     // shared variables
-    __shared__ bool applyqr;
     __shared__ int t2b;
-    __shared__ S smin, smax, sh, thresh;
-    __shared__ rocblas_int i, k, start;
-    __shared__ rocblas_int num_splits, iter;
-
-    // get convergence threshold
-    if(tid == 0)
-    {
-        smin = work[0];
-        thresh = work[1];
-        num_splits = work[2];
-    }
-    __syncthreads();
-
-    // main loop
-    // iterate over each diagonal block
-    for(rocblas_int sid = sid_start; sid < num_splits; sid += hipGridDim_y)
-    {
-        if(tid == 0)
-        {
-            // read diagonal block endpoints
-            start = splits[4 * sid] - 1;
-            i = splits[4 * sid + 1] - 1;
-            k = splits[4 * sid + 2] - 1;
-
-            // number of iterations (QR steps) applied to current block
-            iter = 0;
-        }
-        __syncthreads();
-
-        // iterate while diagonal block has not converged
-        while(k > start && iter < maxiter)
-        {
-            if(tid == 0)
-            {
-                applyqr = false;
-
-                // current block goes from i until k
-                // determine shift for the QR step
-                // (apply convergence test to find gaps)
-                t2b = std::abs(D[i]) >= std::abs(D[k]);
-                sh = (t2b ? std::abs(D[i]) : std::abs(D[k]));
-
-                // shift
-                smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1);
-                // estimate of the largest singular value in the block
-                smax = find_max_tridiag(i, k, D, E);
-
-                // check for gaps, if none then continue
-                if(smin >= 0)
-                {
-                    if(smin / smax <= minshift)
-                        smin = 0; // shift set to zero if less than accepted value
-                    else if(sh > 0)
-                    {
-                        if(smin * smin / sh / sh < eps)
-                            smin = 0; // shift set to zero if negligible
-                    }
-
-                    applyqr = true;
-                }
-            }
-            __syncthreads();
-
-            // apply QR step
-            if(applyqr)
-            {
-                if(tid == 0)
-                    iter += k - i;
-
-                bdsqr_QRstep(tid, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
-                             ldu, C + i, ldc, smin, rots + incW * i, incW);
-
-                __syncthreads();
-            }
-
-            // update current block endpoints
-            if(tid == 0)
-            {
-                while(k - 1 >= start && std::abs(E[k - 1]) < thresh)
-                {
-                    E[k - 1] = 0;
-                    k--;
-                }
-
-                for(i = k - 1; i >= start; i--)
-                {
-                    if(std::abs(E[i]) < thresh)
-                    {
-                        E[i] = 0;
-                        break;
-                    }
-                }
-                i++;
-            }
-        }
-    }
-}
-
-/** BDSQR_SINGLE_ITER implements one iteration of the main loop of the
-    BDSQR algorithm to compute the SVD of an upper bidiagonal matrix given by D and E
-    and store the Givens rotations **/
-template <typename T, typename S>
-ROCSOLVER_KERNEL void bdsqr_single_iter(const rocblas_int n,
-                                        const rocblas_int nv,
-                                        const rocblas_int nu,
-                                        const rocblas_int nc,
-                                        S* DD,
-                                        const rocblas_stride strideD,
-                                        S* EE,
-                                        const rocblas_stride strideE,
-                                        const rocblas_int maxiter,
-                                        const S eps,
-                                        const S sfm,
-                                        const S tol,
-                                        const S minshift,
-                                        rocblas_int* splitsA,
-                                        S* workA,
-                                        const rocblas_int incW,
-                                        const rocblas_stride strideW,
-                                        rocblas_int* completed)
-{
-    rocblas_int sid_start = hipBlockIdx_y;
-    rocblas_int bid = hipBlockIdx_z;
-
-    if(completed[bid + 2])
-        return;
-
-    // select batch instance to work with
-    S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
-    rocblas_int* splits = splitsA + bid * (2 * n);
-    S* work = workA + bid * strideW;
-    S* rots = work + 4;
+    __shared__ bool applyqr;
+    __shared__ S smin, smax, sh;
 
     // local variables
-    bool applyqr;
-    int t2b;
-    S smin, smax, sh, thresh;
     rocblas_int i, k;
     rocblas_int num_splits, iter;
 
-    // get convergence threshold
-    smin = work[0];
-    thresh = work[1];
-    num_splits = work[2];
-
     // main loop
     // iterate over each diagonal block
+    num_splits = work[2];
     for(rocblas_int sid = sid_start; sid < num_splits; sid += hipGridDim_y)
     {
         // read diagonal block endpoints
@@ -762,42 +623,50 @@ ROCSOLVER_KERNEL void bdsqr_single_iter(const rocblas_int n,
         if(i >= k || iter >= maxiter)
             continue;
 
-        // current block goes from i until k
-        // determine shift for the QR step
-        // (apply convergence test to find gaps)
-        t2b = std::abs(D[i]) >= std::abs(D[k]);
-        sh = (t2b ? std::abs(D[i]) : std::abs(D[k]));
-
-        // shift
-        smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1);
-        // estimate of the largest singular value in the block
-        smax = find_max_tridiag(i, k, D, E);
-
-        // check for gaps, if none then continue
-        applyqr = false;
-        if(smin >= 0)
+        if(tid == 0)
         {
-            if(smin / smax <= minshift)
-                smin = 0; // shift set to zero if less than accepted value
-            else if(sh > 0)
-            {
-                if(smin * smin / sh / sh < eps)
-                    smin = 0; // shift set to zero if negligible
-            }
+            // current block goes from i until k
+            // determine shift for the QR step
+            // (apply convergence test to find gaps)
+            t2b = std::abs(D[i]) >= std::abs(D[k]);
+            sh = (t2b ? std::abs(D[i]) : std::abs(D[k]));
 
-            applyqr = true;
+            // shift
+            smin = bdsqr_estimate<S>(k - i + 1, D + i, E + i, t2b, tol, 1);
+            // estimate of the largest singular value in the block
+            smax = find_max_tridiag(i, k, D, E);
+
+            // check for gaps, if none then continue
+            applyqr = false;
+            if(smin >= 0)
+            {
+                if(smin / smax <= minshift)
+                    smin = 0; // shift set to zero if less than accepted value
+                else if(sh > 0)
+                {
+                    if(smin * smin / sh / sh < eps)
+                        smin = 0; // shift set to zero if negligible
+                }
+
+                applyqr = true;
+            }
         }
+        __syncthreads();
 
         // apply QR step
         if(applyqr)
         {
-            splits[4 * sid] = (t2b ? 1 : -1);
+            if(tid == 0)
+                splits[4 * sid] = (t2b ? 1 : -1);
 
-            bdsqr_QRstep<S>(0, t2b, k - i + 1, nv, nu, nc, D + i, E + i, nullptr, 0, nullptr, 0,
-                            nullptr, 0, smin, rots + incW * i, incW);
+            bdsqr_QRstep(tid, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
+                         ldu, C + i, ldc, smin, rots + incW * i, incW);
         }
         else
-            splits[4 * sid] = 0;
+        {
+            if(tid == 0)
+                splits[4 * sid] = 0;
+        }
     }
 }
 
@@ -1375,18 +1244,6 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                     ldc, strideC, info, work, strideW, completed);
         }
 
-        // if(nvuc_max <= BDSQR_SWITCH_SIZE)
-        // {
-        //     // *** NO SINGULAR VECTORS OR SMALL SIZE: USE SINGLE KERNEL ***
-
-        //     // main computation of SVD
-        //     ROCSOLVER_LAUNCH_KERNEL((bdsqr_multi_iter<T>), gridSplits, threadsVUC, 0, stream, n, nv,
-        //                             nu, nc, D, strideD, E, strideE, V, shiftV, ldv, strideV, U,
-        //                             shiftU, ldu, strideU, C, shiftC, ldc, strideC, maxiter, eps,
-        //                             sfm, tol, minshift, splits_map, work, incW, strideW, completed);
-        // }
-
-        // *** FIND SINGULAR VECTORS FOR LARGE SIZE: USE MULTI-KERNEL APPROACH ***
         rocblas_int h_iter = 0;
         struct
         {
@@ -1409,17 +1266,30 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
             for(rocblas_int inner_iters = 0; inner_iters < BDSQR_ITERS_PER_SYNC; inner_iters++)
             {
-                // main computation of SVD
-                ROCSOLVER_LAUNCH_KERNEL((bdsqr_single_iter<T>), gridSplits, threadsBasic, 0, stream,
-                                        n, nv, nu, nc, D, strideD, E, strideE, maxiter, eps, sfm,
-                                        tol, minshift, splits_map, work, incW, strideW, completed);
+                if(nvuc_max <= BDSQR_SWITCH_SIZE)
+                {
+                    // main computation of SVD
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_compute<T>), gridSplits, threadsVUC, 0, stream,
+                                            n, nv, nu, nc, D, strideD, E, strideE, V, shiftV, ldv,
+                                            strideV, U, shiftU, ldu, strideU, C, shiftC, ldc,
+                                            strideC, maxiter, eps, sfm, tol, minshift, splits_map,
+                                            work, incW, strideW, completed);
+                }
+                else
+                {
+                    // main computation of SVD
+                    ROCSOLVER_LAUNCH_KERNEL(
+                        (bdsqr_compute<T>), gridSplits, threadsBasic, 0, stream, n, nv, nu, nc, D,
+                        strideD, E, strideE, (W1) nullptr, shiftV, ldv, strideV, (W2) nullptr,
+                        shiftU, ldu, strideU, (W3) nullptr, shiftC, ldc, strideC, maxiter, eps, sfm,
+                        tol, minshift, splits_map, work, incW, strideW, completed);
 
-                // update singular vectors
-                if(nvuc_max > 0)
+                    // update singular vectors
                     ROCSOLVER_LAUNCH_KERNEL((bdsqr_rotate<T>), gridVUC, threadsVUC, 0, stream, n,
                                             nv, nu, nc, V, shiftV, ldv, strideV, U, shiftU, ldu,
                                             strideU, C, shiftC, ldc, strideC, maxiter, splits_map,
                                             work, incW, strideW, completed);
+                }
 
                 // update split block endpoints
                 ROCSOLVER_LAUNCH_KERNEL((bdsqr_update_endpoints<T>), gridSplits, threadsBasic, 0,
