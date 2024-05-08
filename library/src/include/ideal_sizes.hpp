@@ -153,13 +153,13 @@
 
 /******************************* bdsqr ****************************************
 *******************************************************************************/
-/*! \brief Determines the size at which rocSOLVER switches from
-    the single-kernel to the multi-kernel algorithm when executing BSDQR. It also applies to the
+/*! \brief Determines the size at which rocSOLVER switches from updating singular vectors
+    in a single thread group, to using multiple thread groups. It also applies to the
     corresponding batched and strided-batched routines.
 
-    \details When nv, nu, and nc are less than or equal to BDSQR_SWITCH_SIZE, BDSQR will launch
-    a single kernel to perform all computations. Otherwise, BDSQR will launch multiple kernels in a
-    loop, requiring synchronization with the device in order to determine when the loop should terminate.*/
+    \details When nv, nu, and nc are less than or equal to BDSQR_SWITCH_SIZE, BDSQR will update
+    the singular vectors in a single thread group. Otherwise, BDSQR will launch a dedicated kernel
+    with multiple thread groups.*/
 #ifndef BDSQR_SWITCH_SIZE
 #define BDSQR_SWITCH_SIZE 512
 #endif
@@ -167,8 +167,8 @@
 /*! \brief Determines the number of iterations that BDSQR will execute between device synchronizations
     in the multi-kernel algorithm.
 
-    \details BDSQR will run the loop that launches multiple kernels BDSQR_ITERS_PER_SYNC at a time,
-    before synchronizing with the device to check if the stopping criterion has been met. */
+    \details BDSQR will run an inner loop BDSQR_ITERS_PER_SYNC at a time, before synchronizing with the
+    device to check if the stopping criterion has been met. */
 #ifndef BDSQR_ITERS_PER_SYNC
 #define BDSQR_ITERS_PER_SYNC 5
 #endif
