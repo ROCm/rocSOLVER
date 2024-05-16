@@ -865,20 +865,23 @@ ROCSOLVER_KERNEL void bdsqr_update_endpoints(const rocblas_int n,
         }
 
         // check for zeroes
-        for(rocblas_int k = k_start; k < k_end; k++)
+        if(applyqr == 0)
         {
-            if(std::abs(E[k]) < thresh)
+            for(rocblas_int k = k_start; k < k_end; k++)
             {
-                E[k] = 0;
-                if(k_start < k)
+                if(std::abs(E[k]) < thresh)
                 {
-                    // spawn new split block
-                    rocblas_int new_sid = num_splits + atomicAdd(work + 3, 1);
-                    splits[4 * new_sid + 1] = k_start;
-                    splits[4 * new_sid + 2] = k;
-                    splits[4 * new_sid + 3] = iter;
+                    E[k] = 0;
+                    if(k_start < k)
+                    {
+                        // spawn new split block
+                        rocblas_int new_sid = num_splits + atomicAdd(work + 3, 1);
+                        splits[4 * new_sid + 1] = k_start;
+                        splits[4 * new_sid + 2] = k;
+                        splits[4 * new_sid + 3] = iter;
+                    }
+                    k_start = k + 1;
                 }
-                k_start = k + 1;
             }
         }
 
