@@ -555,11 +555,9 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         // ==============================================
         for(int i = 1; i < MAXITERS; ++i)
         {
-            //printf(">>> fx = %2.15f\n",abs(fx));
             // if the value of secular eq is small enough, no point to continue; converged!!!
             if(abs(fx) <= tol * er)
             {
-                //printf(">>> CONVERGED <<<\n");
                 converged = true;
                 break;
             }
