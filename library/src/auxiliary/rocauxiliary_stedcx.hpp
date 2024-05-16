@@ -96,6 +96,37 @@ __host__ __device__ inline rocblas_int
 /*************** Main kernels *********************************************************/
 /**************************************************************************************/
 
+/** This kernel deals with the case n = 1
+    (one split block and a single eigenvalue which is the element in D) **/
+template <typename S>
+ROCSOLVER_KERNEL void stedcx_case1_kernel(const rocblas_erange range,
+                                          const S vlow,
+                                          const S vup,
+                                          S* DA,
+                                          const rocblas_stride strideD,
+                                          rocblas_int* nev,
+                                          S* WA,
+                                          const rocblas_stride strideW)
+{
+    int bid = hipBlockIdx_x;
+
+    // select batch instance
+    S* D = DA + bid * strideD;
+    S* W = WA + bid * strideW;
+
+    // check if diagonal element is in range and return
+    S d = D[0];
+    if(range == rocblas_erange_value && (d <= vlow || d > vup))
+    {
+        nev[bid] = 0;
+    }
+    else
+    {
+        nev[bid] = 1;
+        W[0] = d;
+    }
+}
+
 //--------------------------------------------------------------------------------------//
 /** STEDCX_SPLIT_KERNEL implements the solver phase of the DC algorithm to
     **/
@@ -121,6 +152,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
     // batch instance
     const int tid = hipThreadIdx_x;
     const int bid = hipBlockIdx_y;
+    const int bdim = hipBlockDim_x;
     S* D = DD + bid * strideD;
     S* E = EE + bid * strideE;
     rocblas_int* splits = splitsA + bid * (5 * n + 2);
@@ -135,18 +167,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
     bool compact = true;
     rocblas_int* nsplit = nullptr;
     // range bounds
-    S* bounds = workA + bid * (3 * n + 2);
+    S* bounds = workA + bid * (4 * n + 2);
     S* pivmin = bounds + 2;
     S* Esqr = pivmin + 1;
-    S* inter = Esqr + n - 1;
+    S* Dcpy = Esqr + n - 1;
+    S* inter = Dcpy + n;
 
-    /*    T* pivmin = pivminA + bid;
-    T* Esqr = EsqrA + bid * (n - 1);
-    T* bounds = boundsA + 2 * bid;
-    rocblas_int* tmpIS = tmpISA + (bid * n);
-    T* inter = interA + bid * (2 * n);
-    rocblas_int* ninter = ninterA + bid * (2 * n);
-*/
+    // make copy of D for future use if necessary
+    if(range == rocblas_erange_index)
+    {
+        for(rocblas_int i = tid; i < n; i += bdim)
+            Dcpy[i] = D[i];
+    }
 
     // shared memory setup for iamax.
     // (sidx also temporarily stores the number of blocks found by each thread)
@@ -159,159 +191,144 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
 }
 
 //--------------------------------------------------------------------------------------//
-/** STEDCX_SOLVE_KERNEL implements the solver phase of the DC algorithm to
-	compute the eigenvalues/eigenvectors of the different sub-blocks of each split-block.
-	A matrix in the batch could have many split-blocks, and each split-block could be
-	divided in a maximum of nn sub-blocks.
-	- Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y
-	  and nn groups in x. Groups are size STEDC_BDIM.
-	- STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will be analysed
-	  in parallel). If there are actually more split-blocks, some groups will work with more
-	  than one split-block sequentially.
-	- An upper bound for the number of sub-blocks (nn) can be estimated from the size n.
-	  If a group has an id larger than the actual number of sub-blocks in a split-block,
-	  it will do nothing. **/
+/** STEDCX_SYNTHESIS_KERNEL implements the solver phase of the DC algorithm to
+    **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedcx_solve_kernel(const rocblas_erange range,
-                        const rocblas_int n,
-                        const S vl,
-                        const S vu,
-                        const rocblas_int il,
-                        const rocblas_int iu,
-                        S* DD,
-                        const rocblas_stride strideD,
-                        S* EE,
-                        const rocblas_stride strideE,
-                        rocblas_int* nevA,
-                        S* VA,
-                        S* CC,
-                        const rocblas_int shiftC,
-                        const rocblas_int ldc,
-                        const rocblas_stride strideC,
-                        rocblas_int* iinfo,
-                        S* WA,
-                        rocblas_int* splitsA,
-                        const S eps,
-                        const S ssfmin,
-                        const S ssfmax)
+    stedcx_synthesis_kernel(const rocblas_erange range,
+                            const rocblas_int n,
+                            const rocblas_int il,
+                            const rocblas_int iu,
+                            S* DD,
+                            const rocblas_stride strideD,
+                            rocblas_int* nevA,
+                            S* WW,
+                            const rocblas_stride strideW,
+                            S* VV,
+                            const rocblas_int ldv,
+                            const rocblas_stride strideV,
+                            const rocblas_int batch_count,
+                            rocblas_int* splitsA,
+                            S* workA,
+                            const S eps)
 {
-    // threads and groups indices
-    /* --------------------------------------------------- */
-    // batch instance id
-    rocblas_int bid = hipBlockIdx_z;
-    // split-block id
-    rocblas_int sid = hipBlockIdx_y;
-    // sub-block id
-    rocblas_int tid = hipBlockIdx_x;
-    // thread index
-    rocblas_int tidb = hipThreadIdx_x;
-    /* --------------------------------------------------- */
-
-    // select batch instance to work with
-    /* --------------------------------------------------- */
-    S* C;
-    if(CC)
-        C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
+    // batch instance
+    const int tid = hipThreadIdx_x;
+    const int bid = hipBlockIdx_y;
+    const int bdim = hipBlockDim_x;
     S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
-    rocblas_int* info = iinfo + bid;
-    /* --------------------------------------------------- */
-
-    // temporary arrays in global memory
-    /* --------------------------------------------------- */
-    // contains the beginning of split blocks
+    S* W = WW + bid * strideW;
+    S* V = VV + bid * strideV;
+    rocblas_int* nev = nevA + bid;
     rocblas_int* splits = splitsA + bid * (5 * n + 2);
-    // the sub-blocks sizes
-    rocblas_int* nsA = splits + n + 2;
-    // the sub-blocks initial positions
-    rocblas_int* psA = nsA + n;
-    // workspace for solvers
-    ////////////////    S* W = WA + bid * (2 + n * n);
-    /* --------------------------------------------------- */
+    // workspace
+    rocblas_int* ninter = splits + n + 2;
+    rocblas_int* idd = ninter + 2 * n;
+    // range bounds
+    S* bounds = workA + bid * (4 * n + 2);
+    S* pmin = bounds + 2;
+    S* Esqr = pmin + 1;
+    S* Dcpy = Esqr + n - 1;
+    S* inter = Dcpy + n;
 
-    // temporary arrays in shared memory
-    /* --------------------------------------------------- */
-    /*    extern __shared__ rocblas_int lsmem[];
-    rocblas_int* sj2 = lsmem;
-    S* sj1 = reinterpret_cast<S*>(sj2 + n + n % 2);*/
-    /* --------------------------------------------------- */
+    // aux variables
+    S tmp, tmp2;
+    rocblas_int nn = 0, nnt = 0, ntmp = 0;
+    bool index = (range == rocblas_erange_index);
+    bool all = (range == rocblas_erange_all);
+    S low, up;
 
-    // local variables
-    /* --------------------------------------------------- */
-    // total number of split blocks
-    rocblas_int nb = splits[n + 1];
-    // size of split block
-    rocblas_int bs;
-    // size of sub block
-    rocblas_int sbs;
-    // beginning of split block
-    rocblas_int p1;
-    // beginning of sub-block
-    rocblas_int p2;
-    // number of sub-blocks
-    rocblas_int blks;
-    // number of level of division
-    rocblas_int levs;
-    // other aux variables
-    S p;
-    rocblas_int *ns, *ps;
-    /* --------------------------------------------------- */
-
-    // work with STEDC_NUM_SPLIT_BLKS split blocks in parallel
-    /* --------------------------------------------------- */
-    for(int kb = sid; kb < nb; kb += STEDC_NUM_SPLIT_BLKS)
+    // if computing all eigenvalues, quick return
+    if(all)
     {
-        // Select current split block
-        p1 = splits[kb];
-        p2 = splits[kb + 1];
-        bs = p2 - p1;
-        ns = nsA + p1;
-        ps = psA + p1;
+        *nev = n;
+        for(int k = tid; k < n; k += bdim)
+            W[k] = D[k];
+        return;
+    }
 
-        // determine ideal number of sub-blocks
-        levs = stedc_num_levels<rocsolver_stedc_mode_jacobi>(bs);
-        blks = 1 << levs;
+    // otherwise, only keep eigenvalues in desired range
+    if(tid == 0)
+    {
+        low = bounds[0];
+        up = bounds[1];
 
-        // 2. SOLVE PHASE
-        /* ----------------------------------------------------------------- */
-        // Solve the blks sub-blocks in parallel.
-
-        /*        if(tid < blks)
+        if(!index)
         {
-            sbs = ns[tid];
-            p2 = ps[tid];
+            for(int k = 0; k < n; ++k)
+            {
+                tmp = D[k];
+                idd[k] = 0;
+                if(tmp >= low && tmp <= up)
+                {
+                    idd[k] = 1;
+                    W[nn] = tmp;
+                    nn++;
+                }
+            }
+        }
 
-            // transform D and E into full upper tridiag matrix and copy to C
-            de2tridiag(STEDC_BDIM, tidb, sbs, D + p2, E + p2, C + p2 + p2 * ldc, ldc);
+        else
+        {
+            for(int k = 0; k < n; ++k)
+            {
+                tmp = D[k];
+                idd[k] = 0;
+                if(tmp >= low && tmp <= up)
+                {
+                    idd[k] = 1;
+                    inter[nnt] = tmp;
+                    inter[nnt + n] = tmp;
+                    ninter[nnt] = k;
+                    nnt++;
+                }
+            }
 
-            // set work space
-            S* W_Acpy = W;
-            S* W_residual = W_Acpy + n * n;
-            rocblas_int* W_n_sweeps = reinterpret_cast<rocblas_int*>(W_residual + 1);
+            // discard extra values
+            increasing_order(nnt, inter + n, (rocblas_int*)nullptr);
+            for(int i = 0; i < nnt; ++i)
+            {
+                tmp = inter[i];
+                for(int j = 0; j < nnt; ++j)
+                {
+                    tmp2 = inter[n + j];
+                    if(tmp == tmp2)
+                    {
+                        tmp2 = (j == nnt - 1) ? (up - tmp2) / 2 : (inter[n + j + 1] - tmp2) / 2;
+                        tmp2 += tmp;
+                        ntmp = sturm_count(n, Dcpy, Esqr, *pmin, tmp2);
+                        if(ntmp >= il && ntmp <= iu)
+                        {
+                            W[nn] = tmp;
+                            nn++;
+                        }
+                        else
+                            idd[ninter[i]] = 0;
+                        break;
+                    }
+                }
+            }
+        }
 
-            // set shared mem
-            rocblas_int even_n = sbs + sbs % 2;
-            rocblas_int half_n = even_n / 2;
-            S* cosines_res = sj1;
-            S* sines_diag = cosines_res + half_n;
-            rocblas_int* top = sj2;
-            rocblas_int* bottom = top + half_n;
+        // final total of number of eigenvalues in desired range
+        *nev = nn;
+    }
+    __syncthreads();
 
-            // re-arrange threads in 2D array
-            rocblas_int ddx, ddy;
-            syevj_get_dims(sbs, STEDC_BDIM, &ddx, &ddy);
-            rocblas_int tix = tidb % ddx;
-            rocblas_int tiy = tidb / ddx;
-            __syncthreads();
-
-            // solve
-            run_syevj<S, S>(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
-                            rocblas_fill_upper, sbs, C + p2 + p2 * ldc, ldc, 0, eps, W_residual,
-                            MAXSWEEPS, W_n_sweeps, D + p2, info, W_Acpy + p2 + p2 * n, cosines_res,
-                            sines_diag, top, bottom);
-            __syncthreads();
-        }*/
+    // and keep corresponding eigenvectors
+    nn = 0;
+    for(int j = 0; j < n; ++j)
+    {
+        if(idd[j] == 1)
+        {
+            if(j != nn)
+            {
+                for(int i = tid; i < n; i += bdim)
+                    V[i + nn * ldv] = V[i + j * ldv];
+            }
+            nn++;
+        }
+        __syncthreads();
     }
 }
 
@@ -324,6 +341,7 @@ template <bool BATCHED, typename T, typename S>
 void rocsolver_stedcx_getMemorySize(const rocblas_int n,
                                     const rocblas_int batch_count,
                                     size_t* size_work_stack,
+                                    size_t* size_work_steqr,
                                     size_t* size_tempvect,
                                     size_t* size_tempgemm,
                                     size_t* size_tmpz,
@@ -336,6 +354,7 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
     if(n <= 1 || !batch_count)
     {
         *size_work_stack = 0;
+        *size_work_steqr = 0;
         *size_tempvect = 0;
         *size_tempgemm = 0;
         *size_workArr = 0;
@@ -344,11 +363,11 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
         return;
     }
 
-    size_t s1, s2, sq;
+    size_t s1, s2;
 
     // requirements for solver of small independent blocks
-    rocsolver_steqr_getMemorySize<T, S>(rocblas_evect_tridiagonal, n, batch_count, &sq);
-    s1 = sizeof(S) * (n + 2) * batch_count + std::max(sq, sizeof(S) * n * 2 * batch_count);
+    rocsolver_steqr_getMemorySize<T, S>(rocblas_evect_tridiagonal, n, batch_count, size_work_steqr);
+    s1 = sizeof(S) * (4 * n + 2) * batch_count;
 
     // extra requirements for original eigenvectors of small independent blocks
     *size_tempvect = (n * n) * batch_count * sizeof(S);
@@ -367,7 +386,7 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
     *size_splits = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
 
     // size for temporary diagonal and rank-1 modif vector
-    *size_tmpz = sizeof(S) * (2 * n) * batch_count;
+    *size_tmpz = sizeof(S) * (3 * n) * batch_count;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -439,6 +458,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                          rocblas_int* info,
                                          const rocblas_int batch_count,
                                          S* work_stack,
+                                         S* work_steqr,
                                          S* tempvect,
                                          S* tempgemm,
                                          S* tmpz,
@@ -464,8 +484,12 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
 
     // quick return
     if(n == 1)
+    {
         ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
                                 strideC, n, 1);
+        ROCSOLVER_LAUNCH_KERNEL(stedcx_case1_kernel, dim3(batch_count), dim3(1), 0, stream, erange,
+                                vl, vu, D, strideD, nev, W, strideW);
+    }
     if(n <= 1)
         return rocblas_status_success;
 
@@ -476,9 +500,6 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     ssfmin = sqrt(ssfmin) / (eps * eps);
     ssfmax = sqrt(ssfmax) / S(3.0);
     rocblas_int blocksn = (n - 1) / BS2 + 1;
-
-    //print_device_matrix(std::cout,"D",1,n,D,1);
-    //print_device_matrix(std::cout,"E",1,n-1,E,1);
 
     // initialize identity matrix in C if required
     ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2), 0,
@@ -498,58 +519,74 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(stedcx_split_kernel, dim3(1, batch_count), dim3(STEBZ_SPLIT_THDS), 0,
                             stream, erange, n, vl, vu, il, iu, D, strideD, E, strideE, W, strideW,
                             splits, work_stack, eps, ssfmin);
-    //printf("after splits\n");
-    //print_device_matrix(std::cout,"D",1,n,D,1);
-    //print_device_matrix(std::cout,"E",1,n-1,E,1);
-    //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
 
     // 1. divide phase
     //-----------------------------
     ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_bisection, S>),
                             dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D, strideD, E,
                             strideE, splits);
-    //printf("after divide\n");
-    //print_device_matrix(std::cout,"D",1,n,D,1);
-    //print_device_matrix(std::cout,"E",1,n-1,E,1);
-    //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
 
     // 2. solve phase
     //-----------------------------
     ROCSOLVER_LAUNCH_KERNEL((stedc_solve_kernel<S>), dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count),
                             dim3(1), 0, stream, n, D, strideD, E, strideE, tempvect, 0, ldt,
-                            strideT, info, work_stack + n + 2, splits, eps, ssfmin, ssfmax);
-    //printf("after solve\n");
-    //print_device_matrix(std::cout,"D",1,n,D,1);
-    //print_device_matrix(std::cout,"E",1,n-1,E,1);
-    //print_device_matrix(std::cout,"splits",1,5*n+2,splits,1);
-    //print_device_matrix(std::cout,"C",n,n,tempvect,ldt);
+                            strideT, info, work_steqr, splits, eps, ssfmin, ssfmax);
 
     // 3. merge phase
     //----------------
-    size_t lmemsize = sizeof(S) * STEDC_BDIM;
+    size_t lmemsize1 = sizeof(S) * maxblks;
+    size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
+    rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
+
+    // launch merge for level k
     for(rocblas_int k = 0; k < maxlevs; ++k)
     {
-        // at level k numgrps thread-groups are needed
-        rocblas_int numgrps = 1 << (maxlevs - 1 - k);
+        /** TODO: at the last level, kernels in steps b, c, and d could skip computations of
+            eigen values and vectors that are out of the desired range. Whether this could be
+            exploited somehow to improve performance must be explored in the future. For now,
+            as all values and vectors are computed concurrently (by different threads), skiping
+            the computation of some of them does not seem to make much difference. **/
 
-        // launch merge for level k
-        /*        ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_bisection, S>),
-                            dim3(numgrps, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
-                            stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT, tmpz,
-                            tempgemm, splits, eps, ssfmin, ssfmax);*/
+        // a. prepare secular equations
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(1, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(maxblks),
+                                lmemsize1, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
+                                strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+
+        // b. solve to find merged eigen values
+        rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                0, stream, k, n, D, strideD, E, strideE, tmpz, tempgemm, splits,
+                                eps, ssfmin, ssfmax);
+
+        // c. find merged eigen vectors
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                lmemsize3, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
+                                strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+
+        // d. update level
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_qr, S>),
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                lmemsize3, stream, k, n, D, strideD, tempvect, 0, ldt, strideT,
+                                tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
     }
 
     // 4. update and sort
     //----------------------
+    // Synthesize the results from all the split blocks
+    ROCSOLVER_LAUNCH_KERNEL(stedcx_synthesis_kernel, dim3(1, batch_count), dim3(STEDC_BDIM), 0,
+                            stream, erange, n, il, iu, D, strideD, nev, W, strideW, tempvect, ldt,
+                            strideT, batch_count, splits, work_stack, eps);
+
     // eigenvectors C <- C*tempvect
     local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
                                     work_stack, 0, ldt, strideT, batch_count, workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, D, strideD,
-                            C, shiftC, ldc, strideC);
-
-    //print_device_matrix(std::cout,"W",1,n,D,1);
-    //print_device_matrix(std::cout,"C",n,n,C,ldc);
+    // sort eigenvalues and eigenvectors
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, W, strideW,
+                            C, shiftC, ldc, strideC, nev);
 
     return rocblas_status_success;
 }

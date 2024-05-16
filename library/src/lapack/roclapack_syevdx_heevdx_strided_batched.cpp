@@ -72,26 +72,27 @@ rocblas_status rocsolver_syevdx_heevdx_strided_batched_impl(rocblas_handle handl
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspaces (for calling SYTRD/HETRD, STEBZ, STEIN, and ORMTR/UNMTR)
-    size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6;
+    size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6_ifail;
     // size for temporary arrays
     size_t size_D, size_E, size_iblock, size_isplit, size_tau, size_nsplit_workArr;
 
     rocsolver_syevdx_heevdx_getMemorySize<false, T, S>(
         evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
+        &size_work4, &size_work5, &size_work6_ifail, &size_D, &size_E, &size_iblock, &size_isplit,
         &size_tau, &size_nsplit_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(
-            handle, size_scalars, size_work1, size_work2, size_work3, size_work4, size_work5,
-            size_work6, size_D, size_E, size_iblock, size_isplit, size_tau, size_nsplit_workArr);
+        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
+                                                      size_work3, size_work4, size_work5,
+                                                      size_work6_ifail, size_D, size_E, size_iblock,
+                                                      size_isplit, size_tau, size_nsplit_workArr);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6, *D, *E, *iblock, *isplit, *tau,
-        *nsplit_workArr;
+    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6_ifail, *D, *E, *iblock, *isplit,
+        *tau, *nsplit_workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_work5, size_work6, size_D, size_E, size_iblock, size_isplit,
-                              size_tau, size_nsplit_workArr);
+                              size_work5, size_work6_ifail, size_D, size_E, size_iblock,
+                              size_isplit, size_tau, size_nsplit_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -102,7 +103,7 @@ rocblas_status rocsolver_syevdx_heevdx_strided_batched_impl(rocblas_handle handl
     work3 = mem[3];
     work4 = mem[4];
     work5 = mem[5];
-    work6 = mem[6];
+    work6_ifail = mem[6];
     D = mem[7];
     E = mem[8];
     iblock = mem[9];
@@ -116,7 +117,8 @@ rocblas_status rocsolver_syevdx_heevdx_strided_batched_impl(rocblas_handle handl
     return rocsolver_syevdx_heevdx_template<false, true, T>(
         handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z,
         shiftZ, ldz, strideZ, info, batch_count, (T*)scalars, work1, work2, work3, work4, work5,
-        work6, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit, (T*)tau, nsplit_workArr);
+        (rocblas_int*)work6_ifail, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit,
+        (T*)tau, nsplit_workArr);
 }
 
 /*

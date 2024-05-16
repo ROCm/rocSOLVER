@@ -68,9 +68,12 @@ __device__ void increasing_order(const rocblas_int nn, T* X, rocblas_int* Y)
         {
             X[s2] = X[s1];
             X[s1] = v;
-            bv = Y[s2];
-            Y[s2] = Y[s1];
-            Y[s1] = bv;
+            if(Y)
+            {
+                bv = Y[s2];
+                Y[s2] = Y[s1];
+                Y[s1] = bv;
+            }
         }
     }
 }

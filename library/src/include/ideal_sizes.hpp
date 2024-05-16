@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -235,6 +235,14 @@
     \details If the size of the block is smaller than SYEVDJ_MIN_DC_SIZE,
     the eigenvectors are computed with the normal Jacobi algorithm. */
 #define SYEVDJ_MIN_DC_SIZE 16
+
+/****************************** syevdx ******************************************
+*******************************************************************************/
+/*! \brief Determines the minimum size required for the Bisection divide and conquer to be used.
+
+    \details If the size of the block is smaller than SYEVDX_MIN_DC_SIZE,
+    the eigenvectors are computed with the normal inverse iteration algorithm. */
+#define SYEVDX_MIN_DC_SIZE 16
 
 /**************************** getf2/getfr *************************************
 *******************************************************************************/

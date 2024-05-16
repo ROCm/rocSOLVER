@@ -444,9 +444,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     dk = D[k];
     dkm1 = D[km1];
     x = dk + p / 2;
-
-    //printf(">>> xo = %2.15f\n",x);
-
     S pinv = 1 / p;
 
     // find bounds and initial guess
@@ -491,7 +488,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         }
     }
     x = dk + tau; // initial guess
-    //printf(">>> xInit = %2.15f\n",x);
 
     // evaluate secular eq and get input values to calculate step correction
     seq_eval(0, km1, dd, D, z, pinv, dk, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
@@ -548,7 +544,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
         // take the step
         tau += eta;
         x = dk + tau;
-        //printf(">>> x0 = %2.15f\n",x);
 
         // evaluate secular eq and get input values to calculate step correction
         seq_eval(0, km1, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
@@ -603,7 +598,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
             // take the step
             tau += eta;
             x = dk + tau;
-            //printf(">>> x%d = %2.15f\n",i,x);
 
             // evaluate secular eq and get input values to calculate step correction
             seq_eval(0, km1, dd, D, z, pinv, eta, &fx, &fdx, &gx, &gdx, &hx, &hdx, &er, true);
@@ -1972,13 +1966,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
 /** STEDC_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void stedc_sort(const rocblas_int n,
+ROCSOLVER_KERNEL void stedc_sort(const rocblas_int nn,
                                  S* DD,
                                  const rocblas_stride strideD,
                                  U CC,
                                  const rocblas_int shiftC,
                                  const rocblas_int ldc,
-                                 const rocblas_stride strideC)
+                                 const rocblas_stride strideC,
+                                 rocblas_int* nev = nullptr)
 {
     rocblas_int bid = hipBlockIdx_x;
 
@@ -1989,8 +1984,13 @@ ROCSOLVER_KERNEL void stedc_sort(const rocblas_int n,
         C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
     S* D = DD + (bid * strideD);
 
-    rocblas_int l, m;
+    rocblas_int l, m, n;
     S p;
+
+    if(nev)
+        n = nev[bid];
+    else
+        n = nn;
 
     // Sort eigenvalues and eigenvectors by selection sort
     for(int ii = 1; ii < n; ii++)
@@ -2010,7 +2010,7 @@ ROCSOLVER_KERNEL void stedc_sort(const rocblas_int n,
         {
             D[m] = D[l];
             D[l] = p;
-            swapvect(n, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
+            swapvect(nn, C + 0 + l * ldc, 1, C + 0 + m * ldc, 1);
         }
     }
 }

@@ -80,7 +80,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_batched_impl(rocblas_handle handle,
     size_t size_scalars;
     // size of reusable workspaces (and for calling TRSM, SYGST/HEGST, and SYEVX/HEEVX)
     bool optim_mem;
-    size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6;
+    size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6_ifail;
     // extra requirements for calling SYEVX/HEEVX
     size_t size_D, size_E, size_iblock, size_isplit, size_tau;
     // extra requirements for calling POTRF and SYEVX/HEEVX
@@ -89,21 +89,21 @@ rocblas_status rocsolver_sygvdx_hegvdx_batched_impl(rocblas_handle handle,
     size_t size_iinfo;
     rocsolver_sygvdx_hegvdx_getMemorySize<true, false, T, S>(
         itype, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
+        &size_work4, &size_work5, &size_work6_ifail, &size_D, &size_E, &size_iblock, &size_isplit,
         &size_tau, &size_work7_workArr, &size_iinfo, &optim_mem);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_work4, size_work5, size_work6,
-                                                      size_D, size_E, size_iblock, size_isplit,
-                                                      size_tau, size_work7_workArr, size_iinfo);
+        return rocblas_set_optimal_device_memory_size(
+            handle, size_scalars, size_work1, size_work2, size_work3, size_work4, size_work5,
+            size_work6_ifail, size_D, size_E, size_iblock, size_isplit, size_tau,
+            size_work7_workArr, size_iinfo);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6, *D, *E, *iblock, *isplit, *tau,
-        *work7_workArr, *iinfo;
+    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6_ifail, *D, *E, *iblock, *isplit,
+        *tau, *work7_workArr, *iinfo;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_work5, size_work6, size_D, size_E, size_iblock, size_isplit,
-                              size_tau, size_work7_workArr, size_iinfo);
+                              size_work5, size_work6_ifail, size_D, size_E, size_iblock,
+                              size_isplit, size_tau, size_work7_workArr, size_iinfo);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -113,7 +113,9 @@ rocblas_status rocsolver_sygvdx_hegvdx_batched_impl(rocblas_handle handle,
     work2 = mem[2];
     work3 = mem[3];
     work4 = mem[4];
-    work5 = mem[5], work6 = mem[6], D = mem[7];
+    work5 = mem[5];
+    work6_ifail = mem[6];
+    D = mem[7];
     E = mem[8];
     iblock = mem[9];
     isplit = mem[10];
@@ -127,8 +129,8 @@ rocblas_status rocsolver_sygvdx_hegvdx_batched_impl(rocblas_handle handle,
     return rocsolver_sygvdx_hegvdx_template<true, false, T>(
         handle, itype, evect, erange, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, vl,
         vu, il, iu, nev, W, strideW, Z, shiftZ, ldz, strideZ, info, batch_count, (T*)scalars, work1,
-        work2, work3, work4, work5, work6, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit,
-        (T*)tau, work7_workArr, (rocblas_int*)iinfo, optim_mem);
+        work2, work3, work4, work5, (rocblas_int*)work6_ifail, (S*)D, (S*)E, (rocblas_int*)iblock,
+        (rocblas_int*)isplit, (T*)tau, work7_workArr, (rocblas_int*)iinfo, optim_mem);
 }
 
 /*

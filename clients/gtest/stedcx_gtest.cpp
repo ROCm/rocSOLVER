@@ -60,7 +60,7 @@ const vector<vector<int>> size_range = {
     {1, 1},
     {15, 20},
     {20, 20},
-    {64, 64}};
+    {60, 64}};
 
 const vector<vector<int>> ops_range = {
     // always invalid
@@ -70,12 +70,12 @@ const vector<vector<int>> ops_range = {
     // valid only when n=0
     {2, 0, 0, 1, 0},
     // valid only when n>1
-    {2, 0, 0, 1, 5},
+    {2, 0, 0, 4, 8},
     {2, 0, 0, 3, 15},
-    {2, 0, 0, 7, 12},
+    {2, 0, 0, 5, 10},
     // always valid samples
     {0, 0, 0, 0, 0},
-    {1, -15, -5, 0, 0},
+    {1, -10, -7, 0, 0},
     {1, -15, 15, 0, 0},
     {1, -5, 5, 0, 0},
     {1, 5, 15, 0, 0},

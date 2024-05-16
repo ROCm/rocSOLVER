@@ -45,8 +45,8 @@ typedef std::tuple<vector<int>, vector<printable_char>> sygvdx_tuple;
 // (null handle, null pointers and invalid values)
 
 const vector<vector<printable_char>> type_range
-    = {{'1', 'N', 'A', 'U'}, {'2', 'N', 'V', 'L'}, {'3', 'N', 'I', 'U'},
-       {'1', 'V', 'V', 'L'}, {'2', 'V', 'I', 'U'}, {'3', 'V', 'A', 'L'}};
+    = {{'1', 'N', 'A', 'U'}, {'2', 'N', 'I', 'L'}, {'3', 'N', 'A', 'U'},
+       {'1', 'V', 'V', 'L'}, {'2', 'V', 'V', 'U'}, {'3', 'V', 'I', 'L'}};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
@@ -61,14 +61,14 @@ const vector<vector<int>> matrix_size_range = {
     {20, 20, 20, 20, 10, 0, 10, 1, 0},
     // normal (valid) samples
     {20, 30, 20, 20, 5, 15, 1, 10, 1},
-    {35, 35, 35, 35, -10, 10, 1, 35, 0},
+    {35, 35, 35, 35, -10, 10, 3, 15, 0},
     {50, 50, 60, 70, -15, -5, 25, 50, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192, 192, 192, 5, 15, 100, 150, 0},
+    {192, 192, 192, 192, 5, 10, 10, 15, 0},
     {256, 270, 256, 260, -10, 10, 1, 100, 0},
-    {300, 300, 310, 320, -15, -5, 200, 300, 0},
+    {300, 300, 310, 320, -15, -10, 20, 30, 0},
 };
 
 template <typename T>
