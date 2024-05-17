@@ -170,7 +170,7 @@
     \details BDSQR will run an inner loop BDSQR_ITERS_PER_SYNC at a time, before synchronizing with the
     device to check if the stopping criterion has been met. */
 #ifndef BDSQR_ITERS_PER_SYNC
-#define BDSQR_ITERS_PER_SYNC 5
+#define BDSQR_ITERS_PER_SYNC 10
 #endif
 
 /******************************* gesvd ****************************************
