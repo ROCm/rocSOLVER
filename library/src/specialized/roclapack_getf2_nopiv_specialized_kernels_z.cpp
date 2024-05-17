@@ -31,5 +31,9 @@
     Instantiate template methods using macros
 *************************************************************/
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 INSTANTIATE_GETF2_NOPIV_SMALL(rocblas_double_complex, rocblas_double_complex*);
 INSTANTIATE_GETF2_NOPIV_SMALL(rocblas_double_complex, rocblas_double_complex* const*);
+
+ROCSOLVER_END_NAMESPACE

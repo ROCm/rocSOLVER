@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <cmath>
 
+ROCSOLVER_BEGIN_NAMESPACE
 /**
  * ------------------------------------------------------
  * Perform LU factorization without pivoting for small n by n matrix.
@@ -292,6 +293,7 @@ rocblas_status getf2_nopiv_run_small(rocblas_handle handle,
     return rocblas_status_success;
 }
 
+ROCSOLVER_END_NAMESPACE
 /*************************************************************
     Instantiation macros
 *************************************************************/
