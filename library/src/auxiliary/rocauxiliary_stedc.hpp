@@ -855,13 +855,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
    split-block. A matrix in the batch could have many split-blocks, and each
    split-block could be divided in a maximum of nn sub-blocks.
         - Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS
-   groups in y and nn groups in x. Groups are size STEDC_BDIM.
+   groups in y. Groups are single-thread.
         - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
    be analysed in parallel). If there are actually more split-blocks, some
-   groups will work with more than one split-block sequentially.
-        - An upper bound for the number of sub-blocks (nn) can be estimated from
-   the size n. If a group has an id larger than the actual number of sub-blocks
-   in a split-block, it will do nothing. **/
+   groups will work with more than one split-block sequentially. **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const rocblas_int n,
                                                                        S* DD,
@@ -969,15 +966,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
 }
 
 //--------------------------------------------------------------------------------------//
-/** STEDC_MERGE_KERNEL implements the main loop of the DC algorithm to merge the
-        eigenvalues/eigenvectors of the different sub-blocks of each
-   split-block. A matrix in the batch could have many split-blocks, and each
-   split-block could be divided in a maximum of nn sub-blocks.
-        - Call this kernel with batch_count groups in y, and
-   STEDC_NUM_SPLIT_BLKS groups in x. Groups are size STEDC_BDIM.
+/** STEDC_MERGEPREPARE_KERNEL performs deflation and prepares the secular equation for
+    every pair of sub-blocks that need to be merged in a split block. A matrix in the batch
+    could have many split-blocks, and each split-block could be divided in a maximum of nn sub-blocks.
+        - Call this kernel with batch_count groups in z, and STEDC_NUM_SPLIT_BLKS groups in y.
+          Groups are size nn.
         - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
-   be analysed in parallel). If there are actually more split-blocks, some
-   groups will work with more than one split-block sequentially. **/
+          be analysed in parallel). If there are actually more split-blocks, some
+          groups will work with more than one split-block sequentially.
+        - An upper bound for the number of sub-blocks (nn) can be estimated from
+          the size n. If a thread has an id larger than the actual number of sub-blocks
+          in a split-block, it will do nothing. **/
 template <rocsolver_stedc_mode MODE, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergePrepare_kernel(const rocblas_int k,
@@ -1317,6 +1316,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEVALUES_KERNEL solves the secular equation for
+    every pair of sub-blocks that need to be merged in a split block. A matrix in the batch
+    could have many split-blocks, and each split-block could be divided in a maximum of nn sub-blocks.
+        - Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y,
+          and as many groups as half of the unmerged sub-blocks in current level. Each group works
+          with a merge. Groups are size STEDC_BDIM.
+        - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
+          be analysed in parallel). If there are actually more split-blocks, some
+          groups will work with more than one split-block sequentially.
+        - An upper bound for the number of sub-blocks (nn) can be estimated from
+          the size n. If a group has an id larger than half the actual number of unmerged sub-blocks
+          in the level, it will do nothing. **/
 template <rocsolver_stedc_mode MODE, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergeValues_kernel(const rocblas_int k,
@@ -1610,6 +1622,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEVECTORS_KERNEL merges vectors from the secular equation for
+    every pair of sub-blocks that need to be merged in a split block. A matrix in the batch
+    could have many split-blocks, and each split-block could be divided in a maximum of nn sub-blocks.
+        - Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y,
+          and as many groups as columns would be in the matrix if its size is exact multiple of nn.
+          Each group works with a column. Groups are size STEDC_BDIM.
+        - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
+          be analysed in parallel). If there are actually more split-blocks, some
+          groups will work with more than one split-block sequentially.
+        - An upper bound for the number of sub-blocks (nn) can be estimated from
+          the size n. If a group has an id larger than the actual number of columns n,
+          it will do nothing. **/
 template <rocsolver_stedc_mode MODE, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergeVectors_kernel(const rocblas_int k,
@@ -1840,6 +1865,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEVECTORS_KERNEL updates vectors after merges are done. A matrix in the batch
+    could have many split-blocks, and each split-block could be divided in a maximum of nn sub-blocks.
+        - Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y,
+          and as many groups as columns would be in the matrix if its size is exact multiple of nn.
+          Each group works with a column. Groups are size STEDC_BDIM.
+        - STEDC_NUM_SPLIT_BLKS is fixed (is the number of split-blocks that will
+          be analysed in parallel). If there are actually more split-blocks, some
+          groups will work with more than one split-block sequentially.
+        - An upper bound for the number of sub-blocks (nn) can be estimated from
+          the size n. If a group has an id larger than the actual number of columns n,
+          it will do nothing. **/
 template <rocsolver_stedc_mode MODE, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergeUpdate_kernel(const rocblas_int k,
@@ -2008,9 +2045,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort(const rocblas_int n,
     // -----------------------------------
     rocblas_int bid_start = hipBlockIdx_z;
     rocblas_int bid_inc = hipGridDim_z;
-    
-int tid=hipThreadIdx_x;
 
+    int tid = hipThreadIdx_x;
 
     rocblas_int* const map = work + bid_start * ((int64_t)n);
 
@@ -2391,6 +2427,9 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
 
         // launch merge for level k
+        /** TODO: using max number of levels for now. Kernels return immediately when passing
+            the actual number of levels in the split block. We should explore if synchronizing
+            to copy back the actual number of levels makes any difference **/
         for(rocblas_int k = 0; k < maxlevs; ++k)
         {
             // a. prepare secular equations
@@ -2412,14 +2451,14 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
                                     E + shiftE, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm,
-                                    splits, eps, ssfmin, ssfmax); //, mID, sID);
+                                    splits, eps, ssfmin, ssfmax);
 
             // c. update level
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
                                     tempvect, 0, ldt, strideT, tmpz, tempgemm, splits, eps, ssfmin,
-                                    ssfmax); //, mID, sID);
+                                    ssfmax);
         }
 
         // 4. update and sort

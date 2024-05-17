@@ -458,8 +458,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
 }
 
 /** STEBZ_BISECTION implements the iterative bisection.
-    Call the kernel with a DIM_BLKS blocks in X (could be one when it is sure that matrix has
-    only one split block -the case with calls from stedcx-) and batch_count blocks in Y.
+    Call the kernel with DIM_BLKS blocks in X and batch_count blocks in Y.
     Each thread-block is working with as many split-off blocks as needed to cover the entire
     matrix in the batch. Each blocks has DIM_THDS threads in X. Each thread works with as many
     non-converged intervals as needed on each iteration. **/
@@ -825,7 +824,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
 
 /** STEBZ_SYNTHESIS synthesize the results from all the independent
     split blocks of a given matrix and corrects for values outside of range.
-    Call the kernel with as many blocks of threads to cover all the matrices in the batch.
+    Call the kernel with as many groups of threads to cover all the matrices in the batch.
     Each thread works with one matrix in the batch. **/
 template <typename T>
 __device__ void run_stebz_synthesis(const rocblas_erange range,

@@ -260,7 +260,7 @@ void stedcx_getError(const rocblas_handle handle,
         // error is then ||hC - hCRes|| / ||hC||
         // using frobenius norm
         err = norm_error('F', n, nn, ldc, hC[0], hCRes[0]);
-//        *max_err = err > *max_err ? err : *max_err;
+        *max_err = err > *max_err ? err : *max_err;
     }
 }
 
@@ -451,10 +451,10 @@ void testing_stedcx(Arguments& argus)
                            hE, hnev, hnevRes, hW, hWRes, hC, hCRes, hinfo, hinfoRes, &max_error);
 
     // collect performance data
-/*    if(argus.timing)
+    if(argus.timing)
         stedcx_getPerfData<T>(handle, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc, dinfo,
                               hD, hE, hnev, hW, hC, hinfo, &gpu_time_used, &cpu_time_used,
-                              hot_calls, argus.profile, argus.profile_kernels, argus.perf);*/
+                              hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // using 3 * n * machine_precision as tolerance

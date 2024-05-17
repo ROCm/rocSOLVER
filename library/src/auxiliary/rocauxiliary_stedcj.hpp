@@ -425,6 +425,9 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
 
     // launch merge for level k
+    /** TODO: using max number of levels for now. Kernels return immediately when passing
+        the actual number of levels in the split block. We should explore if synchronizing
+        to copy back the actual number of levels makes any difference **/
     for(rocblas_int k = 0; k < maxlevs; ++k)
     {
         // a. prepare secular equations
@@ -460,8 +463,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                     static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
                                     workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
-                            D, strideD, C, shiftC, ldc, strideC, batch_count, splits_map);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n, D,
+                            strideD, C, shiftC, ldc, strideC, batch_count, splits_map);
 
     return rocblas_status_success;
 }

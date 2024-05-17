@@ -34,9 +34,7 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-
 ROCSOLVER_BEGIN_NAMESPACE
-
 
 /***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
@@ -543,6 +541,9 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
 
     // launch merge for level k
+    /** TODO: using max number of levels for now. Kernels return immediately when passing
+        the actual number of levels in the split block. We should explore if synchronizing
+        to copy back the actual number of levels makes any difference **/
     for(rocblas_int k = 0; k < maxlevs; ++k)
     {
         /** TODO: at the last level, kernels in steps b, c, and d could skip computations of
@@ -589,11 +590,10 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                     work_stack, 0, ldt, strideT, batch_count, workArr);
 
     // sort eigenvalues and eigenvectors
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1,1,batch_count), dim3(BS1), 0, stream, n, W, strideW,
-                            C, shiftC, ldc, strideC, batch_count, splits, nev);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n, W,
+                            strideW, C, shiftC, ldc, strideC, batch_count, splits, nev);
 
     return rocblas_status_success;
 }
 
 ROCSOLVER_END_NAMESPACE
-

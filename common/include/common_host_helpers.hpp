@@ -203,7 +203,7 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_fill uplo = rocblas_fill_full,
                          const rocblas_int inca = 1)
 {
-    size_t to_read = lda*n;//max(inca * (m - 1) + m, lda * (n - 1) + n);
+    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
 
     std::vector<T> hA(to_read);
     THROW_IF_HIP_ERROR(
