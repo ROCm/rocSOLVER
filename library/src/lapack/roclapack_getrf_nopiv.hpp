@@ -39,6 +39,8 @@
 #include <cmath>
 #include <type_traits>
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename I>
 static I partition_mn(I const m, I const n)
 {
@@ -1143,3 +1145,5 @@ rocblas_status rocsolver_getrf_nopiv_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return istat;
 }
+
+ROCSOLVER_END_NAMESPACE
