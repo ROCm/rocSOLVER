@@ -34,6 +34,8 @@
 #include "roclapack_sygv_hegv.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S>
 rocblas_status rocsolver_sygvdj_hegvdj_argCheck(rocblas_handle handle,
                                                 const rocblas_eform itype,
@@ -117,25 +119,25 @@ void rocsolver_sygvdj_hegvdj_getMemorySize(const rocblas_eform itype,
     rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars,
                                                        size_work1, size_work2, size_work3,
                                                        size_work4, size_workArr, size_iinfo, &opt1);
-    *size_iinfo = max(*size_iinfo, sizeof(rocblas_int) * batch_count);
+    *size_iinfo = std::max(*size_iinfo, sizeof(rocblas_int) * batch_count);
 
     // requirements for calling SYGST/HEGST
     rocsolver_sygst_hegst_getMemorySize<BATCHED, STRIDED, T>(uplo, itype, n, batch_count, &unused,
                                                              &temp1, &temp2, &temp3, &temp4, &opt2);
-    *size_work1 = max(*size_work1, temp1);
-    *size_work2 = max(*size_work2, temp2);
-    *size_work3 = max(*size_work3, temp3);
-    *size_work4 = max(*size_work4, temp4);
+    *size_work1 = std::max(*size_work1, temp1);
+    *size_work2 = std::max(*size_work2, temp2);
+    *size_work3 = std::max(*size_work3, temp3);
+    *size_work4 = std::max(*size_work4, temp4);
 
     // requirements for calling SYEVDJ/HEEVDJ
     rocsolver_syevdj_heevdj_getMemorySize<BATCHED, T, S>(
         evect, uplo, n, batch_count, &unused, size_workE, size_workTau, size_workVec,
         size_workSplits, &temp1, &temp2, &temp3, &temp4, &temp5);
-    *size_work1 = max(*size_work1, temp1);
-    *size_work2 = max(*size_work2, temp2);
-    *size_work3 = max(*size_work3, temp3);
-    *size_work4 = max(*size_work4, temp4);
-    *size_workArr = max(*size_workArr, temp5);
+    *size_work1 = std::max(*size_work1, temp1);
+    *size_work2 = std::max(*size_work2, temp2);
+    *size_work3 = std::max(*size_work3, temp3);
+    *size_work4 = std::max(*size_work4, temp4);
+    *size_workArr = std::max(*size_workArr, temp5);
 
     if(evect == rocblas_evect_original)
     {
@@ -147,10 +149,10 @@ void rocsolver_sygvdj_hegvdj_getMemorySize(const rocblas_eform itype,
                                               : rocblas_operation_conjugate_transpose);
             rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, trans, n, n, batch_count,
                                                     &temp1, &temp2, &temp3, &temp4, &opt3);
-            *size_work1 = max(*size_work1, temp1);
-            *size_work2 = max(*size_work2, temp2);
-            *size_work3 = max(*size_work3, temp3);
-            *size_work4 = max(*size_work4, temp4);
+            *size_work1 = std::max(*size_work1, temp1);
+            *size_work2 = std::max(*size_work2, temp2);
+            *size_work3 = std::max(*size_work3, temp3);
+            *size_work4 = std::max(*size_work4, temp4);
         }
     }
 
@@ -271,3 +273,5 @@ rocblas_status rocsolver_sygvdj_hegvdj_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

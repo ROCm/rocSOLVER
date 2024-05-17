@@ -34,6 +34,8 @@
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Argument checking **/
 template <typename T, typename S>
 rocblas_status rocsolver_syevdx_heevdx_argCheck(rocblas_handle handle,
@@ -284,7 +286,7 @@ rocblas_status rocsolver_syevdx_heevdx_template(rocblas_handle handle,
             dim3 grid(1, batch_count, 1);
             dim3 threads(BS1, 1, 1);
             ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid, threads, 0, stream, n, nev, W,
-                                    strideW, Z, shiftZ, ldz, strideZ, work6_ifail, strideF, info);
+                                    strideW, Z, shiftZ, ldz, strideZ, work6_ifail, strideF, info, isplit);
         }
     }
 
@@ -306,3 +308,5 @@ rocblas_status rocsolver_syevdx_heevdx_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +37,8 @@
 #include "rocblas.hpp"
 #include "roclapack_geqr2.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <bool BATCHED, typename T>
 void rocsolver_geqrf_getMemorySize(const rocblas_int m,
@@ -76,7 +78,7 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m,
 
         // requirements for calling GEQR2 with sub blocks
         rocsolver_geqr2_getMemorySize<BATCHED, T>(m, jb, batch_count, size_scalars, &w1, &s2, &s1);
-        *size_Abyx_norms_trfact = max(s2, *size_Abyx_norms_trfact);
+        *size_Abyx_norms_trfact = std::max(s2, *size_Abyx_norms_trfact);
 
         // requirements for calling LARFT
         rocsolver_larft_getMemorySize<BATCHED, T>(m, jb, batch_count, &unused, &w2, size_workArr);
@@ -85,8 +87,8 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m,
         rocsolver_larfb_getMemorySize<BATCHED, T>(rocblas_side_left, m, n - jb, jb, batch_count,
                                                   &s2, &unused);
 
-        *size_work_workArr = max(w1, w2);
-        *size_diag_tmptr = max(s1, s2);
+        *size_work_workArr = std::max(w1, w2);
+        *size_diag_tmptr = std::max(s1, s2);
 
         // size of workArr is double to accommodate
         // LARFB's TRMM calls in the batched case
@@ -130,7 +132,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    rocblas_int dim = min(m, n); // total number of pivots
+    rocblas_int dim = std::min(m, n); // total number of pivots
     rocblas_int jb, j = 0;
 
     rocblas_int nb = GEQxF_BLOCKSIZE;
@@ -140,7 +142,7 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     while(j < dim - GEQxF_GEQx2_SWITCHSIZE)
     {
         // Factor diagonal and subdiagonal blocks
-        jb = min(dim - j, nb); // number of columns in the block
+        jb = std::min(dim - j, nb); // number of columns in the block
         rocsolver_geqr2_template<T>(handle, m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
                                     (ipiv + j), strideP, batch_count, scalars, work_workArr,
                                     Abyx_norms_trfact, diag_tmptr);
@@ -172,3 +174,5 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

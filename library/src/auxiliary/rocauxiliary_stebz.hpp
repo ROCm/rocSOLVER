@@ -40,6 +40,8 @@
 #define IBISEC_BLKS 64
 #define IBISEC_THDS 128
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /************** Kernels and device functions *********************************/
 /*****************************************************************************/
 
@@ -1174,3 +1176,5 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

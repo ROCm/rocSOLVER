@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     April 2012
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,6 +43,8 @@
 #include "roclapack_gesvd.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Argument checking **/
 template <typename T, typename TT, typename W>
 rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
@@ -78,7 +80,7 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_value;
 
     // 2. invalid size
-    const rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : min(m, n));
+    const rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : std::min(m, n));
     if(n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || batch_count < 0)
         return rocblas_status_invalid_size;
     if(left_svect == rocblas_svect_singular && ldu < m)
@@ -89,7 +91,7 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_size;
     if(srange == rocblas_srange_index && (il < 1 || iu < 0))
         return rocblas_status_invalid_size;
-    if(srange == rocblas_srange_index && (iu > min(m, n) || (min(m, n) > 0 && il > iu)))
+    if(srange == rocblas_srange_index && (iu > std::min(m, n) || (std::min(m, n) > 0 && il > iu)))
         return rocblas_status_invalid_size;
 
     // skip pointer check if querying memory size
@@ -97,14 +99,14 @@ rocblas_status rocsolver_gesvdx_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n * m && !A) || (nsv_max && !S) || (batch_count && !info) || (batch_count && !nsv))
+    if((n && m && !A) || (nsv_max && !S) || (batch_count && !info) || (batch_count && !nsv))
         return rocblas_status_invalid_pointer;
-    if((left_svect == rocblas_svect_singular || right_svect == rocblas_svect_singular) && min(m, n)
-       && !ifail)
+    if((left_svect == rocblas_svect_singular || right_svect == rocblas_svect_singular)
+       && std::min(m, n) && !ifail)
         return rocblas_status_invalid_pointer;
-    if(left_svect == rocblas_svect_singular && m * nsv_max && !U)
+    if(left_svect == rocblas_svect_singular && m && nsv_max && !U)
         return rocblas_status_invalid_pointer;
-    if(right_svect == rocblas_svect_singular && nsv_max * n && !V)
+    if(right_svect == rocblas_svect_singular && nsv_max && n && !V)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -171,7 +173,7 @@ void rocsolver_gesvdx_getMemorySize(const rocblas_svect left_svect,
     const bool leftvS = (left_svect == rocblas_svect_singular);
     const bool rightvS = (right_svect == rocblas_svect_singular);
     const bool thinSVD = (m >= THIN_SVD_SWITCH * n || n >= THIN_SVD_SWITCH * m);
-    const rocblas_int k = min(m, n);
+    const rocblas_int k = std::min(m, n);
     const rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : k);
 
     // init sizes
@@ -365,7 +367,7 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
     rocblas_fill uplo = row ? rocblas_fill_upper : rocblas_fill_lower;
     const rocblas_svect svect = (leftvS || rightvS) ? rocblas_svect_singular : rocblas_svect_none;
     const rocblas_int thread_count = BS2;
-    const rocblas_int k = min(m, n);
+    const rocblas_int k = std::min(m, n);
     const rocblas_int nsv_max = (srange == rocblas_srange_index ? iu - il + 1 : k);
     const rocblas_int ldt = k;
     const rocblas_int ldx = thinSVD ? k : m;
@@ -540,3 +542,5 @@ rocblas_status rocsolver_gesvdx_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

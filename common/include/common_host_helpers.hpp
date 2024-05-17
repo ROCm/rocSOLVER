@@ -42,6 +42,10 @@
 #include "fmt_rocblas_types.hpp"
 #include "rocblas_utility.hpp"
 
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
+
 /*
  * ===========================================================================
  *    common location for functions that are used by both the rocSOLVER
@@ -60,6 +64,7 @@
     } while(0)
 
 /* =============================================================================================== */
+
 /* Number properties functions.                                                                    */
 
 template <typename T>
@@ -198,7 +203,7 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_fill uplo = rocblas_fill_full,
                          const rocblas_int inca = 1)
 {
-    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+    size_t to_read = lda*n;//max(inca * (m - 1) + m, lda * (n - 1) + n);
 
     std::vector<T> hA(to_read);
     THROW_IF_HIP_ERROR(
@@ -550,3 +555,7 @@ inline void read_matrix(const std::string filenameS,
             fmt::format("Error: Could not close file {} with test data...", filename));
     }
 }
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_END_NAMESPACE
+#endif

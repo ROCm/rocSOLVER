@@ -87,7 +87,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.26.0")
+set(VERSION_STRING "3.27.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -167,6 +167,7 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1102
   )
   set(AMDGPU_TARGETS_INIT
+    gfx900
     gfx906:xnack-
     gfx908:xnack-
     gfx1010
@@ -194,6 +195,8 @@ if(BUILD_WITH_SPARSE)
   message(STATUS "Found rocSPARSE: ${location}")
   list(APPEND rocsolver_pkgdeps "rocsparse >= 2.2")
 endif()
+
+find_package(rocprim REQUIRED CONFIG PATHS ${ROCM_PATH})
 
 add_subdirectory(common)
 

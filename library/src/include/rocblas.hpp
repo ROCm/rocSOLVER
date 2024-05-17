@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +36,8 @@
 #include "rocblas/internal/rocblas-exported-proto.hpp"
 #include "rocblas/internal/rocblas_device_malloc.hpp"
 #include "rocsolver_logger.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 constexpr auto rocblas2string_status(rocblas_status status)
 {
@@ -167,41 +169,51 @@ rocblas_status rocblasCall_iamax(rocblas_handle handle,
 }
 
 // scal
-template <typename T, typename Ta>
+template <typename T, typename I, typename S>
 rocblas_status rocblasCall_scal(rocblas_handle handle,
-                                rocblas_int n,
-                                const Ta* alpha,
+                                I n,
+                                const S* alpha,
                                 rocblas_stride stridea,
                                 T* x,
                                 rocblas_stride offsetx,
-                                rocblas_int incx,
+                                I incx,
                                 rocblas_stride stridex,
-                                rocblas_int batch_count)
+                                I batch_count)
 {
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    return rocblas_internal_scal_template(handle, n, alpha, stridea, x, offsetx, incx, stridex,
-                                          batch_count);
+    if constexpr(std::is_same<I, int64_t>::value)
+/*        return rocblas_internal_scal_template_64(handle, n, alpha, stridea, x, offsetx, incx,
+                                                 stridex, batch_count);*/
+        return rocblas_status_success;
+    else
+        return rocblas_internal_scal_template(handle, n, alpha, stridea, x, offsetx, incx, stridex,
+                                              batch_count);
 }
 
 // batched scal
-template <typename T, typename Ta>
+template <typename T, typename I, typename S>
 rocblas_status rocblasCall_scal(rocblas_handle handle,
-                                rocblas_int n,
-                                const Ta* alpha,
+                                I n,
+                                const S* alpha,
                                 rocblas_stride stridea,
                                 T* const* x,
                                 rocblas_stride offsetx,
-                                rocblas_int incx,
+                                I incx,
                                 rocblas_stride stridex,
-                                rocblas_int batch_count)
+                                I batch_count)
 {
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("scal", "n:", n, "shiftX:", offsetx, "incx:", incx, "bc:", batch_count);
 
-    return rocblas_internal_scal_batched_template(handle, n, alpha, stridea, x, offsetx, incx,
-                                                  stridex, batch_count);
+    if constexpr(std::is_same<I, int64_t>::value)
+/*        return rocblas_internal_scal_batched_template_64(handle, n, alpha, stridea, x, offsetx,
+                                                         incx, stridex, batch_count);*/
+        return rocblas_status_success;
+    else
+        return rocblas_internal_scal_batched_template(handle, n, alpha, stridea, x, offsetx, incx,
+                                                      stridex, batch_count);
 }
 
 // dot
@@ -299,97 +311,127 @@ rocblas_status rocblasCall_dot(rocblas_handle handle,
 }
 
 // ger - non batched
-template <bool CONJ, typename T>
+template <bool CONJ, typename T, typename I>
 rocblas_status rocblasCall_ger(rocblas_handle handle,
-                               rocblas_int m,
-                               rocblas_int n,
+                               I m,
+                               I n,
                                const T* alpha,
                                rocblas_stride stridea,
                                const T* x,
                                rocblas_stride offsetx,
-                               rocblas_int incx,
+                               I incx,
                                rocblas_stride stridex,
                                const T* y,
                                rocblas_stride offsety,
-                               rocblas_int incy,
+                               I incy,
                                rocblas_stride stridey,
                                T* A,
                                rocblas_stride offsetA,
-                               rocblas_int lda,
+                               I lda,
                                rocblas_stride strideA,
-                               rocblas_int batch_count,
+                               I batch_count,
                                T** work)
 {
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
                   "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
 
-    if constexpr(CONJ)
-        return rocblas_internal_gerc_template(handle, m, n, alpha, stridea, x, offsetx, incx,
-                                              stridex, y, offsety, incy, stridey, A, offsetA, lda,
-                                              strideA, batch_count);
+    if constexpr(std::is_same<I, int64_t>::value)
+    {
+/*        if constexpr(CONJ)
+            return rocblas_internal_gerc_template_64(handle, m, n, alpha, stridea, x, offsetx, incx,
+                                                     stridex, y, offsety, incy, stridey, A, offsetA,
+                                                     lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_template_64(handle, m, n, alpha, stridea, x, offsetx, incx,
+                                                    stridex, y, offsety, incy, stridey, A, offsetA,
+                                                    lda, strideA, batch_count);*/
+        return rocblas_status_success;
+    }
     else
-        return rocblas_internal_ger_template(handle, m, n, alpha, stridea, x, offsetx, incx,
-                                             stridex, y, offsety, incy, stridey, A, offsetA, lda,
-                                             strideA, batch_count);
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_template(handle, m, n, alpha, stridea, x, offsetx, incx,
+                                                  stridex, y, offsety, incy, stridey, A, offsetA,
+                                                  lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_template(handle, m, n, alpha, stridea, x, offsetx, incx,
+                                                 stridex, y, offsety, incy, stridey, A, offsetA,
+                                                 lda, strideA, batch_count);
+    }
 }
 
 // ger batched
-template <bool CONJ, typename T>
+template <bool CONJ, typename T, typename I>
 rocblas_status rocblasCall_ger(rocblas_handle handle,
-                               rocblas_int m,
-                               rocblas_int n,
+                               I m,
+                               I n,
                                const T* alpha,
                                rocblas_stride stridea,
                                const T* const* x,
                                rocblas_stride offsetx,
-                               rocblas_int incx,
+                               I incx,
                                rocblas_stride stridex,
                                const T* const* y,
                                rocblas_stride offsety,
-                               rocblas_int incy,
+                               I incy,
                                rocblas_stride stridey,
                                T* const* A,
                                rocblas_stride offsetA,
-                               rocblas_int lda,
+                               I lda,
                                rocblas_stride strideA,
-                               rocblas_int batch_count,
+                               I batch_count,
                                T** work)
 {
     // TODO: How to get alpha for trace logging
     ROCBLAS_ENTER("ger", "m:", m, "n:", n, "shiftX:", offsetx, "incx:", incx, "shiftY:", offsety,
                   "incy:", incy, "shiftA:", offsetA, "lda:", lda, "bc:", batch_count);
 
-    if constexpr(CONJ)
-        return rocblas_internal_gerc_batched_template(handle, m, n, alpha, stridea, x, offsetx,
-                                                      incx, stridex, y, offsety, incy, stridey, A,
-                                                      offsetA, lda, strideA, batch_count);
+    if constexpr(std::is_same<I, int64_t>::value)
+    {
+/*        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template_64(
+                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, y, offsety, incy, stridey,
+                A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template_64(handle, m, n, alpha, stridea, x, offsetx,
+                                                            incx, stridex, y, offsety, incy, stridey,
+                                                            A, offsetA, lda, strideA, batch_count);*/
+        return rocblas_status_success;
+    }
     else
-        return rocblas_internal_ger_batched_template(handle, m, n, alpha, stridea, x, offsetx, incx,
-                                                     stridex, y, offsety, incy, stridey, A, offsetA,
-                                                     lda, strideA, batch_count);
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template(handle, m, n, alpha, stridea, x, offsetx,
+                                                          incx, stridex, y, offsety, incy, stridey,
+                                                          A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template(handle, m, n, alpha, stridea, x, offsetx,
+                                                         incx, stridex, y, offsety, incy, stridey,
+                                                         A, offsetA, lda, strideA, batch_count);
+    }
 }
 
 // ger overload - batched with strided y
-template <bool CONJ, typename T>
+template <bool CONJ, typename T, typename I>
 rocblas_status rocblasCall_ger(rocblas_handle handle,
-                               rocblas_int m,
-                               rocblas_int n,
+                               I m,
+                               I n,
                                const T* alpha,
                                rocblas_stride stridea,
                                const T* const* x,
                                rocblas_stride offsetx,
-                               rocblas_int incx,
+                               I incx,
                                rocblas_stride stridex,
                                T* y,
                                rocblas_stride offsety,
-                               rocblas_int incy,
+                               I incy,
                                rocblas_stride stridey,
                                T* const* A,
                                rocblas_stride offsetA,
-                               rocblas_int lda,
+                               I lda,
                                rocblas_stride strideA,
-                               rocblas_int batch_count,
+                               I batch_count,
                                T** work)
 {
     // TODO: How to get alpha for trace logging
@@ -399,40 +441,55 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    I blocks = (batch_count - 1) / 256 + 1;
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, y, stridey,
                             batch_count);
 
-    if constexpr(CONJ)
-        return rocblas_internal_gerc_batched_template(
-            handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
-            offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    if constexpr(std::is_same<I, int64_t>::value)
+    {
+/*        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template_64(
+                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template_64(
+                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);*/
+        return rocblas_status_success;
+    }
     else
-        return rocblas_internal_ger_batched_template(handle, m, n, alpha, stridea, x, offsetx, incx,
-                                                     stridex, cast2constType<T>(work), offsety, incy,
-                                                     stridey, A, offsetA, lda, strideA, batch_count);
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template(
+                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template(
+                handle, m, n, alpha, stridea, x, offsetx, incx, stridex, cast2constType<T>(work),
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    }
 }
 
 // ger overload - batched with strided x
-template <bool CONJ, typename T>
+template <bool CONJ, typename T, typename I>
 rocblas_status rocblasCall_ger(rocblas_handle handle,
-                               rocblas_int m,
-                               rocblas_int n,
+                               I m,
+                               I n,
                                const T* alpha,
                                rocblas_stride stridea,
                                T* x,
                                rocblas_stride offsetx,
-                               rocblas_int incx,
+                               I incx,
                                rocblas_stride stridex,
                                const T* const* y,
                                rocblas_stride offsety,
-                               rocblas_int incy,
+                               I incy,
                                rocblas_stride stridey,
                                T* const* A,
                                rocblas_stride offsetA,
-                               rocblas_int lda,
+                               I lda,
                                rocblas_stride strideA,
-                               rocblas_int batch_count,
+                               I batch_count,
                                T** work)
 {
     // TODO: How to get alpha for trace logging
@@ -442,18 +499,33 @@ rocblas_status rocblasCall_ger(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    I blocks = (batch_count - 1) / 256 + 1;
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, x, stridex,
                             batch_count);
 
-    if constexpr(CONJ)
-        return rocblas_internal_gerc_batched_template(
-            handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
-            offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    if constexpr(std::is_same<I, int64_t>::value)
+    {
+/*        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template_64(
+                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template_64(
+                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);*/
+        return rocblas_status_success;
+    }
     else
-        return rocblas_internal_ger_batched_template(
-            handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
-            offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    {
+        if constexpr(CONJ)
+            return rocblas_internal_gerc_batched_template(
+                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+        else
+            return rocblas_internal_ger_batched_template(
+                handle, m, n, alpha, stridea, cast2constType<T>(work), offsetx, incx, stridex, y,
+                offsety, incy, stridey, A, offsetA, lda, strideA, batch_count);
+    }
 }
 
 // gemv - non batched
@@ -1878,50 +1950,68 @@ rocblas_status rocblasCall_trsv(rocblas_handle handle,
 }
 
 // trsm memory sizes
-template <bool BATCHED, typename T>
-void rocblasCall_trsm_mem(rocblas_side side,
-                          rocblas_operation transA,
-                          rocblas_int m,
-                          rocblas_int n,
-                          rocblas_int batch_count,
-                          size_t* x_temp,
-                          size_t* x_temp_arr,
-                          size_t* invA,
-                          size_t* invA_arr)
+template <bool BATCHED, typename T, typename I>
+rocblas_status rocblasCall_trsm_mem(rocblas_side side,
+                                    rocblas_operation transA,
+                                    I m,
+                                    I n,
+                                    I lda,
+                                    I ldb,
+                                    I batch_count,
+                                    size_t* x_temp,
+                                    size_t* x_temp_arr,
+                                    size_t* invA,
+                                    size_t* invA_arr)
 {
-    size_t no_opt_size;
+    size_t no_opt_size = 0;
     /** TODO: For now, we always request the size for optimal performance.
         no_opt_size could be used in the future if we generalize the use of
         rocblas_workmode parameter **/
 
     // can't infer batched based on input params
-    if constexpr(BATCHED)
-        rocblas_internal_trsm_batched_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
-                                                        x_temp_arr, invA, invA_arr, &no_opt_size);
+    if constexpr(std::is_same<I, int64_t>::value)
+    {
+/*        if constexpr(BATCHED)
+            return rocblas_internal_trsm_batched_workspace_size_64<T>(
+                side, transA, m, n, lda, ldb, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr,
+                &no_opt_size);
+        else
+            return rocblas_internal_trsm_workspace_size_64<T>(side, transA, m, n, lda, ldb,
+                                                              batch_count, 0, x_temp, x_temp_arr,
+                                                              invA, invA_arr, &no_opt_size);*/
+        return rocblas_status_success;
+    }
     else
-        rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
-                                                x_temp_arr, invA, invA_arr, &no_opt_size);
+    {
+        if constexpr(BATCHED)
+            return rocblas_internal_trsm_batched_workspace_size<T>(side, transA, m, n, batch_count,
+                                                                   0, x_temp, x_temp_arr, invA,
+                                                                   invA_arr, &no_opt_size);
+        else
+            return rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
+                                                           x_temp_arr, invA, invA_arr, &no_opt_size);
+    }
 }
 
 // trsm
-template <typename T>
+template <typename T, typename I>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
                                 rocblas_operation transA,
                                 rocblas_diagonal diag,
-                                rocblas_int m,
-                                rocblas_int n,
+                                I m,
+                                I n,
                                 const T* alpha,
                                 const T* A,
                                 rocblas_stride offset_A,
-                                rocblas_int lda,
+                                I lda,
                                 rocblas_stride stride_A,
                                 T* B,
                                 rocblas_stride offset_B,
-                                rocblas_int ldb,
+                                I ldb,
                                 rocblas_stride stride_B,
-                                rocblas_int batch_count,
+                                I batch_count,
                                 bool optimal_mem,
                                 void* x_temp,
                                 void* x_temp_arr,
@@ -1935,30 +2025,38 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     const T* supplied_invA = nullptr;
-    return rocblas_internal_trsm_template(
-        handle, side, uplo, transA, diag, m, n, alpha, A, offset_A, lda, stride_A, B, offset_B, ldb,
-        stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr, supplied_invA, 0);
+    if constexpr(std::is_same<I, int64_t>::value)
+/*        return rocblas_internal_trsm_template_64(handle, side, uplo, transA, diag, m, n, alpha, A,
+                                                 offset_A, lda, stride_A, B, offset_B, ldb,
+                                                 stride_B, batch_count, optimal_mem, x_temp,
+                                                 x_temp_arr, invA, invA_arr, supplied_invA, 0);*/
+        return rocblas_status_success;
+    else
+        return rocblas_internal_trsm_template(handle, side, uplo, transA, diag, m, n, alpha, A,
+                                              offset_A, lda, stride_A, B, offset_B, ldb, stride_B,
+                                              batch_count, optimal_mem, x_temp, x_temp_arr, invA,
+                                              invA_arr, supplied_invA, 0);
 }
 
 // batched trsm
-template <typename T>
+template <typename T, typename I>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
                                 rocblas_operation transA,
                                 rocblas_diagonal diag,
-                                rocblas_int m,
-                                rocblas_int n,
+                                I m,
+                                I n,
                                 const T* alpha,
                                 const T* const* A,
                                 rocblas_stride offset_A,
-                                rocblas_int lda,
+                                I lda,
                                 rocblas_stride stride_A,
                                 T* const* B,
                                 rocblas_stride offset_B,
-                                rocblas_int ldb,
+                                I ldb,
                                 rocblas_stride stride_B,
-                                rocblas_int batch_count,
+                                I batch_count,
                                 bool optimal_mem,
                                 void* x_temp,
                                 void* x_temp_arr,
@@ -1972,30 +2070,38 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
                   "bc:", batch_count);
 
     const T* const* supplied_invA = nullptr;
-    return rocblas_internal_trsm_batched_template(
-        handle, side, uplo, transA, diag, m, n, alpha, A, offset_A, lda, stride_A, B, offset_B, ldb,
-        stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr, supplied_invA, 0);
+    if constexpr(std::is_same<I, int64_t>::value)
+/*        return rocblas_internal_trsm_batched_template_64(
+            handle, side, uplo, transA, diag, m, n, alpha, A, offset_A, lda, stride_A, B, offset_B,
+            ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA, invA_arr,
+            supplied_invA, 0);*/
+        return rocblas_status_success;
+    else
+        return rocblas_internal_trsm_batched_template(handle, side, uplo, transA, diag, m, n, alpha,
+                                                      A, offset_A, lda, stride_A, B, offset_B, ldb,
+                                                      stride_B, batch_count, optimal_mem, x_temp,
+                                                      x_temp_arr, invA, invA_arr, supplied_invA, 0);
 }
 
 // trsm overload
-template <typename T>
+template <typename T, typename I>
 rocblas_status rocblasCall_trsm(rocblas_handle handle,
                                 rocblas_side side,
                                 rocblas_fill uplo,
                                 rocblas_operation transA,
                                 rocblas_diagonal diag,
-                                rocblas_int m,
-                                rocblas_int n,
+                                I m,
+                                I n,
                                 const T* alpha,
                                 T* A,
                                 rocblas_stride offset_A,
-                                rocblas_int lda,
+                                I lda,
                                 rocblas_stride stride_A,
                                 T* const B[],
                                 rocblas_stride offset_B,
-                                rocblas_int ldb,
+                                I ldb,
                                 rocblas_stride stride_B,
-                                rocblas_int batch_count,
+                                I batch_count,
                                 bool optimal_mem,
                                 void* x_temp,
                                 void* x_temp_arr,
@@ -2013,15 +2119,22 @@ rocblas_status rocblasCall_trsm(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    I blocks = (batch_count - 1) / 256 + 1;
     ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, A, stride_A,
                             batch_count);
 
     U supplied_invA = nullptr;
-    return rocblas_internal_trsm_batched_template(
-        handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A, lda,
-        stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr, invA,
-        invA_arr, supplied_invA, 0);
+    if constexpr(std::is_same<I, int64_t>::value)
+/*        return rocblas_internal_trsm_batched_template_64(
+            handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A,
+            lda, stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr,
+            invA, invA_arr, supplied_invA, 0);*/
+        return rocblas_status_success;
+    else
+        return rocblas_internal_trsm_batched_template(
+            handle, side, uplo, transA, diag, m, n, alpha, cast2constType((U)workArr), offset_A,
+            lda, stride_A, B, offset_B, ldb, stride_B, batch_count, optimal_mem, x_temp, x_temp_arr,
+            invA, invA_arr, supplied_invA, 0);
 }
 
 // trtri memory sizes
@@ -2161,3 +2274,5 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
         handle, uplo, diag, n, A, offset_A, lda, stride_A, 0, cast2constPointer(workArr),
         offset_invA, ldinvA, stride_invA, 0, batch_count, 1, cast2constPointer(c_temp_arr));
 }
+
+ROCSOLVER_END_NAMESPACE

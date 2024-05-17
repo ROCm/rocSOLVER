@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,12 +27,23 @@
 
 #include "roclapack_getf2_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETF2_PANEL(float, float*);
-INSTANTIATE_GETF2_PANEL(float, float* const*);
+INSTANTIATE_GETF2_PANEL(float, rocblas_int, rocblas_int, float*);
+INSTANTIATE_GETF2_PANEL(float, rocblas_int, rocblas_int, float* const*);
 
-INSTANTIATE_GETF2_SCALE_UPDATE(float, float*);
-INSTANTIATE_GETF2_SCALE_UPDATE(float, float* const*);
+INSTANTIATE_GETF2_SCALE_UPDATE(float, rocblas_int, float*);
+INSTANTIATE_GETF2_SCALE_UPDATE(float, rocblas_int, float* const*);
+
+// 64-bit APIs
+INSTANTIATE_GETF2_PANEL(float, int64_t, int64_t, float*);
+INSTANTIATE_GETF2_PANEL(float, int64_t, int64_t, float* const*);
+
+INSTANTIATE_GETF2_SCALE_UPDATE(float, int64_t, float*);
+INSTANTIATE_GETF2_SCALE_UPDATE(float, int64_t, float* const*);
+
+ROCSOLVER_END_NAMESPACE

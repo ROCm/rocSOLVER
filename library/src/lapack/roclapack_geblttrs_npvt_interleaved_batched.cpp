@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_geblttrs_npvt.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_geblttrs_npvt_interleaved_batched_impl(rocblas_handle handle,
@@ -77,9 +79,9 @@ rocblas_status rocsolver_geblttrs_npvt_interleaved_batched_impl(rocblas_handle h
     bool optim_mem;
     size_t size_work1, size_work2, size_work3, size_work4;
 
-    rocsolver_geblttrs_npvt_getMemorySize<false, true, T>(nb, nblocks, nrhs, batch_count,
-                                                          &size_work1, &size_work2, &size_work3,
-                                                          &size_work4, &optim_mem, incb, incx);
+    rocsolver_geblttrs_npvt_getMemorySize<false, true, T>(nb, nblocks, nrhs, batch_count, &size_work1,
+                                                          &size_work2, &size_work3, &size_work4,
+                                                          &optim_mem, ldb, ldx, incb, incx);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work1, size_work2, size_work3,
@@ -102,6 +104,8 @@ rocblas_status rocsolver_geblttrs_npvt_interleaved_batched_impl(rocblas_handle h
         shiftC, incc, ldc, strideC, X, shiftX, incx, ldx, strideX, batch_count, work1, work2, work3,
         work4, optim_mem);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -133,7 +137,7 @@ rocblas_status rocsolver_sgeblttrs_npvt_interleaved_batched(rocblas_handle handl
                                                             const rocblas_stride strideX,
                                                             const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_interleaved_batched_impl<float>(
+    return rocsolver::rocsolver_geblttrs_npvt_interleaved_batched_impl<float>(
         handle, nb, nblocks, nrhs, A, inca, lda, strideA, B, incb, ldb, strideB, C, incc, ldc,
         strideC, X, incx, ldx, strideX, batch_count);
 }
@@ -160,7 +164,7 @@ rocblas_status rocsolver_dgeblttrs_npvt_interleaved_batched(rocblas_handle handl
                                                             const rocblas_stride strideX,
                                                             const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_interleaved_batched_impl<double>(
+    return rocsolver::rocsolver_geblttrs_npvt_interleaved_batched_impl<double>(
         handle, nb, nblocks, nrhs, A, inca, lda, strideA, B, incb, ldb, strideB, C, incc, ldc,
         strideC, X, incx, ldx, strideX, batch_count);
 }
@@ -187,7 +191,7 @@ rocblas_status rocsolver_cgeblttrs_npvt_interleaved_batched(rocblas_handle handl
                                                             const rocblas_stride strideX,
                                                             const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_interleaved_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_geblttrs_npvt_interleaved_batched_impl<rocblas_float_complex>(
         handle, nb, nblocks, nrhs, A, inca, lda, strideA, B, incb, ldb, strideB, C, incc, ldc,
         strideC, X, incx, ldx, strideX, batch_count);
 }
@@ -214,7 +218,7 @@ rocblas_status rocsolver_zgeblttrs_npvt_interleaved_batched(rocblas_handle handl
                                                             const rocblas_stride strideX,
                                                             const rocblas_int batch_count)
 {
-    return rocsolver_geblttrs_npvt_interleaved_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_geblttrs_npvt_interleaved_batched_impl<rocblas_double_complex>(
         handle, nb, nblocks, nrhs, A, inca, lda, strideA, B, incb, ldb, strideB, C, incc, ldc,
         strideC, X, incx, ldx, strideX, batch_count);
 }

@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,6 +38,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, typename T>
 void rocsolver_geqr2_getMemorySize(const rocblas_int m,
                                    const rocblas_int n,
@@ -63,8 +65,8 @@ void rocsolver_geqr2_getMemorySize(const rocblas_int m,
     rocsolver_larf_getMemorySize<BATCHED, T>(rocblas_side_left, m, n, batch_count, size_scalars,
                                              &s1, &w1);
     rocsolver_larfg_getMemorySize<T>(m, batch_count, &w2, &s2);
-    *size_work_workArr = max(w1, w2);
-    *size_Abyx_norms = max(s1, s2);
+    *size_work_workArr = std::max(w1, w2);
+    *size_Abyx_norms = std::max(s1, s2);
 
     // size of array to store temporary diagonal values
     *size_diag = sizeof(T) * batch_count;
@@ -93,7 +95,7 @@ rocblas_status rocsolver_geqr2_geqrf_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((m * n && !A) || (m * n && !ipiv))
+    if((m && n && !A) || (m && n && !ipiv))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -124,14 +126,14 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int dim = min(m, n); // total number of pivots
+    rocblas_int dim = std::min(m, n); // total number of pivots
 
     for(rocblas_int j = 0; j < dim; ++j)
     {
         // generate Householder reflector to work on column j
         rocsolver_larfg_template(handle, m - j, A, shiftA + idx2D(j, j, lda), A,
-                                 shiftA + idx2D(min(j + 1, m - 1), j, lda), 1, strideA, (ipiv + j),
-                                 strideP, batch_count, (T*)work_workArr, Abyx_norms);
+                                 shiftA + idx2D(std::min(j + 1, m - 1), j, lda), 1, strideA,
+                                 (ipiv + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
         // insert one in A(j,j) tobuild/apply the householder matrix
         ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
@@ -161,3 +163,5 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

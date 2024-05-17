@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    common location for declarations of specialized kernel launchers.
@@ -39,107 +41,109 @@
  */
 
 // trsm
-template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_trsm_mem(const rocblas_side side,
-                        const rocblas_operation trans,
-                        const rocblas_int m,
-                        const rocblas_int n,
-                        const rocblas_int batch_count,
-                        size_t* size_work1,
-                        size_t* size_work2,
-                        size_t* size_work3,
-                        size_t* size_work4,
-                        bool* optim_mem,
-                        bool inblocked = false,
-                        const rocblas_int inca = 1,
-                        const rocblas_int incb = 1);
+template <bool BATCHED, bool STRIDED, typename T, typename I>
+rocblas_status rocsolver_trsm_mem(const rocblas_side side,
+                                  const rocblas_operation trans,
+                                  const I m,
+                                  const I n,
+                                  const I batch_count,
+                                  size_t* size_work1,
+                                  size_t* size_work2,
+                                  size_t* size_work3,
+                                  size_t* size_work4,
+                                  bool* optim_mem,
+                                  bool inblocked = false,
+                                  const I lda = 1,
+                                  const I ldb = 1,
+                                  const I inca = 1,
+                                  const I incb = 1);
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                                     const rocblas_side side,
                                     const rocblas_operation trans,
                                     const rocblas_diagonal diag,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
+                                    const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shiftA,
+                                    const I lda,
                                     const rocblas_stride strideA,
                                     U B,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int ldb,
+                                    const rocblas_stride shiftB,
+                                    const I ldb,
                                     const rocblas_stride strideB,
-                                    const rocblas_int batch_count,
+                                    const I batch_count,
                                     const bool optim_mem,
                                     void* work1,
                                     void* work2,
                                     void* work3,
                                     void* work4);
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                                     const rocblas_side side,
                                     const rocblas_operation trans,
                                     const rocblas_diagonal diag,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
+                                    const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int inca,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shiftA,
+                                    const I inca,
+                                    const I lda,
                                     const rocblas_stride strideA,
                                     U B,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int incb,
-                                    const rocblas_int ldb,
+                                    const rocblas_stride shiftB,
+                                    const I incb,
+                                    const I ldb,
                                     const rocblas_stride strideB,
-                                    const rocblas_int batch_count,
+                                    const I batch_count,
                                     const bool optim_mem,
                                     void* work1,
                                     void* work2,
                                     void* work3,
                                     void* work4);
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                     const rocblas_side side,
                                     const rocblas_operation trans,
                                     const rocblas_diagonal diag,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
+                                    const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shiftA,
+                                    const I lda,
                                     const rocblas_stride strideA,
                                     U B,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int ldb,
+                                    const rocblas_stride shiftB,
+                                    const I ldb,
                                     const rocblas_stride strideB,
-                                    const rocblas_int batch_count,
+                                    const I batch_count,
                                     const bool optim_mem,
                                     void* work1,
                                     void* work2,
                                     void* work3,
                                     void* work4);
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                     const rocblas_side side,
                                     const rocblas_operation trans,
                                     const rocblas_diagonal diag,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
+                                    const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shiftA,
-                                    const rocblas_int inca,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shiftA,
+                                    const I inca,
+                                    const I lda,
                                     const rocblas_stride strideA,
                                     U B,
-                                    const rocblas_int shiftB,
-                                    const rocblas_int incb,
-                                    const rocblas_int ldb,
+                                    const rocblas_stride shiftB,
+                                    const I incb,
+                                    const I ldb,
                                     const rocblas_stride strideB,
-                                    const rocblas_int batch_count,
+                                    const I batch_count,
                                     const bool optim_mem,
                                     void* work1,
                                     void* work2,
@@ -147,150 +151,162 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                     void* work4);
 
 // gemm
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
-                              rocblas_int m,
-                              rocblas_int n,
-                              rocblas_int k,
+                              I m,
+                              I n,
+                              I k,
                               const T* alpha,
                               U A,
                               rocblas_stride shiftA,
-                              rocblas_int lda,
+                              I lda,
                               rocblas_stride strideA,
                               U B,
                               rocblas_stride shiftB,
-                              rocblas_int ldb,
+                              I ldb,
                               rocblas_stride strideB,
                               const T* beta,
                               U C,
                               rocblas_stride shiftC,
-                              rocblas_int ldc,
+                              I ldc,
                               rocblas_stride strideC,
-                              rocblas_int batch_count,
+                              I batch_count,
                               T** work);
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
-                              rocblas_int m,
-                              rocblas_int n,
-                              rocblas_int k,
+                              I m,
+                              I n,
+                              I k,
                               const T* alpha,
                               U A,
                               rocblas_stride shiftA,
-                              rocblas_int inca,
-                              rocblas_int lda,
+                              I inca,
+                              I lda,
                               rocblas_stride strideA,
                               U B,
                               rocblas_stride shiftB,
-                              rocblas_int incb,
-                              rocblas_int ldb,
+                              I incb,
+                              I ldb,
                               rocblas_stride strideB,
                               const T* beta,
                               U C,
                               rocblas_stride shiftC,
-                              rocblas_int incc,
-                              rocblas_int ldc,
+                              I incc,
+                              I ldc,
                               rocblas_stride strideC,
-                              rocblas_int batch_count,
+                              I batch_count,
                               T** work);
 
 // ger
-template <bool CONJ, typename T, typename U>
+template <bool CONJ, typename T, typename I, typename U>
 rocblas_status rocsolver_ger(rocblas_handle handle,
-                             rocblas_int m,
-                             rocblas_int n,
+                             I m,
+                             I n,
                              const T* alpha,
                              rocblas_stride stridea,
                              U x,
                              rocblas_stride shiftX,
-                             rocblas_int incx,
+                             I incx,
                              rocblas_stride strideX,
                              U y,
                              rocblas_stride shiftY,
-                             rocblas_int incy,
+                             I incy,
                              rocblas_stride strideY,
                              U A,
                              rocblas_stride shiftA,
-                             rocblas_int lda,
+                             I lda,
                              rocblas_stride strideA,
-                             rocblas_int batch_count,
+                             I batch_count,
                              T** work);
 
-template <bool CONJ, typename T, typename U>
+template <bool CONJ, typename T, typename I, typename U>
 rocblas_status rocsolver_ger(rocblas_handle handle,
-                             rocblas_int m,
-                             rocblas_int n,
+                             I m,
+                             I n,
                              const T* alpha,
                              rocblas_stride stridea,
                              U x,
                              rocblas_stride shiftX,
-                             rocblas_int incx,
+                             I incx,
                              rocblas_stride strideX,
                              U y,
                              rocblas_stride shiftY,
-                             rocblas_int incy,
+                             I incy,
                              rocblas_stride strideY,
                              U A,
                              rocblas_stride shiftA,
-                             rocblas_int inca,
-                             rocblas_int lda,
+                             I inca,
+                             I lda,
                              rocblas_stride strideA,
-                             rocblas_int batch_count,
+                             I batch_count,
                              T** work);
+
+// potf2
+template <typename T, typename U>
+rocblas_status potf2_run_small(rocblas_handle handle,
+                               const rocblas_fill uplo,
+                               const rocblas_int n,
+                               U AA,
+                               const rocblas_int shiftA,
+                               const rocblas_int lda,
+                               const rocblas_stride strideA,
+                               rocblas_int* info,
+                               const rocblas_int batch_count);
 
 #ifdef OPTIMAL
 
-template <typename T, typename U>
+template <typename T, typename I, typename INFO, typename U>
 rocblas_status getf2_run_panel(rocblas_handle handle,
-                               const rocblas_int m,
-                               const rocblas_int n,
+                               const I m,
+                               const I n,
                                U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_stride shiftA,
+                               const I lda,
                                const rocblas_stride strideA,
-                               rocblas_int* ipiv,
-                               const rocblas_int shiftP,
+                               I* ipiv,
+                               const rocblas_stride shiftP,
                                const rocblas_stride strideP,
-                               rocblas_int* info,
-                               const rocblas_int batch_count,
+                               INFO* info,
+                               const I batch_count,
                                const bool pivot,
-                               const rocblas_int offset,
-                               rocblas_int* permut_idx,
+                               const I offset,
+                               I* permut_idx,
                                const rocblas_stride stride);
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 void getf2_run_scale_update(rocblas_handle handle,
-                            const rocblas_int m,
-                            const rocblas_int n,
+                            const I m,
+                            const I n,
                             T* pivotval,
                             U A,
-                            const rocblas_int shiftA,
-                            const rocblas_int lda,
+                            const rocblas_stride shiftA,
+                            const I lda,
                             const rocblas_stride strideA,
-                            const rocblas_int batch_count,
-                            const rocblas_int dimx,
-                            const rocblas_int dimy);
+                            const I batch_count,
+                            const I dimx,
+                            const I dimy);
 
-template <typename T, typename U>
+template <typename T, typename I, typename INFO, typename U>
 rocblas_status getf2_run_small(rocblas_handle handle,
-                               const rocblas_int m,
-                               const rocblas_int n,
+                               const I m,
+                               const I n,
                                U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_stride shiftA,
+                               const I lda,
                                const rocblas_stride strideA,
-                               rocblas_int* ipiv,
-                               const rocblas_int shiftP,
+                               I* ipiv,
+                               const rocblas_stride shiftP,
                                const rocblas_stride strideP,
-                               rocblas_int* info,
-                               const rocblas_int batch_count,
+                               INFO* info,
+                               const I batch_count,
                                const bool pivot,
-                               const rocblas_int offset,
-                               rocblas_int* permut_idx,
+                               const I offset,
+                               I* permut_idx,
                                const rocblas_stride stride);
 
 template <typename T, typename U>
@@ -308,6 +324,7 @@ rocblas_status getri_run_small(rocblas_handle handle,
                                const bool complete,
                                const bool pivot);
 
+// trti2
 template <typename T, typename U>
 void trti2_run_small(rocblas_handle handle,
                      const rocblas_fill uplo,
@@ -320,3 +337,5 @@ void trti2_run_small(rocblas_handle handle,
                      const rocblas_int batch_count);
 
 #endif // OPTIMAL
+
+ROCSOLVER_END_NAMESPACE

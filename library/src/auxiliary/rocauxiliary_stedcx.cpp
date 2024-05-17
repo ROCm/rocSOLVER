@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_stedcx.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    stedcx is not intended for inclusion in the public API. It
@@ -114,6 +116,9 @@ rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
         (S*)tmpz, (rocblas_int*)splits, (S**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -137,7 +142,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcx_impl<float>(handle, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc,
+    return rocsolver::rocsolver_stedcx_impl<float>(handle, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc,
                                         info);
 }
 
@@ -156,7 +161,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcx_impl<double>(handle, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc,
+    return rocsolver::rocsolver_stedcx_impl<double>(handle, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc,
                                          info);
 }
 
@@ -175,7 +180,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcx_impl<rocblas_float_complex>(handle, erange, n, vl, vu, il, iu, D, E,
+    return rocsolver::rocsolver_stedcx_impl<rocblas_float_complex>(handle, erange, n, vl, vu, il, iu, D, E,
                                                         nev, W, C, ldc, info);
 }
 
@@ -194,7 +199,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcx_impl<rocblas_double_complex>(handle, erange, n, vl, vu, il, iu, D, E,
+    return rocsolver::rocsolver_stedcx_impl<rocblas_double_complex>(handle, erange, n, vl, vu, il, iu, D, E,
                                                          nev, W, C, ldc, info);
 }
 

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_gesvdj.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename SS, typename W>
 rocblas_status rocsolver_gesvdj_impl(rocblas_handle handle,
@@ -113,6 +115,8 @@ rocblas_status rocsolver_gesvdj_impl(rocblas_handle handle,
         (T*)scalars, (T*)VUtmp, work1_UVtmp, work2, work3, work4, work5_ipiv, work6_workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -139,8 +143,9 @@ rocblas_status rocsolver_sgesvdj(rocblas_handle handle,
                                  const rocblas_int ldv,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdj_impl<float>(handle, left_svect, right_svect, m, n, A, lda, abstol,
-                                        residual, max_sweeps, n_sweeps, S, U, ldu, V, ldv, info);
+    return rocsolver::rocsolver_gesvdj_impl<float>(handle, left_svect, right_svect, m, n, A, lda,
+                                                   abstol, residual, max_sweeps, n_sweeps, S, U,
+                                                   ldu, V, ldv, info);
 }
 
 rocblas_status rocsolver_dgesvdj(rocblas_handle handle,
@@ -161,8 +166,9 @@ rocblas_status rocsolver_dgesvdj(rocblas_handle handle,
                                  const rocblas_int ldv,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdj_impl<double>(handle, left_svect, right_svect, m, n, A, lda, abstol,
-                                         residual, max_sweeps, n_sweeps, S, U, ldu, V, ldv, info);
+    return rocsolver::rocsolver_gesvdj_impl<double>(handle, left_svect, right_svect, m, n, A, lda,
+                                                    abstol, residual, max_sweeps, n_sweeps, S, U,
+                                                    ldu, V, ldv, info);
 }
 
 rocblas_status rocsolver_cgesvdj(rocblas_handle handle,
@@ -183,9 +189,9 @@ rocblas_status rocsolver_cgesvdj(rocblas_handle handle,
                                  const rocblas_int ldv,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdj_impl<rocblas_float_complex>(handle, left_svect, right_svect, m, n, A,
-                                                        lda, abstol, residual, max_sweeps, n_sweeps,
-                                                        S, U, ldu, V, ldv, info);
+    return rocsolver::rocsolver_gesvdj_impl<rocblas_float_complex>(
+        handle, left_svect, right_svect, m, n, A, lda, abstol, residual, max_sweeps, n_sweeps, S, U,
+        ldu, V, ldv, info);
 }
 
 rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
@@ -206,9 +212,9 @@ rocblas_status rocsolver_zgesvdj(rocblas_handle handle,
                                  const rocblas_int ldv,
                                  rocblas_int* info)
 {
-    return rocsolver_gesvdj_impl<rocblas_double_complex>(handle, left_svect, right_svect, m, n, A,
-                                                         lda, abstol, residual, max_sweeps,
-                                                         n_sweeps, S, U, ldu, V, ldv, info);
+    return rocsolver::rocsolver_gesvdj_impl<rocblas_double_complex>(
+        handle, left_svect, right_svect, m, n, A, lda, abstol, residual, max_sweeps, n_sweeps, S, U,
+        ldu, V, ldv, info);
 }
 
 } // extern C

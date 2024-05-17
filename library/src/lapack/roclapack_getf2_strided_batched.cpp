@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,18 +27,20 @@
 
 #include "roclapack_getf2.hpp"
 
-template <typename T, typename U>
+ROCSOLVER_BEGIN_NAMESPACE
+
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
-                                                    const rocblas_int m,
-                                                    const rocblas_int n,
+                                                    const I m,
+                                                    const I n,
                                                     U A,
-                                                    const rocblas_int lda,
+                                                    const I lda,
                                                     const rocblas_stride strideA,
-                                                    rocblas_int* ipiv,
+                                                    I* ipiv,
                                                     const rocblas_stride strideP,
-                                                    rocblas_int* info,
+                                                    I* info,
                                                     const bool pivot,
-                                                    const rocblas_int batch_count)
+                                                    const I batch_count)
 {
     const char* name = (pivot ? "getf2_strided_batched" : "getf2_npvt_strided_batched");
     ROCSOLVER_ENTER_TOP(name, "-m", m, "-n", n, "--lda", lda, "--strideA", strideA, "--strideP",
@@ -56,11 +58,11 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
         return st;
 
     // using unshifted arrays
-    rocblas_int shiftA = 0;
-    rocblas_int shiftP = 0;
+    rocblas_stride shiftA = 0;
+    rocblas_stride shiftP = 0;
 
     // strided batched execution
-    rocblas_int inca = 1;
+    I inca = 1;
 
     // memory workspace sizes:
     // size for constants in rocblas calls
@@ -91,8 +93,10 @@ rocblas_status rocsolver_getf2_strided_batched_impl(rocblas_handle handle,
     // execution
     return rocsolver_getf2_template<true, T>(handle, m, n, A, shiftA, inca, lda, strideA, ipiv,
                                              shiftP, strideP, info, batch_count, (T*)scalars,
-                                             (T*)pivotval, (rocblas_int*)pivotidx, pivot);
+                                             (T*)pivotval, (I*)pivotidx, pivot);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -113,8 +117,8 @@ rocblas_status rocsolver_sgetf2_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getf2_strided_batched_impl<float>(handle, m, n, A, lda, strideA, ipiv, strideP,
-                                                       info, true, batch_count);
+    return rocsolver::rocsolver_getf2_strided_batched_impl<float>(
+        handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 }
 
 rocblas_status rocsolver_dgetf2_strided_batched(rocblas_handle handle,
@@ -128,8 +132,8 @@ rocblas_status rocsolver_dgetf2_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getf2_strided_batched_impl<double>(handle, m, n, A, lda, strideA, ipiv,
-                                                        strideP, info, true, batch_count);
+    return rocsolver::rocsolver_getf2_strided_batched_impl<double>(
+        handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 }
 
 rocblas_status rocsolver_cgetf2_strided_batched(rocblas_handle handle,
@@ -143,7 +147,7 @@ rocblas_status rocsolver_cgetf2_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getf2_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_float_complex>(
         handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 }
 
@@ -158,7 +162,67 @@ rocblas_status rocsolver_zgetf2_strided_batched(rocblas_handle handle,
                                                 rocblas_int* info,
                                                 const rocblas_int batch_count)
 {
-    return rocsolver_getf2_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_double_complex>(
+        handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
+}
+
+rocblas_status rocsolver_sgetf2_strided_batched_64(rocblas_handle handle,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   float* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* ipiv,
+                                                   const rocblas_stride strideP,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+    return rocsolver::rocsolver_getf2_strided_batched_impl<float>(
+        handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
+}
+
+rocblas_status rocsolver_dgetf2_strided_batched_64(rocblas_handle handle,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   double* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* ipiv,
+                                                   const rocblas_stride strideP,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+    return rocsolver::rocsolver_getf2_strided_batched_impl<double>(
+        handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
+}
+
+rocblas_status rocsolver_cgetf2_strided_batched_64(rocblas_handle handle,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   rocblas_float_complex* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* ipiv,
+                                                   const rocblas_stride strideP,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_float_complex>(
+        handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
+}
+
+rocblas_status rocsolver_zgetf2_strided_batched_64(rocblas_handle handle,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   rocblas_double_complex* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* ipiv,
+                                                   const rocblas_stride strideP,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 }
 
@@ -172,8 +236,8 @@ rocblas_status rocsolver_sgetf2_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_strided_batched_impl<float>(handle, m, n, A, lda, strideA, ipiv, 0, info,
-                                                       false, batch_count);
+    return rocsolver::rocsolver_getf2_strided_batched_impl<float>(handle, m, n, A, lda, strideA,
+                                                                  ipiv, 0, info, false, batch_count);
 }
 
 rocblas_status rocsolver_dgetf2_npvt_strided_batched(rocblas_handle handle,
@@ -186,8 +250,8 @@ rocblas_status rocsolver_dgetf2_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_strided_batched_impl<double>(handle, m, n, A, lda, strideA, ipiv, 0,
-                                                        info, false, batch_count);
+    return rocsolver::rocsolver_getf2_strided_batched_impl<double>(
+        handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
 }
 
 rocblas_status rocsolver_cgetf2_npvt_strided_batched(rocblas_handle handle,
@@ -200,7 +264,7 @@ rocblas_status rocsolver_cgetf2_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_float_complex>(
         handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
 }
 
@@ -214,7 +278,63 @@ rocblas_status rocsolver_zgetf2_npvt_strided_batched(rocblas_handle handle,
                                                      const rocblas_int batch_count)
 {
     rocblas_int* ipiv = nullptr;
-    return rocsolver_getf2_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_double_complex>(
+        handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
+}
+
+rocblas_status rocsolver_sgetf2_npvt_strided_batched_64(rocblas_handle handle,
+                                                        const int64_t m,
+                                                        const int64_t n,
+                                                        float* A,
+                                                        const int64_t lda,
+                                                        const rocblas_stride strideA,
+                                                        int64_t* info,
+                                                        const int64_t batch_count)
+{
+    int64_t* ipiv = nullptr;
+    return rocsolver::rocsolver_getf2_strided_batched_impl<float>(handle, m, n, A, lda, strideA,
+                                                                  ipiv, 0, info, false, batch_count);
+}
+
+rocblas_status rocsolver_dgetf2_npvt_strided_batched_64(rocblas_handle handle,
+                                                        const int64_t m,
+                                                        const int64_t n,
+                                                        double* A,
+                                                        const int64_t lda,
+                                                        const rocblas_stride strideA,
+                                                        int64_t* info,
+                                                        const int64_t batch_count)
+{
+    int64_t* ipiv = nullptr;
+    return rocsolver::rocsolver_getf2_strided_batched_impl<double>(
+        handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
+}
+
+rocblas_status rocsolver_cgetf2_npvt_strided_batched_64(rocblas_handle handle,
+                                                        const int64_t m,
+                                                        const int64_t n,
+                                                        rocblas_float_complex* A,
+                                                        const int64_t lda,
+                                                        const rocblas_stride strideA,
+                                                        int64_t* info,
+                                                        const int64_t batch_count)
+{
+    int64_t* ipiv = nullptr;
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_float_complex>(
+        handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
+}
+
+rocblas_status rocsolver_zgetf2_npvt_strided_batched_64(rocblas_handle handle,
+                                                        const int64_t m,
+                                                        const int64_t n,
+                                                        rocblas_double_complex* A,
+                                                        const int64_t lda,
+                                                        const rocblas_stride strideA,
+                                                        int64_t* info,
+                                                        const int64_t batch_count)
+{
+    int64_t* ipiv = nullptr;
+    return rocsolver::rocsolver_getf2_strided_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
 }
 

@@ -79,6 +79,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
   lapack/roclapack_getrf.cpp
+  lapack/roclapack_getrf_info32.cpp
   lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getrf_strided_batched.cpp
   #- symmetric positive definite matrices
@@ -294,6 +295,11 @@ set(rocsolver_specialized_source
   specialized/roclapack_trsm_specialized_kernels_d.cpp
   specialized/roclapack_trsm_specialized_kernels_c.cpp
   specialized/roclapack_trsm_specialized_kernels_z.cpp
+  # potf2
+  specialized/roclapack_potf2_specialized_kernels_s.cpp
+  specialized/roclapack_potf2_specialized_kernels_d.cpp
+  specialized/roclapack_potf2_specialized_kernels_c.cpp
+  specialized/roclapack_potf2_specialized_kernels_z.cpp
 )
 
 if(OPTIMAL)
@@ -344,13 +350,17 @@ target_link_libraries(rocsolver
     roc::rocblas
   PRIVATE
     $<BUILD_INTERFACE:rocsolver-common> # https://gitlab.kitware.com/cmake/cmake/-/issues/15415
+    roc::rocprim
     hip::device
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
 
+set(static_depends)
+
 if(BUILD_WITH_SPARSE)
   target_link_libraries(rocsolver PRIVATE roc::rocsparse)
+  list(APPEND static_depends PACKAGE rocsparse)
   set_source_files_properties(${rocsolver_refact_source}
     PROPERTIES
       COMPILE_DEFINITIONS HAVE_ROCSPARSE
@@ -358,8 +368,9 @@ if(BUILD_WITH_SPARSE)
 endif()
 
 if(ROCSOLVER_EMBED_FMT)
-  target_link_libraries(rocsolver PRIVATE fmt::fmt-header-only)
+  target_link_libraries(rocsolver PRIVATE $<BUILD_INTERFACE:fmt::fmt-header-only>)
 else()
+  list(APPEND static_depends PACKAGE fmt)
   target_link_libraries(rocsolver PRIVATE fmt::fmt)
 endif()
 
@@ -368,6 +379,15 @@ target_compile_options(rocsolver PRIVATE --gpu-max-threads-per-block=1024)
 
 # Ignore loop unrolling failures
 target_compile_options(rocsolver PRIVATE -Wno-pass-failed)
+
+# hipcc adds these options automatically. These options might have an effect
+# on performance, so add them when building with clang directly, just in case.
+if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+.*")
+  target_compile_options(rocsolver PRIVATE
+    "SHELL:-mllvm -amdgpu-early-inline-all=true"
+    "SHELL:-mllvm -amdgpu-function-calls=false"
+  )
+endif()
 
 target_include_directories(rocsolver
   PUBLIC
@@ -458,6 +478,8 @@ rocm_export_targets(
   DEPENDS
     PACKAGE hip
     PACKAGE rocblas
+  STATIC_DEPENDS
+    ${static_depends}
   NAMESPACE roc::
 )
 

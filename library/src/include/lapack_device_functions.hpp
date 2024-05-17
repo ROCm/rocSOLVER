@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 #include "lib_device_helpers.hpp"
 #include "lib_macros.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /*
  * ===========================================================================
@@ -618,23 +620,18 @@ __device__ void lasrt_increasing(const rocblas_int n, T* D, rocblas_int* stack)
 /** IAMAX finds the maximum element of a given vector and its index.
     MAX_THDS should be 128, 256, 512, or 1024, and sval and sidx should
     be shared arrays of size MAX_THDS. **/
-template <int MAX_THDS, typename T, typename S>
-__device__ void iamax(const rocblas_int tid,
-                      const rocblas_int n,
-                      T* A,
-                      const rocblas_int incA,
-                      S* sval,
-                      rocblas_int* sidx)
+template <int MAX_THDS, typename T, typename I, typename S>
+__device__ void iamax(const I tid, const I n, T* A, const I incA, S* sval, I* sidx)
 {
     // local memory setup
     S val1, val2;
-    rocblas_int idx1, idx2;
+    I idx1, idx2;
 
     // read into shared memory while doing initial step
     // (each thread reduce as many elements as needed to cover the original array)
     val1 = 0;
     idx1 = INT_MAX;
-    for(int i = tid; i < n; i += MAX_THDS)
+    for(I i = tid; i < n; i += MAX_THDS)
     {
         val2 = aabs<S>(A[i * incA]);
         idx2 = i + 1; // add one to make it 1-based index
@@ -656,7 +653,7 @@ __device__ void iamax(const rocblas_int tid,
         reducing two elements in the shared array. **/
 
 #pragma unroll
-    for(int i = MAX_THDS / 2; i > warpSize; i /= 2)
+    for(I i = MAX_THDS / 2; i > warpSize; i /= 2)
     {
         if(tid < i)
         {
@@ -974,3 +971,5 @@ ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
         y[i * incy] = a[0] * x[i * incx] + y[i * incy];
     }
 }
+
+ROCSOLVER_END_NAMESPACE

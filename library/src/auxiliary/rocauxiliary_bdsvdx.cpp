@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_bdsvdx.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_bdsvdx_impl(rocblas_handle handle,
@@ -73,22 +75,22 @@ rocblas_status rocsolver_bdsvdx_impl(rocblas_handle handle,
     // size of reusable workspaces (for calling STEBZ and STEIN)
     size_t size_work1_iwork, size_work2_pivmin, size_Esqr, size_bounds, size_inter, size_ninter;
     // size for temporary arrays
-    size_t size_nsplit, size_iblock, size_isplit, size_Dtgk, size_Etgk, size_Stmp;
+    size_t size_nsplit, size_iblock, size_isplit_map, size_Dtgk, size_Etgk, size_Stmp;
     rocsolver_bdsvdx_getMemorySize<T>(n, batch_count, &size_work1_iwork, &size_work2_pivmin,
                                       &size_Esqr, &size_bounds, &size_inter, &size_ninter,
-                                      &size_nsplit, &size_iblock, &size_isplit, &size_Dtgk,
+                                      &size_nsplit, &size_iblock, &size_isplit_map, &size_Dtgk,
                                       &size_Etgk, &size_Stmp);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(
             handle, size_work1_iwork, size_work2_pivmin, size_Esqr, size_bounds, size_inter,
-            size_ninter, size_nsplit, size_iblock, size_isplit, size_Dtgk, size_Etgk, size_Stmp);
+            size_ninter, size_nsplit, size_iblock, size_isplit_map, size_Dtgk, size_Etgk, size_Stmp);
 
     // memory workspace allocation
-    void *work1_iwork, *work2_pivmin, *Esqr, *bounds, *inter, *ninter, *nsplit, *iblock, *isplit,
-        *Stmp, *Dtgk, *Etgk;
+    void *work1_iwork, *work2_pivmin, *Esqr, *bounds, *inter, *ninter, *nsplit, *iblock,
+        *isplit_map, *Stmp, *Dtgk, *Etgk;
     rocblas_device_malloc mem(handle, size_work1_iwork, size_work2_pivmin, size_Esqr, size_bounds,
-                              size_inter, size_ninter, size_nsplit, size_iblock, size_isplit,
+                              size_inter, size_ninter, size_nsplit, size_iblock, size_isplit_map,
                               size_Dtgk, size_Etgk, size_Stmp);
     if(!mem)
         return rocblas_status_memory_error;
@@ -101,7 +103,7 @@ rocblas_status rocsolver_bdsvdx_impl(rocblas_handle handle,
     ninter = mem[5];
     nsplit = mem[6];
     iblock = mem[7];
-    isplit = mem[8];
+    isplit_map = mem[8];
     Dtgk = mem[9];
     Etgk = mem[10];
     Stmp = mem[11];
@@ -111,8 +113,10 @@ rocblas_status rocsolver_bdsvdx_impl(rocblas_handle handle,
         handle, uplo, svect, srange, n, D, strideD, E, strideE, vl, vu, il, iu, nsv, S, strideS, Z,
         shiftZ, ldz, strideZ, ifail, strideIfail, info, batch_count, (rocblas_int*)work1_iwork,
         (T*)work2_pivmin, (T*)Esqr, (T*)bounds, (T*)inter, (rocblas_int*)ninter, (rocblas_int*)nsplit,
-        (rocblas_int*)iblock, (rocblas_int*)isplit, (T*)Dtgk, (T*)Etgk, (T*)Stmp);
+        (rocblas_int*)iblock, (rocblas_int*)isplit_map, (T*)Dtgk, (T*)Etgk, (T*)Stmp);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -140,8 +144,8 @@ rocblas_status rocsolver_sbdsvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_bdsvdx_impl<float>(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv,
-                                        S, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_bdsvdx_impl<float>(handle, uplo, svect, srange, n, D, E, vl, vu, il,
+                                                   iu, nsv, S, Z, ldz, ifail, info);
 }
 
 rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
@@ -162,8 +166,8 @@ rocblas_status rocsolver_dbdsvdx(rocblas_handle handle,
                                  rocblas_int* ifail,
                                  rocblas_int* info)
 {
-    return rocsolver_bdsvdx_impl<double>(handle, uplo, svect, srange, n, D, E, vl, vu, il, iu, nsv,
-                                         S, Z, ldz, ifail, info);
+    return rocsolver::rocsolver_bdsvdx_impl<double>(handle, uplo, svect, srange, n, D, E, vl, vu,
+                                                    il, iu, nsv, S, Z, ldz, ifail, info);
 }
 
 } // extern C

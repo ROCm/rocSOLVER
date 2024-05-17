@@ -34,6 +34,10 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+
+ROCSOLVER_BEGIN_NAMESPACE
+
+
 /***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 
@@ -585,8 +589,11 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                     work_stack, 0, ldt, strideT, batch_count, workArr);
 
     // sort eigenvalues and eigenvectors
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(batch_count), dim3(1), 0, stream, n, W, strideW,
-                            C, shiftC, ldc, strideC, nev);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1,1,batch_count), dim3(BS1), 0, stream, n, W, strideW,
+                            C, shiftC, ldc, strideC, batch_count, splits, nev);
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE
+
