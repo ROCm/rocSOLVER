@@ -29,6 +29,8 @@
 
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** Constants for block size of trsm **/
 // clang-format off
 #define TRSM_NUMROWS_REAL 12
@@ -1428,3 +1430,5 @@ inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
         const I lda, const rocblas_stride strideA, U B, const rocblas_stride shiftB, const I ldb, \
         const rocblas_stride strideB, const I batch_count, const bool optim_mem, void* work1,     \
         void* work2, void* work3, void* work4)
+
+ROCSOLVER_END_NAMESPACE

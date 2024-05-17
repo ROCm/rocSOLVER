@@ -39,6 +39,8 @@
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T>
 __device__ static void syevx_permute_swap(rocblas_int n,
                                           rocblas_int nev,
@@ -414,3 +416,5 @@ rocblas_status rocsolver_syevx_heevx_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

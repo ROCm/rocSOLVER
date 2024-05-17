@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsparse.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 ROCSOLVER_KERNEL void rf_sumLU_kernel(const rocblas_int n,
@@ -167,3 +169,5 @@ rocblas_status rocsolver_csrrf_sumlu_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

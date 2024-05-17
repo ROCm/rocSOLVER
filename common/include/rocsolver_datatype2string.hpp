@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,15 +31,12 @@
 #include "rocsolver/rocsolver.h"
 #include <string>
 
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
+
 #define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
     (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
-
-typedef enum rocblas_initialization_ : int
-{
-    rocblas_initialization_random_int = 111,
-    rocblas_initialization_trig_float = 222,
-    rocblas_initialization_hpl = 333,
-} rocblas_initialization;
 
 // return char from type
 template <typename>
@@ -231,17 +228,6 @@ constexpr auto rocblas2string_datatype(rocblas_datatype type)
     case rocblas_datatype_f8_r: return "f8_r";
     case rocblas_datatype_bf8_r: return "bf8_r";
 #endif
-    }
-    return "invalid";
-}
-
-constexpr auto rocblas2string_initialization(rocblas_initialization init)
-{
-    switch(init)
-    {
-    case rocblas_initialization_random_int: return "rand_int";
-    case rocblas_initialization_trig_float: return "trig_float";
-    case rocblas_initialization_hpl: return "hpl";
     }
     return "invalid";
 }
@@ -443,15 +429,6 @@ inline rocblas_datatype string2rocblas_datatype(const std::string& value)
 #endif
         rocblas_datatype_invalid;
 }
-
-inline rocblas_initialization string2rocblas_initialization(const std::string& value)
-{
-    return
-        value == "rand_int"   ? rocblas_initialization_random_int :
-        value == "trig_float" ? rocblas_initialization_trig_float :
-        value == "hpl"        ? rocblas_initialization_hpl        :
-        static_cast<rocblas_initialization>(0);
-}
 // clang-format on
 
 constexpr rocsolver_rfinfo_mode char2rocsolver_rfinfo_mode(char value)
@@ -465,3 +442,7 @@ constexpr rocsolver_rfinfo_mode char2rocsolver_rfinfo_mode(char value)
 }
 
 #undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_END_NAMESPACE
+#endif

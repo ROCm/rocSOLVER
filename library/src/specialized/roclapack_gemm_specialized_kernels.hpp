@@ -31,6 +31,8 @@
 
 #include <climits>
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /** GEMM device function to compute C = alpha * A * B + beta * C.
 
     Call this kernel with 'batch_count' groups in z, and enough
@@ -281,3 +283,5 @@ inline rocblas_status rocsolver_gemm(rocblas_handle handle,
         const T* alpha, U A, rocblas_stride shiftA, I lda, rocblas_stride strideA, U B,           \
         rocblas_stride shiftB, I ldb, rocblas_stride strideB, const T* beta, U C,                 \
         rocblas_stride shiftC, I ldc, rocblas_stride strideC, I batch_count, T** work)
+
+ROCSOLVER_END_NAMESPACE
