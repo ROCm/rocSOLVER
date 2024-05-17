@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_potri.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_potri_impl(rocblas_handle handle,
@@ -87,6 +89,8 @@ rocblas_status rocsolver_potri_impl(rocblas_handle handle,
                                                      (T*)tmpcopy, (T**)workArr, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -102,7 +106,7 @@ rocblas_status rocsolver_spotri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potri_impl<float>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potri_impl<float>(handle, uplo, n, A, lda, info);
 }
 
 rocblas_status rocsolver_dpotri(rocblas_handle handle,
@@ -112,7 +116,7 @@ rocblas_status rocsolver_dpotri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potri_impl<double>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potri_impl<double>(handle, uplo, n, A, lda, info);
 }
 
 rocblas_status rocsolver_cpotri(rocblas_handle handle,
@@ -122,7 +126,7 @@ rocblas_status rocsolver_cpotri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potri_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potri_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info);
 }
 
 rocblas_status rocsolver_zpotri(rocblas_handle handle,
@@ -132,6 +136,6 @@ rocblas_status rocsolver_zpotri(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potri_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potri_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info);
 }
 }

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,6 +42,10 @@
 #include "fmt_rocblas_types.hpp"
 #include "rocblas_utility.hpp"
 
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
+
 /*
  * ===========================================================================
  *    common location for functions that are used by both the rocSOLVER
@@ -60,6 +64,7 @@
     } while(0)
 
 /* =============================================================================================== */
+
 /* Number properties functions.                                                                    */
 
 template <typename T>
@@ -550,3 +555,7 @@ inline void read_matrix(const std::string filenameS,
             fmt::format("Error: Could not close file {} with test data...", filename));
     }
 }
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_END_NAMESPACE
+#endif

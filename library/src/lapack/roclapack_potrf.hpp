@@ -37,6 +37,8 @@
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 static rocblas_int get_lds_size()
 {
     rocblas_int const default_lds_size = 64 * 1024;
@@ -830,3 +832,5 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return istat;
 }
+
+ROCSOLVER_END_NAMESPACE
