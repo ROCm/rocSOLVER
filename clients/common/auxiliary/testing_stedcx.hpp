@@ -450,11 +450,11 @@ void testing_stedcx(Arguments& argus)
                            hE, hnev, hnevRes, hW, hWRes, hC, hCRes, hinfo, hinfoRes, &max_error);
 
     // collect performance data
-    /*    if(argus.timing)
+    if(argus.timing)
         stedcx_getPerfData<T>(handle, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc, dinfo,
                               hD, hE, hnev, hW, hC, hinfo, &gpu_time_used, &cpu_time_used,
                               hot_calls, argus.profile, argus.profile_kernels, argus.perf);
-*/
+
     // validate results for rocsolver-test
     // using 3 * n * machine_precision as tolerance
     if(argus.unit_check)
