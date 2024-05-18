@@ -181,8 +181,7 @@ void stedcx_getError(const rocblas_handle handle,
     std::vector<int> iwork(3 * n);
     std::vector<rocblas_int> hIblock(n);
     std::vector<rocblas_int> hIsplit(n);
-    rocblas_int* hnsplit;
-    rocblas_int* htinfo;
+    rocblas_int hnsplit;
     S atol = 2 * get_safemin<S>();
 
     // input data initialization
@@ -199,7 +198,7 @@ void stedcx_getError(const rocblas_handle handle,
 
     // CPU lapack
     cpu_stebz(erange, rocblas_eorder_entire, n, vl, vu, il, iu, atol, hD[0], hE[0], hnev[0],
-              hnsplit, hW[0], hIblock.data(), hIsplit.data(), work.data(), iwork.data(), hinfo[0]);
+              &hnsplit, hW[0], hIblock.data(), hIsplit.data(), work.data(), iwork.data(), hinfo[0]);
 
     // check info
     EXPECT_EQ(hinfo[0][0], hinfoRes[0][0]);
@@ -451,11 +450,11 @@ void testing_stedcx(Arguments& argus)
                            hE, hnev, hnevRes, hW, hWRes, hC, hCRes, hinfo, hinfoRes, &max_error);
 
     // collect performance data
-    if(argus.timing)
+    /*    if(argus.timing)
         stedcx_getPerfData<T>(handle, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc, dinfo,
                               hD, hE, hnev, hW, hC, hinfo, &gpu_time_used, &cpu_time_used,
                               hot_calls, argus.profile, argus.profile_kernels, argus.perf);
-
+*/
     // validate results for rocsolver-test
     // using 3 * n * machine_precision as tolerance
     if(argus.unit_check)
