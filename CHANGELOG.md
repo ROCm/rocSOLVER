@@ -2,17 +2,6 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
-## (Unreleased) rocSOLVER
-### Added
-### Optimized
-### Changed
-### Deprecated
-### Removed
-### Fixed
-### Known Issues
-### Security
-
-
 ## rocSOLVER 3.26.0 for ROCm 6.2.0
 ### Added
 - 64-bit APIs for existing functions:
@@ -20,6 +9,12 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - GETRF_64 (with batched and strided\_batched versions)
     - GETRS_64 (with batched and strided\_batched versions)
 - Added gfx900 to default build targets.
+- Partial eigenvalue decomposition routines for symmetric/hermitian matrices using Divide & Conquer and Bisection:
+    - SYEVDX (with batched and strided\_batched versions)
+    - HEEVDX (with batched and strided\_batched versions)
+- Partial generalized symmetric/hermitian-definite eigenvalue decomposition using Divide & Conquer and Bisection:
+    - SYGVDX (with batched and strided\_batched versions)
+    - HEGVDX (with batched and strided\_batched versions)
 
 ### Optimized
 - Improved performance of Cholesky factorization.

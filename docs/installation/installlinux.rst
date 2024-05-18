@@ -12,11 +12,11 @@ Prerequisites
 =================
 
 rocSOLVER requires a ROCm-enabled platform. For more information, see the
-:doc:`ROCm install guide <rocm-install-on-linux:index>`.
+`ROCm install guide <https://rocm.docs.amd.com/en/latest/deploy/linux/index.html>`_.
 
 rocSOLVER also requires compatible versions of rocBLAS and rocSPARSE installed on the system.
-For more information, see the :doc:`rocBLAS install guide <rocblas:install/Linux_Install_Guide>`
-and :doc:`rocSPARSE install guide <rocsparse:install/install>`.
+For more information, see the `rocBLAS install guide <https://rocm.docs.amd.com/projects/rocBLAS/en/latest/Linux_Install_Guide.html>`_
+and `rocSPARSE install guide <https://rocm.docs.amd.com/projects/rocSPARSE/en/latest/install.html>`_.
 
 rocBLAS, rocSPARSE, and rocSOLVER are still under active development, and it is hard to define minimal
 compatibility versions. For now, a good rule of thumb is to always use rocSOLVER together with the
@@ -43,7 +43,7 @@ rocSOLVER can be installed using a package manager. On Ubuntu, for example, use 
 Building & installing from source
 =====================================
 
-The `rocSOLVER source code <https://github.com/ROCm/rocSOLVER.git>`_ is hosted
+The `rocSOLVER source code <https://github.com/ROCmSoftwarePlatform/rocSOLVER.git>`_ is hosted
 on GitHub. Download the code and checkout the desired branch using:
 
 .. code-block:: bash
@@ -52,8 +52,8 @@ on GitHub. Download the code and checkout the desired branch using:
     cd rocSOLVER
 
 To build from source, some external dependencies such as CMake and Python are required. Additionally, if the library clients
-are to be built (by default they are not), then LAPACK and GoogleTest will be also required. 
-(The library clients, rocsolver-test and rocsolver-bench, provide the infrastructure for testing and benchmarking rocSOLVER. 
+are to be built (by default they are not), then LAPACK and GoogleTest will be also required.
+(The library clients, rocsolver-test and rocsolver-bench, provide the infrastructure for testing and benchmarking rocSOLVER.
 For more details see the :ref:`rocSOLVER clients How-To <clients>`).
 
 Using the install.sh script

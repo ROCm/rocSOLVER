@@ -5,7 +5,7 @@
 .. _user-guide:
 
 ********************************************************************
-How to
+How-To
 ********************************************************************
 
 This section provides guides on how to use the rocSOLVER library and its
