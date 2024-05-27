@@ -300,7 +300,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
     iamax<SPLIT_THDS>(tid, n - 1, Esqr, 1, sval, sidx);
     __syncthreads();
 
-    T pmin = sval[0] * sfmin;
+    // `pmin` is a numerically stable lower bound for pivots
+    T pmin = std::max(sval[0] * sfmin, sfmin);
     vl = vlow;
     vu = vup;
 
