@@ -132,7 +132,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_gerqf.cpp
   lapack/roclapack_gerqf_batched.cpp
   lapack/roclapack_gerqf_strided_batched.cpp
-  #### Problem and matrix reductions (diagonalizations) ####
+  #### Problem and Matrix Reductions (Diagonalizations) ####
   ##########################################################
   #- bidiagonalization
   lapack/roclapack_gebd2.cpp
@@ -155,7 +155,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_sygst_hegst.cpp
   lapack/roclapack_sygst_hegst_batched.cpp
   lapack/roclapack_sygst_hegst_strided_batched.cpp
-  #### singular value decomposition ####
+  #### Singular Value Decomposition ####
   ######################################
   #- classic
   lapack/roclapack_gesvd.cpp
@@ -172,7 +172,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_gesvdx_batched.cpp
   lapack/roclapack_gesvdx_strided_batched.cpp
   lapack/roclapack_gesvdx_notransv_strided_batched.cpp
-  #### symmetric eigensolvers ####
+  #### Symmetric Eigensolvers ####
   ################################
   #- classic
   lapack/roclapack_syev_heev.cpp

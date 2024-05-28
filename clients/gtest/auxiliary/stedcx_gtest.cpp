@@ -39,7 +39,7 @@ typedef std::tuple<vector<int>, vector<int>> stedcx_tuple;
 
 // each ops_range vector is a {rng, vl, vu, il, iu}
 // if rng = 0, then find all eigenvalues
-// if rng = 1, then find eigenavlues in (vl, vu]
+// if rng = 1, then find eigenvalues in (vl, vu]
 // if rng = 2, then find the il-th to the iu-th eigenvalue
 
 // Note: all tests are prepared with diagonally dominant matrices that have random diagonal

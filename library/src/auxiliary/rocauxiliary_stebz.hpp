@@ -876,6 +876,7 @@ __device__ void run_stebz_synthesis(const rocblas_erange range,
 
         // discard extra values
         increasing_order(nnt, inter + n, ninter + n);
+
         for(int i = 0; i < nnt; ++i)
         {
             tmp = inter[i];

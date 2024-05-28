@@ -245,9 +245,9 @@
 #endif
 
 /*! \brief Determines the maximum size at which rocSOLVER can use POTF2
-    \details 
+    \details
     POTF2 will attempt to factorize a small symmetric matrix that can fit entirely
-    within the LDS share memory using compact storage.  
+    within the LDS share memory using compact storage.
     The amount of LDS shared memory is assumed to be at least (64 * 1024) bytes. */
 #ifndef POTF2_MAX_SMALL_SIZE
 #define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
@@ -301,7 +301,9 @@
 
     \details If the size of the block is smaller than SYEVDX_MIN_DC_SIZE,
     the eigenvectors are computed with the normal inverse iteration algorithm. */
+#ifndef SYEVDX_MIN_DC_SIZE
 #define SYEVDX_MIN_DC_SIZE 16
+#endif
 
 /**************************** getf2/getfr *************************************
 *******************************************************************************/

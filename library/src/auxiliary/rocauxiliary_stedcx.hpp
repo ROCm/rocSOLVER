@@ -130,8 +130,8 @@ ROCSOLVER_KERNEL void stedcx_case1_kernel(const rocblas_erange range,
 }
 
 //--------------------------------------------------------------------------------------//
-/** STEDCX_SPLIT_KERNEL implements the solver phase of the DC algorithm to
-    **/
+/** STEDCX_SPLIT_KERNEL splits the matrix into independent blocks and determines range
+    for the partial decomposition **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
     stedcx_split_kernel(const rocblas_erange range,
@@ -193,8 +193,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
 }
 
 //--------------------------------------------------------------------------------------//
-/** STEDCX_SYNTHESIS_KERNEL implements the solver phase of the DC algorithm to
-    **/
+/** STEDCX_SYNTHESIS_KERNEL synthesizes the results of the partial decomposition **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedcx_synthesis_kernel(const rocblas_erange range,
@@ -421,7 +420,9 @@ rocblas_status rocsolver_stedcx_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_value;
 
     // 2. invalid size
-    if(n < 0 || ldc < n)
+    if(n < 0)
+        return rocblas_status_invalid_size;
+    if(evect != rocblas_evect_none && ldc < n)
         return rocblas_status_invalid_size;
     if(range == rocblas_erange_value && vlow >= vup)
         return rocblas_status_invalid_size;
@@ -564,26 +565,26 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
             the computation of some of them does not seem to make much difference. **/
 
         // a. prepare secular equations
-        ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_qr, S>),
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_bisection, S>),
                                 dim3(1, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(maxblks),
                                 lmemsize1, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
                                 strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
         // b. solve to find merged eigen values
         rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
-        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_qr, S>),
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_bisection, S>),
                                 dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 0, stream, k, n, D, strideD, E, strideE, tmpz, tempgemm, splits,
                                 eps, ssfmin, ssfmax);
 
         // c. find merged eigen vectors
-        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, S>),
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_bisection, S>),
                                 dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize3, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
                                 strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
         // d. update level
-        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_qr, S>),
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_bisection, S>),
                                 dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize3, stream, k, n, D, strideD, tempvect, 0, ldt, strideT,
                                 tmpz, tempgemm, splits, eps, ssfmin, ssfmax);

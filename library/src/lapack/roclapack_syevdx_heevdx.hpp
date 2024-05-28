@@ -171,8 +171,9 @@ void rocsolver_syevdx_heevdx_getMemorySize(const rocblas_evect evect,
     else
     {
         // extra requirements for computing eigenvalues and vectors (stedcx)
-        rocsolver_stedcx_getMemorySize<BATCHED, T, S>(
-            evect, n, batch_count, &a3, &b3, &c3, size_work4, size_work5, size_work6_ifail, &unused);
+        rocsolver_stedcx_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count,
+                                                      &a3, &b3, &c3, size_work4, size_work5,
+                                                      size_work6_ifail, &unused);
 
         *size_iblock = 0;
         *size_isplit = 0;

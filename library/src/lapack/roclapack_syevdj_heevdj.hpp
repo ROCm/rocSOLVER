@@ -108,8 +108,8 @@ void rocsolver_syevdj_heevdj_getMemorySize(const rocblas_evect evect,
                                                     &unused);
 
     // extra requirements for computing eigenvalues and vectors (stedcj)
-    rocsolver_stedcj_getMemorySize<BATCHED, T, S>(evect, n, batch_count, &w12, &w22, &w32,
-                                                  size_work4, size_workSplits, &unused);
+    rocsolver_stedcj_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
+                                                  &w22, &w32, size_work4, size_workSplits, &unused);
 
     // extra requirements for ormtr/unmtr
     rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,

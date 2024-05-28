@@ -159,9 +159,9 @@ void stedcx_initData(const rocblas_handle handle,
     // initialize C to the identity matrix
     if(evect == rocblas_evect_original)
     {
-        for(rocblas_int i = 0; i < n; i++)
+        for(rocblas_int j = 0; j < n; j++)
         {
-            for(rocblas_int j = 0; j < n; j++)
+            for(rocblas_int i = 0; i < n; i++)
             {
                 if(i == j)
                     hC[0][i + j * ldc] = 1;
