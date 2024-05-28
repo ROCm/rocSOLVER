@@ -104,6 +104,10 @@ Arguments stedcx_setup_arguments(stedcx_tuple tup)
     arg.set<rocblas_int>("il", op[3]);
     arg.set<rocblas_int>("iu", op[4]);
 
+    // case evect = N is not implemented for now.
+    // it could be added if stedcx goes to public API
+    arg.set<char>("evect", 'I');
+
     arg.timing = 0;
 
     return arg;

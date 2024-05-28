@@ -63,6 +63,10 @@ Arguments stedcj_setup_arguments(stedcj_tuple tup)
     arg.set<rocblas_int>("n", tup[0]);
     arg.set<rocblas_int>("ldc", tup[1]);
 
+    // case evect = N is not implemented for now.
+    // it could be added if stedcj goes to public API
+    arg.set<char>("evect", 'I');
+
     arg.timing = 0;
 
     return arg;

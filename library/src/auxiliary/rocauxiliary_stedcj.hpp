@@ -125,8 +125,7 @@ __device__ inline void de2tridiag(const int numt,
     }
 }
 
-/*************** Main kernels
- * *********************************************************/
+/*************** Main kernels *********************************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
@@ -285,7 +284,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 //--------------------------------------------------------------------------------------//
 /** This helper calculates required workspace size **/
 template <bool BATCHED, typename T, typename S>
-void rocsolver_stedcj_getMemorySize(const rocblas_int n,
+void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
+                                    const rocblas_int n,
                                     const rocblas_int batch_count,
                                     size_t* size_work_stack,
                                     size_t* size_tempvect,
@@ -337,6 +337,7 @@ void rocsolver_stedcj_getMemorySize(const rocblas_int n,
 /** STEDC templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
+                                         const rocblas_evect evect,
                                          const rocblas_int n,
                                          S* D,
                                          const rocblas_stride strideD,
@@ -355,7 +356,11 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                          rocblas_int* splits_map,
                                          S** workArr)
 {
-    ROCSOLVER_ENTER("stedcj", "n:", n, "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
+    ROCSOLVER_ENTER("stedcj", "evect:", evect, "n:", n, "shiftC:", shiftC, "ldc:", ldc,
+                    "bc:", batch_count);
+
+    // NOTE: case evect = N is not implemented for now. This routine always compute vectors
+    // as it is only for internal use by syevdj.
 
     // quick return
     if(batch_count == 0)
@@ -372,7 +377,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
     // quick return
-    if(n == 1)
+    if(n == 1 && evect != rocblas_evect_none)
         ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
                                 strideC, n, 1);
     if(n <= 1)
@@ -387,8 +392,9 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     rocblas_int blocksn = (n - 1) / BS2 + 1;
 
     // initialize identity matrix in C if required
-    ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2), 0,
-                            stream, n, n, C, shiftC, ldc, strideC);
+    if(evect == rocblas_evect_tridiagonal)
+        ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2),
+                                0, stream, n, n, C, shiftC, ldc, strideC);
 
     // initialize identity matrix in tempvect
     rocblas_int ldt = n;

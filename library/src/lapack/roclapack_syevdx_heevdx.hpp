@@ -171,8 +171,8 @@ void rocsolver_syevdx_heevdx_getMemorySize(const rocblas_evect evect,
     else
     {
         // extra requirements for computing eigenvalues and vectors (stedcx)
-        rocsolver_stedcx_getMemorySize<BATCHED, T, S>(n, batch_count, &a3, &b3, &c3, size_work4,
-                                                      size_work5, size_work6_ifail, &unused);
+        rocsolver_stedcx_getMemorySize<BATCHED, T, S>(
+            evect, n, batch_count, &a3, &b3, &c3, size_work4, size_work5, size_work6_ifail, &unused);
 
         *size_iblock = 0;
         *size_isplit = 0;
@@ -285,8 +285,8 @@ rocblas_status rocsolver_syevdx_heevdx_template(rocblas_handle handle,
             // sort eigenvalues and eigenvectors
             dim3 grid(1, batch_count, 1);
             dim3 threads(BS1, 1, 1);
-            ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid, threads, 0, stream, n, nev, W,
-                                    strideW, Z, shiftZ, ldz, strideZ, work6_ifail, strideF, info, isplit);
+            ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid, threads, 0, stream, n, nev, W, strideW,
+                                    Z, shiftZ, ldz, strideZ, work6_ifail, strideF, info, isplit);
         }
     }
 
@@ -295,9 +295,9 @@ rocblas_status rocsolver_syevdx_heevdx_template(rocblas_handle handle,
         // **** Use D&C approach ****
 
         rocsolver_stedcx_template<BATCHED, STRIDED, T>(
-            handle, erange, n, vl, vu, il, iu, D, stride, E, stride, nev, W, strideW, Z, shiftZ,
-            ldz, strideZ, info, batch_count, (S*)work1, (S*)work2, (S*)work3, (S*)work4, (S*)work5,
-            work6_ifail, (S**)nsplit_workArr);
+            handle, rocblas_evect_tridiagonal, erange, n, vl, vu, il, iu, D, stride, E, stride, nev,
+            W, strideW, Z, shiftZ, ldz, strideZ, info, batch_count, (S*)work1, (S*)work2, (S*)work3,
+            (S*)work4, (S*)work5, work6_ifail, (S**)nsplit_workArr);
 
         rocblas_int h_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(

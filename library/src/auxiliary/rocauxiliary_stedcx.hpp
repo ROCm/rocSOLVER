@@ -340,7 +340,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 //--------------------------------------------------------------------------------------//
 /** This helper calculates required workspace size **/
 template <bool BATCHED, typename T, typename S>
-void rocsolver_stedcx_getMemorySize(const rocblas_int n,
+void rocsolver_stedcx_getMemorySize(const rocblas_evect evect,
+                                    const rocblas_int n,
                                     const rocblas_int batch_count,
                                     size_t* size_work_stack,
                                     size_t* size_work_steqr,
@@ -368,7 +369,7 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
     size_t s1, s2;
 
     // requirements for solver of small independent blocks
-    rocsolver_steqr_getMemorySize<T, S>(rocblas_evect_tridiagonal, n, batch_count, size_work_steqr);
+    rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_steqr);
     s1 = sizeof(S) * (4 * n + 2) * batch_count;
 
     // extra requirements for original eigenvectors of small independent blocks
@@ -395,6 +396,7 @@ void rocsolver_stedcx_getMemorySize(const rocblas_int n,
 /** Helper to check argument correctnesss **/
 template <typename T, typename S>
 rocblas_status rocsolver_stedcx_argCheck(rocblas_handle handle,
+                                         const rocblas_evect evect,
                                          const rocblas_erange range,
                                          const rocblas_int n,
                                          const S vlow,
@@ -413,6 +415,9 @@ rocblas_status rocsolver_stedcx_argCheck(rocblas_handle handle,
 
     // 1. invalid/non-supported values
     if(range != rocblas_erange_all && range != rocblas_erange_value && range != rocblas_erange_index)
+        return rocblas_status_invalid_value;
+    if(evect != rocblas_evect_none && evect != rocblas_evect_tridiagonal
+       && evect != rocblas_evect_original)
         return rocblas_status_invalid_value;
 
     // 2. invalid size
@@ -440,6 +445,7 @@ rocblas_status rocsolver_stedcx_argCheck(rocblas_handle handle,
 /** STEDCX templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
 rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
+                                         const rocblas_evect evect,
                                          const rocblas_erange erange,
                                          const rocblas_int n,
                                          const S vl,
@@ -470,6 +476,9 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     ROCSOLVER_ENTER("stedcx", "erange:", erange, "n:", n, "vl:", vl, "vu:", vu, "il:", il,
                     "iu:", iu, "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
+    // NOTE: case evect = N is not implemented for now. This routine always compute vectors
+    // as it is only for internal use by syevdx.
+
     // quick return
     if(batch_count == 0)
         return rocblas_status_success;
@@ -487,8 +496,9 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     // quick return
     if(n == 1)
     {
-        ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0, stream, C,
-                                strideC, n, 1);
+        if(evect != rocblas_evect_none)
+            ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, dim3(1, batch_count), dim3(1, 1), 0,
+                                    stream, C, strideC, n, 1);
         ROCSOLVER_LAUNCH_KERNEL(stedcx_case1_kernel, dim3(batch_count), dim3(1), 0, stream, erange,
                                 vl, vu, D, strideD, nev, W, strideW);
     }
@@ -504,8 +514,9 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
     rocblas_int blocksn = (n - 1) / BS2 + 1;
 
     // initialize identity matrix in C if required
-    ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2), 0,
-                            stream, n, n, C, shiftC, ldc, strideC);
+    if(evect == rocblas_evect_tridiagonal)
+        ROCSOLVER_LAUNCH_KERNEL(init_ident<T>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2),
+                                0, stream, n, n, C, shiftC, ldc, strideC);
 
     // initialize identity matrix in tempvect
     rocblas_int ldt = n;

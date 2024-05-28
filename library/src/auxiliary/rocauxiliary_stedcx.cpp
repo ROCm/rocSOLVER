@@ -38,6 +38,7 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S>
 rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
+                                     const rocblas_evect evect,
                                      const rocblas_erange erange,
                                      const rocblas_int n,
                                      const S vl,
@@ -52,15 +53,15 @@ rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
                                      const rocblas_int ldc,
                                      rocblas_int* info)
 {
-    ROCSOLVER_ENTER_TOP("stedcx", "--erange", erange, "-n", n, "--vl", vl, "--vu", vu, "--il", il,
-                        "--iu", iu, "--ldc", ldc);
+    ROCSOLVER_ENTER_TOP("stedcx", "--evect", evect, "--erange", erange, "-n", n, "--vl", vl, "--vu",
+                        vu, "--il", il, "--iu", iu, "--ldc", ldc);
 
     if(!handle)
         return rocblas_status_invalid_handle;
 
     // argument checking
-    rocblas_status st
-        = rocsolver_stedcx_argCheck(handle, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc, info);
+    rocblas_status st = rocsolver_stedcx_argCheck(handle, evect, erange, n, vl, vu, il, iu, D, E,
+                                                  nev, W, C, ldc, info);
     if(st != rocblas_status_continue)
         return st;
 
@@ -85,9 +86,9 @@ rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
     size_t size_splits;
     // size for temporary diagonal and z vectors.
     size_t size_tmpz;
-    rocsolver_stedcx_getMemorySize<false, T, S>(n, batch_count, &size_work_stack, &size_work_steqr,
-                                                &size_tempvect, &size_tempgemm, &size_tmpz,
-                                                &size_splits, &size_workArr);
+    rocsolver_stedcx_getMemorySize<false, T, S>(evect, n, batch_count, &size_work_stack,
+                                                &size_work_steqr, &size_tempvect, &size_tempgemm,
+                                                &size_tmpz, &size_splits, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work_stack, size_work_steqr,
@@ -111,13 +112,12 @@ rocblas_status rocsolver_stedcx_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_stedcx_template<false, false, T>(
-        handle, erange, n, vl, vu, il, iu, D, strideD, E, strideE, nev, W, strideW, C, shiftC, ldc,
-        strideC, info, batch_count, (S*)work_stack, (S*)work_steqr, (S*)tempvect, (S*)tempgemm,
-        (S*)tmpz, (rocblas_int*)splits, (S**)workArr);
+        handle, evect, erange, n, vl, vu, il, iu, D, strideD, E, strideE, nev, W, strideW, C,
+        shiftC, ldc, strideC, info, batch_count, (S*)work_stack, (S*)work_steqr, (S*)tempvect,
+        (S*)tempgemm, (S*)tmpz, (rocblas_int*)splits, (S**)workArr);
 }
 
 ROCSOLVER_END_NAMESPACE
-
 
 /*
  * ===========================================================================
@@ -128,6 +128,7 @@ ROCSOLVER_END_NAMESPACE
 extern "C" {
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_sstedcx(rocblas_handle handle,
+                                                  const rocblas_evect evect,
                                                   const rocblas_erange erange,
                                                   const rocblas_int n,
                                                   const float vl,
@@ -142,11 +143,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedcx_impl<float>(handle, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc,
-                                        info);
+    return rocsolver::rocsolver_stedcx_impl<float>(handle, evect, erange, n, vl, vu, il, iu, D, E,
+                                                   nev, W, C, ldc, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dstedcx(rocblas_handle handle,
+                                                  const rocblas_evect evect,
                                                   const rocblas_erange erange,
                                                   const rocblas_int n,
                                                   const double vl,
@@ -161,11 +163,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedcx_impl<double>(handle, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc,
-                                         info);
+    return rocsolver::rocsolver_stedcx_impl<double>(handle, evect, erange, n, vl, vu, il, iu, D, E,
+                                                    nev, W, C, ldc, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cstedcx(rocblas_handle handle,
+                                                  const rocblas_evect evect,
                                                   const rocblas_erange erange,
                                                   const rocblas_int n,
                                                   const float vl,
@@ -180,11 +183,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedcx_impl<rocblas_float_complex>(handle, erange, n, vl, vu, il, iu, D, E,
-                                                        nev, W, C, ldc, info);
+    return rocsolver::rocsolver_stedcx_impl<rocblas_float_complex>(
+        handle, evect, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zstedcx(rocblas_handle handle,
+                                                  const rocblas_evect evect,
                                                   const rocblas_erange erange,
                                                   const rocblas_int n,
                                                   const double vl,
@@ -199,8 +203,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedcx(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver::rocsolver_stedcx_impl<rocblas_double_complex>(handle, erange, n, vl, vu, il, iu, D, E,
-                                                         nev, W, C, ldc, info);
+    return rocsolver::rocsolver_stedcx_impl<rocblas_double_complex>(
+        handle, evect, erange, n, vl, vu, il, iu, D, E, nev, W, C, ldc, info);
 }
 
 } // extern C

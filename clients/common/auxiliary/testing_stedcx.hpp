@@ -37,6 +37,7 @@
 
 template <typename T, typename S, typename U>
 void stedcx_checkBadArgs(const rocblas_handle handle,
+                         const rocblas_evect evect,
                          const rocblas_erange erange,
                          const rocblas_int n,
                          const T vl,
@@ -52,37 +53,40 @@ void stedcx_checkBadArgs(const rocblas_handle handle,
                          rocblas_int* dinfo)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(
-        rocsolver_stedcx(nullptr, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc, dinfo),
-        rocblas_status_invalid_handle);
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(nullptr, evect, erange, n, vl, vu, il, iu, dD, dE, dnev,
+                                           dW, dC, ldc, dinfo),
+                          rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, rocblas_erange(0), n, vl, vu, il, iu, dD, dE,
-                                           dnev, dW, dC, ldc, dinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, rocblas_erange(0), n, vl, vu, il, iu, dD,
+                                           dE, dnev, dW, dC, ldc, dinfo),
+                          rocblas_status_invalid_value);
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, rocblas_evect(0), erange, n, vl, vu, il, iu, dD,
+                                           dE, dnev, dW, dC, ldc, dinfo),
                           rocblas_status_invalid_value);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, (S) nullptr, dE, dnev,
-                                           dW, dC, ldc, dinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, (S) nullptr,
+                                           dE, dnev, dW, dC, ldc, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD, (S) nullptr, dnev,
-                                           dW, dC, ldc, dinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD,
+                                           (S) nullptr, dnev, dW, dC, ldc, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD, dE,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD, dE,
                                            (rocblas_int*)nullptr, dW, dC, ldc, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD, dE, dnev,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD, dE, dnev,
                                            (S) nullptr, dC, ldc, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD, dE, dnev, dW,
-                                           (U) nullptr, ldc, dinfo),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD, dE, dnev,
+                                           dW, (U) nullptr, ldc, dinfo),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC,
-                                           ldc, (rocblas_int*)nullptr),
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD, dE, dnev,
+                                           dW, dC, ldc, (rocblas_int*)nullptr),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, 0, vl, vu, il, iu, (S) nullptr,
+    EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, 0, vl, vu, il, iu, (S) nullptr,
                                            (S) nullptr, dnev, (S) nullptr, (U) nullptr, ldc, dinfo),
                           rocblas_status_success);
 }
@@ -97,6 +101,7 @@ void testing_stedcx_bad_arg()
     rocblas_int n = 2;
     rocblas_int ldc = 2;
     rocblas_erange erange = rocblas_erange_all;
+    rocblas_evect evect = rocblas_evect_original;
     S vl = 0;
     S vu = 0;
     rocblas_int il = 0;
@@ -117,12 +122,21 @@ void testing_stedcx_bad_arg()
     CHECK_HIP_ERROR(dinfo.memcheck());
 
     // check bad arguments
-    stedcx_checkBadArgs(handle, erange, n, vl, vu, il, iu, dD.data(), dE.data(), dnev.data(),
+    stedcx_checkBadArgs(handle, evect, erange, n, vl, vu, il, iu, dD.data(), dE.data(), dnev.data(),
                         dW.data(), dC.data(), ldc, dinfo.data());
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void stedcx_initData(const rocblas_handle handle, const rocblas_int n, Td& dD, Td& dE, Th& hD, Th& hE)
+template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Sh, typename Th>
+void stedcx_initData(const rocblas_handle handle,
+                     const rocblas_evect evect,
+                     const rocblas_int n,
+                     Sd& dD,
+                     Sd& dE,
+                     Td& dC,
+                     const rocblas_int ldc,
+                     Sh& hD,
+                     Sh& hE,
+                     Th& hC)
 {
     if(CPU)
     {
@@ -142,16 +156,35 @@ void stedcx_initData(const rocblas_handle handle, const rocblas_int n, Td& dD, T
         }
     }
 
+    // initialize C to the identity matrix
+    if(evect == rocblas_evect_original)
+    {
+        for(rocblas_int i = 0; i < n; i++)
+        {
+            for(rocblas_int j = 0; j < n; j++)
+            {
+                if(i == j)
+                    hC[0][i + j * ldc] = 1;
+                else
+                    hC[0][i + j * ldc] = 0;
+            }
+        }
+    }
+
     if(GPU)
     {
         // now copy to the GPU
         CHECK_HIP_ERROR(dD.transfer_from(hD));
         CHECK_HIP_ERROR(dE.transfer_from(hE));
+
+        if(evect == rocblas_evect_original)
+            CHECK_HIP_ERROR(dC.transfer_from(hC));
     }
 }
 
 template <typename T, typename S, typename Td, typename Sd, typename Id, typename Th, typename Sh, typename Ih>
 void stedcx_getError(const rocblas_handle handle,
+                     const rocblas_evect evect,
                      const rocblas_erange erange,
                      const rocblas_int n,
                      const S vl,
@@ -185,12 +218,13 @@ void stedcx_getError(const rocblas_handle handle,
     S atol = 2 * get_safemin<S>();
 
     // input data initialization
-    stedcx_initData<true, true, S>(handle, n, dD, dE, hD, hE);
+    stedcx_initData<true, true, S>(handle, evect, n, dD, dE, dC, ldc, hD, hE, hC);
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD.data(), dE.data(),
-                                         dnev.data(), dW.data(), dC.data(), ldc, dinfo.data()));
+    CHECK_ROCBLAS_ERROR(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD.data(),
+                                         dE.data(), dnev.data(), dW.data(), dC.data(), ldc,
+                                         dinfo.data()));
     CHECK_HIP_ERROR(hnevRes.transfer_from(dnev));
     CHECK_HIP_ERROR(hWRes.transfer_from(dW));
     CHECK_HIP_ERROR(hCRes.transfer_from(dC));
@@ -220,51 +254,56 @@ void stedcx_getError(const rocblas_handle handle,
         double err = norm_error('F', 1, nn, 1, hW[0], hWRes[0]);
         *max_err = err > *max_err ? err : *max_err;
 
-        // C should be orthonormal, if it is then C^T*C should be the identity
-        if(nn > 0)
+        if(evect != rocblas_evect_none)
         {
-            std::vector<T> CCres(nn * nn, 0.0);
-            std::vector<T> I(nn * nn, 0.0);
+            // C should be orthonormal, if it is then C^T*C should be the identity
+            if(nn > 0)
+            {
+                std::vector<T> CCres(nn * nn, 0.0);
+                std::vector<T> I(nn * nn, 0.0);
 
-            for(rocblas_int i = 0; i < nn; i++)
-                I[i + i * nn] = T(1);
+                for(rocblas_int i = 0; i < nn; i++)
+                    I[i + i * nn] = T(1);
 
-            cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, n, T(1),
-                     hCRes[0], ldc, hCRes[0], ldc, T(0), CCres.data(), nn);
-            err = norm_error('F', nn, nn, nn, I.data(), CCres.data());
+                cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, n,
+                         T(1), hCRes[0], ldc, hCRes[0], ldc, T(0), CCres.data(), nn);
+                err = norm_error('F', nn, nn, nn, I.data(), CCres.data());
+                *max_err = err > *max_err ? err : *max_err;
+            }
+
+            // for each of the nev eigenvalues w_j, verify that the associated eigenvector is in the
+            // null space of (A - w_i * I)
+            T alpha, t1, t2;
+            for(int j = 0; j < nn; j++)
+            {
+                for(int i = 0; i < n; i++)
+                {
+                    alpha = hWRes[0][j] - hD[0][i];
+                    hC[0][i + j * ldc] = hCRes[0][i + j * ldc] * alpha;
+                }
+                t1 = hCRes[0][j * ldc];
+                hCRes[0][j * ldc] = hE[0][0] * hCRes[0][1 + j * ldc];
+                for(int i = 1; i < n - 1; i++)
+                {
+                    t2 = hCRes[0][i + j * ldc];
+                    hCRes[0][i + j * ldc]
+                        = hE[0][i - 1] * t1 + hE[0][i] * hCRes[0][(i + 1) + j * ldc];
+                    t1 = t2;
+                }
+                hCRes[0][(n - 1) + j * ldc] = hE[0][n - 2] * t1;
+            }
+
+            // error is then ||hC - hCRes|| / ||hC||
+            // using frobenius norm
+            err = norm_error('F', n, nn, ldc, hC[0], hCRes[0]);
             *max_err = err > *max_err ? err : *max_err;
         }
-
-        // for each of the nev eigenvalues w_j, verify that the associated eigenvector is in the
-        // null space of (A - w_i * I)
-        T alpha, t1, t2;
-        for(int j = 0; j < nn; j++)
-        {
-            for(int i = 0; i < n; i++)
-            {
-                alpha = hWRes[0][j] - hD[0][i];
-                hC[0][i + j * ldc] = hCRes[0][i + j * ldc] * alpha;
-            }
-            t1 = hCRes[0][j * ldc];
-            hCRes[0][j * ldc] = hE[0][0] * hCRes[0][1 + j * ldc];
-            for(int i = 1; i < n - 1; i++)
-            {
-                t2 = hCRes[0][i + j * ldc];
-                hCRes[0][i + j * ldc] = hE[0][i - 1] * t1 + hE[0][i] * hCRes[0][(i + 1) + j * ldc];
-                t1 = t2;
-            }
-            hCRes[0][(n - 1) + j * ldc] = hE[0][n - 2] * t1;
-        }
-
-        // error is then ||hC - hCRes|| / ||hC||
-        // using frobenius norm
-        err = norm_error('F', n, nn, ldc, hC[0], hCRes[0]);
-        *max_err = err > *max_err ? err : *max_err;
     }
 }
 
 template <typename T, typename S, typename Td, typename Sd, typename Id, typename Th, typename Sh, typename Ih>
 void stedcx_getPerfData(const rocblas_handle handle,
+                        const rocblas_evect evect,
                         const rocblas_erange erange,
                         const rocblas_int n,
                         const S vl,
@@ -297,15 +336,16 @@ void stedcx_getPerfData(const rocblas_handle handle,
         *cpu_time_used = nan("");
     }
 
-    stedcx_initData<true, false, S>(handle, n, dD, dE, hD, hE);
+    stedcx_initData<true, false, S>(handle, evect, n, dD, dE, dC, ldc, hD, hE, hC);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        stedcx_initData<false, true, S>(handle, n, dD, dE, hD, hE);
+        stedcx_initData<false, true, S>(handle, evect, n, dD, dE, dC, ldc, hD, hE, hC);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD.data(), dE.data(),
-                                             dnev.data(), dW.data(), dC.data(), ldc, dinfo.data()));
+        CHECK_ROCBLAS_ERROR(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD.data(),
+                                             dE.data(), dnev.data(), dW.data(), dC.data(), ldc,
+                                             dinfo.data()));
     }
 
     // gpu-lapack performance
@@ -325,11 +365,11 @@ void stedcx_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        stedcx_initData<false, true, S>(handle, n, dD, dE, hD, hE);
+        stedcx_initData<false, true, S>(handle, evect, n, dD, dE, dC, ldc, hD, hE, hC);
 
         start = get_time_us_sync(stream);
-        rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD.data(), dE.data(), dnev.data(),
-                         dW.data(), dC.data(), ldc, dinfo.data());
+        rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD.data(), dE.data(),
+                         dnev.data(), dW.data(), dC.data(), ldc, dinfo.data());
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
@@ -342,6 +382,7 @@ void testing_stedcx(Arguments& argus)
 
     // get arguments
     rocblas_local_handle handle;
+    char evectC = argus.get<char>("evect");
     char erangeC = argus.get<char>("erange");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int ldc = argus.get<rocblas_int>("ldc", n);
@@ -350,6 +391,7 @@ void testing_stedcx(Arguments& argus)
     rocblas_int il = argus.get<rocblas_int>("il", erangeC == 'I' ? 1 : 0);
     rocblas_int iu = argus.get<rocblas_int>("iu", erangeC == 'I' ? 1 : 0);
 
+    rocblas_evect evect = char2rocblas_evect(evectC);
     rocblas_erange erange = char2rocblas_erange(erangeC);
     rocblas_int hot_calls = argus.iters;
 
@@ -372,9 +414,9 @@ void testing_stedcx(Arguments& argus)
         || (erange == rocblas_erange_index && (il < 1 || iu < 0));
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, (S*)nullptr,
-                                               (S*)nullptr, (rocblas_int*)nullptr, (S*)nullptr,
-                                               (T*)nullptr, ldc, (rocblas_int*)nullptr),
+        EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu,
+                                               (S*)nullptr, (S*)nullptr, (rocblas_int*)nullptr,
+                                               (S*)nullptr, (T*)nullptr, ldc, (rocblas_int*)nullptr),
                               rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -387,7 +429,7 @@ void testing_stedcx(Arguments& argus)
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, (S*)nullptr,
+        CHECK_ALLOC_QUERY(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, (S*)nullptr,
                                            (S*)nullptr, (rocblas_int*)nullptr, (S*)nullptr,
                                            (T*)nullptr, ldc, (rocblas_int*)nullptr));
 
@@ -434,7 +476,7 @@ void testing_stedcx(Arguments& argus)
     // check quick return
     if(n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, erange, n, vl, vu, il, iu, dD.data(),
+        EXPECT_ROCBLAS_STATUS(rocsolver_stedcx(handle, evect, erange, n, vl, vu, il, iu, dD.data(),
                                                dE.data(), dnev.data(), dW.data(), dC.data(), ldc,
                                                dinfo.data()),
                               rocblas_status_success);
@@ -446,13 +488,13 @@ void testing_stedcx(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        stedcx_getError<T>(handle, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc, dinfo, hD,
-                           hE, hnev, hnevRes, hW, hWRes, hC, hCRes, hinfo, hinfoRes, &max_error);
+        stedcx_getError<T>(handle, evect, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc, dinfo,
+                           hD, hE, hnev, hnevRes, hW, hWRes, hC, hCRes, hinfo, hinfoRes, &max_error);
 
     // collect performance data
     if(argus.timing)
-        stedcx_getPerfData<T>(handle, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc, dinfo,
-                              hD, hE, hnev, hW, hC, hinfo, &gpu_time_used, &cpu_time_used,
+        stedcx_getPerfData<T>(handle, evect, erange, n, vl, vu, il, iu, dD, dE, dnev, dW, dC, ldc,
+                              dinfo, hD, hE, hnev, hW, hC, hinfo, &gpu_time_used, &cpu_time_used,
                               hot_calls, argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
@@ -466,8 +508,8 @@ void testing_stedcx(Arguments& argus)
         if(!argus.perf)
         {
             rocsolver_bench_header("Arguments:");
-            rocsolver_bench_output("erange", "n", "vl", "vu", "il", "iu", "ldc");
-            rocsolver_bench_output(erangeC, n, vl, vu, il, iu, ldc);
+            rocsolver_bench_output("evect", "erange", "n", "vl", "vu", "il", "iu", "ldc");
+            rocsolver_bench_output(evectC, erangeC, n, vl, vu, il, iu, ldc);
 
             rocsolver_bench_header("Results:");
             if(argus.norm_check)
