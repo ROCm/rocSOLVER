@@ -291,7 +291,8 @@ __device__ void run_stebz_splitting(const int tid,
     iamax<DIM>(tid, n - 1, Esqr, 1, sval, sidx);
     __syncthreads();
 
-    T pmin = sval[0] * sfmin;
+    // `pmin` is a numerically stable lower bound for pivots
+    T pmin = std::max(sval[0] * sfmin, sfmin);
     vl = vlow;
     vu = vup;
 
