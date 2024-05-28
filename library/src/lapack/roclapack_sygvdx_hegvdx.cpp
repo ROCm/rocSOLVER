@@ -164,8 +164,8 @@ rocblas_status rocsolver_ssygvdx(rocblas_handle handle,
                                  const rocblas_int ldz,
                                  rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygvdx_hegvdx_impl<float>(handle, itype, evect, erange, uplo, n, A, lda, B,
-                                               ldb, vl, vu, il, iu, nev, W, Z, ldz, info);
+    return rocsolver::rocsolver_sygvdx_hegvdx_impl<float>(
+        handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, nev, W, Z, ldz, info);
 }
 
 rocblas_status rocsolver_dsygvdx(rocblas_handle handle,
@@ -188,8 +188,8 @@ rocblas_status rocsolver_dsygvdx(rocblas_handle handle,
                                  const rocblas_int ldz,
                                  rocblas_int* info)
 {
-    return rocsolver::rocsolver_sygvdx_hegvdx_impl<double>(handle, itype, evect, erange, uplo, n, A, lda, B,
-                                                ldb, vl, vu, il, iu, nev, W, Z, ldz, info);
+    return rocsolver::rocsolver_sygvdx_hegvdx_impl<double>(
+        handle, itype, evect, erange, uplo, n, A, lda, B, ldb, vl, vu, il, iu, nev, W, Z, ldz, info);
 }
 
 rocblas_status rocsolver_chegvdx(rocblas_handle handle,
