@@ -58,6 +58,7 @@
 #include "common/auxiliary/testing_stebz.hpp"
 #include "common/auxiliary/testing_stedc.hpp"
 #include "common/auxiliary/testing_stedcj.hpp"
+#include "common/auxiliary/testing_stedcx.hpp"
 #include "common/auxiliary/testing_stein.hpp"
 #include "common/auxiliary/testing_steqr.hpp"
 #include "common/auxiliary/testing_sterf.hpp"
@@ -89,12 +90,14 @@
 #include "common/lapack/testing_syev_heev.hpp"
 #include "common/lapack/testing_syevd_heevd.hpp"
 #include "common/lapack/testing_syevdj_heevdj.hpp"
+#include "common/lapack/testing_syevdx_heevdx.hpp"
 #include "common/lapack/testing_syevj_heevj.hpp"
 #include "common/lapack/testing_syevx_heevx.hpp"
 #include "common/lapack/testing_sygsx_hegsx.hpp"
 #include "common/lapack/testing_sygv_hegv.hpp"
 #include "common/lapack/testing_sygvd_hegvd.hpp"
 #include "common/lapack/testing_sygvdj_hegvdj.hpp"
+#include "common/lapack/testing_sygvdx_hegvdx.hpp"
 #include "common/lapack/testing_sygvj_hegvj.hpp"
 #include "common/lapack/testing_sygvx_hegvx.hpp"
 #include "common/lapack/testing_sytf2_sytrf.hpp"
@@ -139,6 +142,7 @@ class rocsolver_dispatcher
             {"steqr", testing_steqr<T>},
             {"stedc", testing_stedc<T>},
             {"stedcj", testing_stedcj<T>},
+            {"stedcx", testing_stedcx<T>},
             {"stein", testing_stein<T>},
             {"lasyf", testing_lasyf<T>},
             {"lauum", testing_lauum<T>},
@@ -352,6 +356,10 @@ class rocsolver_dispatcher
             {"syevx", testing_syevx_heevx<false, false, T>},
             {"syevx_batched", testing_syevx_heevx<true, true, T>},
             {"syevx_strided_batched", testing_syevx_heevx<false, true, T>},
+            // syevdx
+            {"syevdx", testing_syevdx_heevdx<false, false, T>},
+            {"syevdx_batched", testing_syevdx_heevdx<true, true, T>},
+            {"syevdx_strided_batched", testing_syevdx_heevdx<false, true, T>},
             // sygv
             {"sygv", testing_sygv_hegv<false, false, T>},
             {"sygv_batched", testing_sygv_hegv<true, true, T>},
@@ -372,6 +380,10 @@ class rocsolver_dispatcher
             {"sygvx", testing_sygvx_hegvx<false, false, T>},
             {"sygvx_batched", testing_sygvx_hegvx<true, true, T>},
             {"sygvx_strided_batched", testing_sygvx_hegvx<false, true, T>},
+            // sygvdx
+            {"sygvdx", testing_sygvdx_hegvdx<false, false, T>},
+            {"sygvdx_batched", testing_sygvdx_hegvdx<true, true, T>},
+            {"sygvdx_strided_batched", testing_sygvdx_hegvdx<false, true, T>},
             // refactorization
             {"csrrf_analysis", testing_csrrf_analysis<T>},
             {"csrrf_sumlu", testing_csrrf_sumlu<T>},
@@ -450,6 +462,10 @@ class rocsolver_dispatcher
             {"heevx", testing_syevx_heevx<false, false, T>},
             {"heevx_batched", testing_syevx_heevx<true, true, T>},
             {"heevx_strided_batched", testing_syevx_heevx<false, true, T>},
+            // heevdx
+            {"heevdx", testing_syevdx_heevdx<false, false, T>},
+            {"heevdx_batched", testing_syevdx_heevdx<true, true, T>},
+            {"heevdx_strided_batched", testing_syevdx_heevdx<false, true, T>},
             // hegv
             {"hegv", testing_sygv_hegv<false, false, T>},
             {"hegv_batched", testing_sygv_hegv<true, true, T>},
@@ -470,6 +486,10 @@ class rocsolver_dispatcher
             {"hegvx", testing_sygvx_hegvx<false, false, T>},
             {"hegvx_batched", testing_sygvx_hegvx<true, true, T>},
             {"hegvx_strided_batched", testing_sygvx_hegvx<false, true, T>},
+            // hegvdx
+            {"hegvdx", testing_sygvdx_hegvdx<false, false, T>},
+            {"hegvdx_batched", testing_sygvdx_hegvdx<true, true, T>},
+            {"hegvdx_strided_batched", testing_sygvdx_hegvdx<false, true, T>},
         };
 
         // Grab function from the map and execute

@@ -243,9 +243,8 @@ rocblas_status rocsolver_syevdj_heevdj_template(rocblas_handle handle,
 
         // solve with Jacobi solver
         rocsolver_stedcj_template<false, ISBATCHED, T>(
-            handle, rocblas_evect_tridiagonal, n, D, 0, strideD, workE, 0, n, workVec, 0, ldv,
-            strideV, info, batch_count, work1, (S*)work2, (S*)work3, (S*)work4, workSplits,
-            (S**)workArr);
+            handle, rocblas_evect_tridiagonal, n, D, strideD, workE, n, workVec, 0, ldv, strideV,
+            info, batch_count, work1, (S*)work2, (S*)work3, (S*)work4, workSplits, (S**)workArr);
 
         // update vectors
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(

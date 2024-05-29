@@ -52,8 +52,8 @@ on GitHub. Download the code and checkout the desired branch using:
     cd rocSOLVER
 
 To build from source, some external dependencies such as CMake and Python are required. Additionally, if the library clients
-are to be built (by default they are not), then LAPACK and GoogleTest will be also required. 
-(The library clients, rocsolver-test and rocsolver-bench, provide the infrastructure for testing and benchmarking rocSOLVER. 
+are to be built (by default they are not), then LAPACK and GoogleTest will be also required.
+(The library clients, rocsolver-test and rocsolver-bench, provide the infrastructure for testing and benchmarking rocSOLVER.
 For more details see the :ref:`rocSOLVER clients How-To <clients>`).
 
 Using the install.sh script
