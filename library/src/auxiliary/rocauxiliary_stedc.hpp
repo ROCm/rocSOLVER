@@ -1866,7 +1866,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 }
 
 //--------------------------------------------------------------------------------------//
-/** STEDC_MERGEVECTORS_KERNEL updates vectors after merges are done. A matrix in the batch
+/** STEDC_MERGEUPDATE_KERNEL updates vectors after merges are done. A matrix in the batch
     could have many split-blocks, and each split-block could be divided in a maximum of nn sub-blocks.
         - Call this kernel with batch_count groups in z, STEDC_NUM_SPLIT_BLKS groups in y,
           and as many groups as columns would be in the matrix if its size is exact multiple of nn.
