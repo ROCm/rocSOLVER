@@ -135,7 +135,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_info32(rocblas_handle handle,
                                                         int64_t* ipiv,
                                                         rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_info32_impl<float>(handle, m, n, A, lda, ipiv, info, true);
 #else
     return rocblas_status_not_implemented;
@@ -150,7 +150,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_info32(rocblas_handle handle,
                                                         int64_t* ipiv,
                                                         rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_info32_impl<double>(handle, m, n, A, lda, ipiv, info, true);
 #else
     return rocblas_status_not_implemented;
@@ -165,7 +165,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_info32(rocblas_handle handle,
                                                         int64_t* ipiv,
                                                         rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_info32_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv,
                                                                          info, true);
 #else
@@ -181,7 +181,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_info32(rocblas_handle handle,
                                                         int64_t* ipiv,
                                                         rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_info32_impl<rocblas_double_complex>(handle, m, n, A, lda,
                                                                           ipiv, info, true);
 #else
@@ -196,7 +196,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgetrf_npvt_info32(rocblas_handle hand
                                                              const int64_t lda,
                                                              rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_info32_impl<float>(handle, m, n, A, lda, ipiv, info, false);
 #else
@@ -211,7 +211,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgetrf_npvt_info32(rocblas_handle hand
                                                              const int64_t lda,
                                                              rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_info32_impl<double>(handle, m, n, A, lda, ipiv, info, false);
 #else
@@ -226,7 +226,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgetrf_npvt_info32(rocblas_handle hand
                                                              const int64_t lda,
                                                              rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_info32_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv,
                                                                          info, false);
@@ -242,7 +242,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgetrf_npvt_info32(rocblas_handle hand
                                                              const int64_t lda,
                                                              rocblas_int* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_info32_impl<rocblas_double_complex>(handle, m, n, A, lda,
                                                                           ipiv, info, false);

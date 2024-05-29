@@ -192,7 +192,7 @@ rocblas_status rocsolver_sgetrf_strided_batched_64(rocblas_handle handle,
                                                    int64_t* info,
                                                    const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_strided_batched_impl<float>(
         handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 #else
@@ -211,7 +211,7 @@ rocblas_status rocsolver_dgetrf_strided_batched_64(rocblas_handle handle,
                                                    int64_t* info,
                                                    const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_strided_batched_impl<double>(
         handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 #else
@@ -230,7 +230,7 @@ rocblas_status rocsolver_cgetrf_strided_batched_64(rocblas_handle handle,
                                                    int64_t* info,
                                                    const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_strided_batched_impl<rocblas_float_complex>(
         handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 #else
@@ -249,7 +249,7 @@ rocblas_status rocsolver_zgetrf_strided_batched_64(rocblas_handle handle,
                                                    int64_t* info,
                                                    const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrf_strided_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, strideA, ipiv, strideP, info, true, batch_count);
 #else
@@ -322,7 +322,7 @@ rocblas_status rocsolver_sgetrf_npvt_strided_batched_64(rocblas_handle handle,
                                                         int64_t* info,
                                                         const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_strided_batched_impl<float>(handle, m, n, A, lda, strideA,
                                                                   ipiv, 0, info, false, batch_count);
@@ -340,7 +340,7 @@ rocblas_status rocsolver_dgetrf_npvt_strided_batched_64(rocblas_handle handle,
                                                         int64_t* info,
                                                         const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_strided_batched_impl<double>(
         handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
@@ -358,7 +358,7 @@ rocblas_status rocsolver_cgetrf_npvt_strided_batched_64(rocblas_handle handle,
                                                         int64_t* info,
                                                         const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_strided_batched_impl<rocblas_float_complex>(
         handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);
@@ -376,7 +376,7 @@ rocblas_status rocsolver_zgetrf_npvt_strided_batched_64(rocblas_handle handle,
                                                         int64_t* info,
                                                         const int64_t batch_count)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getrf_strided_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, strideA, ipiv, 0, info, false, batch_count);

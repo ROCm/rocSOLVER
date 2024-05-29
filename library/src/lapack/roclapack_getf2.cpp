@@ -158,7 +158,7 @@ rocblas_status rocsolver_sgetf2_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getf2_impl<float>(handle, m, n, A, lda, ipiv, info, true);
 #else
     return rocblas_status_not_implemented;
@@ -173,7 +173,7 @@ rocblas_status rocsolver_dgetf2_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, true);
 #else
     return rocblas_status_not_implemented;
@@ -188,7 +188,7 @@ rocblas_status rocsolver_cgetf2_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
                                                                   true);
 #else
@@ -204,7 +204,7 @@ rocblas_status rocsolver_zgetf2_64(rocblas_handle handle,
                                    int64_t* ipiv,
                                    int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
                                                                    true);
 #else
@@ -265,7 +265,7 @@ rocblas_status rocsolver_sgetf2_npvt_64(rocblas_handle handle,
                                         const int64_t lda,
                                         int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getf2_impl<float>(handle, m, n, A, lda, ipiv, info, false);
 #else
@@ -280,7 +280,7 @@ rocblas_status rocsolver_dgetf2_npvt_64(rocblas_handle handle,
                                         const int64_t lda,
                                         int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getf2_impl<double>(handle, m, n, A, lda, ipiv, info, false);
 #else
@@ -295,7 +295,7 @@ rocblas_status rocsolver_cgetf2_npvt_64(rocblas_handle handle,
                                         const int64_t lda,
                                         int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getf2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv, info,
                                                                   false);
@@ -311,7 +311,7 @@ rocblas_status rocsolver_zgetf2_npvt_64(rocblas_handle handle,
                                         const int64_t lda,
                                         int64_t* info)
 {
-#if HAVE_ROCBLAS_64
+#ifdef HAVE_ROCBLAS_64
     int64_t* ipiv = nullptr;
     return rocsolver::rocsolver_getf2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv, info,
                                                                    false);
