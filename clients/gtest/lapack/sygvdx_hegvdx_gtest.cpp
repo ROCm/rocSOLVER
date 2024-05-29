@@ -25,6 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
+#include "common/lapack/testing_sygvdx_hegvdx.hpp"
 #include "common/lapack/testing_sygvdx_hegvdx_inplace.hpp"
 
 using ::testing::Combine;
@@ -54,19 +55,20 @@ const vector<vector<int>> matrix_size_range = {
     // invalid
     {-1, 1, 1, 1, 0, 10, 1, 1, 0},
     {20, 5, 5, 20, 0, 10, 1, 1, 0},
+    // valid only when evect=N
     {20, 20, 20, 5, 0, 10, 1, 1, 0},
     // valid only when erange=A
     {20, 20, 20, 20, 10, 0, 10, 1, 0},
     // normal (valid) samples
-    {20, 30, 20, 20, 5, 15, 1, 10, 1},
-    {35, 35, 35, 35, -10, 10, 1, 35, 0},
-    {50, 50, 60, 70, -15, -5, 25, 50, 1}};
+    {18, 18, 20, 18, 5, 15, 15, 18, 1},
+    {35, 35, 35, 35, -10, 10, 3, 15, 0},
+    {50, 50, 60, 70, -15, -5, 28, 35, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
-    {192, 192, 192, 192, 5, 15, 100, 150, 0},
+    {192, 192, 192, 192, 5, 10, 10, 15, 0},
     {256, 270, 256, 260, -10, 10, 1, 100, 0},
-    {300, 300, 310, 320, -15, -5, 200, 300, 0},
+    {300, 300, 310, 320, -15, -10, 20, 30, 0},
 };
 
 template <typename T>
@@ -94,8 +96,6 @@ Arguments sygvdx_setup_arguments(sygvdx_tuple tup, bool inplace)
     arg.set<char>("erange", type[2]);
     arg.set<char>("uplo", type[3]);
 
-    arg.set<double>("abstol", 0);
-
     // only testing standard use case/defaults for strides
 
     arg.timing = 0;
@@ -103,6 +103,41 @@ Arguments sygvdx_setup_arguments(sygvdx_tuple tup, bool inplace)
 
     return arg;
 }
+
+class SYGVDX_HEGVDX : public ::TestWithParam<sygvdx_tuple>
+{
+protected:
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        Arguments arg = sygvdx_setup_arguments<T>(GetParam(), false);
+
+        if(arg.peek<char>("itype") == '1' && arg.peek<char>("evect") == 'N'
+           && arg.peek<char>("erange") == 'A' && arg.peek<char>("uplo") == 'U'
+           && arg.peek<rocblas_int>("n") == 0)
+            testing_sygvdx_hegvdx_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        if(arg.singular == 1)
+            testing_sygvdx_hegvdx<BATCHED, STRIDED, T>(arg);
+
+        arg.singular = 0;
+        testing_sygvdx_hegvdx<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class SYGVDX : public SYGVDX_HEGVDX
+{
+};
+
+class HEGVDX : public SYGVDX_HEGVDX
+{
+};
 
 class SYGVDX_HEGVDX_INPLACE : public ::TestWithParam<sygvdx_tuple>
 {
@@ -141,6 +176,26 @@ class HEGVDX_INPLACE : public SYGVDX_HEGVDX_INPLACE
 
 // non-batch tests
 
+TEST_P(SYGVDX, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(SYGVDX, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(HEGVDX, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(HEGVDX, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
 TEST_P(SYGVDX_INPLACE, __float)
 {
     run_tests<false, false, float>();
@@ -160,6 +215,66 @@ TEST_P(HEGVDX_INPLACE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
+
+// batched tests
+
+TEST_P(SYGVDX, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(SYGVDX, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(HEGVDX, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(HEGVDX, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
+// strided_batched tests
+
+TEST_P(SYGVDX, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(SYGVDX, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(HEGVDX, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(HEGVDX, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         SYGVDX,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(type_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         SYGVDX,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(type_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         HEGVDX,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(type_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         HEGVDX,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(type_range)));
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          SYGVDX_INPLACE,

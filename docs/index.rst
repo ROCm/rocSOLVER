@@ -8,7 +8,7 @@
 rocSOLVER documentation
 ********************************************************************
 
-rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_ 
+rocSOLVER is an implementation of `LAPACK routines <https://www.netlib.org/lapack/explore-html/modules.html>`_
 on top of `AMD's open source ROCm platform <https://rocm.docs.amd.com/>`_. rocSOLVER is implemented in the
 `HIP programming language <https://rocm.docs.amd.com/projects/HIP/>`_ and optimized for AMD's
 latest discrete GPUs.
@@ -36,7 +36,7 @@ The rocSOLVER documentation is structured as follows:
 
     * :ref:`intro`
     * :ref:`rocsolver-types`
-    * :ref:`rocsolver_auxiliary_functions` 
+    * :ref:`rocsolver_auxiliary_functions`
     * :ref:`lapackfunc`
     * :ref:`lapack-like`
     * :ref:`refactor`
