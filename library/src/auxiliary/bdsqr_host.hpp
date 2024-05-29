@@ -43,823 +43,1110 @@
 #include "hip/hip_runtime.h"
 #include "hip/hip_runtime_api.h"
 
-
 ROCSOLVER_BEGIN_NAMESPACE
 
 #ifndef HIP_CHECK
-#define HIP_CHECK(fcn)                                                         \
-  {                                                                            \
-    hipError_t const istat = (fcn);                                            \
-    assert(istat == hipSuccess);                                               \
-  }
+#define HIP_CHECK(fcn)                  \
+    {                                   \
+        hipError_t const istat = (fcn); \
+        assert(istat == hipSuccess);    \
+    }
 #endif
 
-
 template <typename S, typename T, typename I>
-__global__ static void lasr_kernel(char const side, char const pivot,
-                                        char const direct, I const m, I const n,
-                                        S const *const c_, S const *const s_,
-                                        T *const A_, I const lda) {
+__global__ static void lasr_kernel(char const side,
+                                   char const pivot,
+                                   char const direct,
+                                   I const m,
+                                   I const n,
+                                   S const* const c_,
+                                   S const* const s_,
+                                   T* const A_,
+                                   I const lda)
+{
+    const auto nblocks = hipGridDim_x;
+    const auto nthreads_per_block = hipBlockDim_x;
+    const auto nthreads = nblocks * nthreads_per_block;
+    const auto tid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    const auto i_inc = nthreads;
+    const auto ij_nb = nthreads;
+    const auto ij_start = tid;
 
-  const auto nblocks = hipGridDim_x;
-  const auto nthreads_per_block = hipBlockDim_x;
-  const auto nthreads = nblocks * nthreads_per_block;
-  const auto tid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-  const auto i_inc = nthreads;
-  const auto ij_nb = nthreads;
-  const auto ij_start = tid;
+    auto max = [](auto x, auto y) { return ((x > y) ? x : y); };
+    auto min = [](auto x, auto y) { return ((x < y) ? x : y); };
 
-  auto max = [](auto x, auto y) { return ((x > y) ? x : y); };
-  auto min = [](auto x, auto y) { return ((x < y) ? x : y); };
+    auto indx2f = [](auto i, auto j, auto lda) -> int64_t {
+        assert((1 <= i));
+        assert((1 <= lda));
+        assert((1 <= j));
 
-  auto indx2f = [](auto i, auto j, auto lda) -> int64_t {
-    assert((1 <= i));
-    assert((1 <= lda));
-    assert((1 <= j));
-
-    return ((i - 1) + (j - 1) * int64_t(lda));
-  };
-
-  auto indx1f = [](auto i) -> int64_t {
-    assert((1 <= i));
-    return (i - int64_t(1));
-  };
-
-  auto c = [&](auto i) -> const S & { return (c_[indx1f(i)]); };
-  auto s = [&](auto i) -> const S & { return (s_[indx1f(i)]); };
-  auto A = [&](auto i, auto j) -> T & { return (A_[indx2f(i, j, lda)]); };
-
-  const S one = 1;
-  const S zero = 0;
-
-  // ----------------
-  // check arguments
-  // ----------------
-
-  const bool is_side_Left = (side == 'L') || (side == 'l');
-  const bool is_side_Right = (side == 'R') || (side == 'r');
-
-  const bool is_pivot_Variable = (pivot == 'V') || (pivot == 'v');
-  const bool is_pivot_Bottom = (pivot == 'B') || (pivot == 'b');
-  const bool is_pivot_Top = (pivot == 'T') || (pivot == 't');
-
-  const bool is_direct_Forward = (direct == 'F') || (direct == 'f');
-  const bool is_direct_Backward = (direct == 'B') || (direct == 'b');
-
-  {
-    const bool isok_side = is_side_Left || is_side_Right;
-    const bool isok_pivot =
-        is_pivot_Variable || is_pivot_Bottom || is_pivot_Top;
-    const bool isok_direct = is_direct_Forward || is_direct_Backward;
-
-    const I info = (!isok_side)        ? 1
-                   : (!isok_pivot)     ? 2
-                   : (!isok_direct)    ? 3
-                   : (m < 0)           ? 4
-                   : (n < 0)           ? 5
-                   : (c_ == nullptr)   ? 6
-                   : (s_ == nullptr)   ? 7
-                   : (A_ == nullptr)   ? 8
-                   : (lda < max(1, m)) ? 9
-                                       : 0;
-    if (info != 0)
-      return;
-  };
-
-  {
-    const bool has_work = (m >= 1) && (n >= 1);
-    if (!has_work) {
-      return;
-    };
-  };
-
-  if (is_side_Left && is_pivot_Variable && is_direct_Forward) {
-    //  -----------------------------
-    //  A := P*A
-    //  Variable pivot, the plane (k,k+1)
-    //  P = P(z-1) * ... * P(2) * P(1)
-    //  -----------------------------
-    {
-
-      for (I j = 1; j <= (m - 1); j++) {
-        const auto ctemp = c(j);
-        const auto stemp = s(j);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = 1 + tid; i <= n; i += i_inc) {
-            const auto temp = A(j + 1, i);
-            A(j + 1, i) = ctemp * temp - stemp * A(j, i);
-            A(j, i) = stemp * temp + ctemp * A(j, i);
-          }
-        };
-      };
+        return ((i - 1) + (j - 1) * int64_t(lda));
     };
 
-    return;
-  };
+    auto indx1f = [](auto i) -> int64_t {
+        assert((1 <= i));
+        return (i - int64_t(1));
+    };
 
-  if (is_side_Left && is_pivot_Variable && is_direct_Backward) {
-    //  -----------------------------
-    //  A := P*A
-    //  Variable pivot, the plane (k,k+1)
-    //  P = P(1)*P(2)*...*P(z-1)
-    //  -----------------------------
+    auto c = [&](auto i) -> const S& { return (c_[indx1f(i)]); };
+    auto s = [&](auto i) -> const S& { return (s_[indx1f(i)]); };
+    auto A = [&](auto i, auto j) -> T& { return (A_[indx2f(i, j, lda)]); };
 
-    auto const jend = (m - 1);
-    auto const jstart = 1;
-    auto const istart = 1;
-    auto const iend = n;
+    const S one = 1;
+    const S zero = 0;
 
-    for (I j = jend; j >= jstart; j--) {
-      const auto ctemp = c(j);
-      const auto stemp = s(j);
-      if ((ctemp != one) || (stemp != zero)) {
-        for (I i = istart + tid; i <= iend; i += i_inc) {
-          const auto temp = A(j + 1, i);
-          A(j + 1, i) = ctemp * temp - stemp * A(j, i);
-          A(j, i) = stemp * temp + ctemp * A(j, i);
+    // ----------------
+    // check arguments
+    // ----------------
+
+    const bool is_side_Left = (side == 'L') || (side == 'l');
+    const bool is_side_Right = (side == 'R') || (side == 'r');
+
+    const bool is_pivot_Variable = (pivot == 'V') || (pivot == 'v');
+    const bool is_pivot_Bottom = (pivot == 'B') || (pivot == 'b');
+    const bool is_pivot_Top = (pivot == 'T') || (pivot == 't');
+
+    const bool is_direct_Forward = (direct == 'F') || (direct == 'f');
+    const bool is_direct_Backward = (direct == 'B') || (direct == 'b');
+
+    {
+        const bool isok_side = is_side_Left || is_side_Right;
+        const bool isok_pivot = is_pivot_Variable || is_pivot_Bottom || is_pivot_Top;
+        const bool isok_direct = is_direct_Forward || is_direct_Backward;
+
+        const I info = (!isok_side) ? 1
+            : (!isok_pivot)         ? 2
+            : (!isok_direct)        ? 3
+            : (m < 0)               ? 4
+            : (n < 0)               ? 5
+            : (c_ == nullptr)       ? 6
+            : (s_ == nullptr)       ? 7
+            : (A_ == nullptr)       ? 8
+            : (lda < max(1, m))     ? 9
+                                    : 0;
+        if(info != 0)
+            return;
+    };
+
+    {
+        const bool has_work = (m >= 1) && (n >= 1);
+        if(!has_work)
+        {
+            return;
         };
-      };
+    };
+
+    if(is_side_Left && is_pivot_Variable && is_direct_Forward)
+    {
+        //  -----------------------------
+        //  A := P*A
+        //  Variable pivot, the plane (k,k+1)
+        //  P = P(z-1) * ... * P(2) * P(1)
+        //  -----------------------------
+        {
+            for(I j = 1; j <= (m - 1); j++)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = 1 + tid; i <= n; i += i_inc)
+                    {
+                        const auto temp = A(j + 1, i);
+                        A(j + 1, i) = ctemp * temp - stemp * A(j, i);
+                        A(j, i) = stemp * temp + ctemp * A(j, i);
+                    }
+                };
+            };
+        };
+
+        return;
+    };
+
+    if(is_side_Left && is_pivot_Variable && is_direct_Backward)
+    {
+        //  -----------------------------
+        //  A := P*A
+        //  Variable pivot, the plane (k,k+1)
+        //  P = P(1)*P(2)*...*P(z-1)
+        //  -----------------------------
+
+        auto const jend = (m - 1);
+        auto const jstart = 1;
+        auto const istart = 1;
+        auto const iend = n;
+
+        for(I j = jend; j >= jstart; j--)
+        {
+            const auto ctemp = c(j);
+            const auto stemp = s(j);
+            if((ctemp != one) || (stemp != zero))
+            {
+                for(I i = istart + tid; i <= iend; i += i_inc)
+                {
+                    const auto temp = A(j + 1, i);
+                    A(j + 1, i) = ctemp * temp - stemp * A(j, i);
+                    A(j, i) = stemp * temp + ctemp * A(j, i);
+                };
+            };
+        };
+
+        return;
+    };
+
+    if(is_side_Left && is_pivot_Top && is_direct_Forward)
+    {
+        //  -----------------------------
+        //  A := P*A
+        //  Top pivot, the plane (1,k+1)
+        //  P = P(z-1) * ... * P(2) * P(1)
+        //  -----------------------------
+        {
+            for(I j = 2; j <= m; j++)
+            {
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
+                for(I i = 1 + tid; i <= n; i += i_inc)
+                {
+                    const auto temp = A(j, i);
+                    A(j, i) = ctemp * temp - stemp * A(1, i);
+                    A(1, i) = stemp * temp + ctemp * A(1, i);
+                };
+            };
+        };
+
+        return;
+    };
+
+    if(is_side_Left && is_pivot_Top && is_direct_Backward)
+    {
+        //  -----------------------------
+        //  A := P*A
+        //  Top pivot, the plane (1,k+1)
+        //  P = P(1)*P(2)*...*P(z-1)
+        //  -----------------------------
+        {
+            auto const jend = m;
+            auto const jstart = 2;
+            auto const istart = 1;
+            auto const iend = n;
+
+            for(I j = jend; j >= jstart; j--)
+            {
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(j, i);
+
+                        A(j, i) = ctemp * temp - stemp * A(1, i);
+                        A(1, i) = stemp * temp + ctemp * A(1, i);
+                    };
+                };
+            };
+        }
+
+        return;
+    };
+
+    if(is_side_Left && is_pivot_Bottom && is_direct_Forward)
+    {
+        //  -----------------------------
+        //  A := P*A
+        //  Bottom pivot, the plane (k,z)
+        //  P = P(z-1) * ... * P(2) * P(1)
+        //  -----------------------------
+        {
+            auto const jstart = 1;
+            auto const jend = (m - 1);
+            auto const istart = 1;
+            auto const iend = n;
+
+            for(I j = jstart; j <= jend; j++)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(j, i);
+                        A(j, i) = stemp * A(m, i) + ctemp * temp;
+                        A(m, i) = ctemp * A(m, i) - stemp * temp;
+                    };
+                };
+            };
+        }
+
+        return;
+    };
+
+    if(is_side_Left && is_pivot_Bottom && is_direct_Backward)
+    {
+        //  -----------------------------
+        //  A := P*A
+        //  Bottom pivot, the plane (k,z)
+        //  P = P(1)*P(2)*...*P(z-1)
+        //  -----------------------------
+        {
+            auto const jend = (m - 1);
+            auto const jstart = 1;
+            auto const istart = 1;
+            auto const iend = n;
+
+            for(I j = jend; j >= jstart; j--)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(j, i);
+                        A(j, i) = stemp * A(m, i) + ctemp * temp;
+                        A(m, i) = ctemp * A(m, i) - stemp * temp;
+                    };
+                };
+            };
+        }
+
+        return;
+    };
+
+    if(is_side_Right && is_pivot_Variable && is_direct_Forward)
+    {
+        //  -----------------------------
+        //  A := A*P**T
+        //  Variable pivot, the plane (k,k+1)
+        //  P = P(z-1) * ... * P(2) * P(1)
+        //  -----------------------------
+
+        {
+            auto const jstart = 1;
+            auto const jend = (n - 1);
+            auto const istart = 1;
+            auto const iend = m;
+
+            for(I j = jstart; j <= jend; j++)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(i, j + 1);
+                        A(i, j + 1) = ctemp * temp - stemp * A(i, j);
+                        A(i, j) = stemp * temp + ctemp * A(i, j);
+                    };
+                };
+            };
+        }
+
+        return;
+    };
+
+    if(is_side_Right && is_pivot_Variable && is_direct_Backward)
+    {
+        //  -----------------------------
+        //  A := A*P**T
+        //  Variable pivot, the plane (k,k+1)
+        //  P = P(1)*P(2)*...*P(z-1)
+        //  -----------------------------
+
+        {
+            auto const jend = (n - 1);
+            auto const jstart = 1;
+            auto const istart = 1;
+            auto const iend = m;
+
+            for(I j = jend; j >= jstart; j--)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(i, j + 1);
+                        A(i, j + 1) = ctemp * temp - stemp * A(i, j);
+                        A(i, j) = stemp * temp + ctemp * A(i, j);
+                    };
+                };
+            };
+        }
+        return;
+    };
+
+    if(is_side_Right && is_pivot_Top && is_direct_Forward)
+    {
+        //  -----------------------------
+        //  A := A*P**T
+        //  Top pivot, the plane (1,k+1)
+        //  P = P(z-1) * ... * P(2) * P(1)
+        //  -----------------------------
+
+        {
+            auto const jstart = 2;
+            auto const jend = n;
+            auto const istart = 1;
+            auto const iend = m;
+
+            for(I j = jstart; j <= jend; j++)
+            {
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(i, j);
+
+                        A(i, j) = ctemp * temp - stemp * A(i, 1);
+                        A(i, 1) = stemp * temp + ctemp * A(i, 1);
+                    };
+                };
+            };
+        }
+
+        return;
+    };
+
+    if(is_side_Right && is_pivot_Top && is_direct_Backward)
+    {
+        //  -----------------------------
+        //  A := A*P**T
+        //  Top pivot, the plane (1,k+1)
+        //  P = P(1)*P(2)*...*P(z-1)
+        //  -----------------------------
+
+        {
+            auto const jend = n;
+            auto const jstart = 2;
+            auto const istart = 1;
+            auto const iend = m;
+
+            for(I j = jend; j >= jstart; j--)
+            {
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(i, j);
+
+                        A(i, j) = ctemp * temp - stemp * A(i, 1);
+                        A(i, 1) = stemp * temp + ctemp * A(i, 1);
+                    };
+                };
+            };
+        }
+
+        return;
+    };
+
+    if(is_side_Right && is_pivot_Bottom && is_direct_Forward)
+    {
+        //  -----------------------------
+        //  A := A*P**T
+        //  Bottom pivot, the plane (k,z)
+        //  P = P(z-1) * ... * P(2) * P(1)
+        //  -----------------------------
+
+        {
+            auto const jstart = 1;
+            auto const jend = (n - 1);
+            auto const istart = 1;
+            auto const iend = m;
+
+            for(I j = jstart; j <= jend; j++)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(i, j);
+
+                        A(i, j) = stemp * A(i, n) + ctemp * temp;
+                        A(i, n) = ctemp * A(i, n) - stemp * temp;
+                    };
+                };
+            };
+        }
+
+        return;
+    };
+
+    if(is_side_Right && is_pivot_Bottom && is_direct_Backward)
+    {
+        //  -----------------------------
+        //  A := A*P**T
+        //  Bottom pivot, the plane (k,z)
+        //  P = P(1)*P(2)*...*P(z-1)
+        //  -----------------------------
+
+        {
+            auto const jend = (n - 1);
+            auto const jstart = 1;
+            auto const istart = 1;
+            auto const iend = m;
+
+            for(I j = jend; j >= jstart; j--)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(i, j);
+                        A(i, j) = stemp * A(i, n) + ctemp * temp;
+                        A(i, n) = ctemp * A(i, n) - stemp * temp;
+                    };
+                };
+            };
+        }
+
+        return;
     };
 
     return;
-  };
-
-  if (is_side_Left && is_pivot_Top && is_direct_Forward) {
-    //  -----------------------------
-    //  A := P*A
-    //  Top pivot, the plane (1,k+1)
-    //  P = P(z-1) * ... * P(2) * P(1)
-    //  -----------------------------
-    {
-      for (I j = 2; j <= m; j++) {
-        const auto ctemp = c(j - 1);
-        const auto stemp = s(j - 1);
-        for (I i = 1 + tid; i <= n; i += i_inc) {
-          const auto temp = A(j, i);
-          A(j, i) = ctemp * temp - stemp * A(1, i);
-          A(1, i) = stemp * temp + ctemp * A(1, i);
-        };
-      };
-    };
-
-    return;
-  };
-
-  if (is_side_Left && is_pivot_Top && is_direct_Backward) {
-    //  -----------------------------
-    //  A := P*A
-    //  Top pivot, the plane (1,k+1)
-    //  P = P(1)*P(2)*...*P(z-1)
-    //  -----------------------------
-    {
-
-      auto const jend = m;
-      auto const jstart = 2;
-      auto const istart = 1;
-      auto const iend = n;
-
-      for (I j = jend; j >= jstart; j--) {
-        const auto ctemp = c(j - 1);
-        const auto stemp = s(j - 1);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(j, i);
-
-            A(j, i) = ctemp * temp - stemp * A(1, i);
-            A(1, i) = stemp * temp + ctemp * A(1, i);
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  if (is_side_Left && is_pivot_Bottom && is_direct_Forward) {
-    //  -----------------------------
-    //  A := P*A
-    //  Bottom pivot, the plane (k,z)
-    //  P = P(z-1) * ... * P(2) * P(1)
-    //  -----------------------------
-    {
-
-      auto const jstart = 1;
-      auto const jend = (m - 1);
-      auto const istart = 1;
-      auto const iend = n;
-
-      for (I j = jstart; j <= jend; j++) {
-        const auto ctemp = c(j);
-        const auto stemp = s(j);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(j, i);
-            A(j, i) = stemp * A(m, i) + ctemp * temp;
-            A(m, i) = ctemp * A(m, i) - stemp * temp;
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  if (is_side_Left && is_pivot_Bottom && is_direct_Backward) {
-    //  -----------------------------
-    //  A := P*A
-    //  Bottom pivot, the plane (k,z)
-    //  P = P(1)*P(2)*...*P(z-1)
-    //  -----------------------------
-    {
-
-      auto const jend = (m - 1);
-      auto const jstart = 1;
-      auto const istart = 1;
-      auto const iend = n;
-
-      for (I j = jend; j >= jstart; j--) {
-        const auto ctemp = c(j);
-        const auto stemp = s(j);
-        if ((ctemp != one) || (stemp != zero)) {
-
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(j, i);
-            A(j, i) = stemp * A(m, i) + ctemp * temp;
-            A(m, i) = ctemp * A(m, i) - stemp * temp;
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  if (is_side_Right && is_pivot_Variable && is_direct_Forward) {
-    //  -----------------------------
-    //  A := A*P**T
-    //  Variable pivot, the plane (k,k+1)
-    //  P = P(z-1) * ... * P(2) * P(1)
-    //  -----------------------------
-
-    {
-
-      auto const jstart = 1;
-      auto const jend = (n - 1);
-      auto const istart = 1;
-      auto const iend = m;
-
-      for (I j = jstart; j <= jend; j++) {
-        const auto ctemp = c(j);
-        const auto stemp = s(j);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(i, j + 1);
-            A(i, j + 1) = ctemp * temp - stemp * A(i, j);
-            A(i, j) = stemp * temp + ctemp * A(i, j);
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  if (is_side_Right && is_pivot_Variable && is_direct_Backward) {
-    //  -----------------------------
-    //  A := A*P**T
-    //  Variable pivot, the plane (k,k+1)
-    //  P = P(1)*P(2)*...*P(z-1)
-    //  -----------------------------
-
-    {
-
-      auto const jend = (n - 1);
-      auto const jstart = 1;
-      auto const istart = 1;
-      auto const iend = m;
-
-      for (I j = jend; j >= jstart; j--) {
-        const auto ctemp = c(j);
-        const auto stemp = s(j);
-        if ((ctemp != one) || (stemp != zero)) {
-
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(i, j + 1);
-            A(i, j + 1) = ctemp * temp - stemp * A(i, j);
-            A(i, j) = stemp * temp + ctemp * A(i, j);
-          };
-        };
-      };
-    }
-    return;
-  };
-
-  if (is_side_Right && is_pivot_Top && is_direct_Forward) {
-    //  -----------------------------
-    //  A := A*P**T
-    //  Top pivot, the plane (1,k+1)
-    //  P = P(z-1) * ... * P(2) * P(1)
-    //  -----------------------------
-
-    {
-
-      auto const jstart = 2;
-      auto const jend = n;
-      auto const istart = 1;
-      auto const iend = m;
-
-      for (I j = jstart; j <= jend; j++) {
-        const auto ctemp = c(j - 1);
-        const auto stemp = s(j - 1);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(i, j);
-
-            A(i, j) = ctemp * temp - stemp * A(i, 1);
-            A(i, 1) = stemp * temp + ctemp * A(i, 1);
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  if (is_side_Right && is_pivot_Top && is_direct_Backward) {
-    //  -----------------------------
-    //  A := A*P**T
-    //  Top pivot, the plane (1,k+1)
-    //  P = P(1)*P(2)*...*P(z-1)
-    //  -----------------------------
-
-    {
-
-      auto const jend = n;
-      auto const jstart = 2;
-      auto const istart = 1;
-      auto const iend = m;
-
-      for (I j = jend; j >= jstart; j--) {
-        const auto ctemp = c(j - 1);
-        const auto stemp = s(j - 1);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(i, j);
-
-            A(i, j) = ctemp * temp - stemp * A(i, 1);
-            A(i, 1) = stemp * temp + ctemp * A(i, 1);
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  if (is_side_Right && is_pivot_Bottom && is_direct_Forward) {
-    //  -----------------------------
-    //  A := A*P**T
-    //  Bottom pivot, the plane (k,z)
-    //  P = P(z-1) * ... * P(2) * P(1)
-    //  -----------------------------
-
-    {
-
-      auto const jstart = 1;
-      auto const jend = (n - 1);
-      auto const istart = 1;
-      auto const iend = m;
-
-      for (I j = jstart; j <= jend; j++) {
-        const auto ctemp = c(j);
-        const auto stemp = s(j);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(i, j);
-
-            A(i, j) = stemp * A(i, n) + ctemp * temp;
-            A(i, n) = ctemp * A(i, n) - stemp * temp;
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  if (is_side_Right && is_pivot_Bottom && is_direct_Backward) {
-    //  -----------------------------
-    //  A := A*P**T
-    //  Bottom pivot, the plane (k,z)
-    //  P = P(1)*P(2)*...*P(z-1)
-    //  -----------------------------
-
-    {
-
-      auto const jend = (n - 1);
-      auto const jstart = 1;
-      auto const istart = 1;
-      auto const iend = m;
-
-      for (I j = jend; j >= jstart; j--) {
-        const auto ctemp = c(j);
-        const auto stemp = s(j);
-        if ((ctemp != one) || (stemp != zero)) {
-          for (I i = istart + tid; i <= iend; i += i_inc) {
-            const auto temp = A(i, j);
-            A(i, j) = stemp * A(i, n) + ctemp * temp;
-            A(i, n) = ctemp * A(i, n) - stemp * temp;
-          };
-        };
-      };
-    }
-
-    return;
-  };
-
-  return;
 }
 template <typename S, typename T, typename I>
-static void lasr_template_gpu(char const side, char const pivot,
-                              char const direct, I const m, I const n,
-                              S const *const c_, S const *const s_, T *const A_,
-                              I const lda, hipStream_t stream = 0) {
+static void lasr_template_gpu(char const side,
+                              char const pivot,
+                              char const direct,
+                              I const m,
+                              I const n,
+                              S const* const c_,
+                              S const* const s_,
+                              T* const A_,
+                              I const lda,
+                              hipStream_t stream = 0)
+{
+    auto const nthreads = 2 * warpSize;
 
-  auto const nthreads = 2 * warpSize;
+    bool const is_left_side = (side == 'L') || (side == 'l');
+    auto const mn = (is_left_side) ? n : m;
 
-  bool const is_left_side = (side == 'L') || (side == 'l');
-  auto const mn = (is_left_side) ? n : m;
-
-  auto const nblocks = (mn - 1) / nthreads + 1;
-  hipLaunchKernelGGL((lasr_kernel<S, T, I>), dim3(nblocks, 1, 1),
-                     dim3(nthreads, 1, 1), 0, stream, side, pivot, direct, m, n,
-                     c_, s_, A_, lda);
+    auto const nblocks = (mn - 1) / nthreads + 1;
+    hipLaunchKernelGGL((lasr_kernel<S, T, I>), dim3(nblocks, 1, 1), dim3(nthreads, 1, 1), 0, stream,
+                       side, pivot, direct, m, n, c_, s_, A_, lda);
 }
 
 template <typename S, typename T, typename I>
-__global__ static void rot_kernel(I const n, T *const x, I const incx,
-                                  T *const y, I const incy, S const c,
-                                  S const s) {
-  if (n <= 0)
-    return;
+__global__ static void
+    rot_kernel(I const n, T* const x, I const incx, T* const y, I const incy, S const c, S const s)
+{
+    if(n <= 0)
+        return;
 
-  I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-  I const i_inc = hipBlockDim_x * hipGridDim_x;
+    I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    I const i_inc = hipBlockDim_x * hipGridDim_x;
 
-  if ((incx == 1) && (incy == 1)) {
-    // ------------
-    // special case
-    // ------------
-    for (I i = i_start; i < n; i += i_inc) {
-      auto const temp = c * x[i] + s * y[i];
-      y[i] = c * y[i] - s * x[i];
-      x[i] = temp;
+    if((incx == 1) && (incy == 1))
+    {
+        // ------------
+        // special case
+        // ------------
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const temp = c * x[i] + s * y[i];
+            y[i] = c * y[i] - s * x[i];
+            x[i] = temp;
+        }
     }
-  } else {
-    // ---------------------------
-    // code for unequal increments
-    // ---------------------------
+    else
+    {
+        // ---------------------------
+        // code for unequal increments
+        // ---------------------------
 
-    for (auto i = i_start; i < n; i += i_inc) {
-      auto const ix = 0 + i * static_cast<int64_t>(incx);
-      auto const iy = 0 + i * static_cast<int64_t>(incy);
-      auto const temp = c * x[ix] + s * y[iy];
-      y[iy] = c * y[iy] - s * x[ix];
-      x[ix] = temp;
+        for(auto i = i_start; i < n; i += i_inc)
+        {
+            auto const ix = 0 + i * static_cast<int64_t>(incx);
+            auto const iy = 0 + i * static_cast<int64_t>(incy);
+            auto const temp = c * x[ix] + s * y[iy];
+            y[iy] = c * y[iy] - s * x[ix];
+            x[ix] = temp;
+        }
     }
-  }
 }
 
 template <typename S, typename T, typename I>
-static void rot_template(I const n, T *x, I const incx, T *y, I const incy,
-                         S const c, S const s, hipStream_t stream) {
-  auto nthreads = warpSize * 2;
-  auto nblocks = (n - 1) / nthreads + 1;
+static void
+    rot_template(I const n, T* x, I const incx, T* y, I const incy, S const c, S const s, hipStream_t stream)
+{
+    auto nthreads = warpSize * 2;
+    auto nblocks = (n - 1) / nthreads + 1;
 
-  hipLaunchKernelGGL((rot_kernel<S, T, I>), dim3(nblocks, 1, 1),
-                     dim3(nthreads, 1, 1), 0, stream, n, x, incx, y, incy, c,
-                     s);
+    hipLaunchKernelGGL((rot_kernel<S, T, I>), dim3(nblocks, 1, 1), dim3(nthreads, 1, 1), 0, stream,
+                       n, x, incx, y, incy, c, s);
 }
 
 template <typename S, typename T, typename I>
-__global__ static void scal_kernel(I const n, S const da, T *const x,
-                                   I const incx) {
+__global__ static void scal_kernel(I const n, S const da, T* const x, I const incx)
+{
+    if(n <= 0)
+        return;
 
-  if (n <= 0)
-    return;
+    I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    I const i_inc = hipBlockDim_x * hipGridDim_x;
 
-  I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-  I const i_inc = hipBlockDim_x * hipGridDim_x;
-
-  S const zero = 0;
-  bool const is_da_zero = (da == zero);
-  if (incx == 1) {
-    for (I i = i_start; i < n; i += i_inc) {
-      x[i] = (is_da_zero) ? zero : da * x[i];
+    S const zero = 0;
+    bool const is_da_zero = (da == zero);
+    if(incx == 1)
+    {
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            x[i] = (is_da_zero) ? zero : da * x[i];
+        }
     }
-  } else {
-    // ---------------------------
-    // code for non-unit increments
-    // ---------------------------
+    else
+    {
+        // ---------------------------
+        // code for non-unit increments
+        // ---------------------------
 
-    for (I i = i_start; i < n; i += i_inc) {
-      auto const ix = 0 + i * static_cast<int64_t>(incx);
-      x[ix] = (is_da_zero) ? zero : da * x[ix];
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const ix = 0 + i * static_cast<int64_t>(incx);
+            x[ix] = (is_da_zero) ? zero : da * x[ix];
+        }
     }
-  }
 }
 
 template <typename S, typename T, typename I>
-static void scal_template(I const n, S const da, T *const x, I const incx,
-                          hipStream_t stream) {
-  auto nthreads = warpSize * 2;
-  auto nblocks = (n - 1) / nthreads + 1;
+static void scal_template(I const n, S const da, T* const x, I const incx, hipStream_t stream)
+{
+    auto nthreads = warpSize * 2;
+    auto nblocks = (n - 1) / nthreads + 1;
 
-  hipLaunchKernelGGL((scal_kernel<S, T, I>), dim3(nblocks, 1, 1),
-                     dim3(nthreads, 1, 1), 0, stream, n, da, x, incx);
+    hipLaunchKernelGGL((scal_kernel<S, T, I>), dim3(nblocks, 1, 1), dim3(nthreads, 1, 1), 0, stream,
+                       n, da, x, incx);
 }
 
 template <typename S, typename T, typename I>
-__global__ static void swap_kernel(I const n, T *const x, I const incx,
-                                   T *const y, I const incy) {
-  if (n <= 0)
-    return;
+__global__ static void swap_kernel(I const n, T* const x, I const incx, T* const y, I const incy)
+{
+    if(n <= 0)
+        return;
 
-  I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-  I const i_inc = hipBlockDim_x * hipGridDim_x;
+    I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    I const i_inc = hipBlockDim_x * hipGridDim_x;
 
-  if ((incx == 1) && (incy == 1)) {
-    // ------------
-    // special case
-    // ------------
-    for (I i = i_start; i < n; i += i_inc) {
-      auto const temp = y[i];
-      y[i] = x[i];
-      x[i] = temp;
+    if((incx == 1) && (incy == 1))
+    {
+        // ------------
+        // special case
+        // ------------
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const temp = y[i];
+            y[i] = x[i];
+            x[i] = temp;
+        }
     }
-  } else {
-    // ---------------------------
-    // code for unequal increments
-    // ---------------------------
+    else
+    {
+        // ---------------------------
+        // code for unequal increments
+        // ---------------------------
 
-    for (I i = i_start; i < n; i += i_inc) {
-      auto const ix = 0 + i * static_cast<int64_t>(incx);
-      auto const iy = 0 + i * static_cast<int64_t>(incy);
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const ix = 0 + i * static_cast<int64_t>(incx);
+            auto const iy = 0 + i * static_cast<int64_t>(incy);
 
-      auto const temp = y[iy];
-      y[iy] = x[ix];
-      x[ix] = temp;
+            auto const temp = y[iy];
+            y[iy] = x[ix];
+            x[ix] = temp;
+        }
     }
-  }
 }
 
 template <typename S, typename T, typename I>
-static void swap_template(I const n, T *x, I const incx, T *y, I const incy,
-                          hipStream_t stream) {
-  auto nthreads = warpSize * 2;
-  auto nblocks = (n - 1) / nthreads + 1;
+static void swap_template(I const n, T* x, I const incx, T* y, I const incy, hipStream_t stream)
+{
+    auto nthreads = warpSize * 2;
+    auto nblocks = (n - 1) / nthreads + 1;
 
-  hipLaunchKernelGGL((swap_kernel<S, T, I>), dim3(nblocks, 1, 1),
-                     dim3(nthreads, 1, 1), 0, stream, n, x, incx, y, incy);
+    hipLaunchKernelGGL((swap_kernel<S, T, I>), dim3(nblocks, 1, 1), dim3(nthreads, 1, 1), 0, stream,
+                       n, x, incx, y, incy);
 }
 
 extern "C" {
 
-double dlamch_(char *cmach);
-float slamch_(char *cmach);
+double dlamch_(char* cmach);
+float slamch_(char* cmach);
 
-void zswap_(int *n, std::complex<double> *zx, int *incx,
-            std::complex<double> *zy, int *incy);
+void zswap_(int* n, std::complex<double>* zx, int* incx, std::complex<double>* zy, int* incy);
 
-void cswap_(int *n, std::complex<float> *zx, int *incx, std::complex<float> *zy,
-            int *incy);
+void cswap_(int* n, std::complex<float>* zx, int* incx, std::complex<float>* zy, int* incy);
 
-void dswap_(int *n, double *zx, int *incx, double *zy, int *incy);
+void dswap_(int* n, double* zx, int* incx, double* zy, int* incy);
 
-void sswap_(int *n, float *zx, int *incx, float *zy, int *incy);
+void sswap_(int* n, float* zx, int* incx, float* zy, int* incy);
 
-void dlasq1_(int *n, double *D_, double *E_, double *rwork_, int *info_arg);
-void slasq1_(int *n, float *D_, float *E_, float *rwork_, int *info_arg);
+void dlasq1_(int* n, double* D_, double* E_, double* rwork_, int* info_arg);
+void slasq1_(int* n, float* D_, float* E_, float* rwork_, int* info_arg);
 
-void zlasr_(char *side, char *pivot, char *direct, int *m, int *n, double *c,
-            double *s, std::complex<double> *A, int *lda);
-void clasr_(char *side, char *pivot, char *direct, int *m, int *n, float *c,
-            float *s, std::complex<float> *A, int *lda);
-void slasr_(char *side, char *pivot, char *direct, int *m, int *n, float *c,
-            float *s, float *A, int *lda);
-void dlasr_(char *side, char *pivot, char *direct, int *m, int *n, double *c,
-            double *s, double *A, int *lda);
+void zlasr_(char* side,
+            char* pivot,
+            char* direct,
+            int* m,
+            int* n,
+            double* c,
+            double* s,
+            std::complex<double>* A,
+            int* lda);
+void clasr_(char* side,
+            char* pivot,
+            char* direct,
+            int* m,
+            int* n,
+            float* c,
+            float* s,
+            std::complex<float>* A,
+            int* lda);
+void slasr_(char* side, char* pivot, char* direct, int* m, int* n, float* c, float* s, float* A, int* lda);
+void dlasr_(char* side, char* pivot, char* direct, int* m, int* n, double* c, double* s, double* A, int* lda);
 
-void dlasv2_(double *f, double *g, double *h, double *ssmin, double *ssmax,
-             double *snr, double *csr, double *snl, double *csl);
-void slasv2_(float *f, float *g, float *h, float *ssmin, float *ssmax,
-             float *snr, float *csr, float *snl, float *csl);
+void dlasv2_(double* f,
+             double* g,
+             double* h,
+             double* ssmin,
+             double* ssmax,
+             double* snr,
+             double* csr,
+             double* snl,
+             double* csl);
+void slasv2_(float* f,
+             float* g,
+             float* h,
+             float* ssmin,
+             float* ssmax,
+             float* snr,
+             float* csr,
+             float* snl,
+             float* csl);
 
-void zdrot_(int *n, std::complex<double> *zx, int *incx,
-            std::complex<double> *zy, int *incy, double *c, double *s);
+void zdrot_(int* n,
+            std::complex<double>* zx,
+            int* incx,
+            std::complex<double>* zy,
+            int* incy,
+            double* c,
+            double* s);
 
-void csrot_(int *n, std::complex<float> *zx, int *incx, std::complex<float> *zy,
-            int *incy, float *c, float *s);
+void csrot_(int* n,
+            std::complex<float>* zx,
+            int* incx,
+            std::complex<float>* zy,
+            int* incy,
+            float* c,
+            float* s);
 
-void drot_(int *n, double *dx, int *incx, double *dy, int *incy, double *c,
-           double *s);
+void drot_(int* n, double* dx, int* incx, double* dy, int* incy, double* c, double* s);
 
-void srot_(int *n, float *dx, int *incx, float *dy, int *incy, float *c,
-           float *s);
+void srot_(int* n, float* dx, int* incx, float* dy, int* incy, float* c, float* s);
 
-void zdscal_(int *n, double *da, std::complex<double> *zx, int *incx);
-void csscal_(int *n, float *da, std::complex<float> *zx, int *incx);
-void dscal_(int *n, double *da, double *zx, int *incx);
-void sscal_(int *n, float *da, float *zx, int *incx);
+void zdscal_(int* n, double* da, std::complex<double>* zx, int* incx);
+void csscal_(int* n, float* da, std::complex<float>* zx, int* incx);
+void zscal_(int* n, std::complex<double>* za, std::complex<double>* zx, int* incx);
+void cscal_(int* n, std::complex<float>* za, std::complex<float>* zx, int* incx);
+void dscal_(int* n, double* da, double* zx, int* incx);
+void sscal_(int* n, float* da, float* zx, int* incx);
 
-void dlartg_(double *f, double *g, double *c, double *s, double *r);
-void slartg_(float *f, float *g, float *c, float *s, float *r);
+void dlartg_(double* f, double* g, double* c, double* s, double* r);
+void slartg_(float* f, float* g, float* c, float* s, float* r);
+void zlartg_(std::complex<double>* f,
+             std::complex<double>* g,
+             double* c,
+             std::complex<double>* s,
+             std::complex<double>* r);
+void clartg_(std::complex<float>* f,
+             std::complex<float>* g,
+             float* c,
+             std::complex<float>* s,
+             std::complex<float>* r);
 
-void dlas2_(double *f, double *g, double *h, double *ssmin, double *ssmax);
-void slas2_(float *f, float *g, float *h, float *ssmin, float *ssmax);
+void dlas2_(double* f, double* g, double* h, double* ssmin, double* ssmax);
+void slas2_(float* f, float* g, float* h, float* ssmin, float* ssmax);
 };
 
-static void call_lamch(char &cmach_arg, double &eps) {
-  char cmach = cmach_arg;
-  eps = dlamch_(&cmach);
+static void call_lamch(char& cmach_arg, double& eps)
+{
+    char cmach = cmach_arg;
+    eps = dlamch_(&cmach);
 }
 
-static void call_lamch(char &cmach_arg, float &eps) {
-  char cmach = cmach_arg;
-  eps = slamch_(&cmach);
+static void call_lamch(char& cmach_arg, float& eps)
+{
+    char cmach = cmach_arg;
+    eps = slamch_(&cmach);
 }
 
-static void call_swap(int &n, std::complex<double> &zx, int &incx,
-                      std::complex<double> &zy, int &incy) {
-  zswap_(&n, &zx, &incx, &zy, &incy);
+static void call_swap(int& n,
+                      rocblas_complex_num<float>& zx,
+                      int& incx,
+                      rocblas_complex_num<float>& zy,
+                      int& incy)
+{
+    cswap_(&n, (std::complex<float>*)&zx, &incx, (std::complex<float>*)&zy, &incy);
 }
 
-static void call_swap(int &n, std::complex<float> &zx, int &incx,
-                      std::complex<float> &zy, int &incy) {
-  cswap_(&n, &zx, &incx, &zy, &incy);
+static void call_swap(int& n, std::complex<float>& zx, int& incx, std::complex<float>& zy, int& incy)
+{
+    cswap_(&n, &zx, &incx, &zy, &incy);
 }
 
-static void call_swap(int &n, float &zx, int &incx, float &zy, int &incy) {
-  sswap_(&n, &zx, &incx, &zy, &incy);
+static void call_swap(int& n,
+                      rocblas_complex_num<double>& zx,
+                      int& incx,
+                      rocblas_complex_num<double>& zy,
+                      int& incy)
+{
+    zswap_(&n, (std::complex<double>*)&zx, &incx, (std::complex<double>*)&zy, &incy);
 }
 
-static void call_swap(int &n, double &zx, int &incx, double &zy, int &incy) {
-  dswap_(&n, &zx, &incx, &zy, &incy);
+static void call_swap(int& n, std::complex<double>& zx, int& incx, std::complex<double>& zy, int& incy)
+{
+    zswap_(&n, &zx, &incx, &zy, &incy);
 }
 
-static void call_las2(double &f, double &g, double &h, double &ssmin,
-                      double &ssmax) {
-  dlas2_(&f, &g, &h, &ssmin, &ssmax);
+static void call_swap(int& n, float& zx, int& incx, float& zy, int& incy)
+{
+    sswap_(&n, &zx, &incx, &zy, &incy);
 }
 
-static void call_las2(float &f, float &g, float &h, float &ssmin,
-                      float &ssmax) {
-  slas2_(&f, &g, &h, &ssmin, &ssmax);
+static void call_swap(int& n, double& zx, int& incx, double& zy, int& incy)
+{
+    dswap_(&n, &zx, &incx, &zy, &incy);
 }
 
-static void call_lartg(double &f, double &g, double &c, double &s, double &r) {
-  dlartg_(&f, &g, &c, &s, &r);
+static void call_las2(double& f, double& g, double& h, double& ssmin, double& ssmax)
+{
+    dlas2_(&f, &g, &h, &ssmin, &ssmax);
 }
 
-static void call_lartg(float &f, float &g, float &c, float &s, float &r) {
-  slartg_(&f, &g, &c, &s, &r);
+static void call_las2(float& f, float& g, float& h, float& ssmin, float& ssmax)
+{
+    slas2_(&f, &g, &h, &ssmin, &ssmax);
 }
 
-static void call_scal(int &n, double &da, std::complex<double> &zx, int &incx) {
-  zdscal_(&n, &da, &zx, &incx);
+static void call_lartg(double& f, double& g, double& c, double& s, double& r)
+{
+    dlartg_(&f, &g, &c, &s, &r);
 }
 
-static void call_scal(int &n, float &da, std::complex<float> &zx, int &incx) {
-  csscal_(&n, &da, &zx, &incx);
+static void call_lartg(float& f, float& g, float& c, float& s, float& r)
+{
+    slartg_(&f, &g, &c, &s, &r);
 }
 
-static void call_scal(int &n, double &da, double &zx, int &incx) {
-  dscal_(&n, &da, &zx, &incx);
+static void call_lartg(std::complex<float>& f,
+                       std::complex<float>& g,
+                       float& c,
+                       std::complex<float>& s,
+                       std::complex<float>& r)
+{
+    clartg_(&f, &g, &c, &s, &r);
 }
 
-static void call_scal(int &n, float &da, float &zx, int &incx) {
-  sscal_(&n, &da, &zx, &incx);
+static void call_lartg(std::complex<double>& f,
+                       std::complex<double>& g,
+                       double& c,
+                       std::complex<double>& s,
+                       std::complex<double>& r)
+{
+    zlartg_(&f, &g, &c, &s, &r);
 }
 
-static void call_rot(int &n, std::complex<double> &zx, int &incx,
-                     std::complex<double> &zy, int &incy, double &c,
-                     double &s) {
-  zdrot_(&n, &zx, &incx, &zy, &incy, &c, &s);
+static void call_scal(int& n, rocblas_complex_num<float>& da, rocblas_complex_num<float>& zx, int& incx)
+{
+    cscal_(&n, (std::complex<float>*)&da, (std::complex<float>*)&zx, &incx);
 }
 
-static void call_rot(int &n, std::complex<float> &zx, int &incx,
-                     std::complex<float> &zy, int &incy, float &c, float &s) {
-  csrot_(&n, &zx, &incx, &zy, &incy, &c, &s);
+static void call_scal(int& n, std::complex<float>& da, std::complex<float>& zx, int& incx)
+{
+    cscal_(&n, &da, &zx, &incx);
 }
 
-static void call_rot(int &n, double &dx, int &incx, double &dy, int &incy,
-                     double &c, double &s) {
-  drot_(&n, &dx, &incx, &dy, &incy, &c, &s);
+static void
+    call_scal(int& n, rocblas_complex_num<double>& da, rocblas_complex_num<double>& zx, int& incx)
+{
+    zscal_(&n, (std::complex<double>*)&da, (std::complex<double>*)&zx, &incx);
 }
 
-static void call_rot(int &n, float &dx, int &incx, float &dy, int &incy,
-                     float &c, float &s) {
-  srot_(&n, &dx, &incx, &dy, &incy, &c, &s);
+static void call_scal(int& n, std::complex<double>& da, std::complex<double>& zx, int& incx)
+{
+    zscal_(&n, &da, &zx, &incx);
 }
 
-static void call_lasv2(double &f, double &g, double &h, double &ssmin,
-                       double &ssmax, double &snr, double &csr, double &snl,
-                       double &csl) {
-  dlasv2_(&f, &g, &h, &ssmin, &ssmax, &snr, &csr, &snl, &csl);
+static void call_scal(int& n, double& da, rocblas_complex_num<double>& zx, int& incx)
+{
+    zdscal_(&n, &da, (std::complex<double>*)&zx, &incx);
 }
 
-static void call_lasv2(float &f, float &g, float &h, float &ssmin, float &ssmax,
-                       float &snr, float &csr, float &snl, float &csl) {
-  slasv2_(&f, &g, &h, &ssmin, &ssmax, &snr, &csr, &snl, &csl);
+static void call_scal(int& n, double& da, std::complex<double>& zx, int& incx)
+{
+    zdscal_(&n, &da, &zx, &incx);
 }
 
-static void call_lasq1(int &n, double &D_, double &E_, double &rwork_,
-                       int &info_arg) {
-  dlasq1_(&n, &D_, &E_, &rwork_, &info_arg);
+static void call_scal(int& n, float& da, rocblas_complex_num<float>& zx, int& incx)
+{
+    csscal_(&n, &da, (std::complex<float>*)&zx, &incx);
+}
+
+static void call_scal(int& n, float& da, std::complex<float>& zx, int& incx)
+{
+    csscal_(&n, &da, &zx, &incx);
+}
+
+static void call_scal(int& n, double& da, double& zx, int& incx)
+{
+    dscal_(&n, &da, &zx, &incx);
+}
+
+static void call_scal(int& n, float& da, float& zx, int& incx)
+{
+    sscal_(&n, &da, &zx, &incx);
+}
+
+static void call_rot(int& n,
+                     std::complex<float>& zx,
+                     int& incx,
+                     std::complex<float>& zy,
+                     int& incy,
+                     float& c,
+                     float& s)
+{
+    csrot_(&n, &zx, &incx, &zy, &incy, &c, &s);
+}
+
+static void call_rot(int& n,
+                     rocblas_complex_num<float>& zx,
+                     int& incx,
+                     rocblas_complex_num<float>& zy,
+                     int& incy,
+                     float& c,
+                     float& s)
+{
+    csrot_(&n, (std::complex<float>*)&zx, &incx, (std::complex<float>*)&zy, &incy, &c, &s);
+}
+
+static void call_rot(int& n,
+                     std::complex<double>& zx,
+                     int& incx,
+                     std::complex<double>& zy,
+                     int& incy,
+                     double& c,
+                     double& s)
+{
+    zdrot_(&n, &zx, &incx, &zy, &incy, &c, &s);
+}
+
+static void call_rot(int& n,
+                     rocblas_complex_num<double>& zx,
+                     int& incx,
+                     rocblas_complex_num<double>& zy,
+                     int& incy,
+                     double& c,
+                     double& s)
+{
+    zdrot_(&n, (std::complex<double>*)&zx, &incx, (std::complex<double>*)&zy, &incy, &c, &s);
+}
+
+static void call_rot(int& n, double& dx, int& incx, double& dy, int& incy, double& c, double& s)
+{
+    drot_(&n, &dx, &incx, &dy, &incy, &c, &s);
+}
+
+static void call_rot(int& n, float& dx, int& incx, float& dy, int& incy, float& c, float& s)
+{
+    srot_(&n, &dx, &incx, &dy, &incy, &c, &s);
+}
+
+static void call_lasv2(double& f,
+                       double& g,
+                       double& h,
+                       double& ssmin,
+                       double& ssmax,
+                       double& snr,
+                       double& csr,
+                       double& snl,
+                       double& csl)
+{
+    dlasv2_(&f, &g, &h, &ssmin, &ssmax, &snr, &csr, &snl, &csl);
+}
+
+static void call_lasv2(float& f,
+                       float& g,
+                       float& h,
+                       float& ssmin,
+                       float& ssmax,
+                       float& snr,
+                       float& csr,
+                       float& snl,
+                       float& csl)
+{
+    slasv2_(&f, &g, &h, &ssmin, &ssmax, &snr, &csr, &snl, &csl);
+}
+
+static void call_lasq1(int& n, double& D_, double& E_, double& rwork_, int& info_arg)
+{
+    dlasq1_(&n, &D_, &E_, &rwork_, &info_arg);
 };
 
-static void call_lasq1(int &n, float &D_, float &E_, float &rwork_,
-                       int &info_arg) {
-  slasq1_(&n, &D_, &E_, &rwork_, &info_arg);
+static void call_lasq1(int& n, float& D_, float& E_, float& rwork_, int& info_arg)
+{
+    slasq1_(&n, &D_, &E_, &rwork_, &info_arg);
 };
 
-static void call_lasr(char &side, char &pivot, char &direct, int &m, int &n,
-                      double &c, double &s, std::complex<double> &A, int &lda) {
-  zlasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
+static void call_lasr(char& side,
+                      char& pivot,
+                      char& direct,
+                      int& m,
+                      int& n,
+                      float& c,
+                      float& s,
+                      rocblas_complex_num<float>& A,
+                      int& lda)
+{
+    clasr_(&side, &pivot, &direct, &m, &n, &c, &s, (std::complex<float>*)&A, &lda);
 };
 
-static void call_lasr(char &side, char &pivot, char &direct, int &m, int &n,
-                      float &c, float &s, std::complex<float> &A, int &lda) {
-  clasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
+static void call_lasr(char& side,
+                      char& pivot,
+                      char& direct,
+                      int& m,
+                      int& n,
+                      double& c,
+                      double& s,
+                      rocblas_complex_num<double>& A,
+                      int& lda)
+{
+    zlasr_(&side, &pivot, &direct, &m, &n, &c, &s, (std::complex<double>*)&A, &lda);
 };
 
-static void call_lasr(char &side, char &pivot, char &direct, int &m, int &n,
-                      float &c, float &s, float &A, int &lda) {
-  slasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
+static void call_lasr(char& side,
+                      char& pivot,
+                      char& direct,
+                      int& m,
+                      int& n,
+                      double& c,
+                      double& s,
+                      std::complex<double>& A,
+                      int& lda)
+{
+    zlasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
 };
 
-static void call_lasr(char &side, char &pivot, char &direct, int &m, int &n,
-                      double &c, double &s, double &A, int &lda) {
-  dlasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
+static void call_lasr(char& side,
+                      char& pivot,
+                      char& direct,
+                      int& m,
+                      int& n,
+                      float& c,
+                      float& s,
+                      std::complex<float>& A,
+                      int& lda)
+{
+    clasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
+};
+
+static void
+    call_lasr(char& side, char& pivot, char& direct, int& m, int& n, float& c, float& s, float& A, int& lda)
+{
+    slasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
+};
+
+static void call_lasr(char& side,
+                      char& pivot,
+                      char& direct,
+                      int& m,
+                      int& n,
+                      double& c,
+                      double& s,
+                      double& A,
+                      int& lda)
+{
+    dlasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
 };
 
 template <typename S, typename T, typename I>
-static void bdsqr_single_template(char uplo, I n, 
+static void bdsqr_single_template(char uplo,
+                                  I n,
 #ifdef USE_VT
-		I ncvt, 
+                                  I ncvt,
 #else
-		I ncv,
+                                  I ncv,
 #endif
-		I nru, I ncc, T *d_,
-                                  T *e_, 
+                                  I nru,
+                                  I ncc,
+                                  S* d_,
+                                  S* e_,
 #ifdef USE_VT
-				  T *vt_, I ldvt, 
+                                  T* vt_,
+                                  I ldvt,
 #else
-				  T *v_, I ldv, 
+                                  T* v_,
+                                  I ldv,
 #endif
-				  T *u_, I ldu, T *c_,
-                                  int ldc, S *work_, I &info,
-                                  S *dwork = nullptr, hipStream_t stream = 0) {
+                                  T* u_,
+                                  I ldu,
+                                  T* c_,
+                                  int ldc,
+                                  S* work_,
+                                  I& info,
+                                  S* dwork = nullptr,
+                                  hipStream_t stream = 0)
+{
+    bool const use_gpu = (dwork != nullptr);
+    bool constexpr need_sort = false;
 
-  bool const use_gpu = (dwork != nullptr);
+    S const zero = 0;
+    S const one = 1;
+    S negone = -1;
+    S const hndrd = 100;
+    S const hndrth = one / hndrd;
+    S const ten = 10;
+    S const eight = 8;
+    S const meight = -one / eight;
+    I const maxitr = 6;
+    I ione = 1;
 
-  S const zero = 0;
-  S const one = 1;
-  S negone = -1;
-  S const hndrd = 100;
-  S const hndrth = one / hndrd;
-  S const ten = 10;
-  S const eight = 8;
-  S const meight = -one / eight;
-  I const maxitr = 6;
-  I ione = 1;
+    I nrv = n;
 
-  I nrv = n;
-
-  bool const lower = (uplo == 'L') || (uplo == 'l');
-  bool const upper = (uplo == 'U') || (uplo == 'u');
-  /*
+    bool const lower = (uplo == 'L') || (uplo == 'l');
+    bool const upper = (uplo == 'U') || (uplo == 'u');
+    /*
    *     rotate is true if any singular vectors desired, false otherwise
    */
 #ifdef USE_VT
-  bool const rotate = (ncvt > 0) || (nru > 0) || (ncc > 0);
+    bool const rotate = (ncvt > 0) || (nru > 0) || (ncc > 0);
 #else
-  bool const rotate = (nrv > 0) || (nru > 0) || (ncc > 0);
+    bool const rotate = (nrv > 0) || (nru > 0) || (ncc > 0);
 #endif
 
-  I i = 0, idir = 0, isub = 0, iter = 0, iterdivn = 0, j = 0, ll = 0, lll = 0,
-    m = 0, maxitdivn = 0, nm1 = 0, nm12 = 0, nm13 = 0, oldll = 0, oldm = 0;
+    I i = 0, idir = 0, isub = 0, iter = 0, iterdivn = 0, j = 0, ll = 0, lll = 0, m = 0,
+      maxitdivn = 0, nm1 = 0, nm12 = 0, nm13 = 0, oldll = 0, oldm = 0;
 
-  I const nrc = n;  // number of rows in C matrix
-  I const nrvt = n; // number of rows in VT matrix
-  I const ncu = n;  // number of columns in U matrix
+    I const nrc = n; // number of rows in C matrix
+    I const nrvt = n; // number of rows in VT matrix
+    I const ncu = n; // number of columns in U matrix
 
-  S abse = 0, abss = 0, cosl = 0, cosr = 0, cs = 0, eps = 0, f = 0, g = 0,
-    h = 0, mu = 0, oldcs = 0, oldsn = 0, r = 0, shift = 0, sigmn = 0, sigmx = 0,
-    sinl = 0, sinr = 0, sll = 0, smax = 0, smin = 0, sminl = 0, sminoa = 0,
-    sn = 0, thresh = 0, tol = 0, tolmul = 0, unfl = 0;
+    S abse = 0, abss = 0, cosl = 0, cosr = 0, cs = 0, eps = 0, f = 0, g = 0, h = 0, mu = 0,
+      oldcs = 0, oldsn = 0, r = 0, shift = 0, sigmn = 0, sigmx = 0, sinl = 0, sinr = 0, sll = 0,
+      smax = 0, smin = 0, sminl = 0, sminoa = 0, sn = 0, thresh = 0, tol = 0, tolmul = 0, unfl = 0;
 
-  /*     ..
+    /*     ..
   *     .. external functions ..
         logical            lsame
         double precision   dlamch
@@ -873,210 +1160,217 @@ static void bdsqr_single_template(char uplo, I n,
         intrinsic          abs, dble, max, min, sign, sqrt
    */
 
-  auto call_swap_gpu = [=](I n, T &x, I incx, T &y, I incy) {
-    swap_template<S, T, I>(n, &x, incx, &y, incy, stream);
-  };
+    auto call_swap_gpu = [=](I n, T& x, I incx, T& y, I incy) {
+        swap_template<S, T, I>(n, &x, incx, &y, incy, stream);
+    };
 
-  auto call_rot_gpu = [=](I n, T &x, I incx, T &y, I incy, S cosl, S sinl) {
-    rot_template<S, T, I>(n, &x, incx, &y, incy, cosl, sinl, stream);
-  };
+    auto call_rot_gpu = [=](I n, T& x, I incx, T& y, I incy, S cosl, S sinl) {
+        rot_template<S, T, I>(n, &x, incx, &y, incy, cosl, sinl, stream);
+    };
 
-  auto call_scal_gpu = [=](I n, auto da, T &x, I incx) {
-    scal_template<S, T, I>(n, da, &x, incx, stream);
-  };
+    auto call_scal_gpu
+        = [=](I n, auto da, T& x, I incx) { scal_template<S, T, I>(n, da, &x, incx, stream); };
 
-  auto call_lasr_gpu = [=](char const side, char const pivot, char const direct,
-                           I const m, I const n, S &c, S &s, T &A, I const lda,
-                           S *const dwork, hipStream_t stream) {
-    bool const is_left_side = (side == 'L') || (side == 'l');
-    auto const mn = (is_left_side) ? m : n;
-    auto const mn_m1 = (mn - 1);
-    S *const dc = dwork;
-    S *const ds = dwork + mn_m1;
-    HIP_CHECK(hipMemcpyAsync(dc, &c, sizeof(S) * mn_m1, hipMemcpyHostToDevice,
-                             stream));
-    HIP_CHECK(hipMemcpyAsync(ds, &s, sizeof(S) * mn_m1, hipMemcpyHostToDevice,
-                             stream));
+    auto call_lasr_gpu
+        = [=](char const side, char const pivot, char const direct, I const m, I const n, S& c,
+              S& s, T& A, I const lda, S* const dwork, hipStream_t stream) {
+              bool const is_left_side = (side == 'L') || (side == 'l');
+              auto const mn = (is_left_side) ? m : n;
+              auto const mn_m1 = (mn - 1);
+              S* const dc = dwork;
+              S* const ds = dwork + mn_m1;
+              HIP_CHECK(hipMemcpyAsync(dc, &c, sizeof(S) * mn_m1, hipMemcpyHostToDevice, stream));
+              HIP_CHECK(hipMemcpyAsync(ds, &s, sizeof(S) * mn_m1, hipMemcpyHostToDevice, stream));
 
-    lasr_template_gpu(side, pivot, direct, m, n, dc, ds, &A, lda, stream);
-    HIP_CHECK(hipStreamSynchronize(stream));
-  };
+              lasr_template_gpu(side, pivot, direct, m, n, dc, ds, &A, lda, stream);
+              HIP_CHECK(hipStreamSynchronize(stream));
+          };
 
-  auto abs = [](auto x) { return ((x >= 0) ? x : (-x)); };
+    auto abs = [](auto x) { return ((x >= 0) ? x : (-x)); };
 
-  auto indx2f = [](auto i, auto j, auto ld) -> int64_t {
-    assert((1 <= i) && (i <= ld));
-    assert((1 <= j));
-    return ((i - 1) + (j - 1) * int64_t(ld));
-  };
+    auto indx2f = [](auto i, auto j, auto ld) -> int64_t {
+        assert((1 <= i) && (i <= ld));
+        assert((1 <= j));
+        return ((i - 1) + (j - 1) * int64_t(ld));
+    };
 
-  auto d = [=](auto i) -> T & {
-    assert((1 <= i) && (i <= n));
-    return (d_[i - 1]);
-  };
+    auto d = [=](auto i) -> S& {
+        assert((1 <= i) && (i <= n));
+        return (d_[i - 1]);
+    };
 
-  auto e = [=](auto i) -> T & {
-    assert((1 <= i) && (i <= (n - 1)));
-    return (e_[i - 1]);
-  };
-  auto work = [=](auto i) -> S & { return (work_[i - 1]); };
+    auto e = [=](auto i) -> S& {
+        assert((1 <= i) && (i <= (n - 1)));
+        return (e_[i - 1]);
+    };
+    auto work = [=](auto i) -> S& { return (work_[i - 1]); };
 
-  auto c = [=](auto i, auto j) -> T & {
-    assert((1 <= i) && (i <= nrc) && (nrc <= ldc));
-    assert((1 <= j) && (j <= ncc));
-    return (c_[indx2f(i, j, ldc)]);
-  };
+    auto c = [=](auto i, auto j) -> T& {
+        assert((1 <= i) && (i <= nrc) && (nrc <= ldc));
+        assert((1 <= j) && (j <= ncc));
+        return (c_[indx2f(i, j, ldc)]);
+    };
 
-  auto u = [=](auto i, auto j) -> T & {
-    assert((1 <= i) && (i <= nru) && (nru <= ldu));
-    assert((1 <= j) && (j <= ncu));
-    return (u_[indx2f(i, j, ldu)]);
-  };
+    auto u = [=](auto i, auto j) -> T& {
+        assert((1 <= i) && (i <= nru) && (nru <= ldu));
+        assert((1 <= j) && (j <= ncu));
+        return (u_[indx2f(i, j, ldu)]);
+    };
 
 #ifdef USE_VT
-  auto vt = [=](auto i, auto j) -> T & {
-    assert((1 <= i) && (i <= nrvt) && (nrvt <= ldvt));
-    assert((1 <= j) && (j <= ncvt));
-    return (vt_[indx2f(i, j, ldvt)]);
-  };
+    auto vt = [=](auto i, auto j) -> T& {
+        assert((1 <= i) && (i <= nrvt) && (nrvt <= ldvt));
+        assert((1 <= j) && (j <= ncvt));
+        return (vt_[indx2f(i, j, ldvt)]);
+    };
 #else
-  auto v = [=](auto i, auto j) -> T & {
-    assert((1 <= i) && (i <= nrv) && (nrv <= ldv));
-    assert((1 <= j) && (j <= ncv));
-    return (v_[indx2f(i, j, ldv)]);
-  };
+    auto v = [=](auto i, auto j) -> T& {
+        assert((1 <= i) && (i <= nrv) && (nrv <= ldv));
+        assert((1 <= j) && (j <= ncv));
+        return (v_[indx2f(i, j, ldv)]);
+    };
 #endif
 
-  // ---------------------------
-  // emulate Fortran  intrinsics
-  // ---------------------------
-  auto sign = [](auto a, auto b) {
-    auto const abs_a = std::abs(a);
-    return ((b >= 0) ? abs_a : -abs_a);
-  };
+    // ---------------------------
+    // emulate Fortran  intrinsics
+    // ---------------------------
+    auto sign = [](auto a, auto b) {
+        auto const abs_a = std::abs(a);
+        return ((b >= 0) ? abs_a : -abs_a);
+    };
 
-  auto dble = [](auto x) { return (static_cast<double>(x)); };
+    auto dble = [](auto x) { return (static_cast<double>(x)); };
 
-  auto max = [](auto a, auto b) { return ((a > b) ? a : b); };
+    auto max = [](auto a, auto b) { return ((a > b) ? a : b); };
 
-  auto min = [](auto a, auto b) { return ((a < b) ? a : b); };
+    auto min = [](auto a, auto b) { return ((a < b) ? a : b); };
 
-  auto sqrt = [](auto x) { return (std::sqrt(x)); };
+    auto sqrt = [](auto x) { return (std::sqrt(x)); };
 
-  /*     ..
+    /*     ..
    *     .. executable statements ..
    *
    *     test the input parameters.
    *
    */
 
-  info = (!upper) && (!lower) ? -1
-         : (n < 0)            ? -2
+    info = (!upper) && (!lower) ? -1
+        : (n < 0)               ? -2
 #ifdef USE_VT
-         : (ncvt < 0)         ? -3
+        : (ncvt < 0) ? -3
 #else
-         : (nrv < 0)         ? -3
+        : (nrv < 0) ? -3
 #endif
-         : (nru < 0)          ? -4
-         : (ncc < 0)          ? -5
-	 : (ldu < max(1, nru)) ? -11
-	 : 0;
+        : (nru < 0)           ? -4
+        : (ncc < 0)           ? -5
+        : (ldu < max(1, nru)) ? -11
+                              : 0;
 
-  if (info != 0)
-    return;
+    if(info != 0)
+        return;
 
-  if (n == 0)
-    return;
-  if (n == 1)
-    goto L160;
-  /*
+    if(n == 0)
+        return;
+    if(n == 1)
+        goto L160;
+    /*
    *     if no singular vectors desired, use qd algorithm
    */
-  if (!rotate) {
-    call_lasq1(n, d(1), e(1), work(1), info);
-    /*
+    if(!rotate)
+    {
+        call_lasq1(n, d(1), e(1), work(1), info);
+        /*
      *     if info equals 2, dqds didn't finish, try to finish
      */
-    if (info != 2)
-      return;
-    info = 0;
-  }
+        if(info != 2)
+            return;
+        info = 0;
+    }
 
-  nm1 = n - 1;
-  nm12 = nm1 + nm1;
-  nm13 = nm12 + nm1;
-  idir = 0;
-  /*
+    nm1 = n - 1;
+    nm12 = nm1 + nm1;
+    nm13 = nm12 + nm1;
+    idir = 0;
+    /*
    *     get machine constants
    *
    */
-  {
-    char cmach_eps = 'E';
-    char cmach_unfl = 'S';
-    call_lamch(cmach_eps, eps);
-    call_lamch(cmach_unfl, unfl);
-  }
-  /*
+    {
+        char cmach_eps = 'E';
+        char cmach_unfl = 'S';
+        call_lamch(cmach_eps, eps);
+        call_lamch(cmach_unfl, unfl);
+    }
+    /*
    *     if matrix lower bidiagonal, rotate to be upper bidiagonal
    *     by applying givens rotations on the left
    */
 
-  if (lower) {
-    // do 10 i = 1, n - 1
-    for (i = 1; i <= (n - 1); i++) {
-      call_lartg(d(i), e(i), cs, sn, r);
-      d(i) = r;
-      e(i) = sn * d(i + 1);
-      d(i + 1) = cs * d(i + 1);
-      work(i) = cs;
-      work(nm1 + i) = sn;
-    }
-  L10:
+    if(lower)
+    {
+        // do 10 i = 1, n - 1
+        for(i = 1; i <= (n - 1); i++)
+        {
+            call_lartg(d(i), e(i), cs, sn, r);
+            d(i) = r;
+            e(i) = sn * d(i + 1);
+            d(i + 1) = cs * d(i + 1);
+            work(i) = cs;
+            work(nm1 + i) = sn;
+        }
+    L10:
 
-    /*
+        /*
      *        update singular vectors if desired
      */
 
-    if (nru > 0) {
-      // call_lasr( 'r', 'v', 'f', nru, n, work( 1 ), work( n ), u, ldu );
-      char side = 'R';
-      char pivot = 'V';
-      char direct = 'F';
-      if (use_gpu) {
-
-        call_lasr_gpu(side, pivot, direct, nru, n, work(1), work(n), u(1, 1),
-                      ldu, dwork, stream);
-      } else {
-        call_lasr(side, pivot, direct, nru, n, work(1), work(n), u(1, 1), ldu);
-      }
+        if(nru > 0)
+        {
+            // call_lasr( 'r', 'v', 'f', nru, n, work( 1 ), work( n ), u, ldu );
+            char side = 'R';
+            char pivot = 'V';
+            char direct = 'F';
+            if(use_gpu)
+            {
+                call_lasr_gpu(side, pivot, direct, nru, n, work(1), work(n), u(1, 1), ldu, dwork,
+                              stream);
+            }
+            else
+            {
+                call_lasr(side, pivot, direct, nru, n, work(1), work(n), u(1, 1), ldu);
+            }
+        }
+        if(ncc > 0)
+        {
+            // call_lasr( 'l', 'v', 'f', n, ncc, work( 1 ), work( n ), c, ldc );
+            char side = 'L';
+            char pivot = 'V';
+            char direct = 'F';
+            if(use_gpu)
+            {
+                call_lasr_gpu(side, pivot, direct, n, ncc, work(1), work(n), c(1, 1), ldc, dwork,
+                              stream);
+            }
+            else
+            {
+                call_lasr(side, pivot, direct, n, ncc, work(1), work(n), c(1, 1), ldc);
+            }
+        }
     }
-    if (ncc > 0) {
-      // call_lasr( 'l', 'v', 'f', n, ncc, work( 1 ), work( n ), c, ldc );
-      char side = 'L';
-      char pivot = 'V';
-      char direct = 'F';
-      if (use_gpu) {
-        call_lasr_gpu(side, pivot, direct, n, ncc, work(1), work(n), c(1, 1),
-                      ldc, dwork, stream);
-      } else {
-        call_lasr(side, pivot, direct, n, ncc, work(1), work(n), c(1, 1), ldc);
-      }
-    }
-  }
-  /*
+    /*
    *     compute singular values to relative accuracy tol
    *     (by setting tol to be negative, algorithm will compute
    *     singular values to absolute accuracy abs(tol)*norm(input matrix))
    */
 
-  tolmul = max(ten, min(hndrd, pow(eps, meight)));
-  tol = tolmul * eps;
+    tolmul = max(ten, min(hndrd, pow(eps, meight)));
+    tol = tolmul * eps;
 
-  /*
+    /*
    *     compute approximate maximum, minimum singular values
    */
 
-  /*
+    /*
         smax = zero
         do 20 i = 1, n
            smax = max( smax, abs( d( i ) ) )
@@ -1085,993 +1379,1151 @@ static void bdsqr_single_template(char uplo, I n,
            smax = max( smax, abs( e( i ) ) )
      L30:
   */
-  smax = zero;
-  // do 20 i = 1, n
-  for (i = 1; i <= n; i++) {
-    smax = max(smax, abs(d(i)));
-  }
+    smax = zero;
+    // do 20 i = 1, n
+    for(i = 1; i <= n; i++)
+    {
+        smax = max(smax, abs(d(i)));
+    }
 L20:
-  // do 30 i = 1, n - 1
-  for (i = 1; i <= (n - 1); i++) {
-    smax = max(smax, abs(e(i)));
-  }
+    // do 30 i = 1, n - 1
+    for(i = 1; i <= (n - 1); i++)
+    {
+        smax = max(smax, abs(e(i)));
+    }
 L30:
 
-  sminl = zero;
-  if (tol >= zero) {
-    /*
+    sminl = zero;
+    if(tol >= zero)
+    {
+        /*
      *        relative accuracy desired
      */
 
-    sminoa = abs(d(1));
-    if (sminoa == zero)
-      goto L50;
-    mu = sminoa;
-    // do 40 i = 2, n
-    for (i = 2; i <= n; i++) {
-      mu = abs(d(i)) * (mu / (mu + abs(e(i - 1))));
-      sminoa = min(sminoa, mu);
-      if (sminoa == zero)
-        goto L50;
-    }
-  L40:
-  L50:
+        sminoa = abs(d(1));
+        if(sminoa == zero)
+            goto L50;
+        mu = sminoa;
+        // do 40 i = 2, n
+        for(i = 2; i <= n; i++)
+        {
+            mu = abs(d(i)) * (mu / (mu + abs(e(i - 1))));
+            sminoa = min(sminoa, mu);
+            if(sminoa == zero)
+                goto L50;
+        }
+    L40:
+    L50:
 
-    sminoa = sminoa / sqrt(dble(n));
-    thresh = max(tol * sminoa, maxitr * (n * (n * unfl)));
-  } else {
-    /*
+        sminoa = sminoa / sqrt(dble(n));
+        thresh = max(tol * sminoa, maxitr * (n * (n * unfl)));
+    }
+    else
+    {
+        /*
      *        absolute accuracy desired
      */
 
-    thresh = max(abs(tol) * smax, maxitr * (n * (n * unfl)));
-  }
-  /*
+        thresh = max(abs(tol) * smax, maxitr * (n * (n * unfl)));
+    }
+    /*
    *     prepare for main iteration loop for the singular values
    *     (maxit is the maximum number of passes through the inner
    *     loop permitted before nonconvergence signalled.)
    */
-  maxitdivn = maxitr * n;
-  iterdivn = 0;
-  iter = -1;
-  oldll = -1;
-  oldm = -1;
-  /*
+    maxitdivn = maxitr * n;
+    iterdivn = 0;
+    iter = -1;
+    oldll = -1;
+    oldm = -1;
+    /*
    *     m points to last element of unconverged part of matrix
    */
-  m = n;
-  /*
+    m = n;
+    /*
    *     begin main iteration loop
    */
 L60:
-  /*
+    /*
    *     check for convergence or exceeding iteration count
    */
-  if (m <= 1)
-    goto L160;
+    if(m <= 1)
+        goto L160;
 
-  if (iter >= n) {
-    iter = iter - n;
-    iterdivn = iterdivn + 1;
-    if (iterdivn >= maxitdivn)
-      goto L200;
-  }
-  /*
+    if(iter >= n)
+    {
+        iter = iter - n;
+        iterdivn = iterdivn + 1;
+        if(iterdivn >= maxitdivn)
+            goto L200;
+    }
+    /*
    *     find diagonal block of matrix to work on
    */
-  if (tol < zero && abs(d(m)) <= thresh)
-    d(m) = zero;
+    if(tol < zero && abs(d(m)) <= thresh)
+        d(m) = zero;
 
-  smax = abs(d(m));
-  smin = smax;
-  // do 70 lll = 1, m - 1
-  for (lll = 1; lll <= (m - 1); lll++) {
-    ll = m - lll;
-    abss = abs(d(ll));
-    abse = abs(e(ll));
-    if (tol < zero && abss <= thresh)
-      d(ll) = zero;
-    if (abse <= thresh)
-      goto L80;
-    smin = min(smin, abss);
-    smax = max(smax, max(abss, abse));
-  }
+    smax = abs(d(m));
+    smin = smax;
+    // do 70 lll = 1, m - 1
+    for(lll = 1; lll <= (m - 1); lll++)
+    {
+        ll = m - lll;
+        abss = abs(d(ll));
+        abse = abs(e(ll));
+        if(tol < zero && abss <= thresh)
+            d(ll) = zero;
+        if(abse <= thresh)
+            goto L80;
+        smin = min(smin, abss);
+        smax = max(smax, max(abss, abse));
+    }
 L70:
-  ll = 0;
-  goto L90;
+    ll = 0;
+    goto L90;
 L80:
-  e(ll) = zero;
-  /*
+    e(ll) = zero;
+    /*
    *     matrix splits since e(ll) = 0
    */
-  if (ll == m - 1) {
-    /*
+    if(ll == m - 1)
+    {
+        /*
      *        convergence of bottom singular value, return to top of loop
      */
-    m = m - 1;
-    goto L60;
-  }
+        m = m - 1;
+        goto L60;
+    }
 L90:
-  ll = ll + 1;
-  /*
+    ll = ll + 1;
+    /*
    *     e(ll) through e(m-1) are nonzero, e(ll-1) is zero
    */
-  if (ll == m - 1) {
-    /*
+    if(ll == m - 1)
+    {
+        /*
      *        2 by 2 block, handle separately
      */
-    call_lasv2(d(m - 1), e(m - 1), d(m), sigmn, sigmx, sinr, cosr, sinl, cosl);
-    d(m - 1) = sigmx;
-    e(m - 1) = zero;
-    d(m) = sigmn;
-    /*
+        call_lasv2(d(m - 1), e(m - 1), d(m), sigmn, sigmx, sinr, cosr, sinl, cosl);
+        d(m - 1) = sigmx;
+        e(m - 1) = zero;
+        d(m) = sigmn;
+        /*
      *        compute singular vectors, if desired
      */
 #ifdef USE_VT
-    if (ncvt > 0) {
-      if (use_gpu) {
-        call_rot_gpu(ncvt, vt(m - 1, 1), ldvt, vt(m, 1), ldvt, cosr, sinr);
-      } else {
-        call_rot(ncvt, vt(m - 1, 1), ldvt, vt(m, 1), ldvt, cosr, sinr);
-      }
-    }
+        if(ncvt > 0)
+        {
+            if(use_gpu)
+            {
+                call_rot_gpu(ncvt, vt(m - 1, 1), ldvt, vt(m, 1), ldvt, cosr, sinr);
+            }
+            else
+            {
+                call_rot(ncvt, vt(m - 1, 1), ldvt, vt(m, 1), ldvt, cosr, sinr);
+            }
+        }
 #else
-    if (nrv > 0) {
-      if (use_gpu) {
-        call_rot_gpu(nrv, v(1,m - 1), 1, v(1,m), 1, cosr, sinr);
-      } else {
-        call_rot(nrv, v(1,m - 1), 1, v(1,m), 1, cosr, sinr);
-      }
-    }
+        if(nrv > 0)
+        {
+            if(use_gpu)
+            {
+                call_rot_gpu(nrv, v(1, m - 1), 1, v(1, m), 1, cosr, sinr);
+            }
+            else
+            {
+                call_rot(nrv, v(1, m - 1), 1, v(1, m), 1, cosr, sinr);
+            }
+        }
 #endif
-    if (nru > 0) {
-      if (use_gpu) {
-        call_rot_gpu(nru, u(1, m - 1), ione, u(1, m), ione, cosl, sinl);
-      } else {
-        call_rot(nru, u(1, m - 1), ione, u(1, m), ione, cosl, sinl);
-      }
+        if(nru > 0)
+        {
+            if(use_gpu)
+            {
+                call_rot_gpu(nru, u(1, m - 1), ione, u(1, m), ione, cosl, sinl);
+            }
+            else
+            {
+                call_rot(nru, u(1, m - 1), ione, u(1, m), ione, cosl, sinl);
+            }
+        }
+        if(ncc > 0)
+        {
+            if(use_gpu)
+            {
+                call_rot_gpu(ncc, c(m - 1, 1), ldc, c(m, 1), ldc, cosl, sinl);
+            }
+            else
+            {
+                call_rot(ncc, c(m - 1, 1), ldc, c(m, 1), ldc, cosl, sinl);
+            }
+        }
+        m = m - 2;
+        goto L60;
     }
-    if (ncc > 0) {
-      if (use_gpu) {
-        call_rot_gpu(ncc, c(m - 1, 1), ldc, c(m, 1), ldc, cosl, sinl);
-      } else {
-        call_rot(ncc, c(m - 1, 1), ldc, c(m, 1), ldc, cosl, sinl);
-      }
-    }
-    m = m - 2;
-    goto L60;
-  }
-  /*
+    /*
    *     if working on new submatrix, choose shift direction
    *     (from larger end diagonal element towards smaller)
    */
-  if (ll > oldm || m < oldll) {
-    if (abs(d(ll)) >= abs(d(m))) {
-      /*
+    if(ll > oldm || m < oldll)
+    {
+        if(abs(d(ll)) >= abs(d(m)))
+        {
+            /*
        *           chase bulge from top (big end) to bottom (small end)
        */
-      idir = 1;
-    } else {
-      /*
+            idir = 1;
+        }
+        else
+        {
+            /*
        *           chase bulge from bottom (big end) to top (small end)
        */
-      idir = 2;
+            idir = 2;
+        }
     }
-  }
-  /*
+    /*
    *     apply convergence tests
    */
-  if (idir == 1) {
-    /*
+    if(idir == 1)
+    {
+        /*
      *        run convergence test in forward direction
      *        first apply standard test to bottom of matrix
      */
-    if (abs(e(m - 1)) <= abs(tol) * abs(d(m)) ||
-        (tol < zero && abs(e(m - 1)) <= thresh)) {
-      e(m - 1) = zero;
-      goto L60;
-    }
+        if(abs(e(m - 1)) <= abs(tol) * abs(d(m)) || (tol < zero && abs(e(m - 1)) <= thresh))
+        {
+            e(m - 1) = zero;
+            goto L60;
+        }
 
-    if (tol >= zero) {
-      /*
+        if(tol >= zero)
+        {
+            /*
        *           if relative accuracy desired,
        *           apply convergence criterion forward
        */
-      mu = abs(d(ll));
-      sminl = mu;
-      // do 100 lll = ll, m - 1
-      for (lll = ll; lll <= (m - 1); lll++) {
-        if (abs(e(lll)) <= tol * mu) {
-          e(lll) = zero;
-          goto L60;
+            mu = abs(d(ll));
+            sminl = mu;
+            // do 100 lll = ll, m - 1
+            for(lll = ll; lll <= (m - 1); lll++)
+            {
+                if(abs(e(lll)) <= tol * mu)
+                {
+                    e(lll) = zero;
+                    goto L60;
+                }
+                mu = abs(d(lll + 1)) * (mu / (mu + abs(e(lll))));
+                sminl = min(sminl, mu);
+            }
+            // L100:
         }
-        mu = abs(d(lll + 1)) * (mu / (mu + abs(e(lll))));
-        sminl = min(sminl, mu);
-      }
-      // L100:
     }
-
-  } else {
-    /*
+    else
+    {
+        /*
      *        run convergence test in backward direction
      *        first apply standard test to top of matrix
      */
-    if (abs(e(ll)) <= abs(tol) * abs(d(ll)) ||
-        (tol < zero && abs(e(ll)) <= thresh)) {
-      e(ll) = zero;
-      goto L60;
-    }
+        if(abs(e(ll)) <= abs(tol) * abs(d(ll)) || (tol < zero && abs(e(ll)) <= thresh))
+        {
+            e(ll) = zero;
+            goto L60;
+        }
 
-    if (tol >= zero) {
-      /*
+        if(tol >= zero)
+        {
+            /*
        *           if relative accuracy desired,
        *           apply convergence criterion backward
        */
-      mu = abs(d(m));
-      sminl = mu;
-      // do 110 lll = m - 1, ll, -1
-      for (lll = (m - 1); lll >= ll; lll--) {
-        if (abs(e(lll)) <= tol * mu) {
-          e(lll) = zero;
-          goto L60;
+            mu = abs(d(m));
+            sminl = mu;
+            // do 110 lll = m - 1, ll, -1
+            for(lll = (m - 1); lll >= ll; lll--)
+            {
+                if(abs(e(lll)) <= tol * mu)
+                {
+                    e(lll) = zero;
+                    goto L60;
+                }
+                mu = abs(d(lll)) * (mu / (mu + abs(e(lll))));
+                sminl = min(sminl, mu);
+            }
+            // L110:
         }
-        mu = abs(d(lll)) * (mu / (mu + abs(e(lll))));
-        sminl = min(sminl, mu);
-      }
-      // L110:
     }
-  }
-  oldll = ll;
-  oldm = m;
-  /*
+    oldll = ll;
+    oldm = m;
+    /*
    *     compute shift.  first, test if shifting would ruin relative
    *     accuracy, and if so set the shift to zero.
    */
-  if (tol >= zero && n * tol * (sminl / smax) <= max(eps, hndrth * tol)) {
-    /*
+    if(tol >= zero && n * tol * (sminl / smax) <= max(eps, hndrth * tol))
+    {
+        /*
      *        use a zero shift to avoid loss of relative accuracy
      */
-    shift = zero;
-  } else {
-    /*
-     *        compute the shift from 2-by-2 block at end of matrix
-     */
-    if (idir == 1) {
-      sll = abs(d(ll));
-      call_las2(d(m - 1), e(m - 1), d(m), shift, r);
-    } else {
-      sll = abs(d(m));
-      call_las2(d(ll), e(ll), d(ll + 1), shift, r);
-    }
-    /*
-     *        test if shift negligible, and if so set to zero
-     */
-    if (sll > zero) {
-      if ((shift / sll) * (shift / sll) < eps)
         shift = zero;
     }
-  }
-  /*
+    else
+    {
+        /*
+     *        compute the shift from 2-by-2 block at end of matrix
+     */
+        if(idir == 1)
+        {
+            sll = abs(d(ll));
+            call_las2(d(m - 1), e(m - 1), d(m), shift, r);
+        }
+        else
+        {
+            sll = abs(d(m));
+            call_las2(d(ll), e(ll), d(ll + 1), shift, r);
+        }
+        /*
+     *        test if shift negligible, and if so set to zero
+     */
+        if(sll > zero)
+        {
+            if((shift / sll) * (shift / sll) < eps)
+                shift = zero;
+        }
+    }
+    /*
    *     increment iteration count
    */
-  iter = iter + m - ll;
-  /*
+    iter = iter + m - ll;
+    /*
    *     if shift = 0, do simplified qr iteration
    */
-  if (shift == zero) {
-    if (idir == 1) {
-      /*
+    if(shift == zero)
+    {
+        if(idir == 1)
+        {
+            /*
        *           chase bulge from top to bottom
        *           save cosines and sines for later singular vector updates
        */
-      cs = one;
-      oldcs = one;
-      // do 120 i = ll, m - 1
-      for (i = ll; i <= (m - 1); i++) {
-        auto di_cs = d(i) * cs;
-        call_lartg(di_cs, e(i), cs, sn, r);
-        if (i > ll)
-          e(i - 1) = oldsn * r;
-        auto oldcs_r = oldcs * r;
-        auto dip1_sn = d(i + 1) * sn;
-        call_lartg(oldcs_r, dip1_sn, oldcs, oldsn, d(i));
-        work(i - ll + 1) = cs;
-        work(i - ll + 1 + nm1) = sn;
-        work(i - ll + 1 + nm12) = oldcs;
-        work(i - ll + 1 + nm13) = oldsn;
-      }
-    L120:
-      h = d(m) * cs;
-      d(m) = h * oldcs;
-      e(m - 1) = h * oldsn;
-      /*
+            cs = one;
+            oldcs = one;
+            // do 120 i = ll, m - 1
+            for(i = ll; i <= (m - 1); i++)
+            {
+                auto di_cs = d(i) * cs;
+                call_lartg(di_cs, e(i), cs, sn, r);
+                if(i > ll)
+                    e(i - 1) = oldsn * r;
+                auto oldcs_r = oldcs * r;
+                auto dip1_sn = d(i + 1) * sn;
+                call_lartg(oldcs_r, dip1_sn, oldcs, oldsn, d(i));
+                work(i - ll + 1) = cs;
+                work(i - ll + 1 + nm1) = sn;
+                work(i - ll + 1 + nm12) = oldcs;
+                work(i - ll + 1 + nm13) = oldsn;
+            }
+        L120:
+            h = d(m) * cs;
+            d(m) = h * oldcs;
+            e(m - 1) = h * oldsn;
+            /*
        *           update singular vectors
        */
 #ifdef USE_VT
-      if (ncvt > 0) {
-        // call_lasr( 'l', 'v', 'f', m-ll+1, ncvt, work( 1 ), work( n ), vt(
-        // ll, 1 ), ldvt )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncvt, work(1), work(n),
-                        vt(ll, 1), ldvt, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1),
-                    ldvt);
-        }
-      }
+            if(ncvt > 0)
+            {
+                // call_lasr( 'l', 'v', 'f', m-ll+1, ncvt, work( 1 ), work( n ), vt(
+                // ll, 1 ), ldvt )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1), ldvt,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1), ldvt);
+                }
+            }
 #else
 
-      if (nrv > 0) {
-        // call_lasr( 'r', 'v', 'f', nrv, m-ll+1, work( 1 ), work( n ), 
-	//            v(1,ll ), ldv)
-        char side = 'R';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nrv, mm, work(1), work(n),
-                        v(1,ll), ldv, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nrv, mm, work(1), work(n), v(1,ll),
-                    ldv);
-        }
-      }
+            if(nrv > 0)
+            {
+                // call_lasr( 'r', 'v', 'f', nrv, m-ll+1, work( 1 ), work( n ),
+                //            v(1,ll ), ldv)
+                char side = 'R';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nrv, mm, work(1), work(n), v(1, ll), ldv,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nrv, mm, work(1), work(n), v(1, ll), ldv);
+                }
+            }
 #endif
-      if (nru > 0) {
-        // call_lasr( 'r', 'v', 'f', nru, m-ll+1, work( nm12+1 ), work( nm13+1
-        // ), u( 1, ll ), ldu )
-        char side = 'R';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nru, mm, work(nm12 + 1),
-                        work(nm13 + 1), u(1, ll), ldu, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nru, mm, work(nm12 + 1),
-                    work(nm13 + 1), u(1, ll), ldu);
-        }
-      }
-      if (ncc > 0) {
-        // call_lasr( 'l', 'v', 'f', m-ll+1, ncc, work( nm12+1 ), work( nm13+1
-        // ), c( ll, 1 ), ldc )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncc, work(nm12 + 1),
-                        work(nm13 + 1), c(ll, 1), ldc, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncc, work(nm12 + 1),
-                    work(nm13 + 1), c(ll, 1), ldc);
-        }
-      }
-      /*
+            if(nru > 0)
+            {
+                // call_lasr( 'r', 'v', 'f', nru, m-ll+1, work( nm12+1 ), work( nm13+1
+                // ), u( 1, ll ), ldu )
+                char side = 'R';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nru, mm, work(nm12 + 1), work(nm13 + 1),
+                                  u(1, ll), ldu, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nru, mm, work(nm12 + 1), work(nm13 + 1),
+                              u(1, ll), ldu);
+                }
+            }
+            if(ncc > 0)
+            {
+                // call_lasr( 'l', 'v', 'f', m-ll+1, ncc, work( nm12+1 ), work( nm13+1
+                // ), c( ll, 1 ), ldc )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncc, work(nm12 + 1), work(nm13 + 1),
+                                  c(ll, 1), ldc, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncc, work(nm12 + 1), work(nm13 + 1),
+                              c(ll, 1), ldc);
+                }
+            }
+            /*
        *           test convergence
        */
-      if (abs(e(m - 1)) <= thresh)
-        e(m - 1) = zero;
-
-    } else {
-      /*
+            if(abs(e(m - 1)) <= thresh)
+                e(m - 1) = zero;
+        }
+        else
+        {
+            /*
        *           chase bulge from bottom to top
        *           save cosines and sines for later singular vector updates
        */
-      cs = one;
-      oldcs = one;
-      // do 130 i = m, ll + 1, -1
-      for (i = m; i >= (ll + 1); i--) {
-        auto di_cs = d(i) * cs;
-        call_lartg(di_cs, e(i - 1), cs, sn, r);
+            cs = one;
+            oldcs = one;
+            // do 130 i = m, ll + 1, -1
+            for(i = m; i >= (ll + 1); i--)
+            {
+                auto di_cs = d(i) * cs;
+                call_lartg(di_cs, e(i - 1), cs, sn, r);
 
-        if (i < m)
-          e(i) = oldsn * r;
+                if(i < m)
+                    e(i) = oldsn * r;
 
-        auto oldcs_r = oldcs * r;
-        auto dim1_sn = d(i - 1) * sn;
-        call_lartg(oldcs_r, dim1_sn, oldcs, oldsn, d(i));
+                auto oldcs_r = oldcs * r;
+                auto dim1_sn = d(i - 1) * sn;
+                call_lartg(oldcs_r, dim1_sn, oldcs, oldsn, d(i));
 
-        work(i - ll) = cs;
-        work(i - ll + nm1) = -sn;
-        work(i - ll + nm12) = oldcs;
-        work(i - ll + nm13) = -oldsn;
-      }
-    L130:
-      h = d(ll) * cs;
-      d(ll) = h * oldcs;
-      e(ll) = h * oldsn;
-      /*
+                work(i - ll) = cs;
+                work(i - ll + nm1) = -sn;
+                work(i - ll + nm12) = oldcs;
+                work(i - ll + nm13) = -oldsn;
+            }
+        L130:
+            h = d(ll) * cs;
+            d(ll) = h * oldcs;
+            e(ll) = h * oldsn;
+            /*
        *           update singular vectors
        */
 #ifdef USE_VT
-      if (ncvt > 0) {
-        // call_lasr( 'l', 'v', 'b', m-ll+1, ncvt, work( nm12+1 ), work(
-        // nm13+1
-        // ), vt( ll, 1 ), ldvt );
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncvt, work(nm12 + 1),
-                        work(nm13 + 1), vt(ll, 1), ldvt, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncvt, work(nm12 + 1),
-                    work(nm13 + 1), vt(ll, 1), ldvt);
-        }
-      }
+            if(ncvt > 0)
+            {
+                // call_lasr( 'l', 'v', 'b', m-ll+1, ncvt, work( nm12+1 ), work(
+                // nm13+1
+                // ), vt( ll, 1 ), ldvt );
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncvt, work(nm12 + 1), work(nm13 + 1),
+                                  vt(ll, 1), ldvt, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncvt, work(nm12 + 1), work(nm13 + 1),
+                              vt(ll, 1), ldvt);
+                }
+            }
 #else
 
-      if (nrv > 0) {
-        // call_lasr( 'r', 'v', 'b', nrv, m-ll+1, work( nm12+1 ), work( nm13+1 ), v( 1,ll ), ldv );
-        char side = 'R';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nrv, mm, work(nm12 + 1),
-                        work(nm13 + 1), v(1,ll), ldv, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nrv, mm, work(nm12 + 1),
-                    work(nm13 + 1), v(1,ll), ldv);
-        }
-      }
-
+            if(nrv > 0)
+            {
+                // call_lasr( 'r', 'v', 'b', nrv, m-ll+1, work( nm12+1 ), work( nm13+1 ), v( 1,ll ), ldv );
+                char side = 'R';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nrv, mm, work(nm12 + 1), work(nm13 + 1),
+                                  v(1, ll), ldv, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nrv, mm, work(nm12 + 1), work(nm13 + 1),
+                              v(1, ll), ldv);
+                }
+            }
 
 #endif
 
-      if (nru > 0) {
-        // call_lasr( 'r', 'v', 'b', nru, m-ll+1, work( 1 ), work( n ), u( 1,
-        // ll
-        // ), ldu )
-        char side = 'R';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nru, mm, work(1), work(n),
-                        u(1, ll), ldu, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll),
-                    ldu);
-        }
-      }
-      if (ncc > 0) {
-        // call_lasr( 'l', 'v', 'b', m-ll+1, ncc, work( 1 ), work( n ), c( ll,
-        // 1
-        // ), ldc )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncc, work(1), work(n),
-                        c(ll, 1), ldc, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1),
-                    ldc);
-        }
-      }
-      /*
+            if(nru > 0)
+            {
+                // call_lasr( 'r', 'v', 'b', nru, m-ll+1, work( 1 ), work( n ), u( 1,
+                // ll
+                // ), ldu )
+                char side = 'R';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll), ldu,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll), ldu);
+                }
+            }
+            if(ncc > 0)
+            {
+                // call_lasr( 'l', 'v', 'b', m-ll+1, ncc, work( 1 ), work( n ), c( ll,
+                // 1
+                // ), ldc )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1), ldc,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1), ldc);
+                }
+            }
+            /*
        *           test convergence
        */
-      if (abs(e(ll)) <= thresh)
-        e(ll) = zero;
+            if(abs(e(ll)) <= thresh)
+                e(ll) = zero;
+        }
     }
-  } else {
-    /*
+    else
+    {
+        /*
      *        use nonzero shift
      */
-    if (idir == 1) {
-      /*
+        if(idir == 1)
+        {
+            /*
        *           chase bulge from top to bottom
        *           save cosines and sines for later singular vector updates
        */
-      f = (abs(d(ll)) - shift) * (sign(one, d(ll)) + shift / d(ll));
-      g = e(ll);
-      // do 140 i = ll, m - 1
-      for (i = ll; i <= (m - 1); i++) {
-        call_lartg(f, g, cosr, sinr, r);
-        if (i > ll)
-          e(i - 1) = r;
-        f = cosr * d(i) + sinr * e(i);
-        e(i) = cosr * e(i) - sinr * d(i);
-        g = sinr * d(i + 1);
-        d(i + 1) = cosr * d(i + 1);
-        call_lartg(f, g, cosl, sinl, r);
-        d(i) = r;
-        f = cosl * e(i) + sinl * d(i + 1);
-        d(i + 1) = cosl * d(i + 1) - sinl * e(i);
-        if (i < m - 1) {
-          g = sinl * e(i + 1);
-          e(i + 1) = cosl * e(i + 1);
-        }
-        work(i - ll + 1) = cosr;
-        work(i - ll + 1 + nm1) = sinr;
-        work(i - ll + 1 + nm12) = cosl;
-        work(i - ll + 1 + nm13) = sinl;
-      }
-    L140:
-      e(m - 1) = f;
-      /*
+            f = (abs(d(ll)) - shift) * (sign(one, d(ll)) + shift / d(ll));
+            g = e(ll);
+            // do 140 i = ll, m - 1
+            for(i = ll; i <= (m - 1); i++)
+            {
+                call_lartg(f, g, cosr, sinr, r);
+                if(i > ll)
+                    e(i - 1) = r;
+                f = cosr * d(i) + sinr * e(i);
+                e(i) = cosr * e(i) - sinr * d(i);
+                g = sinr * d(i + 1);
+                d(i + 1) = cosr * d(i + 1);
+                call_lartg(f, g, cosl, sinl, r);
+                d(i) = r;
+                f = cosl * e(i) + sinl * d(i + 1);
+                d(i + 1) = cosl * d(i + 1) - sinl * e(i);
+                if(i < m - 1)
+                {
+                    g = sinl * e(i + 1);
+                    e(i + 1) = cosl * e(i + 1);
+                }
+                work(i - ll + 1) = cosr;
+                work(i - ll + 1 + nm1) = sinr;
+                work(i - ll + 1 + nm12) = cosl;
+                work(i - ll + 1 + nm13) = sinl;
+            }
+        L140:
+            e(m - 1) = f;
+            /*
        *           update singular vectors
        */
 #ifdef USE_VT
-      if (ncvt > 0) {
-        // call_lasr( 'l', 'v', 'f', m-ll+1, ncvt, work( 1 ), work( n ), vt(
-        // ll, 1 ), ldvt )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncvt, work(1), work(n),
-                        vt(ll, 1), ldvt, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1),
-                    ldvt);
-        }
-      }
+            if(ncvt > 0)
+            {
+                // call_lasr( 'l', 'v', 'f', m-ll+1, ncvt, work( 1 ), work( n ), vt(
+                // ll, 1 ), ldvt )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1), ldvt,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1), ldvt);
+                }
+            }
 #else
 
-      if (nrv > 0) {
-        // call_lasr( 'r', 'v', 'f', nrv, m-ll+1, work( 1 ), work( n ), v( 1, ll ), ldv )
-        char side = 'R';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nrv, mm, work(1), work(n),
-                        v(1,ll), ldv, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nrv, mm, work(1), work(n), v(1,ll),
-                    ldv);
-        }
-      }
+            if(nrv > 0)
+            {
+                // call_lasr( 'r', 'v', 'f', nrv, m-ll+1, work( 1 ), work( n ), v( 1, ll ), ldv )
+                char side = 'R';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nrv, mm, work(1), work(n), v(1, ll), ldv,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nrv, mm, work(1), work(n), v(1, ll), ldv);
+                }
+            }
 #endif
 
-      if (nru > 0) {
-        // call_lasr( 'r', 'v', 'f', nru, m-ll+1, work( nm12+1 ), work( nm13+1
-        // ), u( 1, ll ), ldu )
-        char side = 'R';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nru, mm, work(nm12 + 1),
-                        work(nm13 + 1), u(1, ll), ldu, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nru, mm, work(nm12 + 1),
-                    work(nm13 + 1), u(1, ll), ldu);
-        }
-      }
-      if (ncc > 0) {
-        // call_lasr( 'l', 'v', 'f', m-ll+1, ncc, work( nm12+1 ), work( nm13+1
-        // ), c( ll, 1 ), ldc )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'F';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncc, work(nm12 + 1),
-                        work(nm13 + 1), c(ll, 1), ldc, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncc, work(nm12 + 1),
-                    work(nm13 + 1), c(ll, 1), ldc);
-        }
-      }
-      /*
+            if(nru > 0)
+            {
+                // call_lasr( 'r', 'v', 'f', nru, m-ll+1, work( nm12+1 ), work( nm13+1
+                // ), u( 1, ll ), ldu )
+                char side = 'R';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nru, mm, work(nm12 + 1), work(nm13 + 1),
+                                  u(1, ll), ldu, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nru, mm, work(nm12 + 1), work(nm13 + 1),
+                              u(1, ll), ldu);
+                }
+            }
+            if(ncc > 0)
+            {
+                // call_lasr( 'l', 'v', 'f', m-ll+1, ncc, work( nm12+1 ), work( nm13+1
+                // ), c( ll, 1 ), ldc )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'F';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncc, work(nm12 + 1), work(nm13 + 1),
+                                  c(ll, 1), ldc, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncc, work(nm12 + 1), work(nm13 + 1),
+                              c(ll, 1), ldc);
+                }
+            }
+            /*
        *           test convergence
        */
-      if (abs(e(m - 1)) <= thresh)
-        e(m - 1) = zero;
-
-    } else {
-      /*
+            if(abs(e(m - 1)) <= thresh)
+                e(m - 1) = zero;
+        }
+        else
+        {
+            /*
        *           chase bulge from bottom to top
        *           save cosines and sines for later singular vector updates
        */
-      f = (abs(d(m)) - shift) * (sign(one, d(m)) + shift / d(m));
-      g = e(m - 1);
-      // do 150 i = m, ll + 1, -1
-      for (i = m; i >= (ll + 1); i--) {
-        call_lartg(f, g, cosr, sinr, r);
-        if (i < m)
-          e(i) = r;
-        f = cosr * d(i) + sinr * e(i - 1);
-        e(i - 1) = cosr * e(i - 1) - sinr * d(i);
-        g = sinr * d(i - 1);
-        d(i - 1) = cosr * d(i - 1);
-        call_lartg(f, g, cosl, sinl, r);
-        d(i) = r;
-        f = cosl * e(i - 1) + sinl * d(i - 1);
-        d(i - 1) = cosl * d(i - 1) - sinl * e(i - 1);
-        if (i > ll + 1) {
-          g = sinl * e(i - 2);
-          e(i - 2) = cosl * e(i - 2);
-        }
-        work(i - ll) = cosr;
-        work(i - ll + nm1) = -sinr;
-        work(i - ll + nm12) = cosl;
-        work(i - ll + nm13) = -sinl;
-      }
-    L150:
-      e(ll) = f;
-      /*
+            f = (abs(d(m)) - shift) * (sign(one, d(m)) + shift / d(m));
+            g = e(m - 1);
+            // do 150 i = m, ll + 1, -1
+            for(i = m; i >= (ll + 1); i--)
+            {
+                call_lartg(f, g, cosr, sinr, r);
+                if(i < m)
+                    e(i) = r;
+                f = cosr * d(i) + sinr * e(i - 1);
+                e(i - 1) = cosr * e(i - 1) - sinr * d(i);
+                g = sinr * d(i - 1);
+                d(i - 1) = cosr * d(i - 1);
+                call_lartg(f, g, cosl, sinl, r);
+                d(i) = r;
+                f = cosl * e(i - 1) + sinl * d(i - 1);
+                d(i - 1) = cosl * d(i - 1) - sinl * e(i - 1);
+                if(i > ll + 1)
+                {
+                    g = sinl * e(i - 2);
+                    e(i - 2) = cosl * e(i - 2);
+                }
+                work(i - ll) = cosr;
+                work(i - ll + nm1) = -sinr;
+                work(i - ll + nm12) = cosl;
+                work(i - ll + nm13) = -sinl;
+            }
+        L150:
+            e(ll) = f;
+            /*
        *           test convergence
        */
-      if (abs(e(ll)) <= thresh)
-        e(ll) = zero;
-      /*
+            if(abs(e(ll)) <= thresh)
+                e(ll) = zero;
+                /*
        *           update singular vectors if desired
        */
 #ifdef USE_VT
-      if (ncvt > 0) {
-        // call_lasr( 'l', 'v', 'b', m-ll+1, ncvt, work( nm12+1 ), work(
-        // nm13+1
-        // ), vt( ll, 1 ), ldvt )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncvt, work(nm12 + 1),
-                        work(nm13 + 1), vt(ll, 1), ldvt, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncvt, work(nm12 + 1),
-                    work(nm13 + 1), vt(ll, 1), ldvt);
-        }
-      }
+            if(ncvt > 0)
+            {
+                // call_lasr( 'l', 'v', 'b', m-ll+1, ncvt, work( nm12+1 ), work(
+                // nm13+1
+                // ), vt( ll, 1 ), ldvt )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncvt, work(nm12 + 1), work(nm13 + 1),
+                                  vt(ll, 1), ldvt, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncvt, work(nm12 + 1), work(nm13 + 1),
+                              vt(ll, 1), ldvt);
+                }
+            }
 #else
 
-      if (nrv > 0) {
-        // call_lasr( 'r', 'v', 'b', nrv, m-ll+1, work( nm12+1 ), work( nm13+1 ), v( 1,ll ), ldv )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nrv, mm, work(nm12 + 1),
-                        work(nm13 + 1), v(1,ll), ldv, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nrv, mm, work(nm12 + 1),
-                    work(nm13 + 1), v(1,ll), ldv);
-        }
-      }
+            if(nrv > 0)
+            {
+                // call_lasr( 'r', 'v', 'b', nrv, m-ll+1, work( nm12+1 ), work( nm13+1 ), v( 1,ll ), ldv )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nrv, mm, work(nm12 + 1), work(nm13 + 1),
+                                  v(1, ll), ldv, dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nrv, mm, work(nm12 + 1), work(nm13 + 1),
+                              v(1, ll), ldv);
+                }
+            }
 #endif
-      if (nru > 0) {
-        // call_lasr( 'r', 'v', 'b', nru, m-ll+1, work( 1 ), work( n ), u( 1,
-        // ll
-        // ), ldu )
-        char side = 'R';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, nru, mm, work(1), work(n),
-                        u(1, ll), ldu, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll),
-                    ldu);
+            if(nru > 0)
+            {
+                // call_lasr( 'r', 'v', 'b', nru, m-ll+1, work( 1 ), work( n ), u( 1,
+                // ll
+                // ), ldu )
+                char side = 'R';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll), ldu,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll), ldu);
+                }
+            }
+            if(ncc > 0)
+            {
+                // call_lasr( 'l', 'v', 'b', m-ll+1, ncc, work( 1 ), work( n ), c( ll,
+                // 1
+                // ), ldc )
+                char side = 'L';
+                char pivot = 'V';
+                char direct = 'B';
+                auto mm = m - ll + 1;
+                if(use_gpu)
+                {
+                    call_lasr_gpu(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1), ldc,
+                                  dwork, stream);
+                }
+                else
+                {
+                    call_lasr(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1), ldc);
+                }
+            }
         }
-      }
-      if (ncc > 0) {
-        // call_lasr( 'l', 'v', 'b', m-ll+1, ncc, work( 1 ), work( n ), c( ll,
-        // 1
-        // ), ldc )
-        char side = 'L';
-        char pivot = 'V';
-        char direct = 'B';
-        auto mm = m - ll + 1;
-        if (use_gpu) {
-          call_lasr_gpu(side, pivot, direct, mm, ncc, work(1), work(n),
-                        c(ll, 1), ldc, dwork, stream);
-        } else {
-          call_lasr(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1),
-                    ldc);
-        }
-      }
     }
-  }
-  /*
+    /*
    *     qr iteration finished, go back and check convergence
    */
-  goto L60;
+    goto L60;
 
 /*
  *     all singular values converged, so make them positive
  */
 L160:
-  // do 170 i = 1, n
-  for (i = 1; i <= n; i++) {
-    if (d(i) < zero) {
-      d(i) = -d(i);
-      /*
+    // do 170 i = 1, n
+    for(i = 1; i <= n; i++)
+    {
+        if(d(i) < zero)
+        {
+            d(i) = -d(i);
+            /*
        *           change sign of singular vectors, if desired
        */
 #ifdef USE_VT
-      if (ncvt > 0) {
-        if (use_gpu) {
-          call_scal_gpu(ncvt, negone, vt(i, 1), ldvt);
-        } else {
-          call_scal(ncvt, negone, vt(i, 1), ldvt);
-        }
-      }
+            if(ncvt > 0)
+            {
+                if(use_gpu)
+                {
+                    call_scal_gpu(ncvt, negone, vt(i, 1), ldvt);
+                }
+                else
+                {
+                    call_scal(ncvt, negone, vt(i, 1), ldvt);
+                }
+            }
 #else
 
-      if (nrv > 0) {
-        if (use_gpu) {
-          call_scal_gpu(nrv, negone, v(1,i), 1);
-        } else {
-          call_scal(nrv, negone, v(1,i), 1);
-        }
-      }
+            if(nrv > 0)
+            {
+                if(use_gpu)
+                {
+                    call_scal_gpu(nrv, negone, v(1, i), 1);
+                }
+                else
+                {
+                    call_scal(nrv, negone, v(1, i), 1);
+                }
+            }
 #endif
+        }
     }
-  }
 L170:
 
-  bool const need_sort = false;
-  if (need_sort) {
-  /*
+    if(need_sort)
+    {
+        /*
    *     sort the singular values into decreasing order (insertion sort on
    *     singular values, but only one transposition per singular vector)
    */
-  // do 190 i = 1, n - 1
-  for (i = 1; i <= (n - 1); i++) {
-    /*
+        // do 190 i = 1, n - 1
+        for(i = 1; i <= (n - 1); i++)
+        {
+            /*
      *        scan for smallest d(i)
      */
-    isub = 1;
-    smin = d(1);
-    // do 180 j = 2, n + 1 - i
-    for (j = 2; j <= (n + 1 - i); j++) {
-      if (d(j) <= smin) {
-        isub = j;
-        smin = d(j);
-      }
-    }
-  L180:
-    if (isub != n + 1 - i) {
-      /*
+            isub = 1;
+            smin = d(1);
+            // do 180 j = 2, n + 1 - i
+            for(j = 2; j <= (n + 1 - i); j++)
+            {
+                if(d(j) <= smin)
+                {
+                    isub = j;
+                    smin = d(j);
+                }
+            }
+        L180:
+            if(isub != n + 1 - i)
+            {
+                /*
        *           swap singular values and vectors
        */
-      d(isub) = d(n + 1 - i);
-      d(n + 1 - i) = smin;
+                d(isub) = d(n + 1 - i);
+                d(n + 1 - i) = smin;
 #ifdef USE_VT
-      if (ncvt > 0) {
-        if (use_gpu) {
-          call_swap_gpu(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
-        } else {
-          call_swap(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
-        }
-      }
+                if(ncvt > 0)
+                {
+                    if(use_gpu)
+                    {
+                        call_swap_gpu(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
+                    }
+                    else
+                    {
+                        call_swap(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
+                    }
+                }
 #else
 
-      if (nrv > 0) {
-        if (use_gpu) {
-          call_swap_gpu(nrv, v(1,isub), 1, v(1,n + 1 - i), 1);
-        } else {
-          call_swap(nrv, v(1,isub), 1, v(1,n + 1 - i), 1);
-        }
-      }
+                if(nrv > 0)
+                {
+                    if(use_gpu)
+                    {
+                        call_swap_gpu(nrv, v(1, isub), ione, v(1, n + 1 - i), ione);
+                    }
+                    else
+                    {
+                        call_swap(nrv, v(1, isub), ione, v(1, n + 1 - i), ione);
+                    }
+                }
 #endif
-      if (nru > 0) {
-        if (use_gpu) {
-          call_swap_gpu(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
-        } else {
-          call_swap(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
+                if(nru > 0)
+                {
+                    if(use_gpu)
+                    {
+                        call_swap_gpu(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
+                    }
+                    else
+                    {
+                        call_swap(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
+                    }
+                }
+                if(ncc > 0)
+                {
+                    if(use_gpu)
+                    {
+                        call_swap_gpu(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
+                    }
+                    else
+                    {
+                        call_swap(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
+                    }
+                }
+            }
         }
-      }
-      if (ncc > 0) {
-        if (use_gpu) {
-          call_swap_gpu(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
-        } else {
-          call_swap(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
-        }
-      }
-    }
-  }
-  } // end if (need_sort)
+    } // end if (need_sort)
 
 L190:
-  goto L220;
+    goto L220;
 /*
  *     maximum number of iterations exceeded, failure to converge
  */
 L200:
-  info = 0;
-  // do 210 i = 1, n - 1
-  for (i = 1; i <= (n - 1); i++) {
-    if (e(i) != zero)
-      info = info + 1;
-  }
+    info = 0;
+    // do 210 i = 1, n - 1
+    for(i = 1; i <= (n - 1); i++)
+    {
+        if(e(i) != zero)
+            info = info + 1;
+    }
 L210:
 L220:
-  return;
-  /*
+    return;
+    /*
    *     end of dbdsqr
    */
 }
 
-
-
-
-template <typename T, typename S, typename W1, typename W2, typename W3>
+template <typename T, typename S, typename W1, typename W2, typename W3, typename I = rocblas_int>
 rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
-                                        const rocblas_fill uplo_in,
-                                        const rocblas_int n,
-                                        const rocblas_int nv,
-                                        const rocblas_int nu,
-                                        const rocblas_int nc,
-                                        S* D,
-                                        const rocblas_stride strideD,
-                                        S* E,
-                                        const rocblas_stride strideE,
-                                        W1 V,
-                                        const rocblas_int shiftV,
-                                        const rocblas_int ldv,
-                                        const rocblas_stride strideV,
-                                        W2 U,
-                                        const rocblas_int shiftU,
-                                        const rocblas_int ldu,
-                                        const rocblas_stride strideU,
-                                        W3 C,
-                                        const rocblas_int shiftC,
-                                        const rocblas_int ldc,
-                                        const rocblas_stride strideC,
-                                        rocblas_int* info_array,
-                                        const rocblas_int batch_count,
-                                        rocblas_int* splits_map,
-                                        S* work)
+                                                   const rocblas_fill uplo_in,
+                                                   const I n,
+                                                   const I nv,
+                                                   const I nu,
+                                                   const I nc,
+                                                   S* D,
+                                                   const rocblas_stride strideD,
+                                                   S* E,
+                                                   const rocblas_stride strideE,
+                                                   W1 V,
+                                                   const I shiftV,
+                                                   const I ldv,
+                                                   const rocblas_stride strideV,
+                                                   W2 U,
+                                                   const I shiftU,
+                                                   const I ldu,
+                                                   const rocblas_stride strideU,
+                                                   W3 C,
+                                                   const I shiftC,
+                                                   const I ldc,
+                                                   const rocblas_stride strideC,
+                                                   I* info_array,
+                                                   const I batch_count,
+                                                   I* splits_map,
+                                                   S* work)
 {
+    // -------------------------
+    // copy D into hD, E into hE
+    // -------------------------
 
-  // -------------------------
-  // copy D into hD, E into hE
-  // -------------------------
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
 
-hipStream_t stream;
-rocblas_get_stream(handle, &stream );
+    S* hD = nullptr;
+    S* hE = nullptr;
+    HIP_CHECK(hipHostMalloc(&hD, sizeof(S) * n * batch_count));
 
+    // ------------------------------------------------------------------
+    // Need to double checking whether array E is length n or length (n-1)
+    // ------------------------------------------------------------------
+    HIP_CHECK(hipHostMalloc(&hE, sizeof(S) * (n - 1) * batch_count));
 
+    // -------------------------------------------------
+    // transfer arrays D(:) and E(:) from Device to Host
+    // -------------------------------------------------
 
-S * hD = nullptr;
-S * hE = nullptr;
-HIP_CHECK( hipHostMalloc( &hD, sizeof(S) * n * batch_count ));
-HIP_CHECK( hipHostMalloc( &hE, sizeof(S) * (n-1) * batch_count ));
+    bool const use_single_copy_for_D = (strideD == n);
+    if(use_single_copy_for_D)
+    {
+        void* const dst = (void*)&(hD[0]);
+        void* const src = (void*)&(D[0]);
+        size_t const sizeBytes = sizeof(S) * n * batch_count;
+        hipMemcpyKind const kind = hipMemcpyDeviceToHost;
 
-bool const use_single_copy_for_D = (strideD == n);
-if (use_single_copy_for_D) {
-	void * const dst = (void *) &(hD[0]);
-	void * const src = (void *) D;
-	size_t const sizeBytes = sizeof(S) * n * batch_count;
-	hipMemcpyKind const kind = hipMemcpyDeviceToHost;
+        HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+    }
+    else
+    {
+        for(I bid = 0; bid < batch_count; bid++)
+        {
+            void* const dst = (void*)&(hD[bid * n]);
+            void* const src = (void*)&(D[bid * strideD]);
+            size_t const sizeBytes = sizeof(S) * n;
+            hipMemcpyKind const kind = hipMemcpyDeviceToHost;
+            HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+        }
+    }
 
-	HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
-}
-else {
-   for(rocblas_int bid = 0; bid < batch_count; bid++) {
-	   void * const dst = (void *) &(hD[ bid * n ]);
-	   void * const src = (void *) D+ bid * strideD; 
-	   size_t const sizeBytes = sizeof(S) * n;
-	   hipMemcpyKind const kind = hipMemcpyDeviceToHost;
-	   HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
-   }
-}
+    bool const use_single_copy_for_E = (strideE == (n - 1));
+    if(use_single_copy_for_E)
+    {
+        void* const dst = (void*)&(hE[0]);
+        void* const src = (void*)&(E[0]);
+        size_t const sizeBytes = sizeof(S) * (n - 1) * batch_count;
+        hipMemcpyKind const kind = hipMemcpyDeviceToHost;
 
-bool const use_single_copy_for_E = (strideE == (n-1));
-if (use_single_copy_for_E) {
-	void * const dst = (void *) &(hE[0]);
-	void * const src = (void *) E;
-	size_t const sizeBytes = sizeof(S) * (n-1) * batch_count;
-	hipMemcpyKind const kind = hipMemcpyDeviceToHost;
+        HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+    }
+    else
+    {
+        for(I bid = 0; bid < batch_count; bid++)
+        {
+            void* const dst = (void*)&(hE[bid * (n - 1)]);
+            void* const src = (void*)&(E[bid * strideE]);
+            size_t const sizeBytes = sizeof(S) * (n - 1);
+            hipMemcpyKind const kind = hipMemcpyDeviceToHost;
+            HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+        }
+    }
 
-	HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
-}
-else {
-  for(rocblas_int bid = 0; bid < batch_count; bid++) {
-	   void * const dst = (void *) &(hE[ bid * (n-1) ]);
-	   void * const src = (void *) E+ bid * strideE; 
-	   size_t const sizeBytes = sizeof(S) * (n-1);
-	   hipMemcpyKind const kind = hipMemcpyDeviceToHost;
-	   HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
-  }
+    for(I bid = 0; bid < batch_count; bid++)
+    {
+        std::vector<S> hwork(4 * n);
 
-}
+        char uplo = (uplo_in == rocblas_fill_lower) ? 'L' : 'U';
+        S* d_ = &(hD[bid * n]);
+        S* e_ = &(hE[bid * (n - 1)]);
 
+        T* v_ = (nv > 0) ? load_ptr_batch<T>(V, bid, shiftV, strideV) : nullptr;
+        T* u_ = (nu > 0) ? load_ptr_batch<T>(U, bid, shiftU, strideU) : nullptr;
+        T* c_ = (nc > 0) ? load_ptr_batch<T>(C, bid, shiftC, strideC) : nullptr;
+        S* work_ = &(hwork[0]);
+        S* dwork = work;
+        I info = 0;
 
-
-
-  for(rocblas_int bid = 0; bid < batch_count; bid++) {
-	  std::vector<S> hwork( 4 * n );
-
-	  char uplo = (uplo_in == rocblas_fill_lower) ? 'L' : 'U';
-          T *d_ =  &(hD[ bid * n ] );
-	  T *e_ =  &(hE[ bid * (n-1) ]);
-
-          T *v_ = (nv > 0) ? load_ptr_batch<T>(V, bid, shiftV, strideV) : nullptr;
-	  T *u_ = (nu > 0) ? load_ptr_batch<T>(U, bid, shiftU, strideU) : nullptr;
-	  T *c_ = (nc > 0) ? load_ptr_batch<T>(C, bid, shiftC, strideC) : nullptr;
-	  S * work_ =  &(hwork[0]);
-	  S * dwork =  work;
-	  I info = 0;
-
-	  I ncv = nv;
-	  I nru = nu;
-	  I ncc = nc;
+        I nru = nu;
+        I ncc = nc;
 
 #ifdef USE_VT
-	  T *vt_ = v_;
-	  I ldvt = ldv;
+        // -------------------------------------------------------
+        // NOTE: lapack dbdsqr() accepts "VT" and "ldvt" for transpose of V
+        // as input variable
+        // However, rocsolver bdsqrt accepts variable called "V" and "ldv"
+        // but is actually holding "VT"
+        // -------------------------------------------------------
+        T* vt_ = v_;
+        I ldvt = ldv;
 
-	  I nrv = n;
-	  I ncvt = nrv;
-	  bdsqr_single_template( uplo, n, ncvt, nru, ncc, d_, e_, 
-			  vt_,ldvt,
-			  u_,ldu, c_,ldc, work_, info, dwork, stream );
+        I nrv = n;
+        I ncvt = nv;
+        bdsqr_single_template<S, T, I>(uplo, n, ncvt, nru, ncc, d_, e_, vt_, ldvt, u_, ldu, c_, ldc,
+                                       work_, info, dwork, stream);
 #else
+        I ncv = nv;
 
-	  bdsqr_single_template( uplo, n, ncv, nru, ncc, d_, e_, 
-			  v_,ldv,
-			  u_,ldu, c_,ldc, work_, info, dwork, stream );
+        bdsqr_single_template<S, T, I>(uplo, n, ncv, nru, ncc, d_, e_, v_, ldv, u_, ldu, c_, ldc,
+                                       work_, info, dwork, stream);
 
 #endif
-   
 
+        info_array[bid] = info;
+    } // end for bid
 
-  info_array[bid] = info;
-  } // end for bid
+    // -------------------------------------------------
+    // transfer arrays D(:) and E(:) from host to device
+    // -------------------------------------------------
 
+    if(use_single_copy_for_D)
+    {
+        void* const src = (void*)&(hD[0]);
+        void* const dst = (void*)D;
+        size_t const sizeBytes = sizeof(S) * n * batch_count;
+        hipMemcpyKind const kind = hipMemcpyHostToDevice;
 
-if (use_single_copy_for_D) {
-	void * const src = (void *) &(hD[0]);
-	void * const dst = (void *) D;
-	size_t const sizeBytes = sizeof(S) * n * batch_count;
-	hipMemcpyKind const kind = hipMemcpyHostToDevice;
+        HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+    }
+    else
+    {
+        for(I bid = 0; bid < batch_count; bid++)
+        {
+            void* const src = (void*)&(hD[bid * n]);
+            void* const dst = (void*)(D + bid * strideD);
+            size_t const sizeBytes = sizeof(S) * n;
+            hipMemcpyKind const kind = hipMemcpyHostToDevice;
+            HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+        }
+    }
 
-	HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
+    if(use_single_copy_for_E)
+    {
+        void* const src = (void*)&(hE[0]);
+        void* const dst = (void*)E;
+        size_t const sizeBytes = sizeof(S) * (n - 1) * batch_count;
+        hipMemcpyKind const kind = hipMemcpyHostToDevice;
+
+        HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+    }
+    else
+    {
+        for(I bid = 0; bid < batch_count; bid++)
+        {
+            void* const src = (void*)&(hE[bid * (n - 1)]);
+            void* const dst = (void*)(E + bid * strideE);
+            size_t const sizeBytes = sizeof(S) * (n - 1);
+            hipMemcpyKind const kind = hipMemcpyHostToDevice;
+            HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
+        }
+    }
+
+    HIP_CHECK(hipHostFree(hD));
+    hD = nullptr;
+    HIP_CHECK(hipHostFree(hE));
+    hE = nullptr;
+
+    return (rocblas_status_success);
 }
-else {
-   for(rocblas_int bid = 0; bid < batch_count; bid++) {
-	   void * const src = (void *) &(hD[ bid * n ]);
-	   void * const dst = (void *) D+ bid * strideD; 
-	   size_t const sizeBytes = sizeof(S) * n;
-	   hipMemcpyKind const kind = hipMemcpyHostToDevice;
-	   HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
-   }
-}
-
-
-if (use_single_copy_for_E) {
-	void * const src = (void *) &(hE[0]);
-	void * const dst = (void *) E;
-	size_t const sizeBytes = sizeof(S) * (n-1) * batch_count;
-	hipMemcpyKind const kind = hipMemcpyHostToDevice;
-
-	HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
-}
-else {
-  for(rocblas_int bid = 0; bid < batch_count; bid++) {
-	   void * const src = (void *) &(hE[ bid * (n-1) ]);
-	   void * const dst = (void *) E+ bid * strideE; 
-	   size_t const sizeBytes = sizeof(S) * (n-1);
-	   hipMemcpyKind const kind = hipMemcpyHostToDevice;
-	   HIP_CHECK( hipMemcpyAsync( dst, src, sizeBytes, kind, stream ) );
-  }
-
-}
-
-HIP_CHECK( hipHostFree( hD ) ); hD = nullptr;
-HIP_CHECK( hipHostFree( hE ) ); hE = nullptr;
-
-return( rocblas_status_success );
-
-}
-
 
 ROCSOLVER_END_NAMESPACE

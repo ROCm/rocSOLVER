@@ -38,6 +38,8 @@
 
 #include <cmath>
 
+#include "bdsqr_host.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 /************** Kernels and device functions *******************/
@@ -1079,21 +1081,35 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), grid1, threads1, 0, stream, n, D, strideD, E, strideE,
                             info, maxiter, sfm, tol, splits_map, work, incW, strideW);
 
+    bool const use_bdsqr_host = true;
+    rocblas_status istat = rocblas_status_success;
     if(n > 1)
     {
-        // rotate to upper bidiagonal if necessary
-        if(uplo == rocblas_fill_lower)
+        if(use_bdsqr_host)
         {
-            ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), grid1, threads2, 0, stream, n, nu, nc,
-                                    D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC, ldc,
-                                    strideC, info, work, strideW);
+            rocblas_fill const uplo_in = uplo;
+            auto const info_array = info;
+            istat = rocsolver_bdsqr_host_batch_template<T, S, W1, W2, W3, rocblas_int>(
+                handle, uplo_in, n, nv, nu, nc, D, strideD, E, strideE, V, shiftV, ldv, strideV, U,
+                shiftU, ldu, strideU, C, shiftC, ldc, strideC, info_array, batch_count, splits_map,
+                work);
         }
+        else
+        {
+            // rotate to upper bidiagonal if necessary
+            if(uplo == rocblas_fill_lower)
+            {
+                ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), grid1, threads2, 0, stream, n, nu,
+                                        nc, D, strideD, E, strideE, U, shiftU, ldu, strideU, C,
+                                        shiftC, ldc, strideC, info, work, strideW);
+            }
 
-        // main computation of SVD
-        ROCSOLVER_LAUNCH_KERNEL((bdsqr_kernel<T>), grid2, threads3, 0, stream, n, nv, nu, nc, D,
-                                strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
-                                strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
-                                minshift, splits_map, work, incW, strideW);
+            // main computation of SVD
+            ROCSOLVER_LAUNCH_KERNEL((bdsqr_kernel<T>), grid2, threads3, 0, stream, n, nv, nu, nc, D,
+                                    strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
+                                    strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
+                                    minshift, splits_map, work, incW, strideW);
+        }
     }
 
     // sort the singular values and vectors
@@ -1101,7 +1117,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                             E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
                             ldc, strideC, info, splits_map);
 
-    return rocblas_status_success;
+    return istat;
 }
 
 ROCSOLVER_END_NAMESPACE
