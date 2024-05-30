@@ -143,22 +143,28 @@ ROCSOLVER_KERNEL void getri_kernel_large2(const rocblas_int n,
 template <bool ISBATCHED>
 rocblas_int getri_get_blksize(const rocblas_int dim)
 {
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     rocblas_int blk;
 
     if(ISBATCHED)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         rocblas_int size[] = {GETRI_BATCH_BLKSIZES};
         rocblas_int intervals[] = {GETRI_BATCH_INTERVALS};
         rocblas_int max = GETRI_BATCH_NUM_INTERVALS;
         blk = size[get_index(intervals, max, dim)];
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
     else
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         rocblas_int size[] = {GETRI_BLKSIZES};
         rocblas_int intervals[] = {GETRI_INTERVALS};
         rocblas_int max = GETRI_NUM_INTERVALS;
         blk = size[get_index(intervals, max, dim)];
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     return blk;
 }
@@ -174,9 +180,11 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
                                    size_t* size_workArr,
                                    bool* optim_mem)
 {
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // if quick return, no need of workspace
     if(n == 0 || batch_count == 0)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
@@ -186,6 +194,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
         *optim_mem = true;
         return;
     }
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
@@ -193,6 +202,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     // if tiny size, no workspace needed
     if((n <= GETRI_TINY_SIZE && !ISBATCHED) || (n <= GETRI_BATCH_TINY_SIZE && ISBATCHED))
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
@@ -203,6 +213,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
         return;
     }
 #endif
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     bool opt1, opt2;
     size_t unused, w1a = 0, w1b = 0, w2a = 0, w2b = 0, w3a = 0, w3b = 0, w4a = 0, w4b = 0, t1, t2;
@@ -210,17 +221,20 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     // requirements for calling TRTRI
     rocsolver_trtri_getMemorySize<BATCHED, STRIDED, T>(rocblas_diagonal_non_unit, n, batch_count,
                                                        &w1b, &w2b, &w3b, &w4b, &t2, &unused, &opt1);
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // size of array of pointers (batched cases)
     if(BATCHED)
         *size_workArr = sizeof(T*) * batch_count;
     else
         *size_workArr = 0;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
 #ifdef OPTIMAL
     // if small size nothing else is needed
     if(n <= TRTRI_MAX_COLS)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         *size_work1 = w1b;
         *size_work2 = w2b;
         *size_work3 = w3b;
@@ -230,6 +244,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     }
 #endif
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // get block size
     rocblas_int blk = getri_get_blksize<ISBATCHED>(n);
     if(blk == 0)
@@ -242,6 +257,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     rocblas_int nn = (n % 128 != 0) ? n : n + 1;
     rocblasCall_trsm_mem<BATCHED, T>(rocblas_side_right, rocblas_operation_none, nn, blk + 1, 1, 1,
                                      batch_count, &w1a, &w2a, &w3a, &w4a);
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     *size_work1 = std::max(w1a, w1b);
     *size_work2 = std::max(w2a, w2b);
@@ -253,6 +269,7 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     opt2 = true;
 
     *optim_mem = opt1 && opt2;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 }
 
 template <typename T>
@@ -269,18 +286,22 @@ rocblas_status rocsolver_getri_argCheck(rocblas_handle handle,
 
     // 1. invalid/non-supported values
     // N/A
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // 2. invalid size
     if(n < 0 || lda < n || batch_count < 0)
         return rocblas_status_invalid_size;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // skip pointer check if querying memory size
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_status_continue;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // 3. invalid pointers
     if((n && !A) || (n && pivot && !ipiv) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     return rocblas_status_continue;
 }
@@ -306,19 +327,24 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                                         const bool optim_mem,
                                         const bool pivot)
 {
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     ROCSOLVER_ENTER("getri", "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftP:", shiftP,
                     "bc:", batch_count);
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // quick return if zero instances in batch
     if(batch_count == 0)
         return rocblas_status_success;
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // quick return if no dimensions
     if(n == 0)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         rocblas_int blocks = (batch_count - 1) / 32 + 1;
         ROCSOLVER_LAUNCH_KERNEL(reset_info, dim3(blocks, 1, 1), dim3(32, 1, 1), 0, stream, info,
                                 batch_count, 0);
@@ -326,15 +352,18 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     }
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
 #ifdef OPTIMAL
     if((n <= GETRI_TINY_SIZE && !ISBATCHED) || (n <= GETRI_BATCH_TINY_SIZE && ISBATCHED))
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
                                   batch_count, true, pivot);
     }
 #endif
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // compute inverse of U (also check singularity and update info)
     rocsolver_trtri_template<BATCHED, STRIDED, T>(
         handle, rocblas_fill_upper, rocblas_diagonal_non_unit, n, A, shiftA, lda, strideA, info,
@@ -343,24 +372,29 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     // ************************************************ //
     // Next, compute inv(A) solving inv(A) * L = inv(U) //
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 #ifdef OPTIMAL
     // if small size, use optimized kernel for stage 2
     if(n <= TRTRI_MAX_COLS)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
                                   batch_count, false, pivot);
     }
 #endif
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     rocblas_int threads = std::min(((n - 1) / 64 + 1) * 64, BS1);
     rocblas_int ldw = n;
     rocblas_stride strideW = n * n;
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // get block size
     rocblas_int blk = getri_get_blksize<ISBATCHED>(n);
     if(blk == 0)
         blk = n;
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
@@ -370,9 +404,11 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     T one = 1;
     rocblas_int jb;
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     rocblas_int nn = ((n - 1) / blk) * blk + 1;
     for(rocblas_int j = nn - 1; j >= 0; j -= blk)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         jb = std::min(n - j, blk);
 
         // copy and zero entries in case info is nonzero
@@ -391,12 +427,15 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                          work2, work3, work4, workArr);
     }
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // apply pivoting (column interchanges)
     if(pivot)
         ROCSOLVER_LAUNCH_KERNEL(getri_kernel_large2<T>, dim3(batch_count, 1, 1), dim3(1, threads, 1),
                                 0, stream, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info);
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     rocblas_set_pointer_mode(handle, old_mode);
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     return rocblas_status_success;
 }

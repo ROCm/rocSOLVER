@@ -134,8 +134,10 @@ void getri_initData(const rocblas_handle handle,
                     Uh& hInfo,
                     const bool singular)
 {
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     if(CPU)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         T tmp;
         rocblas_init<T>(hA, true);
 
@@ -165,8 +167,10 @@ void getri_initData(const rocblas_handle handle,
                 }
             }
 
+            fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
             // do the LU decomposition of matrix A w/ the reference LAPACK routine
             cpu_getrf(n, n, hA[b], lda, hIpiv[b], hInfo[b]);
+            fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
             {
@@ -186,12 +190,15 @@ void getri_initData(const rocblas_handle handle,
             }
         }
     }
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // now copy data to the GPU
     if(GPU)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         CHECK_HIP_ERROR(dA.transfer_from(hA));
         CHECK_HIP_ERROR(dIpiv.transfer_from(hIpiv));
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
 }
 
@@ -213,35 +220,47 @@ void getri_getError(const rocblas_handle handle,
                     double* max_err,
                     const bool singular)
 {
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     rocblas_int sizeW = n;
     std::vector<T> hW(sizeW);
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // input data initialization
     getri_initData<true, true, T>(handle, n, dA, lda, dIpiv, bc, hA, hIpiv, hInfo, singular);
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // execute computations
     // GPU lapack
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     CHECK_ROCBLAS_ERROR(rocsolver_getri(STRIDED, handle, n, dA.data(), lda, stA, dIpiv.data(), stP,
                                         dInfo.data(), bc));
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         cpu_getri(n, hA[b], lda, hIpiv[b], hW.data(), sizeW, hInfo[b]);
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
 
     // check info for singularities
     double err = 0;
     *max_err = 0;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     for(rocblas_int b = 0; b < bc; ++b)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
             err++;
     }
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     *max_err += err;
 
     // error is ||hA - hARes|| / ||hA||
@@ -335,6 +354,7 @@ void getri_getPerfData(const rocblas_handle handle,
 template <bool BATCHED, bool STRIDED, typename T>
 void testing_getri(Arguments& argus)
 {
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // get arguments
     rocblas_local_handle handle;
     rocblas_int n = argus.get<rocblas_int>("n");
@@ -346,6 +366,7 @@ void testing_getri(Arguments& argus)
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // check non-supported values
     // N/A
@@ -361,6 +382,7 @@ void testing_getri(Arguments& argus)
     bool invalid_size = (n < 0 || lda < n || bc < 0);
     if(invalid_size)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         if(BATCHED)
             EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, (T* const*)nullptr, lda, stA,
                                                   (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr,
@@ -371,6 +393,7 @@ void testing_getri(Arguments& argus)
                                                   (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr,
                                                   bc),
                                   rocblas_status_invalid_size);
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_size);
@@ -381,16 +404,20 @@ void testing_getri(Arguments& argus)
     // memory size query is necessary
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         if(BATCHED)
             CHECK_ALLOC_QUERY(rocsolver_getri(STRIDED, handle, n, (T* const*)nullptr, lda, stA,
                                               (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr, bc));
         else
             CHECK_ALLOC_QUERY(rocsolver_getri(STRIDED, handle, n, (T*)nullptr, lda, stA,
                                               (rocblas_int*)nullptr, stP, (rocblas_int*)nullptr, bc));
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         if(argus.mem_query)
         {
             rocsolver_bench_inform(inform_mem_query, size);
@@ -398,10 +425,12 @@ void testing_getri(Arguments& argus)
         }
 
         CHECK_ROCBLAS_ERROR(rocblas_set_device_memory_size(handle, size));
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
 
     if(BATCHED)
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         // memory allocations
         host_batch_vector<T> hA(size_A, 1, bc);
         host_batch_vector<T> hARes(size_ARes, 1, bc);
@@ -416,23 +445,29 @@ void testing_getri(Arguments& argus)
         if(size_P)
             CHECK_HIP_ERROR(dIpiv.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
         // check quick return
         if(n == 0 || bc == 0)
         {
+            fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
             EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, dA.data(), lda, stA,
                                                   dIpiv.data(), stP, dInfo.data(), bc),
                                   rocblas_status_success);
+            fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
+            fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
             return;
         }
 
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         // check computations
         if(argus.unit_check || argus.norm_check)
             getri_getError<STRIDED, T>(handle, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hARes,
                                        hIpiv, hInfo, hInfoRes, &max_error, argus.singular);
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
         // collect performance data
         if(argus.timing)
@@ -440,10 +475,12 @@ void testing_getri(Arguments& argus)
                                           hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                           argus.profile, argus.profile_kernels, argus.perf,
                                           argus.singular);
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
 
     else
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         // memory allocations
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
         host_strided_batch_vector<T> hARes(size_ARes, 1, stARes, bc);
@@ -458,23 +495,28 @@ void testing_getri(Arguments& argus)
         if(size_P)
             CHECK_HIP_ERROR(dIpiv.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
         // check quick return
         if(n == 0 || bc == 0)
         {
+            fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
             EXPECT_ROCBLAS_STATUS(rocsolver_getri(STRIDED, handle, n, dA.data(), lda, stA,
                                                   dIpiv.data(), stP, dInfo.data(), bc),
                                   rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
+            fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
             return;
         }
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
         // check computations
         if(argus.unit_check || argus.norm_check)
             getri_getError<STRIDED, T>(handle, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hARes,
                                        hIpiv, hInfo, hInfoRes, &max_error, argus.singular);
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
         // collect performance data
         if(argus.timing)
@@ -482,12 +524,15 @@ void testing_getri(Arguments& argus)
                                           hInfo, &gpu_time_used, &cpu_time_used, hot_calls,
                                           argus.profile, argus.profile_kernels, argus.perf,
                                           argus.singular);
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
 
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     // validate results for rocsolver-test
     // using n * machine_precision as tolerance
     if(argus.unit_check)
         ROCSOLVER_TEST_CHECK(T, max_error, n);
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // output results for rocsolver-bench
     if(argus.timing)
@@ -531,9 +576,11 @@ void testing_getri(Arguments& argus)
                 rocsolver_bench_output(gpu_time_used);
         }
     }
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     // ensure all arguments were consumed
     argus.validate_consumed();
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 }
 
 #define EXTERN_TESTING_GETRI(...) extern template void testing_getri<__VA_ARGS__>(Arguments&);

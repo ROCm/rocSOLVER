@@ -90,17 +90,22 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         Arguments arg = getri_setup_arguments(GetParam(), false);
 
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         if(arg.peek<rocblas_int>("n") == 0)
             testing_getri_bad_arg<BATCHED, STRIDED, T>();
 
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         if(arg.singular == 1)
             testing_getri<BATCHED, STRIDED, T>(arg);
 
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
         arg.singular = 0;
         testing_getri<BATCHED, STRIDED, T>(arg);
+        fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     }
 };
 
@@ -183,7 +188,9 @@ protected:
 
 TEST_P(GETRI, __float)
 {
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
     run_tests<false, false, float>();
+    fprintf(stderr, "%s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__);
 }
 
 TEST_P(GETRI, __double)
