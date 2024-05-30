@@ -1088,11 +1088,9 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
         if(use_bdsqr_host)
         {
             rocblas_fill const uplo_in = uplo;
-            auto const info_array = info;
             istat = rocsolver_bdsqr_host_batch_template<T, S, W1, W2, W3, rocblas_int>(
                 handle, uplo_in, n, nv, nu, nc, D, strideD, E, strideE, V, shiftV, ldv, strideV, U,
-                shiftU, ldu, strideU, C, shiftC, ldc, strideC, info_array, batch_count, splits_map,
-                work);
+                shiftU, ldu, strideU, C, shiftC, ldc, strideC, info, batch_count, splits_map, work);
         }
         else
         {
