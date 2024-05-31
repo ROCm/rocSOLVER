@@ -51,7 +51,14 @@ namespace fs = std::experimental::filesystem;
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-#define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())
+#define ROCSOLVER_TEST_CHECK(T, max_error, tol)                                                       \
+    {                                                                                                 \
+        ASSERT_LE((max_error), (tol)*get_epsilon<T>());                                               \
+        std::cout << "\u001b[32m[          ] \u001b[0m" << "Normalized error <= \u001b[32m"  << (     \
+                (tol > get_safemin<T>()) ? max_error/(tol * get_epsilon<T>()) : get_safemin<T>()      \
+        ) << "\u001b[0m" << std::endl << std::flush;                                                  \
+    }                                                                                                 \
+
 #else // ROCSOLVER_CLIENTS_BENCH
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol)
 #endif

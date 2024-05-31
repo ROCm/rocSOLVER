@@ -46,7 +46,13 @@ extern const std::thread::id main_thread_id;
 inline rocblas_rng_t get_seed()
 {
     auto tid = std::this_thread::get_id();
-    return tid == main_thread_id ? rocblas_seed : rocblas_rng_t(std::hash<std::thread::id>{}(tid));
+    /* return tid == main_thread_id ? rocblas_seed : rocblas_rng_t(std::hash<std::thread::id>{}(tid)); */
+
+    auto tid_hash = static_cast<std::size_t>(std::hash<std::thread::id>{}(tid));
+    std::cout << "\u001b[32m[          ] \u001b[33m" << "Random seed hash: " << tid_hash << "\u001b[0m" << std::endl << std::flush;
+
+    auto seed = static_cast<rocblas_rng_t>((tid == main_thread_id) ? rocblas_seed : rocblas_rng_t(tid_hash));
+    return seed;
 }
 
 // Reset the seed (mainly to ensure repeatability of failures in a given suite)
