@@ -51,7 +51,7 @@ inline rocblas_rng_t get_seed()
     auto tid_hash = static_cast<std::size_t>(std::hash<std::thread::id>{}(tid));
     std::cout << "\u001b[32m[          ] \u001b[33m" << "Random seed hash: " << tid_hash << "\u001b[0m" << std::endl << std::flush;
 
-    auto seed = static_cast<rocblas_rng_t>((tid == main_thread_id) ? rocblas_seed : rocblas_rng_t(tid_hash));
+    auto seed = static_cast<rocblas_rng_t>(tid_hash);
     return seed;
 }
 
