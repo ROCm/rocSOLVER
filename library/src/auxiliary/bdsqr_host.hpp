@@ -1,4 +1,4 @@
-#define USE_VT
+#undef USE_VT
 
 /****************************************************************************
  * Derived from the BSD3-licensed
@@ -736,6 +736,22 @@ void slasv2_(float* f,
              float* snl,
              float* csl);
 
+void crot_(int* n,
+           std::complex<float>* cx,
+           int* incx,
+           std::complex<float>* cy,
+           int* incy,
+           float* c,
+           std::complex<float>* s);
+
+void zrot_(int* n,
+           std::complex<double>* cx,
+           int* incx,
+           std::complex<double>* cy,
+           int* incy,
+           double* c,
+           std::complex<double>* s);
+
 void zdrot_(int* n,
             std::complex<double>* zx,
             int* incx,
@@ -1181,6 +1197,7 @@ static void bdsqr_single_template(char uplo,
               S* const ds = dwork + mn_m1;
               HIP_CHECK(hipMemcpyAsync(dc, &c, sizeof(S) * mn_m1, hipMemcpyHostToDevice, stream));
               HIP_CHECK(hipMemcpyAsync(ds, &s, sizeof(S) * mn_m1, hipMemcpyHostToDevice, stream));
+              HIP_CHECK(hipStreamSynchronize(stream));
 
               lasr_template_gpu(side, pivot, direct, m, n, dc, ds, &A, lda, stream);
               HIP_CHECK(hipStreamSynchronize(stream));
@@ -1253,6 +1270,15 @@ static void bdsqr_single_template(char uplo,
    *     test the input parameters.
    *
    */
+    int const idebug = 2;
+    if(idebug >= 2)
+    {
+        printf("single entry\n");
+        for(auto i = 1; i <= (n - 1); i++)
+        {
+            printf("e(%d) = %le\n", i, e(i));
+        }
+    }
 
     info = (!upper) && (!lower) ? -1
         : (n < 0)               ? -2
@@ -1528,11 +1554,11 @@ L90:
         {
             if(use_gpu)
             {
-                call_rot_gpu(nrv, v(1, m - 1), 1, v(1, m), 1, cosr, sinr);
+                call_rot_gpu(nrv, v(1, m - 1), ione, v(1, m), ione, cosr, sinr);
             }
             else
             {
-                call_rot(nrv, v(1, m - 1), 1, v(1, m), 1, cosr, sinr);
+                call_rot(nrv, v(1, m - 1), ione, v(1, m), ione, cosr, sinr);
             }
         }
 #endif
@@ -2221,11 +2247,11 @@ L160:
             {
                 if(use_gpu)
                 {
-                    call_scal_gpu(nrv, negone, v(1, i), 1);
+                    call_scal_gpu(nrv, negone, v(1, i), ione);
                 }
                 else
                 {
-                    call_scal(nrv, negone, v(1, i), 1);
+                    call_scal(nrv, negone, v(1, i), ione);
                 }
             }
 #endif
@@ -2331,6 +2357,14 @@ L200:
     }
 L210:
 L220:
+    if(idebug >= 2)
+    {
+        printf("single exit\n");
+        for(auto i = 1; i <= (n - 1); i++)
+        {
+            printf("e(%d) = %le\n", i, e(i));
+        }
+    }
     return;
     /*
    *     end of dbdsqr
@@ -2365,7 +2399,7 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
                                                    I* splits_map,
                                                    S* work)
 {
-    int const idebug = 1;
+    int const idebug = 2;
 
     // -------------------------
     // copy D into hD, E into hE
@@ -2380,7 +2414,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
     // ------------------------------------------------------------------
     // Need to double checking whether array E is length n or length (n-1)
     // ------------------------------------------------------------------
-    bool const use_single_copy_for_E = (strideE == (n - 1)) || (strideE == (n));
+    // bool const use_single_copy_for_E = (strideE == (n - 1)) || (strideE == (n));
+    bool const use_single_copy_for_E = false;
+
     size_t E_size = use_single_copy_for_E ? strideE : (n - 1);
     HIP_CHECK(hipHostMalloc(&hE, sizeof(S) * E_size * batch_count));
 
@@ -2402,7 +2438,8 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
     // transfer arrays D(:) and E(:) from Device to Host
     // -------------------------------------------------
 
-    bool const use_single_copy_for_D = (strideD == n);
+    // bool const use_single_copy_for_D = (strideD == n);
+    bool const use_single_copy_for_D = false;
     if(use_single_copy_for_D)
     {
         void* const dst = (void*)&(hD[0]);
@@ -2445,10 +2482,25 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         }
     }
 
+    HIP_CHECK(hipStreamSynchronize(stream));
+
     if(idebug >= 1)
     {
         printf("batch_count = %d\n", batch_count);
         printf("n = %d, strideD = %ld, strideE = %ld\n", n, (int64_t)strideD, (int64_t)strideE);
+        printf("nv = %d, nu = %d, nc = %d\n", nv, nu, nc);
+    }
+    if(idebug >= 2)
+    {
+        printf("on entry\n");
+        for(auto i = 0; i < n; i++)
+        {
+            printf("hD[%d] = %le\n", i, hD[i]);
+        }
+        for(auto i = 0; i < (n - 1); i++)
+        {
+            printf("hE[%d] = %le\n", i, hE[i]);
+        }
     }
 
     for(I bid = 0; bid < batch_count; bid++)
@@ -2543,6 +2595,19 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         }
     }
 
+    if(idebug >= 2)
+    {
+        printf("on exit\n");
+        for(auto i = 0; i < n; i++)
+        {
+            printf("hD[%d] = %le\n", i, hD[i]);
+        }
+        for(auto i = 0; i < (n - 1); i++)
+        {
+            printf("hE[%d] = %le\n", i, hE[i]);
+        }
+    }
+
     HIP_CHECK(hipHostFree(hD));
     hD = nullptr;
     HIP_CHECK(hipHostFree(hE));
@@ -2567,6 +2632,7 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         hipMemcpyKind const kind = hipMemcpyHostToDevice;
 
         HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+        HIP_CHECK(hipStreamSynchronize(stream));
     }
 
     HIP_CHECK(hipHostFree(linfo_array));
