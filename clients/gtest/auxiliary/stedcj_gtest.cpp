@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,7 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "common/auxiliary/testing_stedc.hpp"
+#include "common/auxiliary/testing_stedcj.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -33,16 +33,12 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, printable_char> stedc_tuple;
+typedef vector<int> stedcj_tuple;
 
 // each size_range vector is a {N, ldc}
 
-// each op_range vector is a {e}
-
-// case when N == 0 and evect == N will also execute the bad arguments test
+// case when N == 0 will also execute the bad arguments test
 // (null handle, null pointers and invalid values)
-
-const vector<printable_char> op_range = {'N', 'I', 'V'};
 
 // for checkin_lapack tests
 const vector<vector<int>> matrix_size_range = {
@@ -60,24 +56,23 @@ const vector<vector<int>> matrix_size_range = {
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {{192, 192}, {250, 250}, {256, 270}, {300, 300}};
 
-Arguments stedc_setup_arguments(stedc_tuple tup)
+Arguments stedcj_setup_arguments(stedcj_tuple tup)
 {
-    vector<int> size = std::get<0>(tup);
-    char op = std::get<1>(tup);
-
     Arguments arg;
 
-    arg.set<rocblas_int>("n", size[0]);
-    arg.set<rocblas_int>("ldc", size[1]);
+    arg.set<rocblas_int>("n", tup[0]);
+    arg.set<rocblas_int>("ldc", tup[1]);
 
-    arg.set<char>("evect", op);
+    // case evect = N is not implemented for now.
+    // it could be added if stedcj goes to public API
+    arg.set<char>("evect", 'I');
 
     arg.timing = 0;
 
     return arg;
 }
 
-class STEDC : public ::TestWithParam<stedc_tuple>
+class STEDCJ : public ::TestWithParam<stedcj_tuple>
 {
 protected:
     void TearDown() override
@@ -88,41 +83,37 @@ protected:
     template <typename T>
     void run_tests()
     {
-        Arguments arg = stedc_setup_arguments(GetParam());
+        Arguments arg = stedcj_setup_arguments(GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N')
-            testing_stedc_bad_arg<T>();
+        if(arg.peek<rocblas_int>("n") == 0)
+            testing_stedcj_bad_arg<T>();
 
-        testing_stedc<T>(arg);
+        testing_stedcj<T>(arg);
     }
 };
 
 // non-batch tests
 
-TEST_P(STEDC, __float)
+TEST_P(STEDCJ, __float)
 {
     run_tests<float>();
 }
 
-TEST_P(STEDC, __double)
+TEST_P(STEDCJ, __double)
 {
     run_tests<double>();
 }
 
-TEST_P(STEDC, __float_complex)
+TEST_P(STEDCJ, __float_complex)
 {
     run_tests<rocblas_float_complex>();
 }
 
-TEST_P(STEDC, __double_complex)
+TEST_P(STEDCJ, __double_complex)
 {
     run_tests<rocblas_double_complex>();
 }
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         STEDC,
-                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, STEDCJ, ValuesIn(large_matrix_size_range));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-                         STEDC,
-                         Combine(ValuesIn(matrix_size_range), ValuesIn(op_range)));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, STEDCJ, ValuesIn(matrix_size_range));

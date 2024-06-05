@@ -25,6 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
+#include "common/lapack/testing_syevdx_heevdx.hpp"
 #include "common/lapack/testing_syevdx_heevdx_inplace.hpp"
 
 using ::testing::Combine;
@@ -52,6 +53,7 @@ const vector<vector<int>> size_range = {
     // invalid
     {-1, 1, 1, 0, 10, 1, 1},
     {10, 5, 10, 0, 10, 1, 1},
+    // valid only when evect=N
     {10, 10, 5, 0, 10, 1, 1},
     // valid only when erange=A
     {10, 10, 10, 10, 0, 10, 1},
@@ -90,14 +92,44 @@ Arguments syevdx_heevdx_setup_arguments(syevdx_heevdx_tuple tup, bool inplace)
     arg.set<char>("erange", op[1]);
     arg.set<char>("uplo", op[2]);
 
-    arg.set<double>("abstol", 0);
-
     // only testing standard use case/defaults for strides
 
     arg.timing = 0;
 
     return arg;
 }
+
+class SYEVDX_HEEVDX : public ::TestWithParam<syevdx_heevdx_tuple>
+{
+protected:
+    void TearDown() override
+    {
+        EXPECT_EQ(hipGetLastError(), hipSuccess);
+    }
+
+    template <bool BATCHED, bool STRIDED, typename T>
+    void run_tests()
+    {
+        using S = decltype(std::real(T{}));
+
+        Arguments arg = syevdx_heevdx_setup_arguments<T>(GetParam(), false);
+
+        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N'
+           && arg.peek<char>("erange") == 'V' && arg.peek<char>("uplo") == 'L')
+            testing_syevdx_heevdx_bad_arg<BATCHED, STRIDED, T>();
+
+        arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
+        testing_syevdx_heevdx<BATCHED, STRIDED, T>(arg);
+    }
+};
+
+class SYEVDX : public SYEVDX_HEEVDX
+{
+};
+
+class HEEVDX : public SYEVDX_HEEVDX
+{
+};
 
 class SYEVDX_HEEVDX_INPLACE : public ::TestWithParam<syevdx_heevdx_tuple>
 {
@@ -133,6 +165,26 @@ class HEEVDX_INPLACE : public SYEVDX_HEEVDX_INPLACE
 
 // non-batch tests
 
+TEST_P(SYEVDX, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(SYEVDX, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(HEEVDX, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(HEEVDX, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
 TEST_P(SYEVDX_INPLACE, __float)
 {
     run_tests<false, false, float>();
@@ -152,6 +204,62 @@ TEST_P(HEEVDX_INPLACE, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
+
+// batched tests
+
+TEST_P(SYEVDX, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(SYEVDX, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(HEEVDX, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(HEEVDX, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
+// strided_batched tests
+
+TEST_P(SYEVDX, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(SYEVDX, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(HEEVDX, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(HEEVDX, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         SYEVDX,
+                         Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, SYEVDX, Combine(ValuesIn(size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         HEEVDX,
+                         Combine(ValuesIn(large_size_range), ValuesIn(op_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, HEEVDX, Combine(ValuesIn(size_range), ValuesIn(op_range)));
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          SYEVDX_INPLACE,
