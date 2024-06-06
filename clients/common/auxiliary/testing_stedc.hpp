@@ -216,9 +216,9 @@ void stedc_initData(const rocblas_handle handle,
         // initialize C to the identity matrix
         if(evect == rocblas_evect_original)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(rocblas_int j = 0; j < n; j++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(rocblas_int i = 0; i < n; i++)
                 {
                     if(i == j)
                         hC[0][i + j * ldc] = 1;
@@ -264,9 +264,9 @@ void stedc_getError(const rocblas_handle handle,
     using S = decltype(std::real(T{}));
 
     int lgn = floor(log(n - 1) / log(2)) + 1;
-    size_t lwork = (COMPLEX ? n * n : 0);
-    size_t lrwork = (evect == rocblas_evect_none ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn);
-    size_t liwork = (evect == rocblas_evect_none ? 1 : 6 + 6 * n + 5 * n * lgn);
+    size_t lwork = (COMPLEX) ? n * n : 0;
+    size_t lrwork = (evect == rocblas_evect_none || n <= 1) ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn;
+    size_t liwork = (evect == rocblas_evect_none || n <= 1) ? 1 : 6 + 6 * n + 5 * n * lgn;
     std::vector<T> work(lwork);
     std::vector<S> rwork(lrwork);
     std::vector<rocblas_int> iwork(liwork);
@@ -373,9 +373,9 @@ void stedc_getPerfData(const rocblas_handle handle,
     using S = decltype(std::real(T{}));
 
     int lgn = floor(log(n - 1) / log(2)) + 1;
-    size_t lwork = (COMPLEX ? n * n : 0);
-    size_t lrwork = (evect == rocblas_evect_none ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn);
-    size_t liwork = (evect == rocblas_evect_none ? 1 : 6 + 6 * n + 5 * n * lgn);
+    size_t lwork = (COMPLEX) ? n * n : 0;
+    size_t lrwork = (evect == rocblas_evect_none || n <= 1) ? 1 : 1 + 3 * n + 4 * n * n + 2 * n * lgn;
+    size_t liwork = (evect == rocblas_evect_none || n <= 1) ? 1 : 6 + 6 * n + 5 * n * lgn;
     std::vector<T> work(lwork);
     std::vector<S> rwork(lrwork);
     std::vector<rocblas_int> iwork(liwork);
