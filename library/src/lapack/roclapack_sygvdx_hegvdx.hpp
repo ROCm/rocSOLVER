@@ -1,10 +1,5 @@
 /************************************************************************
- * Derived from the BSD3-licensed
- * LAPACK routine (version 3.7.0) --
- *     Univ. of Tennessee, Univ. of California Berkeley,
- *     Univ. of Colorado Denver and NAG Ltd..
- *     December 2016
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,7 +29,7 @@
 
 #include "rocblas.hpp"
 #include "roclapack_potrf.hpp"
-#include "roclapack_syevdx_heevdx_inplace.hpp"
+#include "roclapack_syevdx_heevdx.hpp"
 #include "roclapack_sygst_hegst.hpp"
 #include "roclapack_sygvx_hegvx.hpp"
 #include "rocsolver/rocsolver.h"
@@ -42,24 +37,26 @@
 ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S>
-rocblas_status rocsolver_sygvdx_hegvdx_inplace_argCheck(rocblas_handle handle,
-                                                        const rocblas_eform itype,
-                                                        const rocblas_evect evect,
-                                                        const rocblas_erange erange,
-                                                        const rocblas_fill uplo,
-                                                        const rocblas_int n,
-                                                        T A,
-                                                        const rocblas_int lda,
-                                                        T B,
-                                                        const rocblas_int ldb,
-                                                        const S vl,
-                                                        const S vu,
-                                                        const rocblas_int il,
-                                                        const rocblas_int iu,
-                                                        rocblas_int* h_nev,
-                                                        S* W,
-                                                        rocblas_int* info,
-                                                        const rocblas_int batch_count = 1)
+rocblas_status rocsolver_sygvdx_hegvdx_argCheck(rocblas_handle handle,
+                                                const rocblas_eform itype,
+                                                const rocblas_evect evect,
+                                                const rocblas_erange erange,
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                T A,
+                                                const rocblas_int lda,
+                                                T B,
+                                                const rocblas_int ldb,
+                                                const S vl,
+                                                const S vu,
+                                                const rocblas_int il,
+                                                const rocblas_int iu,
+                                                rocblas_int* nev,
+                                                S* W,
+                                                T Z,
+                                                const rocblas_int ldz,
+                                                rocblas_int* info,
+                                                const rocblas_int batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -75,7 +72,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_value;
 
     // 2. invalid size
-    if(n < 0 || lda < n || ldb < n || batch_count < 0)
+    if(n < 0 || lda < n || ldb < n || (evect != rocblas_evect_none && ldz < n) || batch_count < 0)
         return rocblas_status_invalid_size;
     if(erange == rocblas_erange_value && vl >= vu)
         return rocblas_status_invalid_size;
@@ -89,34 +86,35 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (n && !B) || (n && !W) || (batch_count && !h_nev) || (batch_count && !info))
+    if((n && !A) || (n && !B) || (n && !W) || (batch_count && !nev) || (batch_count && !info))
+        return rocblas_status_invalid_pointer;
+    if(evect != rocblas_evect_none && n && !Z)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S>
-void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
-                                                   const rocblas_evect evect,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   const rocblas_int batch_count,
-                                                   size_t* size_scalars,
-                                                   size_t* size_work1,
-                                                   size_t* size_work2,
-                                                   size_t* size_work3,
-                                                   size_t* size_work4,
-                                                   size_t* size_work5,
-                                                   size_t* size_work6_ifail,
-                                                   size_t* size_D,
-                                                   size_t* size_E,
-                                                   size_t* size_iblock,
-                                                   size_t* size_isplit,
-                                                   size_t* size_tau,
-                                                   size_t* size_nev,
-                                                   size_t* size_work7_workArr,
-                                                   size_t* size_iinfo,
-                                                   bool* optim_mem)
+void rocsolver_sygvdx_hegvdx_getMemorySize(const rocblas_eform itype,
+                                           const rocblas_evect evect,
+                                           const rocblas_fill uplo,
+                                           const rocblas_int n,
+                                           const rocblas_int batch_count,
+                                           size_t* size_scalars,
+                                           size_t* size_work1,
+                                           size_t* size_work2,
+                                           size_t* size_work3,
+                                           size_t* size_work4,
+                                           size_t* size_work5,
+                                           size_t* size_work6_ifail,
+                                           size_t* size_D,
+                                           size_t* size_E,
+                                           size_t* size_iblock,
+                                           size_t* size_isplit,
+                                           size_t* size_tau,
+                                           size_t* size_work7_workArr,
+                                           size_t* size_iinfo,
+                                           bool* optim_mem)
 {
     // if quick return no need of workspace
     if(n == 0 || batch_count == 0)
@@ -133,7 +131,6 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
         *size_iblock = 0;
         *size_isplit = 0;
         *size_tau = 0;
-        *size_nev = 0;
         *size_work7_workArr = 0;
         *size_iinfo = 0;
         *optim_mem = true;
@@ -158,9 +155,9 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
     *size_work4 = max(*size_work4, temp4);
 
     // requirements for calling SYEVDX/HEEVDX
-    rocsolver_syevdx_heevdx_inplace_getMemorySize<BATCHED, T, S>(
+    rocsolver_syevdx_heevdx_getMemorySize<BATCHED, T, S>(
         evect, uplo, n, batch_count, &unused, &temp1, &temp2, &temp3, &temp4, size_work5,
-        size_work6_ifail, size_D, size_E, size_iblock, size_isplit, size_tau, size_nev, &temp5);
+        size_work6_ifail, size_D, size_E, size_iblock, size_isplit, size_tau, &temp5);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -188,51 +185,53 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
-rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
-                                                        const rocblas_eform itype,
-                                                        const rocblas_evect evect,
-                                                        const rocblas_erange erange,
-                                                        const rocblas_fill uplo,
-                                                        const rocblas_int n,
-                                                        U A,
-                                                        const rocblas_int shiftA,
-                                                        const rocblas_int lda,
-                                                        const rocblas_stride strideA,
-                                                        U B,
-                                                        const rocblas_int shiftB,
-                                                        const rocblas_int ldb,
-                                                        const rocblas_stride strideB,
-                                                        const S vl,
-                                                        const S vu,
-                                                        const rocblas_int il,
-                                                        const rocblas_int iu,
-                                                        const S abstol,
-                                                        rocblas_int* h_nev,
-                                                        S* W,
-                                                        const rocblas_stride strideW,
-                                                        rocblas_int* info,
-                                                        const rocblas_int batch_count,
-                                                        T* scalars,
-                                                        void* work1,
-                                                        void* work2,
-                                                        void* work3,
-                                                        void* work4,
-                                                        void* work5,
-                                                        rocblas_int* work6_ifail,
-                                                        S* D,
-                                                        S* E,
-                                                        rocblas_int* iblock,
-                                                        rocblas_int* isplit,
-                                                        T* tau,
-                                                        rocblas_int* d_nev,
-                                                        void* work7_workArr,
-                                                        rocblas_int* iinfo,
-                                                        bool optim_mem)
+rocblas_status rocsolver_sygvdx_hegvdx_template(rocblas_handle handle,
+                                                const rocblas_eform itype,
+                                                const rocblas_evect evect,
+                                                const rocblas_erange erange,
+                                                const rocblas_fill uplo,
+                                                const rocblas_int n,
+                                                U A,
+                                                const rocblas_int shiftA,
+                                                const rocblas_int lda,
+                                                const rocblas_stride strideA,
+                                                U B,
+                                                const rocblas_int shiftB,
+                                                const rocblas_int ldb,
+                                                const rocblas_stride strideB,
+                                                const S vl,
+                                                const S vu,
+                                                const rocblas_int il,
+                                                const rocblas_int iu,
+                                                rocblas_int* nev,
+                                                S* W,
+                                                const rocblas_stride strideW,
+                                                U Z,
+                                                const rocblas_int shiftZ,
+                                                const rocblas_int ldz,
+                                                const rocblas_stride strideZ,
+                                                rocblas_int* info,
+                                                const rocblas_int batch_count,
+                                                T* scalars,
+                                                void* work1,
+                                                void* work2,
+                                                void* work3,
+                                                void* work4,
+                                                void* work5,
+                                                rocblas_int* work6_ifail,
+                                                S* D,
+                                                S* E,
+                                                rocblas_int* iblock,
+                                                rocblas_int* isplit,
+                                                T* tau,
+                                                void* work7_workArr,
+                                                rocblas_int* iinfo,
+                                                bool optim_mem)
 {
-    ROCSOLVER_ENTER("sygvdx_hegvdx_inplace", "itype:", itype, "evect:", evect, "erange:", erange,
+    ROCSOLVER_ENTER("sygvdx_hegvdx", "itype:", itype, "evect:", evect, "erange:", erange,
                     "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda, "shiftB:", shiftB,
-                    "ldb:", ldb, "vl:", vl, "vu:", vu, "il:", il, "iu:", iu, "abstol:", abstol,
-                    "bc:", batch_count);
+                    "ldb:", ldb, "vl:", vl, "vu:", vu, "il:", il, "iu:", iu, "shiftZ:", shiftZ,
+                    "ldz:", ldz, "bc:", batch_count);
 
     // quick return
     if(batch_count == 0)
@@ -251,7 +250,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
     // quick return with n = 0
     if(n == 0)
     {
-        memset(h_nev, 0, sizeof(rocblas_int) * batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, nev, batch_count, 0);
         return rocblas_status_success;
     }
 
@@ -278,35 +277,35 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
         handle, itype, uplo, n, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
         scalars, work1, work2, work3, work4, optim_mem);
 
-    rocsolver_syevdx_heevdx_inplace_template<BATCHED, STRIDED, T>(
-        handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, abstol,
-        (rocblas_int*)nullptr, W, strideW, iinfo, batch_count, scalars, work1, work2, work3, work4,
-        work5, work6_ifail, D, E, iblock, isplit, tau, d_nev, (T**)work7_workArr);
+    rocsolver_syevdx_heevdx_template<BATCHED, STRIDED, T>(
+        handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, nev, W, strideW, Z,
+        shiftZ, ldz, strideZ, iinfo, batch_count, scalars, work1, work2, work3, work4, work5,
+        work6_ifail, D, E, iblock, isplit, tau, (T**)work7_workArr);
 
     // combine info from POTRF with info from SYEVDX/HEEVDX
-    ROCSOLVER_LAUNCH_KERNEL(sygvx_update_info, gridReset, threads, 0, stream, info, iinfo, d_nev, n,
+    ROCSOLVER_LAUNCH_KERNEL(sygvx_update_info, gridReset, threads, 0, stream, info, iinfo, nev, n,
                             batch_count);
 
-    /** (TODO: Similarly, if only temp_nev < n eigenvalues were returned, TRSM or TRMM below should not
+    /** (TODO: Similarly, if only h_nev < n eigenvalues were returned, TRSM or TRMM below should not
             work with the entire matrix. Need to find a way to do this efficiently; for now we ignore
-            nev and set temp_nev = n) **/
+            nev and set h_nev = n) **/
 
     // backtransform eigenvectors
     if(evect == rocblas_evect_original)
     {
-        rocblas_int temp_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
+        rocblas_int h_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
         if(itype == rocblas_eform_ax || itype == rocblas_eform_abx)
         {
             if(uplo == rocblas_fill_upper)
                 rocsolver_trsm_upper<BATCHED, STRIDED, T>(
                     handle, rocblas_side_left, rocblas_operation_none, rocblas_diagonal_non_unit, n,
-                    temp_nev, B, shiftB, ldb, strideB, A, shiftA, lda, strideA, batch_count,
-                    optim_mem, work1, work2, work3, work4);
+                    h_nev, B, shiftB, ldb, strideB, Z, shiftZ, ldz, strideZ, batch_count, optim_mem,
+                    work1, work2, work3, work4);
             else
                 rocsolver_trsm_lower<BATCHED, STRIDED, T>(
                     handle, rocblas_side_left, rocblas_operation_conjugate_transpose,
-                    rocblas_diagonal_non_unit, n, temp_nev, B, shiftB, ldb, strideB, A, shiftA, lda,
-                    strideA, batch_count, optim_mem, work1, work2, work3, work4);
+                    rocblas_diagonal_non_unit, n, h_nev, B, shiftB, ldb, strideB, Z, shiftZ, ldz,
+                    strideZ, batch_count, optim_mem, work1, work2, work3, work4);
         }
         else
         {
@@ -314,17 +313,9 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
                 = (uplo == rocblas_fill_upper ? rocblas_operation_conjugate_transpose
                                               : rocblas_operation_none);
             rocblasCall_trmm(handle, rocblas_side_left, uplo, trans, rocblas_diagonal_non_unit, n,
-                             temp_nev, &one, 0, B, shiftB, ldb, strideB, A, shiftA, lda, strideA,
+                             h_nev, &one, 0, B, shiftB, ldb, strideB, Z, shiftZ, ldz, strideZ,
                              batch_count, (T**)work7_workArr);
         }
-    }
-
-    // copy nev from device to host
-    if(h_nev)
-    {
-        HIP_CHECK(hipMemcpyAsync(h_nev, d_nev, sizeof(rocblas_int) * batch_count,
-                                 hipMemcpyDeviceToHost, stream));
-        HIP_CHECK(hipStreamSynchronize(stream));
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

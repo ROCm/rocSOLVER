@@ -9,7 +9,7 @@ Introduction to rocSOLVER API
 ********************************************************************
 
 .. note::
-    The rocSOLVER library is in the early stages of active development. New features are being continuously added, 
+    The rocSOLVER library is in the early stages of active development. New features are being continuously added,
     with new functionality documented at each `release of the ROCm platform <https://rocm.docs.amd.com/en/latest/release.html>`_.
 
 Currently implemented functionality
@@ -17,7 +17,7 @@ Currently implemented functionality
 
 The following tables summarize the functionality implemented for the different supported precisions in rocSOLVER's latest release.
 All LAPACK and LAPACK-like main functions include *_batched* and *_strided_batched* versions. For a complete description of the listed
-routines, please see the corresponding reference guides. 
+routines, please see the corresponding reference guides.
 
 LAPACK auxiliary functions
 ----------------------------
@@ -205,6 +205,10 @@ LAPACK-like functions
     :ref:`rocsolver_sygvdj <sygvdj>`, x, x, ,
     :ref:`rocsolver_heevdj <heevdj>`, , , x, x
     :ref:`rocsolver_hegvdj <hegvdj>`, , , x, x
+    :ref:`rocsolver_syevdx <syevdx>`, x, x, ,
+    :ref:`rocsolver_sygvdx <sygvdx>`, x, x, ,
+    :ref:`rocsolver_heevdx <heevdx>`, , , x, x
+    :ref:`rocsolver_hegvdx <hegvdx>`, , , x, x
 
 .. csv-table:: Singular value decomposition
     :header: "Function", "single", "double", "single complex", "double complex"

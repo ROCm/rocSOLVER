@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "common/misc/client_util.hpp"
 #include "common/misc/clientcommon.hpp"
 #include "common/misc/lapack_host_reference.hpp"
 #include "common/misc/norm.hpp"
@@ -35,103 +36,108 @@
 #include "common/misc/rocsolver_test.hpp"
 
 template <bool STRIDED, typename T, typename S, typename U>
-void sygvdx_hegvdx_inplace_checkBadArgs(const rocblas_handle handle,
-                                        const rocblas_eform itype,
-                                        const rocblas_evect evect,
-                                        const rocblas_erange erange,
-                                        const rocblas_fill uplo,
-                                        const rocblas_int n,
-                                        T dA,
-                                        const rocblas_int lda,
-                                        const rocblas_stride stA,
-                                        T dB,
-                                        const rocblas_int ldb,
-                                        const rocblas_stride stB,
-                                        const S vl,
-                                        const S vu,
-                                        const rocblas_int il,
-                                        const rocblas_int iu,
-                                        const S abstol,
-                                        rocblas_int* hNev,
-                                        U dW,
-                                        const rocblas_stride stW,
-                                        rocblas_int* dInfo,
-                                        const rocblas_int bc)
+void sygvdx_hegvdx_checkBadArgs(const rocblas_handle handle,
+                                const rocblas_eform itype,
+                                const rocblas_evect evect,
+                                const rocblas_erange erange,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                T dA,
+                                const rocblas_int lda,
+                                const rocblas_stride stA,
+                                T dB,
+                                const rocblas_int ldb,
+                                const rocblas_stride stB,
+                                const S vl,
+                                const S vu,
+                                const rocblas_int il,
+                                const rocblas_int iu,
+                                rocblas_int* dNev,
+                                U dW,
+                                const rocblas_stride stW,
+                                T dZ,
+                                const rocblas_int ldz,
+                                const rocblas_stride stZ,
+                                rocblas_int* dInfo,
+                                const rocblas_int bc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(STRIDED, nullptr, itype, evect, erange,
-                                                          uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu,
-                                                          il, iu, abstol, hNev, dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, nullptr, itype, evect, erange, uplo, n,
+                                                  dA, lda, stA, dB, ldb, stB, vl, vu, il, iu, dNev,
+                                                  dW, stW, dZ, ldz, stZ, dInfo, bc),
                           rocblas_status_invalid_handle);
 
     // values
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                              STRIDED, handle, rocblas_eform(0), evect, erange, uplo, n, dA, lda,
-                              stA, dB, ldb, stB, vl, vu, il, iu, abstol, hNev, dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, rocblas_eform(0), evect, erange,
+                                                  uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il,
+                                                  iu, dNev, dW, stW, dZ, ldz, stZ, dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(STRIDED, handle, itype,
-                                                          rocblas_evect_tridiagonal, erange, uplo,
-                                                          n, dA, lda, stA, dB, ldb, stB, vl, vu, il,
-                                                          iu, abstol, hNev, dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, rocblas_evect_tridiagonal,
+                                                  erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl,
+                                                  vu, il, iu, dNev, dW, stW, dZ, ldz, stZ, dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                              STRIDED, handle, itype, evect, rocblas_erange(0), uplo, n, dA, lda,
-                              stA, dB, ldb, stB, vl, vu, il, iu, abstol, hNev, dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, rocblas_erange(0),
+                                                  uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il,
+                                                  iu, dNev, dW, stW, dZ, ldz, stZ, dInfo, bc),
                           rocblas_status_invalid_value);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                              STRIDED, handle, itype, evect, erange, rocblas_fill_full, n, dA, lda,
-                              stA, dB, ldb, stB, vl, vu, il, iu, abstol, hNev, dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange,
+                                                  rocblas_fill_full, n, dA, lda, stA, dB, ldb, stB,
+                                                  vl, vu, il, iu, dNev, dW, stW, dZ, ldz, stZ,
+                                                  dInfo, bc),
                           rocblas_status_invalid_value);
 
     // sizes (only check batch_count if applicable)
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                                  STRIDED, handle, itype, evect, erange, uplo, n, dA, lda, stA, dB,
-                                  ldb, stB, vl, vu, il, iu, abstol, hNev, dW, stW, dInfo, -1),
+        EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo,
+                                                      n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
+                                                      dNev, dW, stW, dZ, ldz, stZ, dInfo, -1),
                               rocblas_status_invalid_size);
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                              STRIDED, handle, itype, evect, erange, uplo, n, (T) nullptr, lda, stA,
-                              dB, ldb, stB, vl, vu, il, iu, abstol, hNev, dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                                  (T) nullptr, lda, stA, dB, ldb, stB, vl, vu, il,
+                                                  iu, dNev, dW, stW, dZ, ldz, stZ, dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(STRIDED, handle, itype, evect, erange,
-                                                          uplo, n, dA, lda, stA, (T) nullptr, ldb,
-                                                          stB, vl, vu, il, iu, abstol, hNev, dW,
-                                                          stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                                  dA, lda, stA, (T) nullptr, ldb, stB, vl, vu, il,
+                                                  iu, dNev, dW, stW, dZ, ldz, stZ, dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(STRIDED, handle, itype, evect, erange,
-                                                          uplo, n, dA, lda, stA, dB, ldb, stB, vl,
-                                                          vu, il, iu, abstol, (rocblas_int*)nullptr,
-                                                          dW, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                                  dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
+                                                  (rocblas_int*)nullptr, dW, stW, dZ, ldz, stZ,
+                                                  dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                              STRIDED, handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb,
-                              stB, vl, vu, il, iu, abstol, hNev, (U) nullptr, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                                  dA, lda, stA, dB, ldb, stB, vl, vu, il, iu, dNev,
+                                                  (U) nullptr, stW, dZ, ldz, stZ, dInfo, bc),
                           rocblas_status_invalid_pointer);
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                              STRIDED, handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb,
-                              stB, vl, vu, il, iu, abstol, hNev, dW, stW, (rocblas_int*)nullptr, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                                  dA, lda, stA, dB, ldb, stB, vl, vu, il, iu, dNev,
+                                                  dW, stW, (T) nullptr, ldz, stZ, dInfo, bc),
+                          rocblas_status_invalid_pointer);
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                                  dA, lda, stA, dB, ldb, stB, vl, vu, il, iu, dNev,
+                                                  dW, stW, dZ, ldz, stZ, (rocblas_int*)nullptr, bc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(STRIDED, handle, itype, evect, erange,
-                                                          uplo, 0, (T) nullptr, lda, stA,
-                                                          (T) nullptr, ldb, stB, vl, vu, il, iu,
-                                                          abstol, hNev, (U) nullptr, stW, dInfo, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, 0,
+                                                  (T) nullptr, lda, stA, (T) nullptr, ldb, stB, vl,
+                                                  vu, il, iu, dNev, (U) nullptr, stW, (T) nullptr,
+                                                  ldz, stZ, dInfo, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
-        EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                                  STRIDED, handle, itype, evect, erange, uplo, n, dA, lda, stA, dB,
-                                  ldb, stB, vl, vu, il, iu, abstol, (rocblas_int*)nullptr, dW, stW,
-                                  (rocblas_int*)nullptr, 0),
+        EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo,
+                                                      n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
+                                                      (rocblas_int*)nullptr, dW, stW, dZ, ldz, stZ,
+                                                      (rocblas_int*)nullptr, 0),
                               rocblas_status_success);
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_sygvdx_hegvdx_inplace_bad_arg()
+void testing_sygvdx_hegvdx_bad_arg()
 {
     using S = decltype(std::real(T{}));
 
@@ -140,9 +146,11 @@ void testing_sygvdx_hegvdx_inplace_bad_arg()
     rocblas_int n = 1;
     rocblas_int lda = 1;
     rocblas_int ldb = 1;
+    rocblas_int ldz = 1;
     rocblas_stride stA = 1;
     rocblas_stride stB = 1;
     rocblas_stride stW = 1;
+    rocblas_stride stZ = 1;
     rocblas_int bc = 1;
     rocblas_eform itype = rocblas_eform_ax;
     rocblas_evect evect = rocblas_evect_original;
@@ -153,64 +161,69 @@ void testing_sygvdx_hegvdx_inplace_bad_arg()
     S vu = 1.0;
     rocblas_int il = 0;
     rocblas_int iu = 0;
-    S abstol = 0;
 
     if(BATCHED)
     {
         // memory allocations
-        host_strided_batch_vector<rocblas_int> hNev(1, 1, 1, 1);
         device_batch_vector<T> dA(1, 1, 1);
         device_batch_vector<T> dB(1, 1, 1);
+        device_batch_vector<T> dZ(1, 1, 1);
         device_strided_batch_vector<S> dW(1, 1, 1, 1);
+        device_strided_batch_vector<rocblas_int> dNev(1, 1, 1, 1);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dB.memcheck());
+        CHECK_HIP_ERROR(dZ.memcheck());
         CHECK_HIP_ERROR(dW.memcheck());
+        CHECK_HIP_ERROR(dNev.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
-        sygvdx_hegvdx_inplace_checkBadArgs<STRIDED>(
-            handle, itype, evect, erange, uplo, n, dA.data(), lda, stA, dB.data(), ldb, stB, vl, vu,
-            il, iu, abstol, hNev.data(), dW.data(), stW, dInfo.data(), bc);
+        sygvdx_hegvdx_checkBadArgs<STRIDED>(handle, itype, evect, erange, uplo, n, dA.data(), lda,
+                                            stA, dB.data(), ldb, stB, vl, vu, il, iu, dNev.data(),
+                                            dW.data(), stW, dZ.data(), ldz, stZ, dInfo.data(), bc);
     }
     else
     {
         // memory allocations
-        host_strided_batch_vector<rocblas_int> hNev(1, 1, 1, 1);
         device_strided_batch_vector<T> dA(1, 1, 1, 1);
         device_strided_batch_vector<T> dB(1, 1, 1, 1);
+        device_strided_batch_vector<T> dZ(1, 1, 1, 1);
         device_strided_batch_vector<S> dW(1, 1, 1, 1);
+        device_strided_batch_vector<rocblas_int> dNev(1, 1, 1, 1);
         device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dB.memcheck());
+        CHECK_HIP_ERROR(dZ.memcheck());
         CHECK_HIP_ERROR(dW.memcheck());
+        CHECK_HIP_ERROR(dNev.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
 
         // check bad arguments
-        sygvdx_hegvdx_inplace_checkBadArgs<STRIDED>(
-            handle, itype, evect, erange, uplo, n, dA.data(), lda, stA, dB.data(), ldb, stB, vl, vu,
-            il, iu, abstol, hNev.data(), dW.data(), stW, dInfo.data(), bc);
+        sygvdx_hegvdx_checkBadArgs<STRIDED>(handle, itype, evect, erange, uplo, n, dA.data(), lda,
+                                            stA, dB.data(), ldb, stB, vl, vu, il, iu, dNev.data(),
+                                            dW.data(), stW, dZ.data(), ldz, stZ, dInfo.data(), bc);
     }
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void sygvdx_hegvdx_inplace_initData(const rocblas_handle handle,
-                                    const rocblas_eform itype,
-                                    const rocblas_evect evect,
-                                    const rocblas_int n,
-                                    Td& dA,
-                                    const rocblas_int lda,
-                                    const rocblas_stride stA,
-                                    Td& dB,
-                                    const rocblas_int ldb,
-                                    const rocblas_stride stB,
-                                    const rocblas_int bc,
-                                    Th& hA,
-                                    Th& hB,
-                                    host_strided_batch_vector<T>& A,
-                                    host_strided_batch_vector<T>& B,
-                                    const bool test,
-                                    const bool singular)
+void sygvdx_hegvdx_initData(const rocblas_handle handle,
+                            const rocblas_eform itype,
+                            const rocblas_evect evect,
+                            const rocblas_int n,
+                            Td& dA,
+                            const rocblas_int lda,
+                            const rocblas_stride stA,
+                            Td& dB,
+                            const rocblas_int ldb,
+                            const rocblas_stride stB,
+                            const rocblas_int bc,
+                            Th& hA,
+                            Th& hB,
+                            host_strided_batch_vector<T>& A,
+                            host_strided_batch_vector<T>& B,
+                            const bool test,
+                            const bool singular)
 {
     if(CPU)
     {
@@ -328,77 +341,80 @@ void sygvdx_hegvdx_inplace_initData(const rocblas_handle handle,
 }
 
 template <bool STRIDED, typename T, typename S, typename Td, typename Ud, typename Vd, typename Th, typename Uh, typename Vh>
-void sygvdx_hegvdx_inplace_getError(const rocblas_handle handle,
-                                    const rocblas_eform itype,
-                                    const rocblas_evect evect,
-                                    const rocblas_erange erange,
-                                    const rocblas_fill uplo,
-                                    const rocblas_int n,
-                                    Td& dA,
-                                    const rocblas_int lda,
-                                    const rocblas_stride stA,
-                                    Td& dB,
-                                    const rocblas_int ldb,
-                                    const rocblas_stride stB,
-                                    const S vl,
-                                    const S vu,
-                                    const rocblas_int il,
-                                    const rocblas_int iu,
-                                    const S abstol,
-                                    Vh& hNevRes,
-                                    Ud& dW,
-                                    const rocblas_stride stW,
-                                    Vd& dInfo,
-                                    const rocblas_int bc,
-                                    Th& hA,
-                                    Th& hARes,
-                                    Th& hB,
-                                    Vh& hNev,
-                                    Uh& hW,
-                                    Uh& hWRes,
-                                    Vh& hInfo,
-                                    Vh& hInfoRes,
-                                    double* max_err,
-                                    const bool singular)
+void sygvdx_hegvdx_getError(const rocblas_handle handle,
+                            const rocblas_eform itype,
+                            const rocblas_evect evect,
+                            const rocblas_erange erange,
+                            const rocblas_fill uplo,
+                            const rocblas_int n,
+                            Td& dA,
+                            const rocblas_int lda,
+                            const rocblas_stride stA,
+                            Td& dB,
+                            const rocblas_int ldb,
+                            const rocblas_stride stB,
+                            const S vl,
+                            const S vu,
+                            const rocblas_int il,
+                            const rocblas_int iu,
+                            Vd& dNev,
+                            Ud& dW,
+                            const rocblas_stride stW,
+                            Td& dZ,
+                            const rocblas_int ldz,
+                            const rocblas_stride stZ,
+                            Vd& dInfo,
+                            const rocblas_int bc,
+                            Th& hA,
+                            Th& hB,
+                            Vh& hNev,
+                            Vh& hNevRes,
+                            Uh& hW,
+                            Uh& hWRes,
+                            Th& hZ,
+                            Th& hZRes,
+                            Vh& hInfo,
+                            Vh& hInfoRes,
+                            double* max_err,
+                            const bool singular)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     int lwork = (COMPLEX ? 2 * n : 8 * n);
     int lrwork = (COMPLEX ? 7 * n : 0);
     int liwork = 5 * n;
-    int ldz = n;
 
     std::vector<T> work(lwork);
     std::vector<S> rwork(lrwork);
     std::vector<int> iwork(liwork);
+    std::vector<int> hIfail(n);
     host_strided_batch_vector<T> A(lda * n, 1, lda * n, bc);
     host_strided_batch_vector<T> B(ldb * n, 1, ldb * n, bc);
-    std::vector<T> Z(ldz * n);
-    std::vector<int> ifail(n);
 
     // input data initialization
-    sygvdx_hegvdx_inplace_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb,
-                                                  stB, bc, hA, hB, A, B, true, singular);
+    sygvdx_hegvdx_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc,
+                                          hA, hB, A, B, true, singular);
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_sygvdx_hegvdx_inplace(
+    CHECK_ROCBLAS_ERROR(rocsolver_sygvdx_hegvdx(
         STRIDED, handle, itype, evect, erange, uplo, n, dA.data(), lda, stA, dB.data(), ldb, stB,
-        vl, vu, il, iu, abstol, hNevRes.data(), dW.data(), stW, dInfo.data(), bc));
+        vl, vu, il, iu, dNev.data(), dW.data(), stW, dZ.data(), ldz, stZ, dInfo.data(), bc));
 
+    CHECK_HIP_ERROR(hNevRes.transfer_from(dNev));
     CHECK_HIP_ERROR(hWRes.transfer_from(dW));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
     if(evect != rocblas_evect_none)
-        CHECK_HIP_ERROR(hARes.transfer_from(dA));
+        CHECK_HIP_ERROR(hZRes.transfer_from(dZ));
 
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
-    S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
+    S atol = 2 * get_safemin<S>();
     for(rocblas_int b = 0; b < bc; ++b)
     {
         cpu_sygvx_hegvx(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu, atol,
-                        hNev[b], hW[b], Z.data(), ldz, work.data(), lwork, rwork.data(),
-                        iwork.data(), ifail.data(), hInfo[b]);
+                        hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(),
+                        hIfail.data(), hInfo[b]);
     }
 
     // (We expect the used input matrices to always converge. Testing
@@ -448,10 +464,10 @@ void sygvdx_hegvdx_inplace_getError(const rocblas_handle handle,
                 T alpha = 1;
                 T beta = 0;
 
-                // hARes contains eigenvectors x
+                // hZRes contains eigenvectors x
                 // compute B*x (or A*x) and store in hB
-                cpu_symm_hemm(rocblas_side_left, uplo, n, hNev[b][0], alpha, B[b], ldb, hARes[b],
-                              lda, beta, hB[b], ldb);
+                cpu_symm_hemm(rocblas_side_left, uplo, n, hNev[b][0], alpha, B[b], ldb, hZRes[b],
+                              ldz, beta, hB[b], ldb);
 
                 if(itype == rocblas_eform_ax)
                 {
@@ -461,14 +477,14 @@ void sygvdx_hegvdx_inplace_getError(const rocblas_handle handle,
                     for(int j = 0; j < hNev[b][0]; j++)
                     {
                         alpha = T(1) / hWRes[b][j];
-                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hARes[b] + j * lda, 1, beta,
+                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hZRes[b] + j * ldz, 1, beta,
                                       hA[b] + j * lda, 1);
                     }
 
-                    // move B*x into hARes
+                    // move B*x into hZRes
                     for(rocblas_int i = 0; i < n; i++)
                         for(rocblas_int j = 0; j < hNev[b][0]; j++)
-                            hARes[b][i + j * lda] = hB[b][i + j * ldb];
+                            hZRes[b][i + j * ldz] = hB[b][i + j * ldb];
                 }
                 else
                 {
@@ -483,9 +499,9 @@ void sygvdx_hegvdx_inplace_getError(const rocblas_handle handle,
                     }
                 }
 
-                // error is ||hA - hARes|| / ||hA||
+                // error is ||hA - hZRes|| / ||hA||
                 // using frobenius norm
-                err = norm_error('F', n, hNev[b][0], lda, hA[b], hARes[b]);
+                err = norm_error('F', n, hNev[b][0], lda, hA[b], hZRes[b], ldz);
                 *max_err = err > *max_err ? err : *max_err;
             }
         }
@@ -493,87 +509,65 @@ void sygvdx_hegvdx_inplace_getError(const rocblas_handle handle,
 }
 
 template <bool STRIDED, typename T, typename S, typename Td, typename Ud, typename Vd, typename Th, typename Uh, typename Vh>
-void sygvdx_hegvdx_inplace_getPerfData(const rocblas_handle handle,
-                                       const rocblas_eform itype,
-                                       const rocblas_evect evect,
-                                       const rocblas_erange erange,
-                                       const rocblas_fill uplo,
-                                       const rocblas_int n,
-                                       Td& dA,
-                                       const rocblas_int lda,
-                                       const rocblas_stride stA,
-                                       Td& dB,
-                                       const rocblas_int ldb,
-                                       const rocblas_stride stB,
-                                       const S vl,
-                                       const S vu,
-                                       const rocblas_int il,
-                                       const rocblas_int iu,
-                                       const S abstol,
-                                       Vh& hNevRes,
-                                       Ud& dW,
-                                       const rocblas_stride stW,
-                                       Vd& dInfo,
-                                       const rocblas_int bc,
-                                       Th& hA,
-                                       Th& hB,
-                                       Vh& hNev,
-                                       Uh& hW,
-                                       Vh& hInfo,
-                                       double* gpu_time_used,
-                                       double* cpu_time_used,
-                                       const rocblas_int hot_calls,
-                                       const int profile,
-                                       const bool profile_kernels,
-                                       const bool perf,
-                                       const bool singular)
+void sygvdx_hegvdx_getPerfData(const rocblas_handle handle,
+                               const rocblas_eform itype,
+                               const rocblas_evect evect,
+                               const rocblas_erange erange,
+                               const rocblas_fill uplo,
+                               const rocblas_int n,
+                               Td& dA,
+                               const rocblas_int lda,
+                               const rocblas_stride stA,
+                               Td& dB,
+                               const rocblas_int ldb,
+                               const rocblas_stride stB,
+                               const S vl,
+                               const S vu,
+                               const rocblas_int il,
+                               const rocblas_int iu,
+                               Vd& dNev,
+                               Ud& dW,
+                               const rocblas_stride stW,
+                               Td& dZ,
+                               const rocblas_int ldz,
+                               const rocblas_stride stZ,
+                               Vd& dInfo,
+                               const rocblas_int bc,
+                               Th& hA,
+                               Th& hB,
+                               Vh& hNev,
+                               Uh& hW,
+                               Th& hZ,
+                               Vh& hInfo,
+                               double* gpu_time_used,
+                               double* cpu_time_used,
+                               const rocblas_int hot_calls,
+                               const int profile,
+                               const bool profile_kernels,
+                               const bool perf,
+                               const bool singular)
 {
-    constexpr bool COMPLEX = rocblas_is_complex<T>;
-
-    int lwork = (COMPLEX ? 2 * n : 8 * n);
-    int lrwork = (COMPLEX ? 7 * n : 0);
-    int liwork = 5 * n;
-    int ldz = n;
-
-    std::vector<T> work(lwork);
-    std::vector<S> rwork(lrwork);
-    std::vector<int> iwork(liwork);
-    host_strided_batch_vector<T> A(1, 1, 1, 1);
-    host_strided_batch_vector<T> B(1, 1, 1, 1);
-    std::vector<T> Z(ldz * n);
-    std::vector<int> ifail(n);
-
-    // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
-    S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
+    host_strided_batch_vector<T> A(lda * n, 1, lda * n, bc);
+    host_strided_batch_vector<T> B(ldb * n, 1, ldb * n, bc);
 
     if(!perf)
     {
-        sygvdx_hegvdx_inplace_initData<true, false, T>(handle, itype, evect, n, dA, lda, stA, dB,
-                                                       ldb, stB, bc, hA, hB, A, B, false, singular);
-
         // cpu-lapack performance (only if not in perf mode)
-        *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
-        {
-            cpu_sygvx_hegvx(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu,
-                            atol, hNev[b], hW[b], Z.data(), ldz, work.data(), lwork, rwork.data(),
-                            iwork.data(), ifail.data(), hInfo[b]);
-        }
-        *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
+        *cpu_time_used = nan("");
     }
 
-    sygvdx_hegvdx_inplace_initData<true, false, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb,
-                                                   stB, bc, hA, hB, A, B, false, singular);
+    sygvdx_hegvdx_initData<true, false, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc,
+                                           hA, hB, A, B, false, singular);
 
     // cold calls
     for(int iter = 0; iter < 2; iter++)
     {
-        sygvdx_hegvdx_inplace_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB,
-                                                       ldb, stB, bc, hA, hB, A, B, false, singular);
+        sygvdx_hegvdx_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB,
+                                               bc, hA, hB, A, B, false, singular);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_sygvdx_hegvdx_inplace(
-            STRIDED, handle, itype, evect, erange, uplo, n, dA.data(), lda, stA, dB.data(), ldb,
-            stB, vl, vu, il, iu, abstol, hNevRes.data(), dW.data(), stW, dInfo.data(), bc));
+        CHECK_ROCBLAS_ERROR(rocsolver_sygvdx_hegvdx(
+            STRIDED, handle, itype, evect, erange, uplo, n, dA.data(), lda, stA, dB.data(), ldb, stB,
+            vl, vu, il, iu, dNev.data(), dW.data(), stW, dZ.data(), ldz, stZ, dInfo.data(), bc));
     }
 
     // gpu-lapack performance
@@ -593,20 +587,20 @@ void sygvdx_hegvdx_inplace_getPerfData(const rocblas_handle handle,
 
     for(rocblas_int iter = 0; iter < hot_calls; iter++)
     {
-        sygvdx_hegvdx_inplace_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB,
-                                                       ldb, stB, bc, hA, hB, A, B, false, singular);
+        sygvdx_hegvdx_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB,
+                                               bc, hA, hB, A, B, false, singular);
 
         start = get_time_us_sync(stream);
-        rocsolver_sygvdx_hegvdx_inplace(STRIDED, handle, itype, evect, erange, uplo, n, dA.data(),
-                                        lda, stA, dB.data(), ldb, stB, vl, vu, il, iu, abstol,
-                                        hNevRes.data(), dW.data(), stW, dInfo.data(), bc);
+        rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n, dA.data(), lda, stA,
+                                dB.data(), ldb, stB, vl, vu, il, iu, dNev.data(), dW.data(), stW,
+                                dZ.data(), ldz, stZ, dInfo.data(), bc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
 
 template <bool BATCHED, bool STRIDED, typename T>
-void testing_sygvdx_hegvdx_inplace(Arguments& argus)
+void testing_sygvdx_hegvdx(Arguments& argus)
 {
     using S = decltype(std::real(T{}));
 
@@ -619,15 +613,16 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
+    rocblas_int ldz = argus.get<rocblas_int>("ldz", n);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
     rocblas_stride stW = argus.get<rocblas_stride>("strideW", n);
+    rocblas_stride stZ = argus.get<rocblas_stride>("strideZ", ldz * n);
 
     S vl = S(argus.get<double>("vl", 0));
     S vu = S(argus.get<double>("vu", erangeC == 'V' ? 1 : 0));
     rocblas_int il = argus.get<rocblas_int>("il", erangeC == 'I' ? 1 : 0);
     rocblas_int iu = argus.get<rocblas_int>("iu", erangeC == 'I' ? 1 : 0);
-    S abstol = S(argus.get<double>("abstol", 0));
 
     rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_evect evect = char2rocblas_evect(evectC);
@@ -636,25 +631,25 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
     rocblas_stride stWRes = (argus.unit_check || argus.norm_check) ? stW : 0;
+    rocblas_stride stZRes = (argus.unit_check || argus.norm_check) ? stZ : 0;
 
     // check non-supported values
     if(uplo == rocblas_fill_full || evect == rocblas_evect_tridiagonal)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                                      STRIDED, handle, itype, evect, erange, uplo, n,
-                                      (T* const*)nullptr, lda, stA, (T* const*)nullptr, ldb, stB,
-                                      vl, vu, il, iu, abstol, (rocblas_int*)nullptr, (S*)nullptr,
-                                      stW, (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_value);
+            EXPECT_ROCBLAS_STATUS(
+                rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                        (T* const*)nullptr, lda, stA, (T* const*)nullptr, ldb, stB,
+                                        vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stW,
+                                        (T* const*)nullptr, ldz, stZ, (rocblas_int*)nullptr, bc),
+                rocblas_status_invalid_value);
         else
             EXPECT_ROCBLAS_STATUS(
-                rocsolver_sygvdx_hegvdx_inplace(STRIDED, handle, itype, evect, erange, uplo, n,
-                                                (T*)nullptr, lda, stA, (T*)nullptr, ldb, stB, vl,
-                                                vu, il, iu, abstol, (rocblas_int*)nullptr,
-                                                (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
+                rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n, (T*)nullptr,
+                                        lda, stA, (T*)nullptr, ldb, stB, vl, vu, il, iu,
+                                        (rocblas_int*)nullptr, (S*)nullptr, stW, (T*)nullptr, ldz,
+                                        stZ, (rocblas_int*)nullptr, bc),
                 rocblas_status_invalid_value);
 
         if(argus.timing)
@@ -667,31 +662,32 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
     size_t size_A = size_t(lda) * n;
     size_t size_B = size_t(ldb) * n;
     size_t size_W = size_t(n);
+    size_t size_Z = size_t(ldz) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
     size_t size_WRes = (argus.unit_check || argus.norm_check) ? size_W : 0;
+    size_t size_ZRes = (argus.unit_check || argus.norm_check) ? size_Z : 0;
 
     // check invalid sizes
-    bool invalid_size
-        = (n < 0 || lda < n || ldb < n || bc < 0 || (erange == rocblas_erange_value && vl >= vu)
-           || (erange == rocblas_erange_index && (il < 1 || iu < 0))
-           || (erange == rocblas_erange_index && (iu > n || (n > 0 && il > iu))));
+    bool invalid_size = (n < 0 || lda < n || ldb < n || (evect != rocblas_evect_none && ldz < n)
+                         || bc < 0 || (erange == rocblas_erange_value && vl >= vu)
+                         || (erange == rocblas_erange_index && (il < 1 || iu < 0))
+                         || (erange == rocblas_erange_index && (iu > n || (n > 0 && il > iu))));
     if(invalid_size)
     {
         if(BATCHED)
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                                      STRIDED, handle, itype, evect, erange, uplo, n,
-                                      (T* const*)nullptr, lda, stA, (T* const*)nullptr, ldb, stB,
-                                      vl, vu, il, iu, abstol, (rocblas_int*)nullptr, (S*)nullptr,
-                                      stW, (rocblas_int*)nullptr, bc),
-                                  rocblas_status_invalid_size);
+            EXPECT_ROCBLAS_STATUS(
+                rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n,
+                                        (T* const*)nullptr, lda, stA, (T* const*)nullptr, ldb, stB,
+                                        vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stW,
+                                        (T* const*)nullptr, ldz, stZ, (rocblas_int*)nullptr, bc),
+                rocblas_status_invalid_size);
         else
             EXPECT_ROCBLAS_STATUS(
-                rocsolver_sygvdx_hegvdx_inplace(STRIDED, handle, itype, evect, erange, uplo, n,
-                                                (T*)nullptr, lda, stA, (T*)nullptr, ldb, stB, vl,
-                                                vu, il, iu, abstol, (rocblas_int*)nullptr,
-                                                (S*)nullptr, stW, (rocblas_int*)nullptr, bc),
+                rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n, (T*)nullptr,
+                                        lda, stA, (T*)nullptr, ldb, stB, vl, vu, il, iu,
+                                        (rocblas_int*)nullptr, (S*)nullptr, stW, (T*)nullptr, ldz,
+                                        stZ, (rocblas_int*)nullptr, bc),
                 rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -705,15 +701,15 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
         if(BATCHED)
-            CHECK_ALLOC_QUERY(rocsolver_sygvdx_hegvdx_inplace(
+            CHECK_ALLOC_QUERY(rocsolver_sygvdx_hegvdx(
                 STRIDED, handle, itype, evect, erange, uplo, n, (T* const*)nullptr, lda, stA,
-                (T* const*)nullptr, ldb, stB, vl, vu, il, iu, abstol, (rocblas_int*)nullptr,
-                (S*)nullptr, stW, (rocblas_int*)nullptr, bc));
+                (T* const*)nullptr, ldb, stB, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr,
+                stW, (T* const*)nullptr, ldz, stZ, (rocblas_int*)nullptr, bc));
         else
-            CHECK_ALLOC_QUERY(rocsolver_sygvdx_hegvdx_inplace(
+            CHECK_ALLOC_QUERY(rocsolver_sygvdx_hegvdx(
                 STRIDED, handle, itype, evect, erange, uplo, n, (T*)nullptr, lda, stA, (T*)nullptr,
-                ldb, stB, vl, vu, il, iu, abstol, (rocblas_int*)nullptr, (S*)nullptr, stW,
-                (rocblas_int*)nullptr, bc));
+                ldb, stB, vl, vu, il, iu, (rocblas_int*)nullptr, (S*)nullptr, stW, (T*)nullptr, ldz,
+                stZ, (rocblas_int*)nullptr, bc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -735,33 +731,39 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
     host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
     host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
     // device
+    device_strided_batch_vector<rocblas_int> dNev(1, 1, 1, bc);
     device_strided_batch_vector<S> dW(size_W, 1, stW, bc);
     device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
+    CHECK_HIP_ERROR(dNev.memcheck());
+    CHECK_HIP_ERROR(dInfo.memcheck());
     if(size_W)
         CHECK_HIP_ERROR(dW.memcheck());
-    CHECK_HIP_ERROR(dInfo.memcheck());
 
     if(BATCHED)
     {
         // memory allocations
         host_batch_vector<T> hA(size_A, 1, bc);
-        host_batch_vector<T> hARes(size_ARes, 1, bc);
         host_batch_vector<T> hB(size_B, 1, bc);
+        host_batch_vector<T> hZ(size_Z, 1, bc);
+        host_batch_vector<T> hZRes(size_ZRes, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
         device_batch_vector<T> dB(size_B, 1, bc);
+        device_batch_vector<T> dZ(size_Z, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         if(size_B)
             CHECK_HIP_ERROR(dB.memcheck());
+        if(size_Z)
+            CHECK_HIP_ERROR(dZ.memcheck());
 
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                                      STRIDED, handle, itype, evect, erange, uplo, n, dA.data(),
-                                      lda, stA, dB.data(), ldb, stB, vl, vu, il, iu, abstol,
-                                      hNevRes.data(), dW.data(), stW, dInfo.data(), bc),
-                                  rocblas_status_success);
+            EXPECT_ROCBLAS_STATUS(
+                rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n, dA.data(),
+                                        lda, stA, dB.data(), ldb, stB, vl, vu, il, iu, dNev.data(),
+                                        dW.data(), stW, dZ.data(), ldz, stZ, dInfo.data(), bc),
+                rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
 
@@ -770,16 +772,16 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            sygvdx_hegvdx_inplace_getError<STRIDED, T>(
-                handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
-                abstol, hNevRes, dW, stW, dInfo, bc, hA, hARes, hB, hNev, hW, hWRes, hInfo,
-                hInfoRes, &max_error, argus.singular);
+            sygvdx_hegvdx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
+                                               dB, ldb, stB, vl, vu, il, iu, dNev, dW, stW, dZ, ldz,
+                                               stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ,
+                                               hZRes, hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
-            sygvdx_hegvdx_inplace_getPerfData<STRIDED, T>(
+            sygvdx_hegvdx_getPerfData<STRIDED, T>(
                 handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
-                abstol, hNevRes, dW, stW, dInfo, bc, hA, hB, hNev, hW, hInfo, &gpu_time_used,
+                dNev, dW, stW, dZ, ldz, stZ, dInfo, bc, hA, hB, hNev, hW, hZ, hInfo, &gpu_time_used,
                 &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels, argus.perf,
                 argus.singular);
     }
@@ -788,23 +790,27 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
     {
         // memory allocations
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
-        host_strided_batch_vector<T> hARes(size_ARes, 1, stARes, bc);
         host_strided_batch_vector<T> hB(size_B, 1, stB, bc);
+        host_strided_batch_vector<T> hZ(size_Z, 1, stZ, bc);
+        host_strided_batch_vector<T> hZRes(size_ZRes, 1, stZRes, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
         device_strided_batch_vector<T> dB(size_B, 1, stB, bc);
+        device_strided_batch_vector<T> dZ(size_Z, 1, stZ, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         if(size_B)
             CHECK_HIP_ERROR(dB.memcheck());
+        if(size_Z)
+            CHECK_HIP_ERROR(dZ.memcheck());
 
         // check quick return
         if(n == 0 || bc == 0)
         {
-            EXPECT_ROCBLAS_STATUS(rocsolver_sygvdx_hegvdx_inplace(
-                                      STRIDED, handle, itype, evect, erange, uplo, n, dA.data(),
-                                      lda, stA, dB.data(), ldb, stB, vl, vu, il, iu, abstol,
-                                      hNevRes.data(), dW.data(), stW, dInfo.data(), bc),
-                                  rocblas_status_success);
+            EXPECT_ROCBLAS_STATUS(
+                rocsolver_sygvdx_hegvdx(STRIDED, handle, itype, evect, erange, uplo, n, dA.data(),
+                                        lda, stA, dB.data(), ldb, stB, vl, vu, il, iu, dNev.data(),
+                                        dW.data(), stW, dZ.data(), ldz, stZ, dInfo.data(), bc),
+                rocblas_status_success);
             if(argus.timing)
                 rocsolver_bench_inform(inform_quick_return);
 
@@ -813,16 +819,16 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check)
-            sygvdx_hegvdx_inplace_getError<STRIDED, T>(
-                handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
-                abstol, hNevRes, dW, stW, dInfo, bc, hA, hARes, hB, hNev, hW, hWRes, hInfo,
-                hInfoRes, &max_error, argus.singular);
+            sygvdx_hegvdx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
+                                               dB, ldb, stB, vl, vu, il, iu, dNev, dW, stW, dZ, ldz,
+                                               stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ,
+                                               hZRes, hInfo, hInfoRes, &max_error, argus.singular);
 
         // collect performance data
         if(argus.timing)
-            sygvdx_hegvdx_inplace_getPerfData<STRIDED, T>(
+            sygvdx_hegvdx_getPerfData<STRIDED, T>(
                 handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
-                abstol, hNevRes, dW, stW, dInfo, bc, hA, hB, hNev, hW, hInfo, &gpu_time_used,
+                dNev, dW, stW, dZ, ldz, stZ, dInfo, bc, hA, hB, hNev, hW, hZ, hInfo, &gpu_time_used,
                 &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels, argus.perf,
                 argus.singular);
     }
@@ -841,24 +847,24 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
             if(BATCHED)
             {
                 rocsolver_bench_output("itype", "evect", "erange", "uplo", "n", "lda", "ldb", "vl",
-                                       "vu", "il", "iu", "abstol", "strideW", "batch_c");
+                                       "vu", "il", "iu", "strideW", "ldz", "batch_c");
                 rocsolver_bench_output(itypeC, evectC, erangeC, uploC, n, lda, ldb, vl, vu, il, iu,
-                                       abstol, stW, bc);
+                                       stW, ldz, bc);
             }
             else if(STRIDED)
             {
                 rocsolver_bench_output("itype", "evect", "erange", "uplo", "n", "lda", "ldb",
-                                       "strideA", "strideB", "vl", "vu", "il", "iu", "abstol",
-                                       "strideW", "batch_c");
+                                       "strideA", "strideB", "vl", "vu", "il", "iu", "strideW",
+                                       "ldz", "strideZ", "batch_c");
                 rocsolver_bench_output(itypeC, evectC, erangeC, uploC, n, lda, ldb, stA, stB, vl,
-                                       vu, il, iu, abstol, stW, bc);
+                                       vu, il, iu, stW, ldz, stZ, bc);
             }
             else
             {
                 rocsolver_bench_output("itype", "evect", "erange", "uplo", "n", "lda", "ldb", "vl",
-                                       "vu", "il", "iu", "abstol");
+                                       "vu", "il", "iu", "ldz");
                 rocsolver_bench_output(itypeC, evectC, erangeC, uploC, n, lda, ldb, vl, vu, il, iu,
-                                       abstol);
+                                       ldz);
             }
             rocsolver_bench_header("Results:");
             if(argus.norm_check)
@@ -885,3 +891,8 @@ void testing_sygvdx_hegvdx_inplace(Arguments& argus)
     // ensure all arguments were consumed
     argus.validate_consumed();
 }
+
+#define EXTERN_TESTING_SYGVDX_HEGVDX(...) \
+    extern template void testing_sygvdx_hegvdx<__VA_ARGS__>(Arguments&);
+
+INSTANTIATE(EXTERN_TESTING_SYGVDX_HEGVDX, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)
