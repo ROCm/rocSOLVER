@@ -42,9 +42,10 @@ ROCSOLVER_BEGIN_NAMESPACE
     the library size.
 *************************************************************/
 
-template <rocblas_int DIM, typename T, typename U>
+template <typename T, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
-    getri_kernel_small(U AA,
+    getri_kernel_small(const rocblas_int n,
+                       U AA,
                        const rocblas_int shiftA,
                        const rocblas_int lda,
                        const rocblas_stride strideA,
@@ -58,7 +59,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
     int b = hipBlockIdx_x;
     int i = hipThreadIdx_x;
 
-    if(i >= DIM)
+    if(i >= n)
         return;
 
     // batch instance
@@ -68,19 +69,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
         ipiv = load_ptr_batch<rocblas_int>(ipivA, b, shiftP, strideP);
 
     // shared memory (for communication between threads in group)
-    __shared__ T common[DIM];
+    __shared__ T common[TRTRI_MAX_COLS];
     T temp;
     rocblas_int jp;
 
     // read corresponding row from global memory in local array
-    T rA[DIM];
-#pragma unroll
-    for(int j = 0; j < DIM; ++j)
+    T rA[TRTRI_MAX_COLS];
+    for(int j = 0; j < n; ++j)
         rA[j] = A[i + j * lda];
 
     if(complete)
     {
-        __shared__ T diag[DIM];
+        __shared__ T diag[TRTRI_MAX_COLS];
         __shared__ rocblas_int _info;
 
         // compute info
@@ -106,8 +106,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
         diag[i] = -rA[i];
 
         // compute element i of each column j
-#pragma unroll
-        for(rocblas_int j = 1; j < DIM; j++)
+        for(rocblas_int j = 1; j < n; j++)
         {
             // share current column and diagonal
             common[i] = rA[j];
@@ -129,9 +128,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
     if(info[b] != 0)
         return;
 
-        //--- GETRI ---
-#pragma unroll
-    for(rocblas_int j = DIM - 2; j >= 0; j--)
+    //--- GETRI ---
+    for(rocblas_int j = n - 2; j >= 0; j--)
     {
         // extract lower triangular column (copy_and_zero)
         if(i > j)
@@ -144,7 +142,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
         // update column j (gemv)
         temp = 0;
 
-        for(rocblas_int ii = j + 1; ii < DIM; ii++)
+        for(rocblas_int ii = j + 1; ii < n; ii++)
             temp += rA[ii] * common[ii];
 
         rA[j] -= temp;
@@ -153,8 +151,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
     // apply pivots (getri_pivot)
     if(pivot)
     {
-#pragma unroll
-        for(rocblas_int j = DIM - 2; j >= 0; j--)
+        for(rocblas_int j = n - 2; j >= 0; j--)
         {
             jp = ipiv[j] - 1;
             if(jp != j)
@@ -162,9 +159,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(TRTRI_MAX_COLS)
         }
     }
 
-// write results to global memory from local array
-#pragma unroll
-    for(int j = 0; j < DIM; j++)
+    // write results to global memory from local array
+    for(int j = 0; j < n; j++)
         A[i + j * lda] = rA[j];
 }
 
@@ -187,86 +183,14 @@ rocblas_status getri_run_small(rocblas_handle handle,
                                const bool complete,
                                const bool pivot)
 {
-#define RUN_GETRI_SMALL(DIM)                                                                      \
-    ROCSOLVER_LAUNCH_KERNEL((getri_kernel_small<DIM, T>), grid, block, 0, stream, A, shiftA, lda, \
-                            strideA, ipiv, shiftP, strideP, info, complete, pivot)
-
     dim3 grid(batch_count, 1, 1);
     dim3 block(TRTRI_MAX_COLS, 1, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    // instantiate cases to make number of columns n known at compile time
-    // this should allow loop unrolling.
-    switch(n)
-    {
-    case 1: RUN_GETRI_SMALL(1); break;
-    case 2: RUN_GETRI_SMALL(2); break;
-    case 3: RUN_GETRI_SMALL(3); break;
-    case 4: RUN_GETRI_SMALL(4); break;
-    case 5: RUN_GETRI_SMALL(5); break;
-    case 6: RUN_GETRI_SMALL(6); break;
-    case 7: RUN_GETRI_SMALL(7); break;
-    case 8: RUN_GETRI_SMALL(8); break;
-    case 9: RUN_GETRI_SMALL(9); break;
-    case 10: RUN_GETRI_SMALL(10); break;
-    case 11: RUN_GETRI_SMALL(11); break;
-    case 12: RUN_GETRI_SMALL(12); break;
-    case 13: RUN_GETRI_SMALL(13); break;
-    case 14: RUN_GETRI_SMALL(14); break;
-    case 15: RUN_GETRI_SMALL(15); break;
-    case 16: RUN_GETRI_SMALL(16); break;
-    case 17: RUN_GETRI_SMALL(17); break;
-    case 18: RUN_GETRI_SMALL(18); break;
-    case 19: RUN_GETRI_SMALL(19); break;
-    case 20: RUN_GETRI_SMALL(20); break;
-    case 21: RUN_GETRI_SMALL(21); break;
-    case 22: RUN_GETRI_SMALL(22); break;
-    case 23: RUN_GETRI_SMALL(23); break;
-    case 24: RUN_GETRI_SMALL(24); break;
-    case 25: RUN_GETRI_SMALL(25); break;
-    case 26: RUN_GETRI_SMALL(26); break;
-    case 27: RUN_GETRI_SMALL(27); break;
-    case 28: RUN_GETRI_SMALL(28); break;
-    case 29: RUN_GETRI_SMALL(29); break;
-    case 30: RUN_GETRI_SMALL(30); break;
-    case 31: RUN_GETRI_SMALL(31); break;
-    case 32: RUN_GETRI_SMALL(32); break;
-    case 33: RUN_GETRI_SMALL(33); break;
-    case 34: RUN_GETRI_SMALL(34); break;
-    case 35: RUN_GETRI_SMALL(35); break;
-    case 36: RUN_GETRI_SMALL(36); break;
-    case 37: RUN_GETRI_SMALL(37); break;
-    case 38: RUN_GETRI_SMALL(38); break;
-    case 39: RUN_GETRI_SMALL(39); break;
-    case 40: RUN_GETRI_SMALL(40); break;
-    case 41: RUN_GETRI_SMALL(41); break;
-    case 42: RUN_GETRI_SMALL(42); break;
-    case 43: RUN_GETRI_SMALL(43); break;
-    case 44: RUN_GETRI_SMALL(44); break;
-    case 45: RUN_GETRI_SMALL(45); break;
-    case 46: RUN_GETRI_SMALL(46); break;
-    case 47: RUN_GETRI_SMALL(47); break;
-    case 48: RUN_GETRI_SMALL(48); break;
-    case 49: RUN_GETRI_SMALL(49); break;
-    case 50: RUN_GETRI_SMALL(50); break;
-    case 51: RUN_GETRI_SMALL(51); break;
-    case 52: RUN_GETRI_SMALL(52); break;
-    case 53: RUN_GETRI_SMALL(53); break;
-    case 54: RUN_GETRI_SMALL(54); break;
-    case 55: RUN_GETRI_SMALL(55); break;
-    case 56: RUN_GETRI_SMALL(56); break;
-    case 57: RUN_GETRI_SMALL(57); break;
-    case 58: RUN_GETRI_SMALL(58); break;
-    case 59: RUN_GETRI_SMALL(59); break;
-    case 60: RUN_GETRI_SMALL(60); break;
-    case 61: RUN_GETRI_SMALL(61); break;
-    case 62: RUN_GETRI_SMALL(62); break;
-    case 63: RUN_GETRI_SMALL(63); break;
-    case 64: RUN_GETRI_SMALL(64); break;
-    default: ROCSOLVER_UNREACHABLE();
-    }
+    ROCSOLVER_LAUNCH_KERNEL((getri_kernel_small<T>), grid, block, 0, stream, n, A, shiftA, lda,
+                            strideA, ipiv, shiftP, strideP, info, complete, pivot);
 
     return rocblas_status_success;
 }

@@ -309,6 +309,8 @@ rocblas_status getf2_run_small(rocblas_handle handle,
                                I* permut_idx,
                                const rocblas_stride stride);
 
+#endif // OPTIMAL
+
 template <typename T, typename U>
 rocblas_status getri_run_small(rocblas_handle handle,
                                const rocblas_int n,
@@ -335,7 +337,5 @@ void trti2_run_small(rocblas_handle handle,
                      const rocblas_int lda,
                      const rocblas_stride strideA,
                      const rocblas_int batch_count);
-
-#endif // OPTIMAL
 
 ROCSOLVER_END_NAMESPACE

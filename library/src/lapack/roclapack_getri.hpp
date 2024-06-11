@@ -191,7 +191,6 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
-#ifdef OPTIMAL
     // if tiny size, no workspace needed
     if((n <= GETRI_TINY_SIZE && !ISBATCHED) || (n <= GETRI_BATCH_TINY_SIZE && ISBATCHED))
     {
@@ -204,7 +203,6 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
         *optim_mem = true;
         return;
     }
-#endif
 
     bool opt1, opt2;
     size_t unused, w1a = 0, w1b = 0, w2a = 0, w2b = 0, w3a = 0, w3b = 0, w4a = 0, w4b = 0, t1, t2;
@@ -219,7 +217,6 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
     else
         *size_workArr = 0;
 
-#ifdef OPTIMAL
     // if small size nothing else is needed
     if(n <= TRTRI_MAX_COLS)
     {
@@ -230,7 +227,6 @@ void rocsolver_getri_getMemorySize(const rocblas_int n,
         *size_tmpcopy = t2;
         return;
     }
-#endif
 
     // get block size
     rocblas_int blk = getri_get_blksize<ISBATCHED>(n);
@@ -329,13 +325,11 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
 
     static constexpr bool ISBATCHED = BATCHED || STRIDED;
 
-#ifdef OPTIMAL
     if((n <= GETRI_TINY_SIZE && !ISBATCHED) || (n <= GETRI_BATCH_TINY_SIZE && ISBATCHED))
     {
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
                                   batch_count, true, pivot);
     }
-#endif
 
     // compute inverse of U (also check singularity and update info)
     rocsolver_trtri_template<BATCHED, STRIDED, T>(
@@ -345,14 +339,12 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
     // ************************************************ //
     // Next, compute inv(A) solving inv(A) * L = inv(U) //
 
-#ifdef OPTIMAL
     // if small size, use optimized kernel for stage 2
     if(n <= TRTRI_MAX_COLS)
     {
         return getri_run_small<T>(handle, n, A, shiftA, lda, strideA, ipiv, shiftP, strideP, info,
                                   batch_count, false, pivot);
     }
-#endif
 
     rocblas_int threads = std::min(((n - 1) / 64 + 1) * 64, BS1);
     rocblas_int ldw = n;

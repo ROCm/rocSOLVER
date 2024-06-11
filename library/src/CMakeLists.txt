@@ -300,6 +300,16 @@ set(rocsolver_specialized_source
   specialized/roclapack_potf2_specialized_kernels_d.cpp
   specialized/roclapack_potf2_specialized_kernels_c.cpp
   specialized/roclapack_potf2_specialized_kernels_z.cpp
+  # getri
+  specialized/roclapack_getri_specialized_kernels_s.cpp
+  specialized/roclapack_getri_specialized_kernels_d.cpp
+  specialized/roclapack_getri_specialized_kernels_c.cpp
+  specialized/roclapack_getri_specialized_kernels_z.cpp
+  # trtri
+  specialized/roclapack_trtri_specialized_kernels_s.cpp
+  specialized/roclapack_trtri_specialized_kernels_d.cpp
+  specialized/roclapack_trtri_specialized_kernels_c.cpp
+  specialized/roclapack_trtri_specialized_kernels_z.cpp
 )
 
 if(OPTIMAL)
@@ -317,16 +327,6 @@ if(OPTIMAL)
     specialized/roclapack_getf2_small_db.cpp
     specialized/roclapack_getf2_small_cb.cpp
     specialized/roclapack_getf2_small_zb.cpp
-    # getri
-    specialized/roclapack_getri_specialized_kernels_s.cpp
-    specialized/roclapack_getri_specialized_kernels_d.cpp
-    specialized/roclapack_getri_specialized_kernels_c.cpp
-    specialized/roclapack_getri_specialized_kernels_z.cpp
-    # trtri
-    specialized/roclapack_trtri_specialized_kernels_s.cpp
-    specialized/roclapack_trtri_specialized_kernels_d.cpp
-    specialized/roclapack_trtri_specialized_kernels_c.cpp
-    specialized/roclapack_trtri_specialized_kernels_z.cpp
   )
 endif()
 

@@ -135,7 +135,6 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
 
     // requirements for TRTI2
     rocblas_int nn = (blk == 1) ? n : blk;
-#ifdef OPTIMAL
     if(nn <= TRTRI_MAX_COLS)
     {
         // if very small size, no workspace needed
@@ -149,12 +148,6 @@ void rocsolver_trtri_getMemorySize(const rocblas_diagonal diag,
         // size for alphas
         w3a = nn * sizeof(T) * batch_count;
     }
-#else
-    // size for TRMV
-    w1a = nn * sizeof(T) * batch_count;
-    // size for alphas
-    w3a = nn * sizeof(T) * batch_count;
-#endif
 
     if(blk == 0)
     {
@@ -231,14 +224,12 @@ void trti2(rocblas_handle handle,
            T* work,
            T* alphas)
 {
-#ifdef OPTIMAL
     // if very small size, use optimized kernel
     if(n <= TRTRI_MAX_COLS)
     {
         trti2_run_small<T>(handle, uplo, diag, n, A, shiftA, lda, strideA, batch_count);
         return;
     }
-#endif
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
