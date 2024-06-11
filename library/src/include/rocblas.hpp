@@ -43,7 +43,7 @@
 #endif
 #endif
 
-// These function tempaltes help to provide compatibility with older versions
+// These function templates help to provide compatibility with older versions
 // of rocblas. We declare these function templates only if rocBLAS does not,
 // and we delete them so that it is a compile-time error if they are used.
 // The calls to these functions are guarded by if constexpr, but they still
