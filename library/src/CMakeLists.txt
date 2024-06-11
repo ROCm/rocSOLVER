@@ -29,7 +29,24 @@
 set(package_targets rocsolver)
 
 set(rocsolver_lapack_source
-  # linear systems solvers
+  #### Linear Systems Solvers ####
+  ################################
+  #- general inverse
+  lapack/roclapack_getri.cpp
+  lapack/roclapack_getri_batched.cpp
+  lapack/roclapack_getri_strided_batched.cpp
+  lapack/roclapack_getri_outofplace.cpp
+  lapack/roclapack_getri_outofplace_batched.cpp
+  lapack/roclapack_getri_outofplace_strided_batched.cpp
+  #- symmetric positive definite inverse
+  lapack/roclapack_potri.cpp
+  lapack/roclapack_potri_batched.cpp
+  lapack/roclapack_potri_strided_batched.cpp
+  #- triangular inverse
+  lapack/roclapack_trtri.cpp
+  lapack/roclapack_trtri_batched.cpp
+  lapack/roclapack_trtri_strided_batched.cpp
+  #- general systems
   lapack/roclapack_getrs.cpp
   lapack/roclapack_getrs_batched.cpp
   lapack/roclapack_getrs_strided_batched.cpp
@@ -37,34 +54,27 @@ set(rocsolver_lapack_source
   lapack/roclapack_gesv_batched.cpp
   lapack/roclapack_gesv_strided_batched.cpp
   lapack/roclapack_gesv_outofplace.cpp
-  lapack/roclapack_getri.cpp
-  lapack/roclapack_getri_batched.cpp
-  lapack/roclapack_getri_strided_batched.cpp
-  lapack/roclapack_getri_outofplace.cpp
-  lapack/roclapack_getri_outofplace_batched.cpp
-  lapack/roclapack_getri_outofplace_strided_batched.cpp
+  #- symmetric positive definite systems
   lapack/roclapack_potrs.cpp
   lapack/roclapack_potrs_batched.cpp
   lapack/roclapack_potrs_strided_batched.cpp
   lapack/roclapack_posv.cpp
   lapack/roclapack_posv_batched.cpp
   lapack/roclapack_posv_strided_batched.cpp
-  lapack/roclapack_potri.cpp
-  lapack/roclapack_potri_batched.cpp
-  lapack/roclapack_potri_strided_batched.cpp
-  lapack/roclapack_trtri.cpp
-  lapack/roclapack_trtri_batched.cpp
-  lapack/roclapack_trtri_strided_batched.cpp
+  #- block-tridiagonal systems
   lapack/roclapack_geblttrs_npvt.cpp
   lapack/roclapack_geblttrs_npvt_batched.cpp
   lapack/roclapack_geblttrs_npvt_strided_batched.cpp
   lapack/roclapack_geblttrs_npvt_interleaved_batched.cpp
-  # least squares solvers
+  #### Least-Squares Solvers ####
+  ###############################
   lapack/roclapack_gels.cpp
   lapack/roclapack_gels_batched.cpp
   lapack/roclapack_gels_strided_batched.cpp
   lapack/roclapack_gels_outofplace.cpp
-  # triangular factorizations
+  #### Triangular Factorizations ####
+  ###################################
+  #- general matrices
   lapack/roclapack_getf2.cpp
   lapack/roclapack_getf2_batched.cpp
   lapack/roclapack_getf2_strided_batched.cpp
@@ -72,113 +82,142 @@ set(rocsolver_lapack_source
   lapack/roclapack_getrf_info32.cpp
   lapack/roclapack_getrf_batched.cpp
   lapack/roclapack_getrf_strided_batched.cpp
+  #- symmetric positive definite matrices
   lapack/roclapack_potf2.cpp
   lapack/roclapack_potf2_batched.cpp
   lapack/roclapack_potf2_strided_batched.cpp
   lapack/roclapack_potrf.cpp
   lapack/roclapack_potrf_batched.cpp
   lapack/roclapack_potrf_strided_batched.cpp
+  #- symmetric indefinite matrices
   lapack/roclapack_sytf2.cpp
   lapack/roclapack_sytf2_batched.cpp
   lapack/roclapack_sytf2_strided_batched.cpp
   lapack/roclapack_sytrf.cpp
   lapack/roclapack_sytrf_batched.cpp
   lapack/roclapack_sytrf_strided_batched.cpp
+  #- block-tridiagonal matrices
   lapack/roclapack_geblttrf_npvt.cpp
   lapack/roclapack_geblttrf_npvt_batched.cpp
   lapack/roclapack_geblttrf_npvt_strided_batched.cpp
   lapack/roclapack_geblttrf_npvt_interleaved_batched.cpp
-  # orthogonal factorizations
+  #### Orthogonal Factorizations ####
+  ###################################
+  #- bottom row compression
   lapack/roclapack_geqr2.cpp
   lapack/roclapack_geqr2_batched.cpp
   lapack/roclapack_geqr2_strided_batched.cpp
-  lapack/roclapack_gerq2.cpp
-  lapack/roclapack_gerq2_batched.cpp
-  lapack/roclapack_gerq2_strided_batched.cpp
-  lapack/roclapack_geql2.cpp
-  lapack/roclapack_geql2_batched.cpp
-  lapack/roclapack_geql2_strided_batched.cpp
-  lapack/roclapack_gelq2.cpp
-  lapack/roclapack_gelq2_batched.cpp
-  lapack/roclapack_gelq2_strided_batched.cpp
   lapack/roclapack_geqrf.cpp
   lapack/roclapack_geqrf_batched.cpp
   lapack/roclapack_geqrf_ptr_batched.cpp
   lapack/roclapack_geqrf_strided_batched.cpp
-  lapack/roclapack_gerqf.cpp
-  lapack/roclapack_gerqf_batched.cpp
-  lapack/roclapack_gerqf_strided_batched.cpp
+  #- top row compression
+  lapack/roclapack_geql2.cpp
+  lapack/roclapack_geql2_batched.cpp
+  lapack/roclapack_geql2_strided_batched.cpp
   lapack/roclapack_geqlf.cpp
   lapack/roclapack_geqlf_batched.cpp
   lapack/roclapack_geqlf_strided_batched.cpp
+  #- right column compression
+  lapack/roclapack_gelq2.cpp
+  lapack/roclapack_gelq2_batched.cpp
+  lapack/roclapack_gelq2_strided_batched.cpp
   lapack/roclapack_gelqf.cpp
   lapack/roclapack_gelqf_batched.cpp
   lapack/roclapack_gelqf_strided_batched.cpp
-  # Problem and matrix reductions (diagonalizations)
+  #- left column compression
+  lapack/roclapack_gerq2.cpp
+  lapack/roclapack_gerq2_batched.cpp
+  lapack/roclapack_gerq2_strided_batched.cpp
+  lapack/roclapack_gerqf.cpp
+  lapack/roclapack_gerqf_batched.cpp
+  lapack/roclapack_gerqf_strided_batched.cpp
+  #### Problem and Matrix Reductions (Diagonalizations) ####
+  ##########################################################
+  #- bidiagonalization
   lapack/roclapack_gebd2.cpp
   lapack/roclapack_gebd2_batched.cpp
   lapack/roclapack_gebd2_strided_batched.cpp
   lapack/roclapack_gebrd.cpp
   lapack/roclapack_gebrd_batched.cpp
   lapack/roclapack_gebrd_strided_batched.cpp
+  #- tridiagonalization
   lapack/roclapack_sytd2_hetd2.cpp
   lapack/roclapack_sytd2_hetd2_batched.cpp
   lapack/roclapack_sytd2_hetd2_strided_batched.cpp
   lapack/roclapack_sytrd_hetrd.cpp
   lapack/roclapack_sytrd_hetrd_batched.cpp
   lapack/roclapack_sytrd_hetrd_strided_batched.cpp
+  #- reduction of generalized eigenproblems
   lapack/roclapack_sygs2_hegs2.cpp
   lapack/roclapack_sygs2_hegs2_batched.cpp
   lapack/roclapack_sygs2_hegs2_strided_batched.cpp
   lapack/roclapack_sygst_hegst.cpp
   lapack/roclapack_sygst_hegst_batched.cpp
   lapack/roclapack_sygst_hegst_strided_batched.cpp
-  # singular value decomposition
+  #### Singular Value Decomposition ####
+  ######################################
+  #- classic
   lapack/roclapack_gesvd.cpp
   lapack/roclapack_gesvd_batched.cpp
   lapack/roclapack_gesvd_strided_batched.cpp
+  #- jacobi
   lapack/roclapack_gesvdj.cpp
   lapack/roclapack_gesvdj_batched.cpp
   lapack/roclapack_gesvdj_strided_batched.cpp
   lapack/roclapack_gesvdj_notransv.cpp
   lapack/roclapack_gesvdj_notransv_strided_batched.cpp
+  #- bisection
   lapack/roclapack_gesvdx.cpp
   lapack/roclapack_gesvdx_batched.cpp
   lapack/roclapack_gesvdx_strided_batched.cpp
   lapack/roclapack_gesvdx_notransv_strided_batched.cpp
-  # symmetric eigensolvers
+  #### Symmetric Eigensolvers ####
+  ################################
+  #- classic
   lapack/roclapack_syev_heev.cpp
   lapack/roclapack_syev_heev_batched.cpp
   lapack/roclapack_syev_heev_strided_batched.cpp
-  lapack/roclapack_syevd_heevd.cpp
-  lapack/roclapack_syevd_heevd_batched.cpp
-  lapack/roclapack_syevd_heevd_strided_batched.cpp
-  lapack/roclapack_syevj_heevj.cpp
-  lapack/roclapack_syevj_heevj_batched.cpp
-  lapack/roclapack_syevj_heevj_strided_batched.cpp
-  lapack/roclapack_syevx_heevx.cpp
-  lapack/roclapack_syevx_heevx_batched.cpp
-  lapack/roclapack_syevx_heevx_strided_batched.cpp
-  lapack/roclapack_syevdx_heevdx_inplace.cpp
   lapack/roclapack_sygv_hegv.cpp
   lapack/roclapack_sygv_hegv_batched.cpp
   lapack/roclapack_sygv_hegv_strided_batched.cpp
+  #- divide & conquer
+  lapack/roclapack_syevd_heevd.cpp
+  lapack/roclapack_syevd_heevd_batched.cpp
+  lapack/roclapack_syevd_heevd_strided_batched.cpp
   lapack/roclapack_sygvd_hegvd.cpp
   lapack/roclapack_sygvd_hegvd_batched.cpp
   lapack/roclapack_sygvd_hegvd_strided_batched.cpp
+  #- jacobi
+  lapack/roclapack_syevj_heevj.cpp
+  lapack/roclapack_syevj_heevj_batched.cpp
+  lapack/roclapack_syevj_heevj_strided_batched.cpp
   lapack/roclapack_sygvj_hegvj.cpp
   lapack/roclapack_sygvj_hegvj_batched.cpp
   lapack/roclapack_sygvj_hegvj_strided_batched.cpp
+  #- bisection
+  lapack/roclapack_syevx_heevx.cpp
+  lapack/roclapack_syevx_heevx_batched.cpp
+  lapack/roclapack_syevx_heevx_strided_batched.cpp
   lapack/roclapack_sygvx_hegvx.cpp
   lapack/roclapack_sygvx_hegvx_batched.cpp
   lapack/roclapack_sygvx_hegvx_strided_batched.cpp
-  lapack/roclapack_sygvdx_hegvdx_inplace.cpp
+  #- d&c + jacobi
   lapack/roclapack_syevdj_heevdj.cpp
   lapack/roclapack_syevdj_heevdj_batched.cpp
   lapack/roclapack_syevdj_heevdj_strided_batched.cpp
   lapack/roclapack_sygvdj_hegvdj.cpp
   lapack/roclapack_sygvdj_hegvdj_batched.cpp
   lapack/roclapack_sygvdj_hegvdj_strided_batched.cpp
+  #- d&c + bisection
+  lapack/roclapack_syevdx_heevdx.cpp
+  lapack/roclapack_syevdx_heevdx_batched.cpp
+  lapack/roclapack_syevdx_heevdx_strided_batched.cpp
+  lapack/roclapack_sygvdx_hegvdx.cpp
+  lapack/roclapack_sygvdx_hegvdx_batched.cpp
+  lapack/roclapack_sygvdx_hegvdx_strided_batched.cpp
+  lapack/roclapack_syevdx_heevdx_inplace.cpp
+  lapack/roclapack_sygvdx_hegvdx_inplace.cpp
 )
 
 set(rocsolver_auxiliary_source
@@ -218,6 +257,7 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_steqr.cpp
   auxiliary/rocauxiliary_stedc.cpp
   auxiliary/rocauxiliary_stedcj.cpp
+  auxiliary/rocauxiliary_stedcx.cpp
   auxiliary/rocauxiliary_stein.cpp
   auxiliary/rocauxiliary_latrd.cpp
   # symmetric matrices

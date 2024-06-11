@@ -522,6 +522,89 @@ rocsolver_<type>hegvdj_strided_batched()
 .. doxygenfunction:: rocsolver_chegvdj_strided_batched
 
 
+.. _syevdx:
+
+rocsolver_<type>syevdx()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdx
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdx
+
+rocsolver_<type>syevdx_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdx_batched
+
+rocsolver_<type>syevdx_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsyevdx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssyevdx_strided_batched
+
+.. _heevdx:
+
+rocsolver_<type>heevdx()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdx
+   :outline
+.. doxygenfunction:: rocsolver_cheevdx
+
+rocsolver_<type>heevdx_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdx_batched
+
+rocsolver_<type>heevdx_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zheevdx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_cheevdx_strided_batched
+
+.. _sygvdx:
+
+rocsolver_<type>sygvdx()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdx
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdx
+
+rocsolver_<type>sygvdx_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdx_batched
+
+rocsolver_<type>sygvdx_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_dsygvdx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_ssygvdx_strided_batched
+
+.. _hegvdx:
+
+rocsolver_<type>hegvdx()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdx
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdx
+
+rocsolver_<type>hegvdx_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdx_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdx_batched
+
+rocsolver_<type>hegvdx_strided_batched()
+---------------------------------------------------
+.. doxygenfunction:: rocsolver_zhegvdx_strided_batched
+   :outline:
+.. doxygenfunction:: rocsolver_chegvdx_strided_batched
+
+
+
+
 .. _likesvds:
 
 Singular value decomposition
