@@ -25,7 +25,7 @@
 # SUCH DAMAGE.
 # ##########################################################################
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.21)
 
 # This has to be initialized before the project() command appears
 # Set the default build type to Release
