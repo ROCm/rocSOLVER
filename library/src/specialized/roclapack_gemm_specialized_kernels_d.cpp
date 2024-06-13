@@ -37,9 +37,11 @@ INSTANTIATE_GEMM(0, 0, double, rocblas_int, double*);
 INSTANTIATE_GEMM(0, 1, double, rocblas_int, double*);
 INSTANTIATE_GEMM(1, 0, double, rocblas_int, double* const*);
 
+#ifdef HAVE_ROCBLAS_64
 // 64-bit APIs
 INSTANTIATE_GEMM(0, 0, double, int64_t, double*);
 INSTANTIATE_GEMM(0, 1, double, int64_t, double*);
 INSTANTIATE_GEMM(1, 0, double, int64_t, double* const*);
+#endif /* HAVE_ROCBLAS_64 */
 
 ROCSOLVER_END_NAMESPACE

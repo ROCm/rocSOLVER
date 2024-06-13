@@ -45,6 +45,7 @@ INSTANTIATE_TRSM_MEM(1, 0, float, rocblas_int);
 INSTANTIATE_TRSM_LOWER(1, 0, float, rocblas_int, float* const*);
 INSTANTIATE_TRSM_UPPER(1, 0, float, rocblas_int, float* const*);
 
+#ifdef HAVE_ROCBLAS_64
 // 64-bit
 INSTANTIATE_TRSM_MEM(0, 0, float, int64_t);
 INSTANTIATE_TRSM_LOWER(0, 0, float, int64_t, float*);
@@ -57,5 +58,6 @@ INSTANTIATE_TRSM_UPPER(0, 1, float, int64_t, float*);
 INSTANTIATE_TRSM_MEM(1, 0, float, int64_t);
 INSTANTIATE_TRSM_LOWER(1, 0, float, int64_t, float* const*);
 INSTANTIATE_TRSM_UPPER(1, 0, float, int64_t, float* const*);
+#endif /* HAVE_ROCBLAS_64 */
 
 ROCSOLVER_END_NAMESPACE

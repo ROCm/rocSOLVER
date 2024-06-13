@@ -180,8 +180,12 @@ rocblas_status rocsolver_sgetrs_batched_64(rocblas_handle handle,
                                            const int64_t ldb,
                                            const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrs_batched_impl<float>(handle, trans, n, nrhs, A, lda, ipiv,
                                                           strideP, B, ldb, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_dgetrs_batched_64(rocblas_handle handle,
@@ -196,8 +200,12 @@ rocblas_status rocsolver_dgetrs_batched_64(rocblas_handle handle,
                                            const int64_t ldb,
                                            const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrs_batched_impl<double>(handle, trans, n, nrhs, A, lda, ipiv,
                                                            strideP, B, ldb, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_cgetrs_batched_64(rocblas_handle handle,
@@ -212,8 +220,12 @@ rocblas_status rocsolver_cgetrs_batched_64(rocblas_handle handle,
                                            const int64_t ldb,
                                            const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrs_batched_impl<rocblas_float_complex>(
         handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_zgetrs_batched_64(rocblas_handle handle,
@@ -228,8 +240,12 @@ rocblas_status rocsolver_zgetrs_batched_64(rocblas_handle handle,
                                            const int64_t ldb,
                                            const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_getrs_batched_impl<rocblas_double_complex>(
         handle, trans, n, nrhs, A, lda, ipiv, strideP, B, ldb, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C

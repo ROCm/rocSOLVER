@@ -39,11 +39,13 @@ INSTANTIATE_GER(false, float, rocblas_int, float*);
 // batched
 INSTANTIATE_GER(false, float, rocblas_int, float* const*);
 
+#ifdef HAVE_ROCBLAS_64
 // 64-bit APIs
 // non-batched and strided batched
 INSTANTIATE_GER(false, float, int64_t, float*);
 
 // batched
 INSTANTIATE_GER(false, float, int64_t, float* const*);
+#endif /* HAVE_ROCBLAS_64 */
 
 ROCSOLVER_END_NAMESPACE
