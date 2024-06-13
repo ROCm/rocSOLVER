@@ -58,9 +58,6 @@ rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
     if(st != rocblas_status_continue)
         return st;
 
-    if(!rfinfo->rocsparse_loaded)
-        return rocblas_status_internal_error;
-
     // TODO: add batched versions
     // working with unshifted arrays
     // normal (non-batched non-strided) execution
