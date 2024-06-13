@@ -29,6 +29,8 @@
 
 #include <rocblas/rocblas.h>
 
+#include "rocblas_utility.hpp"
+
 typedef enum rocsparse_status_
 {
     rocsparse_status_success                 = 0,
@@ -98,6 +100,8 @@ constexpr auto rocsparse2rocblas_status(rocsparse_status status)
     default: return rocblas_status_internal_error;
     }
 }
+
+ROCSOLVER_END_NAMESPACE
 
 typedef enum rocsparse_operation_
 {
@@ -767,8 +771,7 @@ extern fp_rocsparse_zcsric0 rocsolver_rocsparse_zcsric0;
 
 
 
-
-
+ROCSOLVER_BEGIN_NAMESPACE
 
 // csrilu0 buffer
 inline rocsparse_status rocsparseCall_csrilu0_buffer_size(rocsparse_handle sphandle,
