@@ -56,14 +56,14 @@ rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
     if(handle == nullptr)
         return rocblas_status_invalid_handle;
 
-    if(!rfinfo->rocsparse_loaded)
-        return rocblas_status_internal_error;
-
     // argument checking
     rocblas_status st = rocsolver_csrrf_analysis_argCheck(
         handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT, indT, valT, pivP, pivQ, B, ldb, rfinfo);
     if(st != rocblas_status_continue)
         return st;
+
+    if(!rfinfo->rocsparse_loaded)
+        return rocblas_status_internal_error;
 
     // TODO: add batched versions
     // working with unshifted arrays

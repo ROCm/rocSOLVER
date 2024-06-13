@@ -51,14 +51,14 @@ rocblas_status rocsolver_csrrf_solve_impl(rocblas_handle handle,
     if(!handle)
         return rocblas_status_invalid_handle;
 
-    if(!rfinfo->rocsparse_loaded)
-        return rocblas_status_internal_error;
-
     // argument checking
     rocblas_status st = rocsolver_csrrf_solve_argCheck(handle, n, nrhs, nnzT, ptrT, indT, valT,
                                                        pivP, pivQ, B, ldb, rfinfo);
     if(st != rocblas_status_continue)
         return st;
+
+    if(!rfinfo->rocsparse_loaded)
+        return rocblas_status_internal_error;
 
     // TODO: add batched versions
     // working with unshifted arrays
