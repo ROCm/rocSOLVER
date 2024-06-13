@@ -29,6 +29,9 @@
 
 #include <rocblas/rocblas.h>
 
+#ifdef HAVE_ROCSPARSE
+#include <rocsparse/rocsparse.h>
+#else
 #include "rocblas_utility.hpp"
 
 typedef enum rocsparse_status_
@@ -61,6 +64,8 @@ typedef enum rocsparse_data_status_
     rocsparse_data_status_invalid_sorting    = 6, /**< Incorrect sorting detected. */
     rocsparse_data_status_invalid_fill       = 7 /**< Incorrect fill mode detected. */
 } rocsparse_data_status;
+
+#endif /* HAVE_ROCSPARSE */
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -102,6 +107,8 @@ constexpr auto rocsparse2rocblas_status(rocsparse_status status)
 }
 
 ROCSOLVER_END_NAMESPACE
+
+#ifndef HAVE_ROCSPARSE
 
 typedef enum rocsparse_operation_
 {
@@ -147,6 +154,8 @@ typedef enum rocsparse_diag_type_
     rocsparse_diag_type_unit     = 1 /**< diagonal entries are unity */
 } rocsparse_diag_type;
 
+#endif /* HAVE_ROCSPARSE */
+
 #define ROCSPARSE_CHECK(...)                                     \
     {                                                            \
         rocsparse_status _status = (__VA_ARGS__);                \
@@ -159,6 +168,8 @@ typedef enum rocsparse_diag_type_
         if(_status != rocsparse_status_success)                 \
             throw rocsolver::rocsparse2rocblas_status(_status); \
     }
+
+#ifndef HAVE_ROCSPARSE
 
 #if defined(rocsparse_ILP64)
 typedef int64_t rocsparse_int;
@@ -769,7 +780,7 @@ typedef rocsparse_status (*fp_rocsparse_zcsric0)(rocsparse_handle          handl
 extern fp_rocsparse_zcsric0 rocsolver_rocsparse_zcsric0;
 #define rocsparse_zcsric0 rocsolver_rocsparse_zcsric0
 
-
+#endif /* HAVE_ROCSPARSE */
 
 ROCSOLVER_BEGIN_NAMESPACE
 

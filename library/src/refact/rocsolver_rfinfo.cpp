@@ -32,11 +32,13 @@
 #include "rocblas/rocblas.h"
 #include "rocsolver/rocsolver.h"
 
+#ifndef HAVE_ROCSPARSE
 #ifdef _WIN32
 #include <libloaderapi.h>
-#else
+#else /* _WIN32 */
 #include <dlfcn.h>
-#endif
+#endif /* _WIN32 */
+#endif /* HAVE_ROCSPARSE */
 
 #define GOTO_IF_ROCBLAS_ERROR(fcn, result, error_label) \
     do                                                  \
@@ -58,34 +60,32 @@
             result = rocsolver::rocsparse2rocblas_status(_status); \
             goto error_label;                                      \
         }                                                          \
-    } while(0)
+    } while(1)
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename Fn>
 static bool load_function(void* handle, const char* symbol, Fn& fn) {
   fn = (Fn)(dlsym(handle, symbol));
   char* err = dlerror();
+#ifndef NDEBUG
   if (err) {
     fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
   }
+#endif
   return !err;
 }
 
 static bool load_rocsparse() {
-  if(rocsolver_rocsparse_zcsric0) {
-    return true; // already loaded
-  }
-
-  fmt::print(stderr, "dlopen!!\n");
   void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
+#ifndef NDEBUG
   if (!handle) {
     fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", dlerror());
   }
-  fmt::print(stderr, "rocsparse not yet loaded!\n");
+#endif
   if(!handle) return false;
-  fmt::print(stderr, "rocsparse loaded!\n");
-  (void)dlerror(); // clear errors
+  (void)dlerror(); /* clear errors */
   if(!load_function(handle, "rocsparse_create_handle", rocsolver_rocsparse_create_handle)) return false;
-  fmt::print(stderr, "loaded first symbol...\n");
   if(!load_function(handle, "rocsparse_destroy_handle", rocsolver_rocsparse_destroy_handle)) return false;
 
   if(!load_function(handle, "rocsparse_set_stream", rocsolver_rocsparse_set_stream)) return false;
@@ -139,6 +139,13 @@ static bool load_rocsparse() {
   return true;
 }
 
+static bool try_load_rocsparse() {
+  static bool result = load_rocsparse();
+  return result;
+}
+
+ROCSOLVER_END_NAMESPACE
+
 extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocblas_handle handle)
 {
     if(!handle)
@@ -147,27 +154,22 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
-    fmt::print(stderr, "going to load rocsparse\n");
-    if(!load_rocsparse()) {
-        fmt::print(stderr, "error: {}\n");
+#ifndef HAVE_ROCSPARSE
+    if(!rocsolver::try_load_rocsparse()) {
         return rocblas_status_internal_error;
     }
-    fmt::print(stderr, "loaded rocsparse\n");
+#endif
 
     rocsolver_rfinfo_* impl = new(std::nothrow) rocsolver_rfinfo_{};
     if(!impl)
         return rocblas_status_memory_error;
 
-    fmt::print(stderr, "set loaded\n");
     impl->rocsparse_loaded = true;
-    fmt::print(stderr, "loaded set\n");
 
     rocblas_status result;
 
     // create sparse handle
-    fmt::print(stderr, "create handle: {}!\n", (void*)(rocsparse_create_handle));
     GOTO_IF_ROCSPARSE_ERROR(rocsparse_create_handle(&impl->sphandle), result, cleanup);
-    fmt::print(stderr, "created handle!\n");
 
     // use handle->stream to sphandle->stream
     hipStream_t stream;

@@ -355,8 +355,11 @@ target_link_libraries(rocsolver
     hip::device
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
-    $<$<PLATFORM_ID:Linux>:dl>
 )
+
+if(NOT BUILD_WITH_SPARSE)
+  target_link_libraries(rocsolver PRIVATE $<$<PLATFORM_ID:Linux>:dl>)
+endif()
 
 set(static_depends)
 

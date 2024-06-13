@@ -127,7 +127,7 @@ endif()
 
 option(BUILD_LIBRARY "Build rocSOLVER library" ON)
 option_opposite(BUILD_LIBRARY SKIP_LIBRARY)
-option(BUILD_WITH_SPARSE "Build rocSOLVER sparse re-factorization and solvers" OFF)
+option(BUILD_WITH_SPARSE "Build with rocsparse available at build time" OFF)
 option(BUILD_CLIENTS_TESTS "Build rocSOLVER test client" "${BUILD_TESTING}")
 option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmark client" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF)
