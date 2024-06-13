@@ -205,6 +205,9 @@ target_link_libraries(rocsolver-test PRIVATE
   roc::rocsolver
   roc::rocblas
 )
+if(NOT USE_HIPCXX)
+  target_link_libraries(rocsolver-test PRIVATE hip::device)
+endif()
 
 # Turn on f16c intrinsics
 target_compile_options(rocsolver-test PRIVATE -mf16c)
