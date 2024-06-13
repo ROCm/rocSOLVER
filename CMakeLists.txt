@@ -48,11 +48,14 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21.0 AND CMAKE_VERSION VERSION_LESS 3.2
 endif()
 message(STATUS "Using CMake ${CMAKE_VERSION}")
 
-project(rocsolver LANGUAGES CXX)
+project(rocsolver LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_HIP_STANDARD 17)
+set(CMAKE_HIP_EXTENSIONS OFF)
+set(CMAKE_HIP_STANDARD_REQUIRED ON)
 
 option(ROCSOLVER_EMBED_FMT "Hide libfmt symbols" ON)
 option(OPTIMAL "Build specialized kernels for small matrix sizes" ON)
@@ -118,6 +121,7 @@ option(BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON)
 
 # Include helper functions and wrapper functions
 include(util)
+include(CheckLanguage)
 include(CMakeDependentOption)
 
 option(BUILD_TESTING "Build rocSOLVER tests" OFF)
@@ -153,33 +157,39 @@ message(STATUS "Tests: ${BUILD_CLIENTS_TESTS}")
 message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
-if(NOT DEFINED AMDGPU_TARGETS)
-  # Query for compiler support of GPU archs
-  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
-    TARGETS
-      gfx90a:xnack-
-      gfx90a:xnack+
-      gfx940
-      gfx941
-      gfx942
-      gfx1100
-      gfx1101
-      gfx1102
-  )
-  set(AMDGPU_TARGETS_INIT
-    gfx900
-    gfx906:xnack-
-    gfx908:xnack-
-    gfx1010
-    gfx1030
-    ${OPTIONAL_AMDGPU_TARGETS}
-  )
-endif()
+check_language(HIP)
+cmake_dependent_option(USE_HIPCXX "Use CMake HIP language support" OFF CMAKE_HIP_COMPILER OFF)
+if(USE_HIPCXX)
+  enable_language(HIP)
+else()
+  if(NOT DEFINED AMDGPU_TARGETS)
+    # Query for compiler support of GPU archs
+    rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
+      TARGETS
+        gfx90a:xnack-
+        gfx90a:xnack+
+        gfx940
+        gfx941
+        gfx942
+        gfx1100
+        gfx1101
+        gfx1102
+    )
+    set(AMDGPU_TARGETS_INIT
+      gfx900
+      gfx906:xnack-
+      gfx908:xnack-
+      gfx1010
+      gfx1030
+      ${OPTIONAL_AMDGPU_TARGETS}
+    )
+  endif()
 
-# Set this before finding hip so that hip::device has the required arch flags
-# added as usage requirements on its interface
-set(AMDGPU_TARGETS "${AMDGPU_TARGETS_INIT}"
-  CACHE STRING "List of specific machine types for library to target")
+  # Set this before finding hip so that hip::device has the required arch flags
+  # added as usage requirements on its interface
+  set(AMDGPU_TARGETS "${AMDGPU_TARGETS_INIT}"
+    CACHE STRING "List of specific machine types for library to target")
+endif()
 
 # Find HIP dependencies
 find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
