@@ -71,9 +71,7 @@ static bool load_function(void* handle, const char* symbol, Fn& fn)
     char* err = dlerror();
 #ifndef NDEBUG
     if(err)
-    {
         fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
-    }
 #endif
     return !err;
 }
@@ -83,9 +81,7 @@ static bool load_rocsparse()
     void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
 #ifndef NDEBUG
     if(!handle)
-    {
         fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", dlerror());
-    }
 #endif
     if(!handle)
         return false;
@@ -194,13 +190,14 @@ static bool load_rocsparse()
         return false;
     if(!load_function(handle, "rocsparse_zcsric0", rocsolver_rocsparse_zcsric0))
         return false;
-    fmt::print(stderr, "loaded all symbols...\n");
 
     return true;
 }
 
 static bool try_load_rocsparse()
 {
+    // Function-scope static initialization has been thread-safe since C++11,
+    // so we can take advantage of that to avoid any fancy mutex code.
     static bool result = load_rocsparse();
     return result;
 }
