@@ -156,8 +156,9 @@ if(WIN32)
   )
 
   get_target_property(rocblas_location roc::rocblas LOCATION)
+  get_filename_component(rocblas_directory ${rocblas_location} DIRECTORY)
   add_custom_command(TARGET rocsolver-test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory $<TARGET_FILE_DIR:rocsolver-test>/library ${rocblas_location}/library
+    COMMAND ${CMAKE_COMMAND} -E copy_directory $<TARGET_FILE_DIR:rocsolver-test>/library ${rocblas_directory}/library
   )
 
   find_program(HIPINFO_EXECUTABLE hipinfo PATHS $ENV{HIP_DIR}/bin)
