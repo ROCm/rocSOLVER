@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,8 @@
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
@@ -82,9 +84,11 @@ rocblas_status rocsolver_csrrf_refactlu_impl(rocblas_handle handle,
     work = mem[0];
 
     // execution
-    return rocsolver_csrrf_refactlu_template<T>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
-                                                valT, pivP, pivQ, rfinfo, work);
+    return rocsolver_csrrf_refactlu_template<T, U>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
+                                                   indT, valT, pivP, pivQ, rfinfo, work);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -108,8 +112,8 @@ rocblas_status rocsolver_scsrrf_refactlu(rocblas_handle handle,
                                          rocblas_int* pivQ,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_csrrf_refactlu_impl<float>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT, indT,
-                                                valT, pivP, pivQ, rfinfo);
+    return rocsolver::rocsolver_csrrf_refactlu_impl<float>(handle, n, nnzA, ptrA, indA, valA, nnzT,
+                                                           ptrT, indT, valT, pivP, pivQ, rfinfo);
 }
 
 rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
@@ -126,8 +130,8 @@ rocblas_status rocsolver_dcsrrf_refactlu(rocblas_handle handle,
                                          rocblas_int* pivQ,
                                          rocsolver_rfinfo rfinfo)
 {
-    return rocsolver_csrrf_refactlu_impl<double>(handle, n, nnzA, ptrA, indA, valA, nnzT, ptrT,
-                                                 indT, valT, pivP, pivQ, rfinfo);
+    return rocsolver::rocsolver_csrrf_refactlu_impl<double>(handle, n, nnzA, ptrA, indA, valA, nnzT,
+                                                            ptrT, indT, valT, pivP, pivQ, rfinfo);
 }
 
 } // extern C

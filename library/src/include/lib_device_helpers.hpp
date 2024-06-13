@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +32,8 @@
 #include "ideal_sizes.hpp"
 #include "lib_macros.hpp"
 #include "libcommon.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /*
  * ===========================================================================
@@ -81,8 +83,19 @@ template <typename T>
 __device__ void
     swapvect(const rocblas_int n, T* a, const rocblas_int inca, T* b, const rocblas_int incb)
 {
-    for(rocblas_int i = 0; i < n; ++i)
-        swap(a[inca * i], b[incb * i]);
+    // check common special case
+    if((inca == 1) && (incb == 1))
+    {
+        for(rocblas_int i = 0; i < n; ++i)
+        {
+            swap(a[i], b[i]);
+        };
+    }
+    else
+    {
+        for(rocblas_int i = 0; i < n; ++i)
+            swap(a[inca * i], b[incb * i]);
+    };
 }
 
 /** FIND_MAX_TRIDIAG finds the element with the largest magnitude in the
@@ -358,39 +371,39 @@ ROCSOLVER_KERNEL void init_ident(const rocblas_int m,
     }
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void reset_info(T* info, const rocblas_int n, U val, rocblas_int incr = 0)
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void reset_info(T* info, const I n, U val, I incr = 0)
 {
-    int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I idx = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
 
     if(idx < n)
         info[idx] = T(val) + incr * idx;
 }
 
-template <typename T, typename S, typename U>
-ROCSOLVER_KERNEL void reset_batch_info(U info, const rocblas_stride stride, const rocblas_int n, S val)
+template <typename T, typename I, typename S, typename U>
+ROCSOLVER_KERNEL void reset_batch_info(U info, const rocblas_stride stride, const I n, S val)
 {
-    int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    int b = hipBlockIdx_y;
+    I idx = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
+    I b = hipBlockIdx_y;
 
     T* inf = load_ptr_batch<T>(info, b, 0, stride);
     if(idx < n)
         inf[idx] = T(val);
 }
 
-template <typename T>
-ROCSOLVER_KERNEL void get_array(T** out, T* in, rocblas_stride stride, rocblas_int batch)
+template <typename T, typename I>
+ROCSOLVER_KERNEL void get_array(T** out, T* in, rocblas_stride stride, I batch)
 {
-    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I b = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
 
     if(b < batch)
         out[b] = in + b * stride;
 }
 
-template <typename T, typename U>
-ROCSOLVER_KERNEL void shift_array(T** out, U in, rocblas_int shift, rocblas_int batch)
+template <typename T, typename I, typename U>
+ROCSOLVER_KERNEL void shift_array(T** out, U in, rocblas_stride shift, I batch)
 {
-    int b = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I b = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
 
     if(b < batch)
         out[b] = in[b] + shift;
@@ -773,3 +786,456 @@ ROCSOLVER_KERNEL void check_singularity(const rocblas_int n,
     if(hipThreadIdx_y == 0)
         info[b] = _info;
 }
+
+template <typename S, typename I>
+__device__ static void shell_sort_ascending(const I n, S* a, I* map = nullptr)
+{
+    // -----------------------------------------------
+    // Sort array a[0...(n-1)] and generate permutation vector
+    // in map[] if map[] is available
+    // Note: performs in a single thread block
+    // -----------------------------------------------
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
+
+    bool const is_root_thread
+        = (hipThreadIdx_x == 0) && (hipThreadIdx_y == 0) && (hipThreadIdx_z == 0);
+
+    int constexpr ngaps = 8;
+    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
+
+    auto const k_start = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const k_inc = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    bool const has_map = (map != nullptr);
+
+    __syncthreads();
+    if(has_map)
+    {
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
+    };
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(auto igap = 0; igap < ngaps; igap++)
+        {
+            auto const gap = gaps[igap];
+
+            for(I i = gap; i < n; i += 1)
+            {
+                {
+                    S const temp = a[i];
+                    auto const itemp = (has_map) ? map[i] : 0;
+
+                    auto j = i;
+
+                    while((j >= gap) && (a[j - gap] > temp))
+                    {
+                        a[j] = a[j - gap];
+                        if(has_map)
+                        {
+                            map[j] = map[j - gap];
+                        };
+                        j -= gap;
+                    };
+
+                    a[j] = temp;
+                    if(has_map)
+                    {
+                        map[j] = itemp;
+                    };
+                };
+            };
+        };
+    };
+    __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 2)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(a[k] <= a[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
+}
+
+template <typename S, typename I>
+__device__ static void shell_sort_descending(const I n, S* a, I* map = nullptr)
+{
+    // -----------------------------------------------
+    // Sort array a[0...(n-1)] and generate permutation vector
+    // in map[] if map[] is available
+    // Note: performs in a single thread block
+    // -----------------------------------------------
+
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
+
+    bool const is_root_thread
+        = (hipThreadIdx_x == 0) && (hipThreadIdx_y == 0) && (hipThreadIdx_z == 0);
+
+    int constexpr ngaps = 8;
+    int const gaps[ngaps] = {701, 301, 132, 57, 23, 10, 4, 1}; // # Ciura gap sequence
+
+    auto const k_start = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const k_inc = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    bool const has_map = (map != nullptr);
+
+    __syncthreads();
+    if(has_map)
+    {
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
+    };
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(auto igap = 0; igap < ngaps; igap++)
+        {
+            auto const gap = gaps[igap];
+
+            for(rocblas_int i = gap; i < n; i += 1)
+            {
+                {
+                    S const temp = a[i];
+                    auto const itemp = (has_map) ? map[i] : 0;
+
+                    auto j = i;
+
+                    while((j >= gap) && (a[j - gap] < temp))
+                    {
+                        a[j] = a[j - gap];
+                        if(has_map)
+                        {
+                            map[j] = map[j - gap];
+                        };
+                        j -= gap;
+                    };
+
+                    a[j] = temp;
+                    if(has_map)
+                    {
+                        map[j] = itemp;
+                    };
+                };
+            };
+        };
+    };
+    __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 2)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(a[k] >= a[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
+}
+
+template <typename S, typename I>
+__device__ static void shell_sort(const I n, S* a, I* map = nullptr, const bool is_ascending = true)
+{
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
+
+    if(is_ascending)
+    {
+        shell_sort_ascending(n, a, map);
+    }
+    else
+    {
+        shell_sort_descending(n, a, map);
+    };
+}
+
+template <typename S, typename I>
+__device__ static void selection_sort_ascending(const I n, S* D, I* map = nullptr)
+{
+    // ---------------------------------------------------
+    // Sort entries in D[0...(n-1)]
+    // generates permutation vector in map[] if map[] is available
+    // Note: performs in a single thread block
+    // ---------------------------------------------------
+    if((n <= 0) || (D == nullptr))
+    {
+        return;
+    };
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+    bool const is_root_thread = (tid == 0);
+
+    bool const has_map = (map != nullptr);
+
+    __syncthreads();
+
+    if(has_map)
+    {
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
+    };
+
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(I ii = 1; ii < n; ii++)
+        {
+            auto l = ii - 1;
+            auto m = l;
+            auto p = D[l];
+            auto ip = (has_map) ? map[l] : 0;
+
+            for(auto j = ii; j < n; j++)
+            {
+                if(D[j] < p)
+                {
+                    m = j;
+                    p = D[j];
+                    if(has_map)
+                    {
+                        ip = map[j];
+                    };
+                }
+            }
+            if(m != l)
+            {
+                D[m] = D[l];
+                D[l] = p;
+
+                if(has_map)
+                {
+                    map[m] = map[l];
+                    map[l] = ip;
+                };
+            }
+        }
+    }
+    __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 2)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(D[k] <= D[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
+}
+
+template <typename S, typename I>
+__device__ static void selection_sort_descending(const I n, S* D, I* map = nullptr)
+{
+    // ---------------------------------------------------
+    // Sort entries in D[0...(n-1)]
+    // generates permutation vector in map[] if map[] is available
+    // Note: performs in a single thread block
+    // ---------------------------------------------------
+    if((n <= 0) || (D == nullptr))
+    {
+        return;
+    };
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+    bool const is_root_thread = (tid == 0);
+
+    bool const has_map = (map != nullptr);
+
+    __syncthreads();
+
+    if(has_map)
+    {
+        for(auto k = k_start; k < n; k += k_inc)
+        {
+            map[k] = k;
+        };
+    };
+
+    __syncthreads();
+
+    if(is_root_thread)
+    {
+        for(I ii = 1; ii < n; ii++)
+        {
+            auto l = ii - 1;
+            auto m = l;
+            auto p = D[l];
+            auto ip = (has_map) ? map[l] : 0;
+
+            for(auto j = ii; j < n; j++)
+            {
+                if(D[j] > p)
+                {
+                    m = j;
+                    p = D[j];
+                    if(has_map)
+                    {
+                        ip = map[j];
+                    };
+                }
+            }
+            if(m != l)
+            {
+                D[m] = D[l];
+                D[l] = p;
+
+                if(has_map)
+                {
+                    map[m] = map[l];
+                    map[l] = ip;
+                };
+            }
+        }
+    }
+    __syncthreads();
+#ifdef NDEBUG
+#else
+    if(n >= 2)
+    {
+        for(auto k = k_start; k < (n - 1); k += k_inc)
+        {
+            assert(D[k] >= D[k + 1]);
+        };
+    };
+    __syncthreads();
+#endif
+}
+
+template <typename S, typename I>
+__device__ static void selection_sort(const I n, S* a, I* map = nullptr, const bool is_ascending = true)
+{
+    if((n <= 0) || (a == nullptr))
+    {
+        return;
+    };
+
+    if(is_ascending)
+    {
+        selection_sort_ascending(n, a, map);
+    }
+    else
+    {
+        selection_sort_descending(n, a, map);
+    };
+}
+
+template <typename T, typename I>
+__device__ static void permute_swap(const I n, T* C, I ldc, I* map, const I nev = -1)
+{
+    // --------------------------------------------
+    // perform swaps to implement permutation vector
+    // the permutation vector will be restored to the
+    // identity permutation 0,1,2,...
+    //
+    // Note: performs in a thread block
+    // --------------------------------------------
+    {
+        bool const has_work = (n >= 1) && (C != nullptr) && (ldc >= 1) && (map != nullptr);
+        if(!has_work)
+        {
+            return;
+        }
+    }
+
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const k_start = tid;
+    auto const k_inc = nthreads;
+
+    bool const is_root_thread = (tid == 0);
+
+    auto const nn = (nev >= 0) ? nev : n;
+
+    for(I i = 0; i < nn; i++)
+    {
+        __syncthreads();
+
+        while(map[i] != i)
+        {
+            auto const map_i = map[i];
+            auto const map_ii = map[map[i]];
+
+            __syncthreads();
+
+            if(is_root_thread)
+            {
+                map[map_i] = map_i;
+                map[i] = map_ii;
+            }
+
+            __syncthreads();
+
+            // ---------------------------------------
+            // swap columns C( 0:(n-1),map_i) and C( 0:(n-1),map_ii)
+            // ---------------------------------------
+
+            for(auto k = k_start; k < n; k += k_inc)
+            {
+                auto const k_map_i = k + (map_i * static_cast<int64_t>(ldc));
+                auto const k_map_ii = k + (map_ii * static_cast<int64_t>(ldc));
+
+                auto const ctemp = C[k_map_i];
+                C[k_map_i] = C[k_map_ii];
+                C[k_map_ii] = ctemp;
+            }
+
+            __syncthreads();
+        }
+    }
+#ifdef NDEBUG
+#else
+    // ----------------------------------------------------------
+    // extra check that map[] is restored to identity permutation
+    // ----------------------------------------------------------
+    __syncthreads();
+    for(auto k = k_start; k < nn; k += k_inc)
+    {
+        assert(map[k] == k);
+    }
+    __syncthreads();
+#endif
+}
+
+ROCSOLVER_END_NAMESPACE

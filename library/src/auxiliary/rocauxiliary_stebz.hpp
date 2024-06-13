@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,9 +36,11 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-#define SPLIT_THDS 256
+#define STEBZ_SPLIT_THDS 256
 #define IBISEC_BLKS 64
 #define IBISEC_THDS 128
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /************** Kernels and device functions *********************************/
 /*****************************************************************************/
@@ -68,9 +70,12 @@ __device__ void increasing_order(const rocblas_int nn, T* X, rocblas_int* Y)
         {
             X[s2] = X[s1];
             X[s1] = v;
-            bv = Y[s2];
-            Y[s2] = Y[s1];
-            Y[s1] = bv;
+            if(Y)
+            {
+                bv = Y[s2];
+                Y[s2] = Y[s1];
+                Y[s1] = bv;
+            }
         }
     }
 }
@@ -184,60 +189,40 @@ ROCSOLVER_KERNEL void stebz_case1_kernel(const rocblas_erange range,
     }
 }
 
-/** This kernel splits the matrix into independent blocks and prepares things
-    for the computations in the iterative bisection **/
-template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
-    stebz_splitting_kernel(const rocblas_erange range,
-                           const rocblas_int n,
-                           const T vlow,
-                           const T vup,
-                           const rocblas_int ilow,
-                           const rocblas_int iup,
-                           U DA,
-                           const rocblas_int shiftD,
-                           const rocblas_int strideD,
-                           U EA,
-                           const rocblas_int shiftE,
-                           const rocblas_int strideE,
-                           rocblas_int* nsplit,
-                           T* WA,
-                           const rocblas_stride strideW,
-                           rocblas_int* ISA,
-                           const rocblas_stride strideIS,
-                           rocblas_int* tmpISA,
-                           T* pivmin,
-                           T* EsqrA,
-                           T* boundsA,
-                           T* interA,
-                           rocblas_int* ninterA,
-                           T eps,
-                           T sfmin)
+/** STEBZ_SPLITTING splits the matrix into independent blocks and prepares ranges
+    for the computations in the iterative bisection.
+    Call the kernel with batch_count groups in Y, of DIM threads in X direction.
+    Each thread will work with as many elements of the diagonal as needed.
+    Call the device function with compact = true to get the output IS = [0, IS, nsplit]
+    as needed by stedcx. **/
+template <int DIM, typename T>
+__device__ void run_stebz_splitting(const int tid,
+                                    const rocblas_erange range,
+                                    const rocblas_int n,
+                                    const T vlow,
+                                    const T vup,
+                                    const rocblas_int ilow,
+                                    const rocblas_int iup,
+                                    T* D,
+                                    T* E,
+                                    rocblas_int* nsplit,
+                                    T* W,
+                                    rocblas_int* IS,
+                                    rocblas_int* tmpIS,
+                                    T* pivmin,
+                                    T* Esqr,
+                                    T* bounds,
+                                    T* inter,
+                                    rocblas_int* ninter,
+                                    T* sval,
+                                    rocblas_int* sidx,
+                                    T eps,
+                                    T sfmin,
+                                    bool compact = false)
 {
-    // batch instance
-    const int bid = hipBlockIdx_y;
-    T* D = load_ptr_batch<T>(DA, bid, shiftD, strideD);
-    T* E = load_ptr_batch<T>(EA, bid, shiftE, strideE);
-    rocblas_int* IS = ISA + bid * strideIS;
-    T* Esqr = EsqrA + bid * (n - 1);
-    T* bounds = boundsA + 2 * bid;
-    // using W as temp array to store the spit off-diagonal
-    // (to use in case range = index)
-    T* W = WA + bid * strideW;
-    // using inter and ninter as auxiliary arrays to find
-    // a range for the case range = index
-    T* inter = interA + bid * (2 * n);
-    rocblas_int* ninter = ninterA + bid * (2 * n);
-
-    // shared memory setup for iamax.
-    // (sidx also temporarily stores the number of blocks found by each thread)
-    __shared__ T sval[SPLIT_THDS];
-    __shared__ rocblas_int sidx[SPLIT_THDS];
-
     // the number of elements worked by this thread is nn
-    const int tid = hipThreadIdx_x;
-    rocblas_int nn = (n - 1) / SPLIT_THDS;
-    if(tid < n - 1 - nn * SPLIT_THDS)
+    rocblas_int nn = (n - 1) / DIM;
+    if(tid < n - 1 - nn * DIM)
         nn++;
     sidx[tid] = nn;
     __syncthreads();
@@ -252,9 +237,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
     rocblas_int j, nu, nl;
     rocblas_int tmpns = 0; //temporary number of blocks found
 
-    // this thread find its split-off blocks
+    // this thread find its split-off blocks if necessary
     // tmpIS stores the block indices found by this thread
-    rocblas_int* tmpIS = tmpISA + (bid * n) + offset;
+    tmpIS += offset;
     for(rocblas_int i = 0; i < nn; ++i)
     {
         j = i + offset;
@@ -281,26 +266,33 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
     __syncthreads();
 
     // find split-off blocks in entire matrix
-    offset = 0;
+    offset = compact ? 1 : 0;
     for(int i = 0; i < tid; ++i)
         offset += sidx[i];
     for(int i = 0; i < tmpns; ++i)
         IS[i + offset] = tmpIS[i] + 1;
 
     // total number of split blocks
-    if(tid == SPLIT_THDS - 1)
+    if(tid == DIM - 1)
     {
         offset += tmpns;
-        nsplit[bid] = offset + 1;
         IS[offset] = n;
+        if(compact)
+        {
+            IS[0] = 0;
+            IS[n + 1] = offset;
+        }
+        else
+            *nsplit = offset + 1;
     }
     __syncthreads();
 
     // find max squared off-diagonal element
-    iamax<SPLIT_THDS>(tid, n - 1, Esqr, 1, sval, sidx);
+    iamax<DIM>(tid, n - 1, Esqr, 1, sval, sidx);
     __syncthreads();
 
-    T pmin = sval[0] * sfmin;
+    // `pmin` is a numerically stable lower bound for pivots
+    T pmin = std::max(sval[0] * sfmin, sfmin);
     vl = vlow;
     vu = vup;
 
@@ -323,7 +315,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
             ninter[1] = nu;
         }
         // work all other elements in parallel
-        for(rocblas_int i = tid + 1; i < n - 1; i += SPLIT_THDS)
+        for(rocblas_int i = tid + 1; i < n - 1; i += DIM)
         {
             tmp = D[i];
             tmp2 = std::abs(W[i]) + std::abs(W[i - 1]);
@@ -337,7 +329,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
             ninter[2 * i + 1] = nu;
         }
         // find gershgorin of last diagonal element
-        if(tid == SPLIT_THDS - 1)
+        if(tid == DIM - 1)
         {
             tmp = D[n - 1];
             tmp2 = std::abs(W[n - 2]);
@@ -390,7 +382,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
     if(tid == 0)
     {
         // set pivmin (minimum value that can be pivot in sturm sequence)
-        pivmin[bid] = pmin;
+        *pivmin = pmin;
 
         // set upper and lower bounds vl and vu of the absolute interval (vl, vu] where
         // the eigenvalues will be searched. vl and vu are set to zero when looking for
@@ -408,32 +400,27 @@ ROCSOLVER_KERNEL void __launch_bounds__(SPLIT_THDS)
     }
 }
 
-/** This is the main kernel that implements the iterative bisection.
-    Each thread works with as many non-converged intervals as needed on each iteration.
-    Each thread-block is working with as many split-off blocks as needed to cover
-    the entire matrix **/
 template <typename T, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
-    stebz_bisection_kernel(const rocblas_erange range,
+ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
+    stebz_splitting_kernel(const rocblas_erange range,
                            const rocblas_int n,
-                           const T abstol,
+                           const T vlow,
+                           const T vup,
+                           const rocblas_int ilow,
+                           const rocblas_int iup,
                            U DA,
                            const rocblas_int shiftD,
                            const rocblas_int strideD,
                            U EA,
                            const rocblas_int shiftE,
                            const rocblas_int strideE,
-                           rocblas_int* nev,
-                           rocblas_int* nsplit,
+                           rocblas_int* nsplitA,
                            T* WA,
                            const rocblas_stride strideW,
-                           rocblas_int* IBA,
-                           const rocblas_stride strideIB,
                            rocblas_int* ISA,
                            const rocblas_stride strideIS,
-                           rocblas_int* info,
-                           rocblas_int* tmpnevA,
-                           T* pivmin,
+                           rocblas_int* tmpISA,
+                           T* pivminA,
                            T* EsqrA,
                            T* boundsA,
                            T* interA,
@@ -441,35 +428,66 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
                            T eps,
                            T sfmin)
 {
-    const int tid = hipThreadIdx_x;
-    const int sbid = hipBlockIdx_x;
-
     // batch instance
+    const int tid = hipThreadIdx_x;
     const int bid = hipBlockIdx_y;
     T* D = load_ptr_batch<T>(DA, bid, shiftD, strideD);
     T* E = load_ptr_batch<T>(EA, bid, shiftE, strideE);
-    T* W = WA + bid * strideW;
-    rocblas_int* IB = IBA + bid * strideIB;
-    rocblas_int* IS = ISA + bid * strideIS;
+    rocblas_int* nsplit = nsplitA + bid;
+    T* pivmin = pivminA + bid;
     T* Esqr = EsqrA + bid * (n - 1);
-    T* bounds = boundsA + bid * 2;
-    T pmin = pivmin[bid];
-    // nofb is the number of split blocks in the matrix
-    rocblas_int nofb = nsplit[bid];
-    // the bounds and related number of eigenvalues of the intervals
-    // in all split blocks are stored in inter and ninter
-    T* inter = interA + bid * (4 * n);
-    rocblas_int* ninter = ninterA + bid * (4 * n);
-    // tmpnev stores the number of eigenvalues found in each split block
-    rocblas_int* tmpnev = tmpnevA + bid * n;
+    T* bounds = boundsA + 2 * bid;
+    rocblas_int* IS = ISA + (bid * strideIS);
+    // tmpIS stores the block indices found by each thread
+    rocblas_int* tmpIS = tmpISA + (bid * n);
+    // using W as temp array to store the spit off-diagonal
+    // (to use in case range = index)
+    T* W = WA + bid * strideW;
+    // using inter and ninter as auxiliary arrays to find
+    // a range for the case range = index
+    T* inter = interA + bid * (2 * n);
+    rocblas_int* ninter = ninterA + bid * (2 * n);
 
-    // Shared arrays (sh_name):
-    // after each iteration, a thread that found a new interval will activate this flag
-    __shared__ int sh_newi[IBISEC_THDS];
-    // threads will share the newfound interval bounds and numbers of
-    // eigenvalues in these arrays:
-    __shared__ T sh_inter[4 * IBISEC_THDS];
-    __shared__ int sh_ninter[4 * IBISEC_THDS];
+    // shared memory setup for iamax.
+    // (sidx also temporarily stores the number of blocks found by each thread)
+    __shared__ T sval[STEBZ_SPLIT_THDS];
+    __shared__ rocblas_int sidx[STEBZ_SPLIT_THDS];
+
+    run_stebz_splitting<STEBZ_SPLIT_THDS>(tid, range, n, vlow, vup, ilow, iup, D, E, nsplit, W, IS,
+                                          tmpIS, pivmin, Esqr, bounds, inter, ninter, sval, sidx,
+                                          eps, sfmin);
+}
+
+/** STEBZ_BISECTION implements the iterative bisection.
+    Call the kernel with DIM_BLKS blocks in X and batch_count blocks in Y.
+    Each thread-block is working with as many split-off blocks as needed to cover the entire
+    matrix in the batch. Each blocks has DIM_THDS threads in X. Each thread works with as many
+    non-converged intervals as needed on each iteration. **/
+template <int DIM_BLKS, int DIM_THDS, typename T>
+__device__ void run_stebz_bisection(const int sbid,
+                                    const int tid,
+                                    const rocblas_erange range,
+                                    const rocblas_int n,
+                                    const T abstol,
+                                    T* D,
+                                    T* E,
+                                    const rocblas_int nofb,
+                                    T* W,
+                                    rocblas_int* IB,
+                                    rocblas_int* IS,
+                                    rocblas_int* info,
+                                    rocblas_int* tmpnev,
+                                    const T pmin,
+                                    T* Esqr,
+                                    T* bounds,
+                                    T* inter,
+                                    rocblas_int* ninter,
+                                    int* sh_newi,
+                                    T* sh_inter,
+                                    int* sh_ninter,
+                                    T eps,
+                                    T sfmin)
+{
     // sh_nofi accumulates the new number of intervals, for next iteration, in the active block
     __shared__ int sh_nofi;
     // sh_computed = true indicates that the eigenvalues in a block were computed
@@ -494,7 +512,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
     int iid;
 
     /*********** loop over independent split blocks ***********/
-    for(int b = sbid; b < nofb; b += IBISEC_BLKS)
+    for(int b = sbid; b < nofb; b += DIM_BLKS)
     {
         // find dimension and indices of current split block
         lc_bin = (b == 0) ? 0 : IS[b - 1];
@@ -606,7 +624,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
                     sh_nofi = 0; // to start accumulation of new number of intervals
 
                 // work with all intervals in parallel
-                for(int i = 0; i < lc_nofi; i += IBISEC_THDS)
+                for(int i = 0; i < lc_nofi; i += DIM_THDS)
                 {
                     iid = tid + i; //position of the interval in the split block
 
@@ -684,7 +702,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
                     __syncthreads();
 
                     // update new number of intervals
-                    nl = std::min(lc_nofi - i, IBISEC_THDS); //number of active threads
+                    nl = std::min(lc_nofi - i, DIM_THDS); //number of active threads
                     if(tid == nl - 1)
                         sh_nofi += (nl + nu + sh_newi[tid]);
                     __syncthreads();
@@ -733,7 +751,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
                 }
 
                 if(!sh_converged)
-                    info[bid] = 1;
+                    *info = 1;
             }
         } // ((split block had dimension > 1 --did iterative bisection--))
 
@@ -741,8 +759,171 @@ ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
     } // (loop worked all independent split blocks)
 }
 
-/** This kernel synthesize the results from all the independent
-    split blocks of a given matrix **/
+template <typename T, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(IBISEC_THDS)
+    stebz_bisection_kernel(const rocblas_erange range,
+                           const rocblas_int n,
+                           const T abstol,
+                           U DA,
+                           const rocblas_int shiftD,
+                           const rocblas_int strideD,
+                           U EA,
+                           const rocblas_int shiftE,
+                           const rocblas_int strideE,
+                           rocblas_int* nsplit,
+                           T* WA,
+                           const rocblas_stride strideW,
+                           rocblas_int* IBA,
+                           const rocblas_stride strideIB,
+                           rocblas_int* ISA,
+                           const rocblas_stride strideIS,
+                           rocblas_int* infoA,
+                           rocblas_int* tmpnevA,
+                           T* pivmin,
+                           T* EsqrA,
+                           T* boundsA,
+                           T* interA,
+                           rocblas_int* ninterA,
+                           T eps,
+                           T sfmin)
+{
+    const int tid = hipThreadIdx_x;
+    const int sbid = hipBlockIdx_x;
+
+    // batch instance
+    const int bid = hipBlockIdx_y;
+    T* D = load_ptr_batch<T>(DA, bid, shiftD, strideD);
+    T* E = load_ptr_batch<T>(EA, bid, shiftE, strideE);
+    T* W = WA + bid * strideW;
+    rocblas_int* IB = IBA + bid * strideIB;
+    rocblas_int* IS = ISA + bid * strideIS;
+    T* Esqr = EsqrA + bid * (n - 1);
+    T* bounds = boundsA + bid * 2;
+    T pmin = pivmin[bid];
+    rocblas_int* info = infoA + bid;
+    // nofb is the number of split blocks in the matrix
+    rocblas_int nofb = nsplit[bid];
+    // the bounds and related number of eigenvalues of the intervals
+    // in all split blocks are stored in inter and ninter
+    T* inter = interA + bid * (4 * n);
+    rocblas_int* ninter = ninterA + bid * (4 * n);
+    // tmpnev stores the number of eigenvalues found in each split block
+    rocblas_int* tmpnev = tmpnevA + bid * n;
+
+    // Shared arrays (sh_name):
+    // after each iteration, a thread that found a new interval will activate this flag
+    __shared__ int sh_newi[IBISEC_THDS];
+    // threads will share the newfound interval bounds and numbers of
+    // eigenvalues in these arrays:
+    __shared__ T sh_inter[4 * IBISEC_THDS];
+    __shared__ int sh_ninter[4 * IBISEC_THDS];
+
+    run_stebz_bisection<IBISEC_BLKS, IBISEC_THDS>(sbid, tid, range, n, abstol, D, E, nofb, W, IB,
+                                                  IS, info, tmpnev, pmin, Esqr, bounds, inter,
+                                                  ninter, sh_newi, sh_inter, sh_ninter, eps, sfmin);
+}
+
+/** STEBZ_SYNTHESIS synthesize the results from all the independent
+    split blocks of a given matrix and corrects for values outside of range.
+    Call the kernel with as many groups of threads to cover all the matrices in the batch.
+    Each thread works with one matrix in the batch. **/
+template <typename T>
+__device__ void run_stebz_synthesis(const rocblas_erange range,
+                                    const rocblas_eorder order,
+                                    const rocblas_int n,
+                                    const rocblas_int ilow,
+                                    const rocblas_int iup,
+                                    T* D,
+                                    rocblas_int* nev,
+                                    const rocblas_int nofb,
+                                    T* W,
+                                    rocblas_int* IB,
+                                    rocblas_int* IS,
+                                    rocblas_int* tmpnev,
+                                    const T pmin,
+                                    T* Esqr,
+                                    T* bounds,
+                                    T* inter,
+                                    rocblas_int* ninter,
+                                    T eps)
+{
+    rocblas_int bin;
+    rocblas_int ntmp;
+    rocblas_int nn = 0, nnt = 0;
+    T tmp, tmp2;
+    T bnorm = std::max(std::abs(bounds[0]), std::abs(bounds[1]));
+
+    bool index = (range == rocblas_erange_index);
+
+    // remove gaps in W and IB
+    // (if range = index, sometimes the searched interval (vl, vu] could
+    // have eigenvalues outside of the desired indices. Thus, the following
+    // code also discards those extra values)
+    if(index)
+    {
+        for(int b = 0; b < nofb; ++b)
+        {
+            bin = (b == 0) ? 0 : IS[b - 1];
+            for(int bb = 0; bb < tmpnev[b]; ++bb)
+            {
+                tmp = W[bin + bb];
+                ntmp = IB[bin + bb];
+                inter[nnt] = tmp;
+                ninter[nnt] = ntmp;
+                inter[nnt + n] = tmp;
+                nnt++;
+            }
+        }
+
+        // discard extra values
+        increasing_order(nnt, inter + n, ninter + n);
+
+        for(int i = 0; i < nnt; ++i)
+        {
+            tmp = inter[i];
+            for(int j = 0; j < nnt; ++j)
+            {
+                tmp2 = inter[n + j];
+                if(tmp == tmp2)
+                {
+                    tmp2 = (j == nnt - 1) ? (bounds[1] - tmp2) / 2 : (inter[n + j + 1] - tmp2) / 2;
+                    tmp2 += tmp;
+                    ntmp = sturm_count(n, D, Esqr, pmin, tmp2);
+                    if(ntmp >= ilow && ntmp <= iup)
+                    {
+                        W[nn] = tmp;
+                        IB[nn] = ninter[i];
+                        nn++;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    else
+    {
+        for(int b = 0; b < nofb; ++b)
+        {
+            bin = (b == 0) ? 0 : IS[b - 1];
+            for(int bb = 0; bb < tmpnev[b]; ++bb)
+            {
+                W[nn] = W[bin + bb];
+                IB[nn] = IB[bin + bb];
+                nn++;
+            }
+        }
+    }
+
+    // total number of eigenvalues found
+    *nev = nn;
+
+    // if ordering is by split blocks, the computed eigenvalues are already in order
+    // otherwise re-arrange from smallest to largest
+    if(order == rocblas_eorder_entire)
+        increasing_order(nn, W, IB);
+}
+
 template <typename T, typename U>
 ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
                                              const rocblas_eorder order,
@@ -752,7 +933,7 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
                                              U DA,
                                              const rocblas_int shiftD,
                                              const rocblas_int strideD,
-                                             rocblas_int* nev,
+                                             rocblas_int* nevA,
                                              rocblas_int* nsplit,
                                              T* WA,
                                              const rocblas_stride strideW,
@@ -782,6 +963,7 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
         T* Esqr = EsqrA + bid * (n - 1);
         T pmin = pivmin[bid];
         T* bounds = boundsA + bid * 2;
+        rocblas_int* nev = nevA + bid;
         // tmpnev stores the number of eigenvalues found in each split block
         rocblas_int* tmpnev = tmpnevA + bid * n;
         // if range = index, inter and ninter will store temporary ordered eigenvalues
@@ -789,81 +971,8 @@ ROCSOLVER_KERNEL void stebz_synthesis_kernel(const rocblas_erange range,
         T* inter = interA + bid * 2 * n;
         rocblas_int* ninter = ninterA + bid * 2 * n;
 
-        rocblas_int bin;
-        rocblas_int ntmp;
-        rocblas_int nn = 0, nnt = 0;
-        T tmp, tmp2;
-        T bnorm = std::max(std::abs(bounds[0]), std::abs(bounds[1]));
-
-        bool index = (range == rocblas_erange_index);
-
-        // remove gaps in W and IB
-        // (if range = index, sometimes the searched interval (vl, vu] could
-        // have eigenvalues outside of the desired indices. Thus, the following
-        // code also discards those extra values)
-        if(index)
-        {
-            for(int b = 0; b < nofb; ++b)
-            {
-                bin = (b == 0) ? 0 : IS[b - 1];
-                for(int bb = 0; bb < tmpnev[b]; ++bb)
-                {
-                    tmp = W[bin + bb];
-                    ntmp = IB[bin + bb];
-                    inter[nnt] = tmp;
-                    ninter[nnt] = ntmp;
-                    inter[nnt + n] = tmp;
-                    nnt++;
-                }
-            }
-
-            // discard extra values
-            increasing_order(nnt, inter + n, ninter + n);
-            for(int i = 0; i < nnt; ++i)
-            {
-                tmp = inter[i];
-                for(int j = 0; j < nnt; ++j)
-                {
-                    tmp2 = inter[n + j];
-                    if(tmp == tmp2)
-                    {
-                        tmp2 = (j == nnt - 1) ? (bounds[1] - tmp2) / 2
-                                              : (inter[n + j + 1] - tmp2) / 2;
-                        tmp2 += tmp;
-                        ntmp = sturm_count(n, D, Esqr, pmin, tmp2);
-                        if(ntmp >= ilow && ntmp <= iup)
-                        {
-                            W[nn] = tmp;
-                            IB[nn] = ninter[i];
-                            nn++;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        else
-        {
-            for(int b = 0; b < nofb; ++b)
-            {
-                bin = (b == 0) ? 0 : IS[b - 1];
-                for(int bb = 0; bb < tmpnev[b]; ++bb)
-                {
-                    W[nn] = W[bin + bb];
-                    IB[nn] = IB[bin + bb];
-                    nn++;
-                }
-            }
-        }
-
-        // total number of eigenvalues found
-        nev[bid] = nn;
-
-        // if ordering is by split blocks, the computed eigenvalues are already in order
-        // otherwise re-arrange from smallest to largest
-        if(order == rocblas_eorder_entire)
-            increasing_order(nn, W, IB);
+        run_stebz_synthesis(range, order, n, ilow, iup, D, nev, nofb, W, IB, IS, tmpnev, pmin, Esqr,
+                            bounds, inter, ninter, eps);
     }
 }
 
@@ -1041,10 +1150,10 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
     T atol = (abstol == 0) ? 2 * sfmin : abstol;
 
     // split matrix into independent blocks and prepare for iterative bisection
-    ROCSOLVER_LAUNCH_KERNEL(stebz_splitting_kernel<T>, dim3(1, batch_count), dim3(SPLIT_THDS), 0,
-                            stream, range, n, vlow, vup, ilow, iup, D, shiftD, strideD, E, shiftE,
-                            strideE, nsplit, W, strideW, IS, strideIS, work, pivmin, Esqr, bounds,
-                            inter, ninter, eps, sfmin);
+    ROCSOLVER_LAUNCH_KERNEL(stebz_splitting_kernel<T>, dim3(1, batch_count), dim3(STEBZ_SPLIT_THDS),
+                            0, stream, range, n, vlow, vup, ilow, iup, D, shiftD, strideD, E,
+                            shiftE, strideE, nsplit, W, strideW, IS, strideIS, work, pivmin, Esqr,
+                            bounds, inter, ninter, eps, sfmin);
 
     // Implement iterative bisection on each split block.
     // The next kernel has IBISEC_BLKS thread-blocks with IBISEC_THDS threads.
@@ -1058,8 +1167,8 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
 
     ROCSOLVER_LAUNCH_KERNEL(stebz_bisection_kernel<T>, dim3(IBISEC_BLKS, batch_count),
                             dim3(IBISEC_THDS), 0, stream, range, n, atol, D, shiftD, strideD, E,
-                            shiftE, strideE, nev, nsplit, W, strideW, IB, strideIB, IS, strideIS,
-                            info, work, pivmin, Esqr, bounds, inter, ninter, eps, sfmin);
+                            shiftE, strideE, nsplit, W, strideW, IB, strideIB, IS, strideIS, info,
+                            work, pivmin, Esqr, bounds, inter, ninter, eps, sfmin);
 
     // Finally, synthesize the results from all the split blocks
     ROCSOLVER_LAUNCH_KERNEL(stebz_synthesis_kernel<T>, gridReset, threads, 0, stream, range, order, n,
@@ -1068,3 +1177,5 @@ rocblas_status rocsolver_stebz_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

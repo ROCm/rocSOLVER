@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +35,8 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /** thread-block size for calling the stein kernel.
     (MAX_THDS sizes must be one of 128, 256, 512, or 1024) **/
@@ -134,9 +136,9 @@ __device__ void run_stein(const int tid,
 
             // compute reorthogonalization criterion and stopping criterion
             onenrm = abs(D[b1]) + abs(E[b1]);
-            onenrm = max(onenrm, abs(D[bn]) + abs(E[bn - 1]));
+            onenrm = std::max(onenrm, abs(D[bn]) + abs(E[bn - 1]));
             for(j = b1 + 1; j <= bn - 1; j++)
-                onenrm = max(onenrm, abs(D[j]) + abs(E[j - 1]) + abs(E[j])); // <- parallelize?
+                onenrm = std::max(onenrm, abs(D[j]) + abs(E[j - 1]) + abs(E[j])); // <- parallelize?
             ortol = S(0.001) * onenrm;
             stpcrt = sqrt(0.1 / blksize);
         }
@@ -193,7 +195,7 @@ __device__ void run_stein(const int tid,
                     // normalize and scale righthand side vector
                     iamax<MAX_THDS, S>(tid, blksize, work, 1, sval1, sidx);
                     __syncthreads();
-                    scl = blksize * onenrm * max(eps, abs(work[3 * n + blksize - 1])) / sval1[0];
+                    scl = blksize * onenrm * std::max(eps, abs(work[3 * n + blksize - 1])) / sval1[0];
                     for(i = tid; i < blksize; i += MAX_THDS) // <- scal
                         work[i] = work[i] * scl;
                     __syncthreads();
@@ -430,3 +432,5 @@ rocblas_status rocsolver_stein_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

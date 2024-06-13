@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +37,8 @@
 #include "rocsolver/rocsolver.h"
 
 #include <cmath>
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /************** Kernels and device functions *******************/
 /***************************************************************/
@@ -679,7 +681,111 @@ ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
         info[bid] = 0;
 }
 
-/** BDSQR_SORT sorts the singular values and vectors by selection sort if applicable. **/
+/**
+ --------------------------------------------
+ perform swaps to implement permutation vector
+ the permutation vector will be restored to the
+ identity permutation 0,1,2,...
+
+ Note: this routine works in a thread block
+ --------------------------------------------
+ **/
+template <typename T, typename I>
+__device__ static void bdsqr_permute_swap(const I n,
+                                          const I nv,
+                                          T* V,
+                                          const I ldv,
+                                          const I nu,
+                                          T* U,
+                                          const I ldu,
+                                          const I nc,
+                                          T* C,
+                                          const I ldc,
+                                          I* map)
+{
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    bool const is_root_thread = (tid == 0);
+
+    if(n <= 0)
+    {
+        return;
+    };
+
+    assert(map != nullptr);
+
+    for(I i = 0; i < n; i++)
+    {
+        __syncthreads();
+
+        while(map[i] != i)
+        {
+            auto const map_i = map[i];
+            auto const map_ii = map[map[i]];
+
+            __syncthreads();
+
+            if(is_root_thread)
+            {
+                map[map_i] = map_i;
+                map[i] = map_ii;
+            };
+
+            __syncthreads();
+
+            // -----------
+            // swap arrays
+            // -----------
+
+            auto const j_start = tid;
+            auto const j_inc = nthreads;
+
+            __syncthreads();
+
+            if(nv > 0)
+            {
+                auto const m = map_i;
+                auto const i = map_ii;
+                for(auto j = j_start; j < nv; j += j_inc)
+                {
+                    swap(V[m + j * ((int64_t)ldv)], V[i + j * ((int64_t)ldv)]);
+                };
+            }
+            __syncthreads();
+
+            if(nu > 0)
+            {
+                auto const m = map_i;
+                auto const i = map_ii;
+                for(auto j = j_start; j < nu; j += j_inc)
+                {
+                    swap(U[j + m * ((int64_t)ldu)], U[j + i * ((int64_t)ldu)]);
+                };
+            }
+            __syncthreads();
+
+            if(nc > 0)
+            {
+                auto const m = map_i;
+                auto const i = map_ii;
+                for(auto j = j_start; j < nc; j += j_inc)
+                {
+                    swap(C[m + j * ((int64_t)ldc)], C[i + j * ((int64_t)ldc)]);
+                };
+            }
+            __syncthreads();
+        };
+    };
+}
+
+/**
+ * BDSQR_SORT sorts the singular values and vectors by
+ * shell sort or selection sort if applicable.
+ * **/
+
 template <typename T, typename S, typename W1, typename W2, typename W3>
 ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
                                  const rocblas_int nv,
@@ -701,9 +807,16 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
                                  const rocblas_int shiftC,
                                  const rocblas_int ldc,
                                  const rocblas_stride strideC,
-                                 rocblas_int* info)
+                                 rocblas_int* info,
+                                 rocblas_int* splits_map)
 {
-    rocblas_int tid = hipThreadIdx_x;
+    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+
+    auto const j_start = tid;
+    auto const j_inc = nthreads;
+
     rocblas_int bid = hipBlockIdx_y;
 
     // if a NaN or Inf was detected in the input, return
@@ -715,15 +828,15 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     rocblas_int local_info = 0;
 
     // array pointers
-    T *V, *U, *C;
-    S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
-    if(nv)
-        V = load_ptr_batch<T>(VV, bid, shiftV, strideV);
-    if(nu)
-        U = load_ptr_batch<T>(UU, bid, shiftU, strideU);
-    if(nc)
-        C = load_ptr_batch<T>(CC, bid, shiftC, strideC);
+    S* const D = (DD != nullptr) ? DD + bid * strideD : nullptr;
+    S* const E = (EE != nullptr) ? EE + bid * strideE : nullptr;
+    T* const V = (nv > 0) ? load_ptr_batch<T>(VV, bid, shiftV, strideV) : nullptr;
+    T* const U = (nu > 0) ? load_ptr_batch<T>(UU, bid, shiftU, strideU) : nullptr;
+    T* const C = (nc > 0) ? load_ptr_batch<T>(CC, bid, shiftC, strideC) : nullptr;
+
+    rocblas_int* map = (splits_map == nullptr) ? nullptr : splits_map + bid * n;
+
+    __syncthreads();
 
     // ensure all singular values converged and are positive
     for(rocblas_int i = 0; i < n; i++)
@@ -735,8 +848,8 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
         {
             if(nv)
             {
-                for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
-                    V[i + j * ldv] = -V[i + j * ldv];
+                for(auto j = j_start; j < nv; j += j_inc)
+                    V[i + j * ((int64_t)ldv)] = -V[i + j * ((int64_t)ldv)];
                 __syncthreads();
             }
 
@@ -754,46 +867,67 @@ ROCSOLVER_KERNEL void bdsqr_sort(const rocblas_int n,
     __syncthreads();
 
     // sort singular values & vectors
-    S p;
-    for(i = 0; i < n - 1; i++)
+    bool const use_map = (map != nullptr);
+    if(use_map)
     {
-        m = i;
-        p = D[i];
-        for(j = i + 1; j < n; j++)
+        bool const need_swap = (nv > 0) || (nu > 0) || (nc > 0);
+        if(need_swap)
         {
-            if(D[j] > p)
-            {
-                m = j;
-                p = D[j];
-            }
+            shell_sort_descending(n, D, map);
+            __syncthreads();
+            bdsqr_permute_swap(n, nv, V, ldv, nu, U, ldu, nc, C, ldc, map);
         }
-        __syncthreads();
-
-        if(m != i)
+        else
         {
-            if(tid == 0)
-            {
-                D[m] = D[i];
-                D[i] = p;
-            }
+            rocblas_int* const null_map = nullptr;
+            shell_sort_descending(n, D, null_map);
+        };
 
-            if(nv)
+        __syncthreads();
+    }
+    else
+    {
+        S p;
+        for(i = 0; i < n - 1; i++)
+        {
+            m = i;
+            p = D[i];
+            for(j = i + 1; j < n; j++)
             {
-                for(j = tid; j < nv; j += hipBlockDim_x)
-                    swap(V[m + j * ldv], V[i + j * ldv]);
-                __syncthreads();
+                if(D[j] > p)
+                {
+                    m = j;
+                    p = D[j];
+                }
             }
-            if(nu)
+            __syncthreads();
+
+            if(m != i)
             {
-                for(j = tid; j < nu; j += hipBlockDim_x)
-                    swap(U[j + m * ldu], U[j + i * ldu]);
-                __syncthreads();
-            }
-            if(nc)
-            {
-                for(j = tid; j < nc; j += hipBlockDim_x)
-                    swap(C[m + j * ldc], C[i + j * ldc]);
-                __syncthreads();
+                if(tid == 0)
+                {
+                    D[m] = D[i];
+                    D[i] = p;
+                }
+
+                if(nv)
+                {
+                    for(j = tid; j < nv; j += hipBlockDim_x)
+                        swap(V[m + j * ldv], V[i + j * ldv]);
+                    __syncthreads();
+                }
+                if(nu)
+                {
+                    for(j = tid; j < nu; j += hipBlockDim_x)
+                        swap(U[j + m * ldu], U[j + i * ldu]);
+                    __syncthreads();
+                }
+                if(nc)
+                {
+                    for(j = tid; j < nc; j += hipBlockDim_x)
+                        swap(C[m + j * ldc], C[i + j * ldc]);
+                    __syncthreads();
+                }
             }
         }
     }
@@ -808,19 +942,19 @@ void rocsolver_bdsqr_getMemorySize(const rocblas_int n,
                                    const rocblas_int nu,
                                    const rocblas_int nc,
                                    const rocblas_int batch_count,
-                                   size_t* size_splits,
+                                   size_t* size_splits_map,
                                    size_t* size_work)
 {
     // if quick return, no workspace is needed
     if(n == 0 || batch_count == 0)
     {
-        *size_splits = 0;
+        *size_splits_map = 0;
         *size_work = 0;
         return;
     }
 
     // size of split indices array
-    *size_splits = sizeof(rocblas_int) * n * batch_count;
+    *size_splits_map = sizeof(rocblas_int) * n * batch_count;
 
     // size of workspace
     rocblas_int incW = 0;
@@ -866,7 +1000,7 @@ rocblas_status rocsolver_bdsqr_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !D) || (n > 1 && !E) || (n * nv && !V) || (n * nu && !U) || (n * nc && !C) || !info)
+    if((n && !D) || (n > 1 && !E) || (n && nv && !V) || (n && nu && !U) || (n && nc && !C) || !info)
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -897,7 +1031,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
                                         const rocblas_stride strideC,
                                         rocblas_int* info,
                                         const rocblas_int batch_count,
-                                        rocblas_int* splits,
+                                        rocblas_int* splits_map,
                                         S* work)
 {
     ROCSOLVER_ENTER("bdsqr", "uplo:", uplo, "n:", n, "nv:", nv, "nu:", nu, "nc:", nc,
@@ -932,18 +1066,18 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     rocblas_stride strideW = 2 + incW * n;
 
     // grid dimensions
-    rocblas_int nuc_max = max(nu, nc);
-    rocblas_int nvuc_max = max(nv, nuc_max);
+    rocblas_int nuc_max = std::max(nu, nc);
+    rocblas_int nvuc_max = std::max(nv, nuc_max);
 
     dim3 grid1(1, batch_count, 1);
     dim3 grid2(1, BDSQR_SPLIT_GROUPS, batch_count);
     dim3 threads1(1, 1, 1);
-    dim3 threads2((nu || nc ? min(nuc_max, BS1) : 1), 1, 1);
-    dim3 threads3((nv || nu || nc ? min(nvuc_max, BS1) : 1), 1, 1);
+    dim3 threads2((nu || nc ? std::min(nuc_max, BS1) : 1), 1, 1);
+    dim3 threads3((nv || nu || nc ? std::min(nvuc_max, BS1) : 1), 1, 1);
 
     // check for NaNs and Infs in input
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), grid1, threads1, 0, stream, n, D, strideD, E, strideE,
-                            info, maxiter, sfm, tol, splits, work, incW, strideW);
+                            info, maxiter, sfm, tol, splits_map, work, incW, strideW);
 
     if(n > 1)
     {
@@ -959,13 +1093,15 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL((bdsqr_kernel<T>), grid2, threads3, 0, stream, n, nv, nu, nc, D,
                                 strideD, E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu,
                                 strideU, C, shiftC, ldc, strideC, info, maxiter, eps, sfm, tol,
-                                minshift, splits, work, incW, strideW);
+                                minshift, splits_map, work, incW, strideW);
     }
 
     // sort the singular values and vectors
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_sort<T>), grid1, threads3, 0, stream, n, nv, nu, nc, D, strideD,
                             E, strideE, V, shiftV, ldv, strideV, U, shiftU, ldu, strideU, C, shiftC,
-                            ldc, strideC, info);
+                            ldc, strideC, info, splits_map);
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

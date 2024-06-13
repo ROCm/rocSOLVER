@@ -1,35 +1,33 @@
-# Anywhere {branch} is used, the branch name will be substituted.
-# These comments will also be removed.
+defaults:
+  numbered: False
 root: index
 subtrees:
-  - numbered: True
-    entries:
-    - file: userguide/index
-      subtrees:
-      - entries:
-        - file: userguide/intro
-        - file: userguide/install
-        - file: userguide/examples
-        - file: userguide/memory
-        - file: userguide/logging
-        - file: userguide/clients
-    - file: design/index
-      subtrees:
-      - entries:
-        - file: design/intro
-        - file: design/batch
-        - file: design/tuning
-        - file: design/contribute
-    - file: api/index
-      subtrees:
-      - entries:
-        - file: api/types
-        - file: api/auxiliary
-        - file: api/lapack
-        - file: api/lapacklike
-        - file: api/refact
-        - file: api/logging
-        - file: api/deprecated
-  - caption: About
-    entries:
-      - file: license
+- entries:
+  - file: installation/index.rst
+    title: Installation
+    subtrees:
+    - entries:
+      - file: installation/installlinux.rst
+  - file: howto/index.rst
+    title: How to
+    subtrees:
+    - entries:
+      - file: howto/using.rst
+      - file: howto/memory.rst
+      - file: howto/logging.rst
+      - file: howto/clients.rst
+      - file: howto/contribute.rst
+  - file: reference/index.rst
+    title: Reference
+    subtrees:
+    - entries:
+      - file: reference/intro.rst
+      - file: reference/types.rst
+      - file: reference/auxiliary.rst
+      - file: reference/lapack.rst
+      - file: reference/lapacklike.rst
+      - file: reference/refact.rst
+      - file: reference/logging.rst
+      - file: reference/tuning.rst
+      - file: reference/deprecated.rst
+  - file: license.rst

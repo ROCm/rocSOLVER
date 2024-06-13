@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_syevx_heevx.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_syevx_heevx_batched_impl(rocblas_handle handle,
@@ -80,23 +82,23 @@ rocblas_status rocsolver_syevx_heevx_batched_impl(rocblas_handle handle,
     // size of reusable workspaces (for calling SYTRD/HETRD, STEBZ, STEIN, and ORMTR/UNMTR)
     size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6;
     // size for temporary arrays
-    size_t size_D, size_E, size_iblock, size_isplit, size_tau, size_nsplit_workArr;
+    size_t size_D, size_E, size_iblock, size_isplit_map, size_tau, size_nsplit_workArr;
 
     rocsolver_syevx_heevx_getMemorySize<true, T, S>(
         evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit,
+        &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit_map,
         &size_tau, &size_nsplit_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(
             handle, size_scalars, size_work1, size_work2, size_work3, size_work4, size_work5,
-            size_work6, size_D, size_E, size_iblock, size_isplit, size_tau, size_nsplit_workArr);
+            size_work6, size_D, size_E, size_iblock, size_isplit_map, size_tau, size_nsplit_workArr);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6, *D, *E, *iblock, *isplit, *tau,
-        *nsplit_workArr;
+    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6, *D, *E, *iblock, *isplit_map,
+        *tau, *nsplit_workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_work5, size_work6, size_D, size_E, size_iblock, size_isplit,
+                              size_work5, size_work6, size_D, size_E, size_iblock, size_isplit_map,
                               size_tau, size_nsplit_workArr);
 
     if(!mem)
@@ -112,7 +114,7 @@ rocblas_status rocsolver_syevx_heevx_batched_impl(rocblas_handle handle,
     D = mem[7];
     E = mem[8];
     iblock = mem[9];
-    isplit = mem[10];
+    isplit_map = mem[10];
     tau = mem[11];
     nsplit_workArr = mem[12];
     if(size_scalars > 0)
@@ -122,9 +124,11 @@ rocblas_status rocsolver_syevx_heevx_batched_impl(rocblas_handle handle,
     return rocsolver_syevx_heevx_template<true, false, T>(
         handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, abstol, nev, W,
         strideW, Z, shiftZ, ldz, strideZ, ifail, strideF, info, batch_count, (T*)scalars, work1,
-        work2, work3, work4, work5, work6, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit,
-        (T*)tau, nsplit_workArr);
+        work2, work3, work4, work5, work6, (S*)D, (S*)E, (rocblas_int*)iblock,
+        (rocblas_int*)isplit_map, (T*)tau, nsplit_workArr);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -156,9 +160,9 @@ rocblas_status rocsolver_ssyevx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_syevx_heevx_batched_impl<float>(handle, evect, erange, uplo, n, A, lda, vl, vu,
-                                                     il, iu, abstol, nev, W, strideW, Z, ldz, ifail,
-                                                     strideF, info, batch_count);
+    return rocsolver::rocsolver_syevx_heevx_batched_impl<float>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, strideW, Z, ldz,
+        ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
@@ -183,9 +187,9 @@ rocblas_status rocsolver_dsyevx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_syevx_heevx_batched_impl<double>(handle, evect, erange, uplo, n, A, lda, vl,
-                                                      vu, il, iu, abstol, nev, W, strideW, Z, ldz,
-                                                      ifail, strideF, info, batch_count);
+    return rocsolver::rocsolver_syevx_heevx_batched_impl<double>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, strideW, Z, ldz,
+        ifail, strideF, info, batch_count);
 }
 
 rocblas_status rocsolver_cheevx_batched(rocblas_handle handle,
@@ -210,7 +214,7 @@ rocblas_status rocsolver_cheevx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_syevx_heevx_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_syevx_heevx_batched_impl<rocblas_float_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, strideW, Z, ldz,
         ifail, strideF, info, batch_count);
 }
@@ -237,7 +241,7 @@ rocblas_status rocsolver_zheevx_batched(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count)
 {
-    return rocsolver_syevx_heevx_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_syevx_heevx_batched_impl<rocblas_double_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, nev, W, strideW, Z, ldz,
         ifail, strideF, info, batch_count);
 }

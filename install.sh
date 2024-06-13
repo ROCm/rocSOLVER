@@ -14,78 +14,78 @@ Usage:
   $0 <options> (modify default behavior according to the following flags)
 
 Options:
-  -h | --help                 Print this help message.
+  -h | --help                  Print this help message.
 
-  --build_dir <builddir>      Specify path to the configure & build process output directory.
-                              Relative paths are relative to the current directory.
-                              (Default is ./build)
+  --build-path <builddir>      Specify path to the configure & build process output directory.
+                               Relative paths are relative to the current directory.
+                               (Default is ./build)
 
-  --lib_dir <libdir>          Specify path to the directory where the library generated files
-                              will be located. Relative paths are relative to builddir/release
-                              or builddir/debug, depending on the build type.
-                              (Default is builddir/release/rocsolver-install)
+  --lib-path <libdir>          Specify path to the directory where the library generated files
+                               will be located. Relative paths are relative to builddir/release
+                               or builddir/debug, depending on the build type.
+                               (Default is builddir/release/rocsolver-install)
 
-  --install_dir <installdir>  Specify path to the directory where the library package
-                              (when generated) will be installed. Use only absolute paths.
-                              (Default is /opt/rocm)
+  --install-path <installdir>  Specify path to the directory where the library package
+                               (when generated) will be installed. Use only absolute paths.
+                               (Default is /opt/rocm)
 
-  --rocblas_dir <blasdir>     Specify path to an existing rocBLAS install directory.
-                              (e.g. /src/rocBLAS/build/release/rocblas-install)
+  --rocblas-path <blasdir>     Specify path to an existing rocBLAS install directory.
+                               (e.g. /src/rocBLAS/build/release/rocblas-install)
 
-  --rocsolver_dir <solverdir> Specify path to an existing rocSOLVER install directory.
-                              (e.g. /src/rocSOLVER/build/release/rocsolver-install)
+  --rocsolver-path <solverdir> Specify path to an existing rocSOLVER install directory.
+                               (e.g. /src/rocSOLVER/build/release/rocsolver-install)
 
-  --rocsparse_dir <sparsedir> Specify path to an existing rocSPARSE install directory.
-                              (e.g. /src/rocSPARSE/build/release/rocsparse-install)
+  --rocsparse-path <sparsedir> Specify path to an existing rocSPARSE install directory.
+                               (e.g. /src/rocSPARSE/build/release/rocsparse-install)
 
-  --cleanup                   Pass this flag to remove intermediary build files after build and reduce disk usage
+  --cleanup                    Pass this flag to remove intermediary build files after build and reduce disk usage
 
-  -g | --debug                Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
-                              (Default build type is Release)
+  -g | --debug                 Pass this flag to build in Debug mode (equivalent to set CMAKE_BUILD_TYPE=Debug).
+                               (Default build type is Release)
 
-  -p | --package              Pass this flag to generate library and client packages after build.
+  -p | --package               Pass this flag to generate library and client packages after build.
 
-  -i | --install              Pass this flag to generate and install library and client packages after build.
+  -i | --install               Pass this flag to generate and install library and client packages after build.
 
-  -d | --dependencies         Pass this flag to also build and install external dependencies.
-                              Dependencies are to be installed in /usr/local. This should be done only once.
-                              (this does not install rocBLAS nor ROCm software stack)
+  -d | --dependencies          Pass this flag to also build and install external dependencies.
+                               Dependencies are to be installed in /usr/local. This should be done only once.
+                               (this does not install rocBLAS nor ROCm software stack)
 
-  -c | --clients              Pass this flag to also build the library clients benchmark and gtest.
-                              (Generated binaries will be located at builddir/clients/staging)
+  -c | --clients               Pass this flag to also build the library clients benchmark and gtest.
+                               (Generated binaries will be located at builddir/clients/staging)
 
-  --clients-only              Pass this flag to skip building the library and only build the clients.
+  --clients-only               Pass this flag to skip building the library and only build the clients.
 
-  --hip-clang                 Pass this flag to build using the hip-clang compiler.
-                              hip-clang is currently the only supported compiler, so this flag has no effect.
+  --hip-clang                  Pass this flag to build using the hip-clang compiler.
+                               hip-clang is currently the only supported compiler, so this flag has no effect.
 
-  -s | --static               Pass this flag to build rocsolver as a static library.
-                              (rocsolver must be built statically when the used companion rocblas is also static).
+  -s | --static                Pass this flag to build rocsolver as a static library.
+                               (rocsolver must be built statically when the used companion rocblas is also static).
 
-  -r | --relocatable          Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
+  -r | --relocatable           Pass this to add RUNPATH(based on ROCM_RPATH) and remove ldconf entry.
 
-  -n | --no-optimizations     Pass this flag to disable optimizations for small sizes.
+  -n | --no-optimizations      Pass this flag to disable optimizations for small sizes.
 
-  --no-sparse                 Pass this flag to remove rocSPARSE as a dependency and disable sparse methods.
+  --no-sparse                  Pass this flag to remove rocSPARSE as a dependency and disable sparse methods.
 
-  -a | --architecture         Set GPU architecture target, e.g. "gfx803;gfx900;gfx906;gfx908".
-                              If you don't know the architecture of the GPU in your local machine, it can be
-                              queried by running "mygpu".
+  -a | --architecture          Set GPU architecture target, e.g. "gfx803;gfx900;gfx906;gfx908".
+                               If you don't know the architecture of the GPU in your local machine, it can be
+                               queried by running "mygpu".
 
-  --address-sanitizer         Pass this flag to build with address sanitizer enabled
+  --address-sanitizer          Pass this flag to build with address sanitizer enabled
 
-  --docs                      (experimental) Pass this flag to build the documentation from source.
-                              Official documentation is available online at https://rocsolver.readthedocs.io/
-                              Building locally with this flag will require docker on your machine. If you are
-                              familiar with doxygen, sphinx and documentation tools, you can alternatively
-                              use the scripts provided in the docs directory.
+  --docs                       (experimental) Pass this flag to build the documentation from source.
+                               Official documentation is available online at https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html
+                               Building locally with this flag will require docker on your machine. If you are
+                               familiar with doxygen, sphinx and documentation tools, you can alternatively
+                               use the scripts provided in the docs directory.
 
-  --codecoverage              Build with code coverage profiling enabled, excluding release mode.
+  --codecoverage               Build with code coverage profiling enabled, excluding release mode.
 
-  -k | --relwithdebinfo       Pass this flag to build in release debug mode (equivalent to set CMAKE_BUILD_TYPE=RelWithDebInfo).
-                              (Default build type is Release)
+  -k | --relwithdebinfo        Pass this flag to build in release debug mode (equivalent to set CMAKE_BUILD_TYPE=RelWithDebInfo).
+                               (Default build type is Release)
 
-  --cmake-arg <argument>      Forward the given argument to CMake when configuring the build.
+  --cmake-arg <argument>       Forward the given argument to CMake when configuring the build.
 EOF
 }
 
@@ -327,9 +327,9 @@ build_sanitizer=false
 build_codecoverage=false
 build_with_sparse=true
 unset architecture
-unset rocblas_dir
-unset rocsolver_dir
-unset rocsparse_dir
+unset rocblas_path
+unset rocsolver_path
+unset rocsparse_path
 declare -a cmake_common_options
 declare -a cmake_client_options
 
@@ -340,7 +340,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,rocblas_dir:,rocsolver_dir:,rocsparse_dir:,lib_dir:,install_dir:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,build-path:,lib_dir:,lib-path:,install_dir:,install-path:,rocblas_dir:,rocblas-path:,rocsolver_dir:,rocsolver-path:,rocsparse_dir:,rocsparse-path:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -391,27 +391,27 @@ while true; do
     --no-sparse)
         build_with_sparse=false
         shift ;;
-    --build_dir)
+    --build_dir|--build-path)
         build_dir=${2}
         shift 2;;
+    --lib_dir|--lib-path)
+        lib_dir=${2}
+        shift 2 ;;
+    --install_dir|--install-path)
+        install_dir=${2}
+        shift 2 ;;
+    --rocblas_dir|--rocblas-path)
+        rocblas_path=${2}
+        shift 2 ;;
+    --rocsolver_dir|--rocsolver-path)
+        rocsolver_path=${2}
+        shift 2 ;;
+    --rocsparse_dir|--rocsparse-path)
+        rocsparse_path=${2}
+        shift 2 ;;
     --cleanup)
         cleanup=true
         shift ;;
-    --lib_dir)
-        lib_dir=${2}
-        shift 2 ;;
-    --install_dir)
-        install_dir=${2}
-        shift 2 ;;
-    --rocblas_dir)
-        rocblas_dir=${2}
-        shift 2 ;;
-    --rocsolver_dir)
-        rocsolver_dir=${2}
-        shift 2 ;;
-    --rocsparse_dir)
-        rocsparse_dir=${2}
-        shift 2 ;;
     -a|--architecture)
         architecture=${2}
         shift 2 ;;
@@ -459,14 +459,14 @@ else
 fi
 
 # resolve relative paths
-if [[ -n "${rocblas_dir+x}" ]]; then
-  rocblas_dir="$(make_absolute_path "${rocblas_dir}")"
+if [[ -n "${rocblas_path+x}" ]]; then
+  rocblas_path="$(make_absolute_path "${rocblas_path}")"
 fi
-if [[ -n "${rocsolver_dir+x}" ]]; then
-  rocsolver_dir="$(make_absolute_path "${rocsolver_dir}")"
+if [[ -n "${rocsolver_path+x}" ]]; then
+  rocsolver_path="$(make_absolute_path "${rocsolver_path}")"
 fi
-if [[ -n "${rocsparse_dir+x}" ]]; then
-  rocsparse_dir="$(make_absolute_path "${rocsparse_dir}")"
+if [[ -n "${rocsparse_path+x}" ]]; then
+  rocsparse_path="$(make_absolute_path "${rocsparse_path}")"
 fi
 
 # Default cmake executable is called cmake
@@ -480,8 +480,8 @@ case "${ID}" in
   ;;
 esac
 
-export CXX="hipcc"
-export CC="clang"
+export CXX="${rocm_path}/bin/amdclang++"
+export CC="${rocm_path}/bin/amdclang"
 export FC="gfortran"
 export PATH="${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}"
 
@@ -542,6 +542,7 @@ else
 fi
 
 cmake_common_options+=(
+  "--toolchain=toolchain-linux.cmake"
   "-DROCM_PATH=${rocm_path}"
   '-DCPACK_SET_DESTDIR=OFF'
   "-DCMAKE_INSTALL_PREFIX=${lib_dir}"
@@ -549,16 +550,16 @@ cmake_common_options+=(
   "-DCMAKE_BUILD_TYPE=${build_type}"
 )
 
-if [[ -n "${rocblas_dir+x}" ]]; then
-  cmake_common_options+=("-Drocblas_DIR=${rocblas_dir}/lib/cmake/rocblas")
+if [[ -n "${rocblas_path+x}" ]]; then
+  cmake_common_options+=("-Drocblas_DIR=${rocblas_path}/lib/cmake/rocblas")
 fi
 
-if [[ -n "${rocsolver_dir+x}" ]]; then
-  cmake_common_options+=("-Drocsolver_DIR=${rocsolver_dir}/lib/cmake/rocsolver")
+if [[ -n "${rocsolver_path+x}" ]]; then
+  cmake_common_options+=("-Drocsolver_DIR=${rocsolver_path}/lib/cmake/rocsolver")
 fi
 
-if [[ -n "${rocsparse_dir+x}" ]]; then
-  cmake_common_options+=("-Drocsparse_DIR=${rocsparse_dir}/lib/cmake/rocsparse")
+if [[ -n "${rocsparse_path+x}" ]]; then
+  cmake_common_options+=("-Drocsparse_DIR=${rocsparse_path}/lib/cmake/rocsparse")
 fi
 
 if [[ "${static_lib}" == true ]]; then

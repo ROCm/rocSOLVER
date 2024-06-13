@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +37,8 @@
 #include "rocauxiliary_org2l_ung2l.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <bool BATCHED, typename T>
 void rocsolver_orgql_ungql_getMemorySize(const rocblas_int m,
@@ -74,7 +76,7 @@ void rocsolver_orgql_ungql_getMemorySize(const rocblas_int m,
     {
         rocblas_int jb = xxGQx_BLOCKSIZE;
         rocblas_int j = ((k - xxGQx_xxGQx2_SWITCHSIZE - 1) / jb) * jb;
-        rocblas_int kk = min(k, j + jb);
+        rocblas_int kk = std::min(k, j + jb);
 
         // size of workspace is maximum of what is needed by larft and larfb.
         // size of Abyx_tmptr is maximum of what is needed by org2r/ung2r and larfb.
@@ -127,7 +129,7 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
 
     // size of unblocked part
     rocblas_int jb = ldw;
-    rocblas_int kk = min(k, ((k - xxGQx_xxGQx2_SWITCHSIZE + jb - 1) / jb) * jb);
+    rocblas_int kk = std::min(k, ((k - xxGQx_xxGQx2_SWITCHSIZE + jb - 1) / jb) * jb);
 
     // start of first blocked block is j + n - k = n - kk
     rocblas_int j = k - kk;
@@ -185,3 +187,5 @@ rocblas_status rocsolver_orgql_ungql_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

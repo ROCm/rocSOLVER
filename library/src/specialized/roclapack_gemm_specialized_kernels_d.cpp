@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,10 +27,21 @@
 
 #include "roclapack_gemm_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GEMM(0, 0, double, double*);
-INSTANTIATE_GEMM(0, 1, double, double*);
-INSTANTIATE_GEMM(1, 0, double, double* const*);
+INSTANTIATE_GEMM(0, 0, double, rocblas_int, double*);
+INSTANTIATE_GEMM(0, 1, double, rocblas_int, double*);
+INSTANTIATE_GEMM(1, 0, double, rocblas_int, double* const*);
+
+#ifdef HAVE_ROCBLAS_64
+// 64-bit APIs
+INSTANTIATE_GEMM(0, 0, double, int64_t, double*);
+INSTANTIATE_GEMM(0, 1, double, int64_t, double*);
+INSTANTIATE_GEMM(1, 0, double, int64_t, double* const*);
+#endif /* HAVE_ROCBLAS_64 */
+
+ROCSOLVER_END_NAMESPACE

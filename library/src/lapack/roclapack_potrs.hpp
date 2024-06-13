@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,11 +29,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  * *************************************************************************/
+
 #pragma once
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_potrs_argCheck(rocblas_handle handle,
@@ -61,7 +64,7 @@ rocblas_status rocsolver_potrs_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n && !A) || (nrhs * n && !B))
+    if((n && !A) || (nrhs && n && !B))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -172,3 +175,5 @@ rocblas_status rocsolver_potrs_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

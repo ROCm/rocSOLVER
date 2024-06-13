@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2016-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2016-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +36,43 @@
 #include <hip/hip_runtime.h>
 #include <rocblas/rocblas.h>
 #include <rocsolver/rocsolver.h>
+
+// concaternate the two arguments, evaluating them first if they are macros
+#define ROCSOLVER_CONCAT2_HELPER(a, b) a##b
+#define ROCSOLVER_CONCAT2(a, b) ROCSOLVER_CONCAT2_HELPER(a, b)
+
+#define ROCSOLVER_CONCAT4_HELPER(a, b, c, d) a##b##c##d
+#define ROCSOLVER_CONCAT4(a, b, c, d) ROCSOLVER_CONCAT4_HELPER(a, b, c, d)
+
+#if ROCSOLVER_VERSION_MINOR < 10
+#define ROCSOLVER_VERSION_MINOR_PADDED ROCSOLVER_CONCAT2(0, ROCSOLVER_VERSION_MINOR)
+#else
+#define ROCSOLVER_VERSION_MINOR_PADDED ROCSOLVER_VERSION_MINOR
+#endif
+
+#if ROCSOLVER_VERSION_PATCH < 10
+#define ROCSOLVER_VERSION_PATCH_PADDED ROCSOLVER_CONCAT2(0, ROCSOLVER_VERSION_PATCH)
+#else
+#define ROCSOLVER_VERSION_PATCH_PADDED ROCSOLVER_VERSION_PATCH
+#endif
+
+#ifndef ROCSOLVER_BEGIN_NAMESPACE
+#define ROCSOLVER_BEGIN_NAMESPACE                                      \
+    namespace rocsolver                                                \
+    {                                                                  \
+    inline namespace ROCSOLVER_CONCAT4(v,                              \
+                                       ROCSOLVER_VERSION_MAJOR,        \
+                                       ROCSOLVER_VERSION_MINOR_PADDED, \
+                                       ROCSOLVER_VERSION_PATCH_PADDED) \
+    {
+#define ROCSOLVER_END_NAMESPACE \
+    }                           \
+    }
+#endif
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
 
 #define ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES \
     (ROCBLAS_VERSION_MAJOR >= 4 || (ROCBLAS_VERSION_MAJOR == 3 && ROCBLAS_VERSION_MINOR >= 1))
@@ -120,24 +157,24 @@ __forceinline__ __device__ __host__ T load_scalar(T x, rocblas_int idx, rocblas_
 // For device array of device pointers
 
 // For device pointers
-template <typename T>
+template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T* p, rocblas_int block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T* p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p + block * stride + offset;
 }
 
 // For device array of device pointers
-template <typename T>
+template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T* const* p, rocblas_int block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T* const* p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p[block] + offset;
 }
 
-template <typename T>
+template <typename T, typename I>
 __forceinline__ __device__ __host__ T*
-    load_ptr_batch(T** p, rocblas_int block, ptrdiff_t offset, rocblas_stride stride)
+    load_ptr_batch(T** p, I block, rocblas_stride offset, rocblas_stride stride)
 {
     return p[block] + offset;
 }
@@ -413,7 +450,12 @@ __device__ __host__ inline rocblas_half rocblas_abs(rocblas_half x)
     return t.x;
 }
 
-// Get base types from complex types.
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_END_NAMESPACE
+#endif
+
+// Get base types from complex types. These should be moved into the rocsolver
+// namespace, but they are used by rocBLAS headers.
 template <typename T, typename = void>
 struct rocblas_real_t_impl
 {
@@ -434,6 +476,10 @@ struct rocblas_real_t_impl<std::complex<T>>
 
 template <typename T>
 using real_t = typename rocblas_real_t_impl<T>::type;
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_BEGIN_NAMESPACE
+#endif
 
 // Output rocblas_half value
 inline std::ostream& operator<<(std::ostream& os, rocblas_half x)
@@ -466,3 +512,7 @@ catch(...)
 }
 
 #undef ROCSOLVER_ROCBLAS_HAS_F8_DATATYPES
+
+#ifdef ROCSOLVER_LIBRARY
+ROCSOLVER_END_NAMESPACE
+#endif

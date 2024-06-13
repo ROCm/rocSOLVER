@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +36,8 @@
 #include "rocauxiliary_ormqr_unmqr.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <bool BATCHED, typename T>
 void rocsolver_ormtr_unmtr_getMemorySize(const rocblas_side side,
@@ -112,7 +114,7 @@ rocblas_status rocsolver_ormtr_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((nq > 0 && !A) || (nq > 0 && !ipiv) || (m * n && !C))
+    if((nq > 0 && !A) || (nq > 1 && !ipiv) || (m && n && !C))
         return rocblas_status_invalid_pointer;
 
     return rocblas_status_continue;
@@ -225,3 +227,5 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
         cast2constType(workArr), shiftC, ldc, strideC, batch_count, scalars, AbyxORwork,
         diagORtmptr, trfact, workArr + batch_count);
 }
+
+ROCSOLVER_END_NAMESPACE

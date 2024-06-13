@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,9 +27,25 @@
 
 #include "roclapack_ger_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GER(false, float, float*);
-INSTANTIATE_GER(false, float, float* const*);
+// non-batched and strided batched
+INSTANTIATE_GER(false, float, rocblas_int, float*);
+
+// batched
+INSTANTIATE_GER(false, float, rocblas_int, float* const*);
+
+#ifdef HAVE_ROCBLAS_64
+// 64-bit APIs
+// non-batched and strided batched
+INSTANTIATE_GER(false, float, int64_t, float*);
+
+// batched
+INSTANTIATE_GER(false, float, int64_t, float* const*);
+#endif /* HAVE_ROCBLAS_64 */
+
+ROCSOLVER_END_NAMESPACE

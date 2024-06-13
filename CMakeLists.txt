@@ -1,5 +1,5 @@
 # ##########################################################################
-# Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -87,7 +87,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.26.0")
+set(VERSION_STRING "3.27.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -127,7 +127,7 @@ endif()
 
 option(BUILD_LIBRARY "Build rocSOLVER library" ON)
 option_opposite(BUILD_LIBRARY SKIP_LIBRARY)
-option(BUILD_WITH_SPARSE "Build rocSOLVER sparse re-factorization and solvers" ON)
+option(BUILD_WITH_SPARSE "Build rocSOLVER sparse re-factorization and solvers" OFF)
 option(BUILD_CLIENTS_TESTS "Build rocSOLVER test client" "${BUILD_TESTING}")
 option(BUILD_CLIENTS_BENCHMARKS "Build rocSOLVER benchmark client" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build rocSOLVER samples" OFF)
@@ -167,7 +167,6 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1102
   )
   set(AMDGPU_TARGETS_INIT
-    gfx803
     gfx900
     gfx906:xnack-
     gfx908:xnack-
@@ -188,14 +187,24 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
-set(rocsolver_pkgdeps "rocblas >= 4.2")
+set(rocblas_minimum 4.1)
+rocm_package_add_dependencies(SHARED_DEPENDS "rocblas >= ${rocblas_minimum}")
+rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocblas-static-devel >= ${rocblas_minimum}")
+rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocblas-static-dev >= ${rocblas_minimum}")
 
-#if(BUILD_WITH_SPARSE)
-#  find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
-#  get_imported_target_location(location roc::rocsparse)
-#  message(STATUS "Found rocSPARSE: ${location}")
-#  list(APPEND rocsolver_pkgdeps "rocsparse >= 2.2")
-#endif()
+if(BUILD_WITH_SPARSE)
+  find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
+  get_imported_target_location(location roc::rocsparse)
+  message(STATUS "Found rocSPARSE: ${location}")
+  set(rocsparse_minimum 2.2)
+  rocm_package_add_dependencies(SHARED_DEPENDS "rocsparse >= ${rocsparse_minimum}")
+  rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocsparse-static-devel >= ${rocsparse_minimum}")
+  rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocsparse-static-dev >= ${rocsparse_minimum}")
+endif()
+
+find_package(rocprim REQUIRED CONFIG PATHS ${ROCM_PATH})
+rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocprim-devel")
+rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocprim-dev")
 
 add_subdirectory(common)
 
@@ -227,9 +236,6 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
   endif()
   add_subdirectory(clients)
 endif()
-
-# Package-specific CPACK vars
-rocm_package_add_dependencies(DEPENDS ${rocsolver_pkgdeps})
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")

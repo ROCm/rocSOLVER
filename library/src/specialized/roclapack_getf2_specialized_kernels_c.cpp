@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,12 +27,25 @@
 
 #include "roclapack_getf2_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GETF2_PANEL(rocblas_float_complex, rocblas_float_complex*);
-INSTANTIATE_GETF2_PANEL(rocblas_float_complex, rocblas_float_complex* const*);
+INSTANTIATE_GETF2_PANEL(rocblas_float_complex, rocblas_int, rocblas_int, rocblas_float_complex*);
+INSTANTIATE_GETF2_PANEL(rocblas_float_complex, rocblas_int, rocblas_int, rocblas_float_complex* const*);
 
-INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_float_complex, rocblas_float_complex*);
-INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_float_complex, rocblas_float_complex* const*);
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_float_complex, rocblas_int, rocblas_float_complex*);
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_float_complex, rocblas_int, rocblas_float_complex* const*);
+
+#ifdef HAVE_ROCBLAS_64
+// 64-bit APIs
+INSTANTIATE_GETF2_PANEL(rocblas_float_complex, int64_t, int64_t, rocblas_float_complex*);
+INSTANTIATE_GETF2_PANEL(rocblas_float_complex, int64_t, int64_t, rocblas_float_complex* const*);
+
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_float_complex, int64_t, rocblas_float_complex*);
+INSTANTIATE_GETF2_SCALE_UPDATE(rocblas_float_complex, int64_t, rocblas_float_complex* const*);
+#endif /* HAVE_ROCBLAS_64 */
+
+ROCSOLVER_END_NAMESPACE

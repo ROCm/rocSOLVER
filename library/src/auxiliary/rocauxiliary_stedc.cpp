@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_stedc.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S>
 rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
@@ -66,22 +68,22 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
     // size for pointers to workspace (batched case)
     size_t size_workArr;
     // size for vector with positions of split blocks
-    size_t size_splits;
+    size_t size_splits_map;
     // size for temporary diagonal and z vectors.
     size_t size_tmpz;
     rocsolver_stedc_getMemorySize<false, T, S>(evect, n, batch_count, &size_work_stack,
                                                &size_tempvect, &size_tempgemm, &size_tmpz,
-                                               &size_splits, &size_workArr);
+                                               &size_splits_map, &size_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work_stack, size_tempvect,
-                                                      size_tempgemm, size_tmpz, size_splits,
+                                                      size_tempgemm, size_tmpz, size_splits_map,
                                                       size_workArr);
 
     // memory workspace allocation
-    void *work_stack, *tempvect, *tempgemm, *tmpz, *splits, *workArr;
+    void *work_stack, *tempvect, *tempgemm, *tmpz, *splits_map, *workArr;
     rocblas_device_malloc mem(handle, size_work_stack, size_tempvect, size_tempgemm, size_tmpz,
-                              size_splits, size_workArr);
+                              size_splits_map, size_workArr);
     if(!mem)
         return rocblas_status_memory_error;
 
@@ -89,15 +91,17 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
     tempvect = mem[1];
     tempgemm = mem[2];
     tmpz = mem[3];
-    splits = mem[4];
+    splits_map = mem[4];
     workArr = mem[5];
 
     // execution
     return rocsolver_stedc_template<false, false, T>(
         handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C, shiftC, ldc, strideC, info,
-        batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz, (rocblas_int*)splits,
+        batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz, (rocblas_int*)splits_map,
         (S**)workArr);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -116,7 +120,7 @@ rocblas_status rocsolver_sstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<float>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<float>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_dstedc(rocblas_handle handle,
@@ -128,7 +132,7 @@ rocblas_status rocsolver_dstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<double>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<double>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_cstedc(rocblas_handle handle,
@@ -140,7 +144,8 @@ rocblas_status rocsolver_cstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc,
+                                                                  info);
 }
 
 rocblas_status rocsolver_zstedc(rocblas_handle handle,
@@ -152,7 +157,8 @@ rocblas_status rocsolver_zstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc,
+                                                                   info);
 }
 
 } // extern C

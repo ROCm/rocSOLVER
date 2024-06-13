@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -59,6 +59,8 @@ typedef enum rocsparse_data_status_
     rocsparse_data_status_invalid_sorting    = 6, /**< Incorrect sorting detected. */
     rocsparse_data_status_invalid_fill       = 7 /**< Incorrect fill mode detected. */
 } rocsparse_data_status;
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 constexpr auto rocsparse2string_status(rocsparse_status status)
 {
@@ -141,17 +143,17 @@ typedef enum rocsparse_diag_type_
     rocsparse_diag_type_unit     = 1 /**< diagonal entries are unity */
 } rocsparse_diag_type;
 
-#define ROCSPARSE_CHECK(fcn)                          \
-    {                                                 \
-        rocsparse_status _status = (fcn);             \
-        if(_status != rocsparse_status_success)       \
-            return rocsparse2rocblas_status(_status); \
+#define ROCSPARSE_CHECK(...)                                     \
+    {                                                            \
+        rocsparse_status _status = (__VA_ARGS__);                \
+        if(_status != rocsparse_status_success)                  \
+            return rocsolver::rocsparse2rocblas_status(_status); \
     }
-#define THROW_IF_ROCSPARSE_ERROR(fcn)                \
-    {                                                \
-        rocsparse_status _status = (fcn);            \
-        if(_status != rocsparse_status_success)      \
-            throw rocsparse2rocblas_status(_status); \
+#define THROW_IF_ROCSPARSE_ERROR(...)                           \
+    {                                                           \
+        rocsparse_status _status = (__VA_ARGS__);               \
+        if(_status != rocsparse_status_success)                 \
+            throw rocsolver::rocsparse2rocblas_status(_status); \
     }
 
 #if defined(rocsparse_ILP64)
@@ -1076,3 +1078,5 @@ inline rocsparse_status rocsparseCall_csrsm_solve(rocsparse_handle sphandle,
     return rocsparse_dcsrsm_solve(sphandle, transA, transB, n, nrhs, nnz, alpha, descr, val, ptr,
                                   ind, B, ldb, info, solve, buffer);
 }
+
+ROCSOLVER_END_NAMESPACE
