@@ -67,23 +67,32 @@ ROCSOLVER_BEGIN_NAMESPACE
 template <typename Fn>
 static bool load_function(void* handle, const char* symbol, Fn& fn)
 {
+#ifdef _WIN32
+    fn = (Fn)(GetProcAddress((HMODULE)handle, symbol));
+    bool err = !fn;
+#else
     fn = (Fn)(dlsym(handle, symbol));
     char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(err)
         fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
 #endif
+#endif /* _WIN32 */
     return !err;
 }
 
 static bool load_rocsparse()
 {
+#ifdef _WIN32
+    void* handle = LoadLibraryW(L"librocsparse.dll");
+#else
     void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
     char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(!handle)
         fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", err);
 #endif
+#endif /* _WIN32 */
     if(!handle)
         return false;
     if(!load_function(handle, "rocsparse_create_handle", rocsolver_rocsparse_create_handle))
