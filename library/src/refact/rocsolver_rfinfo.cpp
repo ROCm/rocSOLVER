@@ -68,7 +68,7 @@ template <typename Fn>
 static bool load_function(void* handle, const char* symbol, Fn& fn)
 {
     fn = (Fn)(dlsym(handle, symbol));
-    char* err = dlerror();
+    char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(err)
         fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
@@ -79,13 +79,13 @@ static bool load_function(void* handle, const char* symbol, Fn& fn)
 static bool load_rocsparse()
 {
     void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
+    char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(!handle)
-        fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", dlerror());
+        fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", err);
 #endif
     if(!handle)
         return false;
-    (void)dlerror(); /* clear errors */
     if(!load_function(handle, "rocsparse_create_handle", rocsolver_rocsparse_create_handle))
         return false;
     if(!load_function(handle, "rocsparse_destroy_handle", rocsolver_rocsparse_destroy_handle))
@@ -196,8 +196,8 @@ static bool load_rocsparse()
 
 static bool try_load_rocsparse()
 {
-    // Function-scope static initialization has been thread-safe since C++11,
-    // so we can take advantage of that to avoid any fancy mutex code.
+    // Function-scope static initialization has been thread-safe since C++11.
+    // There is an implicit mutex guarding the initialization.
     static bool result = load_rocsparse();
     return result;
 }
