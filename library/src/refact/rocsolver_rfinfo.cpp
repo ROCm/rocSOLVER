@@ -60,7 +60,7 @@
             result = rocsolver::rocsparse2rocblas_status(_status); \
             goto error_label;                                      \
         }                                                          \
-    } while(1)
+    } while(0)
 
 ROCSOLVER_BEGIN_NAMESPACE
 
