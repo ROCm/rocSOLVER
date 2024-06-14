@@ -215,9 +215,7 @@ extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocb
 
 #ifndef HAVE_ROCSPARSE
     if(!rocsolver::try_load_rocsparse())
-    {
-        return rocblas_status_internal_error;
-    }
+        return rocblas_status_not_implemented;
 #endif
 
     rocsolver_rfinfo_* impl = new(std::nothrow) rocsolver_rfinfo_{};
