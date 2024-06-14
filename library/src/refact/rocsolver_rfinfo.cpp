@@ -95,109 +95,101 @@ static bool load_rocsparse()
 #endif /* _WIN32 */
     if(!handle)
         return false;
-    if(!load_function(handle, "rocsparse_create_handle", rocsolver_rocsparse_create_handle))
+    if(!load_function(handle, "rocsparse_create_handle", g_sparse_create_handle))
         return false;
-    if(!load_function(handle, "rocsparse_destroy_handle", rocsolver_rocsparse_destroy_handle))
-        return false;
-
-    if(!load_function(handle, "rocsparse_set_stream", rocsolver_rocsparse_set_stream))
-        return false;
-    if(!load_function(handle, "rocsparse_create_mat_descr", rocsolver_rocsparse_create_mat_descr))
-        return false;
-    if(!load_function(handle, "rocsparse_destroy_mat_descr", rocsolver_rocsparse_destroy_mat_descr))
-        return false;
-    if(!load_function(handle, "rocsparse_set_mat_type", rocsolver_rocsparse_set_mat_type))
-        return false;
-    if(!load_function(handle, "rocsparse_set_mat_index_base", rocsolver_rocsparse_set_mat_index_base))
-        return false;
-    if(!load_function(handle, "rocsparse_set_mat_fill_mode", rocsolver_rocsparse_set_mat_fill_mode))
-        return false;
-    if(!load_function(handle, "rocsparse_set_mat_diag_type", rocsolver_rocsparse_set_mat_diag_type))
-        return false;
-    if(!load_function(handle, "rocsparse_create_mat_info", rocsolver_rocsparse_create_mat_info))
-        return false;
-    if(!load_function(handle, "rocsparse_destroy_mat_info", rocsolver_rocsparse_destroy_mat_info))
+    if(!load_function(handle, "rocsparse_destroy_handle", g_sparse_destroy_handle))
         return false;
 
-    if(!load_function(handle, "rocsparse_scsrilu0_buffer_size",
-                      rocsolver_rocsparse_scsrilu0_buffer_size))
+    if(!load_function(handle, "rocsparse_set_stream", g_sparse_set_stream))
         return false;
-    if(!load_function(handle, "rocsparse_dcsrilu0_buffer_size",
-                      rocsolver_rocsparse_dcsrilu0_buffer_size))
+    if(!load_function(handle, "rocsparse_create_mat_descr", g_sparse_create_mat_descr))
         return false;
-    if(!load_function(handle, "rocsparse_ccsrilu0_buffer_size",
-                      rocsolver_rocsparse_ccsrilu0_buffer_size))
+    if(!load_function(handle, "rocsparse_destroy_mat_descr", g_sparse_destroy_mat_descr))
         return false;
-    if(!load_function(handle, "rocsparse_zcsrilu0_buffer_size",
-                      rocsolver_rocsparse_zcsrilu0_buffer_size))
+    if(!load_function(handle, "rocsparse_set_mat_type", g_sparse_set_mat_type))
         return false;
-    if(!load_function(handle, "rocsparse_scsric0_buffer_size",
-                      rocsolver_rocsparse_scsric0_buffer_size))
+    if(!load_function(handle, "rocsparse_set_mat_index_base", g_sparse_set_mat_index_base))
         return false;
-    if(!load_function(handle, "rocsparse_dcsric0_buffer_size",
-                      rocsolver_rocsparse_dcsric0_buffer_size))
+    if(!load_function(handle, "rocsparse_set_mat_fill_mode", g_sparse_set_mat_fill_mode))
         return false;
-    if(!load_function(handle, "rocsparse_ccsric0_buffer_size",
-                      rocsolver_rocsparse_ccsric0_buffer_size))
+    if(!load_function(handle, "rocsparse_set_mat_diag_type", g_sparse_set_mat_diag_type))
         return false;
-    if(!load_function(handle, "rocsparse_zcsric0_buffer_size",
-                      rocsolver_rocsparse_zcsric0_buffer_size))
+    if(!load_function(handle, "rocsparse_create_mat_info", g_sparse_create_mat_info))
         return false;
-    if(!load_function(handle, "rocsparse_scsric0_analysis", rocsolver_rocsparse_scsric0_analysis))
+    if(!load_function(handle, "rocsparse_destroy_mat_info", g_sparse_destroy_mat_info))
         return false;
-    if(!load_function(handle, "rocsparse_dcsric0_analysis", rocsolver_rocsparse_dcsric0_analysis))
+
+    if(!load_function(handle, "rocsparse_scsrilu0_buffer_size", g_sparse_scsrilu0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_ccsric0_analysis", rocsolver_rocsparse_ccsric0_analysis))
+    if(!load_function(handle, "rocsparse_dcsrilu0_buffer_size", g_sparse_dcsrilu0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_zcsric0_analysis", rocsolver_rocsparse_zcsric0_analysis))
+    if(!load_function(handle, "rocsparse_ccsrilu0_buffer_size", g_sparse_ccsrilu0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_scsrsm_analysis", rocsolver_rocsparse_scsrsm_analysis))
+    if(!load_function(handle, "rocsparse_zcsrilu0_buffer_size", g_sparse_zcsrilu0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_dcsrsm_analysis", rocsolver_rocsparse_dcsrsm_analysis))
+    if(!load_function(handle, "rocsparse_scsric0_buffer_size", g_sparse_scsric0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_ccsrsm_analysis", rocsolver_rocsparse_ccsrsm_analysis))
+    if(!load_function(handle, "rocsparse_dcsric0_buffer_size", g_sparse_dcsric0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_zcsrsm_analysis", rocsolver_rocsparse_zcsrsm_analysis))
+    if(!load_function(handle, "rocsparse_ccsric0_buffer_size", g_sparse_ccsric0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_scsrsm_buffer_size", rocsolver_rocsparse_scsrsm_buffer_size))
+    if(!load_function(handle, "rocsparse_zcsric0_buffer_size", g_sparse_zcsric0_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_dcsrsm_buffer_size", rocsolver_rocsparse_dcsrsm_buffer_size))
+    if(!load_function(handle, "rocsparse_scsric0_analysis", g_sparse_scsric0_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_ccsrsm_buffer_size", rocsolver_rocsparse_ccsrsm_buffer_size))
+    if(!load_function(handle, "rocsparse_dcsric0_analysis", g_sparse_dcsric0_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_zcsrsm_buffer_size", rocsolver_rocsparse_zcsrsm_buffer_size))
+    if(!load_function(handle, "rocsparse_ccsric0_analysis", g_sparse_ccsric0_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_scsrsm_solve", rocsolver_rocsparse_scsrsm_solve))
+    if(!load_function(handle, "rocsparse_zcsric0_analysis", g_sparse_zcsric0_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_dcsrsm_solve", rocsolver_rocsparse_dcsrsm_solve))
+    if(!load_function(handle, "rocsparse_scsrsm_analysis", g_sparse_scsrsm_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_ccsrsm_solve", rocsolver_rocsparse_ccsrsm_solve))
+    if(!load_function(handle, "rocsparse_dcsrsm_analysis", g_sparse_dcsrsm_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_zcsrsm_solve", rocsolver_rocsparse_zcsrsm_solve))
+    if(!load_function(handle, "rocsparse_ccsrsm_analysis", g_sparse_ccsrsm_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_scsrilu0_analysis", rocsolver_rocsparse_scsrilu0_analysis))
+    if(!load_function(handle, "rocsparse_zcsrsm_analysis", g_sparse_zcsrsm_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_dcsrilu0_analysis", rocsolver_rocsparse_dcsrilu0_analysis))
+    if(!load_function(handle, "rocsparse_scsrsm_buffer_size", g_sparse_scsrsm_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_ccsrilu0_analysis", rocsolver_rocsparse_ccsrilu0_analysis))
+    if(!load_function(handle, "rocsparse_dcsrsm_buffer_size", g_sparse_dcsrsm_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_zcsrilu0_analysis", rocsolver_rocsparse_zcsrilu0_analysis))
+    if(!load_function(handle, "rocsparse_ccsrsm_buffer_size", g_sparse_ccsrsm_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_scsrilu0", rocsolver_rocsparse_scsrilu0))
+    if(!load_function(handle, "rocsparse_zcsrsm_buffer_size", g_sparse_zcsrsm_buffer_size))
         return false;
-    if(!load_function(handle, "rocsparse_dcsrilu0", rocsolver_rocsparse_dcsrilu0))
+    if(!load_function(handle, "rocsparse_scsrsm_solve", g_sparse_scsrsm_solve))
         return false;
-    if(!load_function(handle, "rocsparse_ccsrilu0", rocsolver_rocsparse_ccsrilu0))
+    if(!load_function(handle, "rocsparse_dcsrsm_solve", g_sparse_dcsrsm_solve))
         return false;
-    if(!load_function(handle, "rocsparse_zcsrilu0", rocsolver_rocsparse_zcsrilu0))
+    if(!load_function(handle, "rocsparse_ccsrsm_solve", g_sparse_ccsrsm_solve))
         return false;
-    if(!load_function(handle, "rocsparse_scsric0", rocsolver_rocsparse_scsric0))
+    if(!load_function(handle, "rocsparse_zcsrsm_solve", g_sparse_zcsrsm_solve))
         return false;
-    if(!load_function(handle, "rocsparse_dcsric0", rocsolver_rocsparse_dcsric0))
+    if(!load_function(handle, "rocsparse_scsrilu0_analysis", g_sparse_scsrilu0_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_ccsric0", rocsolver_rocsparse_ccsric0))
+    if(!load_function(handle, "rocsparse_dcsrilu0_analysis", g_sparse_dcsrilu0_analysis))
         return false;
-    if(!load_function(handle, "rocsparse_zcsric0", rocsolver_rocsparse_zcsric0))
+    if(!load_function(handle, "rocsparse_ccsrilu0_analysis", g_sparse_ccsrilu0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrilu0_analysis", g_sparse_zcsrilu0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_scsrilu0", g_sparse_scsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsrilu0", g_sparse_dcsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsrilu0", g_sparse_ccsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrilu0", g_sparse_zcsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_scsric0", g_sparse_scsric0))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsric0", g_sparse_dcsric0))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsric0", g_sparse_ccsric0))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsric0", g_sparse_zcsric0))
         return false;
 
     return true;
