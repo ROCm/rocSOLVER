@@ -1,4 +1,4 @@
-#undef USE_VT
+#define USE_VT
 
 /****************************************************************************
  * Derived from the BSD3-licensed
@@ -68,6 +68,7 @@ __global__ static void lasr_kernel(char const side,
     const auto nthreads_per_block = hipBlockDim_x;
     const auto nthreads = nblocks * nthreads_per_block;
     const auto tid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    const auto i_start = tid;
     const auto i_inc = nthreads;
     const auto ij_nb = nthreads;
     const auto ij_start = tid;
@@ -78,6 +79,7 @@ __global__ static void lasr_kernel(char const side,
     auto indx2f = [](auto i, auto j, auto lda) -> int64_t {
         assert((1 <= i));
         assert((1 <= lda));
+        assert(i <= lda);
         assert((1 <= j));
 
         return ((i - 1) + (j - 1) * int64_t(lda));
@@ -150,7 +152,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = 1 + tid; i <= n; i += i_inc)
+                    for(I i = 1 + i_start; i <= n; i += i_inc)
                     {
                         const auto temp = A(j + 1, i);
                         A(j + 1, i) = ctemp * temp - stemp * A(j, i);
@@ -182,7 +184,7 @@ __global__ static void lasr_kernel(char const side,
             const auto stemp = s(j);
             if((ctemp != one) || (stemp != zero))
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
+                for(I i = istart + i_start; i <= iend; i += i_inc)
                 {
                     const auto temp = A(j + 1, i);
                     A(j + 1, i) = ctemp * temp - stemp * A(j, i);
@@ -206,7 +208,7 @@ __global__ static void lasr_kernel(char const side,
             {
                 const auto ctemp = c(j - 1);
                 const auto stemp = s(j - 1);
-                for(I i = 1 + tid; i <= n; i += i_inc)
+                for(I i = 1 + i_start; i <= n; i += i_inc)
                 {
                     const auto temp = A(j, i);
                     A(j, i) = ctemp * temp - stemp * A(1, i);
@@ -237,7 +239,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j - 1);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(j, i);
 
@@ -270,7 +272,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(j, i);
                         A(j, i) = stemp * A(m, i) + ctemp * temp;
@@ -302,7 +304,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(j, i);
                         A(j, i) = stemp * A(m, i) + ctemp * temp;
@@ -335,7 +337,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(i, j + 1);
                         A(i, j + 1) = ctemp * temp - stemp * A(i, j);
@@ -368,7 +370,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(i, j + 1);
                         A(i, j + 1) = ctemp * temp - stemp * A(i, j);
@@ -400,7 +402,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j - 1);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(i, j);
 
@@ -434,7 +436,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j - 1);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(i, j);
 
@@ -468,7 +470,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(i, j);
 
@@ -502,7 +504,7 @@ __global__ static void lasr_kernel(char const side,
                 const auto stemp = s(j);
                 if((ctemp != one) || (stemp != zero))
                 {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    for(I i = istart + i_start; i <= iend; i += i_inc)
                     {
                         const auto temp = A(i, j);
                         A(i, j) = stemp * A(i, n) + ctemp * temp;
@@ -1197,10 +1199,10 @@ static void bdsqr_single_template(char uplo,
               S* const ds = dwork + mn_m1;
               HIP_CHECK(hipMemcpyAsync(dc, &c, sizeof(S) * mn_m1, hipMemcpyHostToDevice, stream));
               HIP_CHECK(hipMemcpyAsync(ds, &s, sizeof(S) * mn_m1, hipMemcpyHostToDevice, stream));
-              HIP_CHECK(hipStreamSynchronize(stream));
 
               lasr_template_gpu(side, pivot, direct, m, n, dc, ds, &A, lda, stream);
-              HIP_CHECK(hipStreamSynchronize(stream));
+              // HIP_CHECK(hipStreamSynchronize(stream));
+              HIP_CHECK(hipDeviceSynchronize());
           };
 
     auto abs = [](auto x) { return ((x >= 0) ? x : (-x)); };
@@ -1278,6 +1280,7 @@ static void bdsqr_single_template(char uplo,
         {
             printf("e(%d) = %le\n", i, e(i));
         }
+        fflush(stdout);
     }
 
     info = (!upper) && (!lower) ? -1
@@ -2121,14 +2124,18 @@ L90:
             }
         L150:
             e(ll) = f;
-            /*
-       *           test convergence
-       */
+	       // ----------------
+               // test convergence
+	       // ----------------
             if(abs(e(ll)) <= thresh)
                 e(ll) = zero;
-                /*
-       *           update singular vectors if desired
-       */
+
+
+
+	       // ----------------------------------
+	       // update singular vectors if desired
+	       // ----------------------------------
+
 #ifdef USE_VT
             if(ncvt > 0)
             {
@@ -2209,6 +2216,7 @@ L90:
                     call_lasr(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1), ldc);
                 }
             }
+
         }
     }
     /*
@@ -2364,6 +2372,7 @@ L220:
         {
             printf("e(%d) = %le\n", i, e(i));
         }
+        fflush(stdout);
     }
     return;
     /*
@@ -2503,6 +2512,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         }
     }
 
+        S * dwork = nullptr;
+	HIP_CHECK( hipMalloc( &dwork, sizeof(S)*(4*n)) );
+
     for(I bid = 0; bid < batch_count; bid++)
     {
         std::vector<S> hwork(4 * n);
@@ -2515,7 +2527,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         T* u_ = (nu > 0) ? load_ptr_batch<T>(U, bid, shiftU, strideU) : nullptr;
         T* c_ = (nc > 0) ? load_ptr_batch<T>(C, bid, shiftC, strideC) : nullptr;
         S* work_ = &(hwork[0]);
-        S* dwork = work;
+        // S* dwork = &(work[bid * (4 * n)]);
+
+
         I info = 0;
 
         I nru = nu;
@@ -2612,6 +2626,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
     hD = nullptr;
     HIP_CHECK(hipHostFree(hE));
     hE = nullptr;
+
+    HIP_CHECK( hipFree( dwork ));
+    dwork = nullptr;
 
     if(idebug >= 1)
     {
