@@ -2401,28 +2401,27 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
 
     S* hD = nullptr;
     S* hE = nullptr;
-    HIP_CHECK(hipHostMalloc(&hD, (sizeof(S) * std::max(1, batch_count)) * n));
-    // ------------------------------------------------------------------
-    // Need to double checking whether array E is length n or length (n-1)
-    // ------------------------------------------------------------------
-    bool const use_single_copy_for_E = (batch_count == 1) || (strideE == (n - 1)) || (strideE == (n));
 
-    size_t E_size = (batch_count == 1) || (strideE == (n - 1)) ? (n - 1) : n;
+    size_t const E_size = (n - 1);
+    HIP_CHECK(hipHostMalloc(&hD, (sizeof(S) * std::max(1, batch_count)) * n));
     HIP_CHECK(hipHostMalloc(&hE, (sizeof(S) * std::max(1, batch_count)) * E_size));
 
     // ----------------------------------------------------
     // copy info_array[] on device to linfo_array[] on host
     // ----------------------------------------------------
     I* linfo_array = nullptr;
-    HIP_CHECK(hipHostMalloc(&linfo_array, sizeof(I) * batch_count));
+    HIP_CHECK(hipHostMalloc(&linfo_array, sizeof(I) * std::max(1, batch_count)));
     {
-        void* dst = &(linfo_array[0]);
-        void* src = info_array;
-        size_t nbytes = sizeof(I) * batch_count;
+        void* const dst = &(linfo_array[0]);
+        void* const src = &(info_array[0]);
+        size_t const nbytes = sizeof(I) * batch_count;
         hipMemcpyKind const kind = hipMemcpyDeviceToHost;
 
         HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, kind, stream));
     }
+
+    S* hwork = nullptr;
+    HIP_CHECK(hipHostMalloc(&hwork, sizeof(S) * (4 * n)));
 
     // -------------------------------------------------
     // transfer arrays D(:) and E(:) from Device to Host
@@ -2450,16 +2449,6 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         }
     }
 
-    if(use_single_copy_for_E)
-    {
-        void* const dst = (void*)&(hE[0]);
-        void* const src = (void*)&(E[0]);
-        size_t const sizeBytes = sizeof(S) * E_size * batch_count;
-        hipMemcpyKind const kind = hipMemcpyDeviceToHost;
-
-        HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
-    }
-    else
     {
         for(I bid = 0; bid < batch_count; bid++)
         {
@@ -2497,7 +2486,17 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
 
     for(I bid = 0; bid < batch_count; bid++)
     {
-        std::vector<S> hwork(4 * n);
+        if(idebug >= 1)
+        {
+            printf("on entry: linfo_array[%d] = %d\n", bid, linfo_array[bid]);
+        }
+
+        if(linfo_array[bid] != 0)
+        {
+            continue;
+        };
+
+        // std::vector<S> hwork(4 * n);
 
         char uplo = (uplo_in == rocblas_fill_lower) ? 'L' : 'U';
         S* d_ = &(hD[bid * n]);
@@ -2559,6 +2558,18 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
                                            work_, info, dwork, stream);
         }
 
+        if(info == 0)
+        {
+            // ----------------------------
+            // explicitly zero out "E" array
+            // ----------------------------
+            S const zero = S(0);
+            for(I i = 0; i < (n - 1); i++)
+            {
+                e_[i] = zero;
+            }
+        }
+
         if(linfo_array[bid] == 0)
         {
             linfo_array[bid] = info;
@@ -2590,28 +2601,32 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         }
     }
 
-    if(use_single_copy_for_E)
-    {
-        void* const src = (void*)&(hE[0]);
-        void* const dst = (void*)E;
-        size_t const sizeBytes = sizeof(S) * E_size * batch_count;
-        hipMemcpyKind const kind = hipMemcpyHostToDevice;
-
-        HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
-    }
-    else
     {
         for(I bid = 0; bid < batch_count; bid++)
         {
             void* const src = (void*)&(hE[bid * E_size]);
-            void* const dst = (void*)(E + bid * strideE);
+            void* const dst = (void*)&(E[bid * strideE]);
             size_t const sizeBytes = sizeof(S) * E_size;
             hipMemcpyKind const kind = hipMemcpyHostToDevice;
             HIP_CHECK(hipMemcpyAsync(dst, src, sizeBytes, kind, stream));
         }
     }
 
+    {
+        // ------------------------------------------------------
+        // copy linfo_array[] from host to info_array[] on device
+        // ------------------------------------------------------
+
+        void* const src = (void*)&(linfo_array[0]);
+        void* const dst = (void*)&(info_array[0]);
+        size_t const nbytes = sizeof(I) * batch_count;
+        hipMemcpyKind const kind = hipMemcpyHostToDevice;
+
+        HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+    }
+
     HIP_CHECK(hipStreamSynchronize(stream));
+    HIP_CHECK(hipDeviceSynchronize());
 
     if(idebug >= 2)
     {
@@ -2626,14 +2641,6 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         }
     }
 
-    HIP_CHECK(hipHostFree(hD));
-    hD = nullptr;
-    HIP_CHECK(hipHostFree(hE));
-    hE = nullptr;
-
-    HIP_CHECK(hipFree(dwork));
-    dwork = nullptr;
-
     if(idebug >= 1)
     {
         for(auto bid = 0; bid < batch_count; bid++)
@@ -2642,19 +2649,21 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         }
     }
 
-    {
-        // ------------------------------------------------------
-        // copy linfo_array[] from host to info_array[] on device
-        // ------------------------------------------------------
+    // ----------------------
+    // free allocated storage
+    // ----------------------
 
-        void* dst = (void*)info_array;
-        void* src = (void*)&(linfo_array[0]);
-        size_t nbytes = sizeof(I) * batch_count;
-        hipMemcpyKind const kind = hipMemcpyHostToDevice;
+    HIP_CHECK(hipHostFree(hwork));
+    hwork = nullptr;
 
-        HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-        HIP_CHECK(hipStreamSynchronize(stream));
-    }
+    HIP_CHECK(hipHostFree(hD));
+    hD = nullptr;
+
+    HIP_CHECK(hipHostFree(hE));
+    hE = nullptr;
+
+    HIP_CHECK(hipFree(dwork));
+    dwork = nullptr;
 
     HIP_CHECK(hipHostFree(linfo_array));
     linfo_array = nullptr;
