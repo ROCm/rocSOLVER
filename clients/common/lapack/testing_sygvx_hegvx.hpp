@@ -256,6 +256,7 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
         rocblas_int ldu = n;
         host_strided_batch_vector<T> U(n * n, 1, n * n, bc);
         rocblas_init<T>(hA, true);
+        rocblas_init<T>(hB, true);
         rocblas_init<T>(U, true);
 
         for(rocblas_int b = 0; b < bc; ++b)
@@ -424,6 +425,16 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     sygvx_hegvx_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc, hA,
                                         hB, A, B, true, singular);
 
+    //
+    // Compute input data hash (combine matrices A and B)
+    //
+    std::size_t input_hash = 0;
+    for (rocblas_int b = 0; b < bc; ++b)
+    {
+        input_hash = hash_combine(input_hash, hA[b], lda * n);
+        input_hash = hash_combine(input_hash, hB[b], ldb * n);
+    }
+
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_sygvx_hegvx(STRIDED, handle, itype, evect, erange, uplo, n,
@@ -472,6 +483,51 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
             *max_err += 1;
     }
 
+    //
+    // Compute output hashes
+    //
+    std::size_t lapack_eigenvalues_hash = 0;
+    std::size_t rocsolver_eigenvalues_hash = 0;
+    std::size_t lapack_eigenvectors_hash = 0;
+    std::size_t rocsolver_eigenvectors_hash = 0;
+
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        if(hInfo[b][0] == 0)
+        {
+            lapack_eigenvalues_hash = hash_combine(lapack_eigenvalues_hash, hW[b], hNev[b][0]);
+            rocsolver_eigenvalues_hash = hash_combine(rocsolver_eigenvalues_hash, hWRes[b], hNevRes[b][0]);
+
+            if(evect == rocblas_evect_original)
+            {
+                for(int j = 0; j < hNev[b][0]; j++)
+                {
+                    lapack_eigenvectors_hash = hash_combine(lapack_eigenvectors_hash, hZ[b] + j * ldz, ldz);
+                }
+
+                for(int j = 0; j < hNevRes[b][0]; j++)
+                {
+                    rocsolver_eigenvectors_hash = hash_combine(rocsolver_eigenvectors_hash, hZRes[b] + j * ldz, ldz);
+                }
+            }
+        }
+    }
+
+    //
+    // Print hashes
+    //
+    std::cout << "[          ] " << "Input matrix hash: " << input_hash << std::endl << std::flush;
+    std::cout << "[          ] " << "Rocsolver eigenvalues hash: " << rocsolver_eigenvalues_hash << std::endl << std::flush;
+    std::cout << "[          ] " << "LAPACK eigenvalues hash: " << lapack_eigenvalues_hash << std::endl << std::flush;
+    if (evect == rocblas_evect_original)
+    {
+        std::cout << "[          ] " << "Rocsolver eigenvectors hash: " << rocsolver_eigenvectors_hash << std::endl << std::flush;
+        std::cout << "[          ] " << "LAPACK eigenvectors hash: " << lapack_eigenvectors_hash << std::endl << std::flush;
+    }
+
+    //
+    // Compute errors
+    //
     double err;
 
     for(rocblas_int b = 0; b < bc; ++b)

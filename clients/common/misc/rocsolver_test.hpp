@@ -54,9 +54,9 @@ namespace fs = std::experimental::filesystem;
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol)                                                       \
     {                                                                                                 \
         ASSERT_LE((max_error), (tol)*get_epsilon<T>());                                               \
-        std::cout << "\u001b[32m[          ] \u001b[0m" << "Normalized error <= \u001b[32m"  << (     \
+        std::cout << "[          ] " << "Error / (K * n * ulp) <= "  << (                             \
                 (tol > get_safemin<T>()) ? max_error/(tol * get_epsilon<T>()) : get_safemin<T>()      \
-        ) << "\u001b[0m" << std::endl << std::flush;                                                  \
+        ) << " [number K is test dependent]" << std::endl << std::flush;  \
     }                                                                                                 \
 
 #else // ROCSOLVER_CLIENTS_BENCH
@@ -165,3 +165,206 @@ inline std::ostream& operator<<(std::ostream& os, printable_char x)
 
 // location of the sparse data directory for the re-factorization tests
 fs::path get_sparse_data_dir();
+
+// Hash arrays following the spirit of boost::hash_combine
+template<typename T>
+std::size_t hash_combine(std::size_t seed, T value)
+{
+    using S = decltype(std::real(T{}));
+    auto hasher = std::hash<S>();
+
+    if constexpr (rocblas_is_complex<T>)
+    {
+        seed ^= hasher(std::real(value)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= hasher(std::imag(value)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    else
+    {
+        seed ^= hasher(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+
+    return seed;
+}
+
+template<typename T>
+std::size_t hash_combine(std::size_t seed, T const *array, std::size_t array_size)
+{
+    std::size_t hash = hash_combine(seed, array_size);
+    for (std::size_t i = 0; i < array_size; ++i)
+    {
+        hash = hash_combine(hash, array[i]);
+    }
+
+    return hash;
+}
+
+template<typename T>
+std::size_t hash_combine(std::size_t seed, const std::vector<T>& array)
+{
+    return hash_combine(seed, array.data(), array.size());
+}
+
+#include "common/misc/lapack_host_reference.hpp"
+
+// Compute eigenvalues and eigenvectors of A with lapack_*syev
+template<typename T, typename S>
+bool eig(const rocblas_fill uplo, T const *A, const int n, T *U, S *D)
+{
+    if (A == nullptr || n < 1)
+    {
+        return false;
+    }
+    [[maybe_unused]] auto mptr = memcpy(U, A, n * n * sizeof(T));
+
+    int info;
+    int worksize = n * n;
+    std::vector<T> work(worksize, T(0.));
+    int worksize_real = n * n;
+    std::vector<S> work_real(worksize_real, S(0.));
+    cpu_syev_heev(rocblas_evect_original, uplo, n, U, n, D, work.data(), worksize, work_real.data(), worksize_real, &info);
+
+    return (info == 0);
+}
+
+template<typename T, typename S>
+bool eig(const rocblas_fill uplo, T const *A, const int n, std::vector<T> &U, std::vector<S> &D)
+{
+    if (A == nullptr || n < 1)
+    {
+        return false;
+    }
+
+    D.resize(n, S(0.));
+    U.resize(n * n, T(0.));
+
+    return eig(uplo, A, n, D.data(), U.data());
+}
+
+// Form matrix Y = X * D * X^*, where X^* is the adjoint of X
+// X is nrowsX x dimD; D is dimD x dimD; Y is nrowsX x nrowsX
+template<typename T, typename S>
+bool XDXh(T const *X, const int nrowsX, S const *D, const int dimD, T *Y)
+{
+    if (X == nullptr || D == nullptr)
+    {
+        return false;
+    }
+
+    const int ldX = nrowsX;
+    constexpr bool T_is_complex = rocblas_is_complex<T>;
+    auto rocblas_operation_adjoint = T_is_complex ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
+
+    std::vector<T> W(dimD * dimD, T(0.)), Z(nrowsX * dimD, T(0.));
+    const int ldZ = nrowsX;
+    const int ldU = dimD;
+    for (int i = 0; i < dimD; ++i)
+    {
+        W[i + i * dimD] = D[i];
+    }
+
+    cpu_gemm(rocblas_operation_none, rocblas_operation_none, nrowsX, dimD, dimD, T(1.), const_cast<T*>(X), nrowsX, W.data(), dimD, T(0.), Z.data(), dimD);
+    cpu_gemm(rocblas_operation_none, rocblas_operation_adjoint, nrowsX, dimD, nrowsX, T(1.), Z.data(), nrowsX, const_cast<T*>(X), dimD, T(0.), Y, dimD);
+    return true;
+}
+
+template<typename T, typename S>
+bool XDXh(T const *X, const int nrows, S const *D, const int dimD, std::vector<T> &Y)
+{
+    Y.resize(dimD * dimD, T(0.));
+    return XDXh(X, nrows, D, dimD, Y.data());
+}
+
+// Form matrix Y = X^* * X - I, where X^* is the adjoint of X
+// X is nrows x ncols; Y is nrows x nrows
+template<typename T>
+bool XhXminusI(T const *X, const int nrows, const int ncols, std::vector<T> &Y)
+{
+    if (X == nullptr)
+    {
+        return false;
+    }
+
+    auto rocblas_operation_adjoint = rocblas_is_complex<T> ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
+    Y.resize(ncols * ncols, T(0.));
+    cpu_gemm(rocblas_operation_adjoint, rocblas_operation_none, ncols, nrows, ncols, T(1.), X, ncols, X, nrows, T(0.), Y.data(), ncols);
+
+    for (int i = 0; i < ncols; ++i)
+    {
+        Y[i + i * ncols] -= T(1.);
+    }
+
+    return true;
+}
+
+//
+// Given inputs X (size nrowsX x dimD) and D (size dimD):
+//
+// Form matrix Y = U * diag(D) * U^*, where
+// - U is the unitary matrix obtained from the QR decomposition of X,
+// - U^* is the adjoint of U.
+//
+// Output Y is nrowsU x nrowsU
+//
+template<typename T, typename S>
+bool UDUh(T const *X, const int nrowsX, S const *D, const int dimD, T *Y)
+{
+    const int ncolsX = dimD;
+    const int ldX = nrowsX;
+    const int m = std::max(nrowsX, ncolsX);
+
+    int info;
+    int worksize = 1;
+    std::vector<T> work(worksize, T(0.)); // lapack workspace
+    std::vector<T> tau(m); // scalar factors of geqrf reflectors
+    auto rocblas_operation_adjoint = rocblas_is_complex<T> ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
+
+    //
+    // Create diagonal matrix W = diag(D)
+    //
+    const int dimW = dimD;
+    std::vector<T> W(dimW * dimW, T(0.)), Z(dimW * dimW, T(0.));
+    for (int i = 0; i < dimW; ++i)
+    {
+        W[i + i * dimW] = D[i];
+    }
+
+    //
+    // Extract unitary matrix
+    //
+    std::vector<T> U(nrowsX * ncolsX, T(0.));
+    { [[maybe_unused]] auto mptr = memcpy(U.data(), X, nrowsX * ncolsX * sizeof(T)); }
+
+    // Pick something that is big enough for work size of geqrf
+    worksize = m * m;
+    work.resize(worksize, T(0.));
+    const int nrowsU = nrowsX;
+    const int ncolsU = ncolsX;
+    const int ldU = ldX;
+    cpu_geqrf<T>(nrowsU, ncolsU, U.data(), ldX, tau.data(), work.data(), worksize);
+
+    /* // Infer work size of [or,un]mqr */
+    /* worksize = -1; */
+    /* cpu_ormqr_unmqr<T>(rocblas_side_right, rocblas_operation_adjoint, nrowsU, ncolsU, dimW, U.data(), ldU, tau.data(), W.data(), dimW, work.data(), worksize, &info); */
+    info = -1;
+
+    if (info == 0)
+    {
+        // Use LAPACK's suggested work size
+        worksize = std::real(work[0]);
+    }
+    else
+    {
+        // Pick something that is big enough for work size
+        worksize = m * m;
+    }
+    work.resize(worksize, T(0.));
+
+    //
+    // Create matrix: Y = U * diag(D) * U^*
+    //
+    cpu_ormqr_unmqr<T>(rocblas_side_left, rocblas_operation_none, nrowsU, ncolsU, dimW, U.data(), ldU, tau.data(), W.data(), dimW, work.data(), worksize, &info);
+    cpu_ormqr_unmqr<T>(rocblas_side_right, rocblas_operation_adjoint, nrowsU, ncolsU, dimW, U.data(), ldU, tau.data(), W.data(), dimW, work.data(), worksize, &info);
+    { [[maybe_unused]] auto mptr = memcpy(Y, W.data(), W.size() * sizeof(T)); }
+
+    return true;
+}
