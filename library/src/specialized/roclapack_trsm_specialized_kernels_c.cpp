@@ -27,6 +27,8 @@
 
 #include "roclapack_trsm_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
@@ -43,6 +45,7 @@ INSTANTIATE_TRSM_MEM(1, 0, rocblas_float_complex, rocblas_int);
 INSTANTIATE_TRSM_LOWER(1, 0, rocblas_float_complex, rocblas_int, rocblas_float_complex* const*);
 INSTANTIATE_TRSM_UPPER(1, 0, rocblas_float_complex, rocblas_int, rocblas_float_complex* const*);
 
+#ifdef HAVE_ROCBLAS_64
 // 64-bit
 INSTANTIATE_TRSM_MEM(0, 0, rocblas_float_complex, int64_t);
 INSTANTIATE_TRSM_LOWER(0, 0, rocblas_float_complex, int64_t, rocblas_float_complex*);
@@ -55,3 +58,6 @@ INSTANTIATE_TRSM_UPPER(0, 1, rocblas_float_complex, int64_t, rocblas_float_compl
 INSTANTIATE_TRSM_MEM(1, 0, rocblas_float_complex, int64_t);
 INSTANTIATE_TRSM_LOWER(1, 0, rocblas_float_complex, int64_t, rocblas_float_complex* const*);
 INSTANTIATE_TRSM_UPPER(1, 0, rocblas_float_complex, int64_t, rocblas_float_complex* const*);
+#endif /* HAVE_ROCBLAS_64 */
+
+ROCSOLVER_END_NAMESPACE

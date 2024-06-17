@@ -27,6 +27,8 @@
 
 #include "roclapack_syevdx_heevdx_inplace.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    syevdx/heevdx_inplace is not intended for inclusion in the public API. It
@@ -80,27 +82,27 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_impl(rocblas_handle handle,
     // size for constants in rocblas calls
     size_t size_scalars;
     // size of reusable workspaces (for calling SYTRD/HETRD, STEBZ, STEIN, and ORMTR/UNMTR)
-    size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6;
+    size_t size_work1, size_work2, size_work3, size_work4, size_work5, size_work6_ifail;
     // size for temporary arrays
     size_t size_D, size_E, size_iblock, size_isplit_map, size_tau, size_nev, size_nsplit_workArr;
 
     rocsolver_syevdx_heevdx_inplace_getMemorySize<false, T, S>(
         evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
-        &size_work4, &size_work5, &size_work6, &size_D, &size_E, &size_iblock, &size_isplit_map,
-        &size_tau, &size_nev, &size_nsplit_workArr);
+        &size_work4, &size_work5, &size_work6_ifail, &size_D, &size_E, &size_iblock,
+        &size_isplit_map, &size_tau, &size_nev, &size_nsplit_workArr);
 
     if(rocblas_is_device_memory_size_query(handle))
-        return rocblas_set_optimal_device_memory_size(handle, size_scalars, size_work1, size_work2,
-                                                      size_work3, size_work4, size_work5, size_work6,
-                                                      size_D, size_E, size_iblock, size_isplit_map,
-                                                      size_tau, size_nev, size_nsplit_workArr);
+        return rocblas_set_optimal_device_memory_size(
+            handle, size_scalars, size_work1, size_work2, size_work3, size_work4, size_work5,
+            size_work6_ifail, size_D, size_E, size_iblock, size_isplit_map, size_tau, size_nev,
+            size_nsplit_workArr);
 
     // memory workspace allocation
-    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6, *D, *E, *iblock, *isplit_map,
-        *tau, *d_nev, *nsplit_workArr;
+    void *scalars, *work1, *work2, *work3, *work4, *work5, *work6_ifail, *D, *E, *iblock,
+        *isplit_map, *tau, *d_nev, *nsplit_workArr;
     rocblas_device_malloc mem(handle, size_scalars, size_work1, size_work2, size_work3, size_work4,
-                              size_work5, size_work6, size_D, size_E, size_iblock, size_isplit_map,
-                              size_tau, size_nev, size_nsplit_workArr);
+                              size_work5, size_work6_ifail, size_D, size_E, size_iblock,
+                              size_isplit_map, size_tau, size_nev, size_nsplit_workArr);
 
     if(!mem)
         return rocblas_status_memory_error;
@@ -111,7 +113,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_impl(rocblas_handle handle,
     work3 = mem[3];
     work4 = mem[4];
     work5 = mem[5];
-    work6 = mem[6];
+    work6_ifail = mem[6];
     D = mem[7];
     E = mem[8];
     iblock = mem[9];
@@ -125,10 +127,12 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_impl(rocblas_handle handle,
     // execution
     return rocsolver_syevdx_heevdx_inplace_template<false, false, T>(
         handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, abstol, h_nev, W,
-        strideW, info, batch_count, (T*)scalars, work1, work2, work3, work4, work5, work6, (S*)D,
-        (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit_map, (T*)tau, (rocblas_int*)d_nev,
-        nsplit_workArr);
+        strideW, info, batch_count, (T*)scalars, work1, work2, work3, work4, work5,
+        (rocblas_int*)work6_ifail, (S*)D, (S*)E, (rocblas_int*)iblock, (rocblas_int*)isplit_map,
+        (T*)tau, (rocblas_int*)d_nev, nsplit_workArr);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -154,8 +158,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ssyevdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<float>(handle, evect, erange, uplo, n, A, lda, vl,
-                                                       vu, il, iu, abstol, h_nev, W, info);
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<float>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_inplace(rocblas_handle handle,
@@ -174,8 +178,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dsyevdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<double>(handle, evect, erange, uplo, n, A, lda, vl,
-                                                        vu, il, iu, abstol, h_nev, W, info);
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<double>(
+        handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdx_inplace(rocblas_handle handle,
@@ -194,7 +198,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cheevdx_inplace(rocblas_handle handle,
                                                           float* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<rocblas_float_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 
@@ -214,7 +218,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zheevdx_inplace(rocblas_handle handle,
                                                           double* W,
                                                           rocblas_int* info)
 {
-    return rocsolver_syevdx_heevdx_inplace_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_syevdx_heevdx_inplace_impl<rocblas_double_complex>(
         handle, evect, erange, uplo, n, A, lda, vl, vu, il, iu, abstol, h_nev, W, info);
 }
 

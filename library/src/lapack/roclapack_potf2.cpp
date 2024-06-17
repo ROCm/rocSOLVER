@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_potf2.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_potf2_impl(rocblas_handle handle,
@@ -82,6 +84,8 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle,
                                        (T*)scalars, (T*)work, (T*)pivots);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -97,7 +101,7 @@ rocblas_status rocsolver_spotf2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potf2_impl<float>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potf2_impl<float>(handle, uplo, n, A, lda, info);
 }
 
 rocblas_status rocsolver_dpotf2(rocblas_handle handle,
@@ -107,7 +111,7 @@ rocblas_status rocsolver_dpotf2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potf2_impl<double>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potf2_impl<double>(handle, uplo, n, A, lda, info);
 }
 
 rocblas_status rocsolver_cpotf2(rocblas_handle handle,
@@ -117,7 +121,7 @@ rocblas_status rocsolver_cpotf2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potf2_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potf2_impl<rocblas_float_complex>(handle, uplo, n, A, lda, info);
 }
 
 rocblas_status rocsolver_zpotf2(rocblas_handle handle,
@@ -127,6 +131,6 @@ rocblas_status rocsolver_zpotf2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_int* info)
 {
-    return rocsolver_potf2_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info);
+    return rocsolver::rocsolver_potf2_impl<rocblas_double_complex>(handle, uplo, n, A, lda, info);
 }
 }

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_syevj_heevj.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S, typename U>
 rocblas_status rocsolver_syevj_heevj_impl(rocblas_handle handle,
@@ -97,6 +99,8 @@ rocblas_status rocsolver_syevj_heevj_impl(rocblas_handle handle,
         (rocblas_int*)bottom, (rocblas_int*)completed);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -119,8 +123,8 @@ rocblas_status rocsolver_ssyevj(rocblas_handle handle,
                                 float* W,
                                 rocblas_int* info)
 {
-    return rocsolver_syevj_heevj_impl<float>(handle, esort, evect, uplo, n, A, lda, abstol,
-                                             residual, max_sweeps, n_sweeps, W, info);
+    return rocsolver::rocsolver_syevj_heevj_impl<float>(
+        handle, esort, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, info);
 }
 
 rocblas_status rocsolver_dsyevj(rocblas_handle handle,
@@ -137,8 +141,8 @@ rocblas_status rocsolver_dsyevj(rocblas_handle handle,
                                 double* W,
                                 rocblas_int* info)
 {
-    return rocsolver_syevj_heevj_impl<double>(handle, esort, evect, uplo, n, A, lda, abstol,
-                                              residual, max_sweeps, n_sweeps, W, info);
+    return rocsolver::rocsolver_syevj_heevj_impl<double>(
+        handle, esort, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, info);
 }
 
 rocblas_status rocsolver_cheevj(rocblas_handle handle,
@@ -155,7 +159,7 @@ rocblas_status rocsolver_cheevj(rocblas_handle handle,
                                 float* W,
                                 rocblas_int* info)
 {
-    return rocsolver_syevj_heevj_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_syevj_heevj_impl<rocblas_float_complex>(
         handle, esort, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, info);
 }
 
@@ -173,7 +177,7 @@ rocblas_status rocsolver_zheevj(rocblas_handle handle,
                                 double* W,
                                 rocblas_int* info)
 {
-    return rocsolver_syevj_heevj_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_syevj_heevj_impl<rocblas_double_complex>(
         handle, esort, evect, uplo, n, A, lda, abstol, residual, max_sweeps, n_sweeps, W, info);
 }
 

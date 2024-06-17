@@ -39,6 +39,8 @@
 #include "roclapack_sygv_hegv.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <bool BATCHED, bool STRIDED, typename T, typename S>
 void rocsolver_sygvj_hegvj_getMemorySize(const rocblas_eform itype,
                                          const rocblas_evect evect,
@@ -295,3 +297,5 @@ rocblas_status rocsolver_sygvj_hegvj_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

@@ -37,6 +37,213 @@
 #include "rocblas/internal/rocblas_device_malloc.hpp"
 #include "rocsolver_logger.hpp"
 
+#ifndef HAVE_ROCBLAS_64
+#if ROCBLAS_VERSION_MAJOR > 4 || (ROCBLAS_VERSION_MAJOR == 4 && ROCBLAS_VERSION_MINOR >= 2)
+#define HAVE_ROCBLAS_64 1
+#endif
+#endif
+
+// These function templates help to provide compatibility with older versions
+// of rocblas. We declare these function templates only if rocBLAS does not,
+// and we delete them so that it is a compile-time error if they are used.
+// The calls to these functions are guarded by if constexpr, but they still
+// need to be declared even if they're only used in the branch not taken.
+#ifndef HAVE_ROCBLAS_64
+// scal
+template <typename T, typename Ta>
+rocblas_status rocblas_internal_scal_template_64(rocblas_handle,
+                                                 int64_t,
+                                                 const Ta*,
+                                                 rocblas_stride,
+                                                 T*,
+                                                 rocblas_stride,
+                                                 int64_t,
+                                                 rocblas_stride,
+                                                 int64_t)
+    = delete;
+template <typename T, typename Ta>
+rocblas_status rocblas_internal_scal_batched_template_64(rocblas_handle,
+                                                         int64_t,
+                                                         const Ta*,
+                                                         rocblas_stride,
+                                                         T* const*,
+                                                         rocblas_stride,
+                                                         int64_t,
+                                                         rocblas_stride,
+                                                         int64_t)
+    = delete;
+// ger / gerc
+template <typename T>
+rocblas_status rocblas_internal_ger_template_64(rocblas_handle,
+                                                int64_t,
+                                                int64_t,
+                                                const T*,
+                                                rocblas_stride,
+                                                const T*,
+                                                rocblas_stride,
+                                                int64_t,
+                                                rocblas_stride,
+                                                const T*,
+                                                rocblas_stride,
+                                                int64_t,
+                                                rocblas_stride,
+                                                T*,
+                                                rocblas_stride,
+                                                int64_t,
+                                                rocblas_stride,
+                                                int64_t)
+    = delete;
+template <typename T>
+rocblas_status rocblas_internal_gerc_template_64(rocblas_handle,
+                                                 int64_t,
+                                                 int64_t,
+                                                 const T*,
+                                                 rocblas_stride,
+                                                 const T*,
+                                                 rocblas_stride,
+                                                 int64_t,
+                                                 rocblas_stride,
+                                                 const T*,
+                                                 rocblas_stride,
+                                                 int64_t,
+                                                 rocblas_stride,
+                                                 T*,
+                                                 rocblas_stride,
+                                                 int64_t,
+                                                 rocblas_stride,
+                                                 int64_t)
+    = delete;
+template <typename T>
+rocblas_status rocblas_internal_ger_batched_template_64(rocblas_handle,
+                                                        int64_t,
+                                                        int64_t,
+                                                        const T*,
+                                                        rocblas_stride,
+                                                        const T* const*,
+                                                        rocblas_stride,
+                                                        int64_t,
+                                                        rocblas_stride,
+                                                        const T* const*,
+                                                        rocblas_stride,
+                                                        int64_t,
+                                                        rocblas_stride,
+                                                        T* const*,
+                                                        rocblas_stride,
+                                                        int64_t,
+                                                        rocblas_stride,
+                                                        int64_t)
+    = delete;
+template <typename T>
+rocblas_status rocblas_internal_gerc_batched_template_64(rocblas_handle,
+                                                         int64_t,
+                                                         int64_t,
+                                                         const T*,
+                                                         rocblas_stride,
+                                                         const T* const*,
+                                                         rocblas_stride,
+                                                         int64_t,
+                                                         rocblas_stride,
+                                                         const T* const*,
+                                                         rocblas_stride,
+                                                         int64_t,
+                                                         rocblas_stride,
+                                                         T* const*,
+                                                         rocblas_stride,
+                                                         int64_t,
+                                                         rocblas_stride,
+                                                         int64_t)
+    = delete;
+// trsm
+template <typename T>
+rocblas_status rocblas_internal_trsm_workspace_size_64(rocblas_side,
+                                                       rocblas_operation,
+                                                       int64_t,
+                                                       int64_t,
+                                                       int64_t,
+                                                       int64_t,
+                                                       int64_t,
+                                                       int64_t,
+                                                       size_t*,
+                                                       size_t*,
+                                                       size_t*,
+                                                       size_t*,
+                                                       size_t*)
+    = delete;
+template <typename T>
+rocblas_status rocblas_internal_trsm_batched_workspace_size_64(rocblas_side,
+                                                               rocblas_operation,
+                                                               int64_t,
+                                                               int64_t,
+                                                               int64_t,
+                                                               int64_t,
+                                                               int64_t,
+                                                               int64_t,
+                                                               size_t*,
+                                                               size_t*,
+                                                               size_t*,
+                                                               size_t*,
+                                                               size_t*)
+    = delete;
+template <typename T>
+rocblas_status rocblas_internal_trsm_template_64(rocblas_handle,
+                                                 rocblas_side,
+                                                 rocblas_fill,
+                                                 rocblas_operation,
+                                                 rocblas_diagonal,
+                                                 int64_t,
+                                                 int64_t,
+                                                 const T*,
+                                                 const T*,
+                                                 rocblas_stride,
+                                                 int64_t,
+                                                 rocblas_stride,
+                                                 T*,
+                                                 rocblas_stride,
+                                                 int64_t,
+                                                 rocblas_stride,
+                                                 int64_t,
+                                                 bool,
+                                                 void*,
+                                                 void*,
+                                                 void* invA = nullptr,
+                                                 void* invAarr = nullptr,
+                                                 const T* supplied_invA = nullptr,
+                                                 int64_t supplied_invA_size_64 = 0,
+                                                 rocblas_stride offset_invA = 0,
+                                                 rocblas_stride stride_invA = 0)
+    = delete;
+template <typename T>
+rocblas_status rocblas_internal_trsm_batched_template_64(rocblas_handle,
+                                                         rocblas_side,
+                                                         rocblas_fill,
+                                                         rocblas_operation,
+                                                         rocblas_diagonal,
+                                                         int64_t,
+                                                         int64_t,
+                                                         const T*,
+                                                         const T* const*,
+                                                         rocblas_stride,
+                                                         int64_t,
+                                                         rocblas_stride,
+                                                         T* const*,
+                                                         rocblas_stride,
+                                                         int64_t,
+                                                         rocblas_stride,
+                                                         int64_t,
+                                                         bool,
+                                                         void*,
+                                                         void*,
+                                                         void* invA = nullptr,
+                                                         void* invAarr = nullptr,
+                                                         const T* const* supplied_invA = nullptr,
+                                                         int64_t supplied_invA_size_64 = 0,
+                                                         rocblas_stride offset_invA = 0,
+                                                         rocblas_stride stride_invA = 0)
+    = delete;
+#endif
+
+ROCSOLVER_BEGIN_NAMESPACE
+
 constexpr auto rocblas2string_status(rocblas_status status)
 {
     switch(status)
@@ -2262,3 +2469,5 @@ rocblas_status rocblasCall_trtri(rocblas_handle handle,
         handle, uplo, diag, n, A, offset_A, lda, stride_A, 0, cast2constPointer(workArr),
         offset_invA, ldinvA, stride_invA, 0, batch_count, 1, cast2constPointer(c_temp_arr));
 }
+
+ROCSOLVER_END_NAMESPACE

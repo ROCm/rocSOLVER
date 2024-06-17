@@ -33,6 +33,8 @@
 #include "lib_macros.hpp"
 #include "libcommon.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    common location for device functions and kernels that are used across
@@ -1157,7 +1159,7 @@ __device__ static void selection_sort(const I n, S* a, I* map = nullptr, const b
 }
 
 template <typename T, typename I>
-__device__ static void permute_swap(const I n, T* C, I ldc, I* map)
+__device__ static void permute_swap(const I n, T* C, I ldc, I* map, const I nev = -1)
 {
     // --------------------------------------------
     // perform swaps to implement permutation vector
@@ -1184,7 +1186,9 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
 
     bool const is_root_thread = (tid == 0);
 
-    for(I i = 0; i < n; i++)
+    auto const nn = (nev >= 0) ? nev : n;
+
+    for(I i = 0; i < nn; i++)
     {
         __syncthreads();
 
@@ -1226,10 +1230,12 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map)
     // extra check that map[] is restored to identity permutation
     // ----------------------------------------------------------
     __syncthreads();
-    for(auto k = k_start; k < n; k += k_inc)
+    for(auto k = k_start; k < nn; k += k_inc)
     {
         assert(map[k] == k);
     }
     __syncthreads();
 #endif
 }
+
+ROCSOLVER_END_NAMESPACE
