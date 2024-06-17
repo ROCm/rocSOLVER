@@ -38,7 +38,7 @@
 
 #include <cmath>
 
-#include "bdsqr_host.hpp"
+#include "rocauxiliary_bdsqr_host.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
