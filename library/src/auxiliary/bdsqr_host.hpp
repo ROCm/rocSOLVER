@@ -2390,8 +2390,6 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
                                                    I* splits_map,
                                                    S* work)
 {
-    int const idebug = 2;
-
     // -------------------------
     // copy D into hD, E into hE
     // -------------------------
@@ -2462,35 +2460,11 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
 
     HIP_CHECK(hipStreamSynchronize(stream));
 
-    if(idebug >= 1)
-    {
-        printf("batch_count = %d\n", batch_count);
-        printf("n = %d, strideD = %ld, strideE = %ld\n", n, (int64_t)strideD, (int64_t)strideE);
-        printf("nv = %d, nu = %d, nc = %d\n", nv, nu, nc);
-    }
-    if(idebug >= 2)
-    {
-        printf("on entry\n");
-        for(auto i = 0; i < n; i++)
-        {
-            printf("hD[%d] = %le\n", i, hD[i]);
-        }
-        for(auto i = 0; i < (n - 1); i++)
-        {
-            printf("hE[%d] = %le\n", i, hE[i]);
-        }
-    }
-
     S* dwork = nullptr;
     HIP_CHECK(hipMalloc(&dwork, sizeof(S) * (4 * n)));
 
     for(I bid = 0; bid < batch_count; bid++)
     {
-        if(idebug >= 1)
-        {
-            printf("on entry: linfo_array[%d] = %d\n", bid, linfo_array[bid]);
-        }
-
         if(linfo_array[bid] != 0)
         {
             continue;
@@ -2626,28 +2600,6 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
     }
 
     HIP_CHECK(hipStreamSynchronize(stream));
-    HIP_CHECK(hipDeviceSynchronize());
-
-    if(idebug >= 2)
-    {
-        printf("on exit\n");
-        for(auto i = 0; i < n; i++)
-        {
-            printf("hD[%d] = %le\n", i, hD[i]);
-        }
-        for(auto i = 0; i < (n - 1); i++)
-        {
-            printf("hE[%d] = %le\n", i, hE[i]);
-        }
-    }
-
-    if(idebug >= 1)
-    {
-        for(auto bid = 0; bid < batch_count; bid++)
-        {
-            printf("linfo_array[%d] = %d\n", bid, linfo_array[bid]);
-        }
-    }
 
     // ----------------------
     // free allocated storage
