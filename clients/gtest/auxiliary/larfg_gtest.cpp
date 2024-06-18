@@ -85,7 +85,8 @@ Arguments larfg_setup_arguments(larfg_tuple tup)
     return arg;
 }
 
-class LARFG : public ::TestWithParam<larfg_tuple>
+template <bool API64>
+class LARFG_BASE : public ::TestWithParam<larfg_tuple>
 {
 protected:
     void TearDown() override
@@ -99,10 +100,17 @@ protected:
         Arguments arg = larfg_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("incx") == 0)
-            testing_larfg_bad_arg<T>();
+            testing_larfg_bad_arg<API64, T>();
 
-        testing_larfg<T>(arg);
+        testing_larfg<API64, T>(arg);
     }
+};
+
+class LARFG : public LARFG_BASE<false>
+{
+};
+class LARFG_64 : public LARFG_BASE<true>
+{
 };
 
 // non-batch tests
@@ -127,8 +135,36 @@ TEST_P(LARFG, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
+TEST_P(LARFG_64, __float)
+{
+    run_tests<float>();
+}
+
+TEST_P(LARFG_64, __double)
+{
+    run_tests<double>();
+}
+
+TEST_P(LARFG_64, __float_complex)
+{
+    run_tests<rocblas_float_complex>();
+}
+
+TEST_P(LARFG_64, __double_complex)
+{
+    run_tests<rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          LARFG,
                          Combine(ValuesIn(large_n_size_range), ValuesIn(incx_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LARFG, Combine(ValuesIn(n_size_range), ValuesIn(incx_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         LARFG_64,
+                         Combine(ValuesIn(large_n_size_range), ValuesIn(incx_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         LARFG_64,
+                         Combine(ValuesIn(n_size_range), ValuesIn(incx_range)));

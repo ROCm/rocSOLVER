@@ -346,6 +346,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg(rocblas_handle handle,
                                                  rocblas_double_complex* x,
                                                  const rocblas_int incx,
                                                  rocblas_double_complex* tau);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarfg_64(rocblas_handle handle,
+                                                    const int64_t n,
+                                                    float* alpha,
+                                                    float* x,
+                                                    const int64_t incx,
+                                                    float* tau);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarfg_64(rocblas_handle handle,
+                                                    const int64_t n,
+                                                    double* alpha,
+                                                    double* x,
+                                                    const int64_t incx,
+                                                    double* tau);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarfg_64(rocblas_handle handle,
+                                                    const int64_t n,
+                                                    rocblas_float_complex* alpha,
+                                                    rocblas_float_complex* x,
+                                                    const int64_t incx,
+                                                    rocblas_float_complex* tau);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfg_64(rocblas_handle handle,
+                                                    const int64_t n,
+                                                    rocblas_double_complex* alpha,
+                                                    rocblas_double_complex* x,
+                                                    const int64_t incx,
+                                                    rocblas_double_complex* tau);
 //! @}
 
 /*! @{

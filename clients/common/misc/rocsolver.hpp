@@ -1007,6 +1007,62 @@ inline rocblas_status rocsolver_larfg(rocblas_handle handle,
 {
     return rocsolver_zlarfg(handle, n, alpha, x, incx, tau);
 }
+
+inline rocblas_status rocsolver_larfg(bool API64,
+                                      rocblas_handle handle,
+                                      rocblas_int n,
+                                      float* alpha,
+                                      float* x,
+                                      rocblas_int incx,
+                                      float* tau)
+{
+    if(!API64)
+        return rocsolver_slarfg(handle, n, alpha, x, incx, tau);
+    else
+        return rocsolver_slarfg_64(handle, n, alpha, x, incx, tau);
+}
+
+inline rocblas_status rocsolver_larfg(bool API64,
+                                      rocblas_handle handle,
+                                      rocblas_int n,
+                                      double* alpha,
+                                      double* x,
+                                      rocblas_int incx,
+                                      double* tau)
+{
+    if(!API64)
+        return rocsolver_dlarfg(handle, n, alpha, x, incx, tau);
+    else
+        return rocsolver_dlarfg_64(handle, n, alpha, x, incx, tau);
+}
+
+inline rocblas_status rocsolver_larfg(bool API64,
+                                      rocblas_handle handle,
+                                      rocblas_int n,
+                                      rocblas_float_complex* alpha,
+                                      rocblas_float_complex* x,
+                                      rocblas_int incx,
+                                      rocblas_float_complex* tau)
+{
+    if(!API64)
+        return rocsolver_clarfg(handle, n, alpha, x, incx, tau);
+    else
+        return rocsolver_clarfg_64(handle, n, alpha, x, incx, tau);
+}
+
+inline rocblas_status rocsolver_larfg(bool API64,
+                                      rocblas_handle handle,
+                                      rocblas_int n,
+                                      rocblas_double_complex* alpha,
+                                      rocblas_double_complex* x,
+                                      rocblas_int incx,
+                                      rocblas_double_complex* tau)
+{
+    if(!API64)
+        return rocsolver_zlarfg(handle, n, alpha, x, incx, tau);
+    else
+        return rocsolver_zlarfg_64(handle, n, alpha, x, incx, tau);
+}
 /*****************************************************/
 
 /******************** LARF ********************/

@@ -97,6 +97,14 @@ Householder reflections
 
 rocsolver_<type>larfg()
 ---------------------------------------
+.. doxygenfunction:: rocsolver_zlarfg_64
+   :outline:
+.. doxygenfunction:: rocsolver_clarfg_64
+   :outline:
+.. doxygenfunction:: rocsolver_dlarfg_64
+   :outline:
+.. doxygenfunction:: rocsolver_slarfg_64
+   :outline:
 .. doxygenfunction:: rocsolver_zlarfg
    :outline:
 .. doxygenfunction:: rocsolver_clarfg

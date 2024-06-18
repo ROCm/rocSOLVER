@@ -29,13 +29,9 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T>
-rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
-                                    const rocblas_int n,
-                                    T* alpha,
-                                    T* x,
-                                    const rocblas_int incx,
-                                    T* tau)
+template <typename T, typename I>
+rocblas_status
+    rocsolver_larfg_impl(rocblas_handle handle, const I n, T* alpha, T* x, const I incx, T* tau)
 {
     // TODO: How to get alpha for bench logging
     ROCSOLVER_ENTER_TOP("larfg", "-n", n, "--incx", incx);
@@ -49,13 +45,13 @@ rocblas_status rocsolver_larfg_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shifta = 0;
-    rocblas_int shiftx = 0;
+    rocblas_stride shifta = 0;
+    rocblas_stride shiftx = 0;
 
     // normal (non-batched non-strided) execution
     rocblas_stride stridex = 0;
     rocblas_stride strideP = 0;
-    rocblas_int batch_count = 1;
+    I batch_count = 1;
 
     // memory workspace sizes:
     // size of re-usable workspace
@@ -127,6 +123,46 @@ rocblas_status rocsolver_zlarfg(rocblas_handle handle,
                                 rocblas_double_complex* x,
                                 const rocblas_int incx,
                                 rocblas_double_complex* tau)
+{
+    return rocsolver::rocsolver_larfg_impl<rocblas_double_complex>(handle, n, alpha, x, incx, tau);
+}
+
+rocblas_status rocsolver_slarfg_64(rocblas_handle handle,
+                                   const int64_t n,
+                                   float* alpha,
+                                   float* x,
+                                   const int64_t incx,
+                                   float* tau)
+{
+    return rocsolver::rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
+}
+
+rocblas_status rocsolver_dlarfg_64(rocblas_handle handle,
+                                   const int64_t n,
+                                   double* alpha,
+                                   double* x,
+                                   const int64_t incx,
+                                   double* tau)
+{
+    return rocsolver::rocsolver_larfg_impl<double>(handle, n, alpha, x, incx, tau);
+}
+
+rocblas_status rocsolver_clarfg_64(rocblas_handle handle,
+                                   const int64_t n,
+                                   rocblas_float_complex* alpha,
+                                   rocblas_float_complex* x,
+                                   const int64_t incx,
+                                   rocblas_float_complex* tau)
+{
+    return rocsolver::rocsolver_larfg_impl<rocblas_float_complex>(handle, n, alpha, x, incx, tau);
+}
+
+rocblas_status rocsolver_zlarfg_64(rocblas_handle handle,
+                                   const int64_t n,
+                                   rocblas_double_complex* alpha,
+                                   rocblas_double_complex* x,
+                                   const int64_t incx,
+                                   rocblas_double_complex* tau)
 {
     return rocsolver::rocsolver_larfg_impl<rocblas_double_complex>(handle, n, alpha, x, incx, tau);
 }

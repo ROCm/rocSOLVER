@@ -132,7 +132,8 @@ class rocsolver_dispatcher
         // Map for functions that support all precisions
         static const func_map map = {
             {"laswp", testing_laswp<T>},
-            {"larfg", testing_larfg<T>},
+            {"larfg", testing_larfg<false, T>},
+            {"larfg_64", testing_larfg<true, T>},
             {"larf", testing_larf<false, T>},
             {"larf_64", testing_larf<true, T>},
             {"larft", testing_larft<T>},
