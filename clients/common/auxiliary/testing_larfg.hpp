@@ -174,7 +174,7 @@ void larfg_getPerfData(const rocblas_handle handle,
     {
         larfg_initData<false, true, T>(handle, n, da, dx, inc, dt, ha, hx, ht);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_larfg(handle, n, da.data(), dx.data(), inc, dt.data()));
+        CHECK_ROCBLAS_ERROR(rocsolver_larfg(API64, handle, n, da.data(), dx.data(), inc, dt.data()));
     }
 
     // gpu-lapack performance

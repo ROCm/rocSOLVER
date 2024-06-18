@@ -178,6 +178,16 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv(rocblas_handle handle,
                                                  const rocblas_int n,
                                                  rocblas_double_complex* x,
                                                  const rocblas_int incx);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clacgv_64(rocblas_handle handle,
+                                                    const int64_t n,
+                                                    rocblas_float_complex* x,
+                                                    const int64_t incx);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlacgv_64(rocblas_handle handle,
+                                                    const int64_t n,
+                                                    rocblas_double_complex* x,
+                                                    const int64_t incx);
 //! @}
 
 /*! @{

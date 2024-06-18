@@ -68,7 +68,8 @@ Arguments lacgv_setup_arguments(lacgv_tuple tup)
     return arg;
 }
 
-class LACGV : public ::TestWithParam<lacgv_tuple>
+template <bool API64>
+class LACGV_BASE : public ::TestWithParam<lacgv_tuple>
 {
 protected:
     void TearDown() override
@@ -82,10 +83,17 @@ protected:
         Arguments arg = lacgv_setup_arguments(GetParam());
 
         if(arg.peek<rocblas_int>("n") == 0)
-            testing_lacgv_bad_arg<T>();
+            testing_lacgv_bad_arg<API64, T>();
 
-        testing_lacgv<T>(arg);
+        testing_lacgv<API64, T>(arg);
     }
+};
+
+class LACGV : public LACGV_BASE<false>
+{
+};
+class LACGV_64 : public LACGV_BASE<true>
+{
 };
 
 // non-batch tests
@@ -100,6 +108,20 @@ TEST_P(LACGV, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
+TEST_P(LACGV_64, __float_complex)
+{
+    run_tests<rocblas_float_complex>();
+}
+
+TEST_P(LACGV_64, __double_complex)
+{
+    run_tests<rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV, ValuesIn(large_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV, ValuesIn(range));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV_64, ValuesIn(large_range));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV_64, ValuesIn(range));
