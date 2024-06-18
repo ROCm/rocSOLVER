@@ -61,19 +61,20 @@ public:
 
     T* device_vector_setup()
     {
-        T* d;
+        T* d = nullptr;
         if((hipMalloc)(&d, bytes) != hipSuccess)
         {
             fmt::print(stderr, "Error allocating {} bytes ({} GB)\n", bytes, bytes >> 30);
             d = nullptr;
         }
         /* CHECK_HIP_ERROR((hipMemset)(d, 0, bytes)); // Why this doesn't work? */
+        if(d != nullptr)
         {
             auto error = (hipMemset)(d, 0, bytes);
             if(error != hipSuccess)
             {
                 fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(error), error,
-                        __FILE__, __LINE__);
+                           __FILE__, __LINE__);
                 rocblas_abort();
             }
         }
