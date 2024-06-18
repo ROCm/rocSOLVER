@@ -1503,29 +1503,33 @@ static void bdsqr_single_template(char uplo,
         //        ----------------------------------
         //        update singular vectors if desired
         //        ----------------------------------
-        CHECK_HIP(hipStreamSynchronize(stream));
 
-        if(need_update_singular_vectors)
+        if(use_lasr_gpu_nocopy)
         {
-            // --------------
-            // copy rotations
-            // --------------
-            size_t const nbytes = sizeof(S) * (n - 1);
-            hipMemcpyKind const kind = hipMemcpyHostToDevice;
+            CHECK_HIP(hipStreamSynchronize(stream));
 
+            if(need_update_singular_vectors)
             {
-                void* const src = (void*)&(work(1));
-                void* const dst = (void*)&(dwork(1));
-                CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-            }
+                // --------------
+                // copy rotations
+                // --------------
+                size_t const nbytes = sizeof(S) * (n - 1);
+                hipMemcpyKind const kind = hipMemcpyHostToDevice;
 
-            {
-                void* const src = (void*)&(work(n));
-                void* const dst = (void*)&(dwork(n));
-                CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                {
+                    void* const src = (void*)&(work(1));
+                    void* const dst = (void*)&(dwork(1));
+                    CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                }
+
+                {
+                    void* const src = (void*)&(work(n));
+                    void* const dst = (void*)&(dwork(n));
+                    CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                }
             }
+            CHECK_HIP(hipStreamSynchronize(stream));
         }
-        CHECK_HIP(hipStreamSynchronize(stream));
 
         if(nru > 0)
         {
@@ -1936,48 +1940,51 @@ L90:
             //   update singular vectors
             //   -----------------------
 
-            CHECK_HIP(hipStreamSynchronize(stream));
-
-            if(rotate)
+            if(use_lasr_gpu_nocopy)
             {
-                // --------------
-                // copy rotations
-                // --------------
-                size_t const nbytes = sizeof(S) * (n - 1);
-                hipMemcpyKind const kind = hipMemcpyHostToDevice;
+                CHECK_HIP(hipStreamSynchronize(stream));
 
-                if(ncvt > 0)
+                if(rotate)
                 {
+                    // --------------
+                    // copy rotations
+                    // --------------
+                    size_t const nbytes = sizeof(S) * (n - 1);
+                    hipMemcpyKind const kind = hipMemcpyHostToDevice;
+
+                    if(ncvt > 0)
                     {
-                        void* const src = (void*)&(work(1));
-                        void* const dst = (void*)&(dwork(1));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        {
+                            void* const src = (void*)&(work(1));
+                            void* const dst = (void*)&(dwork(1));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(n));
+                            void* const dst = (void*)&(dwork(n));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
                     }
 
+                    if((nru > 0) || (ncc > 0))
                     {
-                        void* const src = (void*)&(work(n));
-                        void* const dst = (void*)&(dwork(n));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        {
+                            void* const src = (void*)&(work(nm12));
+                            void* const dst = (void*)&(dwork(nm12));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(nm13));
+                            void* const dst = (void*)&(dwork(nm13));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
                     }
                 }
 
-                if((nru > 0) || (ncc > 0))
-                {
-                    {
-                        void* const src = (void*)&(work(nm12));
-                        void* const dst = (void*)&(dwork(nm12));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-                    }
-
-                    {
-                        void* const src = (void*)&(work(nm13));
-                        void* const dst = (void*)&(dwork(nm13));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-                    }
-                }
+                CHECK_HIP(hipStreamSynchronize(stream));
             }
-
-            CHECK_HIP(hipStreamSynchronize(stream));
 
             if(ncvt > 0)
             {
@@ -2099,48 +2106,51 @@ L90:
             //           update singular vectors
             //
 
-            CHECK_HIP(hipStreamSynchronize(stream));
-
-            if(rotate)
+            if(use_lasr_gpu_nocopy)
             {
-                // --------------
-                // copy rotations
-                // --------------
-                size_t const nbytes = sizeof(S) * (n - 1);
-                hipMemcpyKind const kind = hipMemcpyHostToDevice;
+                CHECK_HIP(hipStreamSynchronize(stream));
 
-                if((nru > 0) || (ncc > 0))
+                if(rotate)
                 {
+                    // --------------
+                    // copy rotations
+                    // --------------
+                    size_t const nbytes = sizeof(S) * (n - 1);
+                    hipMemcpyKind const kind = hipMemcpyHostToDevice;
+
+                    if((nru > 0) || (ncc > 0))
                     {
-                        void* const src = (void*)&(work(1));
-                        void* const dst = (void*)&(dwork(1));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        {
+                            void* const src = (void*)&(work(1));
+                            void* const dst = (void*)&(dwork(1));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(n));
+                            void* const dst = (void*)&(dwork(n));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
                     }
 
+                    if(ncvt > 0)
                     {
-                        void* const src = (void*)&(work(n));
-                        void* const dst = (void*)&(dwork(n));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        {
+                            void* const src = (void*)&(work(nm12));
+                            void* const dst = (void*)&(dwork(nm12));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(nm13));
+                            void* const dst = (void*)&(dwork(nm13));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
                     }
                 }
 
-                if(ncvt > 0)
-                {
-                    {
-                        void* const src = (void*)&(work(nm12));
-                        void* const dst = (void*)&(dwork(nm12));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-                    }
-
-                    {
-                        void* const src = (void*)&(work(nm13));
-                        void* const dst = (void*)&(dwork(nm13));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-                    }
-                }
+                CHECK_HIP(hipStreamSynchronize(stream));
             }
-
-            CHECK_HIP(hipStreamSynchronize(stream));
 
             if(ncvt > 0)
             {
@@ -2274,48 +2284,51 @@ L90:
             //           update singular vectors
             //
 
-            CHECK_HIP(hipStreamSynchronize(stream));
-
-            if(rotate)
+            if(use_lasr_gpu_nocopy)
             {
-                // --------------
-                // copy rotations
-                // --------------
-                size_t const nbytes = sizeof(S) * (n - 1);
-                hipMemcpyKind const kind = hipMemcpyHostToDevice;
+                CHECK_HIP(hipStreamSynchronize(stream));
 
-                if(ncvt > 0)
+                if(rotate)
                 {
+                    // --------------
+                    // copy rotations
+                    // --------------
+                    size_t const nbytes = sizeof(S) * (n - 1);
+                    hipMemcpyKind const kind = hipMemcpyHostToDevice;
+
+                    if(ncvt > 0)
                     {
-                        void* const src = (void*)&(work(1));
-                        void* const dst = (void*)&(dwork(1));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        {
+                            void* const src = (void*)&(work(1));
+                            void* const dst = (void*)&(dwork(1));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(n));
+                            void* const dst = (void*)&(dwork(n));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
                     }
 
+                    if((nru > 0) || (ncc > 0))
                     {
-                        void* const src = (void*)&(work(n));
-                        void* const dst = (void*)&(dwork(n));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        {
+                            void* const src = (void*)&(work(nm12));
+                            void* const dst = (void*)&(dwork(nm12));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(nm13));
+                            void* const dst = (void*)&(dwork(nm13));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
                     }
                 }
 
-                if((nru > 0) || (ncc > 0))
-                {
-                    {
-                        void* const src = (void*)&(work(nm12));
-                        void* const dst = (void*)&(dwork(nm12));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-                    }
-
-                    {
-                        void* const src = (void*)&(work(nm13));
-                        void* const dst = (void*)&(dwork(nm13));
-                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
-                    }
-                }
+                CHECK_HIP(hipStreamSynchronize(stream));
             }
-
-            CHECK_HIP(hipStreamSynchronize(stream));
 
             if(ncvt > 0)
             {
@@ -2438,14 +2451,61 @@ L90:
             }
         L150:
             e(ll) = f;
-            /*
-       *           test convergence
-       */
+            //
+            //           test convergence
+            //
             if(abs(e(ll)) <= thresh)
                 e(ll) = zero;
-            /*
-       *           update singular vectors if desired
-       */
+            //
+            //           update singular vectors if desired
+            //
+
+            if(use_lasr_gpu_nocopy)
+            {
+                CHECK_HIP(hipStreamSynchronize(stream));
+
+                if(rotate)
+                {
+                    // --------------
+                    // copy rotations
+                    // --------------
+                    size_t const nbytes = sizeof(S) * (n - 1);
+                    hipMemcpyKind const kind = hipMemcpyHostToDevice;
+
+                    if((nru > 0) || (ncc > 0))
+                    {
+                        {
+                            void* const src = (void*)&(work(1));
+                            void* const dst = (void*)&(dwork(1));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(n));
+                            void* const dst = (void*)&(dwork(n));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+                    }
+
+                    if(ncvt > 0)
+                    {
+                        {
+                            void* const src = (void*)&(work(nm12));
+                            void* const dst = (void*)&(dwork(nm12));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+
+                        {
+                            void* const src = (void*)&(work(nm13));
+                            void* const dst = (void*)&(dwork(nm13));
+                            CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                        }
+                    }
+                }
+
+                CHECK_HIP(hipStreamSynchronize(stream));
+            }
+
             if(ncvt > 0)
             {
                 // call_lasr( 'l', 'v', 'b', m-ll+1, ncvt, work( nm12+1 ), work(
@@ -2457,8 +2517,16 @@ L90:
                 auto mm = m - ll + 1;
                 if(use_gpu)
                 {
-                    call_lasr_gpu(side, pivot, direct, mm, ncvt, work(nm12 + 1), work(nm13 + 1),
-                                  vt(ll, 1), ldvt, dwork_, stream);
+                    if(use_lasr_gpu_nocopy)
+                    {
+                        call_lasr_gpu_nocopy(side, pivot, direct, mm, ncvt, dwork(nm12 + 1),
+                                             dwork(nm13 + 1), vt(ll, 1), ldvt, stream);
+                    }
+                    else
+                    {
+                        call_lasr_gpu(side, pivot, direct, mm, ncvt, work(nm12 + 1), work(nm13 + 1),
+                                      vt(ll, 1), ldvt, dwork_, stream);
+                    }
                 }
                 else
                 {
@@ -2477,8 +2545,16 @@ L90:
                 auto mm = m - ll + 1;
                 if(use_gpu)
                 {
-                    call_lasr_gpu(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll), ldu,
-                                  dwork_, stream);
+                    if(use_lasr_gpu_nocopy)
+                    {
+                        call_lasr_gpu_nocopy(side, pivot, direct, nru, mm, dwork(1), dwork(n),
+                                             u(1, ll), ldu, stream);
+                    }
+                    else
+                    {
+                        call_lasr_gpu(side, pivot, direct, nru, mm, work(1), work(n), u(1, ll), ldu,
+                                      dwork_, stream);
+                    }
                 }
                 else
                 {
@@ -2496,8 +2572,16 @@ L90:
                 auto mm = m - ll + 1;
                 if(use_gpu)
                 {
-                    call_lasr_gpu(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1), ldc,
-                                  dwork_, stream);
+                    if(use_lasr_gpu_nocopy)
+                    {
+                        call_lasr_gpu_nocopy(side, pivot, direct, mm, ncc, dwork(1), dwork(n),
+                                             c(ll, 1), ldc, stream);
+                    }
+                    else
+                    {
+                        call_lasr_gpu(side, pivot, direct, mm, ncc, work(1), work(n), c(ll, 1), ldc,
+                                      dwork_, stream);
+                    }
                 }
                 else
                 {
@@ -2521,9 +2605,9 @@ L160:
         if(d(i) < zero)
         {
             d(i) = -d(i);
-            /*
-       *           change sign of singular vectors, if desired
-       */
+            //
+            //           change sign of singular vectors, if desired
+            //
             if(ncvt > 0)
             {
                 if(use_gpu)
@@ -2538,16 +2622,16 @@ L160:
         }
     }
 L170:
-    /*
-   *     sort the singular values into decreasing order (insertion sort on
-   *     singular values, but only one transposition per singular vector)
-   */
+    //
+    //     sort the singular values into decreasing order (insertion sort on
+    //     singular values, but only one transposition per singular vector)
+    //
     // do 190 i = 1, n - 1
     for(i = 1; i <= (n - 1); i++)
     {
-        /*
-     *        scan for smallest d(i)
-     */
+        //
+        //        scan for smallest d(i)
+        //
         isub = 1;
         smin = d(1);
         // do 180 j = 2, n + 1 - i
@@ -2562,9 +2646,9 @@ L170:
     L180:
         if(isub != n + 1 - i)
         {
-            /*
-       *           swap singular values and vectors
-       */
+            //
+            //           swap singular values and vectors
+            //
             d(isub) = d(n + 1 - i);
             d(n + 1 - i) = smin;
             if(ncvt > 0)
@@ -2604,9 +2688,9 @@ L170:
     }
 L190:
     goto L220;
-/*
- *     maximum number of iterations exceeded, failure to converge
- */
+//
+//     maximum number of iterations exceeded, failure to converge
+//
 L200:
     info = 0;
     // do 210 i = 1, n - 1
@@ -2618,9 +2702,9 @@ L200:
 L210:
 L220:
     return;
-    /*
-   *     end of dbdsqr
-   */
+    //
+    //     end of dbdsqr
+    //
 }
 
 template <typename T, typename S, typename W1, typename W2, typename W3, typename I = rocblas_int>
