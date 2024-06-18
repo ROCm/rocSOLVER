@@ -2270,9 +2270,53 @@ L90:
             }
         L140:
             e(m - 1) = f;
-            /*
-       *           update singular vectors
-       */
+            //
+            //           update singular vectors
+            //
+
+            CHECK_HIP(hipStreamSynchronize(stream));
+
+            if(rotate)
+            {
+                // --------------
+                // copy rotations
+                // --------------
+                size_t const nbytes = sizeof(S) * (n - 1);
+                hipMemcpyKind const kind = hipMemcpyHostToDevice;
+
+                if(ncvt > 0)
+                {
+                    {
+                        void* const src = (void*)&(work(1));
+                        void* const dst = (void*)&(dwork(1));
+                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                    }
+
+                    {
+                        void* const src = (void*)&(work(n));
+                        void* const dst = (void*)&(dwork(n));
+                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                    }
+                }
+
+                if((nru > 0) || (ncc > 0))
+                {
+                    {
+                        void* const src = (void*)&(work(nm12));
+                        void* const dst = (void*)&(dwork(nm12));
+                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                    }
+
+                    {
+                        void* const src = (void*)&(work(nm13));
+                        void* const dst = (void*)&(dwork(nm13));
+                        CHECK_HIP(hipMemcpyAsync(dst, src, nbytes, kind, stream));
+                    }
+                }
+            }
+
+            CHECK_HIP(hipStreamSynchronize(stream));
+
             if(ncvt > 0)
             {
                 // call_lasr( 'l', 'v', 'f', m-ll+1, ncvt, work( 1 ), work( n ), vt(
@@ -2283,8 +2327,16 @@ L90:
                 auto mm = m - ll + 1;
                 if(use_gpu)
                 {
-                    call_lasr_gpu(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1), ldvt,
-                                  dwork_, stream);
+                    if(use_lasr_gpu_nocopy)
+                    {
+                        call_lasr_gpu_nocopy(side, pivot, direct, mm, ncvt, dwork(1), dwork(n),
+                                             vt(ll, 1), ldvt, stream);
+                    }
+                    else
+                    {
+                        call_lasr_gpu(side, pivot, direct, mm, ncvt, work(1), work(n), vt(ll, 1),
+                                      ldvt, dwork_, stream);
+                    }
                 }
                 else
                 {
@@ -2302,8 +2354,16 @@ L90:
                 auto mm = m - ll + 1;
                 if(use_gpu)
                 {
-                    call_lasr_gpu(side, pivot, direct, nru, mm, work(nm12 + 1), work(nm13 + 1),
-                                  u(1, ll), ldu, dwork_, stream);
+                    if(use_lasr_gpu_nocopy)
+                    {
+                        call_lasr_gpu_nocopy(side, pivot, direct, nru, mm, dwork(nm12 + 1),
+                                             dwork(nm13 + 1), u(1, ll), ldu, stream);
+                    }
+                    else
+                    {
+                        call_lasr_gpu(side, pivot, direct, nru, mm, work(nm12 + 1), work(nm13 + 1),
+                                      u(1, ll), ldu, dwork_, stream);
+                    }
                 }
                 else
                 {
@@ -2321,8 +2381,16 @@ L90:
                 auto mm = m - ll + 1;
                 if(use_gpu)
                 {
-                    call_lasr_gpu(side, pivot, direct, mm, ncc, work(nm12 + 1), work(nm13 + 1),
-                                  c(ll, 1), ldc, dwork_, stream);
+                    if(use_lasr_gpu_nocopy)
+                    {
+                        call_lasr_gpu_nocopy(side, pivot, direct, mm, ncc, dwork(nm12 + 1),
+                                             dwork(nm13 + 1), c(ll, 1), ldc, stream);
+                    }
+                    else
+                    {
+                        call_lasr_gpu(side, pivot, direct, mm, ncc, work(nm12 + 1), work(nm13 + 1),
+                                      c(ll, 1), ldc, dwork_, stream);
+                    }
                 }
                 else
                 {
