@@ -1010,7 +1010,8 @@ inline rocblas_status rocsolver_larfg(rocblas_handle handle,
 /*****************************************************/
 
 /******************** LARF ********************/
-inline rocblas_status rocsolver_larf(rocblas_handle handle,
+inline rocblas_status rocsolver_larf(bool API64,
+                                     rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_int m,
                                      rocblas_int n,
@@ -1020,10 +1021,14 @@ inline rocblas_status rocsolver_larf(rocblas_handle handle,
                                      float* A,
                                      rocblas_int lda)
 {
-    return rocsolver_slarf(handle, side, m, n, x, incx, alpha, A, lda);
+    if(!API64)
+        return rocsolver_slarf(handle, side, m, n, x, incx, alpha, A, lda);
+    else
+        return rocsolver_slarf_64(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
-inline rocblas_status rocsolver_larf(rocblas_handle handle,
+inline rocblas_status rocsolver_larf(bool API64,
+                                     rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_int m,
                                      rocblas_int n,
@@ -1033,10 +1038,14 @@ inline rocblas_status rocsolver_larf(rocblas_handle handle,
                                      double* A,
                                      rocblas_int lda)
 {
-    return rocsolver_dlarf(handle, side, m, n, x, incx, alpha, A, lda);
+    if(!API64)
+        return rocsolver_dlarf(handle, side, m, n, x, incx, alpha, A, lda);
+    else
+        return rocsolver_dlarf_64(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
-inline rocblas_status rocsolver_larf(rocblas_handle handle,
+inline rocblas_status rocsolver_larf(bool API64,
+                                     rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_int m,
                                      rocblas_int n,
@@ -1046,10 +1055,14 @@ inline rocblas_status rocsolver_larf(rocblas_handle handle,
                                      rocblas_float_complex* A,
                                      rocblas_int lda)
 {
-    return rocsolver_clarf(handle, side, m, n, x, incx, alpha, A, lda);
+    if(!API64)
+        return rocsolver_clarf(handle, side, m, n, x, incx, alpha, A, lda);
+    else
+        return rocsolver_clarf_64(handle, side, m, n, x, incx, alpha, A, lda);
 }
 
-inline rocblas_status rocsolver_larf(rocblas_handle handle,
+inline rocblas_status rocsolver_larf(bool API64,
+                                     rocblas_handle handle,
                                      rocblas_side side,
                                      rocblas_int m,
                                      rocblas_int n,
@@ -1059,7 +1072,10 @@ inline rocblas_status rocsolver_larf(rocblas_handle handle,
                                      rocblas_double_complex* A,
                                      rocblas_int lda)
 {
-    return rocsolver_zlarf(handle, side, m, n, x, incx, alpha, A, lda);
+    if(!API64)
+        return rocsolver_zlarf(handle, side, m, n, x, incx, alpha, A, lda);
+    else
+        return rocsolver_zlarf_64(handle, side, m, n, x, incx, alpha, A, lda);
 }
 /*****************************************************/
 

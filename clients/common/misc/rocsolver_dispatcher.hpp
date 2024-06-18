@@ -133,7 +133,8 @@ class rocsolver_dispatcher
         static const func_map map = {
             {"laswp", testing_laswp<T>},
             {"larfg", testing_larfg<T>},
-            {"larf", testing_larf<T>},
+            {"larf", testing_larf<false, T>},
+            {"larf_64", testing_larf<true, T>},
             {"larft", testing_larft<T>},
             {"larfb", testing_larfb<T>},
             {"latrd", testing_latrd<T>},

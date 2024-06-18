@@ -53,6 +53,9 @@
    wants to add. By calling the next function twice, it can double the number of times the stamp
    is instantiated. By appending different values in each call to the next function, it can
    instantiate the stamp with multiple different values. */
+#define FOREACH_BIT_VARIANT(STAMP, F, ...) \
+    F(STAMP, ##__VA_ARGS__, false)         \
+    F(STAMP, ##__VA_ARGS__, true)
 #define FOREACH_BLOCKED_VARIANT(STAMP, F, ...) \
     F(STAMP, ##__VA_ARGS__, false)             \
     F(STAMP, ##__VA_ARGS__, true)

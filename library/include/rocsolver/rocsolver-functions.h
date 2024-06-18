@@ -537,6 +537,46 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf(rocblas_handle handle,
                                                 const rocblas_double_complex* alpha,
                                                 rocblas_double_complex* A,
                                                 const rocblas_int lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slarf_64(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   float* x,
+                                                   const int64_t incx,
+                                                   const float* alpha,
+                                                   float* A,
+                                                   const int64_t lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlarf_64(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   double* x,
+                                                   const int64_t incx,
+                                                   const double* alpha,
+                                                   double* A,
+                                                   const int64_t lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clarf_64(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   rocblas_float_complex* x,
+                                                   const int64_t incx,
+                                                   const rocblas_float_complex* alpha,
+                                                   rocblas_float_complex* A,
+                                                   const int64_t lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlarf_64(rocblas_handle handle,
+                                                   const rocblas_side side,
+                                                   const int64_t m,
+                                                   const int64_t n,
+                                                   rocblas_double_complex* x,
+                                                   const int64_t incx,
+                                                   const rocblas_double_complex* alpha,
+                                                   rocblas_double_complex* A,
+                                                   const int64_t lda);
 //! @}
 
 /*! @{
