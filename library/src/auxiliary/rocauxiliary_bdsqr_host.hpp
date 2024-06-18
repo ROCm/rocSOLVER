@@ -74,12 +74,13 @@ __global__ static void lasr_kernel(char const side,
     auto max = [](auto x, auto y) { return ((x > y) ? x : y); };
     auto min = [](auto x, auto y) { return ((x < y) ? x : y); };
 
-    auto indx2f = [](auto i, auto j, auto lda) -> int64_t {
+    auto indx2f = [](auto i, auto j, auto lda) {
         assert((1 <= i));
         assert((1 <= lda));
         assert((1 <= j));
 
-        return ((i - 1) + (j - 1) * int64_t(lda));
+        // return ((i - 1) + (j - 1) * int64_t(lda));
+        return (i + j * lda - (1 + lda));
     };
 
     auto indx1f = [](auto i) -> int64_t {
@@ -529,7 +530,7 @@ static void lasr_template_gpu(char const side,
                               I const lda,
                               hipStream_t stream = 0)
 {
-    auto const nthreads = 2 * warpSize;
+    auto const nthreads = warpSize;
 
     bool const is_left_side = (side == 'L') || (side == 'l');
     auto const mn = (is_left_side) ? n : m;
