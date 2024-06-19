@@ -256,7 +256,6 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
         rocblas_int ldu = n;
         host_strided_batch_vector<T> U(n * n, 1, n * n, bc);
         rocblas_init<T>(hA, true);
-        rocblas_init<T>(hB, true);
         rocblas_init<T>(U, true);
 
         for(rocblas_int b = 0; b < bc; ++b)
@@ -264,6 +263,8 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
             // for testing purposes, we start with a reduced matrix M for the standard equivalent problem
             // with spectrum in a desired range (-20, 20). Then we construct the generalized pair
             // (A, B) from there.
+
+            [[maybe_unused]] volatile auto mptr = memset(hB[b], 0, n * ldb * sizeof(T));
             for(rocblas_int i = 0; i < n; i++)
             {
                 // scale matrices and set hA = M (symmetric/hermitian), hB = U (upper triangular)
