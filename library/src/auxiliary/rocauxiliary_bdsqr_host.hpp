@@ -1290,6 +1290,7 @@ static void bdsqr_single_template(char uplo,
                                   hipStream_t stream = 0)
 {
     bool const use_gpu = (dwork_ != nullptr);
+    bool constexpr need_sort = false;
 
     S const zero = 0;
     S const one = 1;
@@ -1449,7 +1450,7 @@ static void bdsqr_single_template(char uplo,
         return;
 
     bool const need_update_singular_vectors = (nru > 0) || (ncc > 0);
-    bool constexpr use_lasr_gpu_nocopy = true;
+    bool constexpr use_lasr_gpu_nocopy = false;
 
     if(n == 1)
         goto L160;
@@ -2590,6 +2591,7 @@ L90:
             }
         }
     }
+    CHECK_HIP(hipStreamSynchronize(stream));
     /*
    *     qr iteration finished, go back and check convergence
    */
@@ -2627,61 +2629,64 @@ L170:
     //     singular values, but only one transposition per singular vector)
     //
     // do 190 i = 1, n - 1
-    for(i = 1; i <= (n - 1); i++)
+    if(need_sort)
     {
-        //
-        //        scan for smallest d(i)
-        //
-        isub = 1;
-        smin = d(1);
-        // do 180 j = 2, n + 1 - i
-        for(j = 2; j <= (n + 1 - i); j++)
-        {
-            if(d(j) <= smin)
-            {
-                isub = j;
-                smin = d(j);
-            }
-        }
-    L180:
-        if(isub != n + 1 - i)
+        for(i = 1; i <= (n - 1); i++)
         {
             //
-            //           swap singular values and vectors
+            //        scan for smallest d(i)
             //
-            d(isub) = d(n + 1 - i);
-            d(n + 1 - i) = smin;
-            if(ncvt > 0)
+            isub = 1;
+            smin = d(1);
+            // do 180 j = 2, n + 1 - i
+            for(j = 2; j <= (n + 1 - i); j++)
             {
-                if(use_gpu)
+                if(d(j) <= smin)
                 {
-                    call_swap_gpu(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
-                }
-                else
-                {
-                    call_swap(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
+                    isub = j;
+                    smin = d(j);
                 }
             }
-            if(nru > 0)
+        L180:
+            if(isub != n + 1 - i)
             {
-                if(use_gpu)
+                //
+                //           swap singular values and vectors
+                //
+                d(isub) = d(n + 1 - i);
+                d(n + 1 - i) = smin;
+                if(ncvt > 0)
                 {
-                    call_swap_gpu(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
+                    if(use_gpu)
+                    {
+                        call_swap_gpu(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
+                    }
+                    else
+                    {
+                        call_swap(ncvt, vt(isub, 1), ldvt, vt(n + 1 - i, 1), ldvt);
+                    }
                 }
-                else
+                if(nru > 0)
                 {
-                    call_swap(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
+                    if(use_gpu)
+                    {
+                        call_swap_gpu(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
+                    }
+                    else
+                    {
+                        call_swap(nru, u(1, isub), ione, u(1, n + 1 - i), ione);
+                    }
                 }
-            }
-            if(ncc > 0)
-            {
-                if(use_gpu)
+                if(ncc > 0)
                 {
-                    call_swap_gpu(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
-                }
-                else
-                {
-                    call_swap(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
+                    if(use_gpu)
+                    {
+                        call_swap_gpu(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
+                    }
+                    else
+                    {
+                        call_swap(ncc, c(isub, 1), ldc, c(n + 1 - i, 1), ldc);
+                    }
                 }
             }
         }
@@ -2718,15 +2723,15 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
                                                    const rocblas_stride strideD,
                                                    S* E,
                                                    const rocblas_stride strideE,
-                                                   W1 V,
+                                                   W1 V_arg,
                                                    const I shiftV,
                                                    const I ldv,
                                                    const rocblas_stride strideV,
-                                                   W2 U,
+                                                   W2 U_arg,
                                                    const I shiftU,
                                                    const I ldu,
                                                    const rocblas_stride strideU,
-                                                   W3 C,
+                                                   W3 C_arg,
                                                    const I shiftC,
                                                    const I ldc,
                                                    const rocblas_stride strideC,
@@ -2741,6 +2746,88 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    W1 V = V_arg;
+    W2 U = U_arg;
+    W3 C = C_arg;
+
+    auto is_device_pointer = [](void* ptr) -> bool {
+        hipPointerAttribute_t dev_attributes;
+        if(ptr == nullptr)
+        {
+            return (false);
+        }
+
+        auto istat = hipPointerGetAttributes(&dev_attributes, ptr);
+        if(istat != hipSuccess)
+        {
+            std::cout << "is_device_pointer: istat = " << istat << " " << hipGetErrorName(istat)
+                      << std::endl;
+        }
+        assert(istat == hipSuccess);
+        return (dev_attributes.type == hipMemoryTypeDevice);
+    };
+
+    // ---------------------------------------------------
+    // handle  batch case with array of pointers on device
+    // ---------------------------------------------------
+    std::vector<T*> Vp_array(batch_count);
+    std::vector<T*> Up_array(batch_count);
+    std::vector<T*> Cp_array(batch_count);
+
+    if(nv > 0)
+    {
+        bool const is_device_V_arg = is_device_pointer((void*)V_arg);
+        if(is_device_V_arg)
+        {
+            bool constexpr need_copy_W1 = !std::is_same<W1, T*>::value;
+            if constexpr(need_copy_W1)
+            {
+                size_t const nbytes = sizeof(T*) * batch_count;
+                void* const dst = (void*)&(Vp_array[0]);
+                void* const src = (void*)V_arg;
+                HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, hipMemcpyDefault, stream));
+                HIP_CHECK(hipStreamSynchronize(stream));
+                V = &(Vp_array[0]);
+            }
+        }
+    }
+
+    if(nu > 0)
+    {
+        bool const is_device_U_arg = is_device_pointer((void*)U_arg);
+        if(is_device_U_arg)
+        {
+            bool constexpr need_copy_W2 = !std::is_same<W2, T*>::value;
+            if constexpr(need_copy_W2)
+            {
+                size_t const nbytes = sizeof(T*) * batch_count;
+                void* const dst = (void*)&(Up_array[0]);
+                void* const src = (void*)U_arg;
+                HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, hipMemcpyDefault, stream));
+                HIP_CHECK(hipStreamSynchronize(stream));
+                U = &(Up_array[0]);
+            }
+        }
+    }
+
+    if(nc > 0)
+    {
+        bool const is_device_C_arg = is_device_pointer((void*)C_arg);
+        if(is_device_C_arg)
+        {
+            bool constexpr need_copy_W3 = !std::is_same<W3, T*>::value;
+            if constexpr(need_copy_W3)
+            {
+                size_t const nbytes = sizeof(T*) * batch_count;
+                void* const dst = (void*)&(Cp_array[0]);
+                void* const src = (void*)C_arg;
+                HIP_CHECK(hipMemcpyAsync(dst, src, nbytes, hipMemcpyDefault, stream));
+                HIP_CHECK(hipStreamSynchronize(stream));
+                C = &(Cp_array[0]);
+            }
+        }
+    }
 
     S* hD = nullptr;
     S* hE = nullptr;
