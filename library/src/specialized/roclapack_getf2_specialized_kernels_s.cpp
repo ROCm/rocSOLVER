@@ -39,11 +39,13 @@ INSTANTIATE_GETF2_PANEL(float, rocblas_int, rocblas_int, float* const*);
 INSTANTIATE_GETF2_SCALE_UPDATE(float, rocblas_int, float*);
 INSTANTIATE_GETF2_SCALE_UPDATE(float, rocblas_int, float* const*);
 
+#ifdef HAVE_ROCBLAS_64
 // 64-bit APIs
 INSTANTIATE_GETF2_PANEL(float, int64_t, int64_t, float*);
 INSTANTIATE_GETF2_PANEL(float, int64_t, int64_t, float* const*);
 
 INSTANTIATE_GETF2_SCALE_UPDATE(float, int64_t, float*);
 INSTANTIATE_GETF2_SCALE_UPDATE(float, int64_t, float* const*);
+#endif /* HAVE_ROCBLAS_64 */
 
 ROCSOLVER_END_NAMESPACE

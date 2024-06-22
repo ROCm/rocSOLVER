@@ -83,6 +83,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/auxiliary/testing_steqr.cpp
     common/auxiliary/testing_stedc.cpp
     common/auxiliary/testing_stedcj.cpp
+    common/auxiliary/testing_stedcx.cpp
     common/auxiliary/testing_stein.cpp
     common/auxiliary/testing_lasyf.cpp
     common/auxiliary/testing_sterf.cpp
@@ -128,11 +129,13 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/lapack/testing_syev_heev.cpp
     common/lapack/testing_syevd_heevd.cpp
     common/lapack/testing_syevdj_heevdj.cpp
+    common/lapack/testing_syevdx_heevdx.cpp
     common/lapack/testing_syevj_heevj.cpp
     common/lapack/testing_syevx_heevx.cpp
     common/lapack/testing_sygv_hegv.cpp
     common/lapack/testing_sygvd_hegvd.cpp
     common/lapack/testing_sygvdj_hegvdj.cpp
+    common/lapack/testing_sygvdx_hegvdx.cpp
     common/lapack/testing_sygvj_hegvj.cpp
     common/lapack/testing_sygvx_hegvx.cpp
     common/lapack/testing_geblttrf_npvt.cpp
