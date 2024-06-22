@@ -1290,7 +1290,20 @@ static void bdsqr_single_template(char uplo,
                                   hipStream_t stream = 0)
 {
     bool const use_gpu = (dwork_ != nullptr);
+
+    // -----------------------------------
+    // Lapack code used O(n^2) algorithm for sorting
+    // Consider turning off this and rely on
+    // bdsqr_sort() to perform sorting
+    // -----------------------------------
     bool constexpr need_sort = false;
+
+    // ---------------------------------------------------
+    // NOTE: lasq1 may return non-zero info value that
+    // has a different meaning
+    // Consider turning off lasq1 to have consistent info value
+    // ---------------------------------------------------
+    bool constexpr use_lasq1 = false;
 
     S const zero = 0;
     S const one = 1;
@@ -1372,7 +1385,7 @@ static void bdsqr_single_template(char uplo,
               CHECK_HIP(hipStreamSynchronize(stream));
           };
 
-    auto abs = [](auto x) { return ((x >= 0) ? x : (-x)); };
+    auto abs = [](auto x) { return (std::abs(x)); };
 
     auto indx2f = [](auto i, auto j, auto ld) -> int64_t {
         assert((1 <= i) && (i <= ld));
@@ -1457,7 +1470,7 @@ static void bdsqr_single_template(char uplo,
     /*
    *     if no singular vectors desired, use qd algorithm
    */
-    if(!rotate)
+    if((!rotate) && (use_lasq1))
     {
         call_lasq1(n, d(1), e(1), work(1), info);
         /*
@@ -1640,7 +1653,7 @@ L30:
     L50:
 
         sminoa = sminoa / sqrt(dble(n));
-        thresh = max(tol * sminoa, maxitr * (n * (n * unfl)));
+        thresh = max(tol * sminoa, ((unfl * n) * n) * maxitr);
     }
     else
     {
@@ -1648,7 +1661,7 @@ L30:
      *        absolute accuracy desired
      */
 
-        thresh = max(abs(tol) * smax, maxitr * (n * (n * unfl)));
+        thresh = max(abs(tol) * smax, ((unfl * n) * n) * maxitr);
     }
     /*
    *     prepare for main iteration loop for the singular values
@@ -2780,7 +2793,12 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         bool const is_device_V_arg = is_device_pointer((void*)V_arg);
         if(is_device_V_arg)
         {
-            bool constexpr need_copy_W1 = !std::is_same<W1, T*>::value;
+            // ------------------------------------------------------------
+            // note "T *" and "T * const" may be considered different types
+            // ------------------------------------------------------------
+            bool constexpr is_array_of_device_pointers
+                = !(std::is_same<W1, T*>::value || std::is_same<W1, T* const>::value);
+            bool constexpr need_copy_W1 = is_array_of_device_pointers;
             if constexpr(need_copy_W1)
             {
                 size_t const nbytes = sizeof(T*) * batch_count;
@@ -2798,7 +2816,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         bool const is_device_U_arg = is_device_pointer((void*)U_arg);
         if(is_device_U_arg)
         {
-            bool constexpr need_copy_W2 = !std::is_same<W2, T*>::value;
+            bool constexpr is_array_of_device_pointers
+                = !(std::is_same<W2, T*>::value || std::is_same<W2, T* const>::value);
+            bool constexpr need_copy_W2 = is_array_of_device_pointers;
             if constexpr(need_copy_W2)
             {
                 size_t const nbytes = sizeof(T*) * batch_count;
@@ -2816,7 +2836,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         bool const is_device_C_arg = is_device_pointer((void*)C_arg);
         if(is_device_C_arg)
         {
-            bool constexpr need_copy_W3 = !std::is_same<W3, T*>::value;
+            bool constexpr is_array_of_device_pointers
+                = !(std::is_same<W3, T*>::value || std::is_same<W3, T* const>::value);
+            bool constexpr need_copy_W3 = is_array_of_device_pointers;
             if constexpr(need_copy_W3)
             {
                 size_t const nbytes = sizeof(T*) * batch_count;
