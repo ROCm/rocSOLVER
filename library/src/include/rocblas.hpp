@@ -1617,74 +1617,116 @@ rocblas_status rocblasCall_syr2_her2(rocblas_handle handle,
                                                       offsetA, strideA, batch_count);
 }
 
-// syrk
-template <bool BATCHED, typename T, typename U, typename V, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+// syrk/herk
+template <typename T>
 rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
                                      rocblas_fill uplo,
                                      rocblas_operation transA,
                                      rocblas_int n,
                                      rocblas_int k,
-                                     U alpha,
-                                     V A,
+                                     const real_t<T>* alpha,
+                                     const T* A,
                                      rocblas_stride offsetA,
                                      rocblas_int lda,
                                      rocblas_stride strideA,
-                                     U beta,
-                                     V C,
+                                     const real_t<T>* beta,
+                                     T* C,
                                      rocblas_stride offsetC,
                                      rocblas_int ldc,
                                      rocblas_stride strideC,
-                                     rocblas_int batch_count)
+                                     rocblas_int batch_count,
+                                     T** work = nullptr)
 {
+    constexpr auto name = rocblas_is_complex<T> ? "herk" : "syrk";
     // TODO: How to get alpha and beta for trace logging
-    ROCBLAS_ENTER("syrk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
+    ROCBLAS_ENTER(name, "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
                   "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
 
-    using S = decltype(std::real(T{}));
-
-    if constexpr(BATCHED)
-        return rocblas_internal_syrk_batched_template(
-            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
-            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
-    else
+    if constexpr(!rocblas_is_complex<T>)
         return rocblas_internal_syrk_template(
-            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
-            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
-}
-
-// herk
-template <bool BATCHED, typename T, typename U, typename V, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
-                                     rocblas_fill uplo,
-                                     rocblas_operation transA,
-                                     rocblas_int n,
-                                     rocblas_int k,
-                                     U alpha,
-                                     V A,
-                                     rocblas_stride offsetA,
-                                     rocblas_int lda,
-                                     rocblas_stride strideA,
-                                     U beta,
-                                     V C,
-                                     rocblas_stride offsetC,
-                                     rocblas_int ldc,
-                                     rocblas_stride strideC,
-                                     rocblas_int batch_count)
-{
-    // TODO: How to get alpha and beta for trace logging
-    ROCBLAS_ENTER("herk", "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
-                  "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
-
-    using S = decltype(std::real(T{}));
-
-    if constexpr(BATCHED)
-        return rocblas_internal_herk_batched_template(
-            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
-            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+            handle, uplo, transA, n, k, (alpha), (A), offsetA,
+            lda, strideA, (beta), C, offsetC, ldc, strideC, batch_count);
     else
         return rocblas_internal_herk_template(
-            handle, uplo, transA, n, k, cast2constType<S>(alpha), cast2constType<T>(A), offsetA,
-            lda, strideA, cast2constType<S>(beta), C, offsetC, ldc, strideC, batch_count);
+            handle, uplo, transA, n, k, (alpha), (A), offsetA,
+            lda, strideA, (beta), C, offsetC, ldc, strideC, batch_count);
+}
+
+// syrk/herk - batched
+template <typename T>
+rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_operation transA,
+                                     rocblas_int n,
+                                     rocblas_int k,
+                                     const real_t<T>* alpha,
+                                     const T* const* A,
+                                     rocblas_stride offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     const real_t<T>* beta,
+                                     T* const* C,
+                                     rocblas_stride offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count,
+                                     T** work = nullptr)
+{
+    constexpr auto name = rocblas_is_complex<T> ? "herk" : "syrk";
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER(name, "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
+
+    if constexpr(!rocblas_is_complex<T>)
+        return rocblas_internal_syrk_batched_template(
+            handle, uplo, transA, n, k, (alpha), (A), offsetA,
+            lda, strideA, (beta), C, offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_herk_batched_template(
+            handle, uplo, transA, n, k, (alpha), (A), offsetA,
+            lda, strideA, (beta), C, offsetC, ldc, strideC, batch_count);
+}
+
+// syrk/herk overload - batched with strided C
+template <typename T>
+rocblas_status rocblasCall_syrk_herk(rocblas_handle handle,
+                                     rocblas_fill uplo,
+                                     rocblas_operation transA,
+                                     rocblas_int n,
+                                     rocblas_int k,
+                                     const real_t<T>* alpha,
+                                     const T* const* A,
+                                     rocblas_stride offsetA,
+                                     rocblas_int lda,
+                                     rocblas_stride strideA,
+                                     const real_t<T>* beta,
+                                     T* C,
+                                     rocblas_stride offsetC,
+                                     rocblas_int ldc,
+                                     rocblas_stride strideC,
+                                     rocblas_int batch_count,
+                                     T** work)
+{
+    constexpr auto name = rocblas_is_complex<T> ? "herk" : "syrk";
+    // TODO: How to get alpha and beta for trace logging
+    ROCBLAS_ENTER(name, "uplo:", uplo, "trans:", transA, "n:", n, "k:", k, "shiftA:", offsetA,
+                  "lda:", lda, "shiftC:", offsetC, "ldc:", ldc, "bc:", batch_count);
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, work, C, strideC,
+                            batch_count);
+
+    if constexpr(!rocblas_is_complex<T>)
+        return rocblas_internal_syrk_batched_template(
+            handle, uplo, transA, n, k, (alpha), (A), offsetA,
+            lda, strideA, (beta), work, offsetC, ldc, strideC, batch_count);
+    else
+        return rocblas_internal_herk_batched_template(
+            handle, uplo, transA, n, k, (alpha), (A), offsetA,
+            lda, strideA, (beta), work, offsetC, ldc, strideC, batch_count);
 }
 
 // syr2k

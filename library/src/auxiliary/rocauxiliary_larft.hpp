@@ -4,6 +4,10 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
+ * and
+ * Joffrain, Low, & Quintana-Ortí, et al. (2006). Accumulating householder
+ * transformations, revisited.
+ *      ACM Transactions on Mathematical Software 32(2), p. 169–179.
  * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +55,8 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                      const rocblas_int ldf,
                                      const rocblas_stride strideF,
                                      const rocblas_direct direct,
-                                     const rocblas_storev storev)
+                                     const rocblas_storev storev,
+                                     const bool inc)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -71,9 +76,29 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             if(j < i)
             {
                 if(storev == rocblas_column_wise)
-                    Fp[j + i * ldf] = -tp[i] * Vp[i + j * ldv];
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * Vp[i + j * ldv];
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * Vp[i + j * ldv];
+                    }
+                }
                 else
-                    Fp[j + i * ldf] = -tp[i] * Vp[j + i * ldv];
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * Vp[j + i * ldv];
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * Vp[j + i * ldv];
+                    }
+                }
             }
             else
                 Fp[j + i * ldf] = 0;
@@ -83,9 +108,29 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             if(j > i)
             {
                 if(storev == rocblas_column_wise)
-                    Fp[j + i * ldf] = -tp[i] * Vp[(n - k + i) + j * ldv];
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * Vp[(n - k + i) + j * ldv];
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * Vp[(n - k + i) + j * ldv];
+                    }
+                }
                 else
-                    Fp[j + i * ldf] = -tp[i] * Vp[j + (n - k + i) * ldv];
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * Vp[j + (n - k + i) * ldv];
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * Vp[j + (n - k + i) * ldv];
+                    }
+                }
             }
             else
                 Fp[j + i * ldf] = 0;
@@ -106,7 +151,8 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                      const rocblas_int ldf,
                                      const rocblas_stride strideF,
                                      const rocblas_direct direct,
-                                     const rocblas_storev storev)
+                                     const rocblas_storev storev,
+                                     const bool inc)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -126,9 +172,29 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             if(j < i)
             {
                 if(storev == rocblas_column_wise)
-                    Fp[j + i * ldf] = -tp[i] * conj(Vp[i + j * ldv]);
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * conj(Vp[i + j * ldv]);
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * conj(Vp[i + j * ldv]);
+                    }
+                }
                 else
-                    Fp[j + i * ldf] = -tp[i] * Vp[j + i * ldv];
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * Vp[j + i * ldv];
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * Vp[j + i * ldv];
+                    }
+                }
             }
             else
                 Fp[j + i * ldf] = 0;
@@ -138,9 +204,29 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             if(j > i)
             {
                 if(storev == rocblas_column_wise)
-                    Fp[j + i * ldf] = -tp[i] * conj(Vp[(n - k + i) + j * ldv]);
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * conj(Vp[(n - k + i) + j * ldv]);
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * conj(Vp[(n - k + i) + j * ldv]);
+                    }
+                }
                 else
-                    Fp[j + i * ldf] = -tp[i] * Vp[j + (n - k + i) * ldv];
+                {
+                    if(!inc)
+                    {
+                        Fp[j + i * ldf] = -tp[i] * Vp[j + (n - k + i) * ldv];
+                    }
+                    else
+                    {
+                        Fp[j + i * ldf] *= -tp[i];
+                        Fp[j + i * ldf] += -tp[i] * Vp[j + (n - k + i) * ldv];
+                    }
+                }
             }
             else
                 Fp[j + i * ldf] = 0;
@@ -269,13 +355,46 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     rocblas_fill uplo;
     rocblas_operation trans;
 
+    const rocblas_int u1_n = std::min(n, k);
+    const rocblas_int u2_n = std::max(n - u1_n, 0);
+
+    const bool call_xrk = u2_n > 0;
+
+    if(call_xrk)
+    {
+        if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
+        {
+            rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
+                                shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+        }
+        else if(direct == rocblas_backward_direction && storev == rocblas_column_wise)
+        {
+            rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
+                                shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+        }
+        else if(direct == rocblas_forward_direction && storev == rocblas_row_wise)
+        {
+            rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
+                                shiftV + idx2D(0, u1_n, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+        }
+        else if(direct == rocblas_backward_direction && storev == rocblas_row_wise)
+        {
+            rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
+                                shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+        }
+    }
+
     // Fix diagonal of T, make zero the not used triangular part,
     // setup tau (changing signs) and account for the non-stored 1's on the
     // householder vectors
     rocblas_int blocks = (k - 1) / 32 + 1;
     ROCSOLVER_LAUNCH_KERNEL(set_triangular, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
                             stream, n, k, V, shiftV, ldv, strideV, tau, strideT, F, ldf, strideF,
-                            direct, storev);
+                            direct, storev, call_xrk);
     ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
                             strideT);
 
@@ -294,7 +413,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
             if(storev == rocblas_column_wise)
             {
                 trans = rocblas_operation_conjugate_transpose;
-                rocblasCall_gemv<T>(handle, trans, n - 1 - i, i, tau + i, strideT, V,
+                rocblasCall_gemv<T>(handle, trans, u1_n - 1 - i, i, tau + i, strideT, V,
                                     shiftV + idx2D(i + 1, 0, ldv), ldv, strideV, V,
                                     shiftV + idx2D(i + 1, i, ldv), 1, strideV, scalars + 2, 0, F,
                                     idx2D(0, i, ldf), 1, strideF, batch_count, workArr);
@@ -306,7 +425,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
                                                 ldv, strideV, batch_count);
 
                 trans = rocblas_operation_none;
-                rocblasCall_gemv<T>(handle, trans, i, n - 1 - i, tau + i, strideT, V,
+                rocblasCall_gemv<T>(handle, trans, i, u1_n - 1 - i, tau + i, strideT, V,
                                     shiftV + idx2D(0, i + 1, ldv), ldv, strideV, V,
                                     shiftV + idx2D(i, i + 1, ldv), ldv, strideV, scalars + 2, 0, F,
                                     idx2D(0, i, ldf), 1, strideF, batch_count, workArr);
@@ -337,9 +456,9 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
             if(storev == rocblas_column_wise)
             {
                 trans = rocblas_operation_conjugate_transpose;
-                rocblasCall_gemv<T>(handle, trans, n - k + i, k - i - 1, tau + i, strideT, V,
-                                    shiftV + idx2D(0, i + 1, ldv), ldv, strideV, V,
-                                    shiftV + idx2D(0, i, ldv), 1, strideV, scalars + 2, 0, F,
+                rocblasCall_gemv<T>(handle, trans, u1_n - k + i, k - i - 1, tau + i, strideT, V,
+                                    shiftV + idx2D(u2_n, i + 1, ldv), ldv, strideV, V,
+                                    shiftV + idx2D(u2_n, i, ldv), 1, strideV, scalars + 2, 0, F,
                                     idx2D(i + 1, i, ldf), 1, strideF, batch_count, workArr);
             }
             else
@@ -349,9 +468,9 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
                                                 ldv, strideV, batch_count);
 
                 trans = rocblas_operation_none;
-                rocblasCall_gemv<T>(handle, trans, k - i - 1, n - k + i, tau + i, strideT, V,
-                                    shiftV + idx2D(i + 1, 0, ldv), ldv, strideV, V,
-                                    shiftV + idx2D(i, 0, ldv), ldv, strideV, scalars + 2, 0, F,
+                rocblasCall_gemv<T>(handle, trans, k - i - 1, u1_n - k + i, tau + i, strideT, V,
+                                    shiftV + idx2D(i + 1, u2_n, ldv), ldv, strideV, V,
+                                    shiftV + idx2D(i, u2_n, ldv), ldv, strideV, scalars + 2, 0, F,
                                     idx2D(i + 1, i, ldf), 1, strideF, batch_count, workArr);
 
                 if(COMPLEX)
