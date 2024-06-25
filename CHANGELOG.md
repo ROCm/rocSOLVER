@@ -39,6 +39,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Fixed
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
 
+### Known Issues
+- There is evidence of a synchronization defect in STEBZ that manifests on Windows and can lead to errors in routines based on Bisection to compute eigenvalues for symmetric/hermitian matrices (such as SYEVX/HEEVX), as well as singular values.
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
 ### Added
