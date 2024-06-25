@@ -26,7 +26,6 @@
  * *************************************************************************/
 
 #include "common/auxiliary/testing_stedc.hpp"
-#include "common/auxiliary/testing_stedcj.hpp"
 
 using ::testing::Combine;
 using ::testing::TestWithParam;
@@ -98,26 +97,6 @@ protected:
     }
 };
 
-class STEDCJ : public ::TestWithParam<stedc_tuple>
-{
-protected:
-    void TearDown() override
-    {
-        EXPECT_EQ(hipGetLastError(), hipSuccess);
-    }
-
-    template <typename T>
-    void run_tests()
-    {
-        Arguments arg = stedc_setup_arguments(GetParam());
-
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("evect") == 'N')
-            testing_stedcj_bad_arg<T>();
-
-        testing_stedcj<T>(arg);
-    }
-};
-
 // non-batch tests
 
 TEST_P(STEDC, __float)
@@ -140,38 +119,10 @@ TEST_P(STEDC, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
-TEST_P(STEDCJ, __float)
-{
-    run_tests<float>();
-}
-
-TEST_P(STEDCJ, __double)
-{
-    run_tests<double>();
-}
-
-TEST_P(STEDCJ, __float_complex)
-{
-    run_tests<rocblas_float_complex>();
-}
-
-TEST_P(STEDCJ, __double_complex)
-{
-    run_tests<rocblas_double_complex>();
-}
-
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          STEDC,
                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(op_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          STEDC,
-                         Combine(ValuesIn(matrix_size_range), ValuesIn(op_range)));
-
-INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         STEDCJ,
-                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(op_range)));
-
-INSTANTIATE_TEST_SUITE_P(checkin_lapack,
-                         STEDCJ,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(op_range)));

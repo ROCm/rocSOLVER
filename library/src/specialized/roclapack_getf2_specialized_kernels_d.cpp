@@ -27,6 +27,8 @@
 
 #include "roclapack_getf2_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
@@ -37,9 +39,13 @@ INSTANTIATE_GETF2_PANEL(double, rocblas_int, rocblas_int, double* const*);
 INSTANTIATE_GETF2_SCALE_UPDATE(double, rocblas_int, double*);
 INSTANTIATE_GETF2_SCALE_UPDATE(double, rocblas_int, double* const*);
 
+#ifdef HAVE_ROCBLAS_64
 // 64-bit APIs
 INSTANTIATE_GETF2_PANEL(double, int64_t, int64_t, double*);
 INSTANTIATE_GETF2_PANEL(double, int64_t, int64_t, double* const*);
 
 INSTANTIATE_GETF2_SCALE_UPDATE(double, int64_t, double*);
 INSTANTIATE_GETF2_SCALE_UPDATE(double, int64_t, double* const*);
+#endif /* HAVE_ROCBLAS_64 */
+
+ROCSOLVER_END_NAMESPACE

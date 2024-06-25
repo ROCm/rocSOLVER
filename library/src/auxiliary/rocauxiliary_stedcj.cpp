@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_stedcj.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*
  * ===========================================================================
  *    stedcj is not intended for inclusion in the public API. It
@@ -55,8 +57,6 @@ rocblas_status rocsolver_stedcj_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftD = 0;
-    rocblas_int shiftE = 0;
     rocblas_int shiftC = 0;
 
     // normal (non-batched non-strided) execution
@@ -101,10 +101,11 @@ rocblas_status rocsolver_stedcj_impl(rocblas_handle handle,
 
     // execution
     return rocsolver_stedcj_template<false, false, T>(
-        handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C, shiftC, ldc, strideC, info,
-        batch_count, work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz, (rocblas_int*)splits_map,
-        (S**)workArr);
+        handle, evect, n, D, strideD, E, strideE, C, shiftC, ldc, strideC, info, batch_count,
+        work_stack, (S*)tempvect, (S*)tempgemm, (S*)tmpz, (rocblas_int*)splits_map, (S**)workArr);
 }
+
+ROCSOLVER_END_NAMESPACE
 
 /*
  * ===========================================================================
@@ -123,7 +124,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sstedcj(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcj_impl<float>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedcj_impl<float>(handle, evect, n, D, E, C, ldc, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dstedcj(rocblas_handle handle,
@@ -135,7 +136,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dstedcj(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcj_impl<double>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedcj_impl<double>(handle, evect, n, D, E, C, ldc, info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cstedcj(rocblas_handle handle,
@@ -147,7 +148,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cstedcj(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcj_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedcj_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc,
+                                                                   info);
 }
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zstedcj(rocblas_handle handle,
@@ -159,7 +161,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zstedcj(rocblas_handle handle,
                                                   const rocblas_int ldc,
                                                   rocblas_int* info)
 {
-    return rocsolver_stedcj_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedcj_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc,
+                                                                    info);
 }
 
 } // extern C

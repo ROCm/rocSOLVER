@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,6 +38,8 @@
 #include "roclapack_sygst_hegst.hpp"
 #include "roclapack_sygvx_hegvx.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename S>
 rocblas_status rocsolver_sygvdx_hegvdx_inplace_argCheck(rocblas_handle handle,
@@ -105,7 +107,7 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
                                                    size_t* size_work3,
                                                    size_t* size_work4,
                                                    size_t* size_work5,
-                                                   size_t* size_work6,
+                                                   size_t* size_work6_ifail,
                                                    size_t* size_D,
                                                    size_t* size_E,
                                                    size_t* size_iblock,
@@ -125,7 +127,7 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
         *size_work3 = 0;
         *size_work4 = 0;
         *size_work5 = 0;
-        *size_work6 = 0;
+        *size_work6_ifail = 0;
         *size_D = 0;
         *size_E = 0;
         *size_iblock = 0;
@@ -158,7 +160,7 @@ void rocsolver_sygvdx_hegvdx_inplace_getMemorySize(const rocblas_eform itype,
     // requirements for calling SYEVDX/HEEVDX
     rocsolver_syevdx_heevdx_inplace_getMemorySize<BATCHED, T, S>(
         evect, uplo, n, batch_count, &unused, &temp1, &temp2, &temp3, &temp4, size_work5,
-        size_work6, size_D, size_E, size_iblock, size_isplit, size_tau, size_nev, &temp5);
+        size_work6_ifail, size_D, size_E, size_iblock, size_isplit, size_tau, size_nev, &temp5);
     *size_work1 = max(*size_work1, temp1);
     *size_work2 = max(*size_work2, temp2);
     *size_work3 = max(*size_work3, temp3);
@@ -216,7 +218,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
                                                         void* work3,
                                                         void* work4,
                                                         void* work5,
-                                                        void* work6,
+                                                        rocblas_int* work6_ifail,
                                                         S* D,
                                                         S* E,
                                                         rocblas_int* iblock,
@@ -279,7 +281,7 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
     rocsolver_syevdx_heevdx_inplace_template<BATCHED, STRIDED, T>(
         handle, evect, erange, uplo, n, A, shiftA, lda, strideA, vl, vu, il, iu, abstol,
         (rocblas_int*)nullptr, W, strideW, iinfo, batch_count, scalars, work1, work2, work3, work4,
-        work5, work6, D, E, iblock, isplit, tau, d_nev, (T**)work7_workArr);
+        work5, work6_ifail, D, E, iblock, isplit, tau, d_nev, (T**)work7_workArr);
 
     // combine info from POTRF with info from SYEVDX/HEEVDX
     ROCSOLVER_LAUNCH_KERNEL(sygvx_update_info, gridReset, threads, 0, stream, info, iinfo, d_nev, n,
@@ -328,3 +330,5 @@ rocblas_status rocsolver_sygvdx_hegvdx_inplace_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

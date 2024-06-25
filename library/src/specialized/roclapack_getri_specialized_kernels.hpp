@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,6 +33,8 @@
 #pragma once
 
 #include "rocsolver_run_specialized_kernels.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /*************************************************************
     Templated kernels are instantiated in separate cpp
@@ -279,3 +281,5 @@ rocblas_status getri_run_small(rocblas_handle handle,
         const rocblas_int lda, const rocblas_stride strideA, rocblas_int* ipiv,    \
         const rocblas_int shiftP, const rocblas_stride strideP, rocblas_int* info, \
         const rocblas_int batch_count, const bool complete, const bool pivot)
+
+ROCSOLVER_END_NAMESPACE

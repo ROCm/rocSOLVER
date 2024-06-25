@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_orgl2_ungl2.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_orgl2_ungl2_impl(rocblas_handle handle,
@@ -85,6 +87,8 @@ rocblas_status rocsolver_orgl2_ungl2_impl(rocblas_handle handle,
                                              batch_count, (T*)scalars, (T*)Abyx, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -101,7 +105,7 @@ rocblas_status rocsolver_sorgl2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 float* ipiv)
 {
-    return rocsolver_orgl2_ungl2_impl<float>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgl2_ungl2_impl<float>(handle, m, n, k, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_dorgl2(rocblas_handle handle,
@@ -112,7 +116,7 @@ rocblas_status rocsolver_dorgl2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 double* ipiv)
 {
-    return rocsolver_orgl2_ungl2_impl<double>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgl2_ungl2_impl<double>(handle, m, n, k, A, lda, ipiv);
 }
 
 rocblas_status rocsolver_cungl2(rocblas_handle handle,
@@ -123,7 +127,8 @@ rocblas_status rocsolver_cungl2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_float_complex* ipiv)
 {
-    return rocsolver_orgl2_ungl2_impl<rocblas_float_complex>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgl2_ungl2_impl<rocblas_float_complex>(handle, m, n, k, A, lda,
+                                                                        ipiv);
 }
 
 rocblas_status rocsolver_zungl2(rocblas_handle handle,
@@ -134,7 +139,8 @@ rocblas_status rocsolver_zungl2(rocblas_handle handle,
                                 const rocblas_int lda,
                                 rocblas_double_complex* ipiv)
 {
-    return rocsolver_orgl2_ungl2_impl<rocblas_double_complex>(handle, m, n, k, A, lda, ipiv);
+    return rocsolver::rocsolver_orgl2_ungl2_impl<rocblas_double_complex>(handle, m, n, k, A, lda,
+                                                                         ipiv);
 }
 
 } // extern C

@@ -35,9 +35,11 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 #define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 
-/***************** Device auxiliary functions ******************************************/
+/***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
@@ -123,8 +125,7 @@ __device__ inline void de2tridiag(const int numt,
     }
 }
 
-/*************** Main kernels
- * *********************************************************/
+/*************** Main kernels *********************************************************/
 /**************************************************************************************/
 
 //--------------------------------------------------------------------------------------//
@@ -268,7 +269,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             __syncthreads();
 
             // solve
-            run_syevj<S, S>(ddx, ddy, tix, tiy, rocblas_esort_ascending, rocblas_evect_original,
+            run_syevj<S, S>(ddx, ddy, tix, tiy, rocblas_esort_none, rocblas_evect_original,
                             rocblas_fill_upper, sbs, C + p2 + p2 * ldc, ldc, 0, eps, W_residual,
                             MAXSWEEPS, W_n_sweeps, D + p2, info, W_Acpy + p2 + p2 * n, cosines_res,
                             sines_diag, top, bottom);
@@ -339,10 +340,8 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                          const rocblas_evect evect,
                                          const rocblas_int n,
                                          S* D,
-                                         const rocblas_int shiftD,
                                          const rocblas_stride strideD,
                                          S* E,
-                                         const rocblas_int shiftE,
                                          const rocblas_stride strideE,
                                          U C,
                                          const rocblas_int shiftC,
@@ -357,8 +356,11 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                          rocblas_int* splits_map,
                                          S** workArr)
 {
-    ROCSOLVER_ENTER("stedcj", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
-                    "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
+    ROCSOLVER_ENTER("stedcj", "evect:", evect, "n:", n, "shiftC:", shiftC, "ldc:", ldc,
+                    "bc:", batch_count);
+
+    // NOTE: case evect = N is not implemented for now. This routine always compute vectors
+    // as it is only for internal use by syevdj.
 
     // quick return
     if(batch_count == 0)
@@ -401,35 +403,64 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                             stream, n, n, tempvect, 0, ldt, strideT);
 
     // find max number of sub-blocks to consider during the divide phase
-    rocblas_int maxblks = 1 << stedc_num_levels<rocsolver_stedc_mode_jacobi>(n);
+    rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_jacobi>(n);
+    rocblas_int maxblks = 1 << maxlevs;
 
     // find independent split blocks in matrix
-    ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
-                            strideD, E + shiftE, strideE, splits_map, eps);
+    ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D, strideD, E,
+                            strideE, splits_map, eps);
 
     // 1. divide phase
     //-----------------------------
-    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_jacobi, S>),
-                            dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD, strideD,
-                            E + shiftE, strideE, splits_map);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_jacobi, S>), dim3(batch_count),
+                            dim3(STEDC_BDIM), 0, stream, n, D, strideD, E, strideE, splits_map);
 
     // 2. solve phase
     //-----------------------------
     size_t lmemsize = (n + n % 2) * (sizeof(rocblas_int) + sizeof(S));
 
-    ROCSOLVER_LAUNCH_KERNEL(
-        (stedcj_solve_kernel<S>), dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count),
-        dim3(STEDC_BDIM), lmemsize, stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect,
-        0, ldt, strideT, info, static_cast<S*>(work_stack), splits_map, eps, ssfmin, ssfmax);
+    ROCSOLVER_LAUNCH_KERNEL((stedcj_solve_kernel<S>),
+                            dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                            lmemsize, stream, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT,
+                            info, static_cast<S*>(work_stack), splits_map, eps, ssfmin, ssfmax);
 
     // 3. merge phase
     //----------------
-    lmemsize = sizeof(S) * STEDC_BDIM;
+    size_t lmemsize1 = sizeof(S) * maxblks;
+    size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
+    rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_merge_kernel<rocsolver_stedc_mode_jacobi, S>),
-                            dim3(STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize,
-                            stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
-                            strideT, tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
+    // launch merge for level k
+    /** TODO: using max number of levels for now. Kernels return immediately when passing
+        the actual number of levels in the split block. We should explore if synchronizing
+        to copy back the actual number of levels makes any difference **/
+    for(rocblas_int k = 0; k < maxlevs; ++k)
+    {
+        // a. prepare secular equations
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_jacobi, S>),
+                                dim3(1, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(maxblks),
+                                lmemsize1, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
+                                strideT, tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
+
+        // b. solve to find merged eigen values
+        rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_jacobi, S>),
+                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                0, stream, k, n, D, strideD, E, strideE, tmpz, tempgemm, splits_map,
+                                eps, ssfmin, ssfmax);
+
+        // c. find merged eigen vectors
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_jacobi, S>),
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                lmemsize3, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
+                                strideT, tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
+
+        // c. update level
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_jacobi, S>),
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
+                                lmemsize3, stream, k, n, D, strideD, tempvect, 0, ldt, strideT,
+                                tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
+    }
 
     // 4. update and sort
     //----------------------
@@ -438,8 +469,10 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                     static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
                                     workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
-                            D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count, splits_map);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n, D,
+                            strideD, C, shiftC, ldc, strideC, batch_count, splits_map);
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

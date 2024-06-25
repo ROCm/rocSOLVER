@@ -19,6 +19,13 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - GETF2_64 (with batched and strided\_batched versions)
     - GETRF_64 (with batched and strided\_batched versions)
     - GETRS_64 (with batched and strided\_batched versions)
+- Added gfx900 to default build targets.
+- Partial eigenvalue decomposition routines for symmetric/hermitian matrices using Divide & Conquer and Bisection:
+    - SYEVDX (with batched and strided\_batched versions)
+    - HEEVDX (with batched and strided\_batched versions)
+- Partial generalized symmetric/hermitian-definite eigenvalue decomposition using Divide & Conquer and Bisection:
+    - SYGVDX (with batched and strided\_batched versions)
+    - HEGVDX (with batched and strided\_batched versions)
 
 ### Optimized
 - Improved performance of Cholesky factorization.

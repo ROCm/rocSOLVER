@@ -27,6 +27,8 @@
 
 #include "rocauxiliary_stedc.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 template <typename T, typename S>
 rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
                                     const rocblas_evect evect,
@@ -99,6 +101,8 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
         (S**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -116,7 +120,7 @@ rocblas_status rocsolver_sstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<float>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<float>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_dstedc(rocblas_handle handle,
@@ -128,7 +132,7 @@ rocblas_status rocsolver_dstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<double>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<double>(handle, evect, n, D, E, C, ldc, info);
 }
 
 rocblas_status rocsolver_cstedc(rocblas_handle handle,
@@ -140,7 +144,8 @@ rocblas_status rocsolver_cstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<rocblas_float_complex>(handle, evect, n, D, E, C, ldc,
+                                                                  info);
 }
 
 rocblas_status rocsolver_zstedc(rocblas_handle handle,
@@ -152,7 +157,8 @@ rocblas_status rocsolver_zstedc(rocblas_handle handle,
                                 const rocblas_int ldc,
                                 rocblas_int* info)
 {
-    return rocsolver_stedc_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc, info);
+    return rocsolver::rocsolver_stedc_impl<rocblas_double_complex>(handle, evect, n, D, E, C, ldc,
+                                                                   info);
 }
 
 } // extern C
