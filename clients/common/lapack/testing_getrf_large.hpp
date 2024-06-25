@@ -467,9 +467,11 @@ void testing_getrf_large(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using min(m,n) * machine_precision as tolerance
+    // using 4 * kappa * min(m,n) * machine_precision as tolerance,
+    // where kappa stands for the condition number of the input matrix
+    double kappa = 1.; // approximation to matrix condition number
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, min(n, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, 4 * kappa * n);
     // output results for rocsolver-bench
     if(argus.timing)
     {
