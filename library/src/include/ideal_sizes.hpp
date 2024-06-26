@@ -31,6 +31,19 @@
     \brief ideal_sizes.hpp gathers all constants that can be tuned for performance.
  *********************************************************************************/
 
+#define BS1 256 // generic 1 dimensional thread-block size used to call common kernels
+#define BS2 32 // generic 2 dimensional thread-block size used to call common kernels
+
+/******************************* larfg ****************************************
+*******************************************************************************/
+#ifndef LARFG_SSKER_THREADS
+#define LARFG_SSKER_THREADS 128 // must be 64, 128, 256, 512, or 1024
+#endif
+
+#ifndef LARFG_SSKER_MAX_N
+#define LARFG_SSKER_MAX_N 1024
+#endif
+
 /***************** geqr2/geqrf and geql2/geqlf ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the block column factorized at each step
