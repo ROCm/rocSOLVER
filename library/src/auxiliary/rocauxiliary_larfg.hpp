@@ -34,6 +34,7 @@
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -133,6 +134,14 @@ void rocsolver_larfg_getMemorySize(const rocblas_int n,
         return;
     }
 
+    // if small size no workspace needed
+    if(n <= LARFG_SSKER_MAX_N)
+    {
+        *size_norms = 0;
+        *size_work = 0;
+        return;
+    }
+
     // size of space to store norms
     *size_norms = sizeof(T) * batch_count;
 
@@ -205,6 +214,13 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, gridReset, threads, 0, stream, tau, strideP, 1,
                                 0);
         return rocblas_status_success;
+    }
+
+    // if n is small, use small-size kernel
+    if(n <= LARFG_SSKER_MAX_N)
+    {
+        return larfg_run_small(handle, n, alpha, shifta, stridex, x, shiftx, incx, stridex, tau,
+                               strideP, batch_count);
     }
 
     // everything must be executed with scalars on the device
