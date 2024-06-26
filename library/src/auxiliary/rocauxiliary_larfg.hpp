@@ -38,86 +38,84 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-ROCSOLVER_KERNEL void set_taubeta(T* tau,
-                                  const rocblas_stride strideP,
-                                  T* norms,
-                                  U alpha,
-                                  const rocblas_int shifta,
-                                  const rocblas_stride stride)
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+__device__ void run_set_taubeta(T* tau, T* norms, T* alpha)
 {
-    int b = hipBlockIdx_x;
-
-    T* a = load_ptr_batch<T>(alpha, b, shifta, stride);
-    T* t = tau + b * strideP;
-
-    if(norms[b] > 0)
+    if(norms[0] > 0)
     {
-        T n = sqrt(norms[b] + a[0] * a[0]);
-        n = a[0] >= 0 ? -n : n;
+        T n = sqrt(norms[0] + alpha[0] * alpha[0]);
+        n = alpha[0] >= 0 ? -n : n;
 
         // scaling factor:
-        norms[b] = 1.0 / (a[0] - n);
+        norms[0] = 1.0 / (alpha[0] - n);
 
         // tau:
-        t[0] = (n - a[0]) / n;
+        tau[0] = (n - alpha[0]) / n;
 
         // beta:
-        a[0] = n;
+        alpha[0] = n;
     }
     else
     {
-        norms[b] = 1;
-        t[0] = 0;
+        norms[0] = 1;
+        tau[0] = 0;
     }
 }
 
-template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-ROCSOLVER_KERNEL void set_taubeta(T* tau,
-                                  const rocblas_stride strideP,
-                                  T* norms,
-                                  U alpha,
-                                  const rocblas_int shifta,
-                                  const rocblas_stride stride)
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+__device__ void run_set_taubeta(T* tau, T* norms, T* alpha)
 {
     using S = decltype(std::real(T{}));
-    int b = hipBlockIdx_x;
     S r, rr, ri, ar, ai;
 
-    T* a = load_ptr_batch<T>(alpha, b, shifta, stride);
-    T* t = tau + b * strideP;
-
-    ar = a[0].real();
-    ai = a[0].imag();
+    ar = alpha[0].real();
+    ai = alpha[0].imag();
     S m = ai * ai;
 
-    if(norms[b].real() > 0 || m > 0)
+    if(norms[0].real() > 0 || m > 0)
     {
         m += ar * ar;
-        S n = sqrt(norms[b].real() + m);
+        S n = sqrt(norms[0].real() + m);
         n = ar >= 0 ? -n : n;
 
         // scaling factor:
-        //    norms[b] = 1.0 / (a[0] - n);
+        //    norms[0] = 1.0 / (alpha[0] - n);
         r = (ar - n) * (ar - n) + ai * ai;
         rr = (ar - n) / r;
         ri = -ai / r;
-        norms[b] = rocblas_complex_num<S>(rr, ri);
+        norms[0] = rocblas_complex_num<S>(rr, ri);
 
         // tau:
-        //t[0] = (n - a[0]) / n;
+        //    tau[0] = (n - alpha[0]) / n;
         rr = (n - ar) / n;
         ri = -ai / n;
-        t[0] = rocblas_complex_num<S>(rr, ri);
+        tau[0] = rocblas_complex_num<S>(rr, ri);
 
         // beta:
-        a[0] = n;
+        alpha[0] = n;
     }
     else
     {
-        norms[b] = 1;
-        t[0] = 0;
+        norms[0] = 1;
+        tau[0] = 0;
     }
+}
+
+template <typename T, typename U>
+ROCSOLVER_KERNEL void set_taubeta(T* tauA,
+                                  const rocblas_stride strideP,
+                                  T* norms,
+                                  U alphaA,
+                                  const rocblas_stride shiftA,
+                                  const rocblas_stride strideA)
+{
+    rocblas_int bid = hipBlockIdx_x;
+
+    // select batch instance
+    T* alpha = load_ptr_batch<T>(alphaA, bid, shiftA, strideA);
+    T* tau = tauA + bid * strideP;
+
+    run_set_taubeta<T>(tau, norms + bid, alpha);
 }
 
 template <typename T>
