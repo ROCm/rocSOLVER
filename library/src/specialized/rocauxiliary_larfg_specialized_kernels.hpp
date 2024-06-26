@@ -32,6 +32,8 @@
 
 #pragma once
 
+#include "../auxiliary/rocauxiliary_larfg.hpp"
+#include "lapack_device_functions.hpp"
 #include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
@@ -48,13 +50,40 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
                        U alpha,
                        const rocblas_stride shiftA,
                        const rocblas_stride strideA,
-                       U x,
+                       U xx,
                        const rocblas_stride shiftX,
                        const I incX,
                        const rocblas_stride strideX,
-                       T* tau,
+                       T* tauA,
                        const rocblas_stride strideP)
 {
+    I bid = hipBlockIdx_x;
+    I tid = hipThreadIdx_x;
+
+    // select batch instance
+    T* a = load_ptr_batch<T>(alpha, bid, shiftA, strideA);
+    T* x = load_ptr_batch<T>(xx, bid, shiftX, strideX);
+    T* tau = load_ptr_batch<T>(tauA, bid, 0, strideP);
+
+    // shared variables
+    __shared__ T sval[LARFG_SSKER_THREADS];
+    __shared__ T sh_x[LARFG_SSKER_MAX_N];
+
+    // load x into shared memory
+    for(I i = tid; i < n - 1; i += LARFG_SSKER_THREADS)
+        sh_x[i] = x[i * incX];
+
+    // find squared norm of x
+    dot<LARFG_SSKER_THREADS, true, T>(tid, n - 1, sh_x, 1, sh_x, 1, sval);
+
+    // set tau, beta, and put scaling factor into sval[0]
+    if(tid == 0)
+        run_set_taubeta<T>(tau, sval, a);
+    __syncthreads();
+
+    // scale x by scaling factor
+    for(I i = tid; i < n - 1; i += LARFG_SSKER_THREADS)
+        x[i * incX] = sh_x[i] * sval[0];
 }
 
 /*************************************************************
