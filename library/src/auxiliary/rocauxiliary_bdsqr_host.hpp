@@ -2953,7 +2953,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         I nrv = n;
         I ncvt = nv;
         bool const values_only = (ncvt == 0) && (nru == 0) && (ncc == 0);
-        if(values_only)
+        bool const use_lapack_bdsqr = false;
+
+        if((use_lapack_bdsqr) && (values_only))
         {
             // --------------------------------
             // call the lapack version of bdsqr
@@ -2990,6 +2992,7 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
         {
             // ----------------------------
             // explicitly zero out "E" array
+            // to be compatible with rocsolver bdsqr
             // ----------------------------
             S const zero = S(0);
             for(I i = 0; i < (n - 1); i++)
