@@ -1039,6 +1039,7 @@ static void call_swap(int& n, double& zx, int& incx, double& zy, int& incy)
     dswap_(&n, &zx, &incx, &zy, &incy);
 }
 
+#ifdef USE_LAPACK
 static void call_las2(double& f, double& g, double& h, double& ssmin, double& ssmax)
 {
     dlas2_(&f, &g, &h, &ssmin, &ssmax);
@@ -1048,6 +1049,80 @@ static void call_las2(float& f, float& g, float& h, float& ssmin, float& ssmax)
 {
     slas2_(&f, &g, &h, &ssmin, &ssmax);
 }
+#else
+
+template <typename T>
+static void call_las2(T& f, T& g, T& h, T& ssmin, T& ssmax)
+{
+    T const zero = 0;
+    T const one = 1;
+    T const two = 2;
+
+    T as, at, au, c, fa, fhmn, fhmx, ga, ha;
+
+    auto abs = [](auto x) { return (std::abs(x)); };
+    auto min = [](auto x, auto y) { return ((x < y) ? x : y); };
+    auto max = [](auto x, auto y) { return ((x > y) ? x : y); };
+    auto sqrt = [](auto x) { return (std::sqrt(x)); };
+    auto square = [](auto x) { return (x * x); };
+
+    fa = abs(f);
+    ga = abs(g);
+    ha = abs(h);
+    fhmn = min(fa, ha);
+    fhmx = max(fa, ha);
+    if(fhmn == zero)
+    {
+        ssmin = zero;
+        if(fhmx == zero)
+        {
+            ssmax = ga;
+        }
+        else
+        {
+            // ssmax = max( fhmx, ga )*sqrt( one+ ( min( fhmx, ga ) / max( fhmx, ga ) )**2 );
+            ssmax = max(fhmx, ga) * sqrt(one + square(min(fhmx, ga) / max(fhmx, ga)));
+        }
+    }
+    else
+    {
+        if(ga < fhmx)
+        {
+            as = one + fhmn / fhmx;
+            at = (fhmx - fhmn) / fhmx;
+            au = square(ga / fhmx);
+            c = two / (sqrt(as * as + au) + sqrt(at * at + au));
+            ssmin = fhmn * c;
+            ssmax = fhmx / c;
+        }
+        else
+        {
+            au = fhmx / ga;
+            if(au == zero)
+            {
+                //
+                //               avoid possible harmful underflow if exponent range
+                //               asymmetric (true ssmin may not underflow even if
+                //               au underflows)
+                //
+                ssmin = (fhmn * fhmx) / ga;
+                ssmax = ga;
+            }
+            else
+            {
+                as = one + fhmn / fhmx;
+                at = (fhmx - fhmn) / fhmx;
+                // c = one / ( sqrt( one+( as*au )**2 )+ sqrt( one+( at*au )**2 ) );
+                c = one / (sqrt(one + square(as * au)) + sqrt(one + square(at * au)));
+                ssmin = (fhmn * c) * au;
+                ssmin = ssmin + ssmin;
+                ssmax = ga / (c + c);
+            }
+        }
+    }
+}
+
+#endif
 
 static void call_lartg(double& f, double& g, double& c, double& s, double& r)
 {
@@ -1077,6 +1152,7 @@ static void call_lartg(std::complex<double>& f,
     zlartg_(&f, &g, &c, &s, &r);
 }
 
+#ifdef USE_LAPACK
 static void call_scal(int& n, rocblas_complex_num<float>& da, rocblas_complex_num<float>& zx, int& incx)
 {
     cscal_(&n, (std::complex<float>*)&da, (std::complex<float>*)&zx, &incx);
@@ -1127,7 +1203,29 @@ static void call_scal(int& n, float& da, float& zx, int& incx)
 {
     sscal_(&n, &da, &zx, &incx);
 }
+#else
+template <typename T, typename S, typename I>
+static void call_scal(I& n, S& a, T& x_in, I& incx)
+{
+    bool const is_zero = (a == 0);
+    T* const x = &x_in;
+    for(I i = 0; i < n; i++)
+    {
+        auto const ip = i * incx;
+        if(is_zero)
+        {
+            x[ip] = 0;
+        }
+        else
+        {
+            x[ip] *= a;
+        }
+    };
+}
 
+#endif
+
+#ifdef USE_LAPACK
 static void call_rot(int& n,
                      std::complex<float>& zx,
                      int& incx,
@@ -1181,7 +1279,28 @@ static void call_rot(int& n, float& dx, int& incx, float& dy, int& incy, float& 
 {
     srot_(&n, &dx, &incx, &dy, &incy, &c, &s);
 }
+#else
 
+template <typename T, typename S, typename I>
+static void call_rot(I& n, T& x_in, I& incx, T& y_in, I& incy, S& c, S& s)
+{
+    T* const x = &(x_in);
+    T* const y = &(y_in);
+
+    for(I i = 0; i < n; i++)
+    {
+        auto const ix = i * incx;
+        auto const iy = i * incy;
+
+        auto const temp = c * x[ix] + s * y[iy];
+        y[iy] = c * y[iy] - s * x[ix];
+        x[ix] = temp;
+    }
+}
+
+#endif
+
+#ifdef USE_LAPACK
 static void call_lasv2(double& f,
                        double& g,
                        double& h,
@@ -1207,6 +1326,227 @@ static void call_lasv2(float& f,
 {
     slasv2_(&f, &g, &h, &ssmin, &ssmax, &snr, &csr, &snl, &csl);
 }
+#else
+// --------------------------------------------------------
+// lasv2 computes the singular value decomposition of a 2 x 2
+// triangular matrix
+// [ F G ]
+// [ 0 H ]
+//
+// on return,
+// abs(ssmax) is the larger singular value,
+// abs(ssmin) is the smaller singular value,
+// (csl,snl) and (csr,snr) are the left and right
+// singular vectors for abs(ssmax)
+//
+// [ csl  snl]  [  F  G ]  [ csr   -snr] = [ ssmax   0    ]
+// [-snl  csl]  [  0  H ]  [ snr    csr]   [  0     ssmin ]
+// --------------------------------------------------------
+template <typename T>
+static void call_lasv2(T& f, T& g, T& h, T& ssmin, T& ssmax, T& snr, T& csr, T& snl, T& csl)
+{
+    T const zero = 0;
+    T const one = 1;
+    T const two = 2;
+    T const four = 4;
+    T const half = one / two;
+
+    bool gasmal;
+    bool swap;
+    int pmax;
+    char cmach;
+
+    T a, clt, crt, d, fa, ft, ga, gt, ha, ht, l, m;
+    T mm, r, s, slt, srt, t, temp, tsign, tt;
+    T macheps;
+
+    auto abs = [](auto x) { return (std::abs(x)); };
+    auto sqrt = [](auto x) { return (std::sqrt(x)); };
+    auto sign = [](auto a, auto b) {
+        auto const abs_a = std::abs(a);
+        return ((b >= 0) ? abs_a : -abs_a);
+    };
+
+    ft = f;
+    fa = abs(ft);
+    ht = h;
+    ha = abs(h);
+    //
+    //     pmax points to the maximum absolute element of matrix
+    //       pmax = 1 if f largest in absolute values
+    //       pmax = 2 if g largest in absolute values
+    //       pmax = 3 if h largest in absolute values
+    //
+    pmax = 1;
+    swap = (ha > fa);
+    if(swap)
+    {
+        pmax = 3;
+        temp = ft;
+        ft = ht;
+        ht = temp;
+        temp = fa;
+        fa = ha;
+        ha = temp;
+        //
+        //        now fa >= ha
+        //
+    }
+    gt = g;
+    ga = abs(gt);
+    if(ga == zero)
+    {
+        //
+        //        diagonal matrix
+        //
+        ssmin = ha;
+        ssmax = fa;
+        clt = one;
+        crt = one;
+        slt = zero;
+        srt = zero;
+    }
+    else
+    {
+        gasmal = true;
+        if(ga > fa)
+        {
+            pmax = 2;
+
+            cmach = 'E';
+            call_lamch(cmach, macheps);
+
+            if((fa / ga) < macheps)
+            {
+                //
+                //              case of very large ga
+                //
+                gasmal = false;
+                ssmax = ga;
+                if(ha > one)
+                {
+                    ssmin = fa / (ga / ha);
+                }
+                else
+                {
+                    ssmin = (fa / ga) * ha;
+                }
+                clt = one;
+                slt = ht / gt;
+                srt = one;
+                crt = ft / gt;
+            }
+        }
+        if(gasmal)
+        {
+            //
+            //           normal case
+            //
+            d = fa - ha;
+            if(d == fa)
+            {
+                //
+                //              copes with infinite f or h
+                //
+                l = one;
+            }
+            else
+            {
+                l = d / fa;
+            }
+            //
+            //           note that 0  <=  l <= 1
+            //
+            m = gt / ft;
+            //
+            //           note that abs(m)  <=  1/macheps
+            //
+            t = two - l;
+            //
+            //           note that t >= 1
+            //
+            mm = m * m;
+            tt = t * t;
+            s = sqrt(tt + mm);
+            //
+            //           note that 1  <=  s <= 1 + 1/macheps
+            //
+            if(l == zero)
+            {
+                r = abs(m);
+            }
+            else
+            {
+                r = sqrt(l * l + mm);
+            }
+            //
+            //           note that 0  <=  r .le. 1 + 1/macheps
+            //
+            a = half * (s + r);
+            //
+            //           note that 1  <=  a .le. 1 + abs(m)
+            //
+            ssmin = ha / a;
+            ssmax = fa * a;
+            if(mm == zero)
+            {
+                //
+                //              note that m is very tiny
+                //
+                if(l == zero)
+                {
+                    t = sign(two, ft) * sign(one, gt);
+                }
+                else
+                {
+                    t = gt / sign(d, ft) + m / t;
+                }
+            }
+            else
+            {
+                t = (m / (s + t) + m / (r + l)) * (one + a);
+            }
+            l = sqrt(t * t + four);
+            crt = two / l;
+            srt = t / l;
+            clt = (crt + srt * m) / a;
+            slt = (ht / ft) * srt / a;
+        }
+    }
+    if(swap)
+    {
+        csl = srt;
+        snl = crt;
+        csr = slt;
+        snr = clt;
+    }
+    else
+    {
+        csl = clt;
+        snl = slt;
+        csr = crt;
+        snr = srt;
+    }
+    //
+    //     correct signs of ssmax and ssmin
+    //
+    if(pmax == 1)
+    {
+        tsign = sign(one, csr) * sign(one, csl) * sign(one, f);
+    }
+    if(pmax == 2)
+    {
+        tsign = sign(one, snr) * sign(one, csl) * sign(one, g);
+    }
+    if(pmax == 3)
+    {
+        tsign = sign(one, snr) * sign(one, snl) * sign(one, h);
+    }
+    ssmax = sign(ssmax, tsign);
+    ssmin = sign(ssmin, tsign * sign(one, f) * sign(one, h));
+}
+
+#endif
 
 static void call_lasq1(int& n, double& D_, double& E_, double& rwork_, int& info_arg)
 {
