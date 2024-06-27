@@ -52,16 +52,20 @@ ROCSOLVER_BEGIN_NAMESPACE
     }
 #endif
 
+#ifndef LASR_MAX_NTHREADS
+#define LASR_MAX_NTHREADS 64
+#endif
+
 template <typename S, typename T, typename I>
-__global__ static void lasr_kernel(char const side,
-                                   char const pivot,
-                                   char const direct,
-                                   I const m,
-                                   I const n,
-                                   S const* const c_,
-                                   S const* const s_,
-                                   T* const A_,
-                                   I const lda)
+__global__ static void __launch_bounds__(LASR_MAX_NTHREADS) lasr_kernel(char const side,
+                                                                        char const pivot,
+                                                                        char const direct,
+                                                                        I const m,
+                                                                        I const n,
+                                                                        S const* const c_,
+                                                                        S const* const s_,
+                                                                        T* const A_,
+                                                                        I const lda)
 {
     const auto nblocks = hipGridDim_x;
     const auto nthreads_per_block = hipBlockDim_x;
@@ -530,7 +534,7 @@ static void lasr_template_gpu(char const side,
                               I const lda,
                               hipStream_t stream = 0)
 {
-    auto const nthreads = warpSize;
+    auto const nthreads = LASR_MAX_NTHREADS;
 
     bool const is_left_side = (side == 'L') || (side == 'l');
     auto const mn = (is_left_side) ? n : m;
@@ -967,6 +971,7 @@ static void call_bdsqr(char& uplo,
     dbdsqr_(&uplo, &n, &ncvt, &nru, &ncc, &d, &e, &vt, &ldvt, &u, &ldu, &c, &ldc, &rwork, &info);
 }
 
+#ifdef USE_LAPACK
 static void call_lamch(char& cmach_arg, double& eps)
 {
     char cmach = cmach_arg;
@@ -978,6 +983,23 @@ static void call_lamch(char& cmach_arg, float& eps)
     char cmach = cmach_arg;
     eps = slamch_(&cmach);
 }
+#else
+
+static void call_lamch(char& cmach, double& eps)
+{
+    eps = ((cmach == 'E') || (cmach == 'e')) ? std::numeric_limits<double>::epsilon()
+        : ((cmach == 'S') || (cmach == 's')) ? std::numeric_limits<double>::min()
+                                             : std::numeric_limits<double>::min();
+}
+
+static void call_lamch(char& cmach, float& eps)
+{
+    eps = ((cmach == 'E') || (cmach == 'e')) ? std::numeric_limits<float>::epsilon()
+        : ((cmach == 'S') || (cmach == 's')) ? std::numeric_limits<float>::min()
+                                             : std::numeric_limits<float>::min();
+}
+
+#endif
 
 static void call_swap(int& n,
                       rocblas_complex_num<float>& zx,
@@ -3081,3 +3103,5 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
 }
 
 ROCSOLVER_END_NAMESPACE
+#undef LASR_MAX_NTHREADS
+#undef CHECK_HIP
