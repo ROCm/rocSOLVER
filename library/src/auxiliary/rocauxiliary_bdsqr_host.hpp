@@ -1001,6 +1001,7 @@ static void call_lamch(char& cmach, float& eps)
 
 #endif
 
+#ifdef USE_LAPACK
 static void call_swap(int& n,
                       rocblas_complex_num<float>& zx,
                       int& incx,
@@ -1038,6 +1039,25 @@ static void call_swap(int& n, double& zx, int& incx, double& zy, int& incy)
 {
     dswap_(&n, &zx, &incx, &zy, &incy);
 }
+#else
+
+template <typename T, typename I>
+static void call_swap(I& n, T& x_in, I& incx, T& y_in, I& incy)
+{
+    T* const x = &(x_in);
+    T* const y = &(y_in);
+    for(I i = 0; i < n; i++)
+    {
+        I const ix = i * incx;
+        I const iy = i * incy;
+
+        T const temp = x[ix];
+        x[ix] = y[iy];
+        y[iy] = temp;
+    }
+}
+
+#endif
 
 #ifdef USE_LAPACK
 static void call_las2(double& f, double& g, double& h, double& ssmin, double& ssmax)
