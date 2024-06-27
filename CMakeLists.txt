@@ -203,8 +203,8 @@ if(BUILD_WITH_SPARSE)
 endif()
 
 find_package(rocprim REQUIRED CONFIG PATHS ${ROCM_PATH})
-rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocprim-devel")
-rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocprim-dev")
+rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocprim-static-devel")
+rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocprim-static-dev")
 
 add_subdirectory(common)
 
