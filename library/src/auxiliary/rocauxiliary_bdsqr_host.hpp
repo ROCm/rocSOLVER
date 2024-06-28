@@ -57,24 +57,18 @@ ROCSOLVER_BEGIN_NAMESPACE
 #endif
 
 template <typename S, typename T, typename I>
-__global__ static void __launch_bounds__(LASR_MAX_NTHREADS) lasr_kernel(char const side,
-                                                                        char const pivot,
-                                                                        char const direct,
-                                                                        I const m,
-                                                                        I const n,
-                                                                        S const* const c_,
-                                                                        S const* const s_,
-                                                                        T* const A_,
-                                                                        I const lda)
+__host__ __device__ static void lasr_body(char const side,
+                                          char const pivot,
+                                          char const direct,
+                                          I const m,
+                                          I const n,
+                                          S const* const c_,
+                                          S const* const s_,
+                                          T* const A_,
+                                          I const lda,
+                                          I const tid,
+                                          I const i_inc)
 {
-    const auto nblocks = hipGridDim_x;
-    const auto nthreads_per_block = hipBlockDim_x;
-    const auto nthreads = nblocks * nthreads_per_block;
-    const auto tid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-    const auto i_inc = nthreads;
-    const auto ij_nb = nthreads;
-    const auto ij_start = tid;
-
     auto max = [](auto x, auto y) { return ((x > y) ? x : y); };
     auto min = [](auto x, auto y) { return ((x < y) ? x : y); };
 
@@ -520,6 +514,26 @@ __global__ static void __launch_bounds__(LASR_MAX_NTHREADS) lasr_kernel(char con
     };
 
     return;
+}
+
+template <typename S, typename T, typename I>
+__global__ static void __launch_bounds__(LASR_MAX_NTHREADS) lasr_kernel(char const side,
+                                                                        char const pivot,
+                                                                        char const direct,
+                                                                        I const m,
+                                                                        I const n,
+                                                                        S const* const c_,
+                                                                        S const* const s_,
+                                                                        T* const A_,
+                                                                        I const lda)
+{
+    const auto nblocks = hipGridDim_x;
+    const auto nthreads_per_block = hipBlockDim_x;
+    const auto nthreads = nblocks * nthreads_per_block;
+    I const tid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    I const i_inc = nthreads;
+
+    lasr_body<S, T, I>(side, pivot, direct, m, n, c_, s_, A_, lda, tid, i_inc);
 }
 
 template <typename S, typename T, typename I>
@@ -1862,6 +1876,7 @@ static void call_lasq1(int& n, float& D_, float& E_, float& rwork_, int& info_ar
     slasq1_(&n, &D_, &E_, &rwork_, &info_arg);
 };
 
+#ifdef USE_LAPACK
 static void call_lasr(char& side,
                       char& pivot,
                       char& direct,
@@ -1932,6 +1947,17 @@ static void call_lasr(char& side,
 {
     dlasr_(&side, &pivot, &direct, &m, &n, &c, &s, &A, &lda);
 };
+#else
+template <typename S, typename T, typename I>
+static void call_lasr(char& side, char& pivot, char& direct, I& m, I& n, S& c, S& s, T& A, I& lda)
+{
+    I const tid = 0;
+    I const i_inc = 1;
+
+    lasr_body<S, T, I>(side, pivot, direct, m, n, &c, &s, &A, lda, tid, i_inc);
+};
+
+#endif
 
 template <typename S, typename T, typename I>
 static void bdsqr_single_template(char uplo,
