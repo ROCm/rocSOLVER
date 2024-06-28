@@ -989,6 +989,7 @@ static void call_lamch(char& cmach, double& eps)
 {
     eps = ((cmach == 'E') || (cmach == 'e')) ? std::numeric_limits<double>::epsilon()
         : ((cmach == 'S') || (cmach == 's')) ? std::numeric_limits<double>::min()
+        : ((cmach == 'B') || (cmach == 's')) ? FLT_RADIX
                                              : std::numeric_limits<double>::min();
 }
 
@@ -996,6 +997,7 @@ static void call_lamch(char& cmach, float& eps)
 {
     eps = ((cmach == 'E') || (cmach == 'e')) ? std::numeric_limits<float>::epsilon()
         : ((cmach == 'S') || (cmach == 's')) ? std::numeric_limits<float>::min()
+        : ((cmach == 'B') || (cmach == 's')) ? FLT_RADIX
                                              : std::numeric_limits<float>::min();
 }
 
@@ -1144,6 +1146,8 @@ static void call_las2(T& f, T& g, T& h, T& ssmin, T& ssmax)
 
 #endif
 
+#ifdef USE_LAPACK
+
 static void call_lartg(double& f, double& g, double& c, double& s, double& r)
 {
     dlartg_(&f, &g, &c, &s, &r);
@@ -1171,6 +1175,286 @@ static void call_lartg(std::complex<double>& f,
 {
     zlartg_(&f, &g, &c, &s, &r);
 }
+#else
+
+static float real_part(float z)
+{
+    return (z);
+};
+static float real_part(std::complex<float> z)
+{
+    return (z.real());
+};
+static float real_part(rocblas_complex_num<float> z)
+{
+    return (z.real());
+};
+
+static double real_part(double z)
+{
+    return (z);
+};
+static double real_part(std::complex<double> z)
+{
+    return (z.real());
+};
+static double real_part(rocblas_complex_num<double> z)
+{
+    return (z.real());
+};
+
+static float imag_part(float z)
+{
+    return (0);
+};
+static float imag_part(std::complex<float> z)
+{
+    return (z.imag());
+};
+static float imag_part(rocblas_complex_num<float> z)
+{
+    return (z.imag());
+};
+
+static double imag_part(double z)
+{
+    return (0);
+};
+static double imag_part(std::complex<double> z)
+{
+    return (z.imag());
+};
+static double imag_part(rocblas_complex_num<double> z)
+{
+    return (z.imag());
+};
+
+template <typename T, typename S>
+static void call_lartg(T& f, T& g, S& cs, T& sn, T& r)
+{
+    // ------------------------------------------------------
+    // lartg generates a plane rotation so that
+    // [  cs  sn ] * [ f ] = [ r ]
+    // [ -sn  cs ]   [ g ]   [ 0 ]
+    //
+    // where cs * cs + abs(sn)*abs(sn) == 1
+    // if g == 0, then cs == 1, sn == 0
+    // if f == 0, then cs = 0, sn is chosen so that r is real
+    // ------------------------------------------------------
+
+    auto Not = [](bool x) { return (!x); };
+    auto abs = [](auto x) { return (std::abs(x)); };
+    auto dble = [](auto z) { return (static_cast<double>(real_part(z))); };
+    auto dimag = [](auto z) { return (static_cast<double>(imag_part(z))); };
+    auto log = [](auto x) { return (std::log(x)); };
+    auto sqrt = [](auto x) { return (std::sqrt(x)); };
+    auto max = [](auto x, auto y) { return ((x > y) ? x : y); };
+    auto disnan = [](auto x) -> bool { return (isnan(x)); };
+    auto dcmplx = [](auto x, auto y) -> T {
+        bool constexpr is_complex_type
+            = !(std::is_same<T, float>::value || std::is_same<T, double>::value);
+
+        if constexpr(is_complex_type)
+        {
+            return (T(x, y));
+        }
+        else
+        {
+            return (T(x));
+        };
+    };
+    auto dconjg = [&](auto z) { return (dcmplx(dble(z), -dimag(z))); };
+
+    auto square = [](auto x) { return (x * x); };
+
+    auto abs1 = [&](auto ff) { return (max(abs(dble(ff)), abs(dimag(ff)))); };
+    auto abssq = [&](auto ff) { return (square(dble(ff)) + square(dimag(ff))); };
+
+    // -----------------------------------------
+    // compute  sqrt( x * x + y * y )
+    // without unnecessary overflow or underflow
+    // -----------------------------------------
+    auto dlapy2 = [&](auto x, auto y) {
+        auto const one = 1;
+        auto const zero = 0;
+
+        auto ddlapy2 = x;
+        bool const x_is_nan = disnan(x);
+        bool const y_is_nan = disnan(y);
+        if(x_is_nan)
+            ddlapy2 = x;
+        if(y_is_nan)
+            ddlapy2 = y;
+
+        if(Not(x_is_nan || y_is_nan))
+        {
+            auto const xabs = abs(x);
+            auto const yabs = abs(y);
+            auto const w = max(xabs, yabs);
+            auto const z = min(xabs, yabs);
+            if(z == zero)
+            {
+                ddlapy2 = w;
+            }
+            else
+            {
+                ddlapy2 = w * sqrt(one + square(z / w));
+            }
+        }
+        return (ddlapy2);
+    };
+
+    char cmach = 'E';
+    S const zero = 0;
+    S const one = 1;
+    S const two = 2;
+    T const czero = 0;
+
+    bool has_work;
+    bool first;
+    int count, i;
+    S d, di, dr, eps, f2, f2s, g2, g2s, safmin;
+    S safmn2, safmx2, scale;
+    T ff, fs, gs;
+
+    // safmin = dlamch( 's' )
+    cmach = 'S';
+    call_lamch(cmach, safmin);
+
+    // eps = dlamch( 'e' )
+    cmach = 'E';
+    call_lamch(cmach, eps);
+
+    // safmn2 = dlamch( 'b' )**int( log( safmin / eps ) / log( dlamch( 'b' ) ) / two )
+    cmach = 'B';
+    S radix = 2;
+    call_lamch(cmach, radix);
+
+    int const npow = (log(safmin / eps) / log(radix) / two);
+    safmn2 = std::pow(radix, npow);
+    safmx2 = one / safmn2;
+    scale = max(abs1(f), abs1(g));
+    fs = f;
+    gs = g;
+    count = 0;
+
+    if(scale >= safmx2)
+    {
+    L10:
+        do
+        {
+            count = count + 1;
+            fs = fs * safmn2;
+            gs = gs * safmn2;
+            scale = scale * safmn2;
+            // if( (scale >= safmx2) &&  (count  <  20) ) go to L10
+            has_work = ((scale >= safmx2) && (count < 20));
+        } while(has_work);
+    }
+    else
+    {
+        if(scale <= safmn2)
+        {
+            if((g == czero) || disnan(abs(g)))
+            {
+                cs = one;
+                sn = czero;
+                r = f;
+                return;
+            }
+        L20:
+            do
+            {
+                count = count - 1;
+                fs = fs * safmx2;
+                gs = gs * safmx2;
+                scale = scale * safmx2;
+                // if( scale <= safmn2 )        goto L20;
+                has_work = (scale <= safmn2);
+            } while(has_work);
+        }
+        f2 = abssq(fs);
+        g2 = abssq(gs);
+        if(f2 <= max(g2, one) * safmin)
+        {
+            //
+            //        this is a rare case: f is very small.
+            //
+            if(f == czero)
+            {
+                cs = zero;
+                r = dlapy2(dble(g), dimag(g));
+                //           do complex/real division explicitly with two real divisions
+                d = dlapy2(dble(gs), dimag(gs));
+                sn = dcmplx(dble(gs) / d, -dimag(gs) / d);
+                return;
+            }
+            f2s = dlapy2(dble(fs), dimag(fs));
+            //        g2 and g2s are accurate
+            //        g2 is at least safmin, and g2s is at least safmn2
+            g2s = sqrt(g2);
+            //        error in cs from underflow in f2s is at most
+            //        unfl / safmn2  <  sqrt(unfl*eps) .lt. eps
+            //        if max(g2,one)=g2,  then f2  <  g2*safmin,
+            //        and so cs  <  sqrt(safmin)
+            //        if max(g2,one)=one,  then f2  <  safmin
+            //        and so cs  <  sqrt(safmin)/safmn2 = sqrt(eps)
+            //        therefore, cs = f2s/g2s / sqrt( 1 + (f2s/g2s)**2 ) = f2s/g2s
+            cs = f2s / g2s;
+            //        make sure abs(ff) = 1
+            //        do complex/real division explicitly with 2 real divisions
+            if(abs1(f) > one)
+            {
+                d = dlapy2(dble(f), dimag(f));
+                ff = dcmplx(dble(f) / d, dimag(f) / d);
+            }
+            else
+            {
+                dr = safmx2 * dble(f);
+                di = safmx2 * dimag(f);
+                d = dlapy2(dr, di);
+                ff = dcmplx(dr / d, di / d);
+            }
+            sn = ff * dcmplx(dble(gs) / g2s, -dimag(gs) / g2s);
+            r = cs * f + sn * g;
+        }
+        else
+        {
+            //
+            //        this is the most common case.
+            //        neither f2 nor f2/g2 are less than safmin
+            //        f2s cannot overflow, and it is accurate
+            //
+            f2s = sqrt(one + g2 / f2);
+            //        do the f2s(real)*fs(complex) multiply with two real multiplies
+            r = dcmplx(f2s * dble(fs), f2s * dimag(fs));
+            cs = one / f2s;
+            d = f2 + g2;
+            //        do complex/real division explicitly with two real divisions
+            sn = dcmplx(dble(r) / d, dimag(r) / d);
+            sn = sn * dconjg(gs);
+            if(count != 0)
+            {
+                if(count > 0)
+                {
+                    for(i = 1; i <= count; i++)
+                    {
+                        r = r * safmx2;
+                    };
+                }
+                else
+                {
+                    for(i = 1; i <= -count; i++)
+                    {
+                        r = r * safmn2;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#endif
 
 #ifdef USE_LAPACK
 static void call_scal(int& n, rocblas_complex_num<float>& da, rocblas_complex_num<float>& zx, int& incx)
