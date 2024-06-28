@@ -62,9 +62,9 @@ __host__ __device__ static void lasr_body(char const side,
                                           char const direct,
                                           I const m,
                                           I const n,
-                                          S const* const c_,
-                                          S const* const s_,
-                                          T* const A_,
+                                          S const* const __restrict__ c_,
+                                          S const* const __restrict__ s_,
+                                          T* const __restrict__ A_,
                                           I const lda,
                                           I const tid,
                                           I const i_inc)
@@ -77,17 +77,16 @@ __host__ __device__ static void lasr_body(char const side,
         assert((1 <= lda));
         assert((1 <= j));
 
-        // return ((i - 1) + (j - 1) * int64_t(lda));
         return (i + j * lda - (1 + lda));
     };
 
     auto indx1f = [](auto i) -> int64_t {
         assert((1 <= i));
-        return (i - int64_t(1));
+        return (i - (1));
     };
 
-    auto c = [&](auto i) -> const S& { return (c_[indx1f(i)]); };
-    auto s = [&](auto i) -> const S& { return (s_[indx1f(i)]); };
+    auto c = [&](auto i) -> const S { return (c_[(i)-1]); };
+    auto s = [&](auto i) -> const S { return (s_[(i)-1]); };
     auto A = [&](auto i, auto j) -> T& { return (A_[indx2f(i, j, lda)]); };
 
     const S one = 1;
