@@ -109,7 +109,8 @@ public:
 
             if(valid_parameters)
             {
-                this->m_data = new T[this->m_nmemb];
+                // Value-initialization (`new T{}` or `new T[]{}`) of a non-class type yields zero-initialization
+                this->m_data = new T[this->m_nmemb]{};
             }
         }
     }
