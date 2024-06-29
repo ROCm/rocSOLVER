@@ -92,6 +92,8 @@ __host__ __device__ static void lasr_body(char const side,
     const S one = 1;
     const S zero = 0;
 
+    constexpr bool use_reorder = true;
+
     // ----------------
     // check arguments
     // ----------------
@@ -141,21 +143,38 @@ __host__ __device__ static void lasr_body(char const side,
         //  P = P(z-1) * ... * P(2) * P(1)
         //  -----------------------------
         {
-            for(I j = 1; j <= (m - 1); j++)
+            if constexpr(use_reorder)
             {
-                const auto ctemp = c(j);
-                const auto stemp = s(j);
-                if((ctemp != one) || (stemp != zero))
+                for(I i = 1 + tid; i <= n; i += i_inc)
                 {
-                    for(I i = 1 + tid; i <= n; i += i_inc)
+                    for(I j = 1; j <= (m - 1); j++)
                     {
+                        const auto ctemp = c(j);
+                        const auto stemp = s(j);
                         const auto temp = A(j + 1, i);
                         A(j + 1, i) = ctemp * temp - stemp * A(j, i);
                         A(j, i) = stemp * temp + ctemp * A(j, i);
                     }
-                };
-            };
-        };
+                }
+            }
+            else
+            {
+                for(I j = 1; j <= (m - 1); j++)
+                {
+                    const auto ctemp = c(j);
+                    const auto stemp = s(j);
+                    if((ctemp != one) || (stemp != zero))
+                    {
+                        for(I i = 1 + tid; i <= n; i += i_inc)
+                        {
+                            const auto temp = A(j + 1, i);
+                            A(j + 1, i) = ctemp * temp - stemp * A(j, i);
+                            A(j, i) = stemp * temp + ctemp * A(j, i);
+                        }
+                    }
+                }
+            }
+        }
 
         return;
     };
@@ -173,20 +192,37 @@ __host__ __device__ static void lasr_body(char const side,
         auto const istart = 1;
         auto const iend = n;
 
-        for(I j = jend; j >= jstart; j--)
+        if constexpr(use_reorder)
         {
-            const auto ctemp = c(j);
-            const auto stemp = s(j);
-            if((ctemp != one) || (stemp != zero))
+            for(I i = istart + tid; i <= iend; i += i_inc)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
+                for(I j = jend; j >= jstart; j--)
                 {
+                    const auto ctemp = c(j);
+                    const auto stemp = s(j);
                     const auto temp = A(j + 1, i);
                     A(j + 1, i) = ctemp * temp - stemp * A(j, i);
                     A(j, i) = stemp * temp + ctemp * A(j, i);
-                };
-            };
-        };
+                }
+            }
+        }
+        else
+        {
+            for(I j = jend; j >= jstart; j--)
+            {
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                if((ctemp != one) || (stemp != zero))
+                {
+                    for(I i = istart + tid; i <= iend; i += i_inc)
+                    {
+                        const auto temp = A(j + 1, i);
+                        A(j + 1, i) = ctemp * temp - stemp * A(j, i);
+                        A(j, i) = stemp * temp + ctemp * A(j, i);
+                    }
+                }
+            }
+        }
 
         return;
     };
