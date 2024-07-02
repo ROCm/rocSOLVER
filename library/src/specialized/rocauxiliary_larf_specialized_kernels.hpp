@@ -32,6 +32,7 @@
 
 #pragma once
 
+#include "lapack_device_functions.hpp"
 #include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
@@ -66,22 +67,27 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARF_SSKER_THREADS)
     T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
     const T* tau = tauA + bid * strideP;
 
-    // // shared variables
-    // __shared__ T sval[LARF_SSKER_THREADS];
+    // shared variables
+    __shared__ T sval[LARF_SSKER_THREADS];
+    __shared__ T xs[LARF_SSKER_MAX_DIM];
 
+    // load x into shared memory
     I start = (incX > 0 ? 0 : (m - 1) * -incX);
-    for(I j = 0; j < n; j += 1)
-    {
-        T temp = 0;
-        for(I i = 0; i < m; i++)
-        {
-            temp += conj(A[i + j * lda]) * x[start + i * incX];
-        }
+    for(I i = rid; i < m; i += LARF_SSKER_THREADS)
+        xs[i] = x[start + i * incX];
+    __syncthreads();
 
-        temp = -tau[0] * conj(temp);
-        for(I i = 0; i < m; i++)
+    for(I j = cid; j < n; j += LARF_SSKER_BLOCKS)
+    {
+        // gemv
+        dot<LARF_SSKER_THREADS, true, T>(rid, m, xs, 1, A + j * lda, 1, sval);
+        __syncthreads();
+
+        // ger
+        T temp = -tau[0] * conj(sval[0]);
+        for(I i = rid; i < m; i += LARF_SSKER_THREADS)
         {
-            A[i + j * lda] += temp * x[start + i * incX];
+            A[i + j * lda] += temp * xs[i];
         }
     }
 }
@@ -110,22 +116,27 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARF_SSKER_THREADS)
     T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
     const T* tau = tauA + bid * strideP;
 
-    // // shared variables
-    // __shared__ T sval[LARF_SSKER_THREADS];
+    // shared variables
+    __shared__ T sval[LARF_SSKER_THREADS];
+    __shared__ T xs[LARF_SSKER_MAX_DIM];
 
+    // load x into shared memory
     I start = (incX > 0 ? 0 : (n - 1) * -incX);
-    for(I i = 0; i < m; i += 1)
-    {
-        T temp = 0;
-        for(I j = 0; j < n; j++)
-        {
-            temp += A[i + j * lda] * x[start + j * incX];
-        }
+    for(I j = cid; j < n; j += LARF_SSKER_THREADS)
+        xs[j] = x[start + j * incX];
+    __syncthreads();
 
-        temp = -tau[0] * temp;
-        for(I j = 0; j < n; j++)
+    for(I i = rid; i < m; i += LARF_SSKER_BLOCKS)
+    {
+        // gemv
+        dot<LARF_SSKER_THREADS, false, T>(cid, n, xs, 1, A + i, lda, sval);
+        __syncthreads();
+
+        // ger
+        T temp = -tau[0] * sval[0];
+        for(I j = cid; j < n; j += LARF_SSKER_THREADS)
         {
-            A[i + j * lda] += temp * conj(x[start + j * incX]);
+            A[i + j * lda] += temp * conj(xs[j]);
         }
     }
 }
@@ -151,20 +162,25 @@ rocblas_status larf_run_small(rocblas_handle handle,
                               const rocblas_stride strideA,
                               const I batch_count)
 {
-    // dim3 grid(batch_count, LARF_SSKER_BLOCKS, 1);
-    // dim3 block(LARF_SSKER_THREADS, 1, 1);
-    dim3 grid(batch_count, 1, 1);
-    dim3 block(1, 1, 1);
-
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
     if(side == rocblas_side_left)
+    {
+        dim3 grid(batch_count, min(n, LARF_SSKER_BLOCKS), 1);
+        dim3 block(LARF_SSKER_THREADS, 1, 1);
+
         ROCSOLVER_LAUNCH_KERNEL(larf_left_kernel_small<T>, grid, block, 0, stream, m, n, x, shiftX,
                                 incX, strideX, tau, strideP, A, shiftA, lda, strideA);
+    }
     else
+    {
+        dim3 grid(batch_count, min(m, LARF_SSKER_BLOCKS), 1);
+        dim3 block(LARF_SSKER_THREADS, 1, 1);
+
         ROCSOLVER_LAUNCH_KERNEL(larf_right_kernel_small<T>, grid, block, 0, stream, m, n, x, shiftX,
                                 incX, strideX, tau, strideP, A, shiftA, lda, strideA);
+    }
 
     return rocblas_status_success;
 }
