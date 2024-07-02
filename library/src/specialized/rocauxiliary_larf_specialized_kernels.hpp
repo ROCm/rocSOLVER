@@ -46,34 +46,88 @@ template <typename T, typename I, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(LARF_SSKER_THREADS)
     larf_left_kernel_small(const I m,
                            const I n,
-                           U x,
+                           U xx,
                            const rocblas_stride shiftX,
                            const I incX,
                            const rocblas_stride strideX,
-                           const T* alpha,
+                           const T* tauA,
                            const rocblas_stride strideP,
-                           U A,
+                           U AA,
                            const rocblas_stride shiftA,
                            const I lda,
                            const rocblas_stride strideA)
 {
+    I bid = hipBlockIdx_x;
+    I rid = hipThreadIdx_x;
+    I cid = hipBlockIdx_y;
+
+    // select batch instance
+    T* x = load_ptr_batch<T>(xx, bid, shiftX, strideX);
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    const T* tau = tauA + bid * strideP;
+
+    // // shared variables
+    // __shared__ T sval[LARF_SSKER_THREADS];
+
+    I start = (incX > 0 ? 0 : (m - 1) * -incX);
+    for(I j = 0; j < n; j += 1)
+    {
+        T temp = 0;
+        for(I i = 0; i < m; i++)
+        {
+            temp += conj(A[i + j * lda]) * x[start + i * incX];
+        }
+
+        temp = -tau[0] * conj(temp);
+        for(I i = 0; i < m; i++)
+        {
+            A[i + j * lda] += temp * x[start + i * incX];
+        }
+    }
 }
 
 template <typename T, typename I, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(LARF_SSKER_THREADS)
     larf_right_kernel_small(const I m,
                             const I n,
-                            U x,
+                            U xx,
                             const rocblas_stride shiftX,
                             const I incX,
                             const rocblas_stride strideX,
-                            const T* alpha,
+                            const T* tauA,
                             const rocblas_stride strideP,
-                            U A,
+                            U AA,
                             const rocblas_stride shiftA,
                             const I lda,
                             const rocblas_stride strideA)
 {
+    I bid = hipBlockIdx_x;
+    I cid = hipThreadIdx_x;
+    I rid = hipBlockIdx_y;
+
+    // select batch instance
+    T* x = load_ptr_batch<T>(xx, bid, shiftX, strideX);
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    const T* tau = tauA + bid * strideP;
+
+    // // shared variables
+    // __shared__ T sval[LARF_SSKER_THREADS];
+
+    I start = (incX > 0 ? 0 : (n - 1) * -incX);
+    for(I i = 0; i < m; i += 1)
+    {
+        T temp = 0;
+        for(I j = 0; j < n; j++)
+        {
+            temp += A[i + j * lda] * x[start + j * incX];
+        }
+
+        temp = -tau[0] * temp;
+        for(I j = 0; j < n; j++)
+        {
+            A[i + j * lda] += temp * conj(x[start + j * incX]);
+        }
+    }
 }
 
 /*************************************************************
@@ -89,7 +143,7 @@ rocblas_status larf_run_small(rocblas_handle handle,
                               const rocblas_stride shiftX,
                               const I incX,
                               const rocblas_stride strideX,
-                              const T* alpha,
+                              const T* tau,
                               const rocblas_stride strideP,
                               U A,
                               const rocblas_stride shiftA,
@@ -97,18 +151,20 @@ rocblas_status larf_run_small(rocblas_handle handle,
                               const rocblas_stride strideA,
                               const I batch_count)
 {
-    dim3 grid(batch_count, LARF_SSKER_BLOCKS, 1);
-    dim3 block(LARF_SSKER_THREADS, 1, 1);
+    // dim3 grid(batch_count, LARF_SSKER_BLOCKS, 1);
+    // dim3 block(LARF_SSKER_THREADS, 1, 1);
+    dim3 grid(batch_count, 1, 1);
+    dim3 block(1, 1, 1);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
     if(side == rocblas_side_left)
         ROCSOLVER_LAUNCH_KERNEL(larf_left_kernel_small<T>, grid, block, 0, stream, m, n, x, shiftX,
-                                incX, strideX, alpha, strideP, A, shiftA, lda, strideA);
+                                incX, strideX, tau, strideP, A, shiftA, lda, strideA);
     else
         ROCSOLVER_LAUNCH_KERNEL(larf_right_kernel_small<T>, grid, block, 0, stream, m, n, x, shiftX,
-                                incX, strideX, alpha, strideP, A, shiftA, lda, strideA);
+                                incX, strideX, tau, strideP, A, shiftA, lda, strideA);
 
     return rocblas_status_success;
 }
@@ -117,11 +173,11 @@ rocblas_status larf_run_small(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_LARF_SMALL(T, I, U)                                                          \
-    template rocblas_status larf_run_small<T, I, U>(                                             \
-        rocblas_handle handle, const rocblas_side side, const I m, const I n, U x,               \
-        const rocblas_stride shiftX, const I incX, const rocblas_stride strideX, const T* alpha, \
-        const rocblas_stride strideP, U A, const rocblas_stride shiftA, const I lda,             \
+#define INSTANTIATE_LARF_SMALL(T, I, U)                                                        \
+    template rocblas_status larf_run_small<T, I, U>(                                           \
+        rocblas_handle handle, const rocblas_side side, const I m, const I n, U x,             \
+        const rocblas_stride shiftX, const I incX, const rocblas_stride strideX, const T* tau, \
+        const rocblas_stride strideP, U A, const rocblas_stride shiftA, const I lda,           \
         const rocblas_stride strideA, const I batch_count)
 
 ROCSOLVER_END_NAMESPACE
