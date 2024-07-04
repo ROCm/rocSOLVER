@@ -81,7 +81,7 @@ rocblas_status rocsolver_syevj_heevj_batched_impl(rocblas_handle handle,
     // memory workspace allocation
     void *Acpy, *J, *norms, *top, *bottom, *completed;
     rocblas_device_malloc mem(handle, size_Acpy, size_J, size_norms, size_top, size_bottom,
-                              size_completed, size_norms);
+                              size_completed);
 
     if(!mem)
         return rocblas_status_memory_error;
