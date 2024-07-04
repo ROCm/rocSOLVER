@@ -59,6 +59,12 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
+    // size of array of pointers to workspace
+    if(BATCHED)
+        *size_workArr = sizeof(T*) * batch_count;
+    else
+        *size_workArr = 0;
+
     // if small size no workspace needed
     bool ssker_left
         = (side == rocblas_side_left && m <= LARF_SSKER_MAX_DIM && n <= LARF_SSKER_MIN_DIM);
@@ -66,9 +72,7 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
         = (side == rocblas_side_right && m <= LARF_SSKER_MIN_DIM && n <= LARF_SSKER_MAX_DIM);
     if(ssker_left || ssker_right)
     {
-        *size_scalars = 0;
         *size_Abyx = 0;
-        *size_workArr = 0;
         return;
     }
 
@@ -80,12 +84,6 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
     else
         *size_Abyx = std::max(m, n);
     *size_Abyx *= sizeof(T) * batch_count;
-
-    // size of array of pointers to workspace
-    if(BATCHED)
-        *size_workArr = sizeof(T*) * batch_count;
-    else
-        *size_workArr = 0;
 }
 
 template <typename T, typename I, typename U>
