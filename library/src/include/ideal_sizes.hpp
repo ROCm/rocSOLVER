@@ -37,7 +37,7 @@
 /******************************* larf ****************************************
 *******************************************************************************/
 #ifndef LARF_SSKER_THREADS
-#define LARF_SSKER_THREADS 128 // must be 64, 128, 256, 512, or 1024
+#define LARF_SSKER_THREADS 256 // must be 64, 128, 256, 512, or 1024
 #endif
 
 #ifndef LARF_SSKER_BLOCKS
@@ -45,7 +45,7 @@
 #endif
 
 #ifndef LARF_SSKER_MAX_DIM
-#define LARF_SSKER_MAX_DIM 512
+#define LARF_SSKER_MAX_DIM 2048
 #endif
 
 #ifndef LARF_SSKER_MIN_DIM
@@ -55,11 +55,11 @@
 /******************************* larfg ****************************************
 *******************************************************************************/
 #ifndef LARFG_SSKER_THREADS
-#define LARFG_SSKER_THREADS 128 // must be 64, 128, 256, 512, or 1024
+#define LARFG_SSKER_THREADS 256 // must be 64, 128, 256, 512, or 1024
 #endif
 
 #ifndef LARFG_SSKER_MAX_N
-#define LARFG_SSKER_MAX_N 1024
+#define LARFG_SSKER_MAX_N 2048
 #endif
 
 /***************** geqr2/geqrf and geql2/geqlf ********************************
