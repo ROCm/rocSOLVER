@@ -5,6 +5,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ## (Unreleased) rocSOLVER
 ### Added
 ### Optimized
+- Improved performanced of LARFG, LARF, and downstream functions such as GEQR2 and GEQRF
+
 ### Changed
 ### Deprecated
 ### Removed

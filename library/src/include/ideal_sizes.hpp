@@ -45,11 +45,11 @@
 #endif
 
 #ifndef LARF_SSKER_MAX_DIM
-#define LARF_SSKER_MAX_DIM 2048
+#define LARF_SSKER_MAX_DIM 2048 // should be >= LARF_SSKER_THREADS
 #endif
 
 #ifndef LARF_SSKER_MIN_DIM
-#define LARF_SSKER_MIN_DIM 64
+#define LARF_SSKER_MIN_DIM 64 // should be >= LARF_SSKER_BLOCKS
 #endif
 
 /******************************* larfg ****************************************
