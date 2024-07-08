@@ -12,6 +12,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - GEQRF_64 (with batched and strided\_batched versions)
 
 ### Optimized
+- Improved performanced of LARFG, LARF, and downstream functions such as GEQR2 and GEQRF
+
 ### Changed
 - The rocsparse library is now an optional dependency at runtime. If rocsparse
   is not available, rocsolver's sparse refactorization and solvers functions
