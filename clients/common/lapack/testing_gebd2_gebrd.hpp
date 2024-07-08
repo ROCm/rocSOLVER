@@ -233,7 +233,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     constexpr bool COMPLEX = rocblas_is_complex<T>;
     constexpr bool VERIFY_IMPLICIT_TEST = false;
 
-    std::vector<T> hW(max(m, n));
+    std::vector<T> hW(std::max(m, n));
 
     // input data initialization
     gebd2_gebrd_initData<true, true, T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq, stQ,
@@ -259,13 +259,14 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
         {
             memcpy(hARes[b], hA[b], lda * n * sizeof(T));
             GEBRD
-            ? cpu_gebrd(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m, n))
+            ? cpu_gebrd(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(),
+                        std::max(m, n))
             : cpu_gebd2(m, n, hARes[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
         }
     }
 
     // reconstruct A from the factorization for implicit testing
-    std::vector<T> vec(max(m, n));
+    std::vector<T> vec(std::max(m, n));
     vec[0] = 1;
     for(rocblas_int b = 0; b < bc; ++b)
     {
@@ -376,7 +377,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    std::vector<T> hW(max(m, n));
+    std::vector<T> hW(std::max(m, n));
 
     if(!perf)
     {
@@ -388,7 +389,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
         for(rocblas_int b = 0; b < bc; ++b)
         {
             GEBRD
-            ? cpu_gebrd(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), max(m, n))
+            ? cpu_gebrd(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), std::max(m, n))
             : cpu_gebd2(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data());
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
@@ -447,10 +448,10 @@ void testing_gebd2_gebrd(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stD = argus.get<rocblas_stride>("strideD", min(m, n));
-    rocblas_stride stE = argus.get<rocblas_stride>("strideE", min(m, n) - 1);
-    rocblas_stride stQ = argus.get<rocblas_stride>("strideQ", min(m, n));
-    rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
+    rocblas_stride stD = argus.get<rocblas_stride>("strideD", std::min(m, n));
+    rocblas_stride stE = argus.get<rocblas_stride>("strideE", std::min(m, n) - 1);
+    rocblas_stride stQ = argus.get<rocblas_stride>("strideQ", std::min(m, n));
+    rocblas_stride stP = argus.get<rocblas_stride>("strideP", std::min(m, n));
 
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
@@ -462,10 +463,10 @@ void testing_gebd2_gebrd(Arguments& argus)
 
     // determine sizes
     size_t size_A = lda * n;
-    size_t size_D = min(m, n);
-    size_t size_E = min(m, n) - 1;
-    size_t size_Q = min(m, n);
-    size_t size_P = min(m, n);
+    size_t size_D = std::min(m, n);
+    size_t size_E = std::min(m, n) - 1;
+    size_t size_Q = std::min(m, n);
+    size_t size_P = std::min(m, n);
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;

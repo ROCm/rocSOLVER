@@ -157,11 +157,11 @@ void print_to_stream(std::ostream& os,
     else
     {
         // symmetric case
-        for(int i = 0; i < min(m, n); i++)
+        for(int i = 0; i < std::min(m, n); i++)
         {
             if(!empty)
                 s += "    ";
-            for(int j = 0; j < min(m, n); j++)
+            for(int j = 0; j < std::min(m, n); j++)
             {
                 if(uplo == rocblas_fill_upper)
                 {
@@ -203,7 +203,7 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_fill uplo = rocblas_fill_full,
                          const rocblas_int inca = 1)
 {
-    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+    size_t to_read = std::max(inca * (m - 1) + m, lda * (n - 1) + n);
 
     std::vector<T> hA(to_read);
     THROW_IF_HIP_ERROR(
@@ -225,7 +225,7 @@ void print_device_matrix(std::ostream& os,
                          const rocblas_fill uplo = rocblas_fill_full,
                          const rocblas_int inca = 1)
 {
-    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+    size_t to_read = std::max(inca * (m - 1) + m, lda * (n - 1) + n);
 
     std::vector<T> hA(to_read);
     T* AA[1];
@@ -247,7 +247,7 @@ void print_device_matrix(const std::string file,
                          const rocblas_fill uplo = rocblas_fill_full,
                          const rocblas_int inca = 1)
 {
-    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+    size_t to_read = std::max(inca * (m - 1) + m, lda * (n - 1) + n);
 
     std::ofstream os(file);
     std::vector<T> hA(to_read);
@@ -269,7 +269,7 @@ void print_device_matrix(const std::string file,
                          const rocblas_fill uplo = rocblas_fill_full,
                          const rocblas_int inca = 1)
 {
-    size_t to_read = max(inca * (m - 1) + m, lda * (n - 1) + n);
+    size_t to_read = std::max(inca * (m - 1) + m, lda * (n - 1) + n);
 
     std::ofstream os(file);
     std::vector<T> hA(to_read);

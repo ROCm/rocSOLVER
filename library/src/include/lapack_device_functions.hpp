@@ -811,7 +811,7 @@ __device__ void lagtf(rocblas_int n, T* a, T lambda, T* b, T* c, T tol, T* d, ro
         return;
     }
 
-    tol = max(tol, eps);
+    tol = std::max(tol, eps);
     scale1 = abs(a[0]) + abs(b[0]);
     for(rocblas_int k = 0; k < n - 1; k++)
     {
@@ -859,7 +859,7 @@ __device__ void lagtf(rocblas_int n, T* a, T lambda, T* b, T* c, T tol, T* d, ro
             }
         }
 
-        if(max(piv1, piv2) <= tol && in[n - 1] == 0)
+        if(std::max(piv1, piv2) <= tol && in[n - 1] == 0)
             in[n - 1] = k + 1;
     }
 
@@ -882,9 +882,9 @@ __device__ void
     {
         tol = abs(a[0]);
         if(n > 1)
-            tol = max(tol, max(abs(a[1]), abs(b[0])));
+            tol = std::max(tol, std::max(abs(a[1]), abs(b[0])));
         for(k = 2; k < n; k++)
-            tol = max(max(tol, abs(a[k])), max(abs(b[k - 1]), abs(d[k - 2])));
+            tol = std::max(std::max(tol, abs(a[k])), std::max(abs(b[k - 1]), abs(d[k - 2])));
         tol = tol * eps;
         if(tol == 0)
             tol = eps;

@@ -483,10 +483,10 @@ void testing_geblttrs_npvt_interleaved(Arguments& argus)
 
     // determine sizes
     rocblas_int n = nb * nblocks;
-    size_t size_A = max(size_t(lda) * n, stA) * bc;
-    size_t size_B = max(size_t(ldb) * n, stB) * bc;
-    size_t size_C = max(size_t(ldc) * n, stC) * bc;
-    size_t size_X = max(size_t(ldx) * nrhs * nblocks, stX) * bc;
+    size_t size_A = std::max(size_t(lda) * n, size_t(stA)) * bc;
+    size_t size_B = std::max(size_t(ldb) * n, size_t(stB)) * bc;
+    size_t size_C = std::max(size_t(ldc) * n, size_t(stC)) * bc;
+    size_t size_X = std::max(size_t(ldx) * nrhs * nblocks, size_t(stX)) * bc;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_XRes = size_X;
