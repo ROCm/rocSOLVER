@@ -872,9 +872,8 @@ ROCSOLVER_KERNEL void syevj_offd_kernel(const rocblas_int blocks,
     if(completed[bid + 1])
         return;
 
-    rocblas_int i = hipBlockIdx_x == 0 ? 0 : top[hipBlockIdx_x];
+    rocblas_int i = top[hipBlockIdx_x];
     rocblas_int j = bottom[hipBlockIdx_x];
-    __syncthreads();
     if(i >= blocks || j >= blocks)
         return;
     if(i > j)
@@ -1044,7 +1043,7 @@ ROCSOLVER_KERNEL void syevj_offd_rotate(const bool skip_block,
     if(completed[bid + 1])
         return;
 
-    rocblas_int i = bix == 0 ? 0 : top[bix];
+    rocblas_int i = top[bix];
     rocblas_int j = bottom[bix];
     if(i >= blocks || j >= blocks)
         return;
@@ -1143,86 +1142,26 @@ ROCSOLVER_KERNEL void
     };
 
     rocblas_int tidx = hipThreadIdx_x;
-    [[maybe_unused]] rocblas_int dimx = hipBlockDim_x;
-    if (tidx >= half_blocks)
-    {
-        return;
-    }
-    /* printf("Input pair %d: [%d, %d]\n", tidx, top[tidx], bottom[tidx]); */
-
+    rocblas_int dimx = hipBlockDim_x;
     rocblas_int k{};
+
     if (tidx == 0)
     {
-        k = g(top[tidx + 1]) + 1;
-        top[tidx] = k;
-        bottom[tidx] = f(2 * n - tidx + k);
+        k = g(top[1]) + 1;
+        bottom[0] = f(2 * n + k);
     }
     __syncthreads();
 
-    /* for (rocblas_int tidx = 1; tidx <= n; ++tidx) */
-    /* else if (tidx < half_blocks) */
     if (tidx > 0)
     {
-        /* k = g(top[tidx]) - (tidx - 1) + 1; */
-        k = top[0];
-        top[tidx] = f(tidx - 1 + k);
-        bottom[tidx] = f(2 * n - tidx + k);
+        for (rocblas_int l = tidx; l < half_blocks; l += dimx)
+        {
+            k = g(top[tidx]) - (tidx - 1) + 1;
+            top[tidx] = f(tidx - 1 + k);
+            bottom[tidx] = f(2 * n - tidx + k);
+        }
     }
-    /* printf("Output pair %d: [%d, %d]\n", tidx, top[tidx], bottom[tidx]); */
 }
-/* template <typename T> */
-/* ROCSOLVER_KERNEL void */
-/*     syevj_cycle_pairs(const rocblas_int half_blocks, rocblas_int* top, rocblas_int* bottom) */
-/* { */
-/*     rocblas_int tix = hipThreadIdx_x; */
-/*     rocblas_int i, j, k; */
-
-/*     if(half_blocks <= hipBlockDim_x && tix < half_blocks) */
-/*     { */
-/*         if(tix == 0) */
-/*             i = 0; */
-/*         else if(tix == 1) */
-/*             i = bottom[0]; */
-/*         else if(tix > 1) */
-/*             i = top[tix - 1]; */
-
-/*         if(tix == half_blocks - 1) */
-/*             j = top[half_blocks - 1]; */
-/*         else */
-/*             j = bottom[tix + 1]; */
-/*         __syncthreads(); */
-
-/*         top[tix] = i; */
-/*         bottom[tix] = j; */
-/*     } */
-/*     else */
-/*     { */
-/*         // shared memory */
-/*         extern __shared__ double lmem[]; */
-/*         rocblas_int* sh_top = reinterpret_cast<rocblas_int*>(lmem); */
-/*         rocblas_int* sh_bottom = reinterpret_cast<rocblas_int*>(sh_top + half_blocks); */
-
-/*         for(k = tix; k < half_blocks; k += hipBlockDim_x) */
-/*         { */
-/*             sh_top[k] = top[k]; */
-/*             sh_bottom[k] = bottom[k]; */
-/*         } */
-/*         __syncthreads(); */
-
-/*         for(k = tix; k < half_blocks; k += hipBlockDim_x) */
-/*         { */
-/*             if(k == 1) */
-/*                 top[k] = sh_bottom[0]; */
-/*             else if(k > 1) */
-/*                 top[k] = sh_top[k - 1]; */
-
-/*             if(k == half_blocks - 1) */
-/*                 bottom[k] = sh_top[half_blocks - 1]; */
-/*             else */
-/*                 bottom[k] = sh_bottom[k + 1]; */
-/*         } */
-/*     } */
-/* } */
 
 /** SYEVJ_CALC_NORM calculates the residual norm of the matrix.
 
