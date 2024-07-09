@@ -1107,12 +1107,13 @@ ROCSOLVER_KERNEL void
 {
     rocblas_int n = half_blocks - 1;
 
-    auto f = [n = n](auto i) -> auto {
+    auto f = [n = n](auto i) -> auto
+    {
         using I = decltype(i);
         i = (i - 1) % (2 * n + 1) + 1;
         I j{};
 
-        if ((1 <= i) && (i <= n))
+        if((1 <= i) && (i <= n))
         {
             j = 2 * i;
         }
@@ -1124,18 +1125,19 @@ ROCSOLVER_KERNEL void
         return j;
     };
 
-    auto g = [n = n](auto j) -> auto {
+    auto g = [n = n](auto j) -> auto
+    {
         using I = decltype(j);
         j = (j - 1) % (2 * n + 1) + 1;
         I i{};
 
-        if (j % 2 == 0)
+        if(j % 2 == 0)
         {
             i = j / 2;
         }
         else
         {
-            i = 2 * n + 1 - (j - 1)/2;
+            i = 2 * n + 1 - (j - 1) / 2;
         }
 
         return i;
@@ -1145,16 +1147,16 @@ ROCSOLVER_KERNEL void
     rocblas_int dimx = hipBlockDim_x;
     rocblas_int k{};
 
-    if (tidx == 0)
+    if(tidx == 0)
     {
         k = g(top[1]) + 1;
         bottom[0] = f(2 * n + k);
     }
     __syncthreads();
 
-    if (tidx > 0)
+    if(tidx > 0)
     {
-        for (rocblas_int l = tidx; l < half_blocks; l += dimx)
+        for(rocblas_int l = tidx; l < half_blocks; l += dimx)
         {
             k = g(top[tidx]) - (tidx - 1) + 1;
             top[tidx] = f(tidx - 1 + k);
