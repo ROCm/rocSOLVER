@@ -384,8 +384,8 @@ void gesvdx_notransv_getError(const rocblas_handle handle,
     //  or wait for problems with gesvdx_ to be fixed)
 
     std::vector<rocblas_int> offset(bc);
-    rocblas_int lwork = 5 * max(m, n);
-    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
+    rocblas_int lwork = 5 * std::max(m, n);
+    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * std::min(m, n) : 0);
     std::vector<T> work(lwork);
     std::vector<S> rwork(lrwork);
     rocblas_int minn = std::min(m, n);
@@ -1021,9 +1021,9 @@ void testing_gesvdx_notransv(Arguments& argus)
     // using 2 * min(m, n) * machine_precision as tolerance
     if(argus.unit_check)
     {
-        ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * std::min(m, n));
         if(svects)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, 4 * min(m, n));
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 4 * std::min(m, n));
     }
 
     // output results for rocsolver-bench

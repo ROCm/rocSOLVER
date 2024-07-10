@@ -188,7 +188,7 @@ void ormlx_unmlx_getError(const rocblas_handle handle,
                           Th& hCr,
                           double* max_err)
 {
-    size_t size_W = max(max(m, n), k);
+    size_t size_W = std::max(std::max(m, n), k);
     std::vector<T> hW(size_W);
 
     // initialize data
@@ -234,7 +234,7 @@ void ormlx_unmlx_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    size_t size_W = max(max(m, n), k);
+    size_t size_W = std::max(std::max(m, n), k);
     std::vector<T> hW(size_W);
 
     if(!perf)

@@ -96,7 +96,7 @@ void orgtr_ungtr_initData(const rocblas_handle handle,
     if(CPU)
     {
         using S = decltype(std::real(T{}));
-        size_t s = max(hIpiv.n(), 2);
+        size_t s = std::max(hIpiv.n(), int64_t(2));
         std::vector<S> E(s - 1);
         std::vector<S> D(s);
 

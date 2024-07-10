@@ -253,7 +253,7 @@ void gels_getError(const rocblas_handle handle,
                    double* max_err,
                    const bool singular)
 {
-    rocblas_int sizeW = max(1, min(m, n) + max(min(m, n), nrhs));
+    rocblas_int sizeW = std::max(1, std::min(m, n) + std::max(std::min(m, n), nrhs));
     std::vector<T> hW(sizeW);
 
     // input data initialization
@@ -281,7 +281,7 @@ void gels_getError(const rocblas_handle handle,
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        err = norm_error('I', max(m, n), nrhs, ldb, hB[b], hBRes[b]);
+        err = norm_error('I', std::max(m, n), nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 
@@ -321,7 +321,7 @@ void gels_getPerfData(const rocblas_handle handle,
                       const bool perf,
                       const bool singular)
 {
-    rocblas_int sizeW = max(1, min(m, n) + max(min(m, n), nrhs));
+    rocblas_int sizeW = std::max(1, std::min(m, n) + std::max(std::min(m, n), nrhs));
     std::vector<T> hW(sizeW);
 
     if(!perf)
@@ -385,7 +385,7 @@ void testing_gels(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
-    rocblas_int ldb = argus.get<rocblas_int>("ldb", max(m, n));
+    rocblas_int ldb = argus.get<rocblas_int>("ldb", std::max(m, n));
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
 
@@ -555,7 +555,7 @@ void testing_gels(Arguments& argus)
     // validate results for rocsolver-test
     // using max(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, max(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, std::max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

@@ -536,7 +536,7 @@ rocblas_status rocsolver_csrrf_splitlu_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    const rocblas_int avg_nnzM = max(1, nnzT / n);
+    const rocblas_int avg_nnzM = std::max(1, nnzT / n);
     const rocblas_int waveSize = cal_wave_size(avg_nnzM);
     const rocblas_int nx = waveSize;
     const rocblas_int ny = BS1 / nx;

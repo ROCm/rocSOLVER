@@ -310,7 +310,7 @@ void rocsolver_syevx_heevx_getMemorySize(const rocblas_evect evect,
     *size_tau = sizeof(T) * n * batch_count;
 
     // size of array for temporary split off block sizes
-    *size_nsplit_workArr = max(*size_nsplit_workArr, sizeof(rocblas_int) * batch_count);
+    *size_nsplit_workArr = std::max(*size_nsplit_workArr, sizeof(rocblas_int) * batch_count);
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>

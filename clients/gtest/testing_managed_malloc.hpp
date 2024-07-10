@@ -209,7 +209,7 @@ void testing_managed_malloc(Arguments& argus)
     rocblas_local_handle handle;
     rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n", m);
-    rocblas_int nb = argus.get<rocblas_int>("k", min(m, n));
+    rocblas_int nb = argus.get<rocblas_int>("k", std::min(m, n));
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldx = argus.get<rocblas_int>("ldx", m);
     rocblas_int ldy = argus.get<rocblas_int>("ldy", n);
@@ -241,7 +241,8 @@ void testing_managed_malloc(Arguments& argus)
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     // check invalid sizes
-    bool invalid_size = (m < 0 || n < 0 || nb < 0 || nb > min(m, n) || lda < m || ldx < m || ldy < n);
+    bool invalid_size
+        = (m < 0 || n < 0 || nb < 0 || nb > std::min(m, n) || lda < m || ldx < m || ldy < n);
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_labrd(handle, m, n, nb, (T*)nullptr, lda, (S*)nullptr,
@@ -326,7 +327,7 @@ void testing_managed_malloc(Arguments& argus)
     // validate results for rocsolver-test
     // using nb * max(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, nb * max(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, nb * std::max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

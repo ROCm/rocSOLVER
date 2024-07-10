@@ -56,7 +56,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(GETF2_SSKER_MAX_M)
     // (SHUFFLES DO NOT IMPROVE PERFORMANCE IN THIS CASE)
     extern __shared__ double lmem[];
     T* common = reinterpret_cast<T*>(lmem);
-    common += ty * max(m, DIM);
+    common += ty * std::max(m, DIM);
 
     // local variables
     T pivot_value;
@@ -574,7 +574,7 @@ rocblas_status getf2_run_small(rocblas_handle handle,
     I nthds = m;
     I msize;
     if(pivot)
-        msize = max(m, n);
+        msize = std::max(m, n);
     else
         msize = n + 1;
 

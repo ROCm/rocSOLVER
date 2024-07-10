@@ -324,7 +324,7 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
         *size_workArr = sizeof(S*) * batch_count;
     else
         *size_workArr = 0;
-    *size_work_stack = max(s1, s2);
+    *size_work_stack = std::max(s1, s2);
 
     // size for split blocks and sub-blocks positions
     *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
