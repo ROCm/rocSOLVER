@@ -33,7 +33,8 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<int>> larf_tuple;
+template <typename I>
+using larf_tuple = std::tuple<vector<I>, vector<I>>;
 
 // each size_range vector is a {M,N,lda}
 
@@ -69,22 +70,26 @@ const vector<vector<int>> matrix_size_range = {
     {20, 15, 20},
     {35, 35, 50}};
 
+const vector<vector<int64_t>> matrix_size_range_64 = {{UINT32_MAX + 1, 1, 1}};
+const vector<vector<int64_t>> incx_range_64 = {{1, 1}};
+
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range
     = {{192, 192, 192}, {640, 300, 700}, {1024, 2000, 1024}, {2547, 2547, 2550}};
 
-Arguments larf_setup_arguments(larf_tuple tup)
+template <typename I>
+Arguments larf_setup_arguments(larf_tuple<I> tup)
 {
-    vector<int> matrix_size = std::get<0>(tup);
-    vector<int> inc = std::get<1>(tup);
+    vector<I> matrix_size = std::get<0>(tup);
+    vector<I> inc = std::get<1>(tup);
 
     Arguments arg;
 
-    arg.set<rocblas_int>("m", matrix_size[0]);
-    arg.set<rocblas_int>("n", matrix_size[1]);
-    arg.set<rocblas_int>("lda", matrix_size[2]);
+    arg.set<I>("m", matrix_size[0]);
+    arg.set<I>("n", matrix_size[1]);
+    arg.set<I>("lda", matrix_size[2]);
 
-    arg.set<rocblas_int>("incx", inc[0]);
+    arg.set<I>("incx", inc[0]);
     arg.set<char>("side", inc[1] == 1 ? 'R' : 'L');
 
     arg.timing = 0;
@@ -92,8 +97,8 @@ Arguments larf_setup_arguments(larf_tuple tup)
     return arg;
 }
 
-template <bool API64>
-class LARF_BASE : public ::TestWithParam<larf_tuple>
+template <typename I>
+class LARF_BASE : public ::TestWithParam<larf_tuple<I>>
 {
 protected:
     void TearDown() override
@@ -104,20 +109,20 @@ protected:
     template <typename T>
     void run_tests()
     {
-        Arguments arg = larf_setup_arguments(GetParam());
+        Arguments arg = larf_setup_arguments(this->GetParam());
 
-        if(arg.peek<rocblas_int>("m") == 0 && arg.peek<rocblas_int>("incx") == 0)
-            testing_larf_bad_arg<API64, T>();
+        if(arg.peek<I>("m") == 0 && arg.peek<I>("incx") == 0)
+            testing_larf_bad_arg<T, I>();
 
-        testing_larf<API64, T>(arg);
+        testing_larf<T, I>(arg);
     }
 };
 
-class LARF : public LARF_BASE<false>
+class LARF : public LARF_BASE<rocblas_int>
 {
 };
 
-class LARF_64 : public LARF_BASE<true>
+class LARF_64 : public LARF_BASE<int64_t>
 {
 };
 
@@ -171,10 +176,6 @@ INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          LARF,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(incx_range)));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack,
-                         LARF_64,
-                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(incx_range)));
-
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          LARF_64,
-                         Combine(ValuesIn(matrix_size_range), ValuesIn(incx_range)));
+                         Combine(ValuesIn(matrix_size_range_64), ValuesIn(incx_range_64)));

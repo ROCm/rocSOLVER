@@ -34,10 +34,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 template <typename I>
-using _lacgv_tuple = vector<I>;
-
-using lacgv_tuple = _lacgv_tuple<int>;
-using lacgv_64_tuple = _lacgv_tuple<int64_t>;
+using lacgv_tuple = vector<I>;
 
 // each range is a {n,inc}
 
@@ -65,7 +62,7 @@ const vector<vector<int>> large_range
     = {{192, 10}, {192, -10}, {250, 20}, {500, 30}, {1500, 40}, {1500, -40}};
 
 template <typename I>
-Arguments lacgv_setup_arguments(_lacgv_tuple<I> tup)
+Arguments lacgv_setup_arguments(lacgv_tuple<I> tup)
 {
     Arguments arg;
 
@@ -76,7 +73,7 @@ Arguments lacgv_setup_arguments(_lacgv_tuple<I> tup)
 }
 
 template <typename I>
-class LACGV_BASE : public ::TestWithParam<_lacgv_tuple<I>>
+class LACGV_BASE : public ::TestWithParam<lacgv_tuple<I>>
 {
 protected:
     void TearDown() override
