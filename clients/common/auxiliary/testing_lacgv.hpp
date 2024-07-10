@@ -35,46 +35,41 @@
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
 
-template <bool API64, typename T>
-void lacgv_checkBadArgs(const rocblas_handle handle, const rocblas_int n, T dA, const rocblas_int inc)
+template <typename T, typename I>
+void lacgv_checkBadArgs(const rocblas_handle handle, const I n, T dA, const I inc)
 {
     // handle
-    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(API64, nullptr, n, dA, inc), rocblas_status_invalid_handle);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(nullptr, n, dA, inc), rocblas_status_invalid_handle);
 
     // values
     // N/A
 
     // pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(API64, handle, n, (T) nullptr, inc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(handle, n, (T) nullptr, inc),
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(API64, handle, 0, (T) nullptr, inc),
-                          rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(handle, (I)0, (T) nullptr, inc), rocblas_status_success);
 }
 
-template <bool API64, typename T>
+template <typename T, typename I>
 void testing_lacgv_bad_arg()
 {
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_int n = 1;
-    rocblas_int inc = 1;
+    I n = 1;
+    I inc = 1;
 
     // memory allocation
     device_strided_batch_vector<T> dA(1, 1, 1, 1);
     CHECK_HIP_ERROR(dA.memcheck());
 
     // check bad arguments
-    lacgv_checkBadArgs<API64>(handle, n, dA.data(), inc);
+    lacgv_checkBadArgs(handle, n, dA.data(), inc);
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void lacgv_initData(const rocblas_handle handle,
-                    const rocblas_int n,
-                    Td& dA,
-                    const rocblas_int inc,
-                    Th& hA)
+template <bool CPU, bool GPU, typename T, typename Td, typename Th, typename I>
+void lacgv_initData(const rocblas_handle handle, const I n, Td& dA, const I inc, Th& hA)
 {
     if(CPU)
     {
@@ -88,11 +83,11 @@ void lacgv_initData(const rocblas_handle handle,
     }
 }
 
-template <bool API64, typename T, typename Td, typename Th>
+template <typename T, typename Td, typename Th, typename I>
 void lacgv_getError(const rocblas_handle handle,
-                    const rocblas_int n,
+                    const I n,
                     Td& dA,
-                    const rocblas_int inc,
+                    const I inc,
                     Th& hA,
                     Th& hAr,
                     double* max_err)
@@ -102,7 +97,7 @@ void lacgv_getError(const rocblas_handle handle,
 
     // execute computations
     // GPU lapack
-    CHECK_ROCBLAS_ERROR(rocsolver_lacgv(API64, handle, n, dA.data(), inc));
+    CHECK_ROCBLAS_ERROR(rocsolver_lacgv(handle, n, dA.data(), inc));
     CHECK_HIP_ERROR(hAr.transfer_from(dA));
 
     // CPU lapack
@@ -118,11 +113,11 @@ void lacgv_getError(const rocblas_handle handle,
     }
 }
 
-template <bool API64, typename T, typename Td, typename Th>
+template <typename T, typename Td, typename Th, typename I>
 void lacgv_getPerfData(const rocblas_handle handle,
-                       const rocblas_int n,
+                       const I n,
                        Td& dA,
-                       const rocblas_int inc,
+                       const I inc,
                        Th& hA,
                        double* gpu_time_used,
                        double* cpu_time_used,
@@ -148,7 +143,7 @@ void lacgv_getPerfData(const rocblas_handle handle,
     {
         lacgv_initData<false, true, T>(handle, n, dA, inc, hA);
 
-        CHECK_ROCBLAS_ERROR(rocsolver_lacgv(API64, handle, n, dA.data(), inc));
+        CHECK_ROCBLAS_ERROR(rocsolver_lacgv(handle, n, dA.data(), inc));
     }
 
     // gpu-lapack performance
@@ -171,19 +166,19 @@ void lacgv_getPerfData(const rocblas_handle handle,
         lacgv_initData<false, true, T>(handle, n, dA, inc, hA);
 
         start = get_time_us_sync(stream);
-        rocsolver_lacgv(API64, handle, n, dA.data(), inc);
+        rocsolver_lacgv(handle, n, dA.data(), inc);
         *gpu_time_used += get_time_us_sync(stream) - start;
     }
     *gpu_time_used /= hot_calls;
 }
 
-template <bool API64, typename T>
+template <typename T, typename I>
 void testing_lacgv(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int inc = argus.get<rocblas_int>("incx");
+    I n = argus.get<I>("n");
+    I inc = argus.get<I>("incx");
 
     rocblas_int hot_calls = argus.iters;
 
@@ -200,7 +195,7 @@ void testing_lacgv(Arguments& argus)
     bool invalid_size = (n < 0 || !inc);
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(API64, handle, n, (T*)nullptr, inc),
+        EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(handle, n, (T*)nullptr, inc),
                               rocblas_status_invalid_size);
 
         if(argus.timing)
@@ -213,7 +208,7 @@ void testing_lacgv(Arguments& argus)
     if(argus.mem_query || !USE_ROCBLAS_REALLOC_ON_DEMAND)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_lacgv(API64, handle, n, (T*)nullptr, inc));
+        CHECK_ALLOC_QUERY(rocsolver_lacgv(handle, n, (T*)nullptr, inc));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -236,8 +231,7 @@ void testing_lacgv(Arguments& argus)
     // check quick return
     if(n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(API64, handle, n, dA.data(), inc),
-                              rocblas_status_success);
+        EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(handle, n, dA.data(), inc), rocblas_status_success);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);
@@ -247,12 +241,12 @@ void testing_lacgv(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        lacgv_getError<API64, T>(handle, n, dA, inc, hA, hAr, &max_error);
+        lacgv_getError<T>(handle, n, dA, inc, hA, hAr, &max_error);
 
     // collect performance data
     if(argus.timing)
-        lacgv_getPerfData<API64, T>(handle, n, dA, inc, hA, &gpu_time_used, &cpu_time_used,
-                                    hot_calls, argus.profile, argus.profile_kernels, argus.perf);
+        lacgv_getPerfData<T>(handle, n, dA, inc, hA, &gpu_time_used, &cpu_time_used, hot_calls,
+                             argus.profile, argus.profile_kernels, argus.perf);
 
     // validate results for rocsolver-test
     // no tolerance
@@ -296,4 +290,4 @@ void testing_lacgv(Arguments& argus)
 
 #define EXTERN_TESTING_LACGV(...) extern template void testing_lacgv<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_LACGV, FOREACH_BIT_VARIANT, FOREACH_COMPLEX_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_LACGV, FOREACH_COMPLEX_TYPE, FOREACH_INT_TYPE, APPLY_STAMP)

@@ -63,7 +63,7 @@ ROCSOLVER_KERNEL void conj_in_place(const I m,
     T* Ap = load_ptr_batch<T>(A, b, shifta, stridea);
 
     if(i < m && j < n)
-        Ap[i + j * lda] = conj(Ap[i + j * lda]);
+        Ap[i + j * lda] = conj(Ap[i + j * (int64_t)lda]);
 }
 
 template <typename T, typename I>
@@ -111,7 +111,8 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
     rocblas_stride offset = incx < 0 ? shiftx - (n - 1) * incx : shiftx;
 
     // conjugate x
-    I blocks = (n - 1) / 64 + 1;
+    constexpr int LACGV_NTHREADS = 64;
+    I blocks = (n - 1) / LACGV_NTHREADS + 1;
     ROCSOLVER_LAUNCH_KERNEL(conj_in_place<T>, dim3(1, blocks, batch_count), dim3(1, 64, 1), 0,
                             stream, (I)1, n, x, offset, incx, stridex);
 

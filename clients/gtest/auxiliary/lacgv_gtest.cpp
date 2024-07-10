@@ -33,7 +33,11 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef vector<int> lacgv_tuple;
+template <typename I>
+using _lacgv_tuple = vector<I>;
+
+using lacgv_tuple = _lacgv_tuple<int>;
+using lacgv_64_tuple = _lacgv_tuple<int64_t>;
 
 // each range is a {n,inc}
 
@@ -54,22 +58,25 @@ const vector<vector<int>> range = {
     {30, 3},
     {30, -3}};
 
+const vector<vector<int64_t>> range_64 = {{UINT32_MAX + 1, 1}};
+
 // for daily_lapack tests
 const vector<vector<int>> large_range
     = {{192, 10}, {192, -10}, {250, 20}, {500, 30}, {1500, 40}, {1500, -40}};
 
-Arguments lacgv_setup_arguments(lacgv_tuple tup)
+template <typename I>
+Arguments lacgv_setup_arguments(_lacgv_tuple<I> tup)
 {
     Arguments arg;
 
-    arg.set<rocblas_int>("n", tup[0]);
-    arg.set<rocblas_int>("incx", tup[1]);
+    arg.set<I>("n", tup[0]);
+    arg.set<I>("incx", tup[1]);
 
     return arg;
 }
 
-template <bool API64>
-class LACGV_BASE : public ::TestWithParam<lacgv_tuple>
+template <typename I>
+class LACGV_BASE : public ::TestWithParam<_lacgv_tuple<I>>
 {
 protected:
     void TearDown() override
@@ -80,19 +87,19 @@ protected:
     template <typename T>
     void run_tests()
     {
-        Arguments arg = lacgv_setup_arguments(GetParam());
+        Arguments arg = lacgv_setup_arguments(this->GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0)
-            testing_lacgv_bad_arg<API64, T>();
+        if(arg.peek<I>("n") == 0)
+            testing_lacgv_bad_arg<T, I>();
 
-        testing_lacgv<API64, T>(arg);
+        testing_lacgv<T, I>(arg);
     }
 };
 
-class LACGV : public LACGV_BASE<false>
+class LACGV : public LACGV_BASE<rocblas_int>
 {
 };
-class LACGV_64 : public LACGV_BASE<true>
+class LACGV_64 : public LACGV_BASE<int64_t>
 {
 };
 
@@ -122,6 +129,6 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV, ValuesIn(large_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV, ValuesIn(range));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV_64, ValuesIn(large_range));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV_64, ValuesIn(range_64));
 
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV_64, ValuesIn(range));
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV_64, ValuesIn(range_64));

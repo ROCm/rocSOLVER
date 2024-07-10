@@ -411,8 +411,8 @@ class rocsolver_dispatcher
     {
         // Map for functions that support only single-complex and double-complex precisions
         static const func_map map_complex = {
-            {"lacgv", testing_lacgv<false, T>},
-            {"lacgv_64", testing_lacgv<true, T>},
+            {"lacgv", testing_lacgv<T, rocblas_int>},
+            {"lacgv_64", testing_lacgv<T, int64_t>},
             // ungxx
             {"ung2r", testing_orgxr_ungxr<T, 0>},
             {"ungqr", testing_orgxr_ungxr<T, 1>},
