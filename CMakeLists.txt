@@ -165,6 +165,8 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1100
       gfx1101
       gfx1102
+      gfx1200
+      gfx1201
   )
   set(AMDGPU_TARGETS_INIT
     gfx900
