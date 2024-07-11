@@ -5,7 +5,7 @@
 .. _install-linux:
 
 ********************************************
-Building and Installing rocSOLVER on Linux
+Installing rocSOLVER on Linux
 ********************************************
 
 Prerequisites
@@ -40,7 +40,7 @@ rocSOLVER can be installed using a package manager. On Ubuntu, for example, use 
 
 .. _linux-install-source:
 
-Building & installing from source
+Building and installing from source
 =====================================
 
 The `rocSOLVER source code <https://github.com/ROCm/rocSOLVER.git>`_ is hosted
