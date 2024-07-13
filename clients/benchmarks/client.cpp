@@ -617,7 +617,7 @@ try
     // print help message
     if(vm.count("help"))
     {
-        fmt::print("{}{}\n", help_str, desc);
+        std::cout << help_str << desc << std::endl;
         return 0;
     }
 
