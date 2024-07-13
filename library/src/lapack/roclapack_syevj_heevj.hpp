@@ -1103,6 +1103,60 @@ ROCSOLVER_KERNEL void syevj_offd_rotate(const bool skip_block,
     so only one thread group is needed.) **/
 template <typename T>
 ROCSOLVER_KERNEL void
+    syevj_cycle_pairs_old(const rocblas_int half_blocks, rocblas_int* top, rocblas_int* bottom)
+{
+    rocblas_int tix = hipThreadIdx_x;
+    rocblas_int i, j, k;
+
+    if(half_blocks <= hipBlockDim_x && tix < half_blocks)
+    {
+        if(tix == 0)
+            i = 0;
+        else if(tix == 1)
+            i = bottom[0];
+        else if(tix > 1)
+            i = top[tix - 1];
+
+        if(tix == half_blocks - 1)
+            j = top[half_blocks - 1];
+        else
+            j = bottom[tix + 1];
+        __syncthreads();
+
+        top[tix] = i;
+        bottom[tix] = j;
+    }
+    else
+    {
+        // shared memory
+        extern __shared__ double lmem[];
+        rocblas_int* sh_top = reinterpret_cast<rocblas_int*>(lmem);
+        rocblas_int* sh_bottom = reinterpret_cast<rocblas_int*>(sh_top + half_blocks);
+
+        for(k = tix; k < half_blocks; k += hipBlockDim_x)
+        {
+            sh_top[k] = top[k];
+            sh_bottom[k] = bottom[k];
+        }
+        __syncthreads();
+
+        for(k = tix; k < half_blocks; k += hipBlockDim_x)
+        {
+            if(k == 1)
+                top[k] = sh_bottom[0];
+            else if(k > 1)
+                top[k] = sh_top[k - 1];
+
+            if(k == half_blocks - 1)
+                bottom[k] = sh_top[half_blocks - 1];
+            else
+                bottom[k] = sh_bottom[k + 1];
+        }
+    }
+}
+
+template <typename T>
+ROCSOLVER_KERNEL void
     syevj_cycle_pairs(const rocblas_int half_blocks, rocblas_int* top, rocblas_int* bottom)
 {
     rocblas_int n = half_blocks - 1;
