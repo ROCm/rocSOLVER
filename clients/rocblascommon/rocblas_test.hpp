@@ -102,7 +102,8 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
         auto error = ERROR;                                                                  \
         if(error != hipSuccess)                                                              \
         {                                                                                    \
-            fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(error), error, \
+            fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(error),        \
+                       static_cast<int32_t>(error),                                          \
                        __FILE__, __LINE__);                                                  \
             rocblas_abort();                                                                 \
         }                                                                                    \
