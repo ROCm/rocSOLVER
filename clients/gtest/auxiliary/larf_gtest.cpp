@@ -70,11 +70,34 @@ const vector<vector<int>> matrix_size_range = {
     {20, 15, 20},
     {35, 35, 50}};
 
-const vector<vector<int64_t>> matrix_size_range_64 = {{UINT32_MAX + 1, 1, 1}};
-const vector<vector<int64_t>> incx_range_64 = {{1, 1}};
+const vector<vector<int64_t>> matrix_size_range_64 = {
+    // quick return
+    {0, 10, 1},
+    {10, 0, 10},
+    // invalid
+    {-1, 10, 1},
+    {10, -1, 10},
+    {10, 10, 5},
+    // normal (valid) samples
+    {12, 20, 12},
+    {20, 15, 20},
+    {35, 35, 50}};
+const vector<vector<int64_t>> incx_range_64 = {
+    // invalid
+    {0, 0},
+    // normal (valid) samples
+    {-10, 0},
+    {-5, 1},
+    {-1, 0},
+    {1, 1},
+    {5, 0},
+    {10, 1}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range
+    = {{192, 192, 192}, {640, 300, 700}, {1024, 2000, 1024}, {2547, 2547, 2550}};
+
+const vector<vector<int64_t>> large_matrix_size_range_64
     = {{192, 192, 192}, {640, 300, 700}, {1024, 2000, 1024}, {2547, 2547, 2550}};
 
 template <typename I>
@@ -175,6 +198,10 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          LARF,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(incx_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         LARF_64,
+                         Combine(ValuesIn(large_matrix_size_range_64), ValuesIn(incx_range_64)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          LARF_64,

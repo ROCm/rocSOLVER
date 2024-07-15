@@ -50,8 +50,31 @@ const vector<int> incx_range = {
     10,
 };
 
+const vector<int64_t> incx_range_64 = {
+    // invalid
+    -1,
+    0,
+    // normal (valid) samples
+    1,
+    5,
+    8,
+    10,
+};
+
 // for checkin_lapack tests
 const vector<int> n_size_range = {
+    // quick return
+    0,
+    // invalid
+    -1,
+    // normal (valid) samples
+    1,
+    12,
+    20,
+    35,
+};
+
+const vector<int64_t> n_size_range_64 = {
     // quick return
     0,
     // invalid
@@ -71,19 +94,12 @@ const vector<int> large_n_size_range = {
     2547,
 };
 
-const vector<int64_t> incx_range_64 = {
-    // invalid
-    -1,
-    0,
-    // normal (valid) samples
-    1,
-    5,
-    8,
-    10,
+const vector<int64_t> large_n_size_range_64 = {
+    192,
+    640,
+    1024,
+    2547,
 };
-
-// for checkin_lapack tests
-const vector<int64_t> n_size_range_64 = {UINT32_MAX + 1};
 
 template <typename I>
 Arguments larfg_setup_arguments(larfg_tuple<I> tup)
@@ -176,6 +192,10 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          Combine(ValuesIn(large_n_size_range), ValuesIn(incx_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LARFG, Combine(ValuesIn(n_size_range), ValuesIn(incx_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         LARFG_64,
+                         Combine(ValuesIn(large_n_size_range_64), ValuesIn(incx_range_64)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          LARFG_64,

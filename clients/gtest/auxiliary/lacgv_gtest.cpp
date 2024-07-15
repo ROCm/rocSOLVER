@@ -55,10 +55,24 @@ const vector<vector<int>> range = {
     {30, 3},
     {30, -3}};
 
-const vector<vector<int64_t>> range_64 = {{UINT32_MAX + 1, 1}};
+const vector<vector<int64_t>> range_64 = {
+    // quick return
+    {0, 1},
+    // invalid
+    {-1, 1},
+    {1, 0},
+    // normal (valid) samples
+    {10, 1},
+    {10, -1},
+    {20, 2},
+    {30, 3},
+    {30, -3}};
 
 // for daily_lapack tests
 const vector<vector<int>> large_range
+    = {{192, 10}, {192, -10}, {250, 20}, {500, 30}, {1500, 40}, {1500, -40}};
+
+const vector<vector<int64_t>> large_range_64
     = {{192, 10}, {192, -10}, {250, 20}, {500, 30}, {1500, 40}, {1500, -40}};
 
 template <typename I>
@@ -126,6 +140,6 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV, ValuesIn(large_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV, ValuesIn(range));
 
-INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV_64, ValuesIn(range_64));
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV_64, ValuesIn(large_range_64));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV_64, ValuesIn(range_64));

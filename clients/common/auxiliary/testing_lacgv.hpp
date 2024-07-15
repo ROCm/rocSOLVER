@@ -68,7 +68,7 @@ void testing_lacgv_bad_arg()
     lacgv_checkBadArgs(handle, n, dA.data(), inc);
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th, typename I>
+template <bool CPU, bool GPU, typename T, typename I, typename Td, typename Th>
 void lacgv_initData(const rocblas_handle handle, const I n, Td& dA, const I inc, Th& hA)
 {
     if(CPU)
@@ -83,7 +83,7 @@ void lacgv_initData(const rocblas_handle handle, const I n, Td& dA, const I inc,
     }
 }
 
-template <typename T, typename Td, typename Th, typename I>
+template <typename T, typename Td, typename I, typename Th>
 void lacgv_getError(const rocblas_handle handle,
                     const I n,
                     Td& dA,
@@ -113,7 +113,7 @@ void lacgv_getError(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th, typename I>
+template <typename T, typename I, typename Td, typename Th>
 void lacgv_getPerfData(const rocblas_handle handle,
                        const I n,
                        Td& dA,

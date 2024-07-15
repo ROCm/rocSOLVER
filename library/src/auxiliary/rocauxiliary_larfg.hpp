@@ -37,15 +37,15 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+template <typename T, typename I, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
                                   const rocblas_stride strideP,
                                   T* norms,
                                   U alpha,
-                                  const rocblas_int shifta,
+                                  const rocblas_stride shifta,
                                   const rocblas_stride stride)
 {
-    int b = hipBlockIdx_x;
+    I b = hipBlockIdx_x;
 
     T* a = load_ptr_batch<T>(alpha, b, shifta, stride);
     T* t = tau + b * strideP;
@@ -71,16 +71,16 @@ ROCSOLVER_KERNEL void set_taubeta(T* tau,
     }
 }
 
-template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+template <typename T, typename I, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void set_taubeta(T* tau,
                                   const rocblas_stride strideP,
                                   T* norms,
                                   U alpha,
-                                  const rocblas_int shifta,
+                                  const rocblas_stride shifta,
                                   const rocblas_stride stride)
 {
     using S = decltype(std::real(T{}));
-    int b = hipBlockIdx_x;
+    I b = hipBlockIdx_x;
     S r, rr, ri, ar, ai;
 
     T* a = load_ptr_batch<T>(alpha, b, shifta, stride);
@@ -211,8 +211,8 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
 
     // set value of tau and beta and scalling factor for vector x
     // alpha <- beta, norms <- scaling
-    ROCSOLVER_LAUNCH_KERNEL(set_taubeta<T>, dim3(batch_count), dim3(1), 0, stream, tau, strideP,
-                            norms, alpha, shifta, stridex);
+    ROCSOLVER_LAUNCH_KERNEL((set_taubeta<T, I>), dim3(batch_count), dim3(1), 0, stream, tau,
+                            strideP, norms, alpha, shifta, stridex);
 
     // compute vector v=x*norms
     rocblasCall_scal<T>(handle, n - 1, norms, 1, x, shiftx, incx, stridex, batch_count);

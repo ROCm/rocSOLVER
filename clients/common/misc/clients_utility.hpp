@@ -53,10 +53,6 @@ static constexpr char LIMITED_MEMORY_STRING_GTEST[]
 // Return the path to the client executable, for finding test matrices on filesystem
 std::string rocsolver_exepath();
 
-// Evaluates to true if an integer type is 64 bits wide
-template <typename I>
-static constexpr bool rocsolver_is_64bit = sizeof(I) == 8;
-
 /* ============================================================================================
  */
 /*! \brief  local handle which is automatically created and destroyed  */

@@ -54,13 +54,13 @@ Vector and Matrix manipulations
 
 rocsolver_<type>lacgv()
 ---------------------------------------
-.. doxygenfunction:: rocsolver_zlacgv
-   :outline:
-.. doxygenfunction:: rocsolver_clacgv
-   :outline:
 .. doxygenfunction:: rocsolver_zlacgv_64
    :outline:
 .. doxygenfunction:: rocsolver_clacgv_64
+   :outline
+.. doxygenfunction:: rocsolver_zlacgv
+   :outline:
+.. doxygenfunction:: rocsolver_clacgv
 
 .. _laswp:
 
