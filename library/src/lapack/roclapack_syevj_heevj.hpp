@@ -1161,40 +1161,30 @@ ROCSOLVER_KERNEL void
 {
     rocblas_int n = half_blocks - 1;
 
-    auto f = [n = n](auto i) -> auto
+    auto cycle = [n = n](auto i) -> auto
     {
         using I = decltype(i);
         i = (i - 1) % (2 * n + 1) + 1;
         I j{};
 
-        if((1 <= i) && (i <= n))
+        if (i % 2 == 0)
         {
-            j = 2 * i;
+            j = i + 2;
+            if (j > 2*n)
+            {
+                j = 2*n + 1;
+            }
         }
         else
         {
-            j = 2 * (2 * n + 1 - i) + 1;
+            j = i - 2;
+            if (j < 1)
+            {
+                j = 2;
+            }
         }
 
         return j;
-    };
-
-    auto g = [n = n](auto j) -> auto
-    {
-        using I = decltype(j);
-        j = (j - 1) % (2 * n + 1) + 1;
-        I i{};
-
-        if(j % 2 == 0)
-        {
-            i = j / 2;
-        }
-        else
-        {
-            i = 2 * n + 1 - (j - 1) / 2;
-        }
-
-        return i;
     };
 
     rocblas_int tidx = hipThreadIdx_x;
@@ -1203,18 +1193,14 @@ ROCSOLVER_KERNEL void
 
     if(tidx == 0)
     {
-        k = g(top[1]) + 1;
-        bottom[0] = f(2 * n + k);
+        bottom[0] = cycle(bottom[0]);
     }
-    __syncthreads();
-
-    if(tidx > 0)
+    else
     {
         for(rocblas_int l = tidx; l < half_blocks; l += dimx)
         {
-            k = g(top[tidx]) - (tidx - 1) + 1;
-            top[tidx] = f(tidx - 1 + k);
-            bottom[tidx] = f(2 * n - tidx + k);
+            top[l] = cycle(top[l]);
+            bottom[l] = cycle(bottom[l]);
         }
     }
 }
