@@ -364,27 +364,43 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     {
         if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
         {
-            rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
-                                shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
+            //                     shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocblasCall_gemm<T>(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k, k, u2_n, scalars + 2,
+                                V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV,
+                                V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV,
+                                scalars + 1, F, idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_column_wise)
         {
-            rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
-                                shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
+            //                     shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocblasCall_gemm<T>(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k, k, u2_n, scalars + 2,
+                                V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
+                                V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
+                                scalars + 1, F, idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_forward_direction && storev == rocblas_row_wise)
         {
-            rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
-                                shiftV + idx2D(0, u1_n, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
+            //                     shiftV + idx2D(0, u1_n, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k, k, u2_n, scalars + 2,
+                                V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV,
+                                V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV,
+                                scalars + 1, F, idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_row_wise)
         {
-            rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
-                                shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
+            //                     shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
+            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k, k, u2_n, scalars + 2,
+                                V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
+                                V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
+                                scalars + 1, F, idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
     }
 
