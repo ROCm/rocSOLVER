@@ -152,7 +152,7 @@ add_armor_flags(rocsolver-test "${ARMOR_LEVEL}")
 
 if(WIN32)
   add_custom_command(TARGET rocsolver-test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE_DIR:rocsolver-test> $<TARGET_RUNTIME_DLLS:rocsolver-test>
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:rocsolver-test> $<TARGET_FILE_DIR:rocsolver-test>
   )
 
   get_target_property(rocblas_location roc::rocblas LOCATION)
