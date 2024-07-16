@@ -1103,60 +1103,6 @@ ROCSOLVER_KERNEL void syevj_offd_rotate(const bool skip_block,
     so only one thread group is needed.) **/
 template <typename T>
 ROCSOLVER_KERNEL void
-    syevj_cycle_pairs_old(const rocblas_int half_blocks, rocblas_int* top, rocblas_int* bottom)
-{
-    rocblas_int tix = hipThreadIdx_x;
-    rocblas_int i, j, k;
-
-    if(half_blocks <= hipBlockDim_x && tix < half_blocks)
-    {
-        if(tix == 0)
-            i = 0;
-        else if(tix == 1)
-            i = bottom[0];
-        else if(tix > 1)
-            i = top[tix - 1];
-
-        if(tix == half_blocks - 1)
-            j = top[half_blocks - 1];
-        else
-            j = bottom[tix + 1];
-        __syncthreads();
-
-        top[tix] = i;
-        bottom[tix] = j;
-    }
-    else
-    {
-        // shared memory
-        extern __shared__ double lmem[];
-        rocblas_int* sh_top = reinterpret_cast<rocblas_int*>(lmem);
-        rocblas_int* sh_bottom = reinterpret_cast<rocblas_int*>(sh_top + half_blocks);
-
-        for(k = tix; k < half_blocks; k += hipBlockDim_x)
-        {
-            sh_top[k] = top[k];
-            sh_bottom[k] = bottom[k];
-        }
-        __syncthreads();
-
-        for(k = tix; k < half_blocks; k += hipBlockDim_x)
-        {
-            if(k == 1)
-                top[k] = sh_bottom[0];
-            else if(k > 1)
-                top[k] = sh_top[k - 1];
-
-            if(k == half_blocks - 1)
-                bottom[k] = sh_top[half_blocks - 1];
-            else
-                bottom[k] = sh_bottom[k + 1];
-        }
-    }
-}
-
-template <typename T>
-ROCSOLVER_KERNEL void
     syevj_cycle_pairs(const rocblas_int half_blocks, rocblas_int* top, rocblas_int* bottom)
 {
     rocblas_int n = half_blocks - 1;
@@ -1167,18 +1113,18 @@ ROCSOLVER_KERNEL void
         i = (i - 1) % (2 * n + 1) + 1;
         I j{};
 
-        if (i % 2 == 0)
+        if(i % 2 == 0)
         {
             j = i + 2;
-            if (j > 2*n)
+            if(j > 2 * n)
             {
-                j = 2*n + 1;
+                j = 2 * n + 1;
             }
         }
         else
         {
             j = i - 2;
-            if (j < 1)
+            if(j < 1)
             {
                 j = 2;
             }
@@ -1189,19 +1135,15 @@ ROCSOLVER_KERNEL void
 
     rocblas_int tidx = hipThreadIdx_x;
     rocblas_int dimx = hipBlockDim_x;
-    rocblas_int k{};
 
     if(tidx == 0)
     {
         bottom[0] = cycle(bottom[0]);
     }
-    else
+    for(rocblas_int l = tidx + 1; l < half_blocks; l += dimx)
     {
-        for(rocblas_int l = tidx; l < half_blocks; l += dimx)
-        {
-            top[l] = cycle(top[l]);
-            bottom[l] = cycle(bottom[l]);
-        }
+        top[l] = cycle(top[l]);
+        bottom[l] = cycle(bottom[l]);
     }
 }
 
