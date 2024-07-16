@@ -3,11 +3,7 @@ defaults:
 root: index
 subtrees:
 - entries:
-  - file: installation/index.rst
-    title: Installation
-    subtrees:
-    - entries:
-      - file: installation/installlinux.rst
+  - file: installation/installlinux.rst
   - file: howto/index.rst
     title: How to
     subtrees:

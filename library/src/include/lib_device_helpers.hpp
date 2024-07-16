@@ -105,7 +105,7 @@ __device__ T find_max_tridiag(const rocblas_int start, const rocblas_int end, T*
 {
     T anorm = abs(D[end]);
     for(int i = start; i < end; i++)
-        anorm = max(anorm, max(abs(D[i]), abs(E[i])));
+        anorm = std::fmax(anorm, std::fmax(abs(D[i]), abs(E[i])));
     return anorm;
 }
 
