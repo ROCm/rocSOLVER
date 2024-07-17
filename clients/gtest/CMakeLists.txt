@@ -168,10 +168,11 @@ if(WIN32)
     ${CMAKE_CURRENT_SOURCE_DIR}/../../rtest.py
     ${CMAKE_CURRENT_SOURCE_DIR}/../../rtest.xml
   )
-  add_custom_command(TARGET rocsolver-test POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "${runtime_files}" $<TARGET_FILE_DIR:rocsolver-test>
-    COMMAND_EXPAND_LISTS
-  )
+  foreach(file_i ${runtime_files})
+    add_custom_command(TARGET rocsolver-test POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy ${file_i} $<TARGET_FILE_DIR:rocsolver-test>
+    )
+  endforeach()
 endif()
 
 target_link_libraries(rocsolver-test PRIVATE
