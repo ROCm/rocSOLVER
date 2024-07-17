@@ -150,7 +150,7 @@ add_executable(rocsolver-test
 
 add_armor_flags(rocsolver-test "${ARMOR_LEVEL}")
 
-if(WIN32)
+if(BUILD_COPY_TEST_DEPS)
   add_custom_command(TARGET rocsolver-test POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:rocsolver-test> $<TARGET_FILE_DIR:rocsolver-test>
     COMMAND_EXPAND_LISTS
