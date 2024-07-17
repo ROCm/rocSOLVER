@@ -4,6 +4,11 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ## (Unreleased) rocSOLVER
 ### Added
+- 64-bit APIs for existing functions:
+    - LACGV_64
+    - LARF_64
+    - LARFG_64
+
 ### Optimized
 ### Changed
 ### Deprecated

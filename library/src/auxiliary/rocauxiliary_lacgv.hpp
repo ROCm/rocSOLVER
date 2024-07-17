@@ -37,38 +37,37 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
-                                    const rocblas_int n,
+template <typename T, typename I, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+ROCSOLVER_KERNEL void conj_in_place(const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shifta,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shifta,
+                                    const I lda,
                                     const rocblas_stride stridea)
 {
     // do nothing
 }
 
-template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-ROCSOLVER_KERNEL void conj_in_place(const rocblas_int m,
-                                    const rocblas_int n,
+template <typename T, typename I, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+ROCSOLVER_KERNEL void conj_in_place(const I m,
+                                    const I n,
                                     U A,
-                                    const rocblas_int shifta,
-                                    const rocblas_int lda,
+                                    const rocblas_stride shifta,
+                                    const I lda,
                                     const rocblas_stride stridea)
 {
-    int i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    int j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    int b = hipBlockIdx_z;
+    I i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    I b = hipBlockIdx_z;
 
     T* Ap = load_ptr_batch<T>(A, b, shifta, stridea);
 
     if(i < m && j < n)
-        Ap[i + j * lda] = conj(Ap[i + j * lda]);
+        Ap[i + j * lda] = conj(Ap[i + j * (int64_t)lda]);
 }
 
-template <typename T>
-rocblas_status
-    rocsolver_lacgv_argCheck(rocblas_handle handle, const rocblas_int n, const rocblas_int incx, T x)
+template <typename T, typename I>
+rocblas_status rocsolver_lacgv_argCheck(rocblas_handle handle, const I n, const I incx, T x)
 {
     // order is important for unit tests:
 
@@ -90,14 +89,14 @@ rocblas_status
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
-                                        const rocblas_int n,
+                                        const I n,
                                         U x,
-                                        const rocblas_int shiftx,
-                                        const rocblas_int incx,
+                                        const rocblas_stride shiftx,
+                                        const I incx,
                                         const rocblas_stride stridex,
-                                        const rocblas_int batch_count)
+                                        const I batch_count)
 {
     ROCSOLVER_ENTER("lacgv", "n:", n, "shiftX:", shiftx, "incx:", incx, "bc:", batch_count);
 
@@ -109,12 +108,13 @@ rocblas_status rocsolver_lacgv_template(rocblas_handle handle,
     rocblas_get_stream(handle, &stream);
 
     // handle negative increments
-    rocblas_int offset = incx < 0 ? shiftx - (n - 1) * incx : shiftx;
+    rocblas_stride offset = incx < 0 ? shiftx - (n - 1) * incx : shiftx;
 
     // conjugate x
-    rocblas_int blocks = (n - 1) / 64 + 1;
+    constexpr int LACGV_NTHREADS = 64;
+    I blocks = (n - 1) / LACGV_NTHREADS + 1;
     ROCSOLVER_LAUNCH_KERNEL(conj_in_place<T>, dim3(1, blocks, batch_count), dim3(1, 64, 1), 0,
-                            stream, 1, n, x, offset, incx, stridex);
+                            stream, (I)1, n, x, offset, incx, stridex);
 
     return rocblas_status_success;
 }

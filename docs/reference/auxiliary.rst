@@ -24,13 +24,13 @@ The auxiliary functions are divided into the following categories:
 
     * i, j, and k are used as general purpose indices. In some legacy LAPACK APIs, k could be
       a parameter indicating some problem/matrix dimension.
-    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices, 
-      i is assigned to rows, j to columns and k to blocks. l is always used to index 
-      matrices/problems in a batch. 
+    * Depending on the context, when it is necessary to index rows, columns and blocks or submatrices,
+      i is assigned to rows, j to columns and k to blocks. l is always used to index
+      matrices/problems in a batch.
     * x[i] stands for the i-th element of vector x, while A[i,j] represents the element
       in the i-th row and j-th column of matrix A. Indices are 1-based, i.e. x[1] is the first
       element of x.
-    * To identify a block in a matrix or a matrix in the batch, k and l are used as sub-indices 
+    * To identify a block in a matrix or a matrix in the batch, k and l are used as sub-indices
     * x_i :math:`=x_i`; we sometimes use both notations, :math:`x_i` when displaying mathematical
       equations, and x_i in the text describing the function parameters.
     * If X is a real vector or matrix, :math:`X^T` indicates its transpose; if X is complex, then
@@ -54,6 +54,10 @@ Vector and Matrix manipulations
 
 rocsolver_<type>lacgv()
 ---------------------------------------
+.. doxygenfunction:: rocsolver_zlacgv_64
+   :outline:
+.. doxygenfunction:: rocsolver_clacgv_64
+   :outline
 .. doxygenfunction:: rocsolver_zlacgv
    :outline:
 .. doxygenfunction:: rocsolver_clacgv
@@ -97,6 +101,14 @@ Householder reflections
 
 rocsolver_<type>larfg()
 ---------------------------------------
+.. doxygenfunction:: rocsolver_zlarfg_64
+   :outline:
+.. doxygenfunction:: rocsolver_clarfg_64
+   :outline:
+.. doxygenfunction:: rocsolver_dlarfg_64
+   :outline:
+.. doxygenfunction:: rocsolver_slarfg_64
+   :outline:
 .. doxygenfunction:: rocsolver_zlarfg
    :outline:
 .. doxygenfunction:: rocsolver_clarfg
@@ -121,6 +133,14 @@ rocsolver_<type>larft()
 
 rocsolver_<type>larf()
 ---------------------------------------
+.. doxygenfunction:: rocsolver_zlarf_64
+   :outline:
+.. doxygenfunction:: rocsolver_clarf_64
+   :outline:
+.. doxygenfunction:: rocsolver_dlarf_64
+   :outline:
+.. doxygenfunction:: rocsolver_slarf_64
+   :outline:
 .. doxygenfunction:: rocsolver_zlarf
    :outline:
 .. doxygenfunction:: rocsolver_clarf

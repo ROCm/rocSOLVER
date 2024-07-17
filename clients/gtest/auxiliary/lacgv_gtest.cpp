@@ -33,7 +33,8 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef vector<int> lacgv_tuple;
+template <typename I>
+using lacgv_tuple = vector<I>;
 
 // each range is a {n,inc}
 
@@ -54,21 +55,39 @@ const vector<vector<int>> range = {
     {30, 3},
     {30, -3}};
 
+const vector<vector<int64_t>> range_64 = {
+    // quick return
+    {0, 1},
+    // invalid
+    {-1, 1},
+    {1, 0},
+    // normal (valid) samples
+    {10, 1},
+    {10, -1},
+    {20, 2},
+    {30, 3},
+    {30, -3}};
+
 // for daily_lapack tests
 const vector<vector<int>> large_range
     = {{192, 10}, {192, -10}, {250, 20}, {500, 30}, {1500, 40}, {1500, -40}};
 
-Arguments lacgv_setup_arguments(lacgv_tuple tup)
+const vector<vector<int64_t>> large_range_64
+    = {{192, 10}, {192, -10}, {250, 20}, {500, 30}, {1500, 40}, {1500, -40}};
+
+template <typename I>
+Arguments lacgv_setup_arguments(lacgv_tuple<I> tup)
 {
     Arguments arg;
 
-    arg.set<rocblas_int>("n", tup[0]);
-    arg.set<rocblas_int>("incx", tup[1]);
+    arg.set<I>("n", tup[0]);
+    arg.set<I>("incx", tup[1]);
 
     return arg;
 }
 
-class LACGV : public ::TestWithParam<lacgv_tuple>
+template <typename I>
+class LACGV_BASE : public ::TestWithParam<lacgv_tuple<I>>
 {
 protected:
     void TearDown() override
@@ -79,13 +98,20 @@ protected:
     template <typename T>
     void run_tests()
     {
-        Arguments arg = lacgv_setup_arguments(GetParam());
+        Arguments arg = lacgv_setup_arguments(this->GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0)
-            testing_lacgv_bad_arg<T>();
+        if(arg.peek<I>("n") == 0)
+            testing_lacgv_bad_arg<T, I>();
 
-        testing_lacgv<T>(arg);
+        testing_lacgv<T, I>(arg);
     }
+};
+
+class LACGV : public LACGV_BASE<rocblas_int>
+{
+};
+class LACGV_64 : public LACGV_BASE<int64_t>
+{
 };
 
 // non-batch tests
@@ -100,6 +126,20 @@ TEST_P(LACGV, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
+TEST_P(LACGV_64, __float_complex)
+{
+    run_tests<rocblas_float_complex>();
+}
+
+TEST_P(LACGV_64, __double_complex)
+{
+    run_tests<rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV, ValuesIn(large_range));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV, ValuesIn(range));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack, LACGV_64, ValuesIn(large_range_64));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack, LACGV_64, ValuesIn(range_64));
