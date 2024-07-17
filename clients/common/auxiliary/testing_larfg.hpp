@@ -35,13 +35,8 @@
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
 
-template <typename T>
-void larfg_checkBadArgs(const rocblas_handle handle,
-                        const rocblas_int n,
-                        T da,
-                        T dx,
-                        const rocblas_int inc,
-                        T dt)
+template <typename T, typename I>
+void larfg_checkBadArgs(const rocblas_handle handle, const I n, T da, T dx, const I inc, T dt)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_larfg(nullptr, n, da, dx, inc, dt),
@@ -59,17 +54,17 @@ void larfg_checkBadArgs(const rocblas_handle handle,
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle, 0, (T) nullptr, (T) nullptr, inc, (T) nullptr),
+    EXPECT_ROCBLAS_STATUS(rocsolver_larfg(handle, (I)0, (T) nullptr, (T) nullptr, inc, (T) nullptr),
                           rocblas_status_success);
 }
 
-template <typename T>
+template <typename T, typename I>
 void testing_larfg_bad_arg()
 {
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_int n = 2;
-    rocblas_int inc = 1;
+    I n = 2;
+    I inc = 1;
 
     // memory allocation
     device_strided_batch_vector<T> da(1, 1, 1, 1);
@@ -83,12 +78,12 @@ void testing_larfg_bad_arg()
     larfg_checkBadArgs(handle, n, da.data(), dx.data(), inc, dt.data());
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th>
+template <bool CPU, bool GPU, typename T, typename I, typename Td, typename Th>
 void larfg_initData(const rocblas_handle handle,
-                    const rocblas_int n,
+                    const I n,
                     Td& da,
                     Td& dx,
-                    const rocblas_int inc,
+                    const I inc,
                     Td& dt,
                     Th& ha,
                     Th& hx,
@@ -108,12 +103,12 @@ void larfg_initData(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th>
+template <typename T, typename I, typename Td, typename Th>
 void larfg_getError(const rocblas_handle handle,
-                    const rocblas_int n,
+                    const I n,
                     Td& da,
                     Td& dx,
-                    const rocblas_int inc,
+                    const I inc,
                     Td& dt,
                     Th& ha,
                     Th& hx,
@@ -139,12 +134,12 @@ void larfg_getError(const rocblas_handle handle,
     *max_err = norm_error('O', 1, n - 1, inc, hx[0], hxr[0]);
 }
 
-template <typename T, typename Td, typename Th>
+template <typename T, typename I, typename Td, typename Th>
 void larfg_getPerfData(const rocblas_handle handle,
-                       const rocblas_int n,
+                       const I n,
                        Td& da,
                        Td& dx,
-                       const rocblas_int inc,
+                       const I inc,
                        Td& dt,
                        Th& ha,
                        Th& hx,
@@ -202,13 +197,13 @@ void larfg_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <typename T>
+template <typename T, typename I>
 void testing_larfg(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int inc = argus.get<rocblas_int>("incx");
+    I n = argus.get<I>("n");
+    I inc = argus.get<I>("incx");
 
     rocblas_int hot_calls = argus.iters;
 
@@ -332,4 +327,4 @@ void testing_larfg(Arguments& argus)
 
 #define EXTERN_TESTING_LARFG(...) extern template void testing_larfg<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_LARFG, FOREACH_SCALAR_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_LARFG, FOREACH_SCALAR_TYPE, FOREACH_INT_TYPE, APPLY_STAMP)
