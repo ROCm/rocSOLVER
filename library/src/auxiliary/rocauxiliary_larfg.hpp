@@ -101,7 +101,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha)
     }
 }
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 ROCSOLVER_KERNEL void set_taubeta(T* tauA,
                                   const rocblas_stride strideP,
                                   T* norms,
@@ -109,7 +109,7 @@ ROCSOLVER_KERNEL void set_taubeta(T* tauA,
                                   const rocblas_stride shiftA,
                                   const rocblas_stride strideA)
 {
-    rocblas_int bid = hipBlockIdx_x;
+    I bid = hipBlockIdx_x;
 
     // select batch instance
     T* alpha = load_ptr_batch<T>(alphaA, bid, shiftA, strideA);
@@ -118,11 +118,8 @@ ROCSOLVER_KERNEL void set_taubeta(T* tauA,
     run_set_taubeta<T>(tau, norms + bid, alpha);
 }
 
-template <typename T>
-void rocsolver_larfg_getMemorySize(const rocblas_int n,
-                                   const rocblas_int batch_count,
-                                   size_t* size_work,
-                                   size_t* size_norms)
+template <typename T, typename I>
+void rocsolver_larfg_getMemorySize(const I n, const I batch_count, size_t* size_work, size_t* size_norms)
 {
     // if quick return no workspace needed
     if(n == 0 || batch_count == 0)
@@ -145,18 +142,14 @@ void rocsolver_larfg_getMemorySize(const rocblas_int n,
 
     // size of re-usable workspace
     // TODO: replace with rocBLAS call
-    constexpr int ROCBLAS_DOT_NB = 512;
+    constexpr I ROCBLAS_DOT_NB = 512;
     *size_work = n > 2 ? (n - 2) / ROCBLAS_DOT_NB + 2 : 1;
     *size_work *= sizeof(T) * batch_count;
 }
 
-template <typename T, typename U>
-rocblas_status rocsolver_larfg_argCheck(rocblas_handle handle,
-                                        const rocblas_int n,
-                                        const rocblas_int incx,
-                                        T alpha,
-                                        T x,
-                                        U tau)
+template <typename T, typename I, typename U>
+rocblas_status
+    rocsolver_larfg_argCheck(rocblas_handle handle, const I n, const I incx, T alpha, T x, U tau)
 {
     // order is important for unit tests:
 
@@ -178,18 +171,18 @@ rocblas_status rocsolver_larfg_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larfg_template(rocblas_handle handle,
-                                        const rocblas_int n,
+                                        const I n,
                                         U alpha,
-                                        const rocblas_int shifta,
+                                        const rocblas_stride shifta,
                                         U x,
-                                        const rocblas_int shiftx,
-                                        const rocblas_int incx,
+                                        const rocblas_stride shiftx,
+                                        const I incx,
                                         const rocblas_stride stridex,
                                         T* tau,
                                         const rocblas_stride strideP,
-                                        const rocblas_int batch_count,
+                                        const I batch_count,
                                         T* work,
                                         T* norms)
 {
@@ -232,8 +225,8 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
 
     // set value of tau and beta and scalling factor for vector x
     // alpha <- beta, norms <- scaling
-    ROCSOLVER_LAUNCH_KERNEL(set_taubeta<T>, dim3(batch_count), dim3(1), 0, stream, tau, strideP,
-                            norms, alpha, shifta, stridex);
+    ROCSOLVER_LAUNCH_KERNEL((set_taubeta<T, I>), dim3(batch_count), dim3(1), 0, stream, tau,
+                            strideP, norms, alpha, shifta, stridex);
 
     // compute vector v=x*norms
     rocblasCall_scal<T>(handle, n - 1, norms, 1, x, shiftx, incx, stridex, batch_count);

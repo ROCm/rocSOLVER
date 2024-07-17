@@ -183,19 +183,19 @@ void bdsqr_initData(const rocblas_handle handle,
         if(nv > 0)
         {
             memset(hV[0], 0, ldv * nv * sizeof(T));
-            for(rocblas_int i = 0; i < min(n, nv); ++i)
+            for(rocblas_int i = 0; i < std::min(n, nv); ++i)
                 hV[0][i + i * ldv] = T(1.0);
         }
         if(nu > 0)
         {
             memset(hU[0], 0, ldu * n * sizeof(T));
-            for(rocblas_int i = 0; i < min(n, nu); ++i)
+            for(rocblas_int i = 0; i < std::min(n, nu); ++i)
                 hU[0][i + i * ldu] = T(1.0);
         }
         if(nc > 0)
         {
             memset(hC[0], 0, ldc * nc * sizeof(T));
-            for(rocblas_int i = 0; i < min(n, nc); ++i)
+            for(rocblas_int i = 0; i < std::min(n, nc); ++i)
                 hC[0][i + i * ldc] = T(1.0);
         }
     }
@@ -313,7 +313,7 @@ void bdsqr_getError(const rocblas_handle handle,
     if(hInfo[0][0] == 0 && (nv || nu))
     {
         err = 0;
-        rocblas_int n_comp = min(n, nvRes);
+        rocblas_int n_comp = std::min(n, nvRes);
 
         if(uplo == rocblas_fill_upper)
         {
@@ -503,20 +503,20 @@ void testing_bdsqr(Arguments& argus)
 
     if(nv && nu)
     {
-        nvRes = nvA = max(nv, nu);
-        nuRes = nuA = max(nvRes, nc);
-        lduRes = max(lduRes, nuRes);
+        nvRes = nvA = std::max(nv, nu);
+        nuRes = nuA = std::max(nvRes, nc);
+        lduRes = std::max(lduRes, nuRes);
     }
     else if(nu)
     {
         nvRes = nvT = nu;
-        nuRes = nuA = max(nu, nc);
+        nuRes = nuA = std::max(nu, nc);
         ldvRes = n;
-        lduRes = max(lduRes, nuRes);
+        lduRes = std::max(lduRes, nuRes);
     }
     else if(nv || nc)
     {
-        nuRes = nuT = max(nv, nc);
+        nuRes = nuT = std::max(nv, nc);
         lduRes = nuRes;
     }
 
@@ -525,11 +525,11 @@ void testing_bdsqr(Arguments& argus)
     // errors in the rest of the unit test
     size_t size_D = size_t(n);
     size_t size_E = n > 1 ? size_t(n - 1) : 1;
-    size_t size_V = max(size_t(ldv) * nv, 1);
-    size_t size_U = max(size_t(ldu) * n, 1);
-    size_t size_C = max(size_t(ldc) * nc, 1);
-    size_t size_VRes = max(size_t(ldvRes) * nvRes, 1);
-    size_t size_URes = max(size_t(lduRes) * n, 1);
+    size_t size_V = std::max(size_t(ldv) * nv, size_t(1));
+    size_t size_U = std::max(size_t(ldu) * n, size_t(1));
+    size_t size_C = std::max(size_t(ldc) * nc, size_t(1));
+    size_t size_VRes = std::max(size_t(ldvRes) * nvRes, size_t(1));
+    size_t size_URes = std::max(size_t(lduRes) * n, size_t(1));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0, max_errorv = 0;
 
     // check invalid sizes

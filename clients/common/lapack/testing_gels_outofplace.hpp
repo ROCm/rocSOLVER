@@ -203,7 +203,7 @@ void gels_outofplace_initData(const rocblas_handle handle,
         std::bernoulli_distribution coinflip(0.5);
 
         const rocblas_int rowsB = (trans == rocblas_operation_none) ? m : n;
-        const rocblas_int ldx = max(m, n);
+        const rocblas_int ldx = std::max(m, n);
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
@@ -284,7 +284,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
                               double* max_err,
                               const bool singular)
 {
-    rocblas_int sizeW = max(1, min(m, n) + max(min(m, n), nrhs));
+    rocblas_int sizeW = std::max(1, std::min(m, n) + std::max(std::min(m, n), nrhs));
     std::vector<T> hW(sizeW);
 
     // input data initialization
@@ -303,7 +303,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
     // CPU lapack
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], max(m, n), hW.data(), sizeW, hInfo[b]);
+        cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], std::max(m, n), hW.data(), sizeW, hInfo[b]);
     }
 
     // error is ||hX - hXRes|| / ||hX||
@@ -321,7 +321,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
         if(hInfo[b][0] == 0)
         {
             const rocblas_int rowsX = (trans == rocblas_operation_none) ? n : m;
-            err = norm_error('I', rowsX, nrhs, max(m, n), hX[b], hXRes[b], ldx);
+            err = norm_error('I', rowsX, nrhs, std::max(m, n), hX[b], hXRes[b], ldx);
             *max_err = err > *max_err ? err : *max_err;
         }
     }
@@ -366,7 +366,7 @@ void gels_outofplace_getPerfData(const rocblas_handle handle,
                                  const bool perf,
                                  const bool singular)
 {
-    rocblas_int sizeW = max(1, min(m, n) + max(min(m, n), nrhs));
+    rocblas_int sizeW = std::max(1, std::min(m, n) + std::max(std::min(m, n), nrhs));
     std::vector<T> hW(sizeW);
 
     if(!perf)
@@ -378,7 +378,8 @@ void gels_outofplace_getPerfData(const rocblas_handle handle,
         *cpu_time_used = get_time_us_no_sync();
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], max(m, n), hW.data(), sizeW, hInfo[b]);
+            cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], std::max(m, n), hW.data(), sizeW,
+                     hInfo[b]);
         }
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
     }
@@ -536,7 +537,7 @@ void testing_gels_outofplace(Arguments& argus)
         host_batch_vector<T> hA(size_A, 1, bc);
         host_batch_vector<T> hB(size_B, 1, bc);
         host_batch_vector<T> hBRes(size_BRes, 1, bc);
-        host_batch_vector<T> hX(max(m, n) * nrhs, 1, bc);
+        host_batch_vector<T> hX(std::max(m, n) * nrhs, 1, bc);
         host_batch_vector<T> hXRes(size_XRes, 1, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
         host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
@@ -585,7 +586,7 @@ void testing_gels_outofplace(Arguments& argus)
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
         host_strided_batch_vector<T> hB(size_B, 1, stB, bc);
         host_strided_batch_vector<T> hBRes(size_BRes, 1, stBRes, bc);
-        host_strided_batch_vector<T> hX(max(m, n) * nrhs, 1, max(m, n) * nrhs, bc);
+        host_strided_batch_vector<T> hX(std::max(m, n) * nrhs, 1, std::max(m, n) * nrhs, bc);
         host_strided_batch_vector<T> hXRes(size_XRes, 1, stXRes, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
         host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
@@ -631,7 +632,7 @@ void testing_gels_outofplace(Arguments& argus)
     // validate results for rocsolver-test
     // using max(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, max(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, std::max(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

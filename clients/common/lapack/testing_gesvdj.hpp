@@ -312,8 +312,8 @@ void gesvdj_getError(const rocblas_handle handle,
                      double* max_err,
                      double* max_errv)
 {
-    rocblas_int lwork = 5 * max(m, n);
-    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * min(m, n) : 0);
+    rocblas_int lwork = 5 * std::max(m, n);
+    rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * std::min(m, n) : 0);
     std::vector<T> work(lwork);
     std::vector<SS> rwork(lrwork);
     std::vector<T> A(lda * n * bc);
@@ -392,7 +392,7 @@ void gesvdj_getError(const rocblas_handle handle,
     for(rocblas_int b = 0; b < bc; ++b)
     {
         // error is ||hS - hSres||
-        err = norm_error('F', 1, min(m, n), 1, hS[b], hSres[b]);
+        err = norm_error('F', 1, std::min(m, n), 1, hS[b], hSres[b]);
         *max_err = err > *max_err ? err : *max_err;
 
         // Check the singular vectors if required
@@ -400,7 +400,7 @@ void gesvdj_getError(const rocblas_handle handle,
         {
             err = 0;
             // check singular vectors implicitly (A*v_k = s_k*u_k)
-            for(rocblas_int k = 0; k < min(m, n); ++k)
+            for(rocblas_int k = 0; k < std::min(m, n); ++k)
             {
                 for(rocblas_int i = 0; i < m; ++i)
                 {
@@ -462,8 +462,8 @@ void gesvdj_getPerfData(const rocblas_handle handle,
                         const bool profile_kernels,
                         const bool perf)
 {
-    rocblas_int lwork = 5 * max(m, n);
-    rocblas_int lrwork = 5 * min(m, n);
+    rocblas_int lwork = 5 * std::max(m, n);
+    rocblas_int lrwork = 5 * std::min(m, n);
     std::vector<T> work(lwork);
     std::vector<SS> rwork(lrwork);
     std::vector<T> A;
@@ -534,11 +534,11 @@ void testing_gesvdj(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
-    rocblas_int ldv = argus.get<rocblas_int>("ldv", (rightvC == 'A' ? n : min(m, n)));
+    rocblas_int ldv = argus.get<rocblas_int>("ldv", (rightvC == 'A' ? n : std::min(m, n)));
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stS = argus.get<rocblas_stride>("strideS", min(m, n));
+    rocblas_stride stS = argus.get<rocblas_stride>("strideS", std::min(m, n));
     rocblas_stride stU
-        = argus.get<rocblas_stride>("strideU", (leftvC == 'A' ? ldu * m : ldu * min(m, n)));
+        = argus.get<rocblas_stride>("strideU", (leftvC == 'A' ? ldu * m : ldu * std::min(m, n)));
     rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
 
     S abstol = S(argus.get<double>("abstol", 0));
@@ -600,7 +600,7 @@ void testing_gesvdj(Arguments& argus)
         if(rightv == rocblas_svect_none)
         {
             rightvT = rocblas_svect_singular;
-            ldvT = min(m, n);
+            ldvT = std::min(m, n);
             mT = m;
             nT = n;
         }
@@ -615,8 +615,8 @@ void testing_gesvdj(Arguments& argus)
     size_t size_UT = 0;
     size_t size_VT = 0;
     size_t size_A = size_t(lda) * n;
-    size_t size_S = size_t(min(m, n));
-    size_t size_U = (leftvC == 'A' ? size_t(ldu) * m : size_t(ldu) * min(m, n));
+    size_t size_S = size_t(std::min(m, n));
+    size_t size_U = (leftvC == 'A' ? size_t(ldu) * m : size_t(ldu) * std::min(m, n));
     size_t size_V = size_t(ldv) * n;
     if(argus.unit_check || argus.norm_check)
     {
@@ -625,7 +625,7 @@ void testing_gesvdj(Arguments& argus)
         {
             if(leftv == rocblas_svect_none)
             {
-                size_UT = size_t(lduT) * min(mT, nT);
+                size_UT = size_t(lduT) * std::min(mT, nT);
                 size_Ures = size_UT;
                 ldures = lduT;
             }
@@ -659,7 +659,7 @@ void testing_gesvdj(Arguments& argus)
     bool invalid_size = (n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || bc < 0)
         || ((leftv == rocblas_svect_all || leftv == rocblas_svect_singular) && ldu < m)
         || ((rightv == rocblas_svect_all && ldv < n)
-            || (rightv == rocblas_svect_singular && ldv < min(m, n)));
+            || (rightv == rocblas_svect_singular && ldv < std::min(m, n)));
 
     if(invalid_size)
     {
@@ -847,9 +847,9 @@ void testing_gesvdj(Arguments& argus)
     // using 2 * min(m, n) * machine_precision as tolerance
     if(argus.unit_check)
     {
-        ROCSOLVER_TEST_CHECK(T, max_error, 2 * min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * std::min(m, n));
         if(svects)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * min(m, n));
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * std::min(m, n));
     }
 
     // output results for rocsolver-bench

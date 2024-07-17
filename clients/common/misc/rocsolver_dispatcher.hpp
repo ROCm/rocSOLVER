@@ -132,8 +132,10 @@ class rocsolver_dispatcher
         // Map for functions that support all precisions
         static const func_map map = {
             {"laswp", testing_laswp<T>},
-            {"larfg", testing_larfg<T>},
-            {"larf", testing_larf<T>},
+            {"larfg", testing_larfg<T, rocblas_int>},
+            {"larfg_64", testing_larfg<T, int64_t>},
+            {"larf", testing_larf<T, rocblas_int>},
+            {"larf_64", testing_larf<T, int64_t>},
             {"larft", testing_larft<T>},
             {"larfb", testing_larfb<T>},
             {"latrd", testing_latrd<T>},
@@ -409,7 +411,8 @@ class rocsolver_dispatcher
     {
         // Map for functions that support only single-complex and double-complex precisions
         static const func_map map_complex = {
-            {"lacgv", testing_lacgv<T>},
+            {"lacgv", testing_lacgv<T, rocblas_int>},
+            {"lacgv_64", testing_lacgv<T, int64_t>},
             // ungxx
             {"ung2r", testing_orgxr_ungxr<T, 0>},
             {"ungqr", testing_orgxr_ungxr<T, 1>},
