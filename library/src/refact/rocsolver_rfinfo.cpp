@@ -84,6 +84,10 @@ static bool load_function(void* handle, const char* symbol, Fn& fn)
 static bool load_rocsparse()
 {
 #ifdef _WIN32
+    // Library users will need to call SetErrorMode(SEM_FAILCRITICALERRORS) if
+    // they wish to avoid an error message box when this library is not found.
+    // The call is not done by rocSOLVER directly, as it is not thread-safe and
+    // will affect the global state of the program.
     void* handle = LoadLibraryW(L"librocsparse.dll");
 #else
     void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
