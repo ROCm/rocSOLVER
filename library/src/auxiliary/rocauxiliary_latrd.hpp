@@ -58,7 +58,8 @@ void rocsolver_latrd_getMemorySize(const rocblas_int n,
         return;
     }
 
-    size_t w_temp;
+    size_t n1 = 0, n2 = 0;
+    size_t w1 = 0, w2 = 0, w3 = 0;
 
     // size of scalars (constants) for rocblas calls
     *size_scalars = sizeof(T) * 3;
@@ -70,11 +71,20 @@ void rocsolver_latrd_getMemorySize(const rocblas_int n,
         *size_workArr = 0;
 
     // extra requirements for calling larfg
-    rocsolver_larfg_getMemorySize<T>(n, batch_count, size_work, size_norms);
+    rocsolver_larfg_getMemorySize<T>(n, batch_count, &w1, &n1);
 
     // extra requirements for calling symv/hemv
-    rocblasCall_symv_hemv_mem<BATCHED, T>(n, batch_count, &w_temp);
-    *size_work = std::max(*size_work, w_temp);
+    rocblasCall_symv_hemv_mem<BATCHED, T>(n, batch_count, &w2);
+
+    // size of re-usable workspace
+    // TODO: replace with rocBLAS call
+    constexpr int ROCBLAS_DOT_NB = 512;
+    w3 = n > 2 ? (n - 2) / ROCBLAS_DOT_NB + 2 : 1;
+    w3 *= sizeof(T) * batch_count;
+    n2 = sizeof(T) * batch_count;
+
+    *size_norms = std::max(n1, n2);
+    *size_work = std::max({w1, w2, w3});
 }
 
 template <typename T, typename S, typename U>
