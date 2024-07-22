@@ -27,6 +27,8 @@
 
 #include "roclapack_gemm_specialized_kernels.hpp"
 
+ROCSOLVER_BEGIN_NAMESPACE
+
 /*************************************************************
     Instantiate template methods using macros
 *************************************************************/
@@ -35,7 +37,11 @@ INSTANTIATE_GEMM(0, 0, float, rocblas_int, float*);
 INSTANTIATE_GEMM(0, 1, float, rocblas_int, float*);
 INSTANTIATE_GEMM(1, 0, float, rocblas_int, float* const*);
 
+#ifdef HAVE_ROCBLAS_64
 // 64-bit APIs
 INSTANTIATE_GEMM(0, 0, float, int64_t, float*);
 INSTANTIATE_GEMM(0, 1, float, int64_t, float*);
 INSTANTIATE_GEMM(1, 0, float, int64_t, float* const*);
+#endif /* HAVE_ROCBLAS_64 */
+
+ROCSOLVER_END_NAMESPACE

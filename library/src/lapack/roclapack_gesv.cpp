@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_gesv.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_gesv_impl(rocblas_handle handle,
@@ -105,6 +107,8 @@ rocblas_status rocsolver_gesv_impl(rocblas_handle handle,
         (rocblas_int*)pivotidx, (rocblas_int*)iipiv, (rocblas_int*)iinfo, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -121,7 +125,7 @@ extern "C" rocblas_status rocsolver_sgesv(rocblas_handle handle,
                                           const rocblas_int ldb,
                                           rocblas_int* info)
 {
-    return rocsolver_gesv_impl<float>(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+    return rocsolver::rocsolver_gesv_impl<float>(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
 }
 
 extern "C" rocblas_status rocsolver_dgesv(rocblas_handle handle,
@@ -134,7 +138,7 @@ extern "C" rocblas_status rocsolver_dgesv(rocblas_handle handle,
                                           const rocblas_int ldb,
                                           rocblas_int* info)
 {
-    return rocsolver_gesv_impl<double>(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+    return rocsolver::rocsolver_gesv_impl<double>(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
 }
 
 extern "C" rocblas_status rocsolver_cgesv(rocblas_handle handle,
@@ -147,7 +151,8 @@ extern "C" rocblas_status rocsolver_cgesv(rocblas_handle handle,
                                           const rocblas_int ldb,
                                           rocblas_int* info)
 {
-    return rocsolver_gesv_impl<rocblas_float_complex>(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+    return rocsolver::rocsolver_gesv_impl<rocblas_float_complex>(handle, n, nrhs, A, lda, ipiv, B,
+                                                                 ldb, info);
 }
 
 extern "C" rocblas_status rocsolver_zgesv(rocblas_handle handle,
@@ -160,5 +165,6 @@ extern "C" rocblas_status rocsolver_zgesv(rocblas_handle handle,
                                           const rocblas_int ldb,
                                           rocblas_int* info)
 {
-    return rocsolver_gesv_impl<rocblas_double_complex>(handle, n, nrhs, A, lda, ipiv, B, ldb, info);
+    return rocsolver::rocsolver_gesv_impl<rocblas_double_complex>(handle, n, nrhs, A, lda, ipiv, B,
+                                                                  ldb, info);
 }

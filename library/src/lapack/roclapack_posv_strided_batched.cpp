@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2022 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_posv.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_posv_strided_batched_impl(rocblas_handle handle,
@@ -101,6 +103,8 @@ rocblas_status rocsolver_posv_strided_batched_impl(rocblas_handle handle,
         (T*)scalars, work1, work2, work3, work4, (T*)pivots_savedB, (rocblas_int*)iinfo, optim_mem);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -120,8 +124,8 @@ extern "C" rocblas_status rocsolver_sposv_strided_batched(rocblas_handle handle,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count)
 {
-    return rocsolver_posv_strided_batched_impl<float>(handle, uplo, n, nrhs, A, lda, strideA, B,
-                                                      ldb, strideB, info, batch_count);
+    return rocsolver::rocsolver_posv_strided_batched_impl<float>(
+        handle, uplo, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }
 
 extern "C" rocblas_status rocsolver_dposv_strided_batched(rocblas_handle handle,
@@ -137,8 +141,8 @@ extern "C" rocblas_status rocsolver_dposv_strided_batched(rocblas_handle handle,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count)
 {
-    return rocsolver_posv_strided_batched_impl<double>(handle, uplo, n, nrhs, A, lda, strideA, B,
-                                                       ldb, strideB, info, batch_count);
+    return rocsolver::rocsolver_posv_strided_batched_impl<double>(
+        handle, uplo, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }
 
 extern "C" rocblas_status rocsolver_cposv_strided_batched(rocblas_handle handle,
@@ -154,7 +158,7 @@ extern "C" rocblas_status rocsolver_cposv_strided_batched(rocblas_handle handle,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count)
 {
-    return rocsolver_posv_strided_batched_impl<rocblas_float_complex>(
+    return rocsolver::rocsolver_posv_strided_batched_impl<rocblas_float_complex>(
         handle, uplo, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }
 
@@ -171,6 +175,6 @@ extern "C" rocblas_status rocsolver_zposv_strided_batched(rocblas_handle handle,
                                                           rocblas_int* info,
                                                           const rocblas_int batch_count)
 {
-    return rocsolver_posv_strided_batched_impl<rocblas_double_complex>(
+    return rocsolver::rocsolver_posv_strided_batched_impl<rocblas_double_complex>(
         handle, uplo, n, nrhs, A, lda, strideA, B, ldb, strideB, info, batch_count);
 }

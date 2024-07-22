@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "roclapack_sytrf.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T, typename U>
 rocblas_status rocsolver_sytrf_impl(rocblas_handle handle,
@@ -76,6 +78,8 @@ rocblas_status rocsolver_sytrf_impl(rocblas_handle handle,
                                        info, batch_count, (T*)work);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -92,7 +96,7 @@ rocblas_status rocsolver_ssytrf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_sytrf_impl<float>(handle, uplo, n, A, lda, ipiv, info);
+    return rocsolver::rocsolver_sytrf_impl<float>(handle, uplo, n, A, lda, ipiv, info);
 }
 
 rocblas_status rocsolver_dsytrf(rocblas_handle handle,
@@ -103,7 +107,7 @@ rocblas_status rocsolver_dsytrf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_sytrf_impl<double>(handle, uplo, n, A, lda, ipiv, info);
+    return rocsolver::rocsolver_sytrf_impl<double>(handle, uplo, n, A, lda, ipiv, info);
 }
 
 rocblas_status rocsolver_csytrf(rocblas_handle handle,
@@ -114,7 +118,8 @@ rocblas_status rocsolver_csytrf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_sytrf_impl<rocblas_float_complex>(handle, uplo, n, A, lda, ipiv, info);
+    return rocsolver::rocsolver_sytrf_impl<rocblas_float_complex>(handle, uplo, n, A, lda, ipiv,
+                                                                  info);
 }
 
 rocblas_status rocsolver_zsytrf(rocblas_handle handle,
@@ -125,7 +130,8 @@ rocblas_status rocsolver_zsytrf(rocblas_handle handle,
                                 rocblas_int* ipiv,
                                 rocblas_int* info)
 {
-    return rocsolver_sytrf_impl<rocblas_double_complex>(handle, uplo, n, A, lda, ipiv, info);
+    return rocsolver::rocsolver_sytrf_impl<rocblas_double_complex>(handle, uplo, n, A, lda, ipiv,
+                                                                   info);
 }
 
 } // extern C

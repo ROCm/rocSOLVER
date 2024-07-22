@@ -33,12 +33,13 @@
 #pragma once
 
 #include "auxiliary/rocauxiliary_ormtr_unmtr.hpp"
-#include "auxiliary/rocauxiliary_stebz.hpp"
-#include "auxiliary/rocauxiliary_stein.hpp"
+#include "auxiliary/rocauxiliary_stedcx.hpp"
 #include "rocblas.hpp"
 #include "roclapack_syevx_heevx.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 /** Argument checking **/
 template <typename T, typename S>
@@ -102,7 +103,7 @@ void rocsolver_syevdx_heevdx_inplace_getMemorySize(const rocblas_evect evect,
                                                    size_t* size_work3,
                                                    size_t* size_work4,
                                                    size_t* size_work5,
-                                                   size_t* size_work6,
+                                                   size_t* size_work6_ifail,
                                                    size_t* size_D,
                                                    size_t* size_E,
                                                    size_t* size_iblock,
@@ -120,7 +121,7 @@ void rocsolver_syevdx_heevdx_inplace_getMemorySize(const rocblas_evect evect,
         *size_work3 = 0;
         *size_work4 = 0;
         *size_work5 = 0;
-        *size_work6 = 0;
+        *size_work6_ifail = 0;
         *size_D = 0;
         *size_E = 0;
         *size_iblock = 0;
@@ -139,22 +140,51 @@ void rocsolver_syevdx_heevdx_inplace_getMemorySize(const rocblas_evect evect,
     // requirements for tridiagonalization (sytrd/hetrd)
     rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &a1, &b1, &c1,
                                                     size_nsplit_workArr);
+    // requirements for ormtr/unmtr
+    rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
+                                                    &unused, &a2, &b2, &c2, &unused);
 
-    // extra requirements for computing the eigenvalues (stebz)
-    rocsolver_stebz_getMemorySize<T>(n, batch_count, &a2, &b2, &c2, size_work4, size_work5,
-                                     size_work6);
+    // size of array for temporary householder scalars
+    *size_tau = sizeof(T) * n * batch_count;
 
-    if(evect == rocblas_evect_original)
+    // size of arrays for temporary tridiagonal elements
+    *size_D = sizeof(S) * n * batch_count;
+    *size_E = sizeof(S) * n * batch_count;
+
+    if(evect != rocblas_evect_original || n < SYEVDX_MIN_DC_SIZE)
     {
-        // extra requirements for ormtr/unmtr
-        rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
-                                                        &unused, &a3, &b3, &c3, &unused);
+        // extra requirements for computing the eigenvalues (stebz)
+        rocsolver_stebz_getMemorySize<T>(n, batch_count, &a3, &b3, &c3, size_work4, size_work5,
+                                         size_work6_ifail);
 
-        // extra requirements for computing the eigenvectors (stein)
-        rocsolver_stein_getMemorySize<T, S>(n, batch_count, &a4, &b4);
+        if(evect == rocblas_evect_original)
+        {
+            // extra requirements for computing the eigenvectors (stein)
+            rocsolver_stein_getMemorySize<T, S>(n, batch_count, &a4, &b4);
+            *size_work6_ifail = std::max(*size_work6_ifail, sizeof(rocblas_int) * n * batch_count);
+
+            // extra space to store A
+            *size_work4 = std::max(*size_work4, sizeof(T) * n * n * batch_count);
+        }
+
+        // size of arrays for temporary submatrix indices
+        *size_iblock = sizeof(rocblas_int) * n * batch_count;
+        *size_isplit_map = sizeof(rocblas_int) * n * batch_count;
+
+        // size of array for temporary split off block sizes
+        *size_nsplit_workArr = std::max(*size_nsplit_workArr, sizeof(rocblas_int) * batch_count);
+    }
+    else
+    {
+        // extra requirements for computing eigenvalues and vectors (stedcx)
+        rocsolver_stedcx_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count,
+                                                      &a3, &b3, &c3, size_work4, size_work5,
+                                                      size_work6_ifail, &unused);
 
         // extra space to store A
-        *size_work4 = max(*size_work4, sizeof(T) * n * n * batch_count);
+        *size_iblock = sizeof(T) * n * n * batch_count;
+
+        *size_isplit_map = 0;
     }
 
     // get max values
@@ -162,22 +192,8 @@ void rocsolver_syevdx_heevdx_inplace_getMemorySize(const rocblas_evect evect,
     *size_work2 = std::max({b1, b2, b3, b4});
     *size_work3 = std::max({c1, c2, c3});
 
-    // size of arrays for temporary tridiagonal elements
-    *size_D = sizeof(S) * n * batch_count;
-    *size_E = sizeof(S) * n * batch_count;
-
-    // size of arrays for temporary submatrix indices
-    *size_iblock = sizeof(rocblas_int) * n * batch_count;
-    *size_isplit_map = sizeof(rocblas_int) * n * batch_count;
-
-    // size of array for temporary householder scalars
-    *size_tau = sizeof(T) * n * batch_count;
-
     // size of array for number of eigenvalues on the device
     *size_nev = sizeof(rocblas_int) * batch_count;
-
-    // size of array for temporary split off block sizes
-    *size_nsplit_workArr = max(*size_nsplit_workArr, sizeof(rocblas_int) * batch_count);
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
@@ -206,7 +222,7 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
                                                         void* work3,
                                                         void* work4,
                                                         void* work5,
-                                                        void* work6,
+                                                        rocblas_int* work6_ifail,
                                                         S* D,
                                                         S* E,
                                                         rocblas_int* iblock,
@@ -242,49 +258,76 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
 
     const rocblas_stride stride = n;
 
+    rocblas_int blocksn = (n - 1) / BS2 + 1;
+    dim3 gridA(blocksn, blocksn, batch_count);
+    dim3 threadsA(BS2, BS2, 1);
+
     // reduce A to tridiagonal form
     rocsolver_sytrd_hetrd_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, stride,
                                                E, stride, tau, stride, batch_count, scalars,
                                                (T*)work1, (T*)work2, (T*)work3, (T**)nsplit_workArr);
 
-    // compute eigenvalues
-    rocblas_eorder eorder
-        = (evect == rocblas_evect_none ? rocblas_eorder_entire : rocblas_eorder_blocks);
-    rocsolver_stebz_template<S>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, 0, stride, E,
-                                0, stride, d_nev, (rocblas_int*)nsplit_workArr, W, strideW, iblock,
-                                stride, isplit_map, stride, info, batch_count, (rocblas_int*)work1,
-                                (S*)work2, (S*)work3, (S*)work4, (S*)work5, (rocblas_int*)work6);
-
-    if(evect != rocblas_evect_none)
+    if(evect != rocblas_evect_original || n < SYEVDX_MIN_DC_SIZE)
     {
-        // kernel dimensions
-        rocblas_int blocks1 = (n - 1) / BS1 + 1;
-        rocblas_int blocks2 = (n - 1) / BS2 + 1;
-        dim3 grid1(1, batch_count, 1);
-        dim3 grid2(blocks2, blocks2, batch_count);
-        dim3 threads1(BS1, 1, 1);
-        dim3 threads2(BS2, BS2, 1);
+        // **** do not use D&C approach ****
 
-        // copy A to work4
-        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, grid2, threads2, 0, stream, copymat_to_buffer, n, n, A,
-                                shiftA, lda, strideA, (T*)work4);
+        const rocblas_stride strideF = n;
 
-        // compute eigenvectors
-        rocsolver_stein_template<T>(handle, n, D, 0, stride, E, 0, stride, d_nev, W, 0, strideW,
-                                    iblock, stride, isplit_map, stride, A, shiftA, lda, strideA,
-                                    (rocblas_int*)nullptr, 0, info, batch_count, (S*)work1,
-                                    (rocblas_int*)work2);
+        // compute eigenvalues
+        rocblas_eorder eorder
+            = (evect == rocblas_evect_none ? rocblas_eorder_entire : rocblas_eorder_blocks);
+        S abstol = 0;
+        rocsolver_stebz_template<S>(handle, erange, eorder, n, vl, vu, il, iu, abstol, D, 0, stride,
+                                    E, 0, stride, d_nev, (rocblas_int*)nsplit_workArr, W, strideW,
+                                    iblock, stride, isplit_map, stride, info, batch_count,
+                                    (rocblas_int*)work1, (S*)work2, (S*)work3, (S*)work4, (S*)work5,
+                                    work6_ifail);
 
-        // apply unitary matrix to eigenvectors
-        rocblas_int temp_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
+        if(evect != rocblas_evect_none)
+        {
+            // copy A to work4
+            ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, gridA, threadsA, 0, stream, copymat_to_buffer, n,
+                                    n, A, shiftA, lda, strideA, (T*)work4);
+
+            // compute eigenvectors
+            rocsolver_stein_template<T>(handle, n, D, 0, stride, E, 0, stride, d_nev, W, 0, strideW,
+                                        iblock, stride, isplit_map, stride, A, shiftA, lda, strideA,
+                                        work6_ifail, strideF, info, batch_count, (S*)work1,
+                                        (rocblas_int*)work2);
+
+            // apply unitary matrix to eigenvectors
+            rocblas_int temp_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
+            rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
+                handle, rocblas_side_left, uplo, rocblas_operation_none, n, temp_nev, (T*)work4, 0,
+                n, n * n, tau, stride, A, shiftA, lda, strideA, batch_count, scalars, (T*)work1,
+                (T*)work2, (T*)work3, (T**)nsplit_workArr);
+
+            // sort eigenvalues and eigenvectors
+            dim3 grid(1, batch_count, 1);
+            dim3 threads(BS1, 1, 1);
+            ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid, threads, 0, stream, n, d_nev, W,
+                                    strideW, A, shiftA, lda, strideA, work6_ifail, strideF, info,
+                                    isplit_map);
+        }
+    }
+    else
+    {
+        // **** Use D&C approach ****
+
+        // copy A to iblock
+        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, gridA, threadsA, 0, stream, copymat_to_buffer, n, n, A,
+                                shiftA, lda, strideA, (T*)iblock);
+
+        rocsolver_stedcx_template<BATCHED, STRIDED, T>(
+            handle, rocblas_evect_tridiagonal, erange, n, vl, vu, il, iu, D, stride, E, stride,
+            d_nev, W, strideW, A, shiftA, lda, strideA, info, batch_count, (S*)work1, (S*)work2,
+            (S*)work3, (S*)work4, (S*)work5, work6_ifail, (S**)nsplit_workArr);
+
+        rocblas_int h_nev = (erange == rocblas_erange_index ? iu - il + 1 : n);
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
-            handle, rocblas_side_left, uplo, rocblas_operation_none, n, temp_nev, (T*)work4, 0, n,
-            n * n, tau, stride, A, shiftA, lda, strideA, batch_count, scalars, (T*)work1, (T*)work2,
+            handle, rocblas_side_left, uplo, rocblas_operation_none, n, h_nev, (T*)iblock, 0, n,
+            n * n, tau, n, A, shiftA, lda, strideA, batch_count, scalars, (T*)work1, (T*)work2,
             (T*)work3, (T**)nsplit_workArr);
-
-        // sort eigenvalues and eigenvectors
-        ROCSOLVER_LAUNCH_KERNEL(syevx_sort_eigs<T>, grid1, threads1, 0, stream, n, d_nev, W, strideW,
-                                A, shiftA, lda, strideA, (rocblas_int*)nullptr, 0, info, isplit_map);
     }
 
     // copy nev from device to host
@@ -297,3 +340,5 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
 
     return rocblas_status_success;
 }
+
+ROCSOLVER_END_NAMESPACE

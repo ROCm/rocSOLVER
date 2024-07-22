@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,6 +26,8 @@
  * *************************************************************************/
 
 #include "rocauxiliary_larfb.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
@@ -92,6 +94,8 @@ rocblas_status rocsolver_larfb_impl(rocblas_handle handle,
         stridef, A, shiftA, lda, stridea, batch_count, (T*)tmptr, (T**)workArr);
 }
 
+ROCSOLVER_END_NAMESPACE
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -115,8 +119,8 @@ rocblas_status rocsolver_slarfb(rocblas_handle handle,
                                 float* A,
                                 const rocblas_int lda)
 {
-    return rocsolver_larfb_impl<float>(handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt,
-                                       A, lda);
+    return rocsolver::rocsolver_larfb_impl<float>(handle, side, trans, direct, storev, m, n, k, V,
+                                                  ldv, T, ldt, A, lda);
 }
 
 rocblas_status rocsolver_dlarfb(rocblas_handle handle,
@@ -134,8 +138,8 @@ rocblas_status rocsolver_dlarfb(rocblas_handle handle,
                                 double* A,
                                 const rocblas_int lda)
 {
-    return rocsolver_larfb_impl<double>(handle, side, trans, direct, storev, m, n, k, V, ldv, T,
-                                        ldt, A, lda);
+    return rocsolver::rocsolver_larfb_impl<double>(handle, side, trans, direct, storev, m, n, k, V,
+                                                   ldv, T, ldt, A, lda);
 }
 
 rocblas_status rocsolver_clarfb(rocblas_handle handle,
@@ -153,8 +157,8 @@ rocblas_status rocsolver_clarfb(rocblas_handle handle,
                                 rocblas_float_complex* A,
                                 const rocblas_int lda)
 {
-    return rocsolver_larfb_impl<rocblas_float_complex>(handle, side, trans, direct, storev, m, n, k,
-                                                       V, ldv, T, ldt, A, lda);
+    return rocsolver::rocsolver_larfb_impl<rocblas_float_complex>(
+        handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt, A, lda);
 }
 
 rocblas_status rocsolver_zlarfb(rocblas_handle handle,
@@ -172,8 +176,8 @@ rocblas_status rocsolver_zlarfb(rocblas_handle handle,
                                 rocblas_double_complex* A,
                                 const rocblas_int lda)
 {
-    return rocsolver_larfb_impl<rocblas_double_complex>(handle, side, trans, direct, storev, m, n,
-                                                        k, V, ldv, T, ldt, A, lda);
+    return rocsolver::rocsolver_larfb_impl<rocblas_double_complex>(
+        handle, side, trans, direct, storev, m, n, k, V, ldv, T, ldt, A, lda);
 }
 
 } // extern C
