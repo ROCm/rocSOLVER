@@ -7119,6 +7119,34 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf(rocblas_handle handle,
                                                  rocblas_double_complex* A,
                                                  const rocblas_int lda,
                                                  rocblas_double_complex* ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqrf_64(rocblas_handle handle,
+                                                    const int64_t m,
+                                                    const int64_t n,
+                                                    float* A,
+                                                    const int64_t lda,
+                                                    float* ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqrf_64(rocblas_handle handle,
+                                                    const int64_t m,
+                                                    const int64_t n,
+                                                    double* A,
+                                                    const int64_t lda,
+                                                    double* ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqrf_64(rocblas_handle handle,
+                                                    const int64_t m,
+                                                    const int64_t n,
+                                                    rocblas_float_complex* A,
+                                                    const int64_t lda,
+                                                    rocblas_float_complex* ipiv);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_64(rocblas_handle handle,
+                                                    const int64_t m,
+                                                    const int64_t n,
+                                                    rocblas_double_complex* A,
+                                                    const int64_t lda,
+                                                    rocblas_double_complex* ipiv);
 //! @}
 
 /*! @{
