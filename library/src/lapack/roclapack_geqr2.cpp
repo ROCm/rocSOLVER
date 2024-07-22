@@ -144,7 +144,11 @@ rocblas_status rocsolver_sgeqr2_64(rocblas_handle handle,
                                    const int64_t lda,
                                    float* ipiv)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqr2_impl<float>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_dgeqr2_64(rocblas_handle handle,
@@ -154,7 +158,11 @@ rocblas_status rocsolver_dgeqr2_64(rocblas_handle handle,
                                    const int64_t lda,
                                    double* ipiv)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqr2_impl<double>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_cgeqr2_64(rocblas_handle handle,
@@ -164,7 +172,11 @@ rocblas_status rocsolver_cgeqr2_64(rocblas_handle handle,
                                    const int64_t lda,
                                    rocblas_float_complex* ipiv)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqr2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_zgeqr2_64(rocblas_handle handle,
@@ -174,7 +186,11 @@ rocblas_status rocsolver_zgeqr2_64(rocblas_handle handle,
                                    const int64_t lda,
                                    rocblas_double_complex* ipiv)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqr2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C

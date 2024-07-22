@@ -169,8 +169,12 @@ rocblas_status rocsolver_sgeqrf_strided_batched_64(rocblas_handle handle,
                                                    const rocblas_stride stridep,
                                                    const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqrf_strided_batched_impl<float>(handle, m, n, A, lda, strideA,
                                                                   ipiv, stridep, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_dgeqrf_strided_batched_64(rocblas_handle handle,
@@ -183,8 +187,12 @@ rocblas_status rocsolver_dgeqrf_strided_batched_64(rocblas_handle handle,
                                                    const rocblas_stride stridep,
                                                    const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqrf_strided_batched_impl<double>(handle, m, n, A, lda, strideA,
                                                                    ipiv, stridep, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_cgeqrf_strided_batched_64(rocblas_handle handle,
@@ -197,8 +205,12 @@ rocblas_status rocsolver_cgeqrf_strided_batched_64(rocblas_handle handle,
                                                    const rocblas_stride stridep,
                                                    const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqrf_strided_batched_impl<rocblas_float_complex>(
         handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_zgeqrf_strided_batched_64(rocblas_handle handle,
@@ -211,8 +223,12 @@ rocblas_status rocsolver_zgeqrf_strided_batched_64(rocblas_handle handle,
                                                    const rocblas_stride stridep,
                                                    const int64_t batch_count)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_geqrf_strided_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, strideA, ipiv, stridep, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C
