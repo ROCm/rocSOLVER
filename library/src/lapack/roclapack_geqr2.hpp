@@ -135,30 +135,31 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
                                  shiftA + idx2D(std::min(j + 1, m - 1), j, lda), 1, strideA,
                                  (ipiv + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
-        // insert one in A(j,j) tobuild/apply the householder matrix
-        ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
-
-        // conjugate tau
-        if(COMPLEX)
-            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
-
         // Apply Householder reflector to the rest of matrix from the left
         if(j < n - 1)
         {
+            // insert one in A(j,j) tobuild/apply the householder matrix
+            ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
+                                    diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
+
+            // conjugate tau
+            if(COMPLEX)
+                rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
+
             rocsolver_larf_template(handle, rocblas_side_left, m - j, n - j - 1, A,
                                     shiftA + idx2D(j, j, lda), 1, strideA, (ipiv + j), strideP, A,
                                     shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count,
                                     scalars, Abyx_norms, (T**)work_workArr);
+
+            // restore original value of A(j,j)
+            ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+                                    stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                                    1);
+
+            // restore tau
+            if(COMPLEX)
+                rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
         }
-
-        // restore original value of A(j,j)
-        ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1);
-
-        // restore tau
-        if(COMPLEX)
-            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
     }
 
     return rocblas_status_success;
