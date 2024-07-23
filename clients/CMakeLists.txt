@@ -131,17 +131,17 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/lapack/testing_syevdj_heevdj.cpp
     common/lapack/testing_syevdx_heevdx.cpp
     common/lapack/testing_syevj_heevj.cpp
-    common/lapack/testing_syevx_heevx.cpp
     common/lapack/testing_sygv_hegv.cpp
     common/lapack/testing_sygvd_hegvd.cpp
     common/lapack/testing_sygvdj_hegvdj.cpp
     common/lapack/testing_sygvdx_hegvdx.cpp
     common/lapack/testing_sygvj_hegvj.cpp
-    common/lapack/testing_sygvx_hegvx.cpp
     common/lapack/testing_geblttrf_npvt.cpp
     common/lapack/testing_geblttrf_npvt_interleaved.cpp
     common/lapack/testing_geblttrs_npvt.cpp
     common/lapack/testing_geblttrs_npvt_interleaved.cpp
+    common/lapack/testing_sygvx_hegvx.cpp
+    common/lapack/testing_syevx_heevx.cpp
   )
 
   set(rocrefact_inst_files
@@ -160,8 +160,8 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/misc/program_options.cpp
     common/misc/client_environment_helpers.cpp
     ${rocauxiliary_inst_files}
-    ${roclapack_inst_files}
     ${rocrefact_inst_files}
+    ${roclapack_inst_files}
   )
 
   prepend_path("${CMAKE_CURRENT_SOURCE_DIR}/" common_source_files common_source_paths)
