@@ -147,7 +147,7 @@ struct pseudorandom_number_generator
         Znext = static_cast<std::int32_t>(next_Z(Z));
 
         Xnext = Ynext - Znext;
-        sgnX = Xnext < 0 ? -1 : 1; 
+        sgnX = Xnext < 0 ? -1 : 1;
         Xnext += std::max(-sgnX, 0) * m_m31_mXY;
 
         return static_cast<I>(Xnext);
@@ -178,7 +178,7 @@ struct pseudorandom_number_generator
 
         // Ynext = (ay * Y) % m_m31_mXY;
         Ynext = ay * (Ynext % qy) - ry * static_cast<std::int32_t>(Ynext / qy);
-        sgnY = Ynext < 0 ? -1 : 1; 
+        sgnY = Ynext < 0 ? -1 : 1;
         Ynext += std::max(-sgnY, 0) * m_m31_mXY;
 
         Y = static_cast<I>(Ynext);
@@ -210,7 +210,7 @@ struct pseudorandom_number_generator
 
         // Znext = (az * Z) % m_mZ;
         Znext = az * (Znext % qz) - rz * static_cast<std::int32_t>(Znext / qz);
-        sgnZ = Znext < 0 ? -1 : 1; 
+        sgnZ = Znext < 0 ? -1 : 1;
         Znext += std::max(-sgnZ, 0) * m_mZ;
 
         Z = static_cast<I>(Znext);
@@ -227,7 +227,7 @@ struct pseudorandom_number_generator
 ///
 /// \tparam IntType - type of generated values, usually an integral type.
 ///
-template<class IntType = std::int32_t>
+template <class IntType = std::int32_t>
 class rocsolver_int_prng
 {
 public:
@@ -237,7 +237,7 @@ public:
     __device__ __host__ rocsolver_int_prng(IntType Y0, IntType Z0 = 0)
     {
         Y_ = rocsolver_prng_impl_t::range_check_Y(static_cast<std::int32_t>(Y0));
-        if (Z0 == 0)
+        if(Z0 == 0)
         {
             Z_ = Y_;
         }

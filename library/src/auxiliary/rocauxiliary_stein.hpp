@@ -35,9 +35,9 @@
 #include <type_traits>
 
 #include "lapack_device_functions.hpp"
-#include "rocsolver_prng.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_prng.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -126,7 +126,7 @@ __device__ void run_stein(const int tid,
             ifail[i] = 0;
 
     auto normalize = [](rocblas_int value, rocblas_int max) -> S {
-        return static_cast<S>(static_cast<double>(value)/max);
+        return static_cast<S>(static_cast<double>(value) / max);
     };
     // iterate over submatrix blocks
     for(rocblas_int nblk = 0; nblk < iblock[nev - 1]; nblk++)
@@ -180,10 +180,11 @@ __device__ void run_stein(const int tid,
                 // deterministic seed, varies with thread ids and with each new computed eigenvalue
                 seed = tid + (j + nblk * nev) * MAX_THDS + 1;
 
-                // rocSOLVER's prng can be initialized with one or two seeds (better results are achieved if 
+                // rocSOLVER's prng can be initialized with one or two seeds (better results are achieved if
                 // two, independent, seeds are used).  The two seeds used here are not independent, they just spread
                 // the first pseudo-random number each thread computes more evenly.
-                rocsolver_int_prng<rocblas_int> prng(seed, rocsolver_int_prng<rocblas_int>::max() + 1 - seed);
+                rocsolver_int_prng<rocblas_int> prng(
+                    seed, rocsolver_int_prng<rocblas_int>::max() + 1 - seed);
 
                 for(i = tid; i < blksize; i += MAX_THDS)
                 {
