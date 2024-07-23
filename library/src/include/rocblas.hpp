@@ -48,7 +48,7 @@
 // and we delete them so that it is a compile-time error if they are used.
 // The calls to these functions are guarded by if constexpr, but they still
 // need to be declared even if they're only used in the branch not taken.
-#ifndef HAVE_ROCBLAS_64
+#if ROCBLAS_VERSION_MAJOR < 4 || (ROCBLAS_VERSION_MAJOR == 4 && ROCBLAS_VERSION_MINOR < 2)
 // scal
 template <typename T, typename Ta>
 rocblas_status rocblas_internal_scal_template_64(rocblas_handle,
@@ -242,7 +242,8 @@ rocblas_status rocblas_internal_trsm_batched_template_64(rocblas_handle,
                                                          rocblas_stride offset_invA = 0,
                                                          rocblas_stride stride_invA = 0)
     = delete;
-
+#endif
+#if ROCBLAS_VERSION_MAJOR < 4 || (ROCBLAS_VERSION_MAJOR == 4 && ROCBLAS_VERSION_MINOR < 3)
 // gemm
 template <typename T>
 rocblas_status rocblas_internal_gemm_template_64(rocblas_handle,
