@@ -40,39 +40,6 @@ ROCSOLVER_BEGIN_NAMESPACE
  * ===========================================================================
  */
 
-// larf
-template <typename T, typename I, typename U>
-rocblas_status larf_run_small(rocblas_handle handle,
-                              const rocblas_side side,
-                              const I m,
-                              const I n,
-                              U x,
-                              const rocblas_stride shiftX,
-                              const I incX,
-                              const rocblas_stride strideX,
-                              const T* tau,
-                              const rocblas_stride strideP,
-                              U A,
-                              const rocblas_stride shiftA,
-                              const I lda,
-                              const rocblas_stride strideA,
-                              const I batch_count);
-
-// larfg
-template <typename T, typename I, typename U>
-rocblas_status larfg_run_small(rocblas_handle handle,
-                               const I n,
-                               U alpha,
-                               const rocblas_stride shiftA,
-                               const rocblas_stride strideA,
-                               U x,
-                               const rocblas_stride shiftX,
-                               const I incX,
-                               const rocblas_stride strideX,
-                               T* tau,
-                               const rocblas_stride strideP,
-                               const I batch_count);
-
 // trsm
 template <bool BATCHED, bool STRIDED, typename T, typename I>
 rocblas_status rocsolver_trsm_mem(const rocblas_side side,

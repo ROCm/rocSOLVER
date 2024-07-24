@@ -10,8 +10,6 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - LARFG_64
 
 ### Optimized
-- Improved performanced of LARFG, LARF, and downstream functions such as GEQR2 and GEQRF
-
 ### Changed
 ### Deprecated
 ### Removed
