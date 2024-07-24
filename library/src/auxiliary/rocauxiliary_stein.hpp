@@ -32,8 +32,6 @@
 
 #pragma once
 
-#include <type_traits>
-
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"

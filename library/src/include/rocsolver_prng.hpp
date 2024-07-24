@@ -29,6 +29,8 @@
 
 #include <type_traits>
 
+#include "rocblas_utility.hpp"
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 namespace detail
@@ -36,7 +38,7 @@ namespace detail
 ///
 /// @brief Pseudorandom number generator
 ///
-/// Generates pseudorandom numbers 0 < X < 2^31 - 1,
+/// Generates pseudorandom numbers 0 <= X < 2^31 - 1,
 /// U = X/(2^31 - 1) in [0, 1) using the sequence
 ///
 /// X_n = Y_n - Z_n, (*)
@@ -120,7 +122,7 @@ struct pseudorandom_number_generator
     template <typename S,
               typename K = I,
               typename = typename std::enable_if<std::is_same<std::decay_t<K>, I>::value>::type>
-    __device__ __host__ static auto uniform(K&& Y, K&& Z = 0) -> S
+    __device__ __host__ static auto uniform01(K&& Y, K&& Z = 0) -> S
     {
         constexpr double range = static_cast<double>(m_m31_mXY);
         I Xnext = next_X(Y, Z);
@@ -222,28 +224,30 @@ struct pseudorandom_number_generator
 /// \class rocSOLVER wrapper class for integer, pseudo-random, number generation
 ///
 /// \brief Produces pseudo-random integer values distributed on the interval
-/// [0, rocsolver_int_prng<IntType>::max()].  If IntType is at least 32-bit wide,
+/// [0, rocsolver_int_prng<T>::max()].  If T is at least 32-bit wide,
 /// then generated values are uniformly distributed.
 ///
-/// \tparam IntType - type of generated values, usually an integral type.
+/// \tparam T - type of generated values, usually an integral type.
 ///
-template <class IntType = std::int32_t>
+/// \sa detail::pseudorandom_number_generator for more details.
+///
+template <class T = std::int32_t>
 class rocsolver_int_prng
 {
 public:
-    using rocsolver_prng_impl_t = typename detail::pseudorandom_number_generator<IntType>;
+    using rocsolver_prng_impl_t = typename detail::pseudorandom_number_generator<T>;
 
     /// Constructor.
-    __device__ __host__ rocsolver_int_prng(IntType Y0, IntType Z0 = 0)
+    __device__ __host__ rocsolver_int_prng(T Y0, T Z0 = 0)
     {
-        Y_ = rocsolver_prng_impl_t::range_check_Y(static_cast<std::int32_t>(Y0));
+        m_Y = rocsolver_prng_impl_t::range_check_Y(static_cast<std::int32_t>(Y0));
         if(Z0 == 0)
         {
-            Z_ = Y_;
+            m_Z = m_Y;
         }
         else
         {
-            Z_ = rocsolver_prng_impl_t::range_check_Z(static_cast<std::int32_t>(Z0));
+            m_Z = rocsolver_prng_impl_t::range_check_Z(static_cast<std::int32_t>(Z0));
         }
     }
 
@@ -251,26 +255,26 @@ public:
     __device__ __host__ ~rocsolver_int_prng() = default;
 
     /// Returns the smallest possible value that can be generated.
-    static constexpr __device__ __host__ IntType min()
+    static constexpr __device__ __host__ auto min() -> T
     {
-        return static_cast<IntType>(0);
+        return static_cast<T>(0);
     }
 
     /// Returns the largest possible value that can be generated.
-    static constexpr __device__ __host__ IntType max()
+    static constexpr __device__ __host__ auto max() -> T
     {
-        return static_cast<IntType>(rocsolver_prng_impl_t::m_m31_mXY - 1);
+        return static_cast<T>(rocsolver_prng_impl_t::m_m31_mXY - 1);
     }
 
     /// Generates a new pseudo-random integer.
-    __device__ __host__ IntType operator()(void)
+    __device__ __host__ auto operator()(void) -> T
     {
-        auto output = rocsolver_prng_impl_t::next_X(Y_, Z_);
-        return static_cast<IntType>(output);
+        auto output = rocsolver_prng_impl_t::next_X(m_Y, m_Z);
+        return static_cast<T>(output);
     }
 
 private:
-    std::int32_t Y_{}, Z_{};
+    std::int32_t m_Y{}, m_Z{};
 };
 
 ROCSOLVER_END_NAMESPACE
