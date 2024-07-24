@@ -31,37 +31,6 @@
     \brief ideal_sizes.hpp gathers all constants that can be tuned for performance.
  *********************************************************************************/
 
-#define BS1 256 // generic 1 dimensional thread-block size used to call common kernels
-#define BS2 32 // generic 2 dimensional thread-block size used to call common kernels
-
-/******************************* larf ****************************************
-*******************************************************************************/
-#ifndef LARF_SSKER_THREADS
-#define LARF_SSKER_THREADS 256 // must be 64, 128, 256, 512, or 1024
-#endif
-
-#ifndef LARF_SSKER_BLOCKS
-#define LARF_SSKER_BLOCKS 64
-#endif
-
-#ifndef LARF_SSKER_MAX_DIM
-#define LARF_SSKER_MAX_DIM 2048 // should be >= LARF_SSKER_THREADS
-#endif
-
-#ifndef LARF_SSKER_MIN_DIM
-#define LARF_SSKER_MIN_DIM 64 // should be >= LARF_SSKER_BLOCKS
-#endif
-
-/******************************* larfg ****************************************
-*******************************************************************************/
-#ifndef LARFG_SSKER_THREADS
-#define LARFG_SSKER_THREADS 256 // must be 64, 128, 256, 512, or 1024
-#endif
-
-#ifndef LARFG_SSKER_MAX_N
-#define LARFG_SSKER_MAX_N 2048
-#endif
-
 /***************** geqr2/geqrf and geql2/geqlf ********************************
 *******************************************************************************/
 /*! \brief Determines the size of the block column factorized at each step
