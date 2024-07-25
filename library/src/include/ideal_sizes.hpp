@@ -306,6 +306,16 @@
 #define SYEVDJ_MIN_DC_SIZE 16
 #endif
 
+/****************************** syevdx ******************************************
+*******************************************************************************/
+/*! \brief Determines the minimum size required for the Bisection divide and conquer to be used.
+
+    \details If the size of the block is smaller than SYEVDX_MIN_DC_SIZE,
+    the eigenvectors are computed with the normal inverse iteration algorithm. */
+#ifndef SYEVDX_MIN_DC_SIZE
+#define SYEVDX_MIN_DC_SIZE 16
+#endif
+
 /**************************** getf2/getfr *************************************
 *******************************************************************************/
 #ifndef GETF2_SPKER_MAX_M

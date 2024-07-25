@@ -4,6 +4,11 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ## (Unreleased) rocSOLVER
 ### Added
+- 64-bit APIs for existing functions:
+    - LACGV_64
+    - LARF_64
+    - LARFG_64
+
 ### Optimized
 - Improved the performance of BDSQR and GESVD
 
@@ -22,6 +27,12 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - GETRF_64 (with batched and strided\_batched versions)
     - GETRS_64 (with batched and strided\_batched versions)
 - Added gfx900 to default build targets.
+- Partial eigenvalue decomposition routines for symmetric/hermitian matrices using Divide & Conquer and Bisection:
+    - SYEVDX (with batched and strided\_batched versions)
+    - HEEVDX (with batched and strided\_batched versions)
+- Partial generalized symmetric/hermitian-definite eigenvalue decomposition using Divide & Conquer and Bisection:
+    - SYGVDX (with batched and strided\_batched versions)
+    - HEGVDX (with batched and strided\_batched versions)
 
 ### Optimized
 - Improved performance of Cholesky factorization.
@@ -34,6 +45,11 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Fixed
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
+
+### Known Issues
+- A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
+  symmetric/hermitian matrices (e.g., SYEVX/HEEVX and SYGVX/HEGVX), as well as singular values (e.g.,
+  BDSVDX and GESVDX).
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0

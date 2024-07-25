@@ -146,7 +146,7 @@ void ormbr_unmbr_initData(const rocblas_handle handle,
     if(CPU)
     {
         using S = decltype(std::real(T{}));
-        size_t s = max(hIpiv.n(), 2);
+        size_t s = std::max(hIpiv.n(), int64_t(2));
         std::vector<S> E(s - 1);
         std::vector<S> D(s);
         std::vector<T> P(s);
@@ -216,7 +216,7 @@ void ormbr_unmbr_getError(const rocblas_handle handle,
                           Th& hCr,
                           double* max_err)
 {
-    size_t size_W = max(max(m, n), k);
+    size_t size_W = std::max(std::max(m, n), k);
     std::vector<T> hW(size_W);
 
     // initialize data
@@ -263,7 +263,7 @@ void ormbr_unmbr_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    size_t size_W = max(max(m, n), k);
+    size_t size_W = std::max(std::max(m, n), k);
     std::vector<T> hW(size_W);
 
     if(!perf)
@@ -338,9 +338,9 @@ void testing_ormbr_unmbr(Arguments& argus)
         n = argus.get<rocblas_int>("n");
         m = argus.get<rocblas_int>("m", n);
     }
-    rocblas_int k = argus.get<rocblas_int>("k", min(m, n));
+    rocblas_int k = argus.get<rocblas_int>("k", std::min(m, n));
     rocblas_int nq = (sideC == 'L' ? m : n);
-    rocblas_int lda = argus.get<rocblas_int>("lda", storevC == 'C' ? nq : min(nq, k));
+    rocblas_int lda = argus.get<rocblas_int>("lda", storevC == 'C' ? nq : std::min(nq, k));
     rocblas_int ldc = argus.get<rocblas_int>("ldc", m);
 
     rocblas_side side = char2rocblas_side(sideC);
@@ -366,7 +366,7 @@ void testing_ormbr_unmbr(Arguments& argus)
 
     // determine sizes
     bool left = (side == rocblas_side_left);
-    size_t size_P = size_t(min(nq, k));
+    size_t size_P = size_t(std::min(nq, k));
     size_t size_C = size_t(ldc) * n;
 
     bool row = (storev == rocblas_row_wise);
@@ -376,8 +376,8 @@ void testing_ormbr_unmbr(Arguments& argus)
     size_t size_Cr = (argus.unit_check || argus.norm_check) ? size_C : 0;
 
     // check invalid sizes
-    bool invalid_size
-        = ((m < 0 || n < 0 || k < 0 || ldc < m) || (row && lda < min(nq, k)) || (!row && lda < nq));
+    bool invalid_size = ((m < 0 || n < 0 || k < 0 || ldc < m) || (row && lda < std::min(nq, k))
+                         || (!row && lda < nq));
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(rocsolver_ormbr_unmbr(handle, storev, side, trans, m, n, k,

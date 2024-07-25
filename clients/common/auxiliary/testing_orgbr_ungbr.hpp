@@ -106,7 +106,7 @@ void orgbr_ungbr_initData(const rocblas_handle handle,
     if(CPU)
     {
         using S = decltype(std::real(T{}));
-        size_t s = max(hIpiv.n(), 2);
+        size_t s = std::max(hIpiv.n(), int64_t(2));
         std::vector<S> E(s - 1);
         std::vector<S> D(s);
         std::vector<T> P(s);
@@ -168,7 +168,7 @@ void orgbr_ungbr_getError(const rocblas_handle handle,
                           Th& hIpiv,
                           double* max_err)
 {
-    size_t size_W = max(max(m, n), k);
+    size_t size_W = std::max(std::max(m, n), k);
     std::vector<T> hW(size_W);
 
     // initialize data
@@ -208,7 +208,7 @@ void orgbr_ungbr_getPerfData(const rocblas_handle handle,
                              const bool profile_kernels,
                              const bool perf)
 {
-    size_t size_W = max(max(m, n), k);
+    size_t size_W = std::max(std::max(m, n), k);
     std::vector<T> hW(size_W);
 
     if(!perf)
@@ -279,7 +279,7 @@ void testing_orgbr_ungbr(Arguments& argus)
         n = argus.get<rocblas_int>("n");
         m = argus.get<rocblas_int>("m", n);
     }
-    rocblas_int k = argus.get<rocblas_int>("k", min(m, n));
+    rocblas_int k = argus.get<rocblas_int>("k", std::min(m, n));
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
 
     rocblas_storev storev = char2rocblas_storev(storevC);
@@ -293,16 +293,18 @@ void testing_orgbr_ungbr(Arguments& argus)
     // cases setting it to one to avoid possible memory access errors in the rest
     // of the unit test
     bool row = (storev == rocblas_row_wise);
-    size_t size_A = row ? size_t(lda) * n : size_t(lda) * max(n, k);
-    size_t size_P = row ? max(size_t(min(n, k)), 1) : max(size_t(min(m, k)), 1);
+    size_t size_A = row ? size_t(lda) * n : size_t(lda) * std::max(n, k);
+    size_t size_P = row ? std::max(size_t(std::min(n, k)), size_t(1))
+                        : std::max(size_t(std::min(m, k)), size_t(1));
 
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_Ar = (argus.unit_check || argus.norm_check) ? size_A : 0;
 
     // check invalid sizes
-    bool invalid_size = ((m < 0 || n < 0 || k < 0 || lda < m) || (row && (m > n || m < min(n, k)))
-                         || (!row && (n > m || n < min(m, k))));
+    bool invalid_size
+        = ((m < 0 || n < 0 || k < 0 || lda < m) || (row && (m > n || m < std::min(n, k)))
+           || (!row && (n > m || n < std::min(m, k))));
     if(invalid_size)
     {
         EXPECT_ROCBLAS_STATUS(

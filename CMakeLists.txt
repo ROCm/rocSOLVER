@@ -48,7 +48,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21.0 AND CMAKE_VERSION VERSION_LESS 3.2
 endif()
 message(STATUS "Using CMake ${CMAKE_VERSION}")
 
-project(rocsolver LANGUAGES CXX)
+project(rocsolver LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -165,6 +165,8 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1100
       gfx1101
       gfx1102
+      gfx1200
+      gfx1201
   )
   set(AMDGPU_TARGETS_INIT
     gfx900
@@ -187,16 +189,24 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
-set(rocsolver_pkgdeps "rocblas >= 4.2")
+set(rocblas_minimum 4.1)
+rocm_package_add_dependencies(SHARED_DEPENDS "rocblas >= ${rocblas_minimum}")
+rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocblas-static-devel >= ${rocblas_minimum}")
+rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocblas-static-dev >= ${rocblas_minimum}")
 
 if(BUILD_WITH_SPARSE)
   find_package(rocsparse REQUIRED CONFIG PATHS ${ROCM_PATH})
   get_imported_target_location(location roc::rocsparse)
   message(STATUS "Found rocSPARSE: ${location}")
-  list(APPEND rocsolver_pkgdeps "rocsparse >= 2.2")
+  set(rocsparse_minimum 2.2)
+  rocm_package_add_dependencies(SHARED_DEPENDS "rocsparse >= ${rocsparse_minimum}")
+  rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocsparse-static-devel >= ${rocsparse_minimum}")
+  rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocsparse-static-dev >= ${rocsparse_minimum}")
 endif()
 
 find_package(rocprim REQUIRED CONFIG PATHS ${ROCM_PATH})
+rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocprim-static-devel")
+rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocprim-static-dev")
 
 add_subdirectory(common)
 
@@ -218,6 +228,8 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
     endif()
   elseif(CLIENTS_OS STREQUAL "ubuntu" AND CLIENTS_OS_VERSION VERSION_GREATER_EQUAL "20.04")
     set(GFORTRAN_DEB "libgfortran5")
+  elseif(CLIENTS_OS STREQUAL "mariner")
+    set(GFORTRAN_RPM "gfortran")
   endif()
   rocm_package_setup_component(clients)
   if(BUILD_CLIENTS_TESTS)
@@ -228,9 +240,6 @@ if(BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_SAMPLES)
   endif()
   add_subdirectory(clients)
 endif()
-
-# Package-specific CPACK vars
-rocm_package_add_dependencies(DEPENDS ${rocsolver_pkgdeps})
 
 if(OS_ID_sles)
   rocm_package_add_rpm_dependencies("libLLVM >= 7.0.1")

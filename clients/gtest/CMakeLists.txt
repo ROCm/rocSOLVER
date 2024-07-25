@@ -61,16 +61,16 @@ set(roclapack_test_source
   # symmetric eigensolvers
   lapack/syev_heev_gtest.cpp
   lapack/syevd_heevd_gtest.cpp
-  lapack/syevj_heevj_gtest.cpp
-  lapack/syevx_heevx_gtest.cpp
-  lapack/syevdx_heevdx_gtest.cpp
   lapack/sygv_hegv_gtest.cpp
   lapack/sygvd_hegvd_gtest.cpp
+  lapack/syevj_heevj_gtest.cpp
+  lapack/syevdj_heevdj_gtest.cpp
   lapack/sygvj_hegvj_gtest.cpp
+  lapack/sygvdj_hegvdj_gtest.cpp
+  lapack/syevx_heevx_gtest.cpp
+  lapack/syevdx_heevdx_gtest.cpp
   lapack/sygvx_hegvx_gtest.cpp
   lapack/sygvdx_hegvdx_gtest.cpp
-  lapack/syevdj_heevdj_gtest.cpp
-  lapack/sygvdj_hegvdj_gtest.cpp
 )
 
 set(rocauxiliary_test_source
@@ -101,6 +101,8 @@ set(rocauxiliary_test_source
   auxiliary/sterf_gtest.cpp
   auxiliary/steqr_gtest.cpp
   auxiliary/stedc_gtest.cpp
+  auxiliary/stedcj_gtest.cpp
+  auxiliary/stedcx_gtest.cpp
   auxiliary/stebz_gtest.cpp
   auxiliary/stein_gtest.cpp
   auxiliary/latrd_gtest.cpp
@@ -184,8 +186,6 @@ target_link_libraries(rocsolver-test PRIVATE
   roc::rocblas
 )
 
-# Turn on f16c intrinsics
-target_compile_options(rocsolver-test PRIVATE -mf16c)
 target_compile_definitions(rocsolver-test PRIVATE
   ROCM_USE_FLOAT16
   ROCSOLVER_CLIENTS_TEST
