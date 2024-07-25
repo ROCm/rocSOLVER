@@ -351,7 +351,6 @@ ROCSOLVER_KERNEL void bdsqr_init(const rocblas_int n,
                                  const S tol,
                                  rocblas_int* splitsA,
                                  S* workA,
-                                 const rocblas_int incW,
                                  const rocblas_stride strideW,
                                  rocblas_int* completed)
 {
@@ -1220,7 +1219,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
         incW += 2;
     if(nu || nc)
         incW += 2;
-    rocblas_stride strideW = 3 + incW * n;
+    rocblas_stride strideW = 4 + incW * n;
 
     // grid dimensions
     rocblas_int nuc_max = std::max(nu, nc);
@@ -1242,8 +1241,7 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     // check for NaNs and Infs in input
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), gridBasic, threadsBasic, 0, stream, n, D, strideD, E,
-                            strideE, info, maxiter, sfm, tol, splits_map, work, incW, strideW,
-                            completed);
+                            strideE, info, maxiter, sfm, tol, splits_map, work, strideW, completed);
 
     if(n > 1)
     {
