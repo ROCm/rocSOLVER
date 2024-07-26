@@ -89,22 +89,19 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
                              T* C,
                              const rocblas_int ldc,
                              const S sh,
-                             S* rots,
-                             const rocblas_int incW)
+                             S* rots)
 {
     S f, g, c, s, r;
     T temp1, temp2;
 
     const rocblas_int b2t = 1 - t2b;
     const rocblas_int dir = t2b - b2t; // +1 for t2b, -1 for b2t
-    const rocblas_int dirW = dir * incW;
-    const rocblas_int nr = nv ? 2 : 0;
+    const rocblas_int nr = nv ? 2 * n : 0;
 
     if(tid == 0)
     {
         rocblas_int dk = (t2b ? 0 : n - 1);
         rocblas_int ek = dk - b2t;
-        rocblas_int rk = ek * incW;
 
         int sgn = (S(0) < D[dk]) - (D[dk] < S(0));
         if(D[dk] == 0)
@@ -125,10 +122,15 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             D[dk + dir] = c * D[dk + dir];
 
             // save rotations to update singular vectors
-            if((t2b && nv) || (b2t && (nu || nc)))
+            if(t2b && nv)
             {
-                rots[rk] = c;
-                rots[rk + 1] = s;
+                rots[ek] = c;
+                rots[ek + n] = s;
+            }
+            if(b2t && (nu || nc))
+            {
+                rots[ek + nr] = c;
+                rots[ek + nr + n] = s;
             }
 
             // then apply rotation by rows (t2b) or columns (b2t)
@@ -143,15 +145,19 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             }
 
             // save rotations to update singular vectors
-            if((t2b && (nu || nc)) || (b2t && nv))
+            if(b2t && nv)
             {
-                rots[rk + nr] = c;
-                rots[rk + nr + 1] = s;
+                rots[ek] = c;
+                rots[ek + n] = s;
+            }
+            if(t2b && (nu || nc))
+            {
+                rots[ek + nr] = c;
+                rots[ek + nr + n] = s;
             }
 
             dk += dir;
             ek += dir;
-            rk += dirW;
         }
 
         ek = (t2b ? n - 2 : 0);
@@ -166,19 +172,19 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
         for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
         {
             rocblas_int k = (t2b ? 0 : n - 1);
-            rocblas_int rk = (t2b ? 0 : (n - 2) * incW + nr);
+            rocblas_int rk = (t2b ? 0 : n - 2);
 
             temp1 = V[k + j * ldv];
             for(rocblas_int kk = 0; kk < n - 1; kk++)
             {
                 temp2 = V[(k + dir) + j * ldv];
                 c = rots[rk];
-                s = rots[rk + 1];
+                s = rots[rk + n];
                 V[k + j * ldv] = c * temp1 - s * temp2;
                 V[(k + dir) + j * ldv] = temp1 = c * temp2 + s * temp1;
 
                 k += dir;
-                rk += dirW;
+                rk += dir;
             }
         }
     }
@@ -188,19 +194,19 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
         for(rocblas_int i = tid; i < nu; i += hipBlockDim_x)
         {
             rocblas_int k = (t2b ? 0 : n - 1);
-            rocblas_int rk = (t2b ? nr : (n - 2) * incW);
+            rocblas_int rk = (t2b ? nr : (n - 2) + nr);
 
             temp1 = U[i + k * ldu];
             for(rocblas_int kk = 0; kk < n - 1; kk++)
             {
                 temp2 = U[i + (k + dir) * ldu];
                 c = rots[rk];
-                s = rots[rk + 1];
+                s = rots[rk + n];
                 U[i + k * ldu] = c * temp1 - s * temp2;
                 U[i + (k + dir) * ldu] = temp1 = c * temp2 + s * temp1;
 
                 k += dir;
-                rk += dirW;
+                rk += dir;
             }
         }
     }
@@ -210,19 +216,19 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
         for(rocblas_int j = tid; j < nc; j += hipBlockDim_x)
         {
             rocblas_int k = (t2b ? 0 : n - 1);
-            rocblas_int rk = (t2b ? nr : (n - 2) * incW);
+            rocblas_int rk = (t2b ? nr : (n - 2) + nr);
 
             temp1 = C[k + j * ldc];
             for(rocblas_int kk = 0; kk < n - 1; kk++)
             {
                 temp2 = C[(k + dir) + j * ldc];
                 c = rots[rk];
-                s = rots[rk + 1];
+                s = rots[rk + n];
                 C[k + j * ldc] = c * temp1 - s * temp2;
                 C[(k + dir) + j * ldc] = temp1 = c * temp2 + s * temp1;
 
                 k += dir;
-                rk += dirW;
+                rk += dir;
             }
         }
     }
@@ -502,8 +508,8 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
             // save rotation to update singular vectors
             if(nu || nc)
             {
-                rots[2 * i] = c;
-                rots[2 * i + 1] = s;
+                rots[i] = c;
+                rots[i + n] = s;
             }
         }
         D[n - 1] = f;
@@ -520,8 +526,8 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
             for(j = 0; j < n - 1; j++)
             {
                 temp2 = U[i + (j + 1) * ldu];
-                c = rots[2 * j];
-                s = rots[2 * j + 1];
+                c = rots[j];
+                s = rots[j + n];
                 U[i + j * ldu] = c * temp1 - s * temp2;
                 U[i + (j + 1) * ldu] = temp1 = c * temp2 + s * temp1;
             }
@@ -536,8 +542,8 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
             for(i = 0; i < n - 1; i++)
             {
                 temp2 = C[(i + 1) + j * ldc];
-                c = rots[2 * i];
-                s = rots[2 * i + 1];
+                c = rots[i];
+                s = rots[i + n];
                 C[i + j * ldc] = c * temp1 - s * temp2;
                 C[(i + 1) + j * ldc] = temp1 = c * temp2 + s * temp1;
             }
@@ -666,7 +672,7 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
                 splits[4 * sid] = (t2b ? 1 : -1);
 
             bdsqr_QRstep(tid, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
-                         ldu, C + i, ldc, smin, rots + incW * i, incW);
+                         ldu, C + i, ldc, smin, rots + incW * i);
         }
         else
         {
@@ -716,16 +722,13 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
     T* C = (CC ? load_ptr_batch<T>(CC, bid, shiftC, strideC) : nullptr);
     rocblas_int* splits = splitsA + bid * (2 * n);
     S* work = workA + bid * strideW;
-    S* rots = work + 4;
 
     // local variables
-    rocblas_int t2b, b2t, dir, dirW;
-    rocblas_int start_t2b, k_start, k_end;
+    rocblas_int dir, k_start, k_end;
     rocblas_int num_splits, iter;
 
     S c, s;
     T temp1, temp2;
-    rocblas_int nr = nv ? 2 : 0;
 
     // main loop
     // iterate over each diagonal block
@@ -747,65 +750,69 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
         // apply QR step
         if(dir != 0)
         {
-            t2b = (dir > 0 ? 1 : 0);
-            b2t = 1 - t2b;
-            dirW = dir * incW;
+            S* rots = work + 4 + incW * k_start;
+
+            rocblas_int t2b = (dir > 0 ? 1 : 0);
+            rocblas_int b2t = 1 - t2b;
+
+            rocblas_int nn = k_end - k_start + 1;
+            rocblas_int nr = nv ? 2 * nn : 0;
 
             if(V && tid < nv)
             {
                 // rotate from the left
                 rocblas_int k = (t2b ? k_start : k_end);
-                rocblas_int rk = (t2b ? k_start * incW : (k_end - 1) * incW + nr);
+                rocblas_int rk = (t2b ? 0 : nn - 2);
 
                 temp1 = V[k + tid * ldv];
                 for(rocblas_int kk = k_start; kk < k_end; kk++)
                 {
                     temp2 = V[(k + dir) + tid * ldv];
                     c = rots[rk];
-                    s = rots[rk + 1];
+                    s = rots[rk + nn];
                     V[k + tid * ldv] = c * temp1 - s * temp2;
                     V[(k + dir) + tid * ldv] = temp1 = c * temp2 + s * temp1;
 
                     k += dir;
-                    rk += dirW;
+                    rk += dir;
                 }
             }
             if(U && tid < nu)
             {
                 // rotate from the right
                 rocblas_int k = (t2b ? k_start : k_end);
-                rocblas_int rk = (t2b ? k_start * incW + nr : (k_end - 1) * incW);
+                rocblas_int rk = (t2b ? nr : (nn - 2) + nr);
 
                 temp1 = U[tid + k * ldu];
                 for(rocblas_int kk = k_start; kk < k_end; kk++)
                 {
                     temp2 = U[tid + (k + dir) * ldu];
                     c = rots[rk];
-                    s = rots[rk + 1];
+                    s = rots[rk + nn];
                     U[tid + k * ldu] = c * temp1 - s * temp2;
                     U[tid + (k + dir) * ldu] = temp1 = c * temp2 + s * temp1;
 
                     k += dir;
-                    rk += dirW;
+                    rk += dir;
                 }
             }
             if(C && tid < nc)
             {
                 // rotate from the left
                 rocblas_int k = (t2b ? k_start : k_end);
-                rocblas_int rk = (t2b ? k_start * incW + nr : (k_end - 1) * incW);
+                rocblas_int rk = (t2b ? nr : (nn - 2) + nr);
 
                 temp1 = C[k + tid * ldc];
                 for(rocblas_int kk = k_start; kk < k_end; kk++)
                 {
                     temp2 = C[(k + dir) + tid * ldc];
                     c = rots[rk];
-                    s = rots[rk + 1];
+                    s = rots[rk + nn];
                     C[k + tid * ldc] = c * temp1 - s * temp2;
                     C[(k + dir) + tid * ldc] = temp1 = c * temp2 + s * temp1;
 
                     k += dir;
-                    rk += dirW;
+                    rk += dir;
                 }
             }
         }
