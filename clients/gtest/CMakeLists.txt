@@ -186,8 +186,6 @@ target_link_libraries(rocsolver-test PRIVATE
   roc::rocblas
 )
 
-# Turn on f16c intrinsics
-target_compile_options(rocsolver-test PRIVATE -mf16c)
 target_compile_definitions(rocsolver-test PRIVATE
   ROCM_USE_FLOAT16
   ROCSOLVER_CLIENTS_TEST
