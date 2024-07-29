@@ -6255,7 +6255,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgeqr2_strided_batched_64(rocblas_hand
                                                                     const int64_t lda,
                                                                     const rocblas_stride strideA,
                                                                     float* ipiv,
-                                                                    const rocblas_stride stridep,
+                                                                    const rocblas_stride strideP,
                                                                     const int64_t batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_strided_batched_64(rocblas_handle handle,
@@ -6265,7 +6265,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgeqr2_strided_batched_64(rocblas_hand
                                                                     const int64_t lda,
                                                                     const rocblas_stride strideA,
                                                                     double* ipiv,
-                                                                    const rocblas_stride stridep,
+                                                                    const rocblas_stride strideP,
                                                                     const int64_t batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_strided_batched_64(rocblas_handle handle,
@@ -6275,7 +6275,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgeqr2_strided_batched_64(rocblas_hand
                                                                     const int64_t lda,
                                                                     const rocblas_stride strideA,
                                                                     rocblas_float_complex* ipiv,
-                                                                    const rocblas_stride stridep,
+                                                                    const rocblas_stride strideP,
                                                                     const int64_t batch_count);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched_64(rocblas_handle handle,
@@ -6285,8 +6285,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqr2_strided_batched_64(rocblas_hand
                                                                     const int64_t lda,
                                                                     const rocblas_stride strideA,
                                                                     rocblas_double_complex* ipiv,
-                                                                    const rocblas_stride stridep,
+                                                                    const rocblas_stride strideP,
                                                                     const int64_t batch_count);
+//! @}
 
 /*! @{
     \brief GERQ2 computes a RQ factorization of a general m-by-n matrix A.
