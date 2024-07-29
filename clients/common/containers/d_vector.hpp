@@ -61,16 +61,15 @@ public:
 
     T* device_vector_setup()
     {
-        T* d;
+        T* d = nullptr;
         if((hipMalloc)(&d, bytes) != hipSuccess)
         {
             fmt::print(stderr, "Error allocating {} bytes ({} GB)\n", bytes, bytes >> 30);
             d = nullptr;
         }
-        else
+        if(d != nullptr)
         {
             auto status = (hipMemset)(d, 0, bytes);
-            /* CHECK_HIP_ERROR(status); // Why this doesn't work? */
             if(status != hipSuccess)
             {
                 fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(status), status,
