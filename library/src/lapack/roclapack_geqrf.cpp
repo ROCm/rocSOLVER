@@ -44,7 +44,7 @@ rocblas_status
         return st;
 
     // working with unshifted arrays
-    I shiftA = 0;
+    rocblas_stride shiftA = 0;
 
     // normal (non-batched non-strided) execution
     rocblas_stride strideA = 0;

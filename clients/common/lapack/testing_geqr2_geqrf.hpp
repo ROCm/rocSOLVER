@@ -57,7 +57,7 @@ void geqr2_geqrf_checkBadArgs(const rocblas_handle handle,
     // sizes (only check batch_count if applicable)
     if(STRIDED)
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, m, n, dA, lda, stA, dIpiv, stP, -1),
+            rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, m, n, dA, lda, stA, dIpiv, stP, (I)-1),
             rocblas_status_invalid_size);
 
     // pointers
@@ -69,17 +69,17 @@ void geqr2_geqrf_checkBadArgs(const rocblas_handle handle,
         rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, 0, n, (T) nullptr, lda, stA,
-                                                (U) nullptr, stP, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, (I)0, n, (T) nullptr, lda,
+                                                stA, (U) nullptr, stP, bc),
                           rocblas_status_success);
-    EXPECT_ROCBLAS_STATUS(rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, m, 0, (T) nullptr, lda, stA,
-                                                (U) nullptr, stP, bc),
+    EXPECT_ROCBLAS_STATUS(rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, m, (I)0, (T) nullptr, lda,
+                                                stA, (U) nullptr, stP, bc),
                           rocblas_status_success);
 
     // quick return with zero batch_count if applicable
     if(STRIDED)
         EXPECT_ROCBLAS_STATUS(
-            rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, m, n, dA, lda, stA, dIpiv, stP, 0),
+            rocsolver_geqr2_geqrf(STRIDED, GEQRF, handle, m, n, dA, lda, stA, dIpiv, stP, (I)0),
             rocblas_status_success);
 }
 
