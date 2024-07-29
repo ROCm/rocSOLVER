@@ -70,10 +70,10 @@ ROCSOLVER_KERNEL void
         info[id] = iinfo[id] + j;
 }
 
-template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_potrf_getMemorySize(const rocblas_int n,
+template <bool BATCHED, bool STRIDED, typename T, typename I>
+void rocsolver_potrf_getMemorySize(const I n,
                                    const rocblas_fill uplo,
-                                   const rocblas_int batch_count,
+                                   const I batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work1,
                                    size_t* size_work2,
@@ -137,16 +137,16 @@ void rocsolver_potrf_getMemorySize(const rocblas_int n,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename S, typename U>
 rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
-                                        const rocblas_int n,
+                                        const I n,
                                         U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
+                                        const rocblas_stride shiftA,
+                                        const I lda,
                                         const rocblas_stride strideA,
                                         rocblas_int* info,
-                                        const rocblas_int batch_count,
+                                        const I batch_count,
                                         T* scalars,
                                         void* work1,
                                         void* work2,
@@ -194,7 +194,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     S s_one = 1;
     S s_minone = -1;
 
-    rocblas_int jb, j = 0;
+    I jb, j = 0;
 
     // (TODO: When the matrix is detected to be non positive definite, we need to
     //  prevent TRSM and HERK to modify further the input matrix; ideally with no

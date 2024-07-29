@@ -29,12 +29,12 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_potf2_impl(rocblas_handle handle,
                                     const rocblas_fill uplo,
-                                    const rocblas_int n,
+                                    const I n,
                                     U A,
-                                    const rocblas_int lda,
+                                    const I lda,
                                     rocblas_int* info)
 {
     ROCSOLVER_ENTER_TOP("potf2", "--uplo", uplo, "-n", n, "--lda", lda);
@@ -48,11 +48,11 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
+    rocblas_stride shiftA = 0;
 
     // normal (non-batched non-strided) execution
     rocblas_stride strideA = 0;
-    rocblas_int batch_count = 1;
+    I batch_count = 1;
 
     // memory workspace sizes:
     // size for constants in rocblas calls

@@ -52,7 +52,7 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
+    rocblas_stride shiftA = 0;
 
     // batched execution
     rocblas_stride strideA = 0;
@@ -95,7 +95,7 @@ rocblas_status rocsolver_potrf_batched_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_potrf_template<true, false, T, S>(
+    return rocsolver_potrf_template<true, false, T, rocblas_int, S>(
         handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, (T*)scalars, work1, work2,
         work3, work4, (T*)pivots, (rocblas_int*)iinfo, optim_mem);
 }
