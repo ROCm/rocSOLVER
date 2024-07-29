@@ -34,7 +34,7 @@
 
 #ifndef HAVE_ROCSPARSE
 #ifdef _WIN32
-#include <libloaderapi.h>
+#include <windows.h>
 #else /* _WIN32 */
 #include <dlfcn.h>
 #endif /* _WIN32 */
