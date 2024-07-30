@@ -11,6 +11,10 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Optimized
 ### Changed
+- The rocsparse library is now an optional dependency at runtime. If rocsparse
+  is not available, rocsolver's sparse refactorization and solvers functions
+  will return `rocblas_status_not_implemented`.
+
 ### Deprecated
 ### Removed
 ### Fixed
