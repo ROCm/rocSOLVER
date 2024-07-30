@@ -464,8 +464,8 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_sygvx_hegvx(STRIDED, handle, itype, evect, erange, uplo, n,
-                                              dA.data(), lda, stA, dB.data(), ldb, stB, vl - tol + sfmin, vu + tol, il,
-                                              iu, abstol, dNev.data(), dW.data(), stW, dZ.data(),
+                                              dA.data(), lda, stA, dB.data(), ldb, stB, vl - tol + sfmin, vu + tol, 1,
+                                              n, abstol, dNev.data(), dW.data(), stW, dZ.data(),
                                               ldz, stZ, dIfail.data(), stF, dInfo.data(), bc));
 
     CHECK_HIP_ERROR(hNevRes.transfer_from(dNev));
@@ -511,7 +511,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     for(rocblas_int b = 0; b < bc; ++b)
     {
         auto hNevResMatch = clss[b](hW[b], hNev[b][0], hWRes[b], hNevRes[b][0], tols[b]);
-        /* clss[b].debug(hW[b], hWRes[b]); */
+        clss[b].debug(hW[b], hWRes[b]);
         EXPECT_EQ(hNev[b][0], hNevResMatch) << "where b = " << b;
         if(hNev[b][0] != hNevResMatch)
             *max_err += 1;
@@ -637,6 +637,15 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                         cpu_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + jj * ldb, 1, beta,
                                       hA[b] + j * lda, 1);
                     }
+                    // move hZRes
+                    for(rocblas_int i = 0; i < n; i++)
+                        for(rocblas_int j = 0; j < hNev[b][0]; j++)
+                        {
+                            int jj = hWResIds[j]; // Id of rocSOLVER eigen-pair associated to j-th LAPACK eigen-pair
+                            if (j != jj)
+                                hZRes[b][i + j * ldz] = hZRes[b][i + jj * ldz];
+                        }
+
                 }
 
                 // error is ||hA - hZRes|| / ||hA||

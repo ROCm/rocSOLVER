@@ -423,7 +423,7 @@ class closest_largest_subsequences {
                 this->tol_= tol;
                 this->size_a_ = size_a;
                 this->size_b_ = size_b;
-                memo_distances_.resize(size_a * size_b, S(-1));
+                memo_distances_.resize(size_a * size_b, std::numeric_limits<S>::infinity());
                 memo_sizes_.resize(size_a * size_b, I(-1));
                 memo_next_.resize(size_a * size_b, I(-1));
 
@@ -554,6 +554,7 @@ class closest_largest_subsequences {
         void debug(T *a, T *b, I num = 0)
         {
             auto print_input_sequences = [](auto& a, auto a_size, auto& b, auto b_size) {
+                /* std::cout << std::setprecision(std::numeric_limits<T>::digits); */
                 std::cout << ">>> Input: \n";
 
                 std::cout << ":: :: a = {";
@@ -587,10 +588,11 @@ class closest_largest_subsequences {
                 std::cout << "}\n\n";
             };
 
+            std::cout << ">>>>>>>>>>>>\n";
             print_input_sequences(a, size_a_, b, size_b_);
             std::cout << ":: :: tol = " << tol_ << std::endl << std::endl;
             closest_largest_subsequences<float> lcs;
-            std::cout << ">>>>>>>>>>>>\n";
+            std::cout << "++++++++++++\n";
             std::cout << ":: :: Subsequences sub_a, sub_b have distance: " << distance_ << ", size: " << sseqs_size_ 
                 << ", and ||sub_a - sub_b||_inf = " << inf_norm_ << std::endl << std::endl;
 
@@ -653,6 +655,7 @@ class closest_largest_subsequences {
             auto [dist, size, next_index] = memo(sa, sb);
             if (memo_valid(dist, size))
             {
+                next_index = ij2index(sa, sb);
                 return std::make_tuple(dist, size, next_index);
             }
 
@@ -724,7 +727,7 @@ class closest_largest_subsequences {
             memo_next(sa, sb) = next_index;
 
             // Make next pair point to this one
-            if (update)
+            /* if (update) */
             {
                 next_index = ij2index(sa, sb);
             }
