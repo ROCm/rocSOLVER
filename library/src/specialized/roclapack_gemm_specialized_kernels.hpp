@@ -182,11 +182,7 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
     if(m == 0 || n == 0 || k == 0 || batch_count == 0)
         return rocblas_status_success;
 
-    const bool is_inc1 = (inca == 1 && incb == 1 && incc == 1);
-    const bool is_32bit
-        = (!std::is_same<I, int64_t>::value
-           || (lda * k < INT_MAX && ldb * n < INT_MAX && ldc * n < INT_MAX && batch_count < INT_MAX));
-    if(is_inc1 && is_32bit)
+    if(inca == 1 && incb == 1 && incc == 1)
         return rocblasCall_gemm(handle, transA, transB, m, n, k, alpha, A, shiftA, lda, strideA, B,
                                 shiftB, ldb, strideB, beta, C, shiftC, ldc, strideC, batch_count,
                                 work);
