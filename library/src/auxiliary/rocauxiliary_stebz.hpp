@@ -37,7 +37,7 @@
 #include "rocsolver/rocsolver.h"
 
 
-#define STEBZ_SPLIT_THDS 32
+#define STEBZ_SPLIT_THDS 256
 #define IBISEC_BLKS 64
 #define IBISEC_THDS 128
 
