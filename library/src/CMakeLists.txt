@@ -333,6 +333,7 @@ endif()
 set(auxiliaries
   common/buildinfo.cpp
   common/rocsolver_logger.cpp
+  common/rocsparse.cpp
 )
 
 add_library(rocsolver
@@ -355,6 +356,10 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
+
+if(NOT BUILD_WITH_SPARSE)
+  target_link_libraries(rocsolver PRIVATE $<$<PLATFORM_ID:Linux>:${CMAKE_DL_LIBS}>)
+endif()
 
 set(static_depends)
 

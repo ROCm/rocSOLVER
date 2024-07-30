@@ -14,9 +14,10 @@ Prerequisites
 rocSOLVER requires a ROCm-enabled platform. For more information, see the
 :doc:`ROCm install guide <rocm-install-on-linux:index>`.
 
-rocSOLVER also requires compatible versions of rocBLAS and rocSPARSE installed on the system.
-For more information, see the :doc:`rocBLAS install guide <rocblas:install/Linux_Install_Guide>`
-and :doc:`rocSPARSE install guide <rocsparse:install/install>`.
+rocSOLVER also requires a compatible versions of rocBLAS installed on the system and may require
+rocSPARSE depending on the build options. For more information, see the
+:doc:`rocBLAS install guide <rocblas:install/Linux_Install_Guide>` and
+:doc:`rocSPARSE install guide <rocsparse:install/install>`.
 
 rocBLAS, rocSPARSE, and rocSOLVER are still under active development, and it is hard to define minimal
 compatibility versions. For now, a good rule of thumb is to always use rocSOLVER together with the
@@ -78,8 +79,7 @@ This command builds rocSOLVER and puts the generated library files, such as head
 Other output files from the configuration and building process can also be found in the
 ``rocSOLVER/build`` and ``rocSOLVER/build/release`` directories. It is assumed that all
 external library dependencies have been installed. It also assumes that the rocBLAS library
-is located at ``/opt/rocm/rocblas`` and that the rocSPARSE library is located at
-``/opt/rocm/rocsparse``.
+is located at ``/opt/rocm/rocblas``.
 
 .. code-block:: bash
 

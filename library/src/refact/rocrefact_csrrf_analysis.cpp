@@ -25,9 +25,7 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#ifdef HAVE_ROCSPARSE
 #include "rocrefact_csrrf_analysis.hpp"
-#endif
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
@@ -55,7 +53,6 @@ rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
     ROCSOLVER_ENTER_TOP("csrrf_analysis", "-n", n, "--nnzM", nnzM, "--nnzT", nnzT, "--nrhs", nrhs,
                         "--ldb", ldb);
 
-#ifdef HAVE_ROCSPARSE
     if(handle == nullptr)
         return rocblas_status_invalid_handle;
 
@@ -91,9 +88,6 @@ rocblas_status rocsolver_csrrf_analysis_impl(rocblas_handle handle,
     // execution
     return rocsolver_csrrf_analysis_template<T>(handle, n, nrhs, nnzM, ptrM, indM, valM, nnzT, ptrT,
                                                 indT, valT, pivP, pivQ, B, ldb, rfinfo, work);
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 ROCSOLVER_END_NAMESPACE
