@@ -27,12 +27,18 @@
 
 #include <new>
 
-#ifdef HAVE_ROCSPARSE
 #include "rocsolver_rfinfo.hpp"
-#endif
 
 #include "rocblas/rocblas.h"
 #include "rocsolver/rocsolver.h"
+
+#ifndef HAVE_ROCSPARSE
+#ifdef _WIN32
+#include <windows.h>
+#else /* _WIN32 */
+#include <dlfcn.h>
+#endif /* _WIN32 */
+#endif /* HAVE_ROCSPARSE */
 
 #define GOTO_IF_ROCBLAS_ERROR(fcn, result, error_label) \
     do                                                  \
@@ -56,9 +62,160 @@
         }                                                          \
     } while(0)
 
+ROCSOLVER_BEGIN_NAMESPACE
+
+template <typename Fn>
+static bool load_function(void* handle, const char* symbol, Fn& fn)
+{
+#ifdef _WIN32
+    fn = (Fn)(GetProcAddress((HMODULE)handle, symbol));
+    bool err = !fn;
+#else
+    fn = (Fn)(dlsym(handle, symbol));
+    char* err = dlerror(); // clear errors
+#ifndef NDEBUG
+    if(err)
+        fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
+#endif
+#endif /* _WIN32 */
+    return !err;
+}
+
+static bool load_rocsparse()
+{
+#ifdef _WIN32
+    // Library users will need to call SetErrorMode(SEM_FAILCRITICALERRORS) if
+    // they wish to avoid an error message box when this library is not found.
+    // The call is not done by rocSOLVER directly, as it is not thread-safe and
+    // will affect the global state of the program.
+    void* handle = LoadLibraryW(L"rocsparse.dll");
+#else
+    void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
+    char* err = dlerror(); // clear errors
+#ifndef NDEBUG
+    if(!handle)
+        fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", err);
+#endif
+#endif /* _WIN32 */
+    if(!handle)
+        return false;
+    if(!load_function(handle, "rocsparse_create_handle", g_sparse_create_handle))
+        return false;
+    if(!load_function(handle, "rocsparse_destroy_handle", g_sparse_destroy_handle))
+        return false;
+
+    if(!load_function(handle, "rocsparse_set_stream", g_sparse_set_stream))
+        return false;
+    if(!load_function(handle, "rocsparse_create_mat_descr", g_sparse_create_mat_descr))
+        return false;
+    if(!load_function(handle, "rocsparse_destroy_mat_descr", g_sparse_destroy_mat_descr))
+        return false;
+    if(!load_function(handle, "rocsparse_set_mat_type", g_sparse_set_mat_type))
+        return false;
+    if(!load_function(handle, "rocsparse_set_mat_index_base", g_sparse_set_mat_index_base))
+        return false;
+    if(!load_function(handle, "rocsparse_set_mat_fill_mode", g_sparse_set_mat_fill_mode))
+        return false;
+    if(!load_function(handle, "rocsparse_set_mat_diag_type", g_sparse_set_mat_diag_type))
+        return false;
+    if(!load_function(handle, "rocsparse_create_mat_info", g_sparse_create_mat_info))
+        return false;
+    if(!load_function(handle, "rocsparse_destroy_mat_info", g_sparse_destroy_mat_info))
+        return false;
+
+    if(!load_function(handle, "rocsparse_scsrilu0_buffer_size", g_sparse_scsrilu0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsrilu0_buffer_size", g_sparse_dcsrilu0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsrilu0_buffer_size", g_sparse_ccsrilu0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrilu0_buffer_size", g_sparse_zcsrilu0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_scsric0_buffer_size", g_sparse_scsric0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsric0_buffer_size", g_sparse_dcsric0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsric0_buffer_size", g_sparse_ccsric0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsric0_buffer_size", g_sparse_zcsric0_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_scsric0_analysis", g_sparse_scsric0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsric0_analysis", g_sparse_dcsric0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsric0_analysis", g_sparse_ccsric0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsric0_analysis", g_sparse_zcsric0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_scsrsm_analysis", g_sparse_scsrsm_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsrsm_analysis", g_sparse_dcsrsm_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsrsm_analysis", g_sparse_ccsrsm_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrsm_analysis", g_sparse_zcsrsm_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_scsrsm_buffer_size", g_sparse_scsrsm_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsrsm_buffer_size", g_sparse_dcsrsm_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsrsm_buffer_size", g_sparse_ccsrsm_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrsm_buffer_size", g_sparse_zcsrsm_buffer_size))
+        return false;
+    if(!load_function(handle, "rocsparse_scsrsm_solve", g_sparse_scsrsm_solve))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsrsm_solve", g_sparse_dcsrsm_solve))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsrsm_solve", g_sparse_ccsrsm_solve))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrsm_solve", g_sparse_zcsrsm_solve))
+        return false;
+    if(!load_function(handle, "rocsparse_scsrilu0_analysis", g_sparse_scsrilu0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsrilu0_analysis", g_sparse_dcsrilu0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsrilu0_analysis", g_sparse_ccsrilu0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrilu0_analysis", g_sparse_zcsrilu0_analysis))
+        return false;
+    if(!load_function(handle, "rocsparse_scsrilu0", g_sparse_scsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsrilu0", g_sparse_dcsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsrilu0", g_sparse_ccsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsrilu0", g_sparse_zcsrilu0))
+        return false;
+    if(!load_function(handle, "rocsparse_scsric0", g_sparse_scsric0))
+        return false;
+    if(!load_function(handle, "rocsparse_dcsric0", g_sparse_dcsric0))
+        return false;
+    if(!load_function(handle, "rocsparse_ccsric0", g_sparse_ccsric0))
+        return false;
+    if(!load_function(handle, "rocsparse_zcsric0", g_sparse_zcsric0))
+        return false;
+
+    return true;
+}
+
+static bool try_load_rocsparse()
+{
+    // Function-scope static initialization has been thread-safe since C++11.
+    // There is an implicit mutex guarding the initialization.
+    static bool result = load_rocsparse();
+    return result;
+}
+
+ROCSOLVER_END_NAMESPACE
+
 extern "C" rocblas_status rocsolver_create_rfinfo(rocsolver_rfinfo* rfinfo, rocblas_handle handle)
 {
-#ifdef HAVE_ROCSPARSE
+#ifndef HAVE_ROCSPARSE
+    if(!rocsolver::try_load_rocsparse())
+        return rocblas_status_not_implemented;
+#endif
+
     if(!handle)
         return rocblas_status_invalid_handle;
 
@@ -135,14 +292,10 @@ cleanup:
 
     delete impl;
     return result;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 {
-#ifdef HAVE_ROCSPARSE
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
@@ -155,17 +308,12 @@ extern "C" rocblas_status rocsolver_destroy_rfinfo(rocsolver_rfinfo rfinfo)
 
     ROCSPARSE_CHECK(rocsparse_destroy_handle(rfinfo->sphandle));
     delete rfinfo;
-
     return rocblas_status_success;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
                                                     rocsolver_rfinfo_mode mode)
 {
-#ifdef HAVE_ROCSPARSE
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
@@ -183,15 +331,11 @@ extern "C" rocblas_status rocsolver_set_rfinfo_mode(rocsolver_rfinfo rfinfo,
     }
 
     return rocblas_status_success;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }
 
 extern "C" rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
                                                     rocsolver_rfinfo_mode* mode)
 {
-#ifdef HAVE_ROCSPARSE
     if(!rfinfo)
         return rocblas_status_invalid_pointer;
 
@@ -201,7 +345,4 @@ extern "C" rocblas_status rocsolver_get_rfinfo_mode(rocsolver_rfinfo rfinfo,
     *mode = rfinfo->mode;
 
     return rocblas_status_success;
-#else
-    return rocblas_status_not_implemented;
-#endif
 }

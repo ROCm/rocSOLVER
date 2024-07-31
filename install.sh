@@ -66,7 +66,7 @@ Options:
 
   -n | --no-optimizations      Pass this flag to disable optimizations for small sizes.
 
-  --no-sparse                  Pass this flag to remove rocSPARSE as a dependency and disable sparse methods.
+  --[no-]sparse                Pass this flag to add [or remove] rocSPARSE as build-time dependency.
 
   -a | --architecture          Set GPU architecture target, e.g. "gfx803;gfx900;gfx906;gfx908".
                                If you don't know the architecture of the GPU in your local machine, it can be
@@ -325,7 +325,7 @@ optimal=true
 cleanup=false
 build_sanitizer=false
 build_codecoverage=false
-build_with_sparse=true
+unset build_with_sparse
 unset architecture
 unset rocblas_path
 unset rocsolver_path
@@ -340,7 +340,7 @@ declare -a cmake_client_options
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,build-path:,lib_dir:,lib-path:,install_dir:,install-path:,rocblas_dir:,rocblas-path:,rocsolver_dir:,rocsolver-path:,rocsparse_dir:,rocsparse-path:,architecture:,static,relocatable,no-optimizations,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,package,clients,clients-only,dependencies,cleanup,debug,hip-clang,codecoverage,relwithdebinfo,build_dir:,build-path:,lib_dir:,lib-path:,install_dir:,install-path:,rocblas_dir:,rocblas-path:,rocsolver_dir:,rocsolver-path:,rocsparse_dir:,rocsparse-path:,architecture:,static,relocatable,no-optimizations,sparse,no-sparse,docs,address-sanitizer,cmake-arg: --options hipcdgsrnka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -387,6 +387,9 @@ while true; do
         shift ;;
     -n | --no-optimizations)
         optimal=false
+        shift ;;
+    --sparse)
+        build_with_sparse=true
         shift ;;
     --no-sparse)
         build_with_sparse=false
@@ -570,8 +573,12 @@ if [[ "${optimal}" == false ]]; then
   cmake_common_options+=('-DOPTIMAL=OFF')
 fi
 
-if [[ "${build_with_sparse}" == false ]]; then
-  cmake_common_options+=('-DBUILD_WITH_SPARSE=OFF')
+if [[ -n "${build_with_sparse+x}" ]]; then
+  if [[ "${build_with_sparse}" == true ]]; then
+    cmake_common_options+=('-DBUILD_WITH_SPARSE=ON')
+  else
+    cmake_common_options+=('-DBUILD_WITH_SPARSE=OFF')
+  fi
 fi
 
 if [[ -n "${architecture+x}" ]]; then
