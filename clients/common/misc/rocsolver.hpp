@@ -2668,6 +2668,85 @@ inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
                      : rocsolver_zpotf2(handle, uplo, n, A, lda, info);
 }
 
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            float* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    if(STRIDED)
+        return POTRF
+            ? rocsolver_spotrf_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count)
+            : rocsolver_spotf2_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count);
+    else
+        return POTRF ? rocsolver_spotrf_64(handle, uplo, n, A, lda, info)
+                     : rocsolver_spotf2_64(handle, uplo, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            double* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    if(STRIDED)
+        return POTRF
+            ? rocsolver_dpotrf_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count)
+            : rocsolver_dpotf2_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count);
+    else
+        return POTRF ? rocsolver_dpotrf_64(handle, uplo, n, A, lda, info)
+                     : rocsolver_dpotf2_64(handle, uplo, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            rocblas_float_complex* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    if(STRIDED)
+        return POTRF
+            ? rocsolver_cpotrf_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count)
+            : rocsolver_cpotf2_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count);
+    else
+        return POTRF ? rocsolver_cpotrf_64(handle, uplo, n, A, lda, info)
+                     : rocsolver_cpotf2_64(handle, uplo, n, A, lda, info);
+}
+
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            rocblas_double_complex* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    if(STRIDED)
+        return POTRF
+            ? rocsolver_zpotrf_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count)
+            : rocsolver_zpotf2_strided_batched_64(handle, uplo, n, A, lda, stA, info, batch_count);
+    else
+        return POTRF ? rocsolver_zpotrf_64(handle, uplo, n, A, lda, info)
+                     : rocsolver_zpotf2_64(handle, uplo, n, A, lda, info);
+}
 // batched
 inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
                                             bool POTRF,
@@ -2727,6 +2806,66 @@ inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
 {
     return POTRF ? rocsolver_zpotrf_batched(handle, uplo, n, A, lda, info, batch_count)
                  : rocsolver_zpotf2_batched(handle, uplo, n, A, lda, info, batch_count);
+}
+
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            float* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    return POTRF ? rocsolver_spotrf_batched_64(handle, uplo, n, A, lda, info, batch_count)
+                 : rocsolver_spotf2_batched_64(handle, uplo, n, A, lda, info, batch_count);
+}
+
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            double* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    return POTRF ? rocsolver_dpotrf_batched_64(handle, uplo, n, A, lda, info, batch_count)
+                 : rocsolver_dpotf2_batched_64(handle, uplo, n, A, lda, info, batch_count);
+}
+
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            rocblas_float_complex* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    return POTRF ? rocsolver_cpotrf_batched_64(handle, uplo, n, A, lda, info, batch_count)
+                 : rocsolver_cpotf2_batched_64(handle, uplo, n, A, lda, info, batch_count);
+}
+
+inline rocblas_status rocsolver_potf2_potrf(bool STRIDED,
+                                            bool POTRF,
+                                            rocblas_handle handle,
+                                            rocblas_fill uplo,
+                                            int64_t n,
+                                            rocblas_double_complex* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            int64_t* info,
+                                            int64_t batch_count)
+{
+    return POTRF ? rocsolver_zpotrf_batched_64(handle, uplo, n, A, lda, info, batch_count)
+                 : rocsolver_zpotf2_batched_64(handle, uplo, n, A, lda, info, batch_count);
 }
 /********************************************************/
 

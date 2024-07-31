@@ -33,7 +33,9 @@ ROCSOLVER_BEGIN_NAMESPACE
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_POTF2_SMALL(rocblas_double_complex, rocblas_double_complex*);
-INSTANTIATE_POTF2_SMALL(rocblas_double_complex, rocblas_double_complex* const*);
+INSTANTIATE_POTF2_SMALL(rocblas_double_complex, rocblas_int, rocblas_double_complex*);
+INSTANTIATE_POTF2_SMALL(rocblas_double_complex, int64_t, rocblas_double_complex*);
+INSTANTIATE_POTF2_SMALL(rocblas_double_complex, rocblas_int, rocblas_double_complex* const*);
+INSTANTIATE_POTF2_SMALL(rocblas_double_complex, int64_t, rocblas_double_complex* const*);
 
 ROCSOLVER_END_NAMESPACE
