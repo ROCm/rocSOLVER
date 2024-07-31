@@ -208,7 +208,8 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
     }
 
     // if n is small, use small-size kernel
-    if(n <= LARFG_SSKER_MAX_N)
+    // TODO: Some architectures have failures in sygvx with small-size kernels enabled, more investigation needed
+    if(n <= LARFG_SSKER_MAX_N && warpSize >= 64)
     {
         return larfg_run_small(handle, n, alpha, shifta, stridex, x, shiftx, incx, stridex, tau,
                                strideP, batch_count);
