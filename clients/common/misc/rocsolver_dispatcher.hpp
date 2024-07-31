@@ -162,9 +162,12 @@ class rocsolver_dispatcher
             {"potrf_batched_64", testing_potf2_potrf<true, true, 1, T, int64_t>},
             {"potrf_strided_batched_64", testing_potf2_potrf<false, true, 1, T, int64_t>},
             // potrs
-            {"potrs", testing_potrs<false, false, T>},
-            {"potrs_batched", testing_potrs<true, true, T>},
-            {"potrs_strided_batched", testing_potrs<false, true, T>},
+            {"potrs", testing_potrs<false, false, T, rocblas_int>},
+            {"potrs_batched", testing_potrs<true, true, T, rocblas_int>},
+            {"potrs_strided_batched", testing_potrs<false, true, T, rocblas_int>},
+            {"potrs_64", testing_potrs<false, false, T, int64_t>},
+            {"potrs_batched_64", testing_potrs<true, true, T, int64_t>},
+            {"potrs_strided_batched_64", testing_potrs<false, true, T, int64_t>},
             // posv
             {"posv", testing_posv<false, false, T>},
             {"posv_batched", testing_posv<true, true, T>},

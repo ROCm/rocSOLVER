@@ -29,16 +29,16 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_potrs_batched_impl(rocblas_handle handle,
                                             const rocblas_fill uplo,
-                                            const rocblas_int n,
-                                            const rocblas_int nrhs,
+                                            const I n,
+                                            const I nrhs,
                                             U A,
-                                            const rocblas_int lda,
+                                            const I lda,
                                             U B,
-                                            const rocblas_int ldb,
-                                            const rocblas_int batch_count)
+                                            const I ldb,
+                                            const I batch_count)
 {
     ROCSOLVER_ENTER_TOP("potrs_batched", "--uplo", uplo, "-n", n, "--nrhs", nrhs, "--lda", lda,
                         "--ldb", ldb, "--batch_count", batch_count);
@@ -52,8 +52,8 @@ rocblas_status rocsolver_potrs_batched_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
-    rocblas_int shiftB = 0;
+    rocblas_stride shiftA = 0;
+    rocblas_stride shiftB = 0;
 
     // batched execution
     rocblas_stride strideA = 0;
@@ -96,58 +96,133 @@ ROCSOLVER_END_NAMESPACE
  * ===========================================================================
  */
 
-extern "C" rocblas_status rocsolver_spotrs_batched(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   const rocblas_int nrhs,
-                                                   float* const A[],
-                                                   const rocblas_int lda,
-                                                   float* const B[],
-                                                   const rocblas_int ldb,
-                                                   const rocblas_int batch_count)
+extern "C" {
+
+rocblas_status rocsolver_spotrs_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        const rocblas_int nrhs,
+                                        float* const A[],
+                                        const rocblas_int lda,
+                                        float* const B[],
+                                        const rocblas_int ldb,
+                                        const rocblas_int batch_count)
 {
     return rocsolver::rocsolver_potrs_batched_impl<float>(handle, uplo, n, nrhs, A, lda, B, ldb,
                                                           batch_count);
 }
 
-extern "C" rocblas_status rocsolver_dpotrs_batched(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   const rocblas_int nrhs,
-                                                   double* const A[],
-                                                   const rocblas_int lda,
-                                                   double* const B[],
-                                                   const rocblas_int ldb,
-                                                   const rocblas_int batch_count)
+rocblas_status rocsolver_dpotrs_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        const rocblas_int nrhs,
+                                        double* const A[],
+                                        const rocblas_int lda,
+                                        double* const B[],
+                                        const rocblas_int ldb,
+                                        const rocblas_int batch_count)
 {
     return rocsolver::rocsolver_potrs_batched_impl<double>(handle, uplo, n, nrhs, A, lda, B, ldb,
                                                            batch_count);
 }
 
-extern "C" rocblas_status rocsolver_cpotrs_batched(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   const rocblas_int nrhs,
-                                                   rocblas_float_complex* const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_float_complex* const B[],
-                                                   const rocblas_int ldb,
-                                                   const rocblas_int batch_count)
+rocblas_status rocsolver_cpotrs_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        const rocblas_int nrhs,
+                                        rocblas_float_complex* const A[],
+                                        const rocblas_int lda,
+                                        rocblas_float_complex* const B[],
+                                        const rocblas_int ldb,
+                                        const rocblas_int batch_count)
 {
     return rocsolver::rocsolver_potrs_batched_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A,
                                                                           lda, B, ldb, batch_count);
 }
 
-extern "C" rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
-                                                   const rocblas_fill uplo,
-                                                   const rocblas_int n,
-                                                   const rocblas_int nrhs,
-                                                   rocblas_double_complex* const A[],
-                                                   const rocblas_int lda,
-                                                   rocblas_double_complex* const B[],
-                                                   const rocblas_int ldb,
-                                                   const rocblas_int batch_count)
+rocblas_status rocsolver_zpotrs_batched(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        const rocblas_int nrhs,
+                                        rocblas_double_complex* const A[],
+                                        const rocblas_int lda,
+                                        rocblas_double_complex* const B[],
+                                        const rocblas_int ldb,
+                                        const rocblas_int batch_count)
 {
     return rocsolver::rocsolver_potrs_batched_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A,
                                                                            lda, B, ldb, batch_count);
+}
+
+rocblas_status rocsolver_spotrs_batched_64(rocblas_handle handle,
+                                           const rocblas_fill uplo,
+                                           const int64_t n,
+                                           const int64_t nrhs,
+                                           float* const A[],
+                                           const int64_t lda,
+                                           float* const B[],
+                                           const int64_t ldb,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_batched_impl<float>(handle, uplo, n, nrhs, A, lda, B, ldb,
+                                                          batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_dpotrs_batched_64(rocblas_handle handle,
+                                           const rocblas_fill uplo,
+                                           const int64_t n,
+                                           const int64_t nrhs,
+                                           double* const A[],
+                                           const int64_t lda,
+                                           double* const B[],
+                                           const int64_t ldb,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_batched_impl<double>(handle, uplo, n, nrhs, A, lda, B, ldb,
+                                                           batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_cpotrs_batched_64(rocblas_handle handle,
+                                           const rocblas_fill uplo,
+                                           const int64_t n,
+                                           const int64_t nrhs,
+                                           rocblas_float_complex* const A[],
+                                           const int64_t lda,
+                                           rocblas_float_complex* const B[],
+                                           const int64_t ldb,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_batched_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A,
+                                                                          lda, B, ldb, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_zpotrs_batched_64(rocblas_handle handle,
+                                           const rocblas_fill uplo,
+                                           const int64_t n,
+                                           const int64_t nrhs,
+                                           rocblas_double_complex* const A[],
+                                           const int64_t lda,
+                                           rocblas_double_complex* const B[],
+                                           const int64_t ldb,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_batched_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A,
+                                                                           lda, B, ldb, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
 }
