@@ -165,7 +165,11 @@ rocblas_status rocsolver_slarf_64(rocblas_handle handle,
                                   float* A,
                                   const int64_t lda)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larf_impl<float>(handle, side, m, n, x, incx, alpha, A, lda);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_dlarf_64(rocblas_handle handle,
@@ -178,7 +182,11 @@ rocblas_status rocsolver_dlarf_64(rocblas_handle handle,
                                   double* A,
                                   const int64_t lda)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larf_impl<double>(handle, side, m, n, x, incx, alpha, A, lda);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_clarf_64(rocblas_handle handle,
@@ -191,8 +199,12 @@ rocblas_status rocsolver_clarf_64(rocblas_handle handle,
                                   rocblas_float_complex* A,
                                   const int64_t lda)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larf_impl<rocblas_float_complex>(handle, side, m, n, x, incx, alpha,
                                                                  A, lda);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_zlarf_64(rocblas_handle handle,
@@ -205,8 +217,12 @@ rocblas_status rocsolver_zlarf_64(rocblas_handle handle,
                                   rocblas_double_complex* A,
                                   const int64_t lda)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larf_impl<rocblas_double_complex>(handle, side, m, n, x, incx,
                                                                   alpha, A, lda);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C

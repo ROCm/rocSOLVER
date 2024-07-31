@@ -6488,6 +6488,152 @@ inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
     return GEQRF ? rocsolver_zgeqrf_ptr_batched(handle, m, n, A, lda, ipiv, bc)
                  : rocblas_status_not_implemented;
 }
+
+// normal and strided_batched
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            float* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            float* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    if(STRIDED)
+        return GEQRF ? rocsolver_sgeqrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc)
+                     : rocsolver_sgeqr2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc);
+    else
+        return GEQRF ? rocsolver_sgeqrf_64(handle, m, n, A, lda, ipiv)
+                     : rocsolver_sgeqr2_64(handle, m, n, A, lda, ipiv);
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            double* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            double* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    if(STRIDED)
+        return GEQRF ? rocsolver_dgeqrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc)
+                     : rocsolver_dgeqr2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc);
+    else
+        return GEQRF ? rocsolver_dgeqrf_64(handle, m, n, A, lda, ipiv)
+                     : rocsolver_dgeqr2_64(handle, m, n, A, lda, ipiv);
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            rocblas_float_complex* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            rocblas_float_complex* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    if(STRIDED)
+        return GEQRF ? rocsolver_cgeqrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc)
+                     : rocsolver_cgeqr2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc);
+    else
+        return GEQRF ? rocsolver_cgeqrf_64(handle, m, n, A, lda, ipiv)
+                     : rocsolver_cgeqr2_64(handle, m, n, A, lda, ipiv);
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            rocblas_double_complex* A,
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            rocblas_double_complex* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    if(STRIDED)
+        return GEQRF ? rocsolver_zgeqrf_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc)
+                     : rocsolver_zgeqr2_strided_batched_64(handle, m, n, A, lda, stA, ipiv, stP, bc);
+    else
+        return GEQRF ? rocsolver_zgeqrf_64(handle, m, n, A, lda, ipiv)
+                     : rocsolver_zgeqr2_64(handle, m, n, A, lda, ipiv);
+}
+
+// batched
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            float* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            float* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    return GEQRF ? rocsolver_sgeqrf_batched_64(handle, m, n, A, lda, ipiv, stP, bc)
+                 : rocsolver_sgeqr2_batched_64(handle, m, n, A, lda, ipiv, stP, bc);
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            double* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            double* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    return GEQRF ? rocsolver_dgeqrf_batched_64(handle, m, n, A, lda, ipiv, stP, bc)
+                 : rocsolver_dgeqr2_batched_64(handle, m, n, A, lda, ipiv, stP, bc);
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            rocblas_float_complex* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            rocblas_float_complex* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    return GEQRF ? rocsolver_cgeqrf_batched_64(handle, m, n, A, lda, ipiv, stP, bc)
+                 : rocsolver_cgeqr2_batched_64(handle, m, n, A, lda, ipiv, stP, bc);
+}
+
+inline rocblas_status rocsolver_geqr2_geqrf(bool STRIDED,
+                                            bool GEQRF,
+                                            rocblas_handle handle,
+                                            int64_t m,
+                                            int64_t n,
+                                            rocblas_double_complex* const A[],
+                                            int64_t lda,
+                                            rocblas_stride stA,
+                                            rocblas_double_complex* ipiv,
+                                            rocblas_stride stP,
+                                            int64_t bc)
+{
+    return GEQRF ? rocsolver_zgeqrf_batched_64(handle, m, n, A, lda, ipiv, stP, bc)
+                 : rocsolver_zgeqr2_batched_64(handle, m, n, A, lda, ipiv, stP, bc);
+}
 /********************************************************/
 
 /******************** GERQ2_GERQF ********************/

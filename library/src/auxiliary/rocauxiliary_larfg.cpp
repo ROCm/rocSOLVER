@@ -134,7 +134,11 @@ rocblas_status rocsolver_slarfg_64(rocblas_handle handle,
                                    const int64_t incx,
                                    float* tau)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larfg_impl<float>(handle, n, alpha, x, incx, tau);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_dlarfg_64(rocblas_handle handle,
@@ -144,7 +148,11 @@ rocblas_status rocsolver_dlarfg_64(rocblas_handle handle,
                                    const int64_t incx,
                                    double* tau)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larfg_impl<double>(handle, n, alpha, x, incx, tau);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_clarfg_64(rocblas_handle handle,
@@ -154,7 +162,11 @@ rocblas_status rocsolver_clarfg_64(rocblas_handle handle,
                                    const int64_t incx,
                                    rocblas_float_complex* tau)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larfg_impl<rocblas_float_complex>(handle, n, alpha, x, incx, tau);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_zlarfg_64(rocblas_handle handle,
@@ -164,7 +176,11 @@ rocblas_status rocsolver_zlarfg_64(rocblas_handle handle,
                                    const int64_t incx,
                                    rocblas_double_complex* tau)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_larfg_impl<rocblas_double_complex>(handle, n, alpha, x, incx, tau);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C

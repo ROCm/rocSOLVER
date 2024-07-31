@@ -195,9 +195,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                 (tauq + j), strideQ, // tau
                 batch_count, (T*)work_workArr, norms);
 
-            ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                    D, j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1,
-                                    j < n - 1);
+            ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                    dim3(1, 1, 1), 0, stream, D, j, strideD, A,
+                                    shiftA + idx2D(j, j, lda), lda, strideA, 1, j < n - 1);
 
             if(j < n - 1)
             {
@@ -268,9 +268,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     (taup + j), strideP, // tau
                     batch_count, (T*)work_workArr, norms);
 
-                ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                        stream, E, j, strideE, A, shiftA + idx2D(j, j + 1, lda),
-                                        lda, strideA, 1, true);
+                ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                        dim3(1, 1, 1), 0, stream, E, j, strideE, A,
+                                        shiftA + idx2D(j, j + 1, lda), lda, strideA, 1, true);
 
                 // compute column j of X
                 rocblasCall_gemv<T>(
@@ -353,9 +353,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                 (taup + j), strideP, // tau
                 batch_count, (T*)work_workArr, norms);
 
-            ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                    D, j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1,
-                                    j < m - 1);
+            ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                    dim3(1, 1, 1), 0, stream, D, j, strideD, A,
+                                    shiftA + idx2D(j, j, lda), lda, strideA, 1, j < m - 1);
 
             if(j < m - 1)
             {
@@ -423,9 +423,9 @@ rocblas_status rocsolver_labrd_template(rocblas_handle handle,
                     (tauq + j), strideQ, // tau
                     batch_count, (T*)work_workArr, norms);
 
-                ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                        stream, E, j, strideE, A, shiftA + idx2D(j + 1, j, lda),
-                                        lda, strideA, 1, true);
+                ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                        dim3(1, 1, 1), 0, stream, E, j, strideE, A,
+                                        shiftA + idx2D(j + 1, j, lda), lda, strideA, 1, true);
 
                 // compute column j of Y
                 rocblasCall_gemv<T>(

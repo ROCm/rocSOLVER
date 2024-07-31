@@ -305,6 +305,14 @@ Orthogonal factorizations
 
 rocsolver_<type>geqr2()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeqr2_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgeqr2_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgeqr2_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgeqr2_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgeqr2
    :outline:
 .. doxygenfunction:: rocsolver_cgeqr2
@@ -315,6 +323,14 @@ rocsolver_<type>geqr2()
 
 rocsolver_<type>geqr2_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeqr2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgeqr2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgeqr2_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgeqr2_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgeqr2_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgeqr2_batched
@@ -325,6 +341,14 @@ rocsolver_<type>geqr2_batched()
 
 rocsolver_<type>geqr2_strided_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeqr2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgeqr2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgeqr2_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgeqr2_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgeqr2_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgeqr2_strided_batched
@@ -337,6 +361,14 @@ rocsolver_<type>geqr2_strided_batched()
 
 rocsolver_<type>geqrf()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeqrf_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgeqrf_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgeqrf_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgeqrf_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgeqrf
    :outline:
 .. doxygenfunction:: rocsolver_cgeqrf
@@ -349,6 +381,14 @@ rocsolver_<type>geqrf()
 
 rocsolver_<type>geqrf_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeqrf_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgeqrf_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgeqrf_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgeqrf_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgeqrf_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgeqrf_batched
@@ -361,6 +401,14 @@ rocsolver_<type>geqrf_batched()
 
 rocsolver_<type>geqrf_strided_batched()
 ---------------------------------------------------
+.. doxygenfunction:: rocsolver_zgeqrf_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_cgeqrf_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_dgeqrf_strided_batched_64
+   :outline:
+.. doxygenfunction:: rocsolver_sgeqrf_strided_batched_64
+   :outline:
 .. doxygenfunction:: rocsolver_zgeqrf_strided_batched
    :outline:
 .. doxygenfunction:: rocsolver_cgeqrf_strided_batched

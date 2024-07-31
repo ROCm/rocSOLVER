@@ -29,13 +29,9 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U>
-rocblas_status rocsolver_geqr2_impl(rocblas_handle handle,
-                                    const rocblas_int m,
-                                    const rocblas_int n,
-                                    U A,
-                                    const rocblas_int lda,
-                                    T* ipiv)
+template <typename T, typename I, typename U>
+rocblas_status
+    rocsolver_geqr2_impl(rocblas_handle handle, const I m, const I n, U A, const I lda, T* ipiv)
 {
     ROCSOLVER_ENTER_TOP("geqr2", "-m", m, "-n", n, "--lda", lda);
 
@@ -48,12 +44,12 @@ rocblas_status rocsolver_geqr2_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
+    rocblas_stride shiftA = 0;
 
     // normal (non-batched non-strided) execution
     rocblas_stride strideA = 0;
     rocblas_stride stridep = 0;
-    rocblas_int batch_count = 1;
+    I batch_count = 1;
 
     // memory workspace sizes:
     // size for constants in rocblas calls
@@ -139,6 +135,62 @@ rocblas_status rocsolver_zgeqr2(rocblas_handle handle,
                                 rocblas_double_complex* ipiv)
 {
     return rocsolver::rocsolver_geqr2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
+}
+
+rocblas_status rocsolver_sgeqr2_64(rocblas_handle handle,
+                                   const int64_t m,
+                                   const int64_t n,
+                                   float* A,
+                                   const int64_t lda,
+                                   float* ipiv)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_impl<float>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_dgeqr2_64(rocblas_handle handle,
+                                   const int64_t m,
+                                   const int64_t n,
+                                   double* A,
+                                   const int64_t lda,
+                                   double* ipiv)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_impl<double>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_cgeqr2_64(rocblas_handle handle,
+                                   const int64_t m,
+                                   const int64_t n,
+                                   rocblas_float_complex* A,
+                                   const int64_t lda,
+                                   rocblas_float_complex* ipiv)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_zgeqr2_64(rocblas_handle handle,
+                                   const int64_t m,
+                                   const int64_t n,
+                                   rocblas_double_complex* A,
+                                   const int64_t lda,
+                                   rocblas_double_complex* ipiv)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_impl<rocblas_double_complex>(handle, m, n, A, lda, ipiv);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C

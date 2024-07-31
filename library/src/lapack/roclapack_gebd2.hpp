@@ -142,8 +142,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                      (tauq + j), strideQ, batch_count, (T*)work_workArr, Abyx_norms);
 
             // copy A(j,j) to D and insert one to build/apply the householder matrix
-            ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, D,
-                                    j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
+            ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                    dim3(1, 1, 1), 0, stream, D, j, strideD, A,
+                                    shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
 
             // Apply Householder reflector H(j)
             if(j < n - 1)
@@ -163,9 +164,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
             }
 
             // restore original value of A(j,j)
-            ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                    stream, D, j, strideD, A, shiftA + idx2D(j, j, lda), lda,
-                                    strideA, 1);
+            ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                    dim3(1, 1, 1), 0, stream, D, j, strideD, A,
+                                    shiftA + idx2D(j, j, lda), lda, strideA, 1);
 
             if(j < n - 1)
             {
@@ -181,9 +182,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
 
                 // copy A(j,j+1) to E and insert one to build/apply the householder
                 // matrix
-                ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                        stream, E, j, strideE, A, shiftA + idx2D(j, j + 1, lda),
-                                        lda, strideA, 1, true);
+                ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                        dim3(1, 1, 1), 0, stream, E, j, strideE, A,
+                                        shiftA + idx2D(j, j + 1, lda), lda, strideA, 1, true);
 
                 // Apply Householder reflector G(j)
                 rocsolver_larf_template(handle, rocblas_side_right, m - j - 1, n - j - 1, A,
@@ -196,9 +197,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                                 lda, strideA, batch_count);
 
                 // restore original value of A(j,j+1)
-                ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                        stream, E, j, strideE, A, shiftA + idx2D(j, j + 1, lda),
-                                        lda, strideA, 1);
+                ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                        dim3(1, 1, 1), 0, stream, E, j, strideE, A,
+                                        shiftA + idx2D(j, j + 1, lda), lda, strideA, 1);
             }
             else
             {
@@ -223,8 +224,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                      (taup + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
 
             // copy A(j,j) to D and insert one to build/apply the householder matrix
-            ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, D,
-                                    j, strideD, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
+            ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                    dim3(1, 1, 1), 0, stream, D, j, strideD, A,
+                                    shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
 
             // Apply Householder reflector G(j)
             if(j < m - 1)
@@ -240,9 +242,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                                             strideA, batch_count);
 
             // restore original value of A(j,j)
-            ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                    stream, D, j, strideD, A, shiftA + idx2D(j, j, lda), lda,
-                                    strideA, 1);
+            ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                    dim3(1, 1, 1), 0, stream, D, j, strideD, A,
+                                    shiftA + idx2D(j, j, lda), lda, strideA, 1);
 
             if(j < m - 1)
             {
@@ -254,9 +256,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
 
                 // copy A(j+1,j) to D and insert one to build/apply the householder
                 // matrix
-                ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                        stream, E, j, strideE, A, shiftA + idx2D(j + 1, j, lda),
-                                        lda, strideA, 1, true);
+                ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                        dim3(1, 1, 1), 0, stream, E, j, strideE, A,
+                                        shiftA + idx2D(j + 1, j, lda), lda, strideA, 1, true);
 
                 // conjugate tauq
                 if(COMPLEX)
@@ -273,9 +275,9 @@ rocblas_status rocsolver_gebd2_template(rocblas_handle handle,
                     rocsolver_lacgv_template<T>(handle, 1, tauq, j, 1, strideQ, batch_count);
 
                 // restore original value of A(j,j+1)
-                ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                        stream, E, j, strideE, A, shiftA + idx2D(j + 1, j, lda),
-                                        lda, strideA, 1);
+                ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                        dim3(1, 1, 1), 0, stream, E, j, strideE, A,
+                                        shiftA + idx2D(j + 1, j, lda), lda, strideA, 1);
             }
             else
             {
