@@ -88,7 +88,11 @@ rocblas_status rocsolver_clacgv_64(rocblas_handle handle,
                                    rocblas_float_complex* x,
                                    const int64_t incx)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_lacgv_impl<rocblas_float_complex>(handle, n, x, incx);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 rocblas_status rocsolver_zlacgv_64(rocblas_handle handle,
@@ -96,7 +100,11 @@ rocblas_status rocsolver_zlacgv_64(rocblas_handle handle,
                                    rocblas_double_complex* x,
                                    const int64_t incx)
 {
+#ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_lacgv_impl<rocblas_double_complex>(handle, n, x, incx);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C

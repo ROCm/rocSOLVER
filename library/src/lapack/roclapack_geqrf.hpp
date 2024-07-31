@@ -40,10 +40,10 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <bool BATCHED, typename T>
-void rocsolver_geqrf_getMemorySize(const rocblas_int m,
-                                   const rocblas_int n,
-                                   const rocblas_int batch_count,
+template <bool BATCHED, typename T, typename I>
+void rocsolver_geqrf_getMemorySize(const I m,
+                                   const I n,
+                                   const I batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work_workArr,
                                    size_t* size_Abyx_norms_trfact,
@@ -71,7 +71,7 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m,
     else
     {
         size_t w1, w2, unused, s1, s2;
-        rocblas_int jb = GEQxF_BLOCKSIZE;
+        I jb = GEQxF_BLOCKSIZE;
 
         // size to store the temporary triangular factor
         *size_Abyx_norms_trfact = sizeof(T) * jb * jb * batch_count;
@@ -97,17 +97,17 @@ void rocsolver_geqrf_getMemorySize(const rocblas_int m,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
-                                        const rocblas_int m,
-                                        const rocblas_int n,
+                                        const I m,
+                                        const I n,
                                         U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
+                                        const rocblas_stride shiftA,
+                                        const I lda,
                                         const rocblas_stride strideA,
                                         T* ipiv,
                                         const rocblas_stride strideP,
-                                        const rocblas_int batch_count,
+                                        const I batch_count,
                                         T* scalars,
                                         void* work_workArr,
                                         T* Abyx_norms_trfact,
@@ -132,11 +132,11 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    rocblas_int dim = std::min(m, n); // total number of pivots
-    rocblas_int jb, j = 0;
+    I dim = std::min(m, n); // total number of pivots
+    I jb, j = 0;
 
-    rocblas_int nb = GEQxF_BLOCKSIZE;
-    rocblas_int ldw = GEQxF_BLOCKSIZE;
+    I nb = GEQxF_BLOCKSIZE;
+    I ldw = GEQxF_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
     while(j < dim - GEQxF_GEQx2_SWITCHSIZE)

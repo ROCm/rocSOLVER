@@ -441,22 +441,23 @@ ROCSOLVER_KERNEL void restau(const rocblas_int k, T* ipiv, const rocblas_stride 
 }
 
 template <typename T,
+          typename I,
           typename S,
           typename U,
           std::enable_if_t<!rocblas_is_complex<T> || rocblas_is_complex<S>, int> = 0>
 ROCSOLVER_KERNEL void set_diag(S* D,
-                               const rocblas_int shiftd,
+                               const rocblas_stride shiftd,
                                const rocblas_stride strided,
                                U A,
-                               const rocblas_int shifta,
-                               const rocblas_int lda,
+                               const rocblas_stride shifta,
+                               const I lda,
                                const rocblas_stride stridea,
-                               const rocblas_int n,
+                               const I n,
                                bool set_one)
 {
-    int b = hipBlockIdx_x;
-    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    int j = i + i * lda;
+    I b = hipBlockIdx_x;
+    I i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    I j = i + i * lda;
 
     S* d = load_ptr_batch<S>(D, b, shiftd, strided);
     T* a = load_ptr_batch<T>(A, b, shifta, stridea);
@@ -469,22 +470,23 @@ ROCSOLVER_KERNEL void set_diag(S* D,
 }
 
 template <typename T,
+          typename I,
           typename S,
           typename U,
           std::enable_if_t<rocblas_is_complex<T> && !rocblas_is_complex<S>, int> = 0>
 ROCSOLVER_KERNEL void set_diag(S* D,
-                               const rocblas_int shiftd,
+                               const rocblas_stride shiftd,
                                const rocblas_stride strided,
                                U A,
-                               const rocblas_int shifta,
-                               const rocblas_int lda,
+                               const rocblas_stride shifta,
+                               const I lda,
                                const rocblas_stride stridea,
-                               const rocblas_int n,
+                               const I n,
                                bool set_one)
 {
-    int b = hipBlockIdx_x;
-    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    int j = i + i * lda;
+    I b = hipBlockIdx_x;
+    I i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    I j = i + i * lda;
 
     S* d = load_ptr_batch<S>(D, b, shiftd, strided);
     T* a = load_ptr_batch<T>(A, b, shifta, stridea);
@@ -496,19 +498,19 @@ ROCSOLVER_KERNEL void set_diag(S* D,
     }
 }
 
-template <typename T, typename S, typename U>
+template <typename T, typename I, typename S, typename U>
 ROCSOLVER_KERNEL void restore_diag(S* D,
-                                   const rocblas_int shiftd,
+                                   const rocblas_stride shiftd,
                                    const rocblas_stride strided,
                                    U A,
-                                   const rocblas_int shifta,
-                                   const rocblas_int lda,
+                                   const rocblas_stride shifta,
+                                   const I lda,
                                    const rocblas_stride stridea,
-                                   const rocblas_int n)
+                                   const I n)
 {
-    int b = hipBlockIdx_x;
-    int i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
-    int j = i + i * lda;
+    I b = hipBlockIdx_x;
+    I i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
+    I j = i + i * lda;
 
     S* d = load_ptr_batch<S>(D, b, shiftd, strided);
     T* a = load_ptr_batch<T>(A, b, shifta, stridea);

@@ -29,15 +29,15 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle,
-                                            const rocblas_int m,
-                                            const rocblas_int n,
+                                            const I m,
+                                            const I n,
                                             U A,
-                                            const rocblas_int lda,
+                                            const I lda,
                                             T* ipiv,
                                             const rocblas_stride stridep,
-                                            const rocblas_int batch_count)
+                                            const I batch_count)
 {
     ROCSOLVER_ENTER_TOP("geqr2_batched", "-m", m, "-n", n, "--lda", lda, "--strideP", stridep,
                         "--batch_count", batch_count);
@@ -51,7 +51,7 @@ rocblas_status rocsolver_geqr2_batched_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
+    rocblas_stride shiftA = 0;
 
     // batched execution
     rocblas_stride strideA = 0;
@@ -152,6 +152,74 @@ rocblas_status rocsolver_zgeqr2_batched(rocblas_handle handle,
 {
     return rocsolver::rocsolver_geqr2_batched_impl<rocblas_double_complex>(
         handle, m, n, A, lda, ipiv, stridep, batch_count);
+}
+
+rocblas_status rocsolver_sgeqr2_batched_64(rocblas_handle handle,
+                                           const int64_t m,
+                                           const int64_t n,
+                                           float* const A[],
+                                           const int64_t lda,
+                                           float* ipiv,
+                                           const rocblas_stride stridep,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_batched_impl<float>(handle, m, n, A, lda, ipiv, stridep,
+                                                          batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_dgeqr2_batched_64(rocblas_handle handle,
+                                           const int64_t m,
+                                           const int64_t n,
+                                           double* const A[],
+                                           const int64_t lda,
+                                           double* ipiv,
+                                           const rocblas_stride stridep,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_batched_impl<double>(handle, m, n, A, lda, ipiv, stridep,
+                                                           batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_cgeqr2_batched_64(rocblas_handle handle,
+                                           const int64_t m,
+                                           const int64_t n,
+                                           rocblas_float_complex* const A[],
+                                           const int64_t lda,
+                                           rocblas_float_complex* ipiv,
+                                           const rocblas_stride stridep,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_batched_impl<rocblas_float_complex>(handle, m, n, A, lda, ipiv,
+                                                                          stridep, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_zgeqr2_batched_64(rocblas_handle handle,
+                                           const int64_t m,
+                                           const int64_t n,
+                                           rocblas_double_complex* const A[],
+                                           const int64_t lda,
+                                           rocblas_double_complex* ipiv,
+                                           const rocblas_stride stridep,
+                                           const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_geqr2_batched_impl<rocblas_double_complex>(
+        handle, m, n, A, lda, ipiv, stridep, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C

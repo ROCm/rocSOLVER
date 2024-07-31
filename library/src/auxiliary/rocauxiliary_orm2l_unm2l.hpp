@@ -201,8 +201,9 @@ rocblas_status rocsolver_orm2l_unm2l_template(rocblas_handle handle,
 
         // insert one in A(nq-k+i,i), i.e. the i-th element of the (nq-k)-th
         // subdiagonal, to build/apply the householder matrix
-        ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream, diag,
-                                0, 1, A, shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1, true);
+        ROCSOLVER_LAUNCH_KERNEL((set_diag<T, rocblas_int>), dim3(batch_count, 1, 1), dim3(1, 1, 1),
+                                0, stream, diag, 0, 1, A, shiftA + idx2D(nq - k + i, i, lda), lda,
+                                strideA, 1, true);
 
         // Apply current Householder reflector
         rocsolver_larf_template(handle, side, nrow, ncol, A, shiftA + idx2D(0, i, lda), 1, strideA,
@@ -210,8 +211,9 @@ rocblas_status rocsolver_orm2l_unm2l_template(rocblas_handle handle,
                                 Abyx, workArr);
 
         // restore original value of A(nq-k+i,i)
-        ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                diag, 0, 1, A, shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1);
+        ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, rocblas_int>), dim3(batch_count, 1, 1),
+                                dim3(1, 1, 1), 0, stream, diag, 0, 1, A,
+                                shiftA + idx2D(nq - k + i, i, lda), lda, strideA, 1);
     }
 
     // restore tau
