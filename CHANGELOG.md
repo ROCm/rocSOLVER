@@ -49,6 +49,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Fixed
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
+- Fixed synchronization issue in STEIN.
 
 ### Known Issues
 - A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
