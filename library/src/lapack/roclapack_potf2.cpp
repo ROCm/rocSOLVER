@@ -35,7 +35,7 @@ rocblas_status rocsolver_potf2_impl(rocblas_handle handle,
                                     const I n,
                                     U A,
                                     const I lda,
-                                    rocblas_int* info)
+                                    I* info)
 {
     ROCSOLVER_ENTER_TOP("potf2", "--uplo", uplo, "-n", n, "--lda", lda);
 
