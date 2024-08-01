@@ -238,6 +238,7 @@ __device__ void run_stein(const int tid,
                 nrm2<MAX_THDS, S>(tid, blksize, work, 1, sval2);
                 __syncthreads();
                 scl = (work[sidx[0] - 1] >= 0 ? S(1) / sval2[0] : S(-1) / sval2[0]);
+                __syncthreads();
                 for(i = tid; i < blksize; i += MAX_THDS) // <- scal
                     work[i] = work[i] * scl;
                 __syncthreads();
