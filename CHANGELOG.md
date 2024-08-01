@@ -27,6 +27,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Fixed
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
+- Fixed synchronization issue in STEIN.
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
