@@ -171,7 +171,7 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute Cholesky factorization of A
-    rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, S>(
+    rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, rocblas_int, S>(
         handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2, work3,
         work4, pivots_savedB, iinfo, optim_mem);
 

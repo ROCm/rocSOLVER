@@ -247,7 +247,7 @@ rocblas_status rocsolver_ger(rocblas_handle handle,
                              T** work);
 
 // potf2
-template <typename T, typename I, typename U>
+template <typename T, typename I, typename INFO, typename U>
 rocblas_status potf2_run_small(rocblas_handle handle,
                                const rocblas_fill uplo,
                                const I n,
@@ -255,7 +255,7 @@ rocblas_status potf2_run_small(rocblas_handle handle,
                                const rocblas_stride shiftA,
                                const I lda,
                                const rocblas_stride strideA,
-                               I* info,
+                               INFO* info,
                                const I batch_count);
 
 #ifdef OPTIMAL

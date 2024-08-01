@@ -61,8 +61,8 @@ static I get_lds_size()
     return (lds_size);
 }
 
-template <typename I, typename U>
-ROCSOLVER_KERNEL void chk_positive(I* iinfo, I* info, I j, I batch_count)
+template <typename I, typename INFO, typename U>
+ROCSOLVER_KERNEL void chk_positive(INFO* iinfo, INFO* info, I j, I batch_count)
 {
     I id = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -137,7 +137,7 @@ void rocsolver_potrf_getMemorySize(const I n,
     }
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename S, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename INFO, typename S, typename U>
 rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const I n,
@@ -145,7 +145,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         const rocblas_stride shiftA,
                                         const I lda,
                                         const rocblas_stride strideA,
-                                        I* info,
+                                        INFO* info,
                                         const I batch_count,
                                         T* scalars,
                                         void* work1,
@@ -153,7 +153,7 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         void* work3,
                                         void* work4,
                                         T* pivots,
-                                        I* iinfo,
+                                        INFO* iinfo,
                                         bool optim_mem)
 {
     ROCSOLVER_ENTER("potrf", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
@@ -212,8 +212,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
 
             // test for non-positive-definiteness.
-            ROCSOLVER_LAUNCH_KERNEL((chk_positive<I, U>), gridReset, threads, 0, stream, iinfo,
-                                    info, j, batch_count);
+            ROCSOLVER_LAUNCH_KERNEL((chk_positive<I, INFO, U>), gridReset, threads, 0, stream,
+                                    iinfo, info, j, batch_count);
 
             if(j + jb < n)
             {
@@ -244,8 +244,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                         strideA, iinfo, batch_count, scalars, (T*)work1, pivots);
 
             // test for non-positive-definiteness.
-            ROCSOLVER_LAUNCH_KERNEL((chk_positive<I, U>), gridReset, threads, 0, stream, iinfo,
-                                    info, j, batch_count);
+            ROCSOLVER_LAUNCH_KERNEL((chk_positive<I, INFO, U>), gridReset, threads, 0, stream,
+                                    iinfo, info, j, batch_count);
 
             if(j + jb < n)
             {
@@ -270,8 +270,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     {
         rocsolver_potf2_template<T>(handle, uplo, n - j, A, shiftA + idx2D(j, j, lda), lda, strideA,
                                     iinfo, batch_count, scalars, (T*)work1, pivots);
-        ROCSOLVER_LAUNCH_KERNEL((chk_positive<I, U>), gridReset, threads, 0, stream, iinfo, info, j,
-                                batch_count);
+        ROCSOLVER_LAUNCH_KERNEL((chk_positive<I, INFO, U>), gridReset, threads, 0, stream, iinfo,
+                                info, j, batch_count);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

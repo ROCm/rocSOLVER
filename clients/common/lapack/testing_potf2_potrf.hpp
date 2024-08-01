@@ -100,7 +100,7 @@ void testing_potf2_potrf_bad_arg()
     {
         // memory allocations
         device_batch_vector<T> dA(1, 1, 1);
-        device_strided_batch_vector<rocblas_int> dinfo(1, 1, 1, 1);
+        device_strided_batch_vector<I> dinfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dinfo.memcheck());
 
@@ -112,7 +112,7 @@ void testing_potf2_potrf_bad_arg()
     {
         // memory allocations
         device_strided_batch_vector<T> dA(1, 1, 1, 1);
-        device_strided_batch_vector<rocblas_int> dinfo(1, 1, 1, 1);
+        device_strided_batch_vector<I> dinfo(1, 1, 1, 1);
         CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dinfo.memcheck());
 
@@ -171,19 +171,19 @@ void potf2_potrf_initData(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, bool POTRF, typename T, typename I, typename Td, typename Ud, typename Th, typename Uh>
+template <bool STRIDED, bool POTRF, typename T, typename I, typename Td, typename Id, typename Th, typename Ih, typename Uh>
 void potf2_potrf_getError(const rocblas_handle handle,
                           const rocblas_fill uplo,
                           const I n,
                           Td& dA,
                           const I lda,
                           const rocblas_stride stA,
-                          Ud& dInfo,
+                          Id& dInfo,
                           const I bc,
                           Th& hA,
                           Th& hARes,
                           Uh& hInfo,
-                          Uh& hInfoRes,
+                          Ih& hInfoRes,
                           double* max_err,
                           const bool singular)
 {
@@ -209,7 +209,7 @@ void potf2_potrf_getError(const rocblas_handle handle,
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
     double err;
-    rocblas_int nn;
+    I nn;
     *max_err = 0;
     for(I b = 0; b < bc; ++b)
     {
@@ -233,14 +233,14 @@ void potf2_potrf_getError(const rocblas_handle handle,
     *max_err += err;
 }
 
-template <bool STRIDED, bool POTRF, typename T, typename I, typename Td, typename Ud, typename Th, typename Uh>
+template <bool STRIDED, bool POTRF, typename T, typename I, typename Td, typename Id, typename Th, typename Uh>
 void potf2_potrf_getPerfData(const rocblas_handle handle,
                              const rocblas_fill uplo,
                              const I n,
                              Td& dA,
                              const I lda,
                              const rocblas_stride stA,
-                             Ud& dInfo,
+                             Id& dInfo,
                              const I bc,
                              Th& hA,
                              Uh& hInfo,
@@ -397,9 +397,9 @@ void testing_potf2_potrf(Arguments& argus)
         host_batch_vector<T> hA(size_A, 1, bc);
         host_batch_vector<T> hARes(size_ARes, 1, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
-        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
+        host_strided_batch_vector<I> hInfoRes(1, 1, 1, bc);
         device_batch_vector<T> dA(size_A, 1, bc);
-        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
+        device_strided_batch_vector<I> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
@@ -435,9 +435,9 @@ void testing_potf2_potrf(Arguments& argus)
         host_strided_batch_vector<T> hA(size_A, 1, stA, bc);
         host_strided_batch_vector<T> hARes(size_ARes, 1, stARes, bc);
         host_strided_batch_vector<rocblas_int> hInfo(1, 1, 1, bc);
-        host_strided_batch_vector<rocblas_int> hInfoRes(1, 1, 1, bc);
+        host_strided_batch_vector<I> hInfoRes(1, 1, 1, bc);
         device_strided_batch_vector<T> dA(size_A, 1, stA, bc);
-        device_strided_batch_vector<rocblas_int> dInfo(1, 1, 1, bc);
+        device_strided_batch_vector<I> dInfo(1, 1, 1, bc);
         if(size_A)
             CHECK_HIP_ERROR(dA.memcheck());
         CHECK_HIP_ERROR(dInfo.memcheck());
