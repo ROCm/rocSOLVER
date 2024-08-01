@@ -39,14 +39,14 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename I, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+template <typename T, typename I, typename INFO, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
                                      const rocblas_stride shiftA,
                                      const rocblas_stride strideA,
                                      const size_t loc,
                                      const I j,
                                      T* res,
-                                     I* info)
+                                     INFO* info)
 {
     I id = hipBlockIdx_x;
 
@@ -70,14 +70,14 @@ ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
     }
 }
 
-template <typename T, typename I, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+template <typename T, typename I, typename INFO, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
                                      const rocblas_stride shiftA,
                                      const rocblas_stride strideA,
                                      const size_t loc,
                                      const I j,
                                      T* res,
-                                     I* info)
+                                     INFO* info)
 {
     I id = hipBlockIdx_x;
 
@@ -136,13 +136,13 @@ void rocsolver_potf2_getMemorySize(const I n,
     *size_pivots = sizeof(T) * batch_count;
 }
 
-template <typename T, typename I>
+template <typename T, typename I, typename INFO>
 rocblas_status rocsolver_potf2_potrf_argCheck(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const I n,
                                               const I lda,
                                               T A,
-                                              I* info,
+                                              INFO* info,
                                               const I batch_count = 1)
 {
     // order is important for unit tests:
@@ -166,7 +166,7 @@ rocblas_status rocsolver_potf2_potrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename INFO, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
                                         const I n,
@@ -174,7 +174,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_stride shiftA,
                                         const I lda,
                                         const rocblas_stride strideA,
-                                        I* info,
+                                        INFO* info,
                                         const I batch_count,
                                         T* scalars,
                                         T* work,

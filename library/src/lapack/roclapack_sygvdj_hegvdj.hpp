@@ -221,7 +221,7 @@ rocblas_status rocsolver_sygvdj_hegvdj_template(rocblas_handle handle,
     T one = 1;
 
     // perform Cholesky factorization of B
-    rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, S>(
+    rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, rocblas_int, S>(
         handle, uplo, n, B, shiftB, ldb, strideB, info, batch_count, scalars, work1, work2, work3,
         work4, (T*)workArr, iinfo, optim_mem);
 
