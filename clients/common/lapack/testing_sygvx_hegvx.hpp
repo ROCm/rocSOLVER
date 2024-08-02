@@ -430,8 +430,11 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     // Compute input data hash (combine matrices A and B)
     //
     std::size_t input_hash = 0;
-    input_hash = hash_combine(input_hash, hA[0], lda * n * bc);
-    input_hash = hash_combine(input_hash, hB[0], ldb * n * bc);
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        input_hash = hash_combine(input_hash, hA[0], lda * n);
+        input_hash = hash_combine(input_hash, hB[0], ldb * n);
+    }
 
     // execute computations
     // GPU lapack
