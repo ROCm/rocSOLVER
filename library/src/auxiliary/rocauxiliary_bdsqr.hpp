@@ -262,8 +262,6 @@ __device__ static void bdsqr_permute_swap(const I n,
 
     for(I i = 0; i < n; i++)
     {
-        __syncthreads();
-
         while(map[i] != i)
         {
             auto const map_i = map[i];
@@ -286,16 +284,14 @@ __device__ static void bdsqr_permute_swap(const I n,
             auto const j_start = tid;
             auto const j_inc = nthreads;
 
-            __syncthreads();
-
             if(nv > 0)
             {
                 auto const m = map_i;
                 auto const i = map_ii;
                 for(auto j = j_start; j < nv; j += j_inc)
                     swap(V[m + j * ((int64_t)ldv)], V[i + j * ((int64_t)ldv)]);
+                __syncthreads();
             }
-            __syncthreads();
 
             if(nu > 0)
             {
@@ -303,8 +299,8 @@ __device__ static void bdsqr_permute_swap(const I n,
                 auto const i = map_ii;
                 for(auto j = j_start; j < nu; j += j_inc)
                     swap(U[j + m * ((int64_t)ldu)], U[j + i * ((int64_t)ldu)]);
+                __syncthreads();
             }
-            __syncthreads();
 
             if(nc > 0)
             {
@@ -312,8 +308,8 @@ __device__ static void bdsqr_permute_swap(const I n,
                 auto const i = map_ii;
                 for(auto j = j_start; j < nc; j += j_inc)
                     swap(C[m + j * ((int64_t)ldc)], C[i + j * ((int64_t)ldc)]);
+                __syncthreads();
             }
-            __syncthreads();
         }
     }
 }
