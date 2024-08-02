@@ -191,6 +191,7 @@ target_compile_options(rocsolver-test PRIVATE -mf16c)
 target_compile_definitions(rocsolver-test PRIVATE
   ROCM_USE_FLOAT16
   ROCSOLVER_CLIENTS_TEST
+  ROCSOLVER_CLIENTS_TEST_PRINT_EXTRA_MESSAGES
 )
 
 add_test(
