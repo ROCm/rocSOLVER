@@ -350,8 +350,10 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
 
     __syncthreads();
 
-    bool const is_up = (use_compute_lower) ? false : is_upper;
-    potf2_simple<T>(is_up, n, Ash, info_bid);
+    {
+        bool const is_up = (use_compute_lower) ? false : is_upper;
+        potf2_simple<T, rocblas_int>(is_up, n, Ash, info_bid);
+    }
 
     __syncthreads();
 

@@ -397,6 +397,21 @@
 #define GETRF_NPVT_BATCH_BLKSIZES_COMPLEX 0, -16, -32, -48, 64, 128
 #endif
 
+// ---------------------------------------------------------------
+// size of submatrix that can fit in 64 KBytes of LDS shared memory
+// ---------------------------------------------------------------
+#ifndef GETRF_NOPIV_BLOCKSIZE
+#define GETRF_NOPIV_BLOCKSIZE(T) ((sizeof(T) == 4) ? 128 : (sizeof(T) == 8) ? 90 : 64)
+#endif
+
+// --------------------------------------------
+// assume there is at least 8 MBytes of last level cache
+// terminate recursion if matrix can fit in cache
+// --------------------------------------------
+#ifndef GETRF_NOPIV_STOPPING_NB
+#define GETRF_NOPIV_STOPPING_NB(T) ((sizeof(T) == 4) ? 1408 : (sizeof(T) == 8) ? 1024 : 704)
+#endif
+
 /****************************** getri *****************************************
 *******************************************************************************/
 #ifndef GETRI_MAX_COLS

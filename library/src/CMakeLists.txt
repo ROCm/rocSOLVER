@@ -300,6 +300,11 @@ set(rocsolver_specialized_source
   specialized/roclapack_potf2_specialized_kernels_d.cpp
   specialized/roclapack_potf2_specialized_kernels_c.cpp
   specialized/roclapack_potf2_specialized_kernels_z.cpp
+  # getf2_nopiv
+  specialized/roclapack_getf2_nopiv_specialized_kernels_s.cpp
+  specialized/roclapack_getf2_nopiv_specialized_kernels_d.cpp
+  specialized/roclapack_getf2_nopiv_specialized_kernels_c.cpp
+  specialized/roclapack_getf2_nopiv_specialized_kernels_z.cpp
 )
 
 if(OPTIMAL)
