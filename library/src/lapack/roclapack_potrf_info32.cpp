@@ -117,12 +117,12 @@ ROCSOLVER_END_NAMESPACE
 
 extern "C" {
 
-rocblas_status rocsolver_spotrf_info32(rocblas_handle handle,
-                                       const rocblas_fill uplo,
-                                       const int64_t n,
-                                       float* A,
-                                       const int64_t lda,
-                                       rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_spotrf_info32(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const int64_t n,
+                                                        float* A,
+                                                        const int64_t lda,
+                                                        rocblas_int* info)
 {
 #ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_potrf_info32_impl<float>(handle, uplo, n, A, lda, info);
@@ -131,12 +131,12 @@ rocblas_status rocsolver_spotrf_info32(rocblas_handle handle,
 #endif
 }
 
-rocblas_status rocsolver_dpotrf_info32(rocblas_handle handle,
-                                       const rocblas_fill uplo,
-                                       const int64_t n,
-                                       double* A,
-                                       const int64_t lda,
-                                       rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_dpotrf_info32(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const int64_t n,
+                                                        double* A,
+                                                        const int64_t lda,
+                                                        rocblas_int* info)
 {
 #ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_potrf_info32_impl<double>(handle, uplo, n, A, lda, info);
@@ -145,12 +145,12 @@ rocblas_status rocsolver_dpotrf_info32(rocblas_handle handle,
 #endif
 }
 
-rocblas_status rocsolver_cpotrf_info32(rocblas_handle handle,
-                                       const rocblas_fill uplo,
-                                       const int64_t n,
-                                       rocblas_float_complex* A,
-                                       const int64_t lda,
-                                       rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_cpotrf_info32(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const int64_t n,
+                                                        rocblas_float_complex* A,
+                                                        const int64_t lda,
+                                                        rocblas_int* info)
 {
 #ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_potrf_info32_impl<rocblas_float_complex>(handle, uplo, n, A, lda,
@@ -160,12 +160,12 @@ rocblas_status rocsolver_cpotrf_info32(rocblas_handle handle,
 #endif
 }
 
-rocblas_status rocsolver_zpotrf_info32(rocblas_handle handle,
-                                       const rocblas_fill uplo,
-                                       const int64_t n,
-                                       rocblas_double_complex* A,
-                                       const int64_t lda,
-                                       rocblas_int* info)
+ROCSOLVER_EXPORT rocblas_status rocsolver_zpotrf_info32(rocblas_handle handle,
+                                                        const rocblas_fill uplo,
+                                                        const int64_t n,
+                                                        rocblas_double_complex* A,
+                                                        const int64_t lda,
+                                                        rocblas_int* info)
 {
 #ifdef HAVE_ROCBLAS_64
     return rocsolver::rocsolver_potrf_info32_impl<rocblas_double_complex>(handle, uplo, n, A, lda,
