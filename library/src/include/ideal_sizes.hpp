@@ -253,6 +253,14 @@
 #define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
 #endif
 
+/*! \brief Determines the size at which recusive algorithm can terminate
+    \details 
+    Assume there is last level cache that is at least 8 MBytes, so terminate recursion
+    at this level.  */
+#ifndef POTRF_STOPPING_NB
+#define POTRF_STOPPING_NB(T) ((sizeof(T) == 4) ? 1408 : (sizeof(T) == 8) ? 1024 : 704)
+#endif
+
 /************************** syevj/heevj ***************************************
 *******************************************************************************/
 /*! \brief Determines the size at which rocSOLVER switches from
