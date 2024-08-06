@@ -119,14 +119,17 @@ ROCSOLVER_KERNEL void set_taubeta(T* tauA,
 }
 
 template <typename T, typename I>
-void rocsolver_larfg_getMemorySize(const I n, const I batch_count, size_t* size_work, size_t* size_norms)
+rocblas_status rocsolver_larfg_getMemorySize(const I n,
+                                             const I batch_count,
+                                             size_t* size_work,
+                                             size_t* size_norms)
 {
     // if quick return no workspace needed
     if(n == 0 || batch_count == 0)
     {
         *size_norms = 0;
         *size_work = 0;
-        return;
+        return rocblas_status_success;
     }
 
     // if small size no workspace needed
@@ -141,7 +144,7 @@ void rocsolver_larfg_getMemorySize(const I n, const I batch_count, size_t* size_
         {
             *size_norms = 0;
             *size_work = 0;
-            return;
+            return rocblas_status_success;
         }
     }
 
@@ -153,6 +156,8 @@ void rocsolver_larfg_getMemorySize(const I n, const I batch_count, size_t* size_
     constexpr I ROCBLAS_DOT_NB = 512;
     *size_work = n > 2 ? (n - 2) / ROCBLAS_DOT_NB + 2 : 1;
     *size_work *= sizeof(T) * batch_count;
+
+    return rocblas_status_success;
 }
 
 template <typename T, typename I, typename U>

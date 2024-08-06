@@ -58,7 +58,7 @@ rocblas_status
     size_t size_work;
     // size to store the norms
     size_t size_norms;
-    rocsolver_larfg_getMemorySize<T>(n, batch_count, &size_work, &size_norms);
+    ROCBLAS_CHECK(rocsolver_larfg_getMemorySize<T>(n, batch_count, &size_work, &size_norms));
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_work, size_norms);
