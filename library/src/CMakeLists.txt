@@ -87,6 +87,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_potf2_batched.cpp
   lapack/roclapack_potf2_strided_batched.cpp
   lapack/roclapack_potrf.cpp
+  lapack/roclapack_potrf_info32.cpp
   lapack/roclapack_potrf_batched.cpp
   lapack/roclapack_potrf_strided_batched.cpp
   #- symmetric indefinite matrices

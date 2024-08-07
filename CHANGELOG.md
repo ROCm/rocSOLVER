@@ -10,6 +10,9 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - LARFG_64
     - GEQR2_64 (with batched and strided\_batched versions)
     - GEQRF_64 (with batched and strided\_batched versions)
+    - POTF2_64 (with batched and strided\_batched versions)
+    - POTRF_64 (with batched and strided\_batched versions)
+    - POTRS_64 (with batched and strided\_batched versions)
 
 ### Optimized
 ### Changed

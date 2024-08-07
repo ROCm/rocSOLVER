@@ -88,8 +88,8 @@ __device__ static I idx_lower(I i, I j, I n)
  * The function executes in a single thread block.
  * ------------------------------------------------------
 **/
-template <typename T, typename I>
-__device__ static void potf2_simple(bool const is_upper, I const n, T* const A, I* const info)
+template <typename T, typename I, typename INFO>
+__device__ static void potf2_simple(bool const is_upper, I const n, T* const A, INFO* const info)
 {
     auto const lda = n;
     bool const is_lower = (!is_upper);
@@ -274,14 +274,14 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
     the library size.
 *************************************************************/
 
-template <typename T, typename U>
+template <typename T, typename I, typename INFO, typename U>
 ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
-                                         const rocblas_int n,
+                                         const I n,
                                          U AA,
-                                         const rocblas_int shiftA,
-                                         const rocblas_int lda,
+                                         const rocblas_stride shiftA,
+                                         const I lda,
                                          const rocblas_stride strideA,
-                                         rocblas_int* const info)
+                                         INFO* const info)
 {
     bool const is_lower = (!is_upper);
 
@@ -299,7 +299,7 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
     assert(info != nullptr);
 
     T* const A = load_ptr_batch(AA, bid, shiftA, strideA);
-    rocblas_int* const info_bid = info + bid;
+    INFO* const info_bid = info + bid;
 
     assert(A != nullptr);
 
@@ -322,9 +322,9 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
 
     if(is_lower)
     {
-        for(rocblas_int j = j_start; j < n; j += j_inc)
+        for(I j = j_start; j < n; j += j_inc)
         {
-            for(rocblas_int i = j + i_start; i < n; i += i_inc)
+            for(I i = j + i_start; i < n; i += i_inc)
             {
                 auto const ij = i + j * static_cast<int64_t>(lda);
                 auto const ij_packed = idx_lower(i, j, n);
@@ -335,9 +335,9 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
     }
     else
     {
-        for(rocblas_int j = j_start; j < n; j += j_inc)
+        for(I j = j_start; j < n; j += j_inc)
         {
-            for(rocblas_int i = i_start; i <= j; i += i_inc)
+            for(I i = i_start; i <= j; i += i_inc)
             {
                 auto const ij = i + j * static_cast<int64_t>(lda);
                 auto const ij_packed = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
@@ -360,9 +360,9 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
     // -------------------------------------
     if(is_lower)
     {
-        for(rocblas_int j = j_start; j < n; j += j_inc)
+        for(I j = j_start; j < n; j += j_inc)
         {
-            for(rocblas_int i = j + i_start; i < n; i += i_inc)
+            for(I i = j + i_start; i < n; i += i_inc)
             {
                 auto const ij = i + j * static_cast<int64_t>(lda);
                 auto const ij_packed = idx_lower(i, j, n);
@@ -373,9 +373,9 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
     }
     else
     {
-        for(rocblas_int j = j_start; j < n; j += j_inc)
+        for(I j = j_start; j < n; j += j_inc)
         {
-            for(rocblas_int i = i_start; i <= j; i += i_inc)
+            for(I i = i_start; i <= j; i += i_inc)
             {
                 auto const ij = i + j * static_cast<int64_t>(lda);
                 auto const ij_packed = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
@@ -393,16 +393,16 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
     Launchers of specilized kernels
 *************************************************************/
 
-template <typename T, typename U>
+template <typename T, typename I, typename INFO, typename U>
 rocblas_status potf2_run_small(rocblas_handle handle,
                                const rocblas_fill uplo,
-                               const rocblas_int n,
+                               const I n,
                                U A,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_stride shiftA,
+                               const I lda,
                                const rocblas_stride strideA,
-                               rocblas_int* info,
-                               const rocblas_int batch_count)
+                               INFO* info,
+                               const I batch_count)
 {
     ROCSOLVER_ENTER("potf2_kernel_small", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
                     "bc:", batch_count);
@@ -413,8 +413,9 @@ rocblas_status potf2_run_small(rocblas_handle handle,
     size_t lmemsize = sizeof(T) * (n * (n + 1)) / 2;
 
     bool const is_upper = (uplo == rocblas_fill_upper);
-    ROCSOLVER_LAUNCH_KERNEL((potf2_kernel_small<T, U>), dim3(1, 1, batch_count), dim3(BS2, BS2, 1),
-                            lmemsize, stream, is_upper, n, A, shiftA, lda, strideA, info);
+    ROCSOLVER_LAUNCH_KERNEL((potf2_kernel_small<T, I, INFO, U>), dim3(1, 1, batch_count),
+                            dim3(BS2, BS2, 1), lmemsize, stream, is_upper, n, A, shiftA, lda,
+                            strideA, info);
 
     return rocblas_status_success;
 }
@@ -423,10 +424,9 @@ rocblas_status potf2_run_small(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_POTF2_SMALL(T, U)                                                  \
-    template rocblas_status potf2_run_small<T, U>(                                     \
-        rocblas_handle handle, const rocblas_fill uplo, const rocblas_int n, U A,      \
-        const rocblas_int shiftA, const rocblas_int lda, const rocblas_stride strideA, \
-        rocblas_int* info, const rocblas_int batch_count)
+#define INSTANTIATE_POTF2_SMALL(T, I, INFO, U)                                                       \
+    template rocblas_status potf2_run_small<T, I, INFO, U>(                                          \
+        rocblas_handle handle, const rocblas_fill uplo, const I n, U A, const rocblas_stride shiftA, \
+        const I lda, const rocblas_stride strideA, INFO* info, const I batch_count)
 
 ROCSOLVER_END_NAMESPACE
