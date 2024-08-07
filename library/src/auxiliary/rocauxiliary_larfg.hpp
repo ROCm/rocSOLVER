@@ -135,17 +135,16 @@ rocblas_status rocsolver_larfg_getMemorySize(const I n,
     // if small size no workspace needed
     if(n <= LARFG_SSKER_MAX_N)
     {
+        *size_norms = 0;
+        *size_work = 0;
+
         // TODO: Some architectures have failures in sygvx with small-size kernels enabled, more investigation needed
         int device;
         HIP_CHECK(hipGetDevice(&device));
         hipDeviceProp_t deviceProperties;
         HIP_CHECK(hipGetDeviceProperties(&deviceProperties, device));
         if(deviceProperties.warpSize >= 64)
-        {
-            *size_norms = 0;
-            *size_work = 0;
             return rocblas_status_success;
-        }
     }
 
     // size of space to store norms
