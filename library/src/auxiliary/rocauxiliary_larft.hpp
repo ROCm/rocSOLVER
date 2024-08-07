@@ -247,6 +247,41 @@ ROCSOLVER_KERNEL void set_tau(const rocblas_int k, T* tau, const rocblas_stride 
     }
 }
 
+template <typename T, typename I, std::enable_if_t<!std::is_same_v<T, rocblas_float_complex>, int> = 0>
+bool larft_do_l3(const I dim,
+                 const rocblas_direct direct,
+                 const rocblas_storev storev)
+{   
+    I value[] = {LARFT_L3_DEFAULT};
+    I intervals[] = {LARFT_L3_INTERVALS_DEFAULT};
+    I max = LARFT_L3_NUM_INTERVALS_DEFAULT;
+
+    return value[get_index(intervals, max, dim)];
+}
+
+template <typename T, typename I, std::enable_if_t<std::is_same_v<T, rocblas_float_complex>, int> = 0>
+bool larft_do_l3(const I dim,
+                 const rocblas_direct direct,
+                 const rocblas_storev storev)
+{
+    if(storev == rocblas_column_wise)
+    {
+        I value[] = {LARFT_L3_C_COL};
+        I intervals[] = {LARFT_L3_INTERVALS_C_COL};
+        I max = LARFT_L3_NUM_INTERVALS_C_COL;
+
+        return value[get_index(intervals, max, dim)];
+    }
+    else
+    {
+        I value[] = {LARFT_L3_DEFAULT};
+        I intervals[] = {LARFT_L3_INTERVALS_DEFAULT};
+        I max = LARFT_L3_NUM_INTERVALS_DEFAULT;
+
+        return value[get_index(intervals, max, dim)];
+    }
+}
+
 template <bool BATCHED, typename T>
 void rocsolver_larft_getMemorySize(const rocblas_int n,
                                    const rocblas_int k,
@@ -355,18 +390,15 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     rocblas_fill uplo;
     rocblas_operation trans;
 
-    const rocblas_int u1_n = std::min(n, k);
-    const rocblas_int u2_n = std::max(n - u1_n, 0);
+    const bool call_l3 = larft_do_l3<T>(n, direct, storev) && n > k;
 
-    const bool call_xrk = u2_n > 0;
+    const rocblas_int u1_n = call_l3 ? k : n;
+    const rocblas_int u2_n = call_l3 ? n - k : 0;
 
-    if(call_xrk)
+    if(call_l3)
     {
         if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
         {
-            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
-            //                     shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
             rocblasCall_gemm<T>(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k, k, u2_n, scalars + 2,
                                 V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV,
                                 V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV,
@@ -374,9 +406,6 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_column_wise)
         {
-            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_conjugate_transpose, k, u2_n, (real_t<T>*)(scalars + 2), V,
-            //                     shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
             rocblasCall_gemm<T>(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k, k, u2_n, scalars + 2,
                                 V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
                                 V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
@@ -384,9 +413,6 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         }
         else if(direct == rocblas_forward_direction && storev == rocblas_row_wise)
         {
-            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_upper, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
-            //                     shiftV + idx2D(0, u1_n, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
             rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k, k, u2_n, scalars + 2,
                                 V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV,
                                 V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV,
@@ -394,9 +420,6 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_row_wise)
         {
-            // rocblasCall_syrk_herk<T>(handle, rocblas_fill_lower, rocblas_operation_none, k, u2_n, (real_t<T>*)(scalars + 2), V,
-            //                     shiftV + idx2D(0, 0, ldv), ldv, strideV, (real_t<T>*)(scalars + 1), F,
-            //                     idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
             rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k, k, u2_n, scalars + 2,
                                 V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
                                 V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
@@ -410,7 +433,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     rocblas_int blocks = (k - 1) / 32 + 1;
     ROCSOLVER_LAUNCH_KERNEL(set_triangular, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
                             stream, n, k, V, shiftV, ldv, strideV, tau, strideT, F, ldf, strideF,
-                            direct, storev, call_xrk);
+                            direct, storev, call_l3);
     ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
                             strideT);
 
