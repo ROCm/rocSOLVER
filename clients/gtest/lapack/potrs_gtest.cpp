@@ -33,7 +33,8 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, vector<int>> potrs_tuple;
+template <typename I>
+using potrs_tuple = tuple<vector<I>, vector<I>>;
 
 // each A_range vector is a {N, lda, ldb};
 
@@ -67,6 +68,28 @@ const vector<vector<int>> matrix_sizeB_range = {
     {20, 1},
     {30, 1},
 };
+const vector<vector<int64_t>> matrix_sizeA_range_64 = {
+    // quick return
+    {0, 1, 1},
+    // invalid
+    {-1, 1, 1},
+    {10, 2, 10},
+    {10, 10, 2},
+    /// normal (valid) samples
+    {20, 20, 20},
+    {30, 50, 30},
+    {30, 30, 50},
+    {50, 60, 60}};
+const vector<vector<int64_t>> matrix_sizeB_range_64 = {
+    // quick return
+    {0, 0},
+    // invalid
+    {-1, 0},
+    // normal (valid) samples
+    {10, 0},
+    {20, 1},
+    {30, 1},
+};
 
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_sizeA_range
@@ -74,18 +97,24 @@ const vector<vector<int>> large_matrix_sizeA_range
 const vector<vector<int>> large_matrix_sizeB_range = {
     {100, 0}, {150, 0}, {200, 1}, {524, 1}, {1000, 0},
 };
+const vector<vector<int64_t>> large_matrix_sizeA_range_64
+    = {{70, 70, 100}, {192, 192, 192}, {600, 700, 645}, {1000, 1000, 1000}, {1000, 2000, 2000}};
+const vector<vector<int64_t>> large_matrix_sizeB_range_64 = {
+    {100, 0}, {150, 0}, {200, 1}, {524, 1}, {1000, 0},
+};
 
-Arguments potrs_setup_arguments(potrs_tuple tup)
+template <typename I>
+Arguments potrs_setup_arguments(potrs_tuple<I> tup)
 {
-    vector<int> matrix_sizeA = std::get<0>(tup);
-    vector<int> matrix_sizeB = std::get<1>(tup);
+    vector<I> matrix_sizeA = std::get<0>(tup);
+    vector<I> matrix_sizeB = std::get<1>(tup);
 
     Arguments arg;
 
-    arg.set<rocblas_int>("n", matrix_sizeA[0]);
-    arg.set<rocblas_int>("nrhs", matrix_sizeB[0]);
-    arg.set<rocblas_int>("lda", matrix_sizeA[1]);
-    arg.set<rocblas_int>("ldb", matrix_sizeA[2]);
+    arg.set<I>("n", matrix_sizeA[0]);
+    arg.set<I>("nrhs", matrix_sizeB[0]);
+    arg.set<I>("lda", matrix_sizeA[1]);
+    arg.set<I>("ldb", matrix_sizeA[2]);
 
     if(matrix_sizeB[1] == 0)
         arg.set<char>("uplo", 'U');
@@ -99,7 +128,8 @@ Arguments potrs_setup_arguments(potrs_tuple tup)
     return arg;
 }
 
-class POTRS : public ::TestWithParam<potrs_tuple>
+template <typename I>
+class POTRS_BASE : public ::TestWithParam<potrs_tuple<I>>
 {
 protected:
     void TearDown() override
@@ -110,14 +140,22 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = potrs_setup_arguments(GetParam());
+        Arguments arg = potrs_setup_arguments(this->GetParam());
 
-        if(arg.peek<rocblas_int>("n") == 0 && arg.peek<rocblas_int>("nrhs") == 0)
-            testing_potrs_bad_arg<BATCHED, STRIDED, T>();
+        if(arg.peek<I>("n") == 0 && arg.peek<I>("nrhs") == 0)
+            testing_potrs_bad_arg<BATCHED, STRIDED, T, I>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
-        testing_potrs<BATCHED, STRIDED, T>(arg);
+        testing_potrs<BATCHED, STRIDED, T, I>(arg);
     }
+};
+
+class POTRS : public POTRS_BASE<rocblas_int>
+{
+};
+
+class POTRS_64 : public POTRS_BASE<int64_t>
+{
 };
 
 // non-batch tests
@@ -138,6 +176,26 @@ TEST_P(POTRS, __float_complex)
 }
 
 TEST_P(POTRS, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(POTRS_64, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(POTRS_64, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(POTRS_64, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(POTRS_64, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -164,6 +222,26 @@ TEST_P(POTRS, batched__double_complex)
     run_tests<true, true, rocblas_double_complex>();
 }
 
+TEST_P(POTRS_64, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(POTRS_64, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(POTRS_64, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(POTRS_64, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
 // strided_batched tests
 
 TEST_P(POTRS, strided_batched__float)
@@ -186,14 +264,43 @@ TEST_P(POTRS, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+TEST_P(POTRS_64, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(POTRS_64, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(POTRS_64, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(POTRS_64, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 // daily_lapack tests normal execution with medium to large sizes
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          POTRS,
                          Combine(ValuesIn(large_matrix_sizeA_range),
                                  ValuesIn(large_matrix_sizeB_range)));
 
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         POTRS_64,
+                         Combine(ValuesIn(large_matrix_sizeA_range_64),
+                                 ValuesIn(large_matrix_sizeB_range_64)));
+
 // checkin_lapack tests normal execution with small sizes, invalid sizes,
 // quick returns, and corner cases
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          POTRS,
                          Combine(ValuesIn(matrix_sizeA_range), ValuesIn(matrix_sizeB_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         POTRS_64,
+                         Combine(ValuesIn(matrix_sizeA_range_64), ValuesIn(matrix_sizeB_range_64)));

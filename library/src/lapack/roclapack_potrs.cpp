@@ -29,15 +29,15 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T>
+template <typename T, typename I>
 rocblas_status rocsolver_potrs_impl(rocblas_handle handle,
                                     const rocblas_fill uplo,
-                                    const rocblas_int n,
-                                    const rocblas_int nrhs,
+                                    const I n,
+                                    const I nrhs,
                                     T* A,
-                                    const rocblas_int lda,
+                                    const I lda,
                                     T* B,
-                                    const rocblas_int ldb)
+                                    const I ldb)
 {
     ROCSOLVER_ENTER_TOP("potrs", "--uplo", uplo, "-n", n, "--nrhs", nrhs, "--lda", lda, "--ldb", ldb);
 
@@ -50,13 +50,13 @@ rocblas_status rocsolver_potrs_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
-    rocblas_int shiftB = 0;
+    rocblas_stride shiftA = 0;
+    rocblas_stride shiftB = 0;
 
     // normal (non-batched non-strided) execution
     rocblas_stride strideA = 0;
     rocblas_stride strideB = 0;
-    rocblas_int batch_count = 1;
+    I batch_count = 1;
 
     // memory workspace sizes:
     // size of workspace (for calling TRSM)
@@ -95,52 +95,120 @@ ROCSOLVER_END_NAMESPACE
  * ===========================================================================
  */
 
-extern "C" rocblas_status rocsolver_spotrs(rocblas_handle handle,
-                                           const rocblas_fill uplo,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           float* A,
-                                           const rocblas_int lda,
-                                           float* B,
-                                           const rocblas_int ldb)
+extern "C" {
+rocblas_status rocsolver_spotrs(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                float* A,
+                                const rocblas_int lda,
+                                float* B,
+                                const rocblas_int ldb)
 {
     return rocsolver::rocsolver_potrs_impl<float>(handle, uplo, n, nrhs, A, lda, B, ldb);
 }
 
-extern "C" rocblas_status rocsolver_dpotrs(rocblas_handle handle,
-                                           const rocblas_fill uplo,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           double* A,
-                                           const rocblas_int lda,
-                                           double* B,
-                                           const rocblas_int ldb)
+rocblas_status rocsolver_dpotrs(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                double* A,
+                                const rocblas_int lda,
+                                double* B,
+                                const rocblas_int ldb)
 {
     return rocsolver::rocsolver_potrs_impl<double>(handle, uplo, n, nrhs, A, lda, B, ldb);
 }
 
-extern "C" rocblas_status rocsolver_cpotrs(rocblas_handle handle,
-                                           const rocblas_fill uplo,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           rocblas_float_complex* A,
-                                           const rocblas_int lda,
-                                           rocblas_float_complex* B,
-                                           const rocblas_int ldb)
+rocblas_status rocsolver_cpotrs(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                rocblas_float_complex* A,
+                                const rocblas_int lda,
+                                rocblas_float_complex* B,
+                                const rocblas_int ldb)
 {
     return rocsolver::rocsolver_potrs_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A, lda, B,
                                                                   ldb);
 }
 
-extern "C" rocblas_status rocsolver_zpotrs(rocblas_handle handle,
-                                           const rocblas_fill uplo,
-                                           const rocblas_int n,
-                                           const rocblas_int nrhs,
-                                           rocblas_double_complex* A,
-                                           const rocblas_int lda,
-                                           rocblas_double_complex* B,
-                                           const rocblas_int ldb)
+rocblas_status rocsolver_zpotrs(rocblas_handle handle,
+                                const rocblas_fill uplo,
+                                const rocblas_int n,
+                                const rocblas_int nrhs,
+                                rocblas_double_complex* A,
+                                const rocblas_int lda,
+                                rocblas_double_complex* B,
+                                const rocblas_int ldb)
 {
     return rocsolver::rocsolver_potrs_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A, lda, B,
                                                                    ldb);
+}
+
+rocblas_status rocsolver_spotrs_64(rocblas_handle handle,
+                                   const rocblas_fill uplo,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   float* A,
+                                   const int64_t lda,
+                                   float* B,
+                                   const int64_t ldb)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_impl<float>(handle, uplo, n, nrhs, A, lda, B, ldb);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_dpotrs_64(rocblas_handle handle,
+                                   const rocblas_fill uplo,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   double* A,
+                                   const int64_t lda,
+                                   double* B,
+                                   const int64_t ldb)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_impl<double>(handle, uplo, n, nrhs, A, lda, B, ldb);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_cpotrs_64(rocblas_handle handle,
+                                   const rocblas_fill uplo,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   rocblas_float_complex* A,
+                                   const int64_t lda,
+                                   rocblas_float_complex* B,
+                                   const int64_t ldb)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_impl<rocblas_float_complex>(handle, uplo, n, nrhs, A, lda, B,
+                                                                  ldb);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_zpotrs_64(rocblas_handle handle,
+                                   const rocblas_fill uplo,
+                                   const int64_t n,
+                                   const int64_t nrhs,
+                                   rocblas_double_complex* A,
+                                   const int64_t lda,
+                                   rocblas_double_complex* B,
+                                   const int64_t ldb)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potrs_impl<rocblas_double_complex>(handle, uplo, n, nrhs, A, lda, B,
+                                                                   ldb);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
 }

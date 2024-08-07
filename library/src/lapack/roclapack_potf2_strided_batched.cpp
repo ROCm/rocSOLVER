@@ -29,15 +29,15 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle,
                                                     const rocblas_fill uplo,
-                                                    const rocblas_int n,
+                                                    const I n,
                                                     U A,
-                                                    const rocblas_int lda,
+                                                    const I lda,
                                                     const rocblas_stride strideA,
-                                                    rocblas_int* info,
-                                                    const rocblas_int batch_count)
+                                                    I* info,
+                                                    const I batch_count)
 {
     ROCSOLVER_ENTER_TOP("potf2_strided_batched", "--uplo", uplo, "-n", n, "--lda", lda, "--strideA",
                         strideA, "--batch_count", batch_count);
@@ -51,7 +51,7 @@ rocblas_status rocsolver_potf2_strided_batched_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftA = 0;
+    rocblas_stride shiftA = 0;
 
     // memory workspace sizes:
     // size for constants in rocblas calls
@@ -143,5 +143,73 @@ rocblas_status rocsolver_zpotf2_strided_batched(rocblas_handle handle,
 {
     return rocsolver::rocsolver_potf2_strided_batched_impl<rocblas_double_complex>(
         handle, uplo, n, A, lda, strideA, info, batch_count);
+}
+
+rocblas_status rocsolver_spotf2_strided_batched_64(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const int64_t n,
+                                                   float* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potf2_strided_batched_impl<float>(handle, uplo, n, A, lda, strideA,
+                                                                  info, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_dpotf2_strided_batched_64(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const int64_t n,
+                                                   double* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potf2_strided_batched_impl<double>(handle, uplo, n, A, lda, strideA,
+                                                                   info, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_cpotf2_strided_batched_64(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const int64_t n,
+                                                   rocblas_float_complex* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potf2_strided_batched_impl<rocblas_float_complex>(
+        handle, uplo, n, A, lda, strideA, info, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_zpotf2_strided_batched_64(rocblas_handle handle,
+                                                   const rocblas_fill uplo,
+                                                   const int64_t n,
+                                                   rocblas_double_complex* A,
+                                                   const int64_t lda,
+                                                   const rocblas_stride strideA,
+                                                   int64_t* info,
+                                                   const int64_t batch_count)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_potf2_strided_batched_impl<rocblas_double_complex>(
+        handle, uplo, n, A, lda, strideA, info, batch_count);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 }

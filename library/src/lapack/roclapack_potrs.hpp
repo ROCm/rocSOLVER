@@ -38,16 +38,16 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T>
+template <typename T, typename I>
 rocblas_status rocsolver_potrs_argCheck(rocblas_handle handle,
                                         const rocblas_fill uplo,
-                                        const rocblas_int n,
-                                        const rocblas_int nrhs,
-                                        const rocblas_int lda,
-                                        const rocblas_int ldb,
+                                        const I n,
+                                        const I nrhs,
+                                        const I lda,
+                                        const I ldb,
                                         T A,
                                         T B,
-                                        const rocblas_int batch_count = 1)
+                                        const I batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -70,10 +70,10 @@ rocblas_status rocsolver_potrs_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <bool BATCHED, bool STRIDED, typename T>
-void rocsolver_potrs_getMemorySize(const rocblas_int n,
-                                   const rocblas_int nrhs,
-                                   const rocblas_int batch_count,
+template <bool BATCHED, bool STRIDED, typename T, typename I>
+void rocsolver_potrs_getMemorySize(const I n,
+                                   const I nrhs,
+                                   const I batch_count,
                                    size_t* size_work1,
                                    size_t* size_work2,
                                    size_t* size_work3,
@@ -108,20 +108,20 @@ void rocsolver_potrs_getMemorySize(const rocblas_int n,
     *size_work4 = std::max(size_work4_temp1, size_work4_temp2);
 }
 
-template <bool BATCHED, bool STRIDED, typename T, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_potrs_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
-                                        const rocblas_int n,
-                                        const rocblas_int nrhs,
+                                        const I n,
+                                        const I nrhs,
                                         U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
+                                        const rocblas_stride shiftA,
+                                        const I lda,
                                         const rocblas_stride strideA,
                                         U B,
-                                        const rocblas_int shiftB,
-                                        const rocblas_int ldb,
+                                        const rocblas_stride shiftB,
+                                        const I ldb,
                                         const rocblas_stride strideB,
-                                        const rocblas_int batch_count,
+                                        const I batch_count,
                                         void* work1,
                                         void* work2,
                                         void* work3,

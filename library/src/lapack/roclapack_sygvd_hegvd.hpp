@@ -130,11 +130,11 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
                                               const rocblas_fill uplo,
                                               const rocblas_int n,
                                               U A,
-                                              const rocblas_int shiftA,
+                                              const rocblas_stride shiftA,
                                               const rocblas_int lda,
                                               const rocblas_stride strideA,
                                               U B,
-                                              const rocblas_int shiftB,
+                                              const rocblas_stride shiftB,
                                               const rocblas_int ldb,
                                               const rocblas_stride strideB,
                                               S* D,
@@ -186,9 +186,9 @@ rocblas_status rocsolver_sygvd_hegvd_template(rocblas_handle handle,
     T one = 1;
 
     // perform Cholesky factorization of B
-    rocsolver_potrf_template<BATCHED, STRIDED, T, S>(handle, uplo, n, B, shiftB, ldb, strideB, info,
-                                                     batch_count, scalars, work1, work2, work3,
-                                                     work4, (T*)pivots_workArr, iinfo, optim_mem);
+    rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, rocblas_int, S>(
+        handle, uplo, n, B, shiftB, ldb, strideB, info, batch_count, scalars, work1, work2, work3,
+        work4, (T*)pivots_workArr, iinfo, optim_mem);
 
     /** (TODO: Strictly speaking, computations should stop here is B is not positive definite.
         A should not be modified in this case as no eigenvalues or eigenvectors can be computed.

@@ -39,16 +39,16 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+template <typename T, typename I, typename INFO, typename U, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
-                                     const rocblas_int shiftA,
-                                     const rocblas_int strideA,
+                                     const rocblas_stride shiftA,
+                                     const rocblas_stride strideA,
                                      const size_t loc,
-                                     const rocblas_int j,
+                                     const I j,
                                      T* res,
-                                     rocblas_int* info)
+                                     INFO* info)
 {
-    int id = hipBlockIdx_x;
+    I id = hipBlockIdx_x;
 
     T* M = load_ptr_batch<T>(A, id, shiftA, strideA);
     T t = M[loc] - res[id];
@@ -70,16 +70,16 @@ ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
     }
 }
 
-template <typename T, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+template <typename T, typename I, typename INFO, typename U, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
-                                     const rocblas_int shiftA,
-                                     const rocblas_int strideA,
+                                     const rocblas_stride shiftA,
+                                     const rocblas_stride strideA,
                                      const size_t loc,
-                                     const rocblas_int j,
+                                     const I j,
                                      T* res,
-                                     rocblas_int* info)
+                                     INFO* info)
 {
-    int id = hipBlockIdx_x;
+    I id = hipBlockIdx_x;
 
     T* M = load_ptr_batch<T>(A, id, shiftA, strideA);
     auto t = M[loc].real() - res[id].real();
@@ -101,9 +101,9 @@ ROCSOLVER_KERNEL void sqrtDiagOnward(U A,
     }
 }
 
-template <typename T>
-void rocsolver_potf2_getMemorySize(const rocblas_int n,
-                                   const rocblas_int batch_count,
+template <typename T, typename I>
+void rocsolver_potf2_getMemorySize(const I n,
+                                   const I batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work,
                                    size_t* size_pivots)
@@ -129,21 +129,21 @@ void rocsolver_potf2_getMemorySize(const rocblas_int n,
 
     // size of workspace
     // TODO: replace with rocBLAS call
-    constexpr int ROCBLAS_DOT_NB = 512;
+    constexpr I ROCBLAS_DOT_NB = 512;
     *size_work = sizeof(T) * ((n - 1) / ROCBLAS_DOT_NB + 2) * batch_count;
 
     // size of array to store pivots
     *size_pivots = sizeof(T) * batch_count;
 }
 
-template <typename T>
+template <typename T, typename I, typename INFO>
 rocblas_status rocsolver_potf2_potrf_argCheck(rocblas_handle handle,
                                               const rocblas_fill uplo,
-                                              const rocblas_int n,
-                                              const rocblas_int lda,
+                                              const I n,
+                                              const I lda,
                                               T A,
-                                              rocblas_int* info,
-                                              const rocblas_int batch_count = 1)
+                                              INFO* info,
+                                              const I batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -166,16 +166,16 @@ rocblas_status rocsolver_potf2_potrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename INFO, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         const rocblas_fill uplo,
-                                        const rocblas_int n,
+                                        const I n,
                                         U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
+                                        const rocblas_stride shiftA,
+                                        const I lda,
                                         const rocblas_stride strideA,
-                                        rocblas_int* info,
-                                        const rocblas_int batch_count,
+                                        INFO* info,
+                                        const I batch_count,
                                         T* scalars,
                                         T* work,
                                         T* pivots)
@@ -190,7 +190,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
+    I blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
@@ -222,21 +222,21 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
         if(uplo == rocblas_fill_upper)
         {
             // Compute the Cholesky factorization A = U'*U.
-            for(rocblas_int j = 0; j < n; ++j)
+            for(I j = 0; j < n; ++j)
             {
                 // Compute U(J,J) and test for non-positive-definiteness.
                 rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(0, j, lda), 1, strideA, A,
                                             shiftA + idx2D(0, j, lda), 1, strideA, batch_count,
                                             pivots, work);
 
-                ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
-                                        shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
+                ROCSOLVER_LAUNCH_KERNEL((sqrtDiagOnward<T, I>), dim3(batch_count), dim3(1), 0, stream,
+                                        A, shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
 
                 // Compute elements J+1:N of row J
                 if(j < n - 1)
                 {
                     if(COMPLEX)
-                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), 1,
+                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), (I)1,
                                                     strideA, batch_count);
 
                     rocblasCall_gemv<T>(handle, rocblas_operation_transpose, j, n - j - 1, scalars,
@@ -246,7 +246,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                         nullptr);
 
                     if(COMPLEX)
-                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), 1,
+                        rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(0, j, lda), (I)1,
                                                     strideA, batch_count);
 
                     rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A,
@@ -257,15 +257,15 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
         else
         {
             // Compute the Cholesky factorization A = L'*L.
-            for(rocblas_int j = 0; j < n; ++j)
+            for(I j = 0; j < n; ++j)
             {
                 // Compute L(J,J) and test for non-positive-definiteness.
                 rocblasCall_dot<COMPLEX, T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
                                             A, shiftA + idx2D(j, 0, lda), lda, strideA, batch_count,
                                             pivots, work);
 
-                ROCSOLVER_LAUNCH_KERNEL(sqrtDiagOnward<T>, dim3(batch_count), dim3(1), 0, stream, A,
-                                        shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
+                ROCSOLVER_LAUNCH_KERNEL((sqrtDiagOnward<T, I>), dim3(batch_count), dim3(1), 0, stream,
+                                        A, shiftA, strideA, idx2D(j, j, lda), j, pivots, info);
 
                 // Compute elements J+1:N of column J
                 if(j < n - 1)
@@ -285,7 +285,7 @@ rocblas_status rocsolver_potf2_template(rocblas_handle handle,
                                                     strideA, batch_count);
 
                     rocblasCall_scal<T>(handle, n - j - 1, pivots, 1, A,
-                                        shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count);
+                                        shiftA + idx2D(j + 1, j, lda), (I)1, strideA, batch_count);
                 }
             }
         }
