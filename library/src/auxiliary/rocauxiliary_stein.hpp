@@ -35,6 +35,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_prng.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -112,7 +113,7 @@ __device__ void run_stein(const int tid,
                           S ssfmin)
 {
     __shared__ rocblas_int _info;
-    rocblas_int i, j, j1 = 0, b1, bn, blksize, gpind;
+    rocblas_int i, j, j1 = 0, b1, bn, blksize, gpind, seed;
     S scl, onenrm, ortol, stpcrt, xj, xjm;
 
     // zero info and ifail
@@ -122,6 +123,9 @@ __device__ void run_stein(const int tid,
         for(i = tid; i < nev; i += MAX_THDS)
             ifail[i] = 0;
 
+    auto normalize = [](rocblas_int value, rocblas_int max) -> S {
+        return static_cast<S>(static_cast<double>(value) / max);
+    };
     // iterate over submatrix blocks
     for(rocblas_int nblk = 0; nblk < iblock[nev - 1]; nblk++)
     {
@@ -170,9 +174,21 @@ __device__ void run_stein(const int tid,
                 rocblas_int nrmchk = 0;
 
                 // initialize starting eigenvector
-                // TODO: how to make it random?
+
+                // deterministic seed, varies with thread ids and with each new computed eigenvalue
+                seed = tid + (j + nblk * nev) * MAX_THDS + 1;
+
+                // rocSOLVER's prng can be initialized with one or two seeds (better results are achieved if
+                // two, independent, seeds are used).  The two seeds used here are not independent, they just spread
+                // the first pseudo-random number each thread computes more evenly.
+                rocsolver_int_prng<rocblas_int> prng(
+                    seed, rocsolver_int_prng<rocblas_int>::max() + 1 - seed);
+
                 for(i = tid; i < blksize; i += MAX_THDS)
-                    work[i] = (i == j - j1 ? S(1) : S(-1) / (blksize - 1));
+                {
+                    // work[i] lies on the interval [0, 1]
+                    work[i] = normalize(prng(), prng.max());
+                }
 
                 // copy the matrix so it won't be destroyed by factorization
                 for(i = tid; i < blksize - 1; i += MAX_THDS)
@@ -238,6 +254,7 @@ __device__ void run_stein(const int tid,
                 nrm2<MAX_THDS, S>(tid, blksize, work, 1, sval2);
                 __syncthreads();
                 scl = (work[sidx[0] - 1] >= 0 ? S(1) / sval2[0] : S(-1) / sval2[0]);
+                __syncthreads();
                 for(i = tid; i < blksize; i += MAX_THDS) // <- scal
                     work[i] = work[i] * scl;
                 __syncthreads();
