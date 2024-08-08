@@ -812,7 +812,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
         ps = psA + p1;
 
         // determine ideal number of sub-blocks in split-block
-        levs = stedc_num_levels<MODE>(bs);
+        //        levs = stedc_num_levels<MODE>(bs);
         blks = 1 << levs;
 
         // 1. DIVIDE PHASE
@@ -945,7 +945,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
         ps = psA + p1;
 
         // determine ideal number of sub-blocks
-        levs = stedc_num_levels<rocsolver_stedc_mode_qr>(bs);
+        //        levs = stedc_num_levels<rocsolver_stedc_mode_qr>(bs);
         blks = 1 << levs;
 
         // 2. SOLVE PHASE
@@ -1087,7 +1087,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
         // determine ideal number of sub-blocks
         // tn is the number of thread-groups needed
-        levs = stedc_num_levels<MODE>(bs);
+        //        levs = stedc_num_levels<MODE>(bs);
         blks = levs - 1 - k;
         tn = (blks < 0) ? 0 : 1 << blks;
 
@@ -1281,128 +1281,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     dd++;
                 }
             }
-            /*            __syncthreads();
-
-            // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
-            // This will allow us to find initial intervals for eigenvalue guesses
-            rocblas_int tsz = (bs - 1) / tn + 1;
-            for(int i = 0; i < tsz; ++i)
-            {
-                if(i < dd)
-                {
-                    if(i % 2 == 0)
-                    {
-                        for(int j = tidb; j < dd / 2; j += hipBlockDim_x)
-                        {
-                            if(tmpd[2 * j] > tmpd[2 * j + 1])
-                            {
-                                valf = tmpd[2 * j];
-                                tmpd[2 * j] = tmpd[2 * j + 1];
-                                tmpd[2 * j + 1] = valf;
-                                valf = zz[2 * j];
-                                zz[2 * j] = zz[2 * j + 1];
-                                zz[2 * j + 1] = valf;
-                                bd = per[2 * j];
-                                per[2 * j] = per[2 * j + 1];
-                                per[2 * j + 1] = bd;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for(int j = tidb; j < (dd - 1) / 2; j += hipBlockDim_x)
-                        {
-                            if(tmpd[2 * j + 1] > tmpd[2 * j + 2])
-                            {
-                                valf = tmpd[2 * j + 1];
-                                tmpd[2 * j + 1] = tmpd[2 * j + 2];
-                                tmpd[2 * j + 2] = valf;
-                                valf = zz[2 * j + 1];
-                                zz[2 * j + 1] = zz[2 * j + 2];
-                                zz[2 * j + 2] = valf;
-                                bd = per[2 * j + 1];
-                                per[2 * j + 1] = per[2 * j + 2];
-                                per[2 * j + 2] = bd;
-                            }
-                        }
-                    }
-                }
-                __syncthreads();
-            }
-
-            // make dd copies of the non-deflated ordered diagonal elements
-            // (i.e. the poles of the secular eqn) so that the distances to the
-            // eigenvalues (D - lambda_i) are updated while computing each eigenvalue.
-            // This will prevent collapses and division by zero when an eigenvalue
-            // is too close to a pole.
-            for(int j = tidb + 1; j < sz; j += hipBlockDim_x)
-            {
-                for(int i = 0; i < dd; ++i)
-                    tmpd[i + j * n] = tmpd[i];
-            }
-
-            // finally copy over all diagonal elements in ev. ev will be overwritten
-            // by the new computed eigenvalues of the merged block
-            for(int i = tidb; i < sz; i += hipBlockDim_x)
-                ev[i] = diag[i];
-            __syncthreads();*/
-            /* ----------------------------------------------------------------- */
-
-            // 3e. Solve secular eqns, i.e. find the dd zeros
-            // corresponding to non-deflated new eigenvalues of the merged block
-            /* ----------------------------------------------------------------- */
-            // each thread will find a different zero in parallel
-            /*            S a, b;
-            for(int j = tidb; j < sz; j += hipBlockDim_x)
-            {
-                if(mask[j] == 1)
-                {
-                    // find position in the ordered array
-                    int cc = 0;
-                    valf = p < 0 ? -ev[j] : ev[j];
-                    for(int jj = 0; jj < dd; ++jj)
-                    {
-                        if(tmpd[jj + j * n] == valf)
-                            break;
-                        else
-                            cc++;
-                    }
-
-                    // computed zero will overwrite 'ev' at the corresponding position.
-                    // 'tmpd' will be updated with the distances D - lambda_i.
-                    // deflated values are not changed.
-                    rocblas_int linfo;
-                    if(cc == dd - 1)
-                        linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps,
-                                              ssfmin, ssfmax);
-                    else
-                        linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps,
-                                          ssfmin, ssfmax);
-                    if(p < 0)
-                        ev[j] *= -1;
-                }
-            }
-            __syncthreads();
-
-            // Re-scale vector Z to avoid bad numerics when an eigenvalue
-            // is too close to a pole
-            for(int i = tidb; i < dd; i += hipBlockDim_x)
-            {
-                valf = 1;
-                for(int j = 0; j < sz; ++j)
-                {
-                    if(mask[j] == 1)
-                    {
-                        valg = tmpd[i + j * n];
-                        if(p > 0)
-                            valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);
-                        else
-                            valf *= (per[i] == j) ? valg : -valg / (diag[per[i]] - diag[j]);
-                    }
-                }
-                valf = sqrt(-valf);
-                zz[i] = zz[i] < 0 ? -valf : valf;
-            }*/
             /* ----------------------------------------------------------------- */
         }
     }
@@ -1513,7 +1391,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
         // determine ideal number of sub-blocks
         // tn is the number of thread-groups needed
-        levs = stedc_num_levels<MODE>(bs);
+        //        levs = stedc_num_levels<MODE>(bs);
         blks = levs - 1 - k;
         tn = (blks < 0) ? 0 : 1 << blks;
         blks = 1 << levs;
@@ -1825,7 +1703,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         ps = psA + p1;
 
         // determine ideal number of sub-blocks
-        levs = stedc_num_levels<MODE>(bs);
+        //        levs = stedc_num_levels<MODE>(bs);
         blks = 1 << levs;
 
         // tn is max number of vectors in each sub-block
@@ -2061,7 +1939,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         ps = psA + p1;
 
         // determine ideal number of sub-blocks
-        levs = stedc_num_levels<MODE>(bs);
+        //        levs = stedc_num_levels<MODE>(bs);
         blks = 1 << levs;
 
         // tn is max number of vectors in each sub-block
@@ -2489,8 +2367,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 0, stream, n, n, tempvect, 0, ldt, strideT);
 
         // find max number of sub-blocks to consider during the divide phase
-        rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
-        //rocblas_int maxlevs = atoi(getenv("LEVELS"));
+        //        rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
+        rocblas_int maxlevs = atoi(getenv("LEVELS"));
         rocblas_int maxblks = 1 << maxlevs;
 
         //printf("%d %d\n\n",maxlevs,maxblks);
