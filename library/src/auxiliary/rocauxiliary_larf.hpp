@@ -34,6 +34,7 @@
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -58,6 +59,23 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
+    // size of array of pointers to workspace
+    if(BATCHED)
+        *size_workArr = sizeof(T*) * batch_count;
+    else
+        *size_workArr = 0;
+
+    // if small size no workspace needed
+    bool ssker_left
+        = (side == rocblas_side_left && m <= LARF_SSKER_MAX_DIM && n <= LARF_SSKER_MIN_DIM);
+    bool ssker_right
+        = (side == rocblas_side_right && m <= LARF_SSKER_MIN_DIM && n <= LARF_SSKER_MAX_DIM);
+    if(ssker_left || ssker_right)
+    {
+        *size_Abyx = 0;
+        return;
+    }
+
     // size of temporary result in Householder matrix generation
     if(side == rocblas_side_left)
         *size_Abyx = n;
@@ -66,12 +84,6 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
     else
         *size_Abyx = std::max(m, n);
     *size_Abyx *= sizeof(T) * batch_count;
-
-    // size of array of pointers to workspace
-    if(BATCHED)
-        *size_workArr = sizeof(T*) * batch_count;
-    else
-        *size_workArr = 0;
 }
 
 template <typename T, typename I, typename U>
@@ -136,6 +148,17 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    // if n is small, use small-size kernel
+    bool ssker_left
+        = (side == rocblas_side_left && m <= LARF_SSKER_MAX_DIM && n <= LARF_SSKER_MIN_DIM);
+    bool ssker_right
+        = (side == rocblas_side_right && m <= LARF_SSKER_MIN_DIM && n <= LARF_SSKER_MAX_DIM);
+    if(ssker_left || ssker_right)
+    {
+        return larf_run_small(handle, side, m, n, x, shiftx, incx, stridex, alpha, stridep, A,
+                              shiftA, lda, stridea, batch_count);
+    }
 
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
