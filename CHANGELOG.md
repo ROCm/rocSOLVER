@@ -10,9 +10,13 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - LARFG_64
     - GEQR2_64 (with batched and strided\_batched versions)
     - GEQRF_64 (with batched and strided\_batched versions)
+    - POTF2_64 (with batched and strided\_batched versions)
+    - POTRF_64 (with batched and strided\_batched versions)
+    - POTRS_64 (with batched and strided\_batched versions)
 
 ### Optimized
 - Improved performanced of LARFG, LARF, and downstream functions such as GEQR2 and GEQRF on wave64 architectures
+- Improved the performance of BDSQR and GESVD
 
 ### Changed
 - The rocsparse library is now an optional dependency at runtime. If rocsparse
@@ -51,6 +55,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Fixed
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
+- Fixed synchronization issue in STEIN.
 
 ### Known Issues
 - A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for

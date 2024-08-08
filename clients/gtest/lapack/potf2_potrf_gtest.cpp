@@ -33,7 +33,8 @@ using ::testing::Values;
 using ::testing::ValuesIn;
 using namespace std;
 
-typedef std::tuple<vector<int>, printable_char> potrf_tuple;
+template <typename I>
+using potrf_tuple = tuple<vector<I>, printable_char>;
 
 // each size_range vector is a {N, lda, singular}
 // if singular = 1, then the used matrix for the tests is not positive definite
@@ -58,20 +59,37 @@ const vector<vector<int>> matrix_size_range = {
     {50, 50, 1},
     {70, 80, 0}};
 
+const vector<vector<int64_t>> matrix_size_range_64 = {
+    // quick return
+    {0, 1, 0},
+    // invalid
+    {-1, 1, 0},
+    {10, 2, 0},
+    // normal (valid) samples
+    {10, 10, 1},
+    {20, 30, 0},
+    {50, 50, 1},
+    {70, 80, 0}};
+
 // for daily_lapack tests
 const vector<vector<int>> large_matrix_size_range = {
     {192, 192, 0}, {640, 960, 1}, {1000, 1000, 0}, {1024, 1024, 1}, {2000, 2000, 0},
 };
 
-Arguments potrf_setup_arguments(potrf_tuple tup)
+const vector<vector<int64_t>> large_matrix_size_range_64 = {
+    {192, 192, 0}, {640, 960, 1}, {1000, 1000, 0}, {1024, 1024, 1}, {2000, 2000, 0},
+};
+
+template <typename I>
+Arguments potrf_setup_arguments(potrf_tuple<I> tup)
 {
-    vector<int> matrix_size = std::get<0>(tup);
+    vector<I> matrix_size = std::get<0>(tup);
     char uplo = std::get<1>(tup);
 
     Arguments arg;
 
-    arg.set<rocblas_int>("n", matrix_size[0]);
-    arg.set<rocblas_int>("lda", matrix_size[1]);
+    arg.set<I>("n", matrix_size[0]);
+    arg.set<I>("lda", matrix_size[1]);
 
     arg.set<char>("uplo", uplo);
 
@@ -83,8 +101,8 @@ Arguments potrf_setup_arguments(potrf_tuple tup)
     return arg;
 }
 
-template <bool BLOCKED>
-class POTF2_POTRF : public ::TestWithParam<potrf_tuple>
+template <bool BLOCKED, typename I>
+class POTF2_POTRF : public ::TestWithParam<potrf_tuple<I>>
 {
 protected:
     void TearDown() override
@@ -95,25 +113,33 @@ protected:
     template <bool BATCHED, bool STRIDED, typename T>
     void run_tests()
     {
-        Arguments arg = potrf_setup_arguments(GetParam());
+        Arguments arg = potrf_setup_arguments(this->GetParam());
 
-        if(arg.peek<char>("uplo") == 'L' && arg.peek<rocblas_int>("n") == 0)
-            testing_potf2_potrf_bad_arg<BATCHED, STRIDED, BLOCKED, T>();
+        if(arg.peek<char>("uplo") == 'L' && arg.peek<I>("n") == 0)
+            testing_potf2_potrf_bad_arg<BATCHED, STRIDED, BLOCKED, T, I>();
 
         arg.batch_count = (BATCHED || STRIDED ? 3 : 1);
         if(arg.singular == 1)
-            testing_potf2_potrf<BATCHED, STRIDED, BLOCKED, T>(arg);
+            testing_potf2_potrf<BATCHED, STRIDED, BLOCKED, T, I>(arg);
 
         arg.singular = 0;
-        testing_potf2_potrf<BATCHED, STRIDED, BLOCKED, T>(arg);
+        testing_potf2_potrf<BATCHED, STRIDED, BLOCKED, T, I>(arg);
     }
 };
 
-class POTF2 : public POTF2_POTRF<false>
+class POTF2 : public POTF2_POTRF<false, rocblas_int>
 {
 };
 
-class POTRF : public POTF2_POTRF<true>
+class POTRF : public POTF2_POTRF<true, rocblas_int>
+{
+};
+
+class POTF2_64 : public POTF2_POTRF<false, int64_t>
+{
+};
+
+class POTRF_64 : public POTF2_POTRF<true, int64_t>
 {
 };
 
@@ -139,6 +165,26 @@ TEST_P(POTF2, __double_complex)
     run_tests<false, false, rocblas_double_complex>();
 }
 
+TEST_P(POTF2_64, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(POTF2_64, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(POTF2_64, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(POTF2_64, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
 TEST_P(POTRF, __float)
 {
     run_tests<false, false, float>();
@@ -155,6 +201,26 @@ TEST_P(POTRF, __float_complex)
 }
 
 TEST_P(POTRF, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(POTRF_64, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(POTRF_64, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(POTRF_64, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(POTRF_64, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -223,6 +289,26 @@ TEST_P(POTF2, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+TEST_P(POTF2_64, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(POTF2_64, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(POTF2_64, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(POTF2_64, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 TEST_P(POTRF, strided_batched__float)
 {
     run_tests<false, true, float>();
@@ -243,6 +329,26 @@ TEST_P(POTRF, strided_batched__double_complex)
     run_tests<false, true, rocblas_double_complex>();
 }
 
+TEST_P(POTRF_64, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(POTRF_64, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(POTRF_64, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(POTRF_64, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          POTF2,
                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(uplo_range)));
@@ -252,9 +358,25 @@ INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(uplo_range)));
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         POTF2_64,
+                         Combine(ValuesIn(large_matrix_size_range_64), ValuesIn(uplo_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         POTF2_64,
+                         Combine(ValuesIn(matrix_size_range_64), ValuesIn(uplo_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          POTRF,
                          Combine(ValuesIn(large_matrix_size_range), ValuesIn(uplo_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          POTRF,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(uplo_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         POTRF_64,
+                         Combine(ValuesIn(large_matrix_size_range_64), ValuesIn(uplo_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         POTRF_64,
+                         Combine(ValuesIn(matrix_size_range_64), ValuesIn(uplo_range)));

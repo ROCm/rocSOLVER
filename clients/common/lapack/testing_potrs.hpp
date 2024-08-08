@@ -35,18 +35,18 @@
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
 
-template <bool STRIDED, typename T>
+template <bool STRIDED, typename T, typename I>
 void potrs_checkBadArgs(const rocblas_handle handle,
                         const rocblas_fill uplo,
-                        const rocblas_int n,
-                        const rocblas_int nrhs,
+                        const I n,
+                        const I nrhs,
                         T dA,
-                        const rocblas_int lda,
+                        const I lda,
                         const rocblas_stride stA,
                         T dB,
-                        const rocblas_int ldb,
+                        const I ldb,
                         const rocblas_stride stB,
-                        const rocblas_int bc)
+                        const I bc)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(
@@ -87,18 +87,18 @@ void potrs_checkBadArgs(const rocblas_handle handle,
             rocblas_status_success);
 }
 
-template <bool BATCHED, bool STRIDED, typename T>
+template <bool BATCHED, bool STRIDED, typename T, typename I>
 void testing_potrs_bad_arg()
 {
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_int n = 1;
-    rocblas_int nrhs = 1;
-    rocblas_int lda = 1;
-    rocblas_int ldb = 1;
+    I n = 1;
+    I nrhs = 1;
+    I lda = 1;
+    I ldb = 1;
     rocblas_stride stA = 1;
     rocblas_stride stB = 1;
-    rocblas_int bc = 1;
+    I bc = 1;
     rocblas_fill uplo = rocblas_fill_upper;
 
     if(BATCHED)
@@ -127,18 +127,18 @@ void testing_potrs_bad_arg()
     }
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th>
+template <bool CPU, bool GPU, typename T, typename I, typename Td, typename Th>
 void potrs_initData(const rocblas_handle handle,
                     const rocblas_fill uplo,
-                    const rocblas_int n,
-                    const rocblas_int nrhs,
+                    const I n,
+                    const I nrhs,
                     Td& dA,
-                    const rocblas_int lda,
+                    const I lda,
                     const rocblas_stride stA,
                     Td& dB,
-                    const rocblas_int ldb,
+                    const I ldb,
                     const rocblas_stride stB,
-                    const rocblas_int bc,
+                    const I bc,
                     Th& hA,
                     Th& hB)
 {
@@ -148,10 +148,10 @@ void potrs_initData(const rocblas_handle handle,
         rocblas_init<T>(hB, true);
         int info;
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(I b = 0; b < bc; ++b)
         {
             // scale to ensure positive definiteness
-            for(rocblas_int i = 0; i < n; i++)
+            for(I i = 0; i < n; i++)
                 hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             // do the Cholesky factorization of matrix A w/ the reference LAPACK routine
@@ -167,18 +167,18 @@ void potrs_initData(const rocblas_handle handle,
     }
 }
 
-template <bool STRIDED, typename T, typename Td, typename Th>
+template <bool STRIDED, typename T, typename I, typename Td, typename Th>
 void potrs_getError(const rocblas_handle handle,
                     const rocblas_fill uplo,
-                    const rocblas_int n,
-                    const rocblas_int nrhs,
+                    const I n,
+                    const I nrhs,
                     Td& dA,
-                    const rocblas_int lda,
+                    const I lda,
                     const rocblas_stride stA,
                     Td& dB,
-                    const rocblas_int ldb,
+                    const I ldb,
                     const rocblas_stride stB,
-                    const rocblas_int bc,
+                    const I bc,
                     Th& hA,
                     Th& hB,
                     Th& hBRes,
@@ -194,7 +194,7 @@ void potrs_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hBRes.transfer_from(dB));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(I b = 0; b < bc; ++b)
     {
         cpu_potrs(uplo, n, nrhs, hA[b], lda, hB[b], ldb);
     }
@@ -205,25 +205,25 @@ void potrs_getError(const rocblas_handle handle,
     // using vector-induced infinity norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(I b = 0; b < bc; ++b)
     {
         err = norm_error('I', n, nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
     }
 }
 
-template <bool STRIDED, typename T, typename Td, typename Th>
+template <bool STRIDED, typename T, typename I, typename Td, typename Th>
 void potrs_getPerfData(const rocblas_handle handle,
                        const rocblas_fill uplo,
-                       const rocblas_int n,
-                       const rocblas_int nrhs,
+                       const I n,
+                       const I nrhs,
                        Td& dA,
-                       const rocblas_int lda,
+                       const I lda,
                        const rocblas_stride stA,
                        Td& dB,
-                       const rocblas_int ldb,
+                       const I ldb,
                        const rocblas_stride stB,
-                       const rocblas_int bc,
+                       const I bc,
                        Th& hA,
                        Th& hB,
                        double* gpu_time_used,
@@ -239,7 +239,7 @@ void potrs_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(I b = 0; b < bc; ++b)
         {
             cpu_potrs(uplo, n, nrhs, hA[b], lda, hB[b], ldb);
         }
@@ -283,21 +283,21 @@ void potrs_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <bool BATCHED, bool STRIDED, typename T>
+template <bool BATCHED, bool STRIDED, typename T, typename I>
 void testing_potrs(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
     char uploC = argus.get<char>("uplo");
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
-    rocblas_int lda = argus.get<rocblas_int>("lda", n);
-    rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
+    I n = argus.get<I>("n");
+    I nrhs = argus.get<I>("nrhs", n);
+    I lda = argus.get<I>("lda", n);
+    I ldb = argus.get<I>("ldb", n);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
     rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
-    rocblas_int bc = argus.batch_count;
+    I bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
     rocblas_stride stBRes = (argus.unit_check || argus.norm_check) ? stB : 0;
@@ -497,4 +497,8 @@ void testing_potrs(Arguments& argus)
 
 #define EXTERN_TESTING_POTRS(...) extern template void testing_potrs<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_POTRS, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_POTRS,
+            FOREACH_MATRIX_DATA_LAYOUT,
+            FOREACH_SCALAR_TYPE,
+            FOREACH_INT_TYPE,
+            APPLY_STAMP)

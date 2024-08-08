@@ -184,13 +184,24 @@
 
 /******************************* bdsqr ****************************************
 *******************************************************************************/
-/*! \brief Determines the maximum number of split diagonal blocks that BDSQR can process in parallel.
-    Must be at least 1.
+/*! \brief Determines the size at which rocSOLVER switches from updating singular vectors
+    in a single thread group, to using multiple thread groups. It also applies to the
+    corresponding batched and strided-batched routines.
 
-    \details BDSQR will use BDSQR_SPLIT_GROUPS thread groups in order to process diagonal blocks
-    in parallel. */
-#ifndef BDSQR_SPLIT_GROUPS
-#define BDSQR_SPLIT_GROUPS 5
+    \details When nv, nu, and nc are less than or equal to BDSQR_SWITCH_SIZE, BDSQR will update
+    the singular vectors in a single thread group. Otherwise, BDSQR will launch a dedicated kernel
+    with multiple thread groups.*/
+#ifndef BDSQR_SWITCH_SIZE
+#define BDSQR_SWITCH_SIZE 512
+#endif
+
+/*! \brief Determines the number of iterations that BDSQR will execute between device synchronizations
+    in the multi-kernel algorithm.
+
+    \details BDSQR will run an inner loop BDSQR_ITERS_PER_SYNC at a time, before synchronizing with the
+    device to check if the stopping criterion has been met. */
+#ifndef BDSQR_ITERS_PER_SYNC
+#define BDSQR_ITERS_PER_SYNC 10
 #endif
 
 /******************************* gesvd ****************************************
