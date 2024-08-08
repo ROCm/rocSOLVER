@@ -15,6 +15,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - POTRS_64 (with batched and strided\_batched versions)
 
 ### Optimized
+- Improved performanced of LARFG, LARF, and downstream functions such as GEQR2 and GEQRF on wave64 architectures
 - Improved the performance of BDSQR and GESVD
 
 ### Changed
