@@ -1064,10 +1064,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int p2;
     // number of sub-blocks
     rocblas_int blks;
+    rocblas_int tn;
     // number of level of division
     //    rocblas_int levs;
     // other aux variables
-    rocblas_int tn;
     S p;
     rocblas_int *ns, *ps;
     /* --------------------------------------------------- */
@@ -1090,7 +1090,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         levs = stedc_num_levels<MODE>(bs);
         blks = levs - 1 - k;
         tn = (blks < 0) ? 0 : 1 << blks;
-        blks = 1 << levs;
 
         // 3. MERGE PHASE
         /* ----------------------------------------------------------------- */
@@ -1261,6 +1260,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             rocblas_int* mask = idd + in;
             S* zz = z + in;
             rocblas_int* per = pers + in;
+            S* ev = evs + in;
 
             // find degree and components of secular equation
             // tmpd contains the non-deflated diagonal elements (ie. poles of the
@@ -1281,6 +1281,128 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     dd++;
                 }
             }
+            /*            __syncthreads();
+
+            // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
+            // This will allow us to find initial intervals for eigenvalue guesses
+            rocblas_int tsz = (bs - 1) / tn + 1;
+            for(int i = 0; i < tsz; ++i)
+            {
+                if(i < dd)
+                {
+                    if(i % 2 == 0)
+                    {
+                        for(int j = tidb; j < dd / 2; j += hipBlockDim_x)
+                        {
+                            if(tmpd[2 * j] > tmpd[2 * j + 1])
+                            {
+                                valf = tmpd[2 * j];
+                                tmpd[2 * j] = tmpd[2 * j + 1];
+                                tmpd[2 * j + 1] = valf;
+                                valf = zz[2 * j];
+                                zz[2 * j] = zz[2 * j + 1];
+                                zz[2 * j + 1] = valf;
+                                bd = per[2 * j];
+                                per[2 * j] = per[2 * j + 1];
+                                per[2 * j + 1] = bd;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for(int j = tidb; j < (dd - 1) / 2; j += hipBlockDim_x)
+                        {
+                            if(tmpd[2 * j + 1] > tmpd[2 * j + 2])
+                            {
+                                valf = tmpd[2 * j + 1];
+                                tmpd[2 * j + 1] = tmpd[2 * j + 2];
+                                tmpd[2 * j + 2] = valf;
+                                valf = zz[2 * j + 1];
+                                zz[2 * j + 1] = zz[2 * j + 2];
+                                zz[2 * j + 2] = valf;
+                                bd = per[2 * j + 1];
+                                per[2 * j + 1] = per[2 * j + 2];
+                                per[2 * j + 2] = bd;
+                            }
+                        }
+                    }
+                }
+                __syncthreads();
+            }
+
+            // make dd copies of the non-deflated ordered diagonal elements
+            // (i.e. the poles of the secular eqn) so that the distances to the
+            // eigenvalues (D - lambda_i) are updated while computing each eigenvalue.
+            // This will prevent collapses and division by zero when an eigenvalue
+            // is too close to a pole.
+            for(int j = tidb + 1; j < sz; j += hipBlockDim_x)
+            {
+                for(int i = 0; i < dd; ++i)
+                    tmpd[i + j * n] = tmpd[i];
+            }
+
+            // finally copy over all diagonal elements in ev. ev will be overwritten
+            // by the new computed eigenvalues of the merged block
+            for(int i = tidb; i < sz; i += hipBlockDim_x)
+                ev[i] = diag[i];
+            __syncthreads();*/
+            /* ----------------------------------------------------------------- */
+
+            // 3e. Solve secular eqns, i.e. find the dd zeros
+            // corresponding to non-deflated new eigenvalues of the merged block
+            /* ----------------------------------------------------------------- */
+            // each thread will find a different zero in parallel
+            /*            S a, b;
+            for(int j = tidb; j < sz; j += hipBlockDim_x)
+            {
+                if(mask[j] == 1)
+                {
+                    // find position in the ordered array
+                    int cc = 0;
+                    valf = p < 0 ? -ev[j] : ev[j];
+                    for(int jj = 0; jj < dd; ++jj)
+                    {
+                        if(tmpd[jj + j * n] == valf)
+                            break;
+                        else
+                            cc++;
+                    }
+
+                    // computed zero will overwrite 'ev' at the corresponding position.
+                    // 'tmpd' will be updated with the distances D - lambda_i.
+                    // deflated values are not changed.
+                    rocblas_int linfo;
+                    if(cc == dd - 1)
+                        linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps,
+                                              ssfmin, ssfmax);
+                    else
+                        linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps,
+                                          ssfmin, ssfmax);
+                    if(p < 0)
+                        ev[j] *= -1;
+                }
+            }
+            __syncthreads();
+
+            // Re-scale vector Z to avoid bad numerics when an eigenvalue
+            // is too close to a pole
+            for(int i = tidb; i < dd; i += hipBlockDim_x)
+            {
+                valf = 1;
+                for(int j = 0; j < sz; ++j)
+                {
+                    if(mask[j] == 1)
+                    {
+                        valg = tmpd[i + j * n];
+                        if(p > 0)
+                            valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);
+                        else
+                            valf *= (per[i] == j) ? valg : -valg / (diag[per[i]] - diag[j]);
+                    }
+                }
+                valf = sqrt(-valf);
+                zz[i] = zz[i] < 0 ? -valf : valf;
+            }*/
             /* ----------------------------------------------------------------- */
         }
     }
@@ -1403,48 +1525,39 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         if(mid < tn)
         {
             rocblas_int iam, sz, bdm, dim;
-            S* ptz;
             S valf, valg;
             rocblas_int bd = 1 << k;
             bdm = bd << 1;
-            dim = hipBlockDim_x / bdm;
+            dim = hipBlockDim_x / 2;
 
+            // tid indexes the sub-blocks in the entire split block
             // iam indexes the sub-blocks in the context of the merge
             // (according to its level in the merge tree)
             iam = tidb / dim;
-            // tid indexes the sub-blocks in the entire split block
-            tid = mid * bdm + iam;
+            tid = mid * bdm + iam * bd;
             p2 = ps[tid];
 
             // Find off-diagonal element of the merge
-            if(iam < bd && tid < blks)
-            {
-                sz = ns[tid];
-                for(int j = 1; j < bd - iam; ++j)
-                    sz += ns[tid + j];
-                p = 2 * E[p2 - 1 + sz];
-            }
-            else if(iam >= bd && tid < blks)
-            {
-                sz = 0;
-                for(int j = 0; j < iam - bd; ++j)
-                    sz += ns[tid - j - 1];
-                p = 2 * E[p2 - sz - 1];
-            }
+            // Threads with iam = 0 work with components below the merge point;
+            // threads with iam = 1 work above the merge point
+            sz = ns[tid];
+            for(int j = 1; j < bd; ++j)
+                sz += ns[tid + j];
+            // with this, all threads involved in a merge
+            // will point to the same row of C and the same off-diag element
+            p = (iam == 0) ? 2 * E[p2 - 1 + sz] : 2 * E[p2 - 1];
+
+            // determine boundaries of what would be the new merged sub-block
+            // 'in' will be its initial position.
+            // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
+            rocblas_int in = tid - iam * bd;
+            sz = ns[in];
+            for(int i = 1; i < bdm; ++i)
+                sz += ns[in + i];
+            in = ps[in];
 
             // 3d.2. Organize data with non-deflated values to prepare secular equation
             /* ----------------------------------------------------------------- */
-            // determine boundaries of what would be the new merged sub-block
-            // 'in' will be its initial position
-            rocblas_int in = ps[tid - iam];
-            // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-            sz = ns[tid];
-            for(int i = iam; i > 0; --i)
-                sz += ns[tid - i];
-            for(int i = bdm - 1 - iam; i > 0; --i)
-                sz += ns[tid + i];
-
-            // final number of merged sub-blocks
             rocblas_int tsz = 1 << (levs - 1 - k);
             tsz = (bs - 1) / tsz + 1;
 

@@ -548,7 +548,7 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
 
     // 3. merge phase
     //----------------
-    size_t lmemsize1 = sizeof(S) * maxblks;
+    size_t lmemsize1 = sizeof(S) * 2 * STEDC_BDIM;
     size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
     rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
 
@@ -565,13 +565,13 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
             the computation of some of them does not seem to make much difference. **/
 
         // a. prepare secular equations
+        rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
         ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_bisection, S>),
-                                dim3(1, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(maxblks),
+                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize1, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
                                 strideT, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
         // b. solve to find merged eigen values
-        rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
         ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_bisection, S>),
                                 dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 0, stream, k, n, D, strideD, E, strideE, tmpz, tempgemm, splits,
