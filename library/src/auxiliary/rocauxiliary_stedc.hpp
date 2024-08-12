@@ -754,8 +754,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
                                                                         const rocblas_stride strideD,
                                                                         S* EE,
                                                                         const rocblas_stride strideE,
-                                                                        rocblas_int* splitsA,
-                                                                        rocblas_int levs = 0)
+                                                                        rocblas_int* splitsA)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -794,7 +793,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
     // number of sub-blocks
     rocblas_int blks;
     // number of level of division
-    //    rocblas_int levs;
+    rocblas_int levs;
     // other aux variables
     S p;
     rocblas_int *ns, *ps;
@@ -812,7 +811,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
         ps = psA + p1;
 
         // determine ideal number of sub-blocks in split-block
-        //        levs = stedc_num_levels<MODE>(bs);
+        levs = stedc_num_levels<MODE>(bs);
         blks = 1 << levs;
 
         // 1. DIVIDE PHASE
@@ -875,8 +874,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
                                                                        rocblas_int* splitsA,
                                                                        const S eps,
                                                                        const S ssfmin,
-                                                                       const S ssfmax,
-                                                                       rocblas_int levs = 0)
+                                                                       const S ssfmax)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -927,7 +925,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
     // number of sub-blocks
     rocblas_int blks;
     // number of level of division
-    //    rocblas_int levs;
+    rocblas_int levs;
     // other aux variables
     S p;
     rocblas_int *ns, *ps;
@@ -945,7 +943,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
         ps = psA + p1;
 
         // determine ideal number of sub-blocks
-        //        levs = stedc_num_levels<rocsolver_stedc_mode_qr>(bs);
+        levs = stedc_num_levels<rocsolver_stedc_mode_qr>(bs);
         blks = 1 << levs;
 
         // 2. SOLVE PHASE
@@ -997,8 +995,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                               rocblas_int* splitsA,
                               const S eps,
                               const S ssfmin,
-                              const S ssfmax,
-                              rocblas_int levs = 0)
+                              const S ssfmax)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -1066,7 +1063,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int blks;
     rocblas_int tn;
     // number of level of division
-    //    rocblas_int levs;
+    rocblas_int levs;
     // other aux variables
     S p;
     rocblas_int *ns, *ps;
@@ -1087,7 +1084,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
         // determine ideal number of sub-blocks
         // tn is the number of thread-groups needed
-        //        levs = stedc_num_levels<MODE>(bs);
+        levs = stedc_num_levels<MODE>(bs);
         blks = levs - 1 - k;
         tn = (blks < 0) ? 0 : 1 << blks;
 
@@ -1208,13 +1205,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 {
                     // determine pair of values (base, top)
                     com = 2 * (i - r);
-                    base = i == 0
-                        ? 0
-                        : (r < i ? com : (r > i - 1 + sz_half ? 2 * (sz_even - 1) + com : 1 - com));
+                    base = (i == 0)             ? 0
+                        : (r < i)               ? com
+                        : (r > i - 1 + sz_half) ? 2 * (sz_even - 1) + com
+                                                : 1 - com;
+
                     com = 2 * (i + r);
-                    top = r < sz_half - i
-                        ? 1 + com
-                        : (r > sz_even - 2 - i ? 3 - 2 * sz_even + com : 2 * (sz_even - 1) - com);
+                    top = (r < sz_half - i)     ? 1 + com
+                        : (r > sz_even - 2 - i) ? 3 - 2 * sz_even + com
+                                                : 2 * (sz_even - 1) - com;
+
                     if(base > top)
                     {
                         com = base;
@@ -1312,8 +1312,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                              rocblas_int* splitsA,
                              const S eps,
                              const S ssfmin,
-                             const S ssfmax,
-                             rocblas_int levs = 0)
+                             const S ssfmax)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -1368,10 +1367,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int p2;
     // number of sub-blocks
     rocblas_int blks;
-    // number of level of division
-    //    rocblas_int levs;
-    // other aux variables
     rocblas_int tn;
+    // number of level of division
+    rocblas_int levs;
+    // other aux variables
     S p;
     rocblas_int *ns, *ps;
     /* --------------------------------------------------- */
@@ -1391,7 +1390,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
         // determine ideal number of sub-blocks
         // tn is the number of thread-groups needed
-        //        levs = stedc_num_levels<MODE>(bs);
+        levs = stedc_num_levels<MODE>(bs);
         blks = levs - 1 - k;
         tn = (blks < 0) ? 0 : 1 << blks;
         blks = 1 << levs;
@@ -1614,8 +1613,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                               rocblas_int* splitsA,
                               const S eps,
                               const S ssfmin,
-                              const S ssfmaxi,
-                              rocblas_int levs = 0)
+                              const S ssfmaxi)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -1682,7 +1680,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // number of sub-blocks
     rocblas_int blks;
     // number of level of division
-    //    rocblas_int levs;
+    rocblas_int levs;
     // other aux variables
     rocblas_int tn;
     S p;
@@ -1703,7 +1701,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         ps = psA + p1;
 
         // determine ideal number of sub-blocks
-        //        levs = stedc_num_levels<MODE>(bs);
+        levs = stedc_num_levels<MODE>(bs);
         blks = 1 << levs;
 
         // tn is max number of vectors in each sub-block
@@ -1855,8 +1853,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                              rocblas_int* splitsA,
                              const S eps,
                              const S ssfmin,
-                             const S ssfmax,
-                             rocblas_int levs = 0)
+                             const S ssfmax)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -1918,7 +1915,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // number of sub-blocks
     rocblas_int blks;
     // number of level of division
-    //    rocblas_int levs;
+    rocblas_int levs;
     // other aux variables
     rocblas_int tn;
     S p;
@@ -1939,7 +1936,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         ps = psA + p1;
 
         // determine ideal number of sub-blocks
-        //        levs = stedc_num_levels<MODE>(bs);
+        levs = stedc_num_levels<MODE>(bs);
         blks = 1 << levs;
 
         // tn is max number of vectors in each sub-block
@@ -2344,9 +2341,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     // otherwise use divide and conquer algorithm:
     else
     {
-        //print_device_matrix(std::cout,"D",1,n,D,1);
-        //print_device_matrix(std::cout,"E",1,n,E,1);
-
         // constants
         S eps = get_epsilon<S>();
         S ssfmin = get_safemin<S>();
@@ -2367,47 +2361,25 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 0, stream, n, n, tempvect, 0, ldt, strideT);
 
         // find max number of sub-blocks to consider during the divide phase
-        //        rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
-        rocblas_int maxlevs = atoi(getenv("LEVELS"));
+        rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
         rocblas_int maxblks = 1 << maxlevs;
-
-        //printf("%d %d\n\n",maxlevs,maxblks);
 
         // find independent split blocks in matrix
         ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
                                 strideD, E + shiftE, strideE, splits_map, eps);
 
-        //print_device_matrix(std::cout,"splits",1,n+2,splits,1);
-
-        //std::vector<int> sp(n+2);
-        //hipMemcpy(sp.data(), splits_map, sizeof(int)*(n+2), hipMemcpyDeviceToHost);
-        //printf("%d\n\n",sp[n+1]);
-
         // 1. divide phase
         //-----------------------------
         ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_qr, S>),
                                 dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD,
-                                strideD, E + shiftE, strideE, splits, maxlevs);
-
-        //print_device_matrix(std::cout,"D divided",1,n,D,1);
-        //print_device_matrix(std::cout,"E divided",1,n,E,1);
-        //print_device_matrix(std::cout,"splits",1,n+2,splits,1);
-        //print_device_matrix(std::cout,"ns",1,n,splits+n+2,1);
-        //print_device_matrix(std::cout,"ps",1,n,splits+2*n+2,1);
+                                strideD, E + shiftE, strideE, splits);
 
         // 2. solve phase
         //-----------------------------
         ROCSOLVER_LAUNCH_KERNEL((stedc_solve_kernel<S>),
-                                dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(1), 0, stream,
-                                n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0, ldt,
-                                strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax, maxlevs);
-
-        //print_device_matrix(std::cout,"D solved",1,n,D,1);
-        //print_device_matrix(std::cout,"C solved",n,n,tempvect,ldt);
-        //print_device_matrix(std::cout,"E solved",1,n,E,1);
-        //print_device_matrix(std::cout,"splits",1,n+2,splits,1);
-        //print_device_matrix(std::cout,"ns",1,n,splits+n+2,1);
-        //print_device_matrix(std::cout,"ps",1,n,splits+2*n+2,1);
+                                dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(1), 0,
+                                stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0,
+                                ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
 
         // 3. merge phase
         //----------------
@@ -2421,54 +2393,33 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             to copy back the actual number of levels makes any difference **/
         for(rocblas_int k = 0; k < maxlevs; ++k)
         {
-            //printf("\n---------------- for level k = %d -------------\n",k);
-
             // a. prepare secular equations
             rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize1, stream, k, n, D + shiftD, strideD,
                                     E + shiftE, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm,
-                                    splits, eps, ssfmin, ssfmax, maxlevs);
-
-            //print_device_matrix(std::cout,"D prepare",1,n,D,1);
-            //print_device_matrix(std::cout,"C prepare",n,n,tempvect,ldt);
-            //print_device_matrix(std::cout,"splits",1,n+2,splits,1);
-            //print_device_matrix(std::cout,"ns",1,n,splits+n+2,1);
-            //print_device_matrix(std::cout,"ps",1,n,splits+2*n+2,1);
-            //print_device_matrix(std::cout,"idd",1,n,splits+3*n+2,1);
-            //print_device_matrix(std::cout,"per",1,n,splits+4*n+2,1);
-            //print_device_matrix(std::cout,"z",1,n,tmpz,1);
+                                    splits, eps, ssfmin, ssfmax);
 
             // b. solve to find merged eigen values
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, k, n, D + shiftD, strideD,
-                                    E + shiftE, strideE, tmpz, tempgemm, splits, eps, ssfmin,
-                                    ssfmax, maxlevs);
-
-            //print_device_matrix(std::cout,"D values",1,n,D,1);
-            //print_device_matrix(std::cout,"C values",n,n,tempvect,ldt);
+                                    E + shiftE, strideE, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
             // c. find merged eigen vectors
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
                                     E + shiftE, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm,
-                                    splits, eps, ssfmin, ssfmax, maxlevs);
-
-            //print_device_matrix(std::cout,"D vectors",1,n,D,1);
-            //print_device_matrix(std::cout,"C vectors",n,n,tempvect,ldt);
+                                    splits, eps, ssfmin, ssfmax);
 
             // c. update level
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
                                     tempvect, 0, ldt, strideT, tmpz, tempgemm, splits, eps, ssfmin,
-                                    ssfmax, maxlevs);
-
-            //print_device_matrix(std::cout,"D update",1,n,D,1);
-            //print_device_matrix(std::cout,"C update",n,n,tempvect,ldt);
+                                    ssfmax);
         }
 
         // 4. update and sort
@@ -2484,9 +2435,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count,
                                 splits_map);
     }
-
-    //print_device_matrix(std::cout,"D",1,n,D,1);
-    //print_device_matrix(std::cout,"C",n,n,C,ldc);
 
     return rocblas_status_success;
 }
