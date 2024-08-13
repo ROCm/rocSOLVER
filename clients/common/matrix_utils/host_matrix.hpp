@@ -113,6 +113,19 @@ public:
         return ptr;
     }
 
+    template<typename S_>
+    static auto Convert(const HostMatrix<S_, I_>& In) -> HostMatrix<T_, I_>
+    {
+        HostMatrix<T_, I_> Out(In.nrows(), In.ncols());
+
+        for (I i = 0; i < Out.size(); ++i)
+        {
+            Out[i] = T(In[i]);
+        }
+
+        return Out;
+    }
+
     static auto Empty() noexcept -> HostMatrix<T_, I_>
     {
         HostMatrix<T_, I_> empty(nullptr, 0, 0);
@@ -456,15 +469,51 @@ public:
         return data_[i];
     }
 
-    // TODO: compute columnwise norm and then accumulate
-    virtual S norm() const override
+    virtual S max_coeff_norm() const override
     {
         S norm = S(0.);
         for(I i = 0; i < size(); ++i)
         {
-            norm += detail::norm(this->operator[](i));
+            S el = detail::abs(this->operator[](i));
+            norm = (norm > el) ? norm : el;
         }
 
+        return norm;
+    }
+
+    virtual S max_col_norm() const override
+    {
+        auto col_norm = HostMatrix<S, I_>::Zeros(1, ncols());
+
+        for (I j = 0; j < ncols(); ++j)
+        {
+            for (I i = 0; i < nrows(); ++i)
+            {
+                col_norm(0, j) += detail::norm(this->operator()(i, j));
+            }
+        }
+
+        S norm = col_norm.max_coeff_norm();
+        return std::sqrt(norm);
+    }
+
+    virtual S norm() const override
+    {
+        auto col_norm = HostMatrix<S, I_>::Zeros(1, ncols());
+
+        for (I j = 0; j < ncols(); ++j)
+        {
+            for (I i = 0; i < nrows(); ++i)
+            {
+                col_norm(0, j) += detail::norm(this->operator()(i, j));
+            }
+        }
+
+        S norm = S(0.);
+        for (I i = 0; i < col_norm.size(); ++i)
+        {
+            norm += col_norm[i];
+        }
         return std::sqrt(norm);
     }
 

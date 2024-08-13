@@ -108,6 +108,10 @@ public:
 
     virtual S norm() const = 0;
 
+    virtual S max_coeff_norm() const = 0;
+
+    virtual S max_col_norm() const = 0;
+
 protected:
 };
 

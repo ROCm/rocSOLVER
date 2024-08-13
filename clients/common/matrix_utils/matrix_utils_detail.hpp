@@ -52,9 +52,10 @@ namespace detail
     }
 
     template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 1>
-    inline T norm(const T& scalar)
+    inline auto norm(const T& scalar)
     {
-        return scalar * scalar;
+        using S = decltype(std::real(T{}));
+        return S(scalar * scalar);
     }
 
     template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
@@ -62,6 +63,20 @@ namespace detail
     {
         using S = decltype(std::real(T{}));
         return S(scalar.real() * scalar.real() + scalar.imag() * scalar.imag());
+    }
+
+    template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 1>
+    inline auto abs(const T& scalar)
+    {
+        using S = decltype(std::real(T{}));
+        return S(std::abs(scalar));
+    }
+
+    template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+    inline auto abs(const T& scalar)
+    {
+        using S = decltype(std::real(T{}));
+        return S(std::sqrt(detail::norm(scalar)));
     }
 
     template <typename T>
