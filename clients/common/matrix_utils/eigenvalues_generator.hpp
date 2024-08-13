@@ -31,7 +31,6 @@
 
 namespace matxu
 {
-
 // Generate eigenvalues following the patterns used in LAPACK's tests.
 //
 // See "A Testing Infrastructure for LAPACK's Symmetric Eigensolvers",

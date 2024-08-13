@@ -42,7 +42,6 @@
 
 namespace matxu
 {
-
 template <typename T_, typename I_ = std::int32_t>
 class HostMatrix : public MatrixInterface<T_, I_>
 {

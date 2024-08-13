@@ -35,10 +35,8 @@
 
 namespace matxu
 {
-
 namespace detail
 {
-
     template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 1>
     inline T conj(const T& scalar)
     {

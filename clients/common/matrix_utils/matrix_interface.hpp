@@ -31,7 +31,6 @@
 
 namespace matxu
 {
-
 template <typename T_,
           typename I_,
           /* typename = typename std::enable_if<std::is_arithmetic<std::decay_t<T_>>::value>::type, */
