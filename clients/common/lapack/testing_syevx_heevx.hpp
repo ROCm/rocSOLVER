@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "common/matrix_utils/matrix_utils.hpp"
 #include "common/misc/client_util.hpp"
 #include "common/misc/clientcommon.hpp"
 #include "common/misc/lapack_host_reference.hpp"
@@ -34,7 +35,6 @@
 #include "common/misc/rocsolver.hpp"
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
-#include "common/matrix_utils/matrix_utils.hpp"
 
 template <bool STRIDED, typename T, typename S, typename SS, typename U>
 void syevx_heevx_checkBadArgs(const rocblas_handle handle,
@@ -246,12 +246,13 @@ void syevx_heevx_initData(const rocblas_handle handle,
         for(rocblas_int b = 0; b < bc; ++b)
         {
             auto hAw = hMat::Wrap(hA[b], lda, n);
-            if (hAw) // update matrix hA if n >= 1
+            if(hAw) // update matrix hA if n >= 1
             {
-                rocblas_int half_n = n/2;
+                rocblas_int half_n = n / 2;
                 // create half_n eigenvalues from -20 to -1, and n - half_n eigenvalues from 1 to 20
                 // (for the time being, avoid using -20 and 20, otherwise some tests will fail with hNev != hNevRes)
-                auto eigs = cat(hMat::FromRange(-20.1, -1.0, half_n), hMat::FromRange(1.0, 20.1, n - half_n));
+                auto eigs = cat(hMat::FromRange(-20.1, -1.0, half_n),
+                                hMat::FromRange(1.0, 20.1, n - half_n));
                 auto [Q, _] = qr((*hAw).block(BDesc().nrows(n).ncols(n)));
                 hAw->set_to_zero();
 
@@ -383,7 +384,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
 
         if((hinfo[b][0] != 0) || (num_eigs <= 0))
         {
-            if (evect == rocblas_evect_original)
+            if(evect == rocblas_evect_original)
             {
                 // check ifail
                 err = 0;
@@ -403,11 +404,11 @@ void syevx_heevx_getError(const rocblas_handle handle,
         auto eigs_ref = *hMat::Convert(hW[b], 1, num_eigs);
 
         // Get computed eigenvalues
-        auto eigs_b = *hMat::Convert(hWRes[b], 1, num_eigs); // convert eigenvalues from type S to type T, if required
-
+        auto eigs_b = *hMat::Convert(
+            hWRes[b], 1, num_eigs); // convert eigenvalues from type S to type T, if required
 
         if(evect != rocblas_evect_original)
-        { 
+        {
             // only eigenvalues needed; can compare with LAPACK
 
             err = (eigs_ref - eigs_b).max_coeff_norm() / eigs_ref.max_coeff_norm();
@@ -430,11 +431,12 @@ void syevx_heevx_getError(const rocblas_handle handle,
             // Create a thin wrapper of input matrix A (bc * lda * n), of size lda * n starting at b * lda * n
             auto AWrap_b = hMat::Wrap(A.data() + b * lda * n, lda, n);
 
-            // Since `lda`, `ldz` and `n` can differ, we must extract submatrices of the correct size from 
+            // Since `lda`, `ldz` and `n` can differ, we must extract submatrices of the correct size from
             // `A`, `hZRes` and `hWRes`.
             //
             // We want the sub-block starting from row 0, col 0 and with size n x n of A
-            auto block_A = BDesc().from_row(0).from_col(0).nrows(n).ncols(n); // the `from_row(0)` and `from_col(0)` calls can be omitted
+            auto block_A = BDesc().from_row(0).from_col(0).nrows(n).ncols(
+                n); // the `from_row(0)` and `from_col(0)` calls can be omitted
             auto A_b = (*AWrap_b).block(block_A);
 
             // Get computed eigenvectors
@@ -447,7 +449,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
 
             // Check accuracy of eigenpairs
             auto AE = adjoint(V_b) * A_b * V_b - hMat::Zeros(num_eigs).diag(eigs_b);
-            err = AE.max_col_norm()/eigs_ref.max_coeff_norm();
+            err = AE.max_col_norm() / eigs_ref.max_coeff_norm();
             /* err *= std::numeric_limits<S>::epsilon() / ortho_err; // Use "relative Weyl" error bound */
             *max_err = err > *max_err ? err : *max_err;
         }

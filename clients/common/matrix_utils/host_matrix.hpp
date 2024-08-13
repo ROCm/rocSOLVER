@@ -61,7 +61,7 @@ public:
         auto ptr = std::unique_ptr<HostMatrix<T_, I_>>(
             new(std::nothrow) HostMatrix<T_, I_>(in_data, nrows, ncols));
 
-        if (ptr)
+        if(ptr)
         {
             ptr->is_a_wrapper_ = true;
         }
@@ -88,24 +88,25 @@ public:
     /*     return ptr; */
     /* } */
 
-    template<typename S_>
+    template <typename S_>
     static auto Convert(S_* in_data, I nrows, I ncols) noexcept -> std::unique_ptr<HostMatrix<T, I>>
     {
-        if ((nrows < 1) || (ncols < 1))
+        if((nrows < 1) || (ncols < 1))
         {
             return nullptr;
         }
 
-        auto ptr = std::unique_ptr<HostMatrix<T, I>>(new(std::nothrow) HostMatrix<T, I>(nullptr, nrows, ncols));
+        auto ptr = std::unique_ptr<HostMatrix<T, I>>(new(std::nothrow)
+                                                         HostMatrix<T, I>(nullptr, nrows, ncols));
 
         ptr->data_ = ptr->cgc_.alloc(ptr->size());
-        if (ptr->data_ == nullptr)
+        if(ptr->data_ == nullptr)
         {
             // If ptr->data_ was not initialized, then ptr does not point to a valid matrix
             ptr = nullptr;
         }
 
-        for (I i = 0; i < ptr->size(); ++i)
+        for(I i = 0; i < ptr->size(); ++i)
         {
             ptr->operator[](i) = T(in_data[i]);
         }
@@ -113,12 +114,12 @@ public:
         return ptr;
     }
 
-    template<typename S_>
+    template <typename S_>
     static auto Convert(const HostMatrix<S_, I_>& In) -> HostMatrix<T_, I_>
     {
         HostMatrix<T_, I_> Out(In.nrows(), In.ncols());
 
-        for (I i = 0; i < Out.size(); ++i)
+        for(I i = 0; i < Out.size(); ++i)
         {
             Out[i] = T(In[i]);
         }
@@ -145,10 +146,9 @@ public:
 
     static auto Eye(I nrows, I ncols) -> HostMatrix<T_, I_>
     {
-        /* HostMatrix<T_, I_> Id(std::max(nrows, I(1)), std::max(ncols, I(1))); */
         HostMatrix<T_, I_> Id(nrows, ncols);
 
-        if (!Id.empty())
+        if(!Id.empty())
         {
             I dim = std::min(Id.nrows(), Id.ncols());
             for(I i = 0; i < dim; ++i)
@@ -167,18 +167,17 @@ public:
 
     static auto Ones(I nrows, I ncols) -> HostMatrix<T_, I_>
     {
-        /* HostMatrix<T_, I_> O(std::max(nrows, I(1)), std::max(ncols, I(1))); */
-        HostMatrix<T_, I_> O(nrows, ncols);
+        HostMatrix<T_, I_> ones(nrows, ncols);
 
-        if(!O.empty())
+        if(!ones.empty())
         {
-            for(I i = 0; i < O.size(); ++i)
+            for(I i = 0; i < ones.size(); ++i)
             {
-                O[i] = T_(1.);
+                ones[i] = T_(1.);
             }
         }
 
-        return O;
+        return ones;
     }
 
     static auto Ones(I dim) -> HostMatrix<T_, I_>
@@ -188,14 +187,14 @@ public:
 
     static auto Diag(const HostMatrix<T_, I_>& d)
     {
-        if (d.empty() || (std::min(d.nrows(), d.ncols())))
+        if(d.empty() || (std::min(d.nrows(), d.ncols())))
         {
             throw; // TODO: pick correct exception to throw, or return empty matrix
         }
 
         I dim = std::max(d.nrows(), d.ncols());
         HostMatrix<T_, I_> Z(dim, dim);
-        for (I i = 0; i < dim; ++i)
+        for(I i = 0; i < dim; ++i)
         {
             Z(i, i) = d[i];
         }
@@ -207,7 +206,7 @@ public:
     {
         HostMatrix<T_, I_> Z(1, static_cast<I>(list.size()));
 
-        if (!Z.empty())
+        if(!Z.empty())
         {
             I i = 0;
             for(auto iter = list.begin(); iter != list.end(); ++iter)
@@ -244,10 +243,9 @@ public:
     }
 
     HostMatrix(I nrows, I ncols)
-        /* : HostMatrix(nullptr, std::max(nrows, I(1)), std::max(ncols, I(1))) */
         : HostMatrix(nullptr, nrows, ncols)
     {
-        if (empty())
+        if(empty())
         {
             return;
         }
@@ -268,9 +266,9 @@ public:
 
     HostMatrix(const HostMatrix& rhs)
     {
-        if (this->is_a_wrapper_)
+        if(this->is_a_wrapper_)
         {
-            if (!this->copy_data_from(rhs))
+            if(!this->copy_data_from(rhs))
             {
                 throw; // TODO: pick adequate exception
             }
@@ -300,9 +298,9 @@ public:
 
     HostMatrix& operator=(const HostMatrix& rhs)
     {
-        if (this->is_a_wrapper_)
+        if(this->is_a_wrapper_)
         {
-            if (!this->copy_data_from(rhs))
+            if(!this->copy_data_from(rhs))
             {
                 throw; // TODO: pick adequate exception
             }
@@ -366,16 +364,16 @@ public:
 
     [[maybe_unused]] virtual bool copy_data_from(const MatrixInterface<T_, I_>& src) override
     {
-        if ((nrows() < src.nrows()) || (ncols() < src.ncols()))
+        if((nrows() < src.nrows()) || (ncols() < src.ncols()))
         {
             return false;
         }
 
         /* [[maybe_unused]] auto volatile mptr */
-            /* = memmove(this->data(), src.data(), src.num_bytes()); */
-        for (I j = 0; j < src.ncols(); ++j)
+        /* = memmove(this->data(), src.data(), src.num_bytes()); */
+        for(I j = 0; j < src.ncols(); ++j)
         {
-            for (I i = 0; i < src.nrows(); ++i)
+            for(I i = 0; i < src.nrows(); ++i)
             {
                 this->operator()(i, j) = src(i, j);
             }
@@ -386,13 +384,12 @@ public:
 
     [[maybe_unused]] virtual bool set_data_from(const MatrixInterface<T_, I_>& src) override
     {
-        if (empty() || (max_size_ < src.size()))
+        if(empty() || (max_size_ < src.size()))
         {
             return false;
         }
 
-        [[maybe_unused]] auto volatile mptr
-            = memmove(this->data(), src.data(), src.num_bytes());
+        [[maybe_unused]] auto volatile mptr = memmove(this->data(), src.data(), src.num_bytes());
         nrows_ = src.nrows();
         ncols_ = src.ncols();
 
@@ -401,8 +398,7 @@ public:
 
     virtual void set_to_zero() override
     {
-        [[maybe_unused]] auto volatile mptr
-            = memset(this->data(), 0, this->num_bytes());
+        [[maybe_unused]] auto volatile mptr = memset(this->data(), 0, this->num_bytes());
     }
 
     virtual I nrows() const override
@@ -483,34 +479,35 @@ public:
 
     virtual S max_col_norm() const override
     {
+        S norm = S(0.);
         auto col_norm = HostMatrix<S, I_>::Zeros(1, ncols());
 
-        for (I j = 0; j < ncols(); ++j)
+        for(I j = 0; j < ncols(); ++j)
         {
-            for (I i = 0; i < nrows(); ++i)
+            for(I i = 0; i < nrows(); ++i)
             {
                 col_norm(0, j) += detail::norm(this->operator()(i, j));
             }
         }
 
-        S norm = col_norm.max_coeff_norm();
+        norm = col_norm.max_coeff_norm();
         return std::sqrt(norm);
     }
 
     virtual S norm() const override
     {
+        S norm = S(0.);
         auto col_norm = HostMatrix<S, I_>::Zeros(1, ncols());
 
-        for (I j = 0; j < ncols(); ++j)
+        for(I j = 0; j < ncols(); ++j)
         {
-            for (I i = 0; i < nrows(); ++i)
+            for(I i = 0; i < nrows(); ++i)
             {
                 col_norm(0, j) += detail::norm(this->operator()(i, j));
             }
         }
 
-        S norm = S(0.);
-        for (I i = 0; i < col_norm.size(); ++i)
+        for(I i = 0; i < col_norm.size(); ++i)
         {
             norm += col_norm[i];
         }
@@ -519,7 +516,7 @@ public:
 
     virtual HostMatrix<T_, I_> row(I k) const
     {
-        if (empty() || (k < 0) || (k >= nrows()))
+        if(empty() || (k < 0) || (k >= nrows()))
         {
             return HostMatrix<T_, I_>::Empty();
         }
@@ -536,7 +533,7 @@ public:
 
     virtual HostMatrix<T_, I_> col(I k) const
     {
-        if (empty() || (k < 0) || (k >= ncols()))
+        if(empty() || (k < 0) || (k >= ncols()))
         {
             return HostMatrix<T_, I_>::Empty();
         }
@@ -556,7 +553,7 @@ public:
         I dim = std::min(nrows(), ncols());
         HostMatrix<T_, I_> out(1, dim);
 
-        if (!out.empty())
+        if(!out.empty())
         {
             for(I i = 0; i < dim; ++i)
             {
@@ -572,7 +569,7 @@ public:
         I dim = std::min(nrows(), ncols()) - 1;
         HostMatrix<T_, I_> out(1, std::max(dim, I(1)));
 
-        if (!out.empty())
+        if(!out.empty())
         {
             for(I i = 0; i < dim; ++i)
             {
@@ -588,7 +585,7 @@ public:
         I dim = std::min(nrows(), ncols()) - 1;
         HostMatrix<T_, I_> out(1, dim);
 
-        if (!out.empty())
+        if(!out.empty())
         {
             for(I i = 0; i < dim; ++i)
             {
@@ -648,11 +645,11 @@ public:
         {
             bool in_range = true;
 
-            if ((from_row_ < 0) || (from_row_ >= max_nrows))
+            if((from_row_ < 0) || (from_row_ >= max_nrows))
             {
                 in_range = false;
             }
-            else if ((nrows_ < 1) || (nrows_ > max_nrows))
+            else if((nrows_ < 1) || (nrows_ > max_nrows))
             {
                 in_range = false;
             }
@@ -660,7 +657,7 @@ public:
             {
                 in_range = false;
             }
-            else if ((ncols_ < 1) || (ncols_ > max_ncols))
+            else if((ncols_ < 1) || (ncols_ > max_ncols))
             {
                 in_range = false;
             }
@@ -678,9 +675,9 @@ public:
 
         HostMatrix<T_, I_> out(bd.nrows_, bd.ncols_);
 
-        for (I j = 0; j < out.ncols(); ++j)
+        for(I j = 0; j < out.ncols(); ++j)
         {
-            for (I i = 0; i < out.nrows(); ++i)
+            for(I i = 0; i < out.nrows(); ++i)
             {
                 out(i, j) = this->operator()(i + bd.from_row_, j + bd.from_col_);
             }
@@ -692,7 +689,7 @@ public:
     virtual HostMatrix<T_, I_>& row(I k, const HostMatrix<T_, I_>& r)
     {
         auto b = BlockDescriptor().from_col(0).ncols(ncols()).from_row(k).nrows(1);
-        if (!empty() || b.range_check(nrows(), ncols()))
+        if(!empty() || b.range_check(nrows(), ncols()))
         {
             for(I i = 0; i < ncols(); ++i)
             {
@@ -706,7 +703,7 @@ public:
     virtual HostMatrix<T_, I_>& col(I k, const HostMatrix<T_, I_>& c)
     {
         auto b = BlockDescriptor().from_row(0).nrows(nrows()).from_col(k).ncols(1);
-        if (!empty() || b.range_check(nrows(), ncols()))
+        if(!empty() || b.range_check(nrows(), ncols()))
         {
             for(I i = 0; i < nrows(); ++i)
             {
@@ -765,9 +762,9 @@ public:
     {
         if(!empty() && bd.range_check(nrows(), ncols()))
         {
-            for (I j = 0; j < bd.ncols_; ++j)
+            for(I j = 0; j < bd.ncols_; ++j)
             {
-                for (I i = 0; i < bd.nrows_; ++i)
+                for(I i = 0; i < bd.nrows_; ++i)
                 {
                     this->operator()(i + bd.from_row_, j + bd.from_col_) = b(i, j);
                 }
@@ -816,7 +813,7 @@ protected:
         , ncols_(ncols)
         , ld_(nrows)
     {
-        if ((nrows < 1) || (ncols < 1))
+        if((nrows < 1) || (ncols < 1))
         {
             nrows_ = I(0);
             ncols_ = I(0);
@@ -958,10 +955,9 @@ auto operator+(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
 {
     if((A.nrows() != B.nrows()) || (A.ncols() != B.ncols()))
     {
-        std::string error_message = std::string("Error computing A + B: ")
-            +    "(A.nrows() [= " + std::to_string(A.nrows()) + "] "
-            + "!= B.nrows()) [= " + std::to_string(B.nrows()) + "] "
-            + "|| (A.ncols() [= " + std::to_string(A.ncols()) + "] "
+        std::string error_message = std::string("Error computing A + B: ") + "(A.nrows() [= "
+            + std::to_string(A.nrows()) + "] " + "!= B.nrows()) [= " + std::to_string(B.nrows())
+            + "] " + "|| (A.ncols() [= " + std::to_string(A.ncols()) + "] "
             + "!= B.ncols()) [= " + std::to_string(B.ncols()) + ")";
 
         throw std::domain_error(error_message);
@@ -985,10 +981,9 @@ auto operator-(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
 {
     if((A.nrows() != B.nrows()) || (A.ncols() != B.ncols()))
     {
-        std::string error_message = std::string("Error computing A - B: ")
-            +    "(A.nrows() [= " + std::to_string(A.nrows()) + "] "
-            + "!= B.nrows()) [= " + std::to_string(B.nrows()) + "] "
-            + "|| (A.ncols() [= " + std::to_string(A.ncols()) + "] "
+        std::string error_message = std::string("Error computing A - B: ") + "(A.nrows() [= "
+            + std::to_string(A.nrows()) + "] " + "!= B.nrows()) [= " + std::to_string(B.nrows())
+            + "] " + "|| (A.ncols() [= " + std::to_string(A.ncols()) + "] "
             + "!= B.ncols()) [= " + std::to_string(B.ncols()) + ")";
 
         throw std::domain_error(error_message);
@@ -1070,8 +1065,8 @@ auto operator*(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
 {
     if((A.ncols() != B.nrows()))
     {
-        std::string error_message = "Error computing A * B: A.ncols() [= " + std::to_string(A.ncols())
-            + "] != B.nrows() [= " + std::to_string(B.nrows()) + "]";
+        std::string error_message = "Error computing A * B: A.ncols() [= "
+            + std::to_string(A.ncols()) + "] != B.nrows() [= " + std::to_string(B.nrows()) + "]";
 
         throw std::domain_error(error_message);
     }
@@ -1086,10 +1081,12 @@ auto operator*(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
     }
     else
     {
-        bool within_lapack_limits
-            = (static_cast<int64_t>(A.nrows()) <= static_cast<int64_t>(std::numeric_limits<int>::max()))
-            && (static_cast<int64_t>(A.ncols()) <= static_cast<int64_t>(std::numeric_limits<int>::max()))
-            && (static_cast<int64_t>(B.ncols()) <= static_cast<int64_t>(std::numeric_limits<int>::max()));
+        bool within_lapack_limits = (static_cast<int64_t>(A.nrows())
+                                     <= static_cast<int64_t>(std::numeric_limits<int>::max()))
+            && (static_cast<int64_t>(A.ncols())
+                <= static_cast<int64_t>(std::numeric_limits<int>::max()))
+            && (static_cast<int64_t>(B.ncols())
+                <= static_cast<int64_t>(std::numeric_limits<int>::max()));
 
         if(within_lapack_limits)
         {
@@ -1131,11 +1128,11 @@ auto cat(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
 {
     I nrows{}, ncols{};
 
-    if ((A.empty()) && ((B.nrows() == 1) || (B.ncols() == 1)))
+    if((A.empty()) && ((B.nrows() == 1) || (B.ncols() == 1)))
     {
         return B;
     }
-    else if ((B.empty()) && ((A.nrows() == 1) || (A.ncols() == 1)))
+    else if((B.empty()) && ((A.nrows() == 1) || (A.ncols() == 1)))
     {
         return A;
     }
@@ -1251,8 +1248,8 @@ auto eig_upper(const HostMatrix_<T, I>& A)
     I ncols = A.ncols();
     if(nrows != ncols)
     {
-        std::string error_message = "Error computing eig(A): A.nrows() [= " + std::to_string(A.nrows())
-            + "] != A.ncols() [= " + std::to_string(A.ncols()) + "]";
+        std::string error_message = "Error computing eig(A): A.nrows() [= "
+            + std::to_string(A.nrows()) + "] != A.ncols() [= " + std::to_string(A.ncols()) + "]";
 
         throw std::domain_error(error_message);
     }

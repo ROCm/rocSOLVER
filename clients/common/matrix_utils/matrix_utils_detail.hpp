@@ -86,7 +86,8 @@ namespace detail
         const int ldB = ncolsA;
         const int ldC = nrowsA;
 
-        cpu_gemm(rocblas_operation_none, rocblas_operation_none, nrowsA, ncolsB, ncolsA, T(1.), const_cast<T*>(A), ldA, const_cast<T*>(B), ldB, T(0.), C, ldC);
+        cpu_gemm(rocblas_operation_none, rocblas_operation_none, nrowsA, ncolsB, ncolsA, T(1.),
+                 const_cast<T*>(A), ldA, const_cast<T*>(B), ldB, T(0.), C, ldC);
     }
 
     //
@@ -114,7 +115,7 @@ namespace detail
 
         // Copy input into Q
         {
-            [[maybe_unused]] auto mptr = memmove(Q, X, nrowsX * ncolsX * sizeof(T));
+            [[maybe_unused]] auto mptr = memmove(Q, X, sizeof(T) * nrowsX * ncolsX);
         }
 
         // TODO: let lapack set its preferred worksize
@@ -129,7 +130,7 @@ namespace detail
         const int ncolsR = ncolsX;
         const int ldR = nrowsR;
         {
-            auto volatile mptr = memset(R, 0, nrowsR * ncolsR * sizeof(T));
+            auto volatile mptr = memset(R, 0, sizeof(T) * nrowsR * ncolsR);
         }
         for(int i = 0; i < rank; ++i)
         {
@@ -156,7 +157,7 @@ namespace detail
         {
             return false;
         }
-        [[maybe_unused]] volatile auto mptr = memcpy(U, A, n * n * sizeof(T));
+        [[maybe_unused]] volatile auto mptr = memcpy(U, A, sizeof(T) * n * n);
 
         int info;
         int worksize = n * n;
@@ -179,7 +180,7 @@ namespace detail
         {
             return false;
         }
-        [[maybe_unused]] volatile auto mptr = memcpy(U, A, n * n * sizeof(T));
+        [[maybe_unused]] volatile auto mptr = memcpy(U, A, sizeof(T) * n * n);
 
         int info;
         int worksize = n * n;
