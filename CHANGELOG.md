@@ -34,7 +34,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Known Issues
 - A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
   symmetric/hermitian matrices (e.g., SYEVX/HEEVX and SYGVX/HEGVX), as well as singular values (e.g.,
-  BDSVDX and GESVDX).  **When was the issue first introduced?**
+  BDSVDX and GESVDX).
 
 ### Security
 
