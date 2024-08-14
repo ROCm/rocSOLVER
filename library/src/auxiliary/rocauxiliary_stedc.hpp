@@ -1471,15 +1471,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                         {
                             if(tmpd[2 * j] > tmpd[2 * j + 1])
                             {
-                                valf = tmpd[2 * j];
-                                tmpd[2 * j] = tmpd[2 * j + 1];
-                                tmpd[2 * j + 1] = valf;
-                                valf = zz[2 * j];
-                                zz[2 * j] = zz[2 * j + 1];
-                                zz[2 * j + 1] = valf;
-                                bd = per[2 * j];
-                                per[2 * j] = per[2 * j + 1];
-                                per[2 * j + 1] = bd;
+                                swap(tmpd[2 * j], tmpd[2 * j + 1]);
+                                swap(zz[2 * j], zz[2 * j + 1]);
+                                swap(per[2 * j], per[2 * j + 1]);
                             }
                         }
                     }
@@ -1489,15 +1483,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                         {
                             if(tmpd[2 * j + 1] > tmpd[2 * j + 2])
                             {
-                                valf = tmpd[2 * j + 1];
-                                tmpd[2 * j + 1] = tmpd[2 * j + 2];
-                                tmpd[2 * j + 2] = valf;
-                                valf = zz[2 * j + 1];
-                                zz[2 * j + 1] = zz[2 * j + 2];
-                                zz[2 * j + 2] = valf;
-                                bd = per[2 * j + 1];
-                                per[2 * j + 1] = per[2 * j + 2];
-                                per[2 * j + 2] = bd;
+                                swap(tmpd[2 * j + 1], tmpd[2 * j + 2]);
+                                swap(zz[2 * j + 1], zz[2 * j + 2]);
+                                swap(per[2 * j + 1], per[2 * j + 2]);
                             }
                         }
                     }
