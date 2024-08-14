@@ -26,7 +26,16 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Deprecated
 ### Removed
 ### Fixed
+- Fixed a memory allocation issue in SYEVJ that could cause failures on clients that manage their own memory.
+- Fixed a synchronizarion issue with SYEVJ that could led to convergence failure for large matrices.
+- Fixed a convergence issue in STEIN steaming from numerical orthogonality of the initial choice of eigenvectors.
+- Fixed synchronization issue in STEIN.
+
 ### Known Issues
+- A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
+  symmetric/hermitian matrices (e.g., SYEVX/HEEVX and SYGVX/HEGVX), as well as singular values (e.g.,
+  BDSVDX and GESVDX).  **When was the issue first introduced?**
+
 ### Security
 
 
@@ -55,7 +64,6 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Fixed
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
-- Fixed synchronization issue in STEIN.
 
 ### Known Issues
 - A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
