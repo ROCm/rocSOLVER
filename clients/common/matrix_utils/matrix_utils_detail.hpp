@@ -132,10 +132,10 @@ namespace detail
         }
         for(int i = 0; i < rank; ++i)
         {
-            R[i + i * ldR] = Q[i + i * ldQ];
+            R[i + i * static_cast<std::int64_t>(ldR)] = Q[i + i * static_cast<std::int64_t>(ldQ)];
             for(int j = i + 1; j < ncolsR; ++j)
             {
-                R[i + j * ldR] = Q[i + j * ldQ];
+                R[i + j * static_cast<std::int64_t>(ldR)] = Q[i + j * static_cast<std::int64_t>(ldQ)];
             }
         }
 

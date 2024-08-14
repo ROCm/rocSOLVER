@@ -446,12 +446,12 @@ public:
 
     virtual T operator()(I i, I j) const override
     {
-        return data_[i + ld_ * j];
+        return data_[i + static_cast<std::int64_t>(ld_) * j];
     }
 
     virtual T& operator()(I i, I j) override
     {
-        return data_[i + ld_ * j];
+        return data_[i + static_cast<std::int64_t>(ld_) * j];
     }
 
     virtual T operator[](I i) const override
