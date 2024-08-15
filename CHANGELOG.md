@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
-## (Unreleased) rocSOLVER
+## rocSOLVER 3.27.0 for ROCm 6.3.0
 ### Added
 - 64-bit APIs for existing functions:
     - LACGV_64
@@ -24,8 +24,6 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
   is not available, rocsolver's sparse refactorization and solvers functions
   will return `rocblas_status_not_implemented`.
 
-### Deprecated
-### Removed
 ### Fixed
 - Fixed a memory allocation issue in SYEVJ that could cause failures on clients that manage their own memory.
 - Fixed a synchronizarion issue with SYEVJ that could led to convergence failure for large matrices.
@@ -36,8 +34,6 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 - A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
   symmetric/hermitian matrices (e.g., SYEVX/HEEVX and SYGVX/HEGVX), as well as singular values (e.g.,
   BDSVDX and GESVDX).
-
-### Security
 
 
 ## rocSOLVER 3.26.0 for ROCm 6.2.0
