@@ -30,7 +30,6 @@
 #include "common/misc/clientcommon.hpp"
 #include "common/misc/lapack_host_reference.hpp"
 
-#include "common/matrix_utils/eigenvalues_generator.hpp"
 #include "common/matrix_utils/host_matrix.hpp"
 #include "common/matrix_utils/matrix_interface.hpp"
 #include "common/matrix_utils/matrix_utils_detail.hpp"

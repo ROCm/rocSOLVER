@@ -240,23 +240,23 @@ void syevx_heevx_initData(const rocblas_handle handle,
             }
 #else
         // New matrix initialization
-        using hMat = HostMatrix<T, rocblas_int>;
-        using BDesc = typename hMat::BlockDescriptor;
+        using HMat = HostMatrix<T, rocblas_int>;
+        using BDesc = typename HMat::BlockDescriptor;
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            auto hAw = hMat::Wrap(hA[b], lda, n);
+            auto hAw = HMat::Wrap(hA[b], lda, n);
             if(hAw) // update matrix hA if n >= 1
             {
                 rocblas_int half_n = n / 2;
                 // create half_n eigenvalues from -20 to -1, and n - half_n eigenvalues from 1 to 20
                 // (for the time being, avoid using -20 and 20, otherwise some tests will fail with hNev != hNevRes)
-                auto eigs = cat(hMat::FromRange(-20.1, -1.0, half_n),
-                                hMat::FromRange(1.0, 20.1, n - half_n));
+                auto eigs = cat(HMat::FromRange(-20.1, -1.0, half_n),
+                                HMat::FromRange(1.0, 20.1, n - half_n));
                 auto [Q, _] = qr((*hAw).block(BDesc().nrows(n).ncols(n)));
                 hAw->set_to_zero();
 
-                hAw->copy_data_from(Q * hMat::Zeros(n).diag(eigs) * adjoint(Q));
+                hAw->copy_data_from(Q * HMat::Zeros(n).diag(eigs) * adjoint(Q));
             }
 #endif
             // make copy of original data to test vectors if required
@@ -315,8 +315,8 @@ void syevx_heevx_getError(const rocblas_handle handle,
                           Ih& hinfoRes,
                           double* max_err)
 {
-    using hMat = HostMatrix<T, rocblas_int>;
-    using BDesc = typename hMat::BlockDescriptor;
+    using HMat = HostMatrix<T, rocblas_int>;
+    using BDesc = typename HMat::BlockDescriptor;
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     int lwork = !COMPLEX ? 35 * n : 33 * n;
@@ -401,10 +401,10 @@ void syevx_heevx_getError(const rocblas_handle handle,
         }
 
         // Get reference eigenvalues (will be updated in a subsequent commit)
-        auto eigs_ref = *hMat::Convert(hW[b], 1, num_eigs);
+        auto eigs_ref = *HMat::Convert(hW[b], 1, num_eigs);
 
         // Get computed eigenvalues
-        auto eigs_b = *hMat::Convert(
+        auto eigs_b = *HMat::Convert(
             hWRes[b], 1, num_eigs); // convert eigenvalues from type S to type T, if required
 
         if(evect != rocblas_evect_original)
@@ -429,7 +429,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
             *max_err = err > *max_err ? err : *max_err;
 
             // Create a thin wrapper of input matrix A (bc * lda * n), of size lda * n starting at b * lda * n
-            auto AWrap_b = hMat::Wrap(A.data() + b * lda * n, lda, n);
+            auto AWrap_b = HMat::Wrap(A.data() + b * lda * n, lda, n);
 
             // Since `lda`, `ldz` and `n` can differ, we must extract submatrices of the correct size from
             // `A`, `hZRes` and `hWRes`.
@@ -440,15 +440,15 @@ void syevx_heevx_getError(const rocblas_handle handle,
             auto A_b = (*AWrap_b).block(block_A);
 
             // Get computed eigenvectors
-            auto V_b = (*hMat::Wrap(hZRes[b], ldz, n)).block(BDesc().nrows(n).ncols(num_eigs));
+            auto V_b = (*HMat::Wrap(hZRes[b], ldz, n)).block(BDesc().nrows(n).ncols(num_eigs));
 
             // Check orthogonality of computed eigenvectors
-            auto OE = adjoint(V_b) * V_b - hMat::Eye(num_eigs);
+            auto OE = adjoint(V_b) * V_b - HMat::Eye(num_eigs);
             S ortho_err = OE.norm();
             *max_err = ortho_err > *max_err ? ortho_err : *max_err;
 
             // Check accuracy of eigenpairs
-            auto AE = adjoint(V_b) * A_b * V_b - hMat::Zeros(num_eigs).diag(eigs_b);
+            auto AE = adjoint(V_b) * A_b * V_b - HMat::Zeros(num_eigs).diag(eigs_b);
             err = AE.max_col_norm() / eigs_ref.max_coeff_norm();
             /* err *= std::numeric_limits<S>::epsilon() / ortho_err; // Use "relative Weyl" error bound */
             *max_err = err > *max_err ? err : *max_err;
