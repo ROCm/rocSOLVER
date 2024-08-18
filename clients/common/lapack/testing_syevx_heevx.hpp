@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "common/matrix_utils/matrix_utils.hpp"
 #include "common/misc/client_util.hpp"
 #include "common/misc/clientcommon.hpp"
 #include "common/misc/lapack_host_reference.hpp"
@@ -213,6 +214,8 @@ void syevx_heevx_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // construct well conditioned matrix A such that all eigenvalues are in (-20, 20)
+#ifdef ROCSOLVER_TESTS_USE_DEPRECATED_INITIALIZERS
+        // Old matrix initialization
         for(rocblas_int b = 0; b < bc; ++b)
         {
             for(rocblas_int i = 0; i < n; i++)
@@ -235,7 +238,27 @@ void syevx_heevx_initData(const rocblas_handle handle,
                 if(i == n / 4 || i == n / 2 || i == n - 1 || i == n / 7 || i == n / 5 || i == n / 3)
                     hA[b][i + i * lda] *= -1;
             }
+#else
+        // New matrix initialization
+        using HMat = HostMatrix<T, rocblas_int>;
+        using BDesc = typename HMat::BlockDescriptor;
 
+        for(rocblas_int b = 0; b < bc; ++b)
+        {
+            auto hAw = HMat::Wrap(hA[b], lda, n);
+            if(hAw) // update matrix hA if n >= 1
+            {
+                rocblas_int half_n = n / 2;
+                // create half_n eigenvalues from -20 to -1, and n - half_n eigenvalues from 1 to 20
+                // (for the time being, avoid using -20 and 20, otherwise some tests will fail with hNev != hNevRes)
+                auto eigs = cat(HMat::FromRange(-20.1, -1.0, half_n),
+                                HMat::FromRange(1.0, 20.1, n - half_n));
+                auto [Q, _] = qr((*hAw).block(BDesc().nrows(n).ncols(n)));
+                hAw->set_to_zero();
+
+                hAw->copy_data_from(Q * HMat::Zeros(n).diag(eigs) * adjoint(Q));
+            }
+#endif
             // make copy of original data to test vectors if required
             if(test && evect == rocblas_evect_original)
             {
@@ -292,6 +315,8 @@ void syevx_heevx_getError(const rocblas_handle handle,
                           Ih& hinfoRes,
                           double* max_err)
 {
+    using HMat = HostMatrix<T, rocblas_int>;
+    using BDesc = typename HMat::BlockDescriptor;
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
     int lwork = !COMPLEX ? 35 * n : 33 * n;
@@ -354,49 +379,12 @@ void syevx_heevx_getError(const rocblas_handle handle,
 
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        if(evect != rocblas_evect_original)
+        // Number of eigenvalues
+        auto num_eigs = hNev[b][0];
+
+        if((hinfo[b][0] != 0) || (num_eigs <= 0))
         {
-            // only eigenvalues needed; can compare with LAPACK
-
-            // error is ||hW - hWRes|| / ||hW||
-            // using frobenius norm
-            if(hinfo[b][0] == 0)
-                err = norm_error('F', 1, hNev[b][0], 1, hW[b], hWRes[b]);
-            *max_err = err > *max_err ? err : *max_err;
-        }
-        else
-        {
-            // both eigenvalues and eigenvectors needed; need to implicitly test
-            // eigenvectors due to non-uniqueness of eigenvectors under scaling
-            if(hinfo[b][0] == 0)
-            {
-                // check ifail
-                err = 0;
-                for(int j = 0; j < hNev[b][0]; j++)
-                {
-                    EXPECT_EQ(hIfailRes[b][j], 0) << "where b = " << b << ", j = " << j;
-                    if(hIfailRes[b][j] != 0)
-                        err++;
-                }
-                *max_err = err > *max_err ? err : *max_err;
-
-                // multiply A with each of the nev eigenvectors and divide by corresponding
-                // eigenvalues
-                T alpha;
-                T beta = 0;
-                for(int j = 0; j < hNev[b][0]; j++)
-                {
-                    alpha = T(1) / hWRes[b][j];
-                    cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hZRes[b] + j * ldz,
-                                  1, beta, hZ[b] + j * ldz, 1);
-                }
-
-                // error is ||hZ - hZRes|| / ||hZ||
-                // using frobenius norm
-                err = norm_error('F', n, hNev[b][0], ldz, hZ[b], hZRes[b]);
-                *max_err = err > *max_err ? err : *max_err;
-            }
-            else
+            if(evect == rocblas_evect_original)
             {
                 // check ifail
                 err = 0;
@@ -408,6 +396,62 @@ void syevx_heevx_getError(const rocblas_handle handle,
                 }
                 *max_err = err > *max_err ? err : *max_err;
             }
+
+            continue;
+        }
+
+        // Get reference eigenvalues (will be updated in a subsequent commit)
+        auto eigs_ref = *HMat::Convert(hW[b], 1, num_eigs);
+
+        // Get computed eigenvalues
+        auto eigs_b = *HMat::Convert(
+            hWRes[b], 1, num_eigs); // convert eigenvalues from type S to type T, if required
+
+        if(evect != rocblas_evect_original)
+        {
+            // only eigenvalues needed; can compare with LAPACK
+
+            err = (eigs_ref - eigs_b).max_coeff_norm() / eigs_ref.max_coeff_norm();
+            *max_err = err > *max_err ? err : *max_err;
+        }
+        else
+        {
+            // both eigenvalues and eigenvectors needed; need to implicitly test
+            // eigenvectors due to non-uniqueness of eigenvectors under scaling
+            // check ifail
+            err = 0;
+            for(int j = 0; j < hNev[b][0]; j++)
+            {
+                EXPECT_EQ(hIfailRes[b][j], 0) << "where b = " << b << ", j = " << j;
+                if(hIfailRes[b][j] != 0)
+                    err++;
+            }
+            *max_err = err > *max_err ? err : *max_err;
+
+            // Create a thin wrapper of input matrix A (bc * lda * n), of size lda * n starting at b * lda * n
+            auto AWrap_b = HMat::Wrap(A.data() + b * lda * n, lda, n);
+
+            // Since `lda`, `ldz` and `n` can differ, we must extract submatrices of the correct size from
+            // `A`, `hZRes` and `hWRes`.
+            //
+            // We want the sub-block starting from row 0, col 0 and with size n x n of A
+            auto block_A = BDesc().from_row(0).from_col(0).nrows(n).ncols(
+                n); // the `from_row(0)` and `from_col(0)` calls can be omitted
+            auto A_b = (*AWrap_b).block(block_A);
+
+            // Get computed eigenvectors
+            auto V_b = (*HMat::Wrap(hZRes[b], ldz, n)).block(BDesc().nrows(n).ncols(num_eigs));
+
+            // Check orthogonality of computed eigenvectors
+            auto OE = adjoint(V_b) * V_b - HMat::Eye(num_eigs);
+            S ortho_err = OE.norm();
+            *max_err = ortho_err > *max_err ? ortho_err : *max_err;
+
+            // Check accuracy of eigenpairs
+            auto AE = adjoint(V_b) * A_b * V_b - HMat::Zeros(num_eigs).diag(eigs_b);
+            err = AE.max_col_norm() / eigs_ref.max_coeff_norm();
+            /* err *= std::numeric_limits<S>::epsilon() / ortho_err; // Use "relative Weyl" error bound */
+            *max_err = err > *max_err ? err : *max_err;
         }
     }
 }
