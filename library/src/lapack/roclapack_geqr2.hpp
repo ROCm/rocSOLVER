@@ -131,17 +131,22 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
     for(I j = 0; j < dim; ++j)
     {
         // generate Householder reflector to work on column j
-        rocsolver_larfg_template(handle, m - j, A, shiftA + idx2D(j, j, lda), A,
+        rocsolver_larfg_general_template<false, T>(handle, m - j, A, shiftA + idx2D(j, j, lda), diag, 0, 1, A,
                                  shiftA + idx2D(std::min(j + 1, m - 1), j, lda), (I)1, strideA,
                                  (ipiv + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
+
+        // // restore original value of A(j,j)
+        // ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+        //                         stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
+        //                         (I)1);
 
         // Apply Householder reflector to the rest of matrix from the left
         if(j < n - 1)
         {
-            // insert one in A(j,j) tobuild/apply the householder matrix
-            ROCSOLVER_LAUNCH_KERNEL((set_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                    stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
-                                    (I)1, true);
+            // // insert one in A(j,j) tobuild/apply the householder matrix
+            // ROCSOLVER_LAUNCH_KERNEL((set_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+            //                         stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
+            //                         (I)1, true);
 
             // conjugate tau
             if(COMPLEX)
@@ -152,15 +157,20 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
                                     A, shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count,
                                     scalars, Abyx_norms, (T**)work_workArr);
 
-            // restore original value of A(j,j)
-            ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
-                                    stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
-                                    (I)1);
+            // // restore original value of A(j,j)
+            // ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+            //                         stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
+            //                         (I)1);
 
             // restore tau
             if(COMPLEX)
                 rocsolver_lacgv_template<T>(handle, (I)1, ipiv, j, (I)1, strideP, batch_count);
         }
+
+        // restore original value of A(j,j)
+        ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+                                stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                                (I)1);
     }
 
     return rocblas_status_success;
