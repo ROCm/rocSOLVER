@@ -22,13 +22,19 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
         }
     }
 
+    def getDependenciesCommand = ""
+    if (project.installLibraryDependenciesFromCI)
+    {
+        project.libraryDependencies.each
+        { libraryName ->
+            getDependenciesCommand += auxiliary.getLibrary(libraryName, platform.jenkinsLabel, 'develop', sameOrg)
+        }
+    }
+
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
-                ${getRocBLAS}
-                ${getRocSPARSE}
-                ${getRocPRIM}
-                ${auxiliary.exitIfNotSuccess()}
+                ${getDependenciesCommand}
                 ${centos}
                 ${project.paths.build_command} ${hipClang} ${debug} ${noOptimizations}
                 ${auxiliary.exitIfNotSuccess()}
