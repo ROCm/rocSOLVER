@@ -9,7 +9,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
     String hipClang = ''
     String debug = project.buildName.contains('Debug') ? '-g' : ''
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
-    String[] options = []
+    List<String> options = []
     Boolean withSparse = true
 
     if (env.BRANCH_NAME ==~ /PR-\d+/)
@@ -28,7 +28,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
         }
     }
 
-    String[] getDeps = []
+    List<String> getDeps = []
     getDeps << auxiliary.getLibrary('rocBLAS', platform.jenkinsLabel, null, sameOrg)
     if (withSparse)
     {
