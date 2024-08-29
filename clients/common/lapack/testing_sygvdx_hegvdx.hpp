@@ -29,6 +29,7 @@
 
 #include "common/misc/client_util.hpp"
 #include "common/misc/clientcommon.hpp"
+#include "common/misc/clss.hpp"
 #include "common/misc/lapack_host_reference.hpp"
 #include "common/misc/norm.hpp"
 #include "common/misc/rocsolver.hpp"
@@ -238,6 +239,8 @@ void sygvdx_hegvdx_initData(const rocblas_handle handle,
             // for testing purposes, we start with a reduced matrix M for the standard equivalent problem
             // with spectrum in a desired range (-20, 20). Then we construct the generalized pair
             // (A, B) from there.
+            memset(hB[b], 0,
+                   sizeof(T) * n * ldb); // since ldb >= n, make sure all entries of B are initialized
             for(rocblas_int i = 0; i < n; i++)
             {
                 // scale matrices and set hA = M (symmetric/hermitian), hB = U (upper triangular)
@@ -390,10 +393,35 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
     std::vector<int> hIfail(n);
     host_strided_batch_vector<T> A(lda * n, 1, lda * n, bc);
     host_strided_batch_vector<T> B(ldb * n, 1, ldb * n, bc);
+    std::vector<closest_largest_subsequences<S>> clss(bc);
 
     // input data initialization
     sygvdx_hegvdx_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc,
                                           hA, hB, A, B, true, singular);
+
+    //
+    // Given an eigenvalue l_i of A and a computed eigenvalue l_i^* (obtained
+    // with a backward stable method) the best we can hope for, in general, is
+    // that | l_i - l_i^* | <= K * ulp * ||A||, where K depends on n and ||.||.
+    // For the sake of this test, we will set K = C * n, with C ~ 1.
+    //
+    // Thus, if the range to look for eigenvalues is the interval (vl, vu],
+    // calls to the solver should look for computed eigenvalues in the range
+    // (vl - tol, vu + tol], where `tol = C * n * ulp * ||A||`.
+    //
+    S C = 1;
+    std::vector<S> tols(bc, 0);
+    std::vector<S> norms(bc, 0);
+    S tol = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        norms[b] = snorm('F', n, n, hA[b], lda);
+        tols[b] = C * n * std::numeric_limits<S>::epsilon() * norms[b];
+        if(std::isfinite(tols[b]) && (tols[b] > tol))
+        {
+            tol = tols[b];
+        }
+    }
 
     // execute computations
     // GPU lapack
@@ -426,6 +454,12 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
     *max_err = 0;
     for(rocblas_int b = 0; b < bc; ++b)
     {
+        // Capture failures where B is not positive definite (hInfo[b][0] > n),
+        // all other LAPACK failures abort the test.
+        if((hInfo[b][0] != 0) && (hInfo[b][0] <= n))
+        {
+            return;
+        }
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
             *max_err += 1;
@@ -434,11 +468,16 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
     // Check number of returned eigenvalues
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        EXPECT_EQ(hNev[b][0], hNevRes[b][0]) << "where b = " << b;
-        if(hNev[b][0] != hNevRes[b][0])
+        auto hNevResMatch = clss[b](hW[b], hNev[b][0], hWRes[b], hNevRes[b][0], tols[b]);
+        /* clss[b].print_debug(); */
+        EXPECT_EQ(hNev[b][0], hNevResMatch) << "where b = " << b;
+        if(hNev[b][0] != hNevResMatch)
             *max_err += 1;
     }
 
+    //
+    // Compute errors
+    //
     double err;
 
     for(rocblas_int b = 0; b < bc; ++b)
@@ -446,12 +485,13 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
         if(evect == rocblas_evect_none)
         {
             // only eigenvalues needed; can compare with LAPACK
+            auto [lapackEigs, rocsolverEigs] = clss[b].subseqs();
 
             // error is ||hW - hWRes|| / ||hW||
             // using frobenius norm
             if(hInfo[b][0] == 0)
             {
-                err = norm_error('F', 1, hNev[b][0], 1, hW[b], hWRes[b]);
+                err = norm_error('F', 1, hNev[b][0], 1, lapackEigs.data(), rocsolverEigs.data());
                 *max_err = err > *max_err ? err : *max_err;
             }
         }
@@ -469,6 +509,7 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
                 cpu_symm_hemm(rocblas_side_left, uplo, n, hNev[b][0], alpha, B[b], ldb, hZRes[b],
                               ldz, beta, hB[b], ldb);
 
+                auto [_, hWResIds] = clss[b].subseqs_ids();
                 if(itype == rocblas_eform_ax)
                 {
                     // problem is A*x = (lambda)*B*x
@@ -476,15 +517,19 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
                     // compute (1/lambda)*A*x and store in hA
                     for(int j = 0; j < hNev[b][0]; j++)
                     {
-                        alpha = T(1) / hWRes[b][j];
-                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hZRes[b] + j * ldz, 1, beta,
+                        int jj = hWResIds[j]; // Id of rocSOLVER eigen-pair associated to j-th LAPACK eigen-pair
+                        alpha = T(1) / hWRes[b][jj];
+                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hZRes[b] + jj * ldz, 1, beta,
                                       hA[b] + j * lda, 1);
                     }
 
                     // move B*x into hZRes
                     for(rocblas_int i = 0; i < n; i++)
                         for(rocblas_int j = 0; j < hNev[b][0]; j++)
-                            hZRes[b][i + j * ldz] = hB[b][i + j * ldb];
+                        {
+                            int jj = hWResIds[j]; // Id of rocSOLVER eigen-pair associated to j-th LAPACK eigen-pair
+                            hZRes[b][i + j * ldz] = hB[b][i + jj * ldb];
+                        }
                 }
                 else
                 {
@@ -493,10 +538,19 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
                     // compute (1/lambda)*A*B*x or (1/lambda)*B*A*x and store in hA
                     for(int j = 0; j < hNev[b][0]; j++)
                     {
-                        alpha = T(1) / hWRes[b][j];
-                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + j * ldb, 1, beta,
+                        int jj = hWResIds[j]; // Id of rocSOLVER eigen-pair associated to j-th LAPACK eigen-pair
+                        alpha = T(1) / hWRes[b][jj];
+                        cpu_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + jj * ldb, 1, beta,
                                       hA[b] + j * lda, 1);
                     }
+                    // move hZRes
+                    for(rocblas_int i = 0; i < n; i++)
+                        for(rocblas_int j = 0; j < hNev[b][0]; j++)
+                        {
+                            int jj = hWResIds[j]; // Id of rocSOLVER eigen-pair associated to j-th LAPACK eigen-pair
+                            if(j != jj)
+                                hZRes[b][i + j * ldz] = hZRes[b][i + jj * ldz];
+                        }
                 }
 
                 // error is ||hA - hZRes|| / ||hA||
