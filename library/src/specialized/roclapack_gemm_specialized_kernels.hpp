@@ -182,10 +182,12 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
     if(m == 0 || n == 0 || k == 0 || batch_count == 0)
         return rocblas_status_success;
 
+#ifndef INTERNAL_BLAS_ONLY
     if(inca == 1 && incb == 1 && incc == 1)
         return rocblasCall_gemm(handle, transA, transB, m, n, k, alpha, A, shiftA, lda, strideA, B,
                                 shiftB, ldb, strideB, beta, C, shiftC, ldc, strideC, batch_count,
                                 work);
+#endif
 
     // TODO: add interleaved support for conjugate transpose
     if(transA == rocblas_operation_conjugate_transpose)

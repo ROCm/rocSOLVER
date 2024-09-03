@@ -31,6 +31,12 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
+#ifdef INTERNAL_BLAS_ONLY
+#define NO_ROCBLAS 1
+#else
+#define NO_ROCBLAS 0
+#endif
+
 /** Constants for block size of trsm **/
 // clang-format off
 #define TRSM_NUMROWS_REAL 12
@@ -677,7 +683,7 @@ I rocsolver_trsm_blksize(const I m, const I n)
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
 
-    if(blk == 1)
+    if(blk == 1 || (NO_ROCBLAS && blk == 0))
         blk = std::min(m, I(512));
 
     return blk;
@@ -708,7 +714,7 @@ I rocsolver_trsm_blksize(const I m, const I n)
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
 
-    if(blk == 1)
+    if(blk == 1 || (NO_ROCBLAS && blk == 0))
         blk = std::min(m, I(512));
 
     return blk;
@@ -732,10 +738,12 @@ rocblas_status rocsolver_trsm_mem(const rocblas_side side,
                                   const I inca,
                                   const I incb)
 {
+    std::cout << "NO_ROCBLAS: " << NO_ROCBLAS << std::endl;
+
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
 
-    if(inca != 1 || incb != 1)
+    if(inca != 1 || incb != 1 || NO_ROCBLAS)
     {
         *size_work1 = 0;
         *size_work2 = 0;
@@ -844,12 +852,14 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                      : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
+#ifndef INTERNAL_BLAS_ONLY
     if(blk == 0)
     {
         return rocblasCall_trsm(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A,
                                 shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                 optim_mem, work1, work2, work3, work4);
     }
+#endif
 
     // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
     int device;
@@ -1127,12 +1137,14 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                      : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
+#ifndef INTERNAL_BLAS_ONLY
     if(blk == 0)
     {
         return rocblasCall_trsm(handle, side, rocblas_fill_upper, trans, diag, m, n, &one, A,
                                 shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count,
                                 optim_mem, work1, work2, work3, work4);
     }
+#endif
 
     // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
     int device;

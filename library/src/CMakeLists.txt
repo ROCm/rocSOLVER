@@ -445,6 +445,10 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif()
 
+if(INTERNAL_BLAS_ONLY)
+  target_compile_definitions(rocsolver PRIVATE INTERNAL_BLAS_ONLY)
+endif()
+
 target_compile_definitions(rocsolver PRIVATE
   ROCM_USE_FLOAT16
   ROCBLAS_INTERNAL_API
