@@ -382,7 +382,7 @@ rocblas_status rocsolver_getri_template(rocblas_handle handle,
                                 0, stream, n, j, jb, A, shiftA, lda, strideA, info, tmpcopy, strideW);
 
         if(j + jb < n)
-            rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, jb,
+            rocsolver_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, rocblas_operation_none, n, jb,
                              n - j - jb, &minone, A, shiftA + idx2D(0, j + jb, lda), lda, strideA,
                              tmpcopy, j + jb, ldw, strideW, &one, A, shiftA + idx2D(0, j, lda), lda,
                              strideA, batch_count, workArr);

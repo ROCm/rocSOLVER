@@ -37,6 +37,7 @@
 #include "rocauxiliary_sterf.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 #include <algorithm>
 
@@ -2059,7 +2060,7 @@ void local_gemm(rocblas_handle handle,
     S zero = 0.0;
 
     // temp = A*B
-    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A,
+    rocsolver_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A,
                      shiftA, lda, strideA, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt,
                      strideT, batch_count, workArr);
 
@@ -2112,7 +2113,7 @@ void local_gemm(rocblas_handle handle,
                             strideA, work, rocblas_fill_full);
 
     // temp = work*B
-    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+    rocsolver_gemm<BATCHED, STRIDED, S>(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
                      shiftT, ldt, strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt,
                      strideT, batch_count, workArr);
 
@@ -2127,7 +2128,7 @@ void local_gemm(rocblas_handle handle,
                             strideA, work, rocblas_fill_full);
 
     // temp = work*B
-    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+    rocsolver_gemm<BATCHED, STRIDED, S>(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
                      shiftT, ldt, strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt,
                      strideT, batch_count, workArr);
 

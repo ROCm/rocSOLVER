@@ -445,8 +445,8 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif()
 
-if(INTERNAL_BLAS_ONLY)
-  target_compile_definitions(rocsolver PRIVATE INTERNAL_BLAS_ONLY)
+if(DISBALE_ROCBLAS_IN_INTERNAL)
+  target_compile_definitions(rocsolver PRIVATE DISBALE_ROCBLAS_IN_INTERNAL)
 endif()
 
 target_compile_definitions(rocsolver PRIVATE

@@ -36,6 +36,7 @@
 #include "rocblas.hpp"
 #include "roclapack_gebd2.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -159,13 +160,13 @@ rocblas_status rocsolver_gebrd_template(rocblas_handle handle,
                                     strideY, batch_count, scalars, work_workArr, Abyx_norms);
 
         // update the rest of the matrix
-        rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
+        rocsolver_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
                          m - j - jb, n - j - jb, jb, &minone, A, shiftA + idx2D(j + jb, j, lda),
                          lda, strideA, Y, shiftY + jb, ldy, strideY, &one, A,
                          shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count,
                          (T**)work_workArr);
 
-        rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m - j - jb,
+        rocsolver_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, rocblas_operation_none, m - j - jb,
                          n - j - jb, jb, &minone, X, shiftX + jb, ldx, strideX, A,
                          shiftA + idx2D(j, j + jb, lda), lda, strideA, &one, A,
                          shiftA + idx2D(j + jb, j + jb, lda), lda, strideA, batch_count,

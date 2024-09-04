@@ -148,7 +148,7 @@ ROCSOLVER_KERNEL void gemm_noconj_kernel(const I m,
     Launchers of specialized kernels
 *************************************************************/
 
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U1, typename U2, typename U3>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
@@ -156,18 +156,18 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                               I n,
                               I k,
                               const T* alpha,
-                              U A,
+                              U1 A,
                               rocblas_stride shiftA,
                               I inca,
                               I lda,
                               rocblas_stride strideA,
-                              U B,
+                              U2 B,
                               rocblas_stride shiftB,
                               I incb,
                               I ldb,
                               rocblas_stride strideB,
                               const T* beta,
-                              U C,
+                              U3 C,
                               rocblas_stride shiftC,
                               I incc,
                               I ldc,
@@ -182,12 +182,18 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
     if(m == 0 || n == 0 || k == 0 || batch_count == 0)
         return rocblas_status_success;
 
-#ifndef INTERNAL_BLAS_ONLY
+#ifndef DISBALE_ROCBLAS_IN_INTERNAL
     if(inca == 1 && incb == 1 && incc == 1)
         return rocblasCall_gemm(handle, transA, transB, m, n, k, alpha, A, shiftA, lda, strideA, B,
                                 shiftB, ldb, strideB, beta, C, shiftC, ldc, strideC, batch_count,
                                 work);
 #endif
+
+    if constexpr (!rocblas_is_complex<T>)
+    {
+        transA = (transA == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose : transA);
+        transB = (transB == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose : transB);
+    }
 
     // TODO: add interleaved support for conjugate transpose
     if(transA == rocblas_operation_conjugate_transpose)
@@ -242,7 +248,7 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
     Non-interleaved wrappers
 *************************************************************/
 
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
+template <bool BATCHED, bool STRIDED, typename T, typename I, typename U1, typename U2, typename U3>
 inline rocblas_status rocsolver_gemm(rocblas_handle handle,
                                      rocblas_operation transA,
                                      rocblas_operation transB,
@@ -250,16 +256,16 @@ inline rocblas_status rocsolver_gemm(rocblas_handle handle,
                                      I n,
                                      I k,
                                      const T* alpha,
-                                     U A,
+                                     U1 A,
                                      rocblas_stride shiftA,
                                      I lda,
                                      rocblas_stride strideA,
-                                     U B,
+                                     U2 B,
                                      rocblas_stride shiftB,
                                      I ldb,
                                      rocblas_stride strideB,
                                      const T* beta,
-                                     U C,
+                                     U3 C,
                                      rocblas_stride shiftC,
                                      I ldc,
                                      rocblas_stride strideC,
@@ -275,11 +281,11 @@ inline rocblas_status rocsolver_gemm(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_GEMM(BATCHED, STRIDED, T, I, U)                                               \
-    template rocblas_status rocsolver_gemm<BATCHED, STRIDED, T, I, U>(                            \
+#define INSTANTIATE_GEMM(BATCHED, STRIDED, T, I, U1, U2, U3)                                      \
+    template rocblas_status rocsolver_gemm<BATCHED, STRIDED, T, I, U1, U2, U3>(                   \
         rocblas_handle handle, rocblas_operation transA, rocblas_operation transB, I m, I n, I k, \
-        const T* alpha, U A, rocblas_stride shiftA, I lda, rocblas_stride strideA, U B,           \
-        rocblas_stride shiftB, I ldb, rocblas_stride strideB, const T* beta, U C,                 \
+        const T* alpha, U1 A, rocblas_stride shiftA, I lda, rocblas_stride strideA, U2 B,         \
+        rocblas_stride shiftB, I ldb, rocblas_stride strideB, const T* beta, U3 C,                \
         rocblas_stride shiftC, I ldc, rocblas_stride strideC, I batch_count, T** work)
 
 ROCSOLVER_END_NAMESPACE

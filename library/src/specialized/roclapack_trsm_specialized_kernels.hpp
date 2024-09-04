@@ -31,7 +31,7 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-#ifdef INTERNAL_BLAS_ONLY
+#ifdef DISBALE_ROCBLAS_IN_INTERNAL
 #define NO_ROCBLAS 1
 #else
 #define NO_ROCBLAS 0
@@ -738,8 +738,6 @@ rocblas_status rocsolver_trsm_mem(const rocblas_side side,
                                   const I inca,
                                   const I incb)
 {
-    std::cout << "NO_ROCBLAS: " << NO_ROCBLAS << std::endl;
-
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
 
@@ -852,7 +850,7 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                      : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
-#ifndef INTERNAL_BLAS_ONLY
+#ifndef DISBALE_ROCBLAS_IN_INTERNAL
     if(blk == 0)
     {
         return rocblasCall_trsm(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A,
@@ -1137,7 +1135,7 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                      : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
-#ifndef INTERNAL_BLAS_ONLY
+#ifndef DISBALE_ROCBLAS_IN_INTERNAL
     if(blk == 0)
     {
         return rocblasCall_trsm(handle, side, rocblas_fill_upper, trans, diag, m, n, &one, A,

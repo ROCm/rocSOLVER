@@ -57,7 +57,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(ROCSOLVER_EMBED_FMT "Hide libfmt symbols" ON)
 option(OPTIMAL "Build specialized kernels for small matrix sizes" ON)
 option(ROCSOLVER_FIND_PACKAGE_LAPACK_CONFIG "Skip module mode search for LAPACK" ON)
-option(INTERNAL_BLAS_ONLY "Disable the use of rocBLAS gemm and trsm; internal implementations will be used instead" OFF)
+option(DISBALE_ROCBLAS_IN_INTERNAL "Disable the use of rocBLAS gemm and trsm in the internal rocSOLVER BLAS implementation." OFF)
 
 # Add our CMake helper files to the lookup path
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
