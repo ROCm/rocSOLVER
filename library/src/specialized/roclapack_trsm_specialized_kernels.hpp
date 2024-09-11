@@ -31,10 +31,10 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-#ifdef DISBALE_ROCBLAS_IN_INTERNAL
-#define NO_ROCBLAS 1
+#ifdef USE_INTERNAL_TRSM
+#define ROCSOLVER_INTERNAL_TRSM  1
 #else
-#define NO_ROCBLAS 0
+#define ROCSOLVER_INTERNAL_TRSM  0
 #endif
 
 /** Constants for block size of trsm **/
@@ -683,7 +683,7 @@ I rocsolver_trsm_blksize(const I m, const I n)
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
 
-    if(blk == 1 || (NO_ROCBLAS && blk == 0))
+    if(blk == 1 || (ROCSOLVER_INTERNAL_TRSM && blk == 0))
         blk = std::min(m, I(512));
 
     return blk;
@@ -714,7 +714,7 @@ I rocsolver_trsm_blksize(const I m, const I n)
         blk = size[get_index(intervalsM, M, m)][get_index(intervalsN, N, n)];
     }
 
-    if(blk == 1 || (NO_ROCBLAS && blk == 0))
+    if(blk == 1 || (ROCSOLVER_INTERNAL_TRSM && blk == 0))
         blk = std::min(m, I(512));
 
     return blk;
@@ -741,7 +741,7 @@ rocblas_status rocsolver_trsm_mem(const rocblas_side side,
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
 
-    if(inca != 1 || incb != 1 || NO_ROCBLAS)
+    if(inca != 1 || incb != 1 || ROCSOLVER_INTERNAL_TRSM)
     {
         *size_work1 = 0;
         *size_work2 = 0;
@@ -850,7 +850,7 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                      : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
-#ifndef DISBALE_ROCBLAS_IN_INTERNAL
+#ifndef USE_INTERNAL_TRSM
     if(blk == 0)
     {
         return rocblasCall_trsm(handle, side, rocblas_fill_lower, trans, diag, m, n, &one, A,
@@ -1135,7 +1135,7 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                      : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
     }
 
-#ifndef DISBALE_ROCBLAS_IN_INTERNAL
+#ifndef USE_INTERNAL_TRSM
     if(blk == 0)
     {
         return rocblasCall_trsm(handle, side, rocblas_fill_upper, trans, diag, m, n, &one, A,
@@ -1441,4 +1441,5 @@ inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
         const rocblas_stride strideB, const I batch_count, const bool optim_mem, void* work1,     \
         void* work2, void* work3, void* work4)
 
+#undef ROCSOLVER_INTERNAL_TRSM
 ROCSOLVER_END_NAMESPACE
