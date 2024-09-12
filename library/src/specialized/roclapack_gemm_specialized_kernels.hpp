@@ -189,10 +189,12 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                                 work);
 #endif
 
-    if constexpr (!rocblas_is_complex<T>)
+    if constexpr(!rocblas_is_complex<T>)
     {
-        transA = (transA == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose : transA);
-        transB = (transB == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose : transB);
+        transA = (transA == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose
+                                                                  : transA);
+        transB = (transB == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose
+                                                                  : transB);
     }
 
     // TODO: add interleaved support for conjugate transpose

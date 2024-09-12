@@ -32,9 +32,9 @@
 ROCSOLVER_BEGIN_NAMESPACE
 
 #ifdef USE_INTERNAL_TRSM
-#define ROCSOLVER_INTERNAL_TRSM  1
+#define ROCSOLVER_INTERNAL_TRSM 1
 #else
-#define ROCSOLVER_INTERNAL_TRSM  0
+#define ROCSOLVER_INTERNAL_TRSM 0
 #endif
 
 /** Constants for block size of trsm **/
