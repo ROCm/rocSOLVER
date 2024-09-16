@@ -64,7 +64,10 @@ __device__ T bdsqr_estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int
             smin = -1;
             break;
         }
-        t = std::abs(D[jd]) * t / (t + std::abs(E[je]));
+
+        // Note: Order of operations is important to prevent t from being rounded down to zero
+        t = std::abs(D[jd]) * (t / (t + std::abs(E[je])));
+
         smin = (t < smin) ? t : smin;
     }
 

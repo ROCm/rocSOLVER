@@ -35,9 +35,10 @@ using namespace std;
 
 typedef std::tuple<vector<int>, vector<int>> gesvd_tuple;
 
-// each size_range vector is a {m, n, fa};
+// each size_range vector is a {m, n, fa, singular};
 // if fa = 0 then no fast algorithm is allowed
 // if fa = 1 fast algorithm is used when possible
+// of singular = 1 then test with a singular matrix of all ones
 
 // each opt_range vector is a {lda, ldu, ldv, leftsv, rightsv};
 // if ldx = -1 then ldx < limit (invalid size)
@@ -54,21 +55,22 @@ typedef std::tuple<vector<int>, vector<int>> gesvd_tuple;
 // for checkin_lapack tests
 const vector<vector<int>> size_range = {
     // quick return
-    {0, 0, 0},
-    {0, 1, 0},
-    {1, 0, 0},
+    {0, 0, 0, 0},
+    {0, 1, 0, 0},
+    {1, 0, 0, 0},
     // invalid
-    {-1, 1, 0},
-    {1, -1, 0},
+    {-1, 1, 0, 0},
+    {1, -1, 0, 0},
     // normal (valid) samples
-    {1, 1, 0},
-    {20, 20, 0},
-    {40, 30, 0},
-    {60, 30, 0},
-    {60, 30, 1},
-    {30, 40, 0},
-    {30, 60, 0},
-    {30, 60, 1}};
+    {1, 1, 0, 0},
+    {15, 15, 0, 1},
+    {20, 20, 0, 0},
+    {40, 30, 0, 0},
+    {60, 30, 0, 0},
+    {60, 30, 1, 0},
+    {30, 40, 0, 0},
+    {30, 60, 0, 0},
+    {30, 60, 1, 0}};
 
 const vector<vector<int>> opt_range = {
     // invalid
@@ -95,7 +97,8 @@ const vector<vector<int>> opt_range = {
 
 // for daily_lapack tests
 const vector<vector<int>> large_size_range
-    = {{120, 100, 0}, {300, 120, 0}, {300, 120, 1}, {100, 120, 1}, {120, 300, 0}, {120, 300, 1}};
+    = {{100, 100, 0, 1}, {120, 100, 0, 0}, {300, 120, 0, 0}, {300, 120, 1, 0},
+       {100, 120, 1, 0}, {120, 300, 0, 0}, {120, 300, 1, 0}};
 
 const vector<vector<int>> large_opt_range
     = {{0, 0, 0, 3, 3}, {1, 0, 0, 0, 1}, {0, 1, 0, 1, 0}, {0, 0, 1, 1, 1},
@@ -150,6 +153,7 @@ Arguments gesvd_setup_arguments(gesvd_tuple tup)
     // only testing standard use case/defaults for strides
 
     arg.timing = 0;
+    arg.singular = size[3];
 
     return arg;
 }
