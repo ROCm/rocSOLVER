@@ -445,7 +445,7 @@ if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
 endif()
 
-if(ROCSOLVER_USE_INTERNAL_BLAS_FOR_DEBUG)
+if(ROCSOLVER_USE_INTERNAL_BLAS)
   target_compile_definitions(rocsolver PRIVATE USE_INTERNAL_GEMM USE_INTERNAL_TRSM)
 endif()
 
