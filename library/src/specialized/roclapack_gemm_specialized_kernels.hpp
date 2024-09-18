@@ -148,7 +148,7 @@ ROCSOLVER_KERNEL void gemm_noconj_kernel(const I m,
     Launchers of specialized kernels
 *************************************************************/
 
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U1, typename U2, typename U3>
+template <typename T, typename I, typename U1, typename U2, typename U3>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
@@ -189,18 +189,10 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                                 work);
 #endif
 
-    if constexpr(!rocblas_is_complex<T>)
-    {
-        transA = (transA == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose
-                                                                  : transA);
-        transB = (transB == rocblas_operation_conjugate_transpose ? rocblas_operation_transpose
-                                                                  : transB);
-    }
-
     // TODO: add interleaved support for conjugate transpose
-    if(transA == rocblas_operation_conjugate_transpose)
+    if(transA == rocblas_operation_conjugate_transpose && rocblas_is_complex<T>)
         return rocblas_status_not_implemented;
-    if(transB == rocblas_operation_conjugate_transpose)
+    if(transB == rocblas_operation_conjugate_transpose && rocblas_is_complex<T>)
         return rocblas_status_not_implemented;
 
     hipStream_t stream;
@@ -250,7 +242,7 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
     Non-interleaved wrappers
 *************************************************************/
 
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U1, typename U2, typename U3>
+template <typename T, typename I, typename U1, typename U2, typename U3>
 inline rocblas_status rocsolver_gemm(rocblas_handle handle,
                                      rocblas_operation transA,
                                      rocblas_operation transB,
@@ -274,17 +266,17 @@ inline rocblas_status rocsolver_gemm(rocblas_handle handle,
                                      I batch_count,
                                      T** work)
 {
-    return rocsolver_gemm<BATCHED, STRIDED, T, I>(handle, transA, transB, m, n, k, alpha, A, shiftA,
-                                                  1, lda, strideA, B, shiftB, 1, ldb, strideB, beta,
-                                                  C, shiftC, 1, ldc, strideC, batch_count, work);
+    return rocsolver_gemm<T, I>(handle, transA, transB, m, n, k, alpha, A, shiftA, 1, lda, strideA,
+                                B, shiftB, 1, ldb, strideB, beta, C, shiftC, 1, ldc, strideC,
+                                batch_count, work);
 }
 
 /*************************************************************
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_GEMM(BATCHED, STRIDED, T, I, U1, U2, U3)                                      \
-    template rocblas_status rocsolver_gemm<BATCHED, STRIDED, T, I, U1, U2, U3>(                   \
+#define INSTANTIATE_GEMM(T, I, U1, U2, U3)                                                        \
+    template rocblas_status rocsolver_gemm<T, I, U1, U2, U3>(                                     \
         rocblas_handle handle, rocblas_operation transA, rocblas_operation transB, I m, I n, I k, \
         const T* alpha, U1 A, rocblas_stride shiftA, I lda, rocblas_stride strideA, U2 B,         \
         rocblas_stride shiftB, I ldb, rocblas_stride strideB, const T* beta, U3 C,                \

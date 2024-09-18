@@ -328,15 +328,13 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     if(trap)
     {
         if(leftside)
-            rocsolver_gemm<BATCHED, STRIDED, T>(handle, transp, rocblas_operation_none, ldw, order,
-                                                m - k, &one, V, offsetV2, ldv, strideV, A, offsetA2,
-                                                lda, strideA, &one, tmptr, 0, ldw, strideW,
-                                                batch_count, workArr);
+            rocsolver_gemm(handle, transp, rocblas_operation_none, ldw, order, m - k, &one, V,
+                           offsetV2, ldv, strideV, A, offsetA2, lda, strideA, &one, tmptr, 0, ldw,
+                           strideW, batch_count, workArr);
         else
-            rocsolver_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, transp, ldw, order,
-                                                n - k, &one, A, offsetA2, lda, strideA, V, offsetV2,
-                                                ldv, strideV, &one, tmptr, 0, ldw, strideW,
-                                                batch_count, workArr);
+            rocsolver_gemm(handle, rocblas_operation_none, transp, ldw, order, n - k, &one, A,
+                           offsetA2, lda, strideA, V, offsetV2, ldv, strideV, &one, tmptr, 0, ldw,
+                           strideW, batch_count, workArr);
     }
 
     // compute: trans(T) * (V1' * A1 + V2' * A2)
@@ -354,15 +352,13 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
     if(trap)
     {
         if(leftside)
-            rocsolver_gemm<BATCHED, STRIDED, T>(handle, transp, rocblas_operation_none, m - k,
-                                                order, ldw, &minone, V, offsetV2, ldv, strideV,
-                                                tmptr, 0, ldw, strideW, &one, A, offsetA2, lda,
-                                                strideA, batch_count, workArr);
+            rocsolver_gemm(handle, transp, rocblas_operation_none, m - k, order, ldw, &minone, V,
+                           offsetV2, ldv, strideV, tmptr, 0, ldw, strideW, &one, A, offsetA2, lda,
+                           strideA, batch_count, workArr);
         else
-            rocsolver_gemm<BATCHED, STRIDED, T>(handle, rocblas_operation_none, transp, ldw, n - k,
-                                                order, &minone, tmptr, 0, ldw, strideW, V, offsetV2,
-                                                ldv, strideV, &one, A, offsetA2, lda, strideA,
-                                                batch_count, workArr);
+            rocsolver_gemm(handle, rocblas_operation_none, transp, ldw, n - k, order, &minone,
+                           tmptr, 0, ldw, strideW, V, offsetV2, ldv, strideV, &one, A, offsetA2,
+                           lda, strideA, batch_count, workArr);
     }
 
     // compute: V1 * trans(T) * (V1' * A1 + V2' * A2)

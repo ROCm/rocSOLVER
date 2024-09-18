@@ -526,12 +526,11 @@ rocblas_status getrf_panelLU(rocblas_handle handle,
                 work1, work2, work3, work4);
 
             if(k + jb < mm)
-                rocsolver_gemm<BATCHED, STRIDED, T>(
-                    handle, rocblas_operation_none, rocblas_operation_none, mm - k - jb,
-                    nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, inca, lda), inca, lda,
-                    strideA, A, shiftA + idx2D(k, k + jb, inca, lda), inca, lda, strideA, &one, A,
-                    shiftA + idx2D(k + jb, k + jb, inca, lda), inca, lda, strideA, batch_count,
-                    (T**)nullptr);
+                rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, mm - k - jb,
+                               nn - k - jb, jb, &minone, A, shiftA + idx2D(k + jb, k, inca, lda),
+                               inca, lda, strideA, A, shiftA + idx2D(k, k + jb, inca, lda), inca,
+                               lda, strideA, &one, A, shiftA + idx2D(k + jb, k + jb, inca, lda),
+                               inca, lda, strideA, batch_count, (T**)nullptr);
         }
     }
 
@@ -745,12 +744,11 @@ rocblas_status rocsolver_getrf_template(rocblas_handle handle,
 
             if(nextpiv < m)
             {
-                rocsolver_gemm<BATCHED, STRIDED, T>(
-                    handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb, &minone, A,
-                    shiftA + idx2D(nextpiv, j, inca, lda), inca, lda, strideA, A,
-                    shiftA + idx2D(j, nextpiv, inca, lda), inca, lda, strideA, &one, A,
-                    shiftA + idx2D(nextpiv, nextpiv, inca, lda), inca, lda, strideA, batch_count,
-                    (T**)nullptr);
+                rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, mm, nn, jb,
+                               &minone, A, shiftA + idx2D(nextpiv, j, inca, lda), inca, lda,
+                               strideA, A, shiftA + idx2D(j, nextpiv, inca, lda), inca, lda,
+                               strideA, &one, A, shiftA + idx2D(nextpiv, nextpiv, inca, lda), inca,
+                               lda, strideA, batch_count, (T**)nullptr);
             }
         }
     }

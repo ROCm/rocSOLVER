@@ -902,12 +902,12 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update right hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
-                    handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, blk,
-                    &minone, A, shiftA + idx2D(nextpiv, j, inca, lda), inca, lda, strideA, B,
-                    shiftB + idx2D(j, 0, incb, ldb), incb, ldb, strideB, &one, B,
-                    shiftB + idx2D(nextpiv, 0, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr));
+                ROCBLAS_CHECK(rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none,
+                                             m - nextpiv, n, blk, &minone, A,
+                                             shiftA + idx2D(nextpiv, j, inca, lda), inca, lda,
+                                             strideA, B, shiftB + idx2D(j, 0, incb, ldb), incb, ldb,
+                                             strideB, &one, B, shiftB + idx2D(nextpiv, 0, incb, ldb),
+                                             incb, ldb, strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -946,7 +946,7 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update right hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm(
                     handle, trans, rocblas_operation_none, m - nextpiv, n, blk, &minone, A,
                     shiftA + idx2D(m - nextpiv, 0, inca, lda), inca, lda, strideA, B,
                     shiftB + idx2D(m - nextpiv, 0, incb, ldb), incb, ldb, strideB, &one, B,
@@ -1002,7 +1002,7 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update left hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, blk,
                     &minone, B, shiftB + idx2D(0, n - nextpiv, incb, ldb), incb, ldb, strideB, A,
                     shiftA + idx2D(n - nextpiv, 0, inca, lda), inca, lda, strideA, &one, B,
@@ -1045,12 +1045,12 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update left hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
-                    handle, rocblas_operation_none, trans, m, n - nextpiv, blk, &minone, B,
-                    shiftB + idx2D(0, j, incb, ldb), incb, ldb, strideB, A,
-                    shiftA + idx2D(nextpiv, j, inca, lda), inca, lda, strideA, &one, B,
-                    shiftB + idx2D(0, nextpiv, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr));
+                ROCBLAS_CHECK(rocsolver_gemm(handle, rocblas_operation_none, trans, m, n - nextpiv,
+                                             blk, &minone, B, shiftB + idx2D(0, j, incb, ldb), incb,
+                                             ldb, strideB, A, shiftA + idx2D(nextpiv, j, inca, lda),
+                                             inca, lda, strideA, &one, B,
+                                             shiftB + idx2D(0, nextpiv, incb, ldb), incb, ldb,
+                                             strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1187,12 +1187,12 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update right hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
-                    handle, trans, rocblas_operation_none, m - nextpiv, n, blk, &minone, A,
-                    shiftA + idx2D(j, nextpiv, inca, lda), inca, lda, strideA, B,
-                    shiftB + idx2D(j, 0, incb, ldb), incb, ldb, strideB, &one, B,
-                    shiftB + idx2D(nextpiv, 0, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr));
+                ROCBLAS_CHECK(rocsolver_gemm(handle, trans, rocblas_operation_none, m - nextpiv, n,
+                                             blk, &minone, A, shiftA + idx2D(j, nextpiv, inca, lda),
+                                             inca, lda, strideA, B, shiftB + idx2D(j, 0, incb, ldb),
+                                             incb, ldb, strideB, &one, B,
+                                             shiftB + idx2D(nextpiv, 0, incb, ldb), incb, ldb,
+                                             strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }
@@ -1231,7 +1231,7 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update right hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm(
                     handle, rocblas_operation_none, rocblas_operation_none, m - nextpiv, n, blk,
                     &minone, A, shiftA + idx2D(0, m - nextpiv, inca, lda), inca, lda, strideA, B,
                     shiftB + idx2D(m - nextpiv, 0, incb, ldb), incb, ldb, strideB, &one, B,
@@ -1287,7 +1287,7 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update left hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
+                ROCBLAS_CHECK(rocsolver_gemm(
                     handle, rocblas_operation_none, trans, m, n - nextpiv, blk, &minone, B,
                     shiftB + idx2D(0, n - nextpiv, incb, ldb), incb, ldb, strideB, A,
                     shiftA + idx2D(0, n - nextpiv, inca, lda), inca, lda, strideA, &one, B,
@@ -1330,12 +1330,12 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                     HIP_CHECK(hipStreamSynchronize(stream));
 
                 // update left hand sides
-                ROCBLAS_CHECK(rocsolver_gemm<BATCHED, STRIDED, T>(
-                    handle, rocblas_operation_none, rocblas_operation_none, m, n - nextpiv, blk,
-                    &minone, B, shiftB + idx2D(0, j, incb, ldb), incb, ldb, strideB, A,
-                    shiftA + idx2D(j, nextpiv, inca, lda), inca, lda, strideA, &one, B,
-                    shiftB + idx2D(0, nextpiv, incb, ldb), incb, ldb, strideB, batch_count,
-                    (T**)nullptr));
+                ROCBLAS_CHECK(rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none,
+                                             m, n - nextpiv, blk, &minone, B,
+                                             shiftB + idx2D(0, j, incb, ldb), incb, ldb, strideB, A,
+                                             shiftA + idx2D(j, nextpiv, inca, lda), inca, lda,
+                                             strideA, &one, B, shiftB + idx2D(0, nextpiv, incb, ldb),
+                                             incb, ldb, strideB, batch_count, (T**)nullptr));
 
                 j = nextpiv;
             }

@@ -184,7 +184,7 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                     void* work4);
 
 // gemm
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U1, typename U2, typename U3>
+template <typename T, typename I, typename U1, typename U2, typename U3>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
@@ -208,7 +208,7 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                               I batch_count,
                               T** work);
 
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U1, typename U2, typename U3>
+template <typename T, typename I, typename U1, typename U2, typename U3>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
