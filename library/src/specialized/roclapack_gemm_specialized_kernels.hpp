@@ -38,26 +38,28 @@ ROCSOLVER_BEGIN_NAMESPACE
     Call this kernel with 'batch_count' groups in z, and enough
     groups in x and y to cover all the 'm' rows and 'n' columns of C. **/
 template <typename T, typename I, typename V, typename U1, typename U2, typename U3>
-ROCSOLVER_KERNEL void gemm_noconj_kernel(const I m,
-                                         const I n,
-                                         const I k,
-                                         V alpha,
-                                         U1 AA,
-                                         rocblas_stride shiftA,
-                                         I inca,
-                                         I lda,
-                                         rocblas_stride strideA,
-                                         U2 BB,
-                                         rocblas_stride shiftB,
-                                         I incb,
-                                         I ldb,
-                                         rocblas_stride strideB,
-                                         V beta,
-                                         U3 CC,
-                                         rocblas_stride shiftC,
-                                         I incc,
-                                         I ldc,
-                                         rocblas_stride strideC)
+ROCSOLVER_KERNEL void gemm_kernel(const I m,
+                                  const I n,
+                                  const I k,
+                                  V alpha,
+                                  bool conjA,
+                                  U1 AA,
+                                  rocblas_stride shiftA,
+                                  I inca,
+                                  I lda,
+                                  rocblas_stride strideA,
+                                  bool conjB,
+                                  U2 BB,
+                                  rocblas_stride shiftB,
+                                  I incb,
+                                  I ldb,
+                                  rocblas_stride strideB,
+                                  V beta,
+                                  U3 CC,
+                                  rocblas_stride shiftC,
+                                  I incc,
+                                  I ldc,
+                                  rocblas_stride strideC)
 {
     // indices
     I bid = hipBlockIdx_z;
@@ -76,7 +78,11 @@ ROCSOLVER_KERNEL void gemm_noconj_kernel(const I m,
     if(i < m && j < n)
     {
         for(I idx = 0; idx < k; idx++)
-            temp += A[i * inca + idx * lda] * B[idx * incb + j * ldb];
+        {
+            const auto Aval = conjA ? conj(A[i * inca + idx * lda]) : A[i * inca + idx * lda];
+            const auto Bval = conjB ? conj(B[idx * incb + j * ldb]) : B[idx * incb + j * ldb];
+            temp += Aval * Bval;
+        }
         C[i * incc + j * ldc] = a * temp + b * C[i * incc + j * ldc];
     }
 }
@@ -189,12 +195,6 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                                 work);
 #endif
 
-    // TODO: add interleaved support for conjugate transpose
-    if(transA == rocblas_operation_conjugate_transpose && rocblas_is_complex<T>)
-        return rocblas_status_not_implemented;
-    if(transB == rocblas_operation_conjugate_transpose && rocblas_is_complex<T>)
-        return rocblas_status_not_implemented;
-
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
@@ -217,6 +217,9 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
         ldb2 = incb;
     }
 
+    const bool conjA = transA == rocblas_operation_conjugate_transpose;
+    const bool conjB = transB == rocblas_operation_conjugate_transpose;
+
     // launch specialized kernel
     I blocksx = (m - 1) / BS2 + 1;
     I blocksy = (n - 1) / BS2 + 1;
@@ -224,15 +227,15 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
     dim3 threads(BS2, BS2, 1);
     if(pmode == rocblas_pointer_mode_device)
     {
-        ROCSOLVER_LAUNCH_KERNEL((gemm_noconj_kernel<T>), grid, threads, 0, stream, m, n, k, alpha,
-                                A, shiftA, lda1, lda2, strideA, B, shiftB, ldb1, ldb2, strideB,
-                                beta, C, shiftC, incc, ldc, strideC);
+        ROCSOLVER_LAUNCH_KERNEL((gemm_kernel<T>), grid, threads, 0, stream, m, n, k, alpha, conjA,
+                                A, shiftA, lda1, lda2, strideA, conjB, B, shiftB, ldb1, ldb2,
+                                strideB, beta, C, shiftC, incc, ldc, strideC);
     }
     else
     {
-        ROCSOLVER_LAUNCH_KERNEL((gemm_noconj_kernel<T>), grid, threads, 0, stream, m, n, k, *alpha,
-                                A, shiftA, lda1, lda2, strideA, B, shiftB, ldb1, ldb2, strideB,
-                                *beta, C, shiftC, incc, ldc, strideC);
+        ROCSOLVER_LAUNCH_KERNEL((gemm_kernel<T>), grid, threads, 0, stream, m, n, k, *alpha, conjA,
+                                A, shiftA, lda1, lda2, strideA, conjB, B, shiftB, ldb1, ldb2,
+                                strideB, *beta, C, shiftC, incc, ldc, strideC);
     }
 
     return rocblas_status_success;
