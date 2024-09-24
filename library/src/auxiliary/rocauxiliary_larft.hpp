@@ -5,9 +5,9 @@
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
  * and
- * Joffrain, Low, Quintana-Orti, et al. (2006). Accumulating householder
- * transformations, revisited.
- *      ACM Transactions on Mathematical Software 32(2), p. 169-179.
+ *     Joffrain, Low, Quintana-Orti, et al. (2006). Accumulating householder
+ *     transformations, revisited.
+ *             ACM Transactions on Mathematical Software 32(2), p. 169-179.
  * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
