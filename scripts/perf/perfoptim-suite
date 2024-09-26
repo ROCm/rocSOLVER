@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# Copyright (c) 2022 Advanced Micro Devices, Inc.
+
+#set -eux
+
+# benchmarks to run
+# valid options are: (default will run all of them)
+# syevd  -> eigensolver D&C + QR algorithm
+# syevdx -> eigensolver D&C + bisection
+# syevj  -> eigensolver Jacobi
+# gesvd  -> SVD QR algorithm
+# gesvdj -> SVD Jacobi
+# potrf  -> Cholesky factorization
+# geqrf  -> Orthogonal factorization
+Slist="syevd syevdx syevj gesvd gesvdj potrf geqrf"
+
+# precisions to use
+# valid options are: (default will use all of them)
+# s -> real single precision
+# d -> real double precision
+# c -> complex single precision
+# z -> complex double precision
+Plist="s d c z"
+
+# size cases to run:
+# valid options are: (default is large)
+# small  -> 2 <= size = 1024
+# medium -> 2 <= size = 4096
+# large  -> 2 <= size <= 12288
+Clist="small medium large"
+ 
+
+# Get an validate input arguments:
+error=true
+suite=""
+precision=""
+case=""
+
+if [ $# == 0 ]; then
+    error=false
+    suite=$Slist
+    precision=$Plist
+    case=$Clist
+else
+    args=$@
+    for a in $args; do
+        for s in $Slist; do
+            if [ $a == $s ]; then
+                error=false
+                suite+="$s "
+                break 
+            fi
+        done          
+        for p in $Plist; do
+            if [ $a == $p ]; then
+                error=false
+                precision+="$p "
+                break
+            fi
+        done  
+        for c in $Clist; do
+            if [ $a == $c ]; then
+                error=false
+                case+="$c "
+                break
+            fi
+        done  
+    done
+fi
+
+if $error; then
+    echo "Incorrect arguments..."
+    exit 1 
+fi
+if [ -z "$suite" ]; then
+    suite=$Slist
+fi
+if [ -z "$precision" ]; then
+    precision=$Plist
+fi
+if [ -z "$case" ]; then
+    case="large"
+fi
+
+
+# ensure this script is in the cwd
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+# setup output directory 
+output_dir=rocsolver_customer01_benchmarks
+mkdir -p "$output_dir"
+
+# run benchmarks
+for s in $suite; do
+    for p in $precision; do
+        for c in $case; do
+            python3 rocsolver-perfoptim-suite.py -v -o "$output_dir/$p${f}_benchmarks.csv" $s $p $c
+        done
+    done
+done
+
