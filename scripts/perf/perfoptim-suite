@@ -24,9 +24,10 @@ Plist="s d c z"
 
 # size cases to run:
 # valid options are: (default is large)
-# small  -> 2 <= size = 1024
-# medium -> 2 <= size = 4096
-# large  -> 2 <= size <= 12288
+# small  -> see definitions in rocsolver-perfoptim-suite.py for included size values  
+# medium -> see definitions in rocsolver-perfoptim-suite.py for included size values
+# large  -> see definitions in rocsolver-perfoptim-suite.py for included size values
+# (note: small is a sub-set of medium which is a sub-set of large)
 Clist="small medium large"
  
 
@@ -94,7 +95,7 @@ mkdir -p "$output_dir"
 for s in $suite; do
     for p in $precision; do
         for c in $case; do
-            python3 rocsolver-perfoptim-suite.py -v -o "$output_dir/$s${f}_benchmarks.csv" $s $p $c
+            python3 rocsolver-perfoptim-suite.py -v -o "$output_dir/$p${s}_benchmarks.csv" $s $p $c
         done
     done
 done
