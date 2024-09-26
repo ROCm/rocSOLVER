@@ -94,7 +94,7 @@ mkdir -p "$output_dir"
 for s in $suite; do
     for p in $precision; do
         for c in $case; do
-            python3 rocsolver-perfoptim-suite.py -v -o "$output_dir/$p${f}_benchmarks.csv" $s $p $c
+            python3 rocsolver-perfoptim-suite.py -v -o "$output_dir/$s${f}_benchmarks.csv" $s $p $c
         done
     done
 done

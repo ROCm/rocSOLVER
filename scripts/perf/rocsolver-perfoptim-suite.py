@@ -68,6 +68,7 @@ def syevdx_suite(*, precision, sizenormal, sizebatch):
             else: vv = 'no'
             for s in size:
                 p = int(s * per / 100)
+                if p == 0: p = 1
                 row = {'name': precision+fn, 'function': fn, 'precision': precision, 'range': per, 'evect': vv, 'n': s}
                 yield (row, s, f'-f {fn} -r {precision} --erange I --il 1 --iu {p} --evect {v} -n {s} {common}')
 
@@ -82,7 +83,7 @@ def syevj_suite(*, precision, sizenormal, sizebatch):
         else: vv = 'no'
         for s in size:
             row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'n': s}
-            yield (fn, f'-f {fn} -r {precision} --evect {v} -n {s} {common}')
+            yield (row, s, f'-f {fn} -r {precision} --evect {v} -n {s} {common}')
 
 """
 SYEVJBATCH tests are run, for the given precision and sizes, with vectors and without vectors
@@ -95,7 +96,7 @@ def syevjBatch_suite(*, precision, sizenormal, sizebatch):
         else: vv = 'no'
         for s, bc in size:
             row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'batch_count': bc, 'n': s}
-            yield (fn, f'-f {fn} -r {precision} --evect {v} --batch_count {bc} -n {s} {common}')
+            yield (row, s, f'-f {fn} -r {precision} --evect {v} --batch_count {bc} -n {s} {common}')
     
 """
 GESVD tests are run, for the given precision and sizes, with vectors and without vectors
@@ -108,7 +109,7 @@ def gesvd_suite(*, precision, sizenormal, sizebatch):
         else: vv = 'no'
         for s in size:
             row = {'name': precision+fn, 'function': fn, 'precision': precision, 'svect': vv, 'n': s}
-            yield (fn, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} -m {s} {common}')
+            yield (row, s, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} -m {s} {common}')
 
 """
 GESVDJ tests are run, for the given precision and sizes, with vectors and without vectors
@@ -121,7 +122,7 @@ def gesvdj_suite(*, precision, sizenormal, sizebatch):
         else: vv = 'no'
         for s in size:
             row = {'name': precision+fn, 'function': fn, 'precision': precision, 'svect': vv, 'n': s}
-            yield (fn, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} -m {s} {common}')
+            yield (row, s, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} -m {s} {common}')
 
 """
 GESVDJBATCH tests are run, for the given precision and sizes, with vectors and without vectors
@@ -134,7 +135,7 @@ def gesvdjBatch_suite(*, precision, sizenormal, sizebatch):
         else: vv = 'no'
         for s, bc in size:
             row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'batch_count': bc, 'n': s}
-            yield (fn, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} --batch_count {bc} -m {s} {common}')
+            yield (row, s, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} --batch_count {bc} -m {s} {common}')
 
 """
 POTRF tests are run with the given precision and sizes
@@ -144,7 +145,7 @@ def potrf_suite(*, precision, sizenormal, sizebatch):
     size = sizenormal
     for s in size:
         row = {'name': precision+fn, 'function': fn, 'precision': precision, 'n': s}
-        yield (fn, f'-f {fn} -r {precision} -n {s} {common}')
+        yield (row, s, f'-f {fn} -r {precision} -n {s} {common}')
 
 """
 POTRFBATCH tests are run with the given precision and sizes
@@ -154,7 +155,7 @@ def potrfBatch_suite(*, precision, sizenormal, sizebatch):
     size = sizebatch
     for s, bc in size:
         row = {'name': precision+fn, 'function': fn, 'precision': precision, 'batch_count': bc, 'n': s}
-        yield (fn, f'-f {fn} -r {precision} --batch_count {bc} -n {s} {common}')
+        yield (row, s, f'-f {fn} -r {precision} --batch_count {bc} -n {s} {common}')
 
 """
 GEQRF tests are run, for the given precision and number of rows, 
@@ -167,7 +168,7 @@ def geqrf_suite(*, precision, sizenormal, sizebatch):
         for s in size:
             if n == 0: n = s
             row = {'name': precision+fn, 'function': fn, 'precision': precision, 'cols': n, 'n': s}
-            yield (fn, f'-f {fn} -r {precision} -n {n} -m {s} {common}')
+            yield (row, s, f'-f {fn} -r {precision} -n {n} -m {s} {common}')
 
 suites = {
   'syevd': syevd_suite,
@@ -221,13 +222,13 @@ def execute_benchmarks(output_file, suite, precision, case, bench_executable):
     init = False
     benchmark_generator = suites[suite];
     sizenormal = list(chain(range(2, 64, 8), range(64, 256, 32), range(256, 1024, 64)))
-    sizebatch = list(chain(range(2, 64, 8), range(64, 256, 32), range(256, 1024, 64)))
+    sizebatch = list(chain(zip(range(2, 64, 4), repeat(5000)), zip(range(72, 164, 8), repeat(2500))))
     if case == 'medium' or case == 'large':
         sizenormal += list(chain(range(1024, 2048, 64), range(2048, 4096, 128)))
-        sizebatch += list(chain(range(1024, 2048, 64), range(2048, 4096, 128)))
+        sizebatch += list(chain(zip(range(168, 260, 8), repeat(2500)), zip(range(272, 520, 16), repeat(1000))))
     if case == 'large':
         sizenormal += list(chain(range(4096, 8192, 256), range(8192, 12300, 512)))
-        sizebatch += list(chain(range(4096, 8192, 256), range(8192, 12300, 512)))
+        sizebatch += list(chain(zip(range(544, 1050, 32), repeat(500)), zip(range(1088, 2050, 64), repeat(50))))
 
     for row, n, bench_args in benchmark_generator(precision=precision, sizenormal=sizenormal, 
                                               sizebatch=sizebatch):
