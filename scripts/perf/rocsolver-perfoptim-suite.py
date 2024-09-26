@@ -164,10 +164,13 @@ with 160, 576, 1088, 2176, and 4352 columns and also for the square case (#rows 
 def geqrf_suite(*, precision, sizenormal, sizebatch):
     fn = 'geqrf'
     size=sizenormal
-    for n in [0, 160, 576, 1088, 2176, 4352]:
+    for nc in [0, 160, 576, 1088, 2176, 4352]:
+        if nc == 0: nn = 'sq'
+        else: nn = nc
         for s in size:
-            if n == 0: n = s
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'cols': n, 'n': s}
+            if nc == 0: n = s
+            else: n = nc
+            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'cols': nn, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} -n {n} -m {s} {common}')
 
 suites = {
@@ -183,6 +186,8 @@ suites = {
   'geqrf': geqrf_suite}
 
 
+#################################################
+############## Helper functions #################
 #################################################
 ############## Helper functions #################
 ################################################# 
@@ -256,7 +261,7 @@ if __name__ == '__main__':
             action='store_true',
             help='display more information about operations being performed')
     parser.add_argument('--exe',
-            default='rocsolver-bench',
+            default='../../build/release/clients/staging/rocsolver-bench',
             help='the benchmark executable to run')
     parser.add_argument('-o',
             dest='output_path',
@@ -279,7 +284,5 @@ if __name__ == '__main__':
             execute_benchmarks(output_file, args.suite, args.precision, args.case, args.exe)
     else:
         execute_benchmarks(sys.stdout, args.suite, args.precision, args.case, args.exe)
-
-
 
 

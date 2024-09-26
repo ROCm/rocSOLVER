@@ -5,14 +5,17 @@
 
 # benchmarks to run
 # valid options are: (default will run all of them)
-# syevd  -> eigensolver D&C + QR algorithm
-# syevdx -> eigensolver D&C + bisection
-# syevj  -> eigensolver Jacobi
-# gesvd  -> SVD QR algorithm
-# gesvdj -> SVD Jacobi
-# potrf  -> Cholesky factorization
-# geqrf  -> Orthogonal factorization
-Slist="syevd syevdx syevj gesvd gesvdj potrf geqrf"
+# syevd       -> eigensolver D&C + QR algorithm
+# syevdx      -> eigensolver D&C + bisection
+# syevj       -> eigensolver Jacobi
+# syevjBatch  -> eigensolver Jacobi batched version
+# gesvd       -> SVD QR algorithm
+# gesvdj      -> SVD Jacobi
+# gesvdjBatch -> SVD Jacobi batched version
+# potrf       -> Cholesky factorization
+# potrfBatch  -> Cholesky factorization batched version
+# geqrf       -> Orthogonal factorization
+Slist="syevd syevdx syevj syevjBatch gesvd gesvdj gesvdjBatch potrf potrfBatch geqrf"
 
 # precisions to use
 # valid options are: (default will use all of them)
@@ -27,12 +30,13 @@ Plist="s d c z"
 # small  -> see definitions in rocsolver-perfoptim-suite.py for included size values  
 # medium -> see definitions in rocsolver-perfoptim-suite.py for included size values
 # large  -> see definitions in rocsolver-perfoptim-suite.py for included size values
-# (note: small is a sub-set of medium which is a sub-set of large)
+# (note: small is a sub-set of medium which is a sub-set of large so only one option is allowed)
 Clist="small medium large"
  
 
 # Get an validate input arguments:
 error=true
+havecase=false
 suite=""
 precision=""
 case=""
@@ -41,7 +45,7 @@ if [ $# == 0 ]; then
     error=false
     suite=$Slist
     precision=$Plist
-    case=$Clist
+    case="large"
 else
     args=$@
     for a in $args; do
@@ -61,8 +65,13 @@ else
         done  
         for c in $Clist; do
             if [ $a == $c ]; then
-                error=false
-                case+="$c "
+                if $havecase; then
+                    error=true
+                else
+                    error=false
+                    havecase=true
+                    case+="$c "
+                fi
                 break
             fi
         done  
