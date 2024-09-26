@@ -8,25 +8,28 @@ To prepare rocSOLVER for benchmarking, follow the instructions from [rocSOLVER A
 
 ## Benchmarking rocSOLVER with `perfoptim-suite`
 
-The `perfoptim-suite` script executes the specified rocSOLVER functions, precision, and data set. The results are written to csv files which are saved in the `rocsolver_customer01_benchmarks` directory.
+The `perfoptim-suite` script executes the specified rocSOLVER functions, precision, and size cases. The results are written to csv files which are saved in the `rocsolver_customer01_benchmarks` directory.
 
 Calling the script without any arguments
 ```
 ./perfoptim-suite
 ```
-runs the default configuration which executes all available functions with all precisions on all the data sets.
+runs the default configuration which executes all available functions with all precisions and all the size cases.
 
 Options can be passed to the script as arguments to modify its behaviour. The available options are:
 ```
 benchmark to run
 valid options are: (default will run all of them)
-syevd  -> eigensolver D&C + QR algorithm
-syevdx -> eigensolver D&C + bisection
-syevj  -> eigensolver Jacobi
-gesvd  -> SVD QR algorithm
-gesvdj -> SVD Jacobi
-potrf  -> Cholesky factorization
-geqrf  -> Orthogonal factorization
+# syevd       -> eigensolver D&C + QR algorithm
+# syevdx      -> eigensolver D&C + bisection
+# syevj       -> eigensolver Jacobi
+# syevjBatch  -> eigensolver Jacobi batched version
+# gesvd       -> SVD QR algorithm
+# gesvdj      -> SVD Jacobi
+# gesvdjBatch -> SVD Jacobi batched version
+# potrf       -> Cholesky factorization
+# potrfBatch  -> Cholesky factorization batched version
+# geqrf       -> Orthogonal factorization
 (note: several can be selected)
 
 precisions to use
@@ -45,7 +48,7 @@ large  -> see definitions in rocsolver-perfoptim-suite.py for included size valu
 (note: select only one as small is a sub-set of medium which is a sub-set of large)
 ```
 
-For example, benchmarking `geqrf` with real single and real double precisions on the medium and small data sets would look like this:
+For example, benchmarking `geqrf` with real single and real double precisions on the medium and small size cases would look like this:
 ```
 ./perfoptim-suite geqrf s d medium
 ```
