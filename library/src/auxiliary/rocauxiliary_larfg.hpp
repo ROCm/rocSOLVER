@@ -38,9 +38,10 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <bool IMPLICIT_UNIT, typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
 __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
 {
+    const auto ignore_beta = (beta == nullptr);
     if(norms[0] > 0)
     {
         T n = sqrt(norms[0] + alpha[0] * alpha[0]);
@@ -53,7 +54,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
         tau[0] = (n - alpha[0]) / n;
 
         // beta:
-        if constexpr (IMPLICIT_UNIT)
+        if(ignore_beta)
         {
             alpha[0] = n;
         }
@@ -69,7 +70,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
         tau[0] = 0;
 
         // beta:
-        if constexpr (!IMPLICIT_UNIT)
+        if(!ignore_beta)
         {
             beta[0] = alpha[0];
             alpha[0] = 1;
@@ -77,7 +78,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
     }
 }
 
-template <bool IMPLICIT_UNIT, typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
 __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
 {
     using S = decltype(std::real(T{}));
@@ -87,6 +88,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
     ai = alpha[0].imag();
     S m = ai * ai;
 
+    const auto ignore_beta = (beta == nullptr);
     if(norms[0].real() > 0 || m > 0)
     {
         m += ar * ar;
@@ -107,7 +109,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
         tau[0] = rocblas_complex_num<S>(rr, ri);
 
         // beta:
-        if constexpr (IMPLICIT_UNIT)
+        if(ignore_beta)
         {
             alpha[0] = n;
         }
@@ -123,7 +125,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
         tau[0] = 0;
 
         // beta:
-        if constexpr (!IMPLICIT_UNIT)
+        if(!ignore_beta)
         {
             beta[0] = alpha[0];
             alpha[0] = 1;
@@ -131,7 +133,7 @@ __device__ void run_set_taubeta(T* tau, T* norms, T* alpha, T* beta)
     }
 }
 
-template <bool IMPLICIT_UNIT, typename T, typename I, typename U, typename UB>
+template <typename T, typename I, typename U, typename UB>
 ROCSOLVER_KERNEL void set_taubeta(T* tauA,
                                   const rocblas_stride strideP,
                                   T* norms,
@@ -146,10 +148,10 @@ ROCSOLVER_KERNEL void set_taubeta(T* tauA,
 
     // select batch instance
     T* alpha = load_ptr_batch<T>(alphaA, bid, shiftA, strideA);
-    T* beta = load_ptr_batch<T>(betaA, bid, shiftb, strideb);
+    T* beta = betaA ? load_ptr_batch<T>(betaA, bid, shiftb, strideb) : nullptr;
     T* tau = tauA + bid * strideP;
 
-    run_set_taubeta<IMPLICIT_UNIT, T>(tau, norms + bid, alpha, beta);
+    run_set_taubeta<T>(tau, norms + bid, alpha, beta);
 }
 
 template <typename T, typename I>
@@ -217,23 +219,23 @@ rocblas_status
     return rocblas_status_continue;
 }
 
-template <bool IMPLICIT_UNIT, typename T, typename I, typename U, typename UB, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename U, typename UB, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larfg_general_template(rocblas_handle handle,
-                                        const I n,
-                                        U alpha,
-                                        const rocblas_stride shifta,
-                                        UB beta,
-                                        const rocblas_stride shiftb,
-                                        const rocblas_stride strideb,
-                                        U x,
-                                        const rocblas_stride shiftx,
-                                        const I incx,
-                                        const rocblas_stride stridex,
-                                        T* tau,
-                                        const rocblas_stride strideP,
-                                        const I batch_count,
-                                        T* work,
-                                        T* norms)
+                                                const I n,
+                                                U alpha,
+                                                const rocblas_stride shifta,
+                                                UB beta,
+                                                const rocblas_stride shiftb,
+                                                const rocblas_stride strideb,
+                                                U x,
+                                                const rocblas_stride shiftx,
+                                                const I incx,
+                                                const rocblas_stride stridex,
+                                                T* tau,
+                                                const rocblas_stride strideP,
+                                                const I batch_count,
+                                                T* work,
+                                                T* norms)
 {
     // TODO: How to get alpha for trace logging
     ROCSOLVER_ENTER("larfg", "n:", n, "shiftA:", shifta, "shiftX:", shiftx, "incx:", incx,
@@ -248,11 +250,17 @@ rocblas_status rocsolver_larfg_general_template(rocblas_handle handle,
 
     // if n==1 return tau=0
     dim3 gridReset(1, batch_count, 1);
+    dim3 setDiag(batch_count, 1, 1);
     dim3 threads(1, 1, 1);
-    if(n == 1 && !COMPLEX && IMPLICIT_UNIT)
+    if(n == 1 && !COMPLEX)
     {
         ROCSOLVER_LAUNCH_KERNEL(reset_batch_info<T>, gridReset, threads, 0, stream, tau, strideP, 1,
                                 0);
+        if(beta != nullptr)
+        {
+            ROCSOLVER_LAUNCH_KERNEL((set_diag<T>), setDiag, threads, 0, stream, beta, shiftb,
+                                    strideb, alpha, shifta, n, stridex, (I)1, true);
+        }
         return rocblas_status_success;
     }
 
@@ -266,8 +274,8 @@ rocblas_status rocsolver_larfg_general_template(rocblas_handle handle,
         HIP_CHECK(hipGetDeviceProperties(&deviceProperties, device));
         if(deviceProperties.warpSize >= 64)
         {
-            return larfg_run_small<IMPLICIT_UNIT>(handle, n, alpha, shifta, stridex, beta, shiftb, strideb, x, shiftx, incx, stridex, tau,
-                                   strideP, batch_count);
+            return larfg_run_small(handle, n, alpha, shifta, stridex, beta, shiftb, strideb, x,
+                                   shiftx, incx, stridex, tau, strideP, batch_count);
         }
     }
 
@@ -282,7 +290,7 @@ rocblas_status rocsolver_larfg_general_template(rocblas_handle handle,
 
     // set value of tau and beta and scalling factor for vector x
     // alpha <- beta, norms <- scaling
-    ROCSOLVER_LAUNCH_KERNEL((set_taubeta<IMPLICIT_UNIT, T, I>), dim3(batch_count), dim3(1), 0, stream, tau,
+    ROCSOLVER_LAUNCH_KERNEL((set_taubeta<T, I>), dim3(batch_count), dim3(1), 0, stream, tau,
                             strideP, norms, alpha, shifta, stridex, beta, shiftb, strideb);
 
     // compute vector v=x*norms
@@ -291,7 +299,6 @@ rocblas_status rocsolver_larfg_general_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
-
 
 template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larfg_template(rocblas_handle handle,
@@ -308,7 +315,8 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
                                         T* work,
                                         T* norms)
 {
-    return rocsolver_larfg_general_template<true>(handle, n, alpha, shifta, (T*)nullptr, 0, 0, x, shiftx, incx, stridex, tau, strideP, batch_count, work, norms);
+    return rocsolver_larfg_general_template(handle, n, alpha, shifta, (T*)nullptr, 0, 0, x, shiftx,
+                                            incx, stridex, tau, strideP, batch_count, work, norms);
 }
 
 ROCSOLVER_END_NAMESPACE

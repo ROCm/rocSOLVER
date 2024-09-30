@@ -59,7 +59,7 @@ rocblas_status larf_run_small(rocblas_handle handle,
                               const I batch_count);
 
 // larfg
-template <bool IMPLICIT_UNIT, typename T, typename I, typename U, typename UB>
+template <typename T, typename I, typename U, typename UB>
 rocblas_status larfg_run_small(rocblas_handle handle,
                                const I n,
                                U alpha,

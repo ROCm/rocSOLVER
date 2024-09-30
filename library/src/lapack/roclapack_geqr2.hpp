@@ -131,9 +131,10 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
     for(I j = 0; j < dim; ++j)
     {
         // generate Householder reflector to work on column j
-        rocsolver_larfg_general_template<false, T>(handle, m - j, A, shiftA + idx2D(j, j, lda), diag, j, dim, A,
-                                 shiftA + idx2D(std::min(j + 1, m - 1), j, lda), (I)1, strideA,
-                                 (ipiv + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
+        rocsolver_larfg_general_template<T>(handle, m - j, A, shiftA + idx2D(j, j, lda), diag, j,
+                                            dim, A, shiftA + idx2D(std::min(j + 1, m - 1), j, lda),
+                                            (I)1, strideA, (ipiv + j), strideP, batch_count,
+                                            (T*)work_workArr, Abyx_norms);
 
         // Apply Householder reflector to the rest of matrix from the left
         if(j < n - 1)
@@ -156,8 +157,9 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
     // restore diagonal values of A
     constexpr int DIAG_NTHREADS = 64;
     I blocks = (dim - 1) / DIAG_NTHREADS + 1;
-    ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, blocks, 1), dim3(1, DIAG_NTHREADS, 1), 0,
-                            stream, diag, 0, dim, A, shiftA, lda, strideA, dim);
+    ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, blocks, 1),
+                            dim3(1, DIAG_NTHREADS, 1), 0, stream, diag, 0, dim, A, shiftA, lda,
+                            strideA, dim);
 
     return rocblas_status_success;
 }
