@@ -40,6 +40,7 @@
 #include "roclapack_gesvdj.hpp"
 #include "roclapack_syevj_heevj.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -279,9 +280,9 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
         rocblas_int ldv_gemm = (rightv ? ldv : n);
         rocblas_int strideV_gemm = (rightv ? strideV : n * n);
 
-        rocblasCall_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, n,
-                         n, m, &minone, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero,
-                         V_gemm, 0, ldv_gemm, strideV_gemm, batch_count, (T**)work6_workArr);
+        rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, n, n,
+                       m, &minone, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, V_gemm,
+                       0, ldv_gemm, strideV_gemm, batch_count, (T**)work6_workArr);
 
         // apply eigenvalue decomposition to -A'A, obtaining V as eigenvectors
         rocsolver_syevj_heevj_template<false, STRIDED, T>(
@@ -295,9 +296,9 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
         rocblas_int ldu_gemm = (leftv ? ldu : m);
         rocblas_int strideU_gemm = (leftv ? strideU : m * n);
 
-        rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n, n, &one, A,
-                         shiftA, lda, strideA, V_gemm, 0, ldv_gemm, strideV_gemm, &zero, U_gemm, 0,
-                         ldu_gemm, strideU_gemm, batch_count, (T**)work6_workArr);
+        rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n, n, &one, A,
+                       shiftA, lda, strideA, V_gemm, 0, ldv_gemm, strideV_gemm, &zero, U_gemm, 0,
+                       ldu_gemm, strideU_gemm, batch_count, (T**)work6_workArr);
 
         // apply QR factorization to AV, obtaining U = Q and S = R
         rocsolver_geqrf_template<false, STRIDED, T>(handle, m, n, U_gemm, 0, ldu_gemm, strideU_gemm,
@@ -321,9 +322,9 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
         rocblas_int ldu_gemm = (leftv ? ldu : m);
         rocblas_int strideU_gemm = (leftv ? strideU : m * m);
 
-        rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, m,
-                         m, n, &minone, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero,
-                         U_gemm, 0, ldu_gemm, strideU_gemm, batch_count, (T**)work6_workArr);
+        rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, m, m,
+                       n, &minone, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, U_gemm,
+                       0, ldu_gemm, strideU_gemm, batch_count, (T**)work6_workArr);
 
         // apply eigenvalue decomposition to -AA', obtaining U as eigenvectors
         rocsolver_syevj_heevj_template<false, STRIDED, T>(
@@ -337,9 +338,9 @@ rocblas_status rocsolver_gesvdj_notransv_template(rocblas_handle handle,
         rocblas_int ldv_gemm = (rightv ? ldv : n);
         rocblas_int strideV_gemm = (rightv ? strideV : n * m);
 
-        rocblasCall_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, n,
-                         m, m, &one, A, shiftA, lda, strideA, U_gemm, 0, ldu_gemm, strideU_gemm,
-                         &zero, V_gemm, 0, ldv_gemm, strideV_gemm, batch_count, (T**)work6_workArr);
+        rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, n, m,
+                       m, &one, A, shiftA, lda, strideA, U_gemm, 0, ldu_gemm, strideU_gemm, &zero,
+                       V_gemm, 0, ldv_gemm, strideV_gemm, batch_count, (T**)work6_workArr);
 
         // apply QR factorization to A'U, obtaining V = Q and S = R
         rocsolver_geqrf_template<false, STRIDED, T>(handle, n, m, V_gemm, 0, ldv_gemm, strideV_gemm,
