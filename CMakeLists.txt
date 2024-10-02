@@ -87,7 +87,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.26.0")
+set(VERSION_STRING "3.26.2")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -165,6 +165,7 @@ if(NOT DEFINED AMDGPU_TARGETS)
       gfx1100
       gfx1101
       gfx1102
+      gfx1151
   )
   set(AMDGPU_TARGETS_INIT
     gfx900

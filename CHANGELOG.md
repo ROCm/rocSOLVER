@@ -1,6 +1,13 @@
 # Change Log for rocSOLVER
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
+## rocSOLVER 3.26.2 for ROCm 6.2.4
+### Added
+- GFX1151 Support
+
+### Fixed
+- Fixed synchronization issue in STEIN.
+
 
 ## rocSOLVER 3.26.0 for ROCm 6.2.0
 ### Added
@@ -27,6 +34,11 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Fixed
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
+
+### Known Issues
+- A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
+  symmetric/hermitian matrices (e.g., SYEVX/HEEVX and SYGVX/HEGVX), as well as singular values (e.g.,
+  BDSVDX and GESVDX).
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
