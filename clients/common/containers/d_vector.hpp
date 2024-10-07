@@ -72,8 +72,8 @@ public:
             auto status = (hipMemset)(d, 0, bytes);
             if(status != hipSuccess)
             {
-                fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(status), status,
-                           __FILE__, __LINE__);
+                fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(status),
+                           static_cast<std::int32_t>(status), __FILE__, __LINE__);
                 rocblas_abort();
             }
         }

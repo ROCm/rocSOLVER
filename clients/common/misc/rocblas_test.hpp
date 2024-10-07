@@ -96,16 +96,16 @@ inline void rocblas_expect_status(rocblas_status status, rocblas_status expect)
     }
 }
 
-#define CHECK_HIP_ERROR(ERROR)                                                               \
-    do                                                                                       \
-    {                                                                                        \
-        auto error = ERROR;                                                                  \
-        if(error != hipSuccess)                                                              \
-        {                                                                                    \
-            fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(error), error, \
-                       __FILE__, __LINE__);                                                  \
-            rocblas_abort();                                                                 \
-        }                                                                                    \
+#define CHECK_HIP_ERROR(ERROR)                                                        \
+    do                                                                                \
+    {                                                                                 \
+        auto error = ERROR;                                                           \
+        if(error != hipSuccess)                                                       \
+        {                                                                             \
+            fmt::print(stderr, "error: {} ({}) at {}:{}\n", hipGetErrorString(error), \
+                       static_cast<int32_t>(error), __FILE__, __LINE__);              \
+            rocblas_abort();                                                          \
+        }                                                                             \
     } while(0)
 
 #define CHECK_ALLOC_QUERY(STATUS)                                                                     \
