@@ -11,4 +11,7 @@
         <!-- * These tests should only be run on devices supporting HMM -->
         <run name="hmm-adhoc">{COMMAND} --gtest_filter=*MANAGED_MALLOC*-*known_bug* --gtest_output=xml </run>
     </test>
+    <emulation sets="smoke">
+        <run name="all-smoke">{COMMAND} --gtest_filter=checkin*-*known_bug* --gtest_output=xml </run>
+    </emulation>
 </testset>
