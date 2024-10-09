@@ -27,6 +27,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - POTRF_64 (with batched and strided\_batched versions)
     - POTRS_64 (with batched and strided\_batched versions)
 
+* Support added for the gfx1151, gfx1200, and gfx1201 architectures
+
 ### Changed
 
 * The rocSPARSE library is now an optional dependency at runtime. If rocSPARSE
