@@ -20,16 +20,16 @@ Options can be passed to the script as arguments to modify its behaviour. The av
 ```
 benchmark to run
 valid options are: (default will run all of them)
-# syevd       -> eigensolver D&C + QR algorithm
-# syevdx      -> eigensolver D&C + bisection
-# syevj       -> eigensolver Jacobi
-# syevjBatch  -> eigensolver Jacobi batched version
-# gesvd       -> SVD QR algorithm
-# gesvdj      -> SVD Jacobi
-# gesvdjBatch -> SVD Jacobi batched version
-# potrf       -> Cholesky factorization
-# potrfBatch  -> Cholesky factorization batched version
-# geqrf       -> Orthogonal factorization
+# syevd_heevd      -> eigensolver D&C + QR algorithm
+# syevdx_heevdx    -> eigensolver D&C + bisection
+# syevj_heevj      -> eigensolver Jacobi
+# syevj_heevjBatch -> eigensolver Jacobi batched version
+# gesvd            -> SVD QR algorithm
+# gesvdj           -> SVD Jacobi
+# gesvdjBatch      -> SVD Jacobi batched version
+# potrf            -> Cholesky factorization
+# potrfBatch       -> Cholesky factorization batched version
+# geqrf            -> Orthogonal factorization
 (note: several can be selected)
 
 precisions to use

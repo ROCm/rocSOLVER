@@ -39,28 +39,28 @@ from subprocess import Popen, PIPE
 
 #################################################
 ######### Benchmark suites definitions ##########
-################################################# 
+#################################################
 common = '--iters 3 --perf 1' #always do 3 iterations in perf mode
 
 """
 SYEVD tests are run, for the given precision and sizes, with vectors and without vectors
 """
-def syevd_suite(*, precision, sizenormal, sizebatch):
-    fn = 'syevd'
+def syevd_heevd_suite(*, precision, sizenormal, sizebatch):
+    fn = 'syevd' if precision == 's' or precision == 'd' else 'heevd'
     size = sizenormal
     for v in ['V', 'N']:
         if v == 'V': vv = 'yes'
         else: vv = 'no'
         for s in size:
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'n': s} 
+            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --evect {v} -n {s} {common}')
 
 """
-SYEVDX tests are run, for the given precision and sizes, with vectors and without vectors and 
+SYEVDX tests are run, for the given precision and sizes, with vectors and without vectors and
 computing 20, 60 and 100 percent of the eigenvalues
 """
-def syevdx_suite(*, precision, sizenormal, sizebatch):
-    fn = 'syevdx'
+def syevdx_heevdx_suite(*, precision, sizenormal, sizebatch):
+    fn = 'syevdx' if precision == 's' or precision == 'd' else 'heevdx'
     size=sizenormal
     for per in [20, 60, 100]:
         for v in ['V', 'N']:
@@ -75,8 +75,8 @@ def syevdx_suite(*, precision, sizenormal, sizebatch):
 """
 SYEVJ tests are run, for the given precision and sizes, with vectors and without vectors
 """
-def syevj_suite(*, precision, sizenormal, sizebatch):
-    fn = 'syevj'
+def syevj_heevj_suite(*, precision, sizenormal, sizebatch):
+    fn = 'syevj' if precision == 's' or precision == 'd' else 'heevj'
     size = sizenormal
     for v in ['V', 'N']:
         if v == 'V': vv = 'yes'
@@ -88,8 +88,8 @@ def syevj_suite(*, precision, sizenormal, sizebatch):
 """
 SYEVJBATCH tests are run, for the given precision and sizes, with vectors and without vectors
 """
-def syevjBatch_suite(*, precision, sizenormal, sizebatch):
-    fn = 'syevj_strided_batched'
+def syevj_heevjBatch_suite(*, precision, sizenormal, sizebatch):
+    fn = 'syevj_strided_batched' if precision == 's' or precision == 'd' else 'heevj_strided_batched'
     size = sizebatch
     for v in ['V', 'N']:
         if v == 'V': vv = 'yes'
@@ -97,7 +97,7 @@ def syevjBatch_suite(*, precision, sizenormal, sizebatch):
         for s, bc in size:
             row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'batch_count': bc, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --evect {v} --batch_count {bc} -n {s} {common}')
-    
+
 """
 GESVD tests are run, for the given precision and sizes, with vectors and without vectors
 """
@@ -158,8 +158,8 @@ def potrfBatch_suite(*, precision, sizenormal, sizebatch):
         yield (row, s, f'-f {fn} -r {precision} --batch_count {bc} -n {s} {common}')
 
 """
-GEQRF tests are run, for the given precision and number of rows, 
-with 160, 576, 1088, 2176, and 4352 columns and also for the square case (#rows = #columns) 
+GEQRF tests are run, for the given precision and number of rows,
+with 160, 576, 1088, 2176, and 4352 columns and also for the square case (#rows = #columns)
 """
 def geqrf_suite(*, precision, sizenormal, sizebatch):
     fn = 'geqrf'
@@ -174,10 +174,10 @@ def geqrf_suite(*, precision, sizenormal, sizebatch):
             yield (row, s, f'-f {fn} -r {precision} -n {n} -m {s} {common}')
 
 suites = {
-  'syevd': syevd_suite,
-  'syevdx': syevdx_suite,
-  'syevj': syevj_suite,
-  'syevjBatch': syevjBatch_suite,
+  'syevd_heevd': syevd_heevd_suite,
+  'syevdx_heevdx': syevdx_heevdx_suite,
+  'syevj_heevj': syevj_heevj_suite,
+  'syevj_heevjBatch': syevj_heevjBatch_suite,
   'gesvd': gesvd_suite,
   'gesvdj': gesvdj_suite,
   'gesvdjBatch': gesvdjBatch_suite,
@@ -190,7 +190,7 @@ suites = {
 ############## Helper functions #################
 #################################################
 ############## Helper functions #################
-################################################# 
+#################################################
 """
 SETUP_VPRINT defines the function vprint as the normal print function when
 verbose output is enabled, or alternatively as a function that does nothing.
@@ -200,7 +200,7 @@ def setup_vprint(args):
     vprint = print if args.verbose else lambda *a, **k: None
 
 """
-CALL_ROCSOLVER_BENCH executes system call to the benchmark 
+CALL_ROCSOLVER_BENCH executes system call to the benchmark
 client executable with the given list of arguments
 """
 def call_rocsolver_bench(bench_executable, *args):
@@ -220,7 +220,7 @@ def call_rocsolver_bench(bench_executable, *args):
             process.returncode)
 
 """
-EXECUTE_BENCHMARKS collects the arguments for the benchmark client, calls 
+EXECUTE_BENCHMARKS collects the arguments for the benchmark client, calls
 the client, gets the resulting time, and put everything in file of screen
 """
 def execute_benchmarks(output_file, suite, precision, case, bench_executable):
@@ -235,7 +235,7 @@ def execute_benchmarks(output_file, suite, precision, case, bench_executable):
         sizenormal += list(chain(range(4096, 8192, 256), range(8192, 12300, 512)))
         sizebatch += list(chain(zip(range(544, 1050, 32), repeat(500)), zip(range(1088, 2050, 64), repeat(50))))
 
-    for row, n, bench_args in benchmark_generator(precision=precision, sizenormal=sizenormal, 
+    for row, n, bench_args in benchmark_generator(precision=precision, sizenormal=sizenormal,
                                               sizebatch=sizebatch):
         out, err, exitcode = call_rocsolver_bench(bench_executable, bench_args)
         if exitcode != 0:
