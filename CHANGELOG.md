@@ -2,9 +2,10 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 ## rocSOLVER 3.26.2 for ROCm 6.2.4
+
 ### Added
-- GFX1034 Support
-- GFX1151 Support
+
+* Support for the gfx1034 and gfx1151 architectures
 
 ### Fixed
 - Fixed synchronization issue in STEIN.
