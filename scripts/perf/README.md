@@ -33,7 +33,7 @@ valid options are: (default will run all of them)
 (note: several can be selected)
 
 precisions to use
-valid options are: (default will use all of them)
+valid options are: (default is d)
 s -> real single precision
 d -> real double precision
 c -> complex single precision

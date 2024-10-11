@@ -19,7 +19,7 @@
 Slist="syevd_heevd syevdx_heevdx syevj_heevj syevj_heevjBatch gesvd gesvdj gesvdjBatch potrf potrfBatch geqrf"
 
 # precisions to use
-# valid options are: (default will use all of them)
+# valid options are: (default is d)
 # s -> real single precision
 # d -> real double precision
 # c -> complex single precision
@@ -46,7 +46,7 @@ case=""
 if [ $# == 0 ]; then
     error=false
     suite=$Slist
-    precision=$Plist
+    precision="d"
     case="large"
 else
     args=$@
@@ -106,7 +106,7 @@ if [ -z "$suite" ]; then
     suite=$Slist
 fi
 if [ -z "$precision" ]; then
-    precision=$Plist
+    precision="d"
 fi
 if [ -z "$case" ]; then
     case="large"
