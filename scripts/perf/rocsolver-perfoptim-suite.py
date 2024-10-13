@@ -52,7 +52,7 @@ def syevd_heevd_suite(*, precision, sizenormal, sizebatch):
         if v == 'V': vv = 'yes'
         else: vv = 'no'
         for s in size:
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'n': s}
+            row = {'name': 'syevd', 'function': fn, 'precision': precision, 'evect': vv, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --evect {v} -n {s} {common}')
 
 """
@@ -69,7 +69,7 @@ def syevdx_heevdx_suite(*, precision, sizenormal, sizebatch):
             for s in size:
                 p = int(s * per / 100)
                 if p == 0: p = 1
-                row = {'name': precision+fn, 'function': fn, 'precision': precision, 'range': per, 'evect': vv, 'n': s}
+                row = {'name': 'syevdx', 'function': fn, 'precision': precision, 'range': per, 'evect': vv, 'n': s}
                 yield (row, s, f'-f {fn} -r {precision} --erange I --il 1 --iu {p} --evect {v} -n {s} {common}')
 
 """
@@ -82,7 +82,7 @@ def syevj_heevj_suite(*, precision, sizenormal, sizebatch):
         if v == 'V': vv = 'yes'
         else: vv = 'no'
         for s in size:
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'n': s}
+            row = {'name': 'syevj', 'function': fn, 'precision': precision, 'evect': vv, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --evect {v} -n {s} {common}')
 
 """
@@ -95,7 +95,7 @@ def syevj_heevjBatch_suite(*, precision, sizenormal, sizebatch):
         if v == 'V': vv = 'yes'
         else: vv = 'no'
         for s, bc in size:
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'batch_count': bc, 'n': s}
+            row = {'name': 'syevjBatched', 'function': fn, 'precision': precision, 'evect': vv, 'batch_count': bc, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --evect {v} --batch_count {bc} -n {s} {common}')
 
 """
@@ -108,7 +108,7 @@ def gesvd_suite(*, precision, sizenormal, sizebatch):
         if v == 'V': vv = 'yes'
         else: vv = 'no'
         for s in size:
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'svect': vv, 'n': s}
+            row = {'name': 'gesvd', 'function': fn, 'precision': precision, 'svect': vv, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} -m {s} {common}')
 
 """
@@ -121,7 +121,7 @@ def gesvdj_suite(*, precision, sizenormal, sizebatch):
         if v == 'V': vv = 'yes'
         else: vv = 'no'
         for s in size:
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'svect': vv, 'n': s}
+            row = {'name': 'gesvdj', 'function': fn, 'precision': precision, 'svect': vv, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} -m {s} {common}')
 
 """
@@ -134,7 +134,7 @@ def gesvdjBatch_suite(*, precision, sizenormal, sizebatch):
         if v == 'V': vv = 'yes'
         else: vv = 'no'
         for s, bc in size:
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'evect': vv, 'batch_count': bc, 'n': s}
+            row = {'name': 'gesvdjBatched', 'function': fn, 'precision': precision, 'evect': vv, 'batch_count': bc, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} --left_svect {v} --right_svect {v} --batch_count {bc} -m {s} {common}')
 
 """
@@ -144,7 +144,7 @@ def potrf_suite(*, precision, sizenormal, sizebatch):
     fn = 'potrf'
     size = sizenormal
     for s in size:
-        row = {'name': precision+fn, 'function': fn, 'precision': precision, 'n': s}
+        row = {'name': 'potrf', 'function': fn, 'precision': precision, 'n': s}
         yield (row, s, f'-f {fn} -r {precision} -n {s} {common}')
 
 """
@@ -154,7 +154,7 @@ def potrfBatch_suite(*, precision, sizenormal, sizebatch):
     fn = 'potrf_batched'
     size = sizebatch
     for s, bc in size:
-        row = {'name': precision+fn, 'function': fn, 'precision': precision, 'batch_count': bc, 'n': s}
+        row = {'name': 'potrfBatched', 'function': fn, 'precision': precision, 'batch_count': bc, 'n': s}
         yield (row, s, f'-f {fn} -r {precision} --batch_count {bc} -n {s} {common}')
 
 """
@@ -170,19 +170,19 @@ def geqrf_suite(*, precision, sizenormal, sizebatch):
         for s in size:
             if nc == 0: n = s
             else: n = nc
-            row = {'name': precision+fn, 'function': fn, 'precision': precision, 'cols': nn, 'n': s}
+            row = {'name': 'geqrf', 'function': fn, 'precision': precision, 'cols': nn, 'n': s}
             yield (row, s, f'-f {fn} -r {precision} -n {n} -m {s} {common}')
 
 suites = {
-  'syevd_heevd': syevd_heevd_suite,
-  'syevdx_heevdx': syevdx_heevdx_suite,
-  'syevj_heevj': syevj_heevj_suite,
-  'syevj_heevjBatch': syevj_heevjBatch_suite,
+  'syevd': syevd_heevd_suite,
+  'syevdx': syevdx_heevdx_suite,
+  'syevj': syevj_heevj_suite,
+  'syevjBatched': syevj_heevjBatch_suite,
   'gesvd': gesvd_suite,
   'gesvdj': gesvdj_suite,
-  'gesvdjBatch': gesvdjBatch_suite,
+  'gesvdjBatched': gesvdjBatch_suite,
   'potrf': potrf_suite,
-  'potrfBatch': potrfBatch_suite,
+  'potrfBatched': potrfBatch_suite,
   'geqrf': geqrf_suite}
 
 
