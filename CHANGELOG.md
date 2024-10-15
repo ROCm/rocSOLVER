@@ -42,7 +42,9 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 
 ## rocSOLVER 3.26.0 for ROCm 6.2.0
+
 ### Added
+
 - 64-bit APIs for existing functions:
     - GETF2_64 (with batched and strided\_batched versions)
     - GETRF_64 (with batched and strided\_batched versions)
@@ -55,21 +57,26 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - SYGVDX (with batched and strided\_batched versions)
     - HEGVDX (with batched and strided\_batched versions)
 
-### Optimized
-- Improved performance of Cholesky factorization.
-- Improved performance of splitlu to extract the L and U triangular matrices from the result of sparse factorization matrix M, where M = (L - eye) + U.
-
 ### Changed
+
 - Renamed install script arguments of the form *_dir to *-path. Arguments of the form *_dir remain functional for
   backwards compatibility.
 - Functions working with arrays of size n - 1 can now accept null pointers when n = 1.
 
-### Fixed
+### Optimized
+
+- Improved performance of Cholesky factorization.
+- Improved performance of splitlu to extract the L and U triangular matrices from the result of sparse factorization matrix M, where M = (L - eye) + U.
+
+### Resolved issues
+
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
+
 ### Added
+
 - Eigensolver routines for symmetric/hermitian matrices using Divide & Conquer and Jacobi algorithm:
     - SYEVDJ (with batched and strided\_batched versions)
     - HEEVDJ (with batched and strided\_batched versions)
@@ -78,12 +85,15 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - HEGVDJ (with batched and strided\_batched versions)
 
 ### Changed
+
 - Relaxed array length requirements for GESVDX with `rocblas_srange_index`.
 
 ### Removed
+
 - Removed gfx803 and gfx900 from default build targets.
 
-### Fixed
+### Resolved issues
+
 - Corrected singular vector normalization in BDSVDX and GESVDX
 - Fixed potential memory access fault in STEIN, SYEVX/HEEVX, SYGVX/HEGVX, BDSVDX and GESVDX
 
