@@ -70,7 +70,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
         Fp = F + b * strideF;
 
         if(j == i)
-            Fp[j + i * ldf] = tp[i];
+            Fp[idx2D(j, i, ldf)] = tp[i];
         else if(direct == rocblas_forward_direction)
         {
             if(j < i)
@@ -79,27 +79,27 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * Vp[i + j * ldv];
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(i, j, ldv)];
                     }
                     else
                     {
-                        Fp[j + i * ldf] = -tp[i] * (Fp[j + i * ldf] + Vp[i + j * ldv]);
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * (Fp[idx2D(j, i, ldf)] + Vp[idx2D(i, j, ldv)]);
                     }
                 }
                 else
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * Vp[j + i * ldv];
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, i, ldv)];
                     }
                     else
                     {
-                        Fp[j + i * ldf] = -tp[i] * (Fp[j + i * ldf] + Vp[j + i * ldv]);
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * (Fp[idx2D(j, i, ldf)] + Vp[idx2D(j, i, ldv)]);
                     }
                 }
             }
             else
-                Fp[j + i * ldf] = 0;
+                Fp[idx2D(j, i, ldf)] = 0;
         }
         else
         {
@@ -109,27 +109,29 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * Vp[(n - k + i) + j * ldv];
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D((n - k + i), j, ldv)];
                     }
                     else
                     {
-                        Fp[j + i * ldf] = -tp[i] * (Fp[j + i * ldf] + Vp[(n - k + i) + j * ldv]);
+                        Fp[idx2D(j, i, ldf)]
+                            = -tp[i] * (Fp[idx2D(j, i, ldf)] + Vp[idx2D((n - k + i), j, ldv)]);
                     }
                 }
                 else
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * Vp[j + (n - k + i) * ldv];
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, (n - k + i), ldv)];
                     }
                     else
                     {
-                        Fp[j + i * ldf] = -tp[i] * (Fp[j + i * ldf] + Vp[j + (n - k + i) * ldv]);
+                        Fp[idx2D(j, i, ldf)]
+                            = -tp[i] * (Fp[idx2D(j, i, ldf)] + Vp[idx2D(j, (n - k + i), ldv)]);
                     }
                 }
             }
             else
-                Fp[j + i * ldf] = 0;
+                Fp[idx2D(j, i, ldf)] = 0;
         }
     }
 }
@@ -162,7 +164,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
         Fp = F + b * strideF;
 
         if(j == i)
-            Fp[j + i * ldf] = tp[i];
+            Fp[idx2D(j, i, ldf)] = tp[i];
         else if(direct == rocblas_forward_direction)
         {
             if(j < i)
@@ -171,27 +173,28 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * conj(Vp[i + j * ldv]);
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * conj(Vp[idx2D(i, j, ldv)]);
                     }
                     else
                     {
-                        Fp[j + i * ldf] = -tp[i] * (Fp[j + i * ldf] + conj(Vp[i + j * ldv]));
+                        Fp[idx2D(j, i, ldf)]
+                            = -tp[i] * (Fp[idx2D(j, i, ldf)] + conj(Vp[idx2D(i, j, ldv)]));
                     }
                 }
                 else
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * Vp[j + i * ldv];
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, i, ldv)];
                     }
                     else
                     {
-                        Fp[j + i * ldf] = -tp[i] * (Fp[j + i * ldf] + Vp[j + i * ldv]);
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * (Fp[idx2D(j, i, ldf)] + Vp[idx2D(j, i, ldv)]);
                     }
                 }
             }
             else
-                Fp[j + i * ldf] = 0;
+                Fp[idx2D(j, i, ldf)] = 0;
         }
         else
         {
@@ -201,28 +204,29 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * conj(Vp[(n - k + i) + j * ldv]);
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * conj(Vp[idx2D((n - k + i), j, ldv)]);
                     }
                     else
                     {
-                        Fp[j + i * ldf]
-                            = -tp[i] * (Fp[j + i * ldf] + conj(Vp[(n - k + i) + j * ldv]));
+                        Fp[idx2D(j, i, ldf)]
+                            = -tp[i] * (Fp[idx2D(j, i, ldf)] + conj(Vp[idx2D((n - k + i), j, ldv)]));
                     }
                 }
                 else
                 {
                     if(!inc)
                     {
-                        Fp[j + i * ldf] = -tp[i] * Vp[j + (n - k + i) * ldv];
+                        Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, (n - k + i), ldv)];
                     }
                     else
                     {
-                        Fp[j + i * ldf] = -tp[i] * (Fp[j + i * ldf] + Vp[j + (n - k + i) * ldv]);
+                        Fp[idx2D(j, i, ldf)]
+                            = -tp[i] * (Fp[idx2D(j, i, ldf)] + Vp[idx2D(j, (n - k + i), ldv)]);
                     }
                 }
             }
             else
-                Fp[j + i * ldf] = 0;
+                Fp[idx2D(j, i, ldf)] = 0;
         }
     }
 }
