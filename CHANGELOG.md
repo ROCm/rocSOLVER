@@ -3,8 +3,10 @@
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
 ## rocSOLVER 3.27.0 for ROCm 6.3.0
+
 ### Added
-- 64-bit APIs for existing functions:
+
+* 64-bit APIs for existing functions:
     - LACGV_64
     - LARF_64
     - LARFG_64
@@ -13,31 +15,36 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - POTF2_64 (with batched and strided\_batched versions)
     - POTRF_64 (with batched and strided\_batched versions)
     - POTRS_64 (with batched and strided\_batched versions)
-
-### Optimized
-- Improved performance of LARFG, LARF, and downstream functions such as GEQR2 and GEQRF on wave64 architectures
-- Improved the performance of BDSQR and GESVD
-- Improved performance of STEDC and divide and conquer Eigensolvers
+* Support added for the gfx1151, gfx1200, and gfx1201 architectures
 
 ### Changed
-- The rocsparse library is now an optional dependency at runtime. If rocsparse
-  is not available, rocsolver's sparse refactorization and solvers functions
+
+* The rocSPARSE library is now an optional dependency at runtime. If rocSPARSE
+  is not available, rocSOLVER's sparse refactorization and solvers functions
   will return `rocblas_status_not_implemented`.
 
-### Fixed
-- Fixed a memory allocation issue in SYEVJ that could cause failures on clients that manage their own memory.
-- Fixed a synchronizarion issue with SYEVJ that could led to convergence failure for large matrices.
-- Fixed a convergence issue in STEIN steaming from numerical orthogonality of the initial choice of eigenvectors.
-- Fixed synchronization issue in STEIN.
+### Optimized
 
-### Known Issues
-- A known issue in STEBZ can lead to errors in routines based on Bisection to compute eigenvalues for
-  symmetric/hermitian matrices (e.g., SYEVX/HEEVX and SYGVX/HEGVX), as well as singular values (e.g.,
-  BDSVDX and GESVDX).
+* Improved the performance of LARFG, LARF, and downstream functions such as GEQR2 and GEQRF on wave64 architectures
+* Improved the performance of BDSQR and GESVD
+* Improved the performance of STEDC and divide and conquer Eigensolvers
+
+### Resolved issues
+
+* Fixed a memory allocation issue in SYEVJ that could cause failures on clients that manage their own memory.
+* Fixed a synchronizarion issue with SYEVJ that could led to a convergence failure for large matrices.
+* Fixed a convergence issue in STEIN stemming from numerical orthogonality of the initial choice of eigenvectors.
+* Fixed a synchronization issue in STEIN.
+
+### Known issues
+
+* A known issue in STEBZ can lead to errors in routines based on bisection to compute eigenvalues for symmetric/hermitian matrices (for example, SYEVX/HEEVX and SYGVX/HEGVX), as well as singular values (for example, BDSVDX and GESVDX).
 
 
 ## rocSOLVER 3.26.0 for ROCm 6.2.0
+
 ### Added
+
 - 64-bit APIs for existing functions:
     - GETF2_64 (with batched and strided\_batched versions)
     - GETRF_64 (with batched and strided\_batched versions)
@@ -50,21 +57,26 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - SYGVDX (with batched and strided\_batched versions)
     - HEGVDX (with batched and strided\_batched versions)
 
-### Optimized
-- Improved performance of Cholesky factorization.
-- Improved performance of splitlu to extract the L and U triangular matrices from the result of sparse factorization matrix M, where M = (L - eye) + U.
-
 ### Changed
+
 - Renamed install script arguments of the form *_dir to *-path. Arguments of the form *_dir remain functional for
   backwards compatibility.
 - Functions working with arrays of size n - 1 can now accept null pointers when n = 1.
 
-### Fixed
+### Optimized
+
+- Improved performance of Cholesky factorization.
+- Improved performance of splitlu to extract the L and U triangular matrices from the result of sparse factorization matrix M, where M = (L - eye) + U.
+
+### Resolved issues
+
 - Fixed potential accuracy degradation in SYEVJ/HEEVJ for inputs with small eigenvalues.
 
 
 ## rocSOLVER 3.25.0 for ROCm 6.1.0
+
 ### Added
+
 - Eigensolver routines for symmetric/hermitian matrices using Divide & Conquer and Jacobi algorithm:
     - SYEVDJ (with batched and strided\_batched versions)
     - HEEVDJ (with batched and strided\_batched versions)
@@ -73,12 +85,15 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
     - HEGVDJ (with batched and strided\_batched versions)
 
 ### Changed
+
 - Relaxed array length requirements for GESVDX with `rocblas_srange_index`.
 
 ### Removed
+
 - Removed gfx803 and gfx900 from default build targets.
 
-### Fixed
+### Resolved issues
+
 - Corrected singular vector normalization in BDSVDX and GESVDX
 - Fixed potential memory access fault in STEIN, SYEVX/HEEVX, SYGVX/HEGVX, BDSVDX and GESVDX
 
