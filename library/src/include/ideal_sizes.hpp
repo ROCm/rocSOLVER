@@ -501,3 +501,24 @@
 #ifndef SPLITLU_SWITCH_SIZE
 #define SPLITLU_SWITCH_SIZE 64
 #endif
+
+/******************************* larft ****************************************
+*******************************************************************************/
+#ifndef LARFT_L3_NUM_INTERVALS_DEFAULT
+#define LARFT_L3_NUM_INTERVALS_DEFAULT 0
+#endif
+#ifndef LARFT_L3_INTERVALS_DEFAULT
+#define LARFT_L3_INTERVALS_DEFAULT 0
+#endif
+#ifndef LARFT_L3_DEFAULT
+#define LARFT_L3_DEFAULT 1
+#endif
+#ifndef LARFT_L3_NUM_INTERVALS_C_COL
+#define LARFT_L3_NUM_INTERVALS_C_COL 2
+#endif
+#ifndef LARFT_L3_INTERVALS_C_COL
+#define LARFT_L3_INTERVALS_C_COL 1176, 2144
+#endif
+#ifndef LARFT_L3_C_COL
+#define LARFT_L3_C_COL 0, 1, 0
+#endif
