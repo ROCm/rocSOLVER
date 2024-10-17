@@ -39,6 +39,7 @@
 #include "rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -391,37 +392,37 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     const rocblas_int u1_n = use_gemm ? k : n;
     const rocblas_int u2_n = use_gemm ? n - k : 0;
 
-    // Compute T=U2'*U2 or U2*U2' (U'=[U1' U2'] where U1 is triangular and U is trapezoidal)
+    // Compute T=V2'*V2 or V2*V2' (V'=[V1' V2'] where V1 is triangular and V is trapezoidal)
     // SYRK/HERK can be used alternatively, but GEMM is currently more performant.
     if(use_gemm)
     {
         if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
         {
-            rocblasCall_gemm<T>(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none,
-                                k, k, u2_n, scalars + 2, V, shiftV + idx2D(u1_n, 0, ldv), ldv,
-                                strideV, V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, scalars + 1,
-                                F, idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k,
+                           k, u2_n, scalars + 2, V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, V,
+                           shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, scalars + 1, F,
+                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_column_wise)
         {
-            rocblasCall_gemm<T>(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none,
-                                k, k, u2_n, scalars + 2, V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
-                                V, shiftV + idx2D(0, 0, ldv), ldv, strideV, scalars + 1, F,
-                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k,
+                           k, u2_n, scalars + 2, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
+                           shiftV + idx2D(0, 0, ldv), ldv, strideV, scalars + 1, F,
+                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_forward_direction && storev == rocblas_row_wise)
         {
-            rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
-                                k, k, u2_n, scalars + 2, V, shiftV + idx2D(0, u1_n, ldv), ldv,
-                                strideV, V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV, scalars + 1,
-                                F, idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k,
+                           k, u2_n, scalars + 2, V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV, V,
+                           shiftV + idx2D(0, u1_n, ldv), ldv, strideV, scalars + 1, F,
+                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_row_wise)
         {
-            rocblasCall_gemm<T>(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
-                                k, k, u2_n, scalars + 2, V, shiftV + idx2D(0, 0, ldv), ldv, strideV,
-                                V, shiftV + idx2D(0, 0, ldv), ldv, strideV, scalars + 1, F,
-                                idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+            rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k,
+                           k, u2_n, scalars + 2, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
+                           shiftV + idx2D(0, 0, ldv), ldv, strideV, scalars + 1, F,
+                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
         }
     }
 
