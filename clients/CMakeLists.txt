@@ -159,6 +159,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/misc/clients_utility.cpp
     common/misc/program_options.cpp
     common/misc/client_environment_helpers.cpp
+    common/matrix_utils/matrix_utils.cpp
     ${rocauxiliary_inst_files}
     ${roclapack_inst_files}
     ${rocrefact_inst_files}

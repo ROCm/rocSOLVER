@@ -34,14 +34,15 @@
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <bool BATCHED, typename T>
+template <bool BATCHED, typename T, typename I>
 void rocsolver_larf_getMemorySize(const rocblas_side side,
-                                  const rocblas_int m,
-                                  const rocblas_int n,
-                                  const rocblas_int batch_count,
+                                  const I m,
+                                  const I n,
+                                  const I batch_count,
                                   size_t* size_scalars,
                                   size_t* size_Abyx,
                                   size_t* size_workArr)
@@ -58,6 +59,23 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
     // size of scalars (constants)
     *size_scalars = sizeof(T) * 3;
 
+    // size of array of pointers to workspace
+    if(BATCHED)
+        *size_workArr = sizeof(T*) * batch_count;
+    else
+        *size_workArr = 0;
+
+    // if small size no workspace needed
+    bool ssker_left
+        = (side == rocblas_side_left && m <= LARF_SSKER_MAX_DIM && n <= LARF_SSKER_MIN_DIM);
+    bool ssker_right
+        = (side == rocblas_side_right && m <= LARF_SSKER_MIN_DIM && n <= LARF_SSKER_MAX_DIM);
+    if(ssker_left || ssker_right)
+    {
+        *size_Abyx = 0;
+        return;
+    }
+
     // size of temporary result in Householder matrix generation
     if(side == rocblas_side_left)
         *size_Abyx = n;
@@ -66,21 +84,15 @@ void rocsolver_larf_getMemorySize(const rocblas_side side,
     else
         *size_Abyx = std::max(m, n);
     *size_Abyx *= sizeof(T) * batch_count;
-
-    // size of array of pointers to workspace
-    if(BATCHED)
-        *size_workArr = sizeof(T*) * batch_count;
-    else
-        *size_workArr = 0;
 }
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_larf_argCheck(rocblas_handle handle,
                                        const rocblas_side side,
-                                       const rocblas_int m,
-                                       const rocblas_int n,
-                                       const rocblas_int lda,
-                                       const rocblas_int incx,
+                                       const I m,
+                                       const I n,
+                                       const I lda,
+                                       const I incx,
                                        T x,
                                        T A,
                                        U alpha)
@@ -107,22 +119,22 @@ rocblas_status rocsolver_larf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larf_template(rocblas_handle handle,
                                        const rocblas_side side,
-                                       const rocblas_int m,
-                                       const rocblas_int n,
+                                       const I m,
+                                       const I n,
                                        U x,
-                                       const rocblas_int shiftx,
-                                       const rocblas_int incx,
+                                       const rocblas_stride shiftx,
+                                       const I incx,
                                        const rocblas_stride stridex,
                                        const T* alpha,
                                        const rocblas_stride stridep,
                                        U A,
-                                       const rocblas_int shiftA,
-                                       const rocblas_int lda,
+                                       const rocblas_stride shiftA,
+                                       const I lda,
                                        const rocblas_stride stridea,
-                                       const rocblas_int batch_count,
+                                       const I batch_count,
                                        T* scalars,
                                        T* Abyx,
                                        T** workArr)
@@ -137,6 +149,17 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    // if n is small, use small-size kernel
+    bool ssker_left
+        = (side == rocblas_side_left && m <= LARF_SSKER_MAX_DIM && n <= LARF_SSKER_MIN_DIM);
+    bool ssker_right
+        = (side == rocblas_side_right && m <= LARF_SSKER_MIN_DIM && n <= LARF_SSKER_MAX_DIM);
+    if(ssker_left || ssker_right)
+    {
+        return larf_run_small(handle, side, m, n, x, shiftx, incx, stridex, alpha, stridep, A,
+                              shiftA, lda, stridea, batch_count);
+    }
+
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
@@ -144,7 +167,7 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
 
     // determine side and order of H
     bool leftside = (side == rocblas_side_left);
-    rocblas_int order = m;
+    I order = m;
     rocblas_operation trans = rocblas_operation_none;
     if(leftside)
     {
@@ -165,13 +188,13 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
     // compute the rank-1 update  (A + tau*X*W'  or A + tau*W*X')
     if(leftside)
     {
-        rocblasCall_ger<COMPLEX, T>(handle, m, n, alpha, stridep, x, shiftx, incx, stridex, Abyx, 0,
-                                    1, order, A, shiftA, lda, stridea, batch_count, workArr);
+        rocblasCall_ger<COMPLEX, T, I>(handle, m, n, alpha, stridep, x, shiftx, incx, stridex, Abyx,
+                                       0, 1, order, A, shiftA, lda, stridea, batch_count, workArr);
     }
     else
     {
-        rocblasCall_ger<COMPLEX, T>(handle, m, n, alpha, stridep, Abyx, 0, 1, order, x, shiftx,
-                                    incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
+        rocblasCall_ger<COMPLEX, T, I>(handle, m, n, alpha, stridep, Abyx, 0, 1, order, x, shiftx,
+                                       incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);

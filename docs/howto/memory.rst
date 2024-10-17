@@ -10,7 +10,8 @@ rocSOLVER Memory Model
 
 Almost all LAPACK and rocSOLVER routines require workspace memory in order to compute their results. In contrast to LAPACK, however, pointers to the workspace are not explicitly passed to rocSOLVER functions as arguments; instead, they are managed behind-the-scenes using a configurable device memory model.
 
-rocSOLVER makes use of and is integrated with `the rocBLAS memory model`_. Workspace memory, and the scheme used to manage it, is tracked on a per-``rocblas_handle`` basis. The same functionality that is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory. You can also refer to `rocBLAS Device Memory Management <https://github.com/ROCm/rocBLAS/blob/develop/docs/Device_Memory_Allocation.pdf>`_.
+rocSOLVER makes use of and is integrated with :doc:`the rocBLAS memory model <rocblas:reference/memory-alloc>`. Workspace memory, and the scheme used to manage it, is tracked on a per- ``rocblas_handle`` basis. The same functionality that is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory. 
+You can also refer to the rocBLAS :ref:`rocblas:Device Memory allocation in detail` documentation.
 
 There are four schemes for device memory management:
 
@@ -26,7 +27,7 @@ Automatic workspace
 
 By default, rocSOLVER will automatically allocate device memory to be used as internal workspace
 using the rocBLAS memory model, and will increase the amount of allocated memory as needed by rocSOLVER functions. If this scheme is in use, the function ``rocblas_is_managing_device_memory`` will return
-``true``. In order to re-enable this scheme if it is not in use, a ``nullptr`` or zero size can be passed to the helper functions ``rocblas_set_device_memory_size`` or ``rocblas_set_workspace``. For more details on these rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
+``true``. In order to re-enable this scheme if it is not in use, a ``nullptr`` or zero size can be passed to the helper functions ``rocblas_set_device_memory_size`` or ``rocblas_set_workspace``. For more information about these rocBLAS APIs, see :doc:`Device Memory Allocation Functions in rocBLAS <rocblas:reference/memory-alloc>`.
 
 This scheme has the disadvantage that automatic reallocation is synchronizing, and the user cannot control when this synchronization happens.
 
@@ -50,7 +51,7 @@ For example, the following code snippet will return the memory size required to 
     rocsolver_dgetrs(handle, rocblas_operation_none, 1024, 1, nullptr, lda, nullptr, nullptr, ldb);
     rocblas_stop_device_memory_size_query(handle, &memory_size);
 
-For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
+For more information about the rocBLAS APIs, see :doc:`Device Memory Allocation Functions in rocBLAS <rocblas:reference/memory-alloc>`.
 
 
 Using an environment variable
@@ -73,7 +74,7 @@ recommended to first synchronize the handle stream if a rocSOLVER or rocBLAS rou
 
     rocblas_set_device_memory_size(handle, memory_size);
 
-For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
+For more information about the rocBLAS APIs, see :doc:`Device Memory Allocation Functions in rocBLAS <rocblas:reference/memory-alloc>`.
 
 User-owned workspace
 ================================================
@@ -90,7 +91,7 @@ Finally, the user may opt to manage the workspace memory manually using HIP. By 
     rocblas_set_workspace(handle, nullptr, 0);
     hipFree(device_memory);
 
-For more details on the rocBLAS APIs, see `Device Memory Allocation Functions in rocBLAS`_.
+For more information about the rocBLAS APIs, see :doc:`Device Memory Allocation Functions in rocBLAS <rocblas:reference/memory-alloc>`.
 
 .. _the rocBLAS memory model: https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-in-rocblas
 .. _Device Memory Allocation Functions in rocBLAS: https://rocm.docs.amd.com/projects/rocBLAS/en/latest/API_Reference_Guide.html#device-memory-allocation-in-rocblas

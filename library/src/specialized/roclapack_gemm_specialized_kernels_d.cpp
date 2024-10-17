@@ -33,15 +33,29 @@ ROCSOLVER_BEGIN_NAMESPACE
     Instantiate template methods using macros
 *************************************************************/
 
-INSTANTIATE_GEMM(0, 0, double, rocblas_int, double*);
-INSTANTIATE_GEMM(0, 1, double, rocblas_int, double*);
-INSTANTIATE_GEMM(1, 0, double, rocblas_int, double* const*);
+INSTANTIATE_GEMM(double, rocblas_int, double*, double*, double*);
+INSTANTIATE_GEMM(double, rocblas_int, double* const*, double* const*, double* const*);
+
+INSTANTIATE_GEMM(double, rocblas_int, double*, double* const*, double* const*);
+INSTANTIATE_GEMM(double, rocblas_int, double* const*, double*, double* const*);
+INSTANTIATE_GEMM(double, rocblas_int, double* const*, double* const*, double*);
+
+INSTANTIATE_GEMM(double, rocblas_int, double* const*, double*, double*);
+INSTANTIATE_GEMM(double, rocblas_int, double*, double* const*, double*);
+INSTANTIATE_GEMM(double, rocblas_int, double*, double*, double* const*);
 
 #ifdef HAVE_ROCBLAS_64
 // 64-bit APIs
-INSTANTIATE_GEMM(0, 0, double, int64_t, double*);
-INSTANTIATE_GEMM(0, 1, double, int64_t, double*);
-INSTANTIATE_GEMM(1, 0, double, int64_t, double* const*);
+INSTANTIATE_GEMM(double, int64_t, double*, double*, double*);
+INSTANTIATE_GEMM(double, int64_t, double* const*, double* const*, double* const*);
+
+INSTANTIATE_GEMM(double, int64_t, double*, double* const*, double* const*);
+INSTANTIATE_GEMM(double, int64_t, double* const*, double*, double* const*);
+INSTANTIATE_GEMM(double, int64_t, double* const*, double* const*, double*);
+
+INSTANTIATE_GEMM(double, int64_t, double* const*, double*, double*);
+INSTANTIATE_GEMM(double, int64_t, double*, double* const*, double*);
+INSTANTIATE_GEMM(double, int64_t, double*, double*, double* const*);
 #endif /* HAVE_ROCBLAS_64 */
 
 ROCSOLVER_END_NAMESPACE

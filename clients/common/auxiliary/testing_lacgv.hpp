@@ -35,8 +35,8 @@
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
 
-template <typename T>
-void lacgv_checkBadArgs(const rocblas_handle handle, const rocblas_int n, T dA, const rocblas_int inc)
+template <typename T, typename I>
+void lacgv_checkBadArgs(const rocblas_handle handle, const I n, T dA, const I inc)
 {
     // handle
     EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(nullptr, n, dA, inc), rocblas_status_invalid_handle);
@@ -49,16 +49,16 @@ void lacgv_checkBadArgs(const rocblas_handle handle, const rocblas_int n, T dA, 
                           rocblas_status_invalid_pointer);
 
     // quick return with invalid pointers
-    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(handle, 0, (T) nullptr, inc), rocblas_status_success);
+    EXPECT_ROCBLAS_STATUS(rocsolver_lacgv(handle, (I)0, (T) nullptr, inc), rocblas_status_success);
 }
 
-template <typename T>
+template <typename T, typename I>
 void testing_lacgv_bad_arg()
 {
     // safe arguments
     rocblas_local_handle handle;
-    rocblas_int n = 1;
-    rocblas_int inc = 1;
+    I n = 1;
+    I inc = 1;
 
     // memory allocation
     device_strided_batch_vector<T> dA(1, 1, 1, 1);
@@ -68,12 +68,8 @@ void testing_lacgv_bad_arg()
     lacgv_checkBadArgs(handle, n, dA.data(), inc);
 }
 
-template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void lacgv_initData(const rocblas_handle handle,
-                    const rocblas_int n,
-                    Td& dA,
-                    const rocblas_int inc,
-                    Th& hA)
+template <bool CPU, bool GPU, typename T, typename I, typename Td, typename Th>
+void lacgv_initData(const rocblas_handle handle, const I n, Td& dA, const I inc, Th& hA)
 {
     if(CPU)
     {
@@ -87,11 +83,11 @@ void lacgv_initData(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th>
+template <typename T, typename Td, typename I, typename Th>
 void lacgv_getError(const rocblas_handle handle,
-                    const rocblas_int n,
+                    const I n,
                     Td& dA,
-                    const rocblas_int inc,
+                    const I inc,
                     Th& hA,
                     Th& hAr,
                     double* max_err)
@@ -117,11 +113,11 @@ void lacgv_getError(const rocblas_handle handle,
     }
 }
 
-template <typename T, typename Td, typename Th>
+template <typename T, typename I, typename Td, typename Th>
 void lacgv_getPerfData(const rocblas_handle handle,
-                       const rocblas_int n,
+                       const I n,
                        Td& dA,
-                       const rocblas_int inc,
+                       const I inc,
                        Th& hA,
                        double* gpu_time_used,
                        double* cpu_time_used,
@@ -176,13 +172,13 @@ void lacgv_getPerfData(const rocblas_handle handle,
     *gpu_time_used /= hot_calls;
 }
 
-template <typename T>
+template <typename T, typename I>
 void testing_lacgv(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
-    rocblas_int n = argus.get<rocblas_int>("n");
-    rocblas_int inc = argus.get<rocblas_int>("incx");
+    I n = argus.get<I>("n");
+    I inc = argus.get<I>("incx");
 
     rocblas_int hot_calls = argus.iters;
 
@@ -294,4 +290,4 @@ void testing_lacgv(Arguments& argus)
 
 #define EXTERN_TESTING_LACGV(...) extern template void testing_lacgv<__VA_ARGS__>(Arguments&);
 
-INSTANTIATE(EXTERN_TESTING_LACGV, FOREACH_COMPLEX_TYPE, APPLY_STAMP)
+INSTANTIATE(EXTERN_TESTING_LACGV, FOREACH_COMPLEX_TYPE, FOREACH_INT_TYPE, APPLY_STAMP)

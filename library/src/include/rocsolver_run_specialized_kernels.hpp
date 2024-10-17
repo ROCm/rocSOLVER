@@ -40,6 +40,39 @@ ROCSOLVER_BEGIN_NAMESPACE
  * ===========================================================================
  */
 
+// larf
+template <typename T, typename I, typename U>
+rocblas_status larf_run_small(rocblas_handle handle,
+                              const rocblas_side side,
+                              const I m,
+                              const I n,
+                              U x,
+                              const rocblas_stride shiftX,
+                              const I incX,
+                              const rocblas_stride strideX,
+                              const T* tau,
+                              const rocblas_stride strideP,
+                              U A,
+                              const rocblas_stride shiftA,
+                              const I lda,
+                              const rocblas_stride strideA,
+                              const I batch_count);
+
+// larfg
+template <typename T, typename I, typename U>
+rocblas_status larfg_run_small(rocblas_handle handle,
+                               const I n,
+                               U alpha,
+                               const rocblas_stride shiftA,
+                               const rocblas_stride strideA,
+                               U x,
+                               const rocblas_stride shiftX,
+                               const I incX,
+                               const rocblas_stride strideX,
+                               T* tau,
+                               const rocblas_stride strideP,
+                               const I batch_count);
+
 // trsm
 template <bool BATCHED, bool STRIDED, typename T, typename I>
 rocblas_status rocsolver_trsm_mem(const rocblas_side side,
@@ -151,7 +184,7 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                     void* work4);
 
 // gemm
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
+template <typename T, typename I, typename U1, typename U2, typename U3>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
@@ -159,23 +192,23 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                               I n,
                               I k,
                               const T* alpha,
-                              U A,
+                              U1 A,
                               rocblas_stride shiftA,
                               I lda,
                               rocblas_stride strideA,
-                              U B,
+                              U2 B,
                               rocblas_stride shiftB,
                               I ldb,
                               rocblas_stride strideB,
                               const T* beta,
-                              U C,
+                              U3 C,
                               rocblas_stride shiftC,
                               I ldc,
                               rocblas_stride strideC,
                               I batch_count,
                               T** work);
 
-template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
+template <typename T, typename I, typename U1, typename U2, typename U3>
 rocblas_status rocsolver_gemm(rocblas_handle handle,
                               rocblas_operation transA,
                               rocblas_operation transB,
@@ -183,18 +216,18 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
                               I n,
                               I k,
                               const T* alpha,
-                              U A,
+                              U1 A,
                               rocblas_stride shiftA,
                               I inca,
                               I lda,
                               rocblas_stride strideA,
-                              U B,
+                              U2 B,
                               rocblas_stride shiftB,
                               I incb,
                               I ldb,
                               rocblas_stride strideB,
                               const T* beta,
-                              U C,
+                              U3 C,
                               rocblas_stride shiftC,
                               I incc,
                               I ldc,
@@ -247,16 +280,16 @@ rocblas_status rocsolver_ger(rocblas_handle handle,
                              T** work);
 
 // potf2
-template <typename T, typename U>
+template <typename T, typename I, typename INFO, typename U>
 rocblas_status potf2_run_small(rocblas_handle handle,
                                const rocblas_fill uplo,
-                               const rocblas_int n,
+                               const I n,
                                U AA,
-                               const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_stride shiftA,
+                               const I lda,
                                const rocblas_stride strideA,
-                               rocblas_int* info,
-                               const rocblas_int batch_count);
+                               INFO* info,
+                               const I batch_count);
 
 #ifdef OPTIMAL
 

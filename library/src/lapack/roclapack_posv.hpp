@@ -127,11 +127,11 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
                                        const rocblas_int n,
                                        const rocblas_int nrhs,
                                        U A,
-                                       const rocblas_int shiftA,
+                                       const rocblas_stride shiftA,
                                        const rocblas_int lda,
                                        const rocblas_stride strideA,
                                        U B,
-                                       const rocblas_int shiftB,
+                                       const rocblas_stride shiftB,
                                        const rocblas_int ldb,
                                        const rocblas_stride strideB,
                                        rocblas_int* info,
@@ -171,9 +171,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute Cholesky factorization of A
-    rocsolver_potrf_template<BATCHED, STRIDED, T, S>(handle, uplo, n, A, shiftA, lda, strideA, info,
-                                                     batch_count, scalars, work1, work2, work3,
-                                                     work4, pivots_savedB, iinfo, optim_mem);
+    rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, rocblas_int, S>(
+        handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2, work3,
+        work4, pivots_savedB, iinfo, optim_mem);
 
     // save elements of B that will be overwritten by POTRS for cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),

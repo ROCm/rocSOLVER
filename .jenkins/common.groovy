@@ -9,7 +9,8 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
     String hipClang = ''
     String debug = project.buildName.contains('Debug') ? '-g' : ''
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
-    String noOptimizations = ''
+    List<String> options = []
+    Boolean withSparse = true
 
     if (env.BRANCH_NAME ==~ /PR-\d+/)
     {
@@ -17,23 +18,32 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
         {
             if (it == "noOptimizations")
             {
-                noOptimizations = "-n"
+                options << "-n"
+            }
+            else if (it == "ci:no-sparse")
+            {
+                options << "--no-sparse"
+                withSparse = false
             }
         }
     }
 
-    def getRocBLAS = auxiliary.getLibrary('rocBLAS', platform.jenkinsLabel, null, sameOrg)
-    def getRocSPARSE = auxiliary.getLibrary('rocSPARSE', platform.jenkinsLabel, null, sameOrg)
-    def getRocPRIM = auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg)
+    List<String> getDeps = []
+    getDeps << auxiliary.getLibrary('hipBLAS-common', platform.jenkinsLabel, null, sameOrg)
+    getDeps << auxiliary.getLibrary('hipBLASLt', platform.jenkinsLabel, null, sameOrg)
+    getDeps << auxiliary.getLibrary('rocBLAS', platform.jenkinsLabel, null, sameOrg)
+    if (withSparse)
+    {
+        getDeps << auxiliary.getLibrary('rocSPARSE', platform.jenkinsLabel, null, sameOrg)
+    }
+    getDeps << auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg)
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
-                ${getRocBLAS}
-                ${getRocSPARSE}
-                ${getRocPRIM}
+                ${getDeps.join('\\n')}
                 ${auxiliary.exitIfNotSuccess()}
                 ${centos}
-                ${project.paths.build_command} ${hipClang} ${debug} ${noOptimizations}
+                ${project.paths.build_command} ${hipClang} ${debug} ${options.join(' ')}
                 ${auxiliary.exitIfNotSuccess()}
                 """
     platform.runCommand(this, command)

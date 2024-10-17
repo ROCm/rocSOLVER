@@ -40,10 +40,10 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <bool BATCHED, typename T>
-void rocsolver_geqr2_getMemorySize(const rocblas_int m,
-                                   const rocblas_int n,
-                                   const rocblas_int batch_count,
+template <bool BATCHED, typename T, typename I>
+void rocsolver_geqr2_getMemorySize(const I m,
+                                   const I n,
+                                   const I batch_count,
                                    size_t* size_scalars,
                                    size_t* size_work_workArr,
                                    size_t* size_Abyx_norms,
@@ -72,14 +72,14 @@ void rocsolver_geqr2_getMemorySize(const rocblas_int m,
     *size_diag = sizeof(T) * batch_count;
 }
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 rocblas_status rocsolver_geqr2_geqrf_argCheck(rocblas_handle handle,
-                                              const rocblas_int m,
-                                              const rocblas_int n,
-                                              const rocblas_int lda,
+                                              const I m,
+                                              const I n,
+                                              const I lda,
                                               T A,
                                               U ipiv,
-                                              const rocblas_int batch_count = 1)
+                                              const I batch_count = 1)
 {
     // order is important for unit tests:
 
@@ -101,17 +101,17 @@ rocblas_status rocsolver_geqr2_geqrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
-                                        const rocblas_int m,
-                                        const rocblas_int n,
+                                        const I m,
+                                        const I n,
                                         U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
+                                        const rocblas_stride shiftA,
+                                        const I lda,
                                         const rocblas_stride strideA,
                                         T* ipiv,
                                         const rocblas_stride strideP,
-                                        const rocblas_int batch_count,
+                                        const I batch_count,
                                         T* scalars,
                                         void* work_workArr,
                                         T* Abyx_norms,
@@ -126,39 +126,41 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    rocblas_int dim = std::min(m, n); // total number of pivots
+    I dim = std::min(m, n); // total number of pivots
 
-    for(rocblas_int j = 0; j < dim; ++j)
+    for(I j = 0; j < dim; ++j)
     {
         // generate Householder reflector to work on column j
         rocsolver_larfg_template(handle, m - j, A, shiftA + idx2D(j, j, lda), A,
-                                 shiftA + idx2D(std::min(j + 1, m - 1), j, lda), 1, strideA,
+                                 shiftA + idx2D(std::min(j + 1, m - 1), j, lda), (I)1, strideA,
                                  (ipiv + j), strideP, batch_count, (T*)work_workArr, Abyx_norms);
-
-        // insert one in A(j,j) tobuild/apply the householder matrix
-        ROCSOLVER_LAUNCH_KERNEL(set_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1, true);
-
-        // conjugate tau
-        if(COMPLEX)
-            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
 
         // Apply Householder reflector to the rest of matrix from the left
         if(j < n - 1)
         {
+            // insert one in A(j,j) tobuild/apply the householder matrix
+            ROCSOLVER_LAUNCH_KERNEL((set_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+                                    stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                                    (I)1, true);
+
+            // conjugate tau
+            if(COMPLEX)
+                rocsolver_lacgv_template<T>(handle, (I)1, ipiv, j, (I)1, strideP, batch_count);
+
             rocsolver_larf_template(handle, rocblas_side_left, m - j, n - j - 1, A,
-                                    shiftA + idx2D(j, j, lda), 1, strideA, (ipiv + j), strideP, A,
-                                    shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count,
+                                    shiftA + idx2D(j, j, lda), (I)1, strideA, (ipiv + j), strideP,
+                                    A, shiftA + idx2D(j, j + 1, lda), lda, strideA, batch_count,
                                     scalars, Abyx_norms, (T**)work_workArr);
+
+            // restore original value of A(j,j)
+            ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, 1, 1), dim3(1, 1, 1), 0,
+                                    stream, diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                                    (I)1);
+
+            // restore tau
+            if(COMPLEX)
+                rocsolver_lacgv_template<T>(handle, (I)1, ipiv, j, (I)1, strideP, batch_count);
         }
-
-        // restore original value of A(j,j)
-        ROCSOLVER_LAUNCH_KERNEL(restore_diag<T>, dim3(batch_count, 1, 1), dim3(1, 1, 1), 0, stream,
-                                diag, 0, 1, A, shiftA + idx2D(j, j, lda), lda, strideA, 1);
-
-        // restore tau
-        if(COMPLEX)
-            rocsolver_lacgv_template<T>(handle, 1, ipiv, j, 1, strideP, batch_count);
     }
 
     return rocblas_status_success;

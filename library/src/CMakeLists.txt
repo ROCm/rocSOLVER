@@ -87,6 +87,7 @@ set(rocsolver_lapack_source
   lapack/roclapack_potf2_batched.cpp
   lapack/roclapack_potf2_strided_batched.cpp
   lapack/roclapack_potrf.cpp
+  lapack/roclapack_potrf_info32.cpp
   lapack/roclapack_potrf_batched.cpp
   lapack/roclapack_potrf_strided_batched.cpp
   #- symmetric indefinite matrices
@@ -280,6 +281,16 @@ set(rocsolver_refact_source
 )
 
 set(rocsolver_specialized_source
+  # larf
+  specialized/rocauxiliary_larf_specialized_kernels_s.cpp
+  specialized/rocauxiliary_larf_specialized_kernels_d.cpp
+  specialized/rocauxiliary_larf_specialized_kernels_c.cpp
+  specialized/rocauxiliary_larf_specialized_kernels_z.cpp
+  # larfg
+  specialized/rocauxiliary_larfg_specialized_kernels_s.cpp
+  specialized/rocauxiliary_larfg_specialized_kernels_d.cpp
+  specialized/rocauxiliary_larfg_specialized_kernels_c.cpp
+  specialized/rocauxiliary_larfg_specialized_kernels_z.cpp
   # gemm
   specialized/roclapack_gemm_specialized_kernels_s.cpp
   specialized/roclapack_gemm_specialized_kernels_d.cpp
@@ -333,6 +344,7 @@ endif()
 set(auxiliaries
   common/buildinfo.cpp
   common/rocsolver_logger.cpp
+  common/rocsparse.cpp
 )
 
 add_library(rocsolver
@@ -355,6 +367,10 @@ target_link_libraries(rocsolver
     $<$<PLATFORM_ID:Linux>:--rtlib=compiler-rt>
     $<$<PLATFORM_ID:Linux>:--unwindlib=libgcc>
 )
+
+if(NOT BUILD_WITH_SPARSE)
+  target_link_libraries(rocsolver PRIVATE $<$<PLATFORM_ID:Linux>:${CMAKE_DL_LIBS}>)
+endif()
 
 set(static_depends)
 
@@ -427,6 +443,10 @@ endif()
 
 if(OPTIMAL)
   target_compile_definitions(rocsolver PRIVATE OPTIMAL)
+endif()
+
+if(ROCSOLVER_USE_INTERNAL_BLAS)
+  target_compile_definitions(rocsolver PRIVATE USE_INTERNAL_GEMM USE_INTERNAL_TRSM)
 endif()
 
 target_compile_definitions(rocsolver PRIVATE

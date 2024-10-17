@@ -29,9 +29,8 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T>
-rocblas_status
-    rocsolver_lacgv_impl(rocblas_handle handle, const rocblas_int n, T* x, const rocblas_int incx)
+template <typename T, typename I>
+rocblas_status rocsolver_lacgv_impl(rocblas_handle handle, const I n, T* x, const I incx)
 {
     ROCSOLVER_ENTER_TOP("lacgv", "-n", n, "--incx", incx);
 
@@ -44,11 +43,11 @@ rocblas_status
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftx = 0;
+    rocblas_stride shiftx = 0;
 
     // normal (non-batched non-strided) execution
     rocblas_stride stridex = 0;
-    rocblas_int batch_count = 1;
+    I batch_count = 1;
 
     // this function does not require memory work space
     if(rocblas_is_device_memory_size_query(handle))
@@ -82,6 +81,30 @@ rocblas_status rocsolver_zlacgv(rocblas_handle handle,
                                 const rocblas_int incx)
 {
     return rocsolver::rocsolver_lacgv_impl<rocblas_double_complex>(handle, n, x, incx);
+}
+
+rocblas_status rocsolver_clacgv_64(rocblas_handle handle,
+                                   const int64_t n,
+                                   rocblas_float_complex* x,
+                                   const int64_t incx)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_lacgv_impl<rocblas_float_complex>(handle, n, x, incx);
+#else
+    return rocblas_status_not_implemented;
+#endif
+}
+
+rocblas_status rocsolver_zlacgv_64(rocblas_handle handle,
+                                   const int64_t n,
+                                   rocblas_double_complex* x,
+                                   const int64_t incx)
+{
+#ifdef HAVE_ROCBLAS_64
+    return rocsolver::rocsolver_lacgv_impl<rocblas_double_complex>(handle, n, x, incx);
+#else
+    return rocblas_status_not_implemented;
+#endif
 }
 
 } // extern C
