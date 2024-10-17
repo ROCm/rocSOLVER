@@ -51,8 +51,49 @@ namespace fs = std::experimental::filesystem;
 #define USE_ROCBLAS_REALLOC_ON_DEMAND true
 
 #ifdef ROCSOLVER_CLIENTS_TEST
-#define ROCSOLVER_TEST_CHECK(T, max_error, tol) ASSERT_LE((max_error), (tol)*get_epsilon<T>())
+
+#ifdef ROCSOLVER_CLIENTS_TEST_PRINT_EXTRA_MESSAGES
+// Format output similarly as GTEST messages
+#define ANSI_CODE_GTEST_GREEN "\033[0;32m"
+#define ANSI_CODE_NORMAL_TERM "\033[0;0m"
+// Macro ROCSOLVER_GTEST_MSG_PRINTER is also used to print hashes in tests
+#define ROCSOLVER_GTEST_MSG_PRINTER \
+    std::cout << ANSI_CODE_GTEST_GREEN << "[          ] " << ANSI_CODE_NORMAL_TERM
+// Print computed errors for all tests, making sure that there are sufficient digits to uniquely
+// represent all distinct `double` values.
+#define ROCSOLVER_STRNGFY(s) #s
+#define ROCSOLVER_PRINT_TEST_ERROR(T, max_error, tol) ROCSOLVER_PRINT_TEST_ERROR2(T, max_error, tol)
+#define ROCSOLVER_PRINT_TEST_ERROR2(T, max_error, tol)                                  \
+    do                                                                                  \
+    {                                                                                   \
+        const auto default_precision{std::cout.precision()};                            \
+        constexpr auto max_precision{std::numeric_limits<double>::max_digits10 + 1};    \
+        double tol_ = static_cast<double>(tol) * static_cast<double>(get_epsilon<T>()); \
+        double max_error_ = static_cast<double>(max_error);                             \
+        ROCSOLVER_GTEST_MSG_PRINTER                                                     \
+            << "Computed error: " << ROCSOLVER_STRNGFY(max_error) << " / "              \
+            << ROCSOLVER_STRNGFY(((tol)*get_epsilon<T>())) << " = "                     \
+            << std::setprecision(max_precision)                                         \
+            << ((max_error_ >= 0.) && (tol_ > 0.) ? max_error_ / tol_ : -1.)            \
+            << std::setprecision(default_precision) << std::endl                        \
+            << std::flush;                                                              \
+    } while(0)
+#else // #ifdef ROCSOLVER_CLIENTS_TEST_PRINT_EXTRA_MESSAGES
+static std::stringstream rocsolver_discard_tests_extra_messages;
+#define ROCSOLVER_GTEST_MSG_PRINTER rocsolver_discard_tests_extra_messages
+#define ROCSOLVER_PRINT_TEST_ERROR(T, max_error, tol)
+#endif // #ifdef ROCSOLVER_CLIENTS_TEST_PRINT_EXTRA_MESSAGES
+
+#define ROCSOLVER_TEST_CHECK(T, max_error, tol)         \
+    do                                                  \
+    {                                                   \
+        ASSERT_LE((max_error), (tol)*get_epsilon<T>()); \
+        ROCSOLVER_PRINT_TEST_ERROR(T, max_error, tol);  \
+    } while(0)
+
 #else // ROCSOLVER_CLIENTS_BENCH
+static std::stringstream rocsolver_discard_tests_extra_messages;
+#define ROCSOLVER_GTEST_MSG_PRINTER rocsolver_discard_tests_extra_messages
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol)
 #endif
 
@@ -158,3 +199,57 @@ inline std::ostream& operator<<(std::ostream& os, printable_char x)
 
 // location of the sparse data directory for the re-factorization tests
 fs::path get_sparse_data_dir();
+
+/// Combines `seed` with the hash of `value`, following the spirit of
+/// `boost::hash_combine`.
+///
+/// Extends `std::hash` to combine the hashes of multiple values (e.g.,
+/// from an array).
+///
+/// Attention: hash_combine(0, T(0)) != 0
+template <typename T>
+std::size_t hash_combine(std::size_t seed, T value)
+{
+    using S = decltype(std::real(T{}));
+    auto hasher = std::hash<S>();
+
+    if constexpr(rocblas_is_complex<T>)
+    {
+        seed ^= hasher(std::real(value)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= hasher(std::imag(value)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    else
+    {
+        seed ^= hasher(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+
+    return seed;
+}
+
+/// Hash contents of the given array.
+///
+/// If seed == 0 and array_size == 0, then hash_combine(seed, _, array_size) == 0
+template <typename T>
+std::size_t hash_combine(std::size_t seed, T const* array, std::size_t array_size)
+{
+    std::size_t hash = 0;
+    if(array_size > 0)
+    {
+        hash = hash_combine(seed, array_size);
+        for(std::size_t i = 0; i < array_size; ++i)
+        {
+            hash = hash_combine(hash, array[i]);
+        }
+    }
+
+    return hash;
+}
+
+/// Hash contents of the given array.
+///
+/// If seed == 0 and array.size() == 0, then hash_combine(seed, array) == 0
+template <typename T>
+std::size_t hash_combine(std::size_t seed, const std::vector<T>& array)
+{
+    return hash_combine(seed, array.data(), array.size());
+}

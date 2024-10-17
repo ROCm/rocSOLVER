@@ -263,6 +263,8 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
             // for testing purposes, we start with a reduced matrix M for the standard equivalent problem
             // with spectrum in a desired range (-20, 20). Then we construct the generalized pair
             // (A, B) from there.
+
+            [[maybe_unused]] volatile auto mptr = memset(hB[b], 0, n * ldb * sizeof(T));
             for(rocblas_int i = 0; i < n; i++)
             {
                 // scale matrices and set hA = M (symmetric/hermitian), hB = U (upper triangular)
@@ -424,6 +426,16 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     sygvx_hegvx_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc, hA,
                                         hB, A, B, true, singular);
 
+    //
+    // Compute input data hash (combine matrices A and B)
+    //
+    std::size_t input_hash = 0;
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        input_hash = hash_combine(input_hash, hA[0], lda * n);
+        input_hash = hash_combine(input_hash, hB[0], ldb * n);
+    }
+
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_sygvx_hegvx(STRIDED, handle, itype, evect, erange, uplo, n,
@@ -470,6 +482,41 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
         EXPECT_EQ(hNev[b][0], hNevRes[b][0]) << "where b = " << b;
         if(hNev[b][0] != hNevRes[b][0])
             *max_err += 1;
+    }
+
+    //
+    // Compute output hashes
+    //
+    std::size_t rocsolver_eigenvalues_hash = 0;
+    std::size_t rocsolver_eigenvectors_hash = 0;
+
+    for(rocblas_int b = 0; b < bc; ++b)
+    {
+        if(hInfo[b][0] == 0)
+        {
+            rocsolver_eigenvalues_hash
+                = hash_combine(rocsolver_eigenvalues_hash, hWRes[b], hNevRes[b][0]);
+
+            if(evect == rocblas_evect_original)
+            {
+                rocsolver_eigenvectors_hash
+                    = hash_combine(rocsolver_eigenvectors_hash, hZRes[b], hNevRes[b][0] * ldz);
+            }
+        }
+    }
+
+    //
+    // Print hashes
+    //
+    ROCSOLVER_GTEST_MSG_PRINTER << "Input matrix hash: " << input_hash << std::endl << std::flush;
+    ROCSOLVER_GTEST_MSG_PRINTER << "Rocsolver eigenvalues hash: " << rocsolver_eigenvalues_hash
+                                << std::endl
+                                << std::flush;
+    if(evect == rocblas_evect_original)
+    {
+        ROCSOLVER_GTEST_MSG_PRINTER
+            << "Rocsolver eigenvectors hash: " << rocsolver_eigenvectors_hash << std::endl
+            << std::flush;
     }
 
     double err;

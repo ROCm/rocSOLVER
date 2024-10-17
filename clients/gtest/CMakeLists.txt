@@ -189,6 +189,7 @@ target_link_libraries(rocsolver-test PRIVATE
 target_compile_definitions(rocsolver-test PRIVATE
   ROCM_USE_FLOAT16
   ROCSOLVER_CLIENTS_TEST
+  ROCSOLVER_CLIENTS_TEST_PRINT_EXTRA_MESSAGES
 )
 
 add_test(
