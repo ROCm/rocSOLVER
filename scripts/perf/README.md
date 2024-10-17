@@ -23,12 +23,12 @@ valid options are: (default will run all of them)
 syevd         -> eigensolver D&C + QR algorithm (heevd in complex precision)
 syevdx        -> eigensolver D&C + bisection (heevdx in complex precision)
 syevj         -> eigensolver Jacobi (heevj in complex precision)
-syevjBatched  -> eigensolver Jacobi batched version (heevjBatched in complex precision)
+syevjBatch    -> eigensolver Jacobi batch version (heevjBatch in complex precision)
 gesvd         -> SVD QR algorithm
 gesvdj        -> SVD Jacobi
-gesvdjBatched -> SVD Jacobi batched version
+gesvdjBatch   -> SVD Jacobi batch version
 potrf         -> Cholesky factorization
-potrfBatched  -> Cholesky factorization batched version
+potrfBatch    -> Cholesky factorization batch version
 geqrf         -> Orthogonal factorization
 (note: several can be selected)
 
