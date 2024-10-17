@@ -391,7 +391,8 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     const rocblas_int u1_n = use_gemm ? k : n;
     const rocblas_int u2_n = use_gemm ? n - k : 0;
 
-    // Compute the inner product between the partial householder vectors in the rectangular part of the trapezoidal householder matrix.
+    // Compute T=U2'*U2 or U2*U2' (U'=[U1' U2'] where U1 is triangular and U is trapezoidal)
+    // SYRK/HERK can be used alternatively, but GEMM is currently more performant.
     if(use_gemm)
     {
         if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
