@@ -150,29 +150,29 @@ add_executable(rocsolver-test
 
 add_armor_flags(rocsolver-test "${ARMOR_LEVEL}")
 
-if(WIN32)
-  file(GLOB third_party_dlls
-    LIST_DIRECTORIES OFF
-    CONFIGURE_DEPENDS
-    ${ROCSOLVER_LAPACK_PATH}/bin/*.dll
-    ${GTest_DIR}/bin/*.dll
-    $ENV{rocblas_DIR}/bin/*.dll
-    $ENV{HIP_DIR}/bin/*.dll
-    $ENV{HIP_DIR}/bin/hipinfo.exe
-    ${CMAKE_SOURCE_DIR}/rtest.*
+if(BUILD_COPY_TEST_DEPS)
+  add_custom_command(TARGET rocsolver-test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:rocsolver-test> $<TARGET_FILE_DIR:rocsolver-test>
+    COMMAND_EXPAND_LISTS
   )
-  foreach(file_i ${third_party_dlls})
-    add_custom_command(TARGET rocsolver-test
-      POST_BUILD
-      COMMAND ${CMAKE_COMMAND}
-      ARGS -E copy ${file_i} ${PROJECT_BINARY_DIR}/staging/
+
+  get_target_property(rocblas_location roc::rocblas LOCATION)
+  get_filename_component(rocblas_directory ${rocblas_location} DIRECTORY)
+  add_custom_command(TARGET rocsolver-test POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory  ${rocblas_directory}/rocblas/library $<TARGET_FILE_DIR:rocsolver-test>/library
+  )
+
+  find_program(HIPINFO_EXECUTABLE hipinfo PATHS $ENV{HIP_DIR}/bin)
+  set(test_files
+    ${HIPINFO_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../rtest.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../rtest.xml
+  )
+  foreach(file_i ${runtime_files})
+    add_custom_command(TARGET rocsolver-test POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy ${file_i} $<TARGET_FILE_DIR:rocsolver-test>
     )
   endforeach()
-  add_custom_command(TARGET rocsolver-test
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy_directory $ENV{rocblas_DIR}/bin/rocblas/library ${PROJECT_BINARY_DIR}/staging/library
-  )
 endif()
 
 target_link_libraries(rocsolver-test PRIVATE

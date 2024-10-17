@@ -143,6 +143,7 @@ option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
 option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
+cmake_dependent_option(BUILD_COPY_TEST_DEPS "Copy test dependencies to the clients build directory" ON "WIN32;CMAKE_VERSION VERSION_GREATER_EQUAL 3.21" OFF)
 
 cmake_dependent_option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY
   "Build with file/folder reorg backward compatibility enabled" OFF "NOT WIN32" OFF)
