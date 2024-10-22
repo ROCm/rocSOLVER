@@ -5,8 +5,8 @@ functionality on the [ROCm platform][2].
 
 ## Documentation
 
-For a detailed description of the rocSOLVER library, its implemented routines,
-the installation process and user guide, see the [rocSOLVER documentation][3].
+> [!NOTE]
+> The published rocSOLVER documentation is available at [rocSOLVER](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html) in an organized, easy-to-read format, with search and a table of contents. The documentation source files reside in the rocSOLVER/docs folder of this repository. As with all ROCm projects, the documentation is open source. For more information, see [Contribute to ROCm documentation](https://rocm.docs.amd.com/en/latest/contribute/contributing.html).
 
 ### How to build documentation
 
