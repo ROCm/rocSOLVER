@@ -33,11 +33,11 @@
 #include "rocsolver/rocsolver.h"
 
 #ifndef HAVE_ROCSPARSE
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)
 #include <windows.h>
-#else /* _WIN32 */
+#elif !defined(ROCSOLVER_STATIC_LIB) /* defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB) */
 #include <dlfcn.h>
-#endif /* _WIN32 */
+#endif /* defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)*/
 #endif /* HAVE_ROCSPARSE */
 
 #define GOTO_IF_ROCBLAS_ERROR(fcn, result, error_label) \
@@ -67,36 +67,41 @@ ROCSOLVER_BEGIN_NAMESPACE
 template <typename Fn>
 static bool load_function(void* handle, const char* symbol, Fn& fn)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)
     fn = (Fn)(GetProcAddress((HMODULE)handle, symbol));
     bool err = !fn;
-#else
+#elif !defined(ROCSOLVER_STATIC_LIB)
     fn = (Fn)(dlsym(handle, symbol));
     char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(err)
         fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
 #endif
-#endif /* _WIN32 */
+#else
+    bool err = false;
+#endif /* defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB) */
     return !err;
 }
 
 static bool load_rocsparse()
 {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)
     // Library users will need to call SetErrorMode(SEM_FAILCRITICALERRORS) if
     // they wish to avoid an error message box when this library is not found.
     // The call is not done by rocSOLVER directly, as it is not thread-safe and
     // will affect the global state of the program.
     void* handle = LoadLibraryW(L"rocsparse.dll");
-#else
+#elif !defined(ROCSOLVER_STATIC_LIB)
     void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
     char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(!handle)
         fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", err);
-#endif
-#endif /* _WIN32 */
+#endif /* NDEBUG */
+#endif /* defined(_WIN32) && !defined(ROCSOLVER_BUILD_STATIC) */
+#if defined(ROCSOLVER_STATIC_LIB)
+    return false; // nothing to load, static builds don't support sparse
+#else
     if(!handle)
         return false;
     if(!load_function(handle, "rocsparse_create_handle", g_sparse_create_handle))
@@ -197,6 +202,7 @@ static bool load_rocsparse()
         return false;
 
     return true;
+#endif
 }
 
 static bool try_load_rocsparse()
