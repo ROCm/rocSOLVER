@@ -67,41 +67,42 @@ ROCSOLVER_BEGIN_NAMESPACE
 template <typename Fn>
 static bool load_function(void* handle, const char* symbol, Fn& fn)
 {
-#if defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)
+#ifndef ROCSOLVER_STATIC_LIB
+#ifdef _WIN32
     fn = (Fn)(GetProcAddress((HMODULE)handle, symbol));
     bool err = !fn;
-#elif !defined(ROCSOLVER_STATIC_LIB)
+#else
     fn = (Fn)(dlsym(handle, symbol));
     char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(err)
         fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
-#endif
-#else
+#endif /* NDEBUG */
     bool err = false;
-#endif /* defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB) */
+#endif /* _WIN32 */
     return !err;
+#else
+    return false;
+#endif /* ROCSOLVER_STATIC_LIB */
 }
 
 static bool load_rocsparse()
 {
-#if defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)
+#ifndef ROCSOLVER_STATIC_LIB
+#ifdef _WIN32
     // Library users will need to call SetErrorMode(SEM_FAILCRITICALERRORS) if
     // they wish to avoid an error message box when this library is not found.
     // The call is not done by rocSOLVER directly, as it is not thread-safe and
     // will affect the global state of the program.
     void* handle = LoadLibraryW(L"rocsparse.dll");
-#elif !defined(ROCSOLVER_STATIC_LIB)
+#else
     void* handle = dlopen("librocsparse.so.1", RTLD_NOW | RTLD_LOCAL);
     char* err = dlerror(); // clear errors
 #ifndef NDEBUG
     if(!handle)
         fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", err);
 #endif /* NDEBUG */
-#endif /* defined(_WIN32) && !defined(ROCSOLVER_BUILD_STATIC) */
-#if defined(ROCSOLVER_STATIC_LIB)
-    return false; // nothing to load, static builds don't support sparse
-#else
+#endif /* _WIN32 */
     if(!handle)
         return false;
     if(!load_function(handle, "rocsparse_create_handle", g_sparse_create_handle))
@@ -202,6 +203,8 @@ static bool load_rocsparse()
         return false;
 
     return true;
+#else /* ROCSOLVER_STATIC_LIB */
+    return false;
 #endif
 }
 
