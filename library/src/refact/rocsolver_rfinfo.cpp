@@ -78,7 +78,6 @@ static bool load_function(void* handle, const char* symbol, Fn& fn)
     if(err)
         fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
 #endif /* NDEBUG */
-    bool err = false;
 #endif /* _WIN32 */
     return !err;
 #else
