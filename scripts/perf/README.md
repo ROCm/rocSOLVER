@@ -14,7 +14,7 @@ Calling the script without any arguments
 ```
 ./perfoptim-suite
 ```
-runs the default configuration which executes all available functions with all precisions and all the size cases.
+runs the default configuration which executes all available functions with real double precision and all the size cases.
 
 Options can be passed to the script as arguments to modify its behaviour. The available options are:
 ```
