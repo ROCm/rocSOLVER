@@ -219,7 +219,7 @@ def call_rocsolver_bench(bench_executable, *args):
 
 """
 EXECUTE_BENCHMARKS collects the arguments for the benchmark client, calls
-the client, gets the resulting time, and put everything in file of screen
+the client, gets the resulting time, and put everything in file or screen
 """
 def execute_benchmarks(output_file, suite, precision, case, bench_executable):
     init = False

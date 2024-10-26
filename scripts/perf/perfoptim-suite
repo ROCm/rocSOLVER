@@ -36,7 +36,7 @@ Plist="s d c z"
 Clist="small medium large"
  
 
-# Get an validate input arguments:
+# Get and validate input arguments:
 error=true
 havecase=false
 suite=""
