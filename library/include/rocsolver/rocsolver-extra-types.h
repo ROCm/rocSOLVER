@@ -170,7 +170,7 @@ typedef enum rocblas_pivot_
 {
     rocblas_pivot_variable = 281, /**< The i-th rotation is applied on plane (i,i+1). */
     rocblas_pivot_top = 282, /**< The i-th rotation is applied on plane (1,i+1). */
-    rocblas_pivot_botton = 283, /**< The i-th rotation is applied on plane (i,m) or (i,n). */
+    rocblas_pivot_bottom = 283, /**< The i-th rotation is applied on plane (i,m) or (i,n). */
 } rocblas_pivot;
 
 #endif /* ROCSOLVER_EXTRA_TYPES_H */

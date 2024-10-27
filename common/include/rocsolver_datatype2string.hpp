@@ -107,6 +107,17 @@ constexpr auto rocblas2char_direct(rocblas_direct value)
     return '\0';
 }
 
+constexpr auto rocblas2char_pivot(rocblas_pivot value)
+{
+    switch(value)
+    {
+    case rocblas_pivot_variable: return 'V';
+    case rocblas_pivot_top: return 'T';
+    case rocblas_pivot_bottom: return 'B';
+    }
+    return '\0';
+}
+
 constexpr auto rocblas2char_storev(rocblas_storev value)
 {
     switch(value)
@@ -303,6 +314,17 @@ constexpr rocblas_direct char2rocblas_direct(char value)
     case 'F': return rocblas_forward_direction;
     case 'B': return rocblas_backward_direction;
     default: return static_cast<rocblas_direct>(0);
+    }
+}
+
+constexpr rocblas_pivot char2rocblas_pivot(char value)
+{
+    switch(value)
+    {
+    case 'V': return rocblas_pivot_variable;
+    case 'T': return rocblas_pivot_top;
+    case 'B': return rocblas_pivot_bottom;
+    default: return static_cast<rocblas_pivot>(0);
     }
 }
 
