@@ -19,6 +19,10 @@ rocblas_direct
 ---------------
 .. doxygenenum:: rocblas_direct
 
+rocblas_pivot
+---------------
+.. doxygenenum:: rocblas_pivot
+
 rocblas_storev
 ---------------
 .. doxygenenum:: rocblas_storev
