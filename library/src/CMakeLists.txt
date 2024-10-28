@@ -436,9 +436,10 @@ if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   )
 endif( )
 
-# Following Boost conventions of prefixing 'lib' on static built libraries, across all platforms
 if(NOT BUILD_SHARED_LIBS)
+  # Following Boost conventions of prefixing 'lib' on static built libraries, across all platforms
   set_target_properties(rocsolver PROPERTIES PREFIX "lib")
+  target_compile_definitions(rocsolver PRIVATE ROCSOLVER_STATIC_LIB)
 endif()
 
 if(OPTIMAL)
