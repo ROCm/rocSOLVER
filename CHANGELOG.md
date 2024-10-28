@@ -4,13 +4,12 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ## (Unreleased) rocSOLVER
 ### Added
-### Optimized
 ### Changed
-### Deprecated
 ### Removed
-### Fixed
-### Known Issues
-### Security
+### Optimized
+### Resolved issues
+### Known issues
+### Upcoming changes
 
 
 ## rocSOLVER 3.27.0 for ROCm 6.3.0
