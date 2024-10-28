@@ -7,8 +7,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Changed
 ### Removed
 ### Optimized
-### Resolved Issues
-### Known Issues
+### Resolved issues
+### Known issues
 ### Upcoming changes
 
 
