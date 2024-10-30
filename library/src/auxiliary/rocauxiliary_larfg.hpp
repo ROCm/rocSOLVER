@@ -220,22 +220,22 @@ rocblas_status
 }
 
 template <typename T, typename I, typename U, typename UB, bool COMPLEX = rocblas_is_complex<T>>
-rocblas_status rocsolver_larfg_general_template(rocblas_handle handle,
-                                                const I n,
-                                                U alpha,
-                                                const rocblas_stride shifta,
-                                                UB beta,
-                                                const rocblas_stride shiftb,
-                                                const rocblas_stride strideb,
-                                                U x,
-                                                const rocblas_stride shiftx,
-                                                const I incx,
-                                                const rocblas_stride stridex,
-                                                T* tau,
-                                                const rocblas_stride strideP,
-                                                const I batch_count,
-                                                T* work,
-                                                T* norms)
+rocblas_status rocsolver_larfg_template(rocblas_handle handle,
+                                        const I n,
+                                        U alpha,
+                                        const rocblas_stride shifta,
+                                        UB beta,
+                                        const rocblas_stride shiftb,
+                                        const rocblas_stride strideb,
+                                        U x,
+                                        const rocblas_stride shiftx,
+                                        const I incx,
+                                        const rocblas_stride stridex,
+                                        T* tau,
+                                        const rocblas_stride strideP,
+                                        const I batch_count,
+                                        T* work,
+                                        T* norms)
 {
     // TODO: How to get alpha for trace logging
     ROCSOLVER_ENTER("larfg", "n:", n, "shiftA:", shifta, "shiftX:", shiftx, "incx:", incx,
@@ -315,8 +315,8 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
                                         T* work,
                                         T* norms)
 {
-    return rocsolver_larfg_general_template(handle, n, alpha, shifta, (T*)nullptr, 0, 0, x, shiftx,
-                                            incx, stridex, tau, strideP, batch_count, work, norms);
+    return rocsolver_larfg_template(handle, n, alpha, shifta, (T*)nullptr, 0, 0, x, shiftx, incx,
+                                    stridex, tau, strideP, batch_count, work, norms);
 }
 
 ROCSOLVER_END_NAMESPACE
