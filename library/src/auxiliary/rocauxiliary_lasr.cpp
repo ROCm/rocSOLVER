@@ -53,8 +53,6 @@ rocblas_status rocsolver_lasr_impl(rocblas_handle handle,
         return st;
 
     // working with unshifted arrays
-    rocblas_int shiftC = 0;
-    rocblas_int shiftS = 0;
     rocblas_int shiftA = 0;
 
     // normal (non-batched non-strided) execution
@@ -68,8 +66,8 @@ rocblas_status rocsolver_lasr_impl(rocblas_handle handle,
         return rocblas_status_size_unchanged;
 
     //  execution
-    return rocsolver_lasr_template<T>(handle, side, pivot, direct, m, n, C, shiftC, strideC, S,
-                                      shiftS, strideS, A, shiftA, lda, strideA, batch_count);
+    return rocsolver_lasr_template<T>(handle, side, pivot, direct, m, n, C, strideC, S, strideS, A,
+                                      shiftA, lda, strideA, batch_count);
 }
 
 ROCSOLVER_END_NAMESPACE
