@@ -200,7 +200,14 @@ static bool load_rocsparse()
         return false;
     if(!load_function(handle, "rocsparse_zcsric0", g_sparse_zcsric0))
         return false;
-
+    if(!load_function(handle, "rocsparse_ssctr", g_sparse_ssctr))
+        return false;
+    if(!load_function(handle, "rocsparse_dsctr", g_sparse_dsctr))
+        return false;
+    if(!load_function(handle, "rocsparse_csctr", g_sparse_csctr))
+        return false;
+    if(!load_function(handle, "rocsparse_zsctr", g_sparse_zsctr))
+        return false;
     return true;
 #else /* ROCSOLVER_STATIC_LIB */
     return false;

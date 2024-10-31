@@ -53,5 +53,9 @@ fp_rocsparse_scsric0 g_sparse_scsric0;
 fp_rocsparse_dcsric0 g_sparse_dcsric0;
 fp_rocsparse_ccsric0 g_sparse_ccsric0;
 fp_rocsparse_zcsric0 g_sparse_zcsric0;
+fp_rocsparse_ssctr g_sparse_ssctr;
+fp_rocsparse_dsctr g_sparse_dsctr;
+fp_rocsparse_csctr g_sparse_csctr;
+fp_rocsparse_zsctr g_sparse_zsctr;
 
 ROCSOLVER_END_NAMESPACE

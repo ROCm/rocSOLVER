@@ -267,6 +267,11 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_lauum.cpp
 )
 
+set(rocsolver_sparse_source
+  # lsvqr
+  sparselapack/rocsparselapack_csrlsvqr.cpp
+)
+
 set(rocsolver_refact_source
   # rfinfo create, analysis, destroy
   refact/rocsolver_rfinfo.cpp
@@ -352,6 +357,7 @@ add_library(rocsolver
   ${rocsolver_specialized_source}
   ${rocsolver_auxiliary_source}
   ${rocsolver_lapack_source}
+  ${rocsolver_sparse_source}
   ${rocsolver_refact_source}
 )
 

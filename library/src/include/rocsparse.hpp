@@ -785,6 +785,42 @@ typedef rocsparse_status (*fp_rocsparse_zcsric0)(rocsparse_handle handle,
 extern fp_rocsparse_zcsric0 g_sparse_zcsric0;
 #define rocsparse_zcsric0 ::rocsolver::g_sparse_zcsric0
 
+typedef rocsparse_status (*fp_rocsparse_ssctr)(rocsparse_handle handle,
+                                               rocsparse_int nnz,
+                                               const float* x_val,
+                                               const rocsparse_int* x_ind,
+                                               float* y,
+                                               rocsparse_index_base idx_base);
+extern fp_rocsparse_ssctr g_sparse_ssctr;
+#define rocsparse_ssctr ::rocsolver::g_sparse_ssctr
+
+typedef rocsparse_status (*fp_rocsparse_dsctr)(rocsparse_handle handle,
+                                               rocsparse_int nnz,
+                                               const double* x_val,
+                                               const rocsparse_int* x_ind,
+                                               double* y,
+                                               rocsparse_index_base idx_base);
+extern fp_rocsparse_dsctr g_sparse_dsctr;
+#define rocsparse_dsctr ::rocsolver::g_sparse_dsctr
+
+typedef rocsparse_status (*fp_rocsparse_csctr)(rocsparse_handle handle,
+                                               rocsparse_int nnz,
+                                               const rocsparse_float_complex* x_val,
+                                               const rocsparse_int* x_ind,
+                                               rocsparse_float_complex* y,
+                                               rocsparse_index_base idx_base);
+extern fp_rocsparse_csctr g_sparse_csctr;
+#define rocsparse_csctr ::rocsolver::g_sparse_csctr
+
+typedef rocsparse_status (*fp_rocsparse_zsctr)(rocsparse_handle handle,
+                                               rocsparse_int nnz,
+                                               const rocsparse_double_complex* x_val,
+                                               const rocsparse_int* x_ind,
+                                               rocsparse_double_complex* y,
+                                               rocsparse_index_base idx_base);
+extern fp_rocsparse_zsctr g_sparse_zsctr;
+#define rocsparse_zsctr ::rocsolver::g_sparse_zsctr
+
 ROCSOLVER_END_NAMESPACE
 
 #endif /* HAVE_ROCSPARSE */
@@ -1098,6 +1134,48 @@ inline rocsparse_status rocsparseCall_csrsm_solve(rocsparse_handle sphandle,
 {
     return rocsparse_dcsrsm_solve(sphandle, transA, transB, n, nrhs, nnz, alpha, descr, val, ptr,
                                   ind, B, ldb, info, solve, buffer);
+}
+
+inline rocsparse_status rocsparseCall_sctr(rocsparse_handle sphandle,
+                                           rocsparse_int nnz,
+                                           const float* x_val,
+                                           const rocsparse_int* x_ind,
+                                           float* y,
+                                           rocsparse_index_base idx_base)
+{
+    return rocsparse_ssctr(sphandle, nnz, x_val, x_ind, y, idx_base);
+}
+
+inline rocsparse_status rocsparseCall_sctr(rocsparse_handle sphandle,
+                                           rocsparse_int nnz,
+                                           const double* x_val,
+                                           const rocsparse_int* x_ind,
+                                           double* y,
+                                           rocsparse_index_base idx_base)
+{
+    return rocsparse_dsctr(sphandle, nnz, x_val, x_ind, y, idx_base);
+}
+
+inline rocsparse_status rocsparseCall_sctr(rocsparse_handle sphandle,
+                                           rocsparse_int nnz,
+                                           const rocblas_float_complex* x_val,
+                                           const rocsparse_int* x_ind,
+                                           rocblas_float_complex* y,
+                                           rocsparse_index_base idx_base)
+{
+    return rocsparse_csctr(sphandle, nnz, (rocsparse_float_complex*)x_val, x_ind,
+                           (rocsparse_float_complex*)y, idx_base);
+}
+
+inline rocsparse_status rocsparseCall_sctr(rocsparse_handle sphandle,
+                                           rocsparse_int nnz,
+                                           const rocblas_double_complex* x_val,
+                                           const rocsparse_int* x_ind,
+                                           rocblas_double_complex* y,
+                                           rocsparse_index_base idx_base)
+{
+    return rocsparse_zsctr(sphandle, nnz, (rocsparse_double_complex*)x_val, x_ind,
+                           (rocsparse_double_complex*)y, idx_base);
 }
 
 ROCSOLVER_END_NAMESPACE
