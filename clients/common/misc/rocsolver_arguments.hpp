@@ -193,6 +193,17 @@ public:
             throw std::invalid_argument("Invalid value for " + name);
     }
 
+    void validate_pivot(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char pivot = val->second.as<char>();
+        if(pivot != 'V' && pivot != 'T' && pivot != 'B')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
     void validate_storev(const std::string name) const
     {
         auto val = find(name);

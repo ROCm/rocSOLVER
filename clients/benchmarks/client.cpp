@@ -565,6 +565,12 @@ try
             "                           The order in which a series of transformations are applied.\n"
             "                           ")
 
+        ("pivot",
+         value<char>()->default_value('V'),
+            "V = variable, T = top, B = bottom.\n"
+            "                           Defines the planes on which a sequence of rotations is applied.\n"
+            "                           ")
+
         ("evect",
          value<char>()->default_value('N'),
             "N = none, V = compute eigenvectors of the matrix,\n"
@@ -644,6 +650,7 @@ try
     argus.validate_fill("uplo");
     argus.validate_diag("diag");
     argus.validate_direct("direct");
+    argus.validate_pivot("pivot");
     argus.validate_storev("storev");
     argus.validate_svect("svect");
     argus.validate_svect("left_svect");
