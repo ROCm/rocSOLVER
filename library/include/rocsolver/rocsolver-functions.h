@@ -26382,6 +26382,107 @@ ROCSOLVER_EXPORT rocblas_status
 
 /*
  * ===========================================================================
+ *      Sparse LAPACK functions
+ * ===========================================================================
+ */
+
+/*! @{
+    \brief CSRLSVQR solves an overdetermined (or underdetermined) linear system defined by an m-by-n
+    sparse matrix A, and a corresponding dense vector B, using the QR factorization computed by \ref rocsolver_sgeqrf "GEQRF"
+
+    \details !TODO
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    n           rocblas_int. n >= 0.
+                The number of rows (and columns) of matrix A.
+    @param[in]
+    nnz         rocblas_int. nnz >= n.
+                The number of non-zero elements in A.
+    @param[in]
+    valA        pointer to type. Array on the GPU of dimension nnz.
+                The values of the non-zero elements of A.
+    @param[in]
+    ptrA        pointer to rocblas_int. Array on the GPU of dimension n+1.
+                It contains the positions of the beginning of each row in indA and valA.
+                The last element of ptrA is equal to nnz.
+    @param[in]
+    indA        pointer to rocblas_int. Array on the GPU of dimension nnz.
+                It contains the column indices of the non-zero elements of A. Indices are
+                sorted by row and by column within each row.
+    @param[in]
+    b           pointer to type. Array on the GPU of dimension m.
+                It contains the right hand vector of the linear system.
+    @param[in]
+    tol         type.
+                Tolerance to decide if the system is singular or not.
+    @param[in]
+    reorder     rocblas_int.
+                Enum to control how much reordering is to be done to reduce fill-in.
+    @param[out]
+    x           pointer to type. Array on the GPU of dimension m.
+                Solution vector satisfying $A^(-1) \cdot b = x$
+    @param[out]
+    singularity pointer to rocblas_int. Value on CPU.
+                -1 if A is invertible, otherwise the first index $i$ such that $R(i, i) \approx 0$
+    ********************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_scsrlsvqr(rocblas_handle handle,
+                                                    const rocblas_int m,
+                                                    const rocblas_int nnz,
+                                                    const rocsparse_mat_descr descA,
+                                                    const float* A,
+                                                    const int* ptrA,
+                                                    const int* indA,
+                                                    const float* b,
+                                                    const float tol,
+                                                    const rocblas_int reorder,
+                                                    float* x,
+                                                    rocblas_int* singularity);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrlsvqr(rocblas_handle handle,
+                                                    const rocblas_int m,
+                                                    const rocblas_int nnz,
+                                                    const rocsparse_mat_descr descA,
+                                                    const double* A,
+                                                    const rocblas_int* ptrA,
+                                                    const rocblas_int* indA,
+                                                    const double* b,
+                                                    const double tol,
+                                                    const rocblas_int reorder,
+                                                    double* x,
+                                                    rocblas_int* singularity);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrlsvqr(rocblas_handle handle,
+                                                    const rocblas_int m,
+                                                    const rocblas_int nnz,
+                                                    const rocsparse_mat_descr descA,
+                                                    const rocblas_float_complex* A,
+                                                    const rocblas_int* ptrA,
+                                                    const rocblas_int* indA,
+                                                    const rocblas_float_complex* b,
+                                                    const rocblas_float_complex tol,
+                                                    const rocblas_int reorder,
+                                                    rocblas_float_complex* x,
+                                                    rocblas_int* singularity);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrlsvqr(rocblas_handle handle,
+                                                    const rocblas_int m,
+                                                    const rocblas_int nnz,
+                                                    const rocsparse_mat_descr descA,
+                                                    const rocblas_double_complex* A,
+                                                    const rocblas_int* ptrA,
+                                                    const rocblas_int* indA,
+                                                    const rocblas_double_complex* b,
+                                                    const rocblas_double_complex tol,
+                                                    const rocblas_int reorder,
+                                                    rocblas_double_complex* x,
+                                                    int* singularity);
+//! @}
+
+/*
+ * ===========================================================================
  *      Refactorization functions
  * ===========================================================================
  */

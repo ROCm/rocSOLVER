@@ -12,15 +12,15 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 template <typename T>
 rocblas_status rocsolver_csrlsvqr_impl(rocblas_handle handle,
-                                       int m,
-                                       int nnz,
-                                       const rocsolver_rfinfo rfinfo,
+                                       const rocblas_int m,
+                                       const rocblas_int nnz,
+                                       const rocsparse_mat_descr descA,
                                        const T* A,
-                                       const int* csrRowPtrA,
-                                       const int* csrColIndA,
+                                       const rocblas_int* ptrA,
+                                       const rocblas_int* indA,
                                        const T* b,
-                                       T tol,
-                                       int reorder,
+                                       const T tol,
+                                       const rocblas_int reorder,
                                        T* x,
                                        int* singularity)
 {

@@ -153,6 +153,10 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/refact/testing_csrrf_solve.cpp
   )
 
+  set(sparselapack_inst_files
+    #common/sparselapack/testing_csrlsvqr.cpp
+  )
+
   set(common_source_files
     common/misc/lapack_host_reference.cpp
     common/misc/rocsolver_test.cpp

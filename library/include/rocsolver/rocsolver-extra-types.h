@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -163,5 +163,10 @@ typedef enum rocsolver_rfinfo_mode_
     rocsolver_rfinfo_mode_cholesky
     = 272, /**< To work with Cholesky factorization (for symmetric positive definite sparse matrices). */
 } rocsolver_rfinfo_mode;
+
+/*! \brief Forward-declaration of opaque struct containing data used to describe sparse matrices
+ ********************************************************************************/
+struct _rocsparse_mat_descr;
+typedef struct _rocsparse_mat_descr* rocsparse_mat_descr;
 
 #endif /* ROCSOLVER_EXTRA_TYPES_H */
