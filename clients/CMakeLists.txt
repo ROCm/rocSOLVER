@@ -144,6 +144,10 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/lapack/testing_geblttrs_npvt_interleaved.cpp
   )
 
+set(sparselapack_inst_files
+  common/sparselapack/testing_lsvqr.cpp
+)
+
   set(rocrefact_inst_files
     common/refact/testing_csrrf_analysis.cpp
     common/refact/testing_csrrf_sumlu.cpp
@@ -153,9 +157,6 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/refact/testing_csrrf_solve.cpp
   )
 
-  set(sparselapack_inst_files
-    #common/sparselapack/testing_csrlsvqr.cpp
-  )
 
   set(common_source_files
     common/misc/lapack_host_reference.cpp
@@ -166,6 +167,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/matrix_utils/matrix_utils.cpp
     ${rocauxiliary_inst_files}
     ${roclapack_inst_files}
+    ${sparselapack_inst_files}
     ${rocrefact_inst_files}
   )
 

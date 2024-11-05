@@ -104,6 +104,9 @@
 #include "common/lapack/testing_sytxx_hetxx.hpp"
 #include "common/lapack/testing_trtri.hpp"
 
+// sparse lapack
+#include "common/sparselapack/testing_lsvqr.hpp"
+
 // refactorization
 #include "common/refact/testing_csrrf_analysis.hpp"
 #include "common/refact/testing_csrrf_refactchol.hpp"
@@ -301,6 +304,8 @@ class rocsolver_dispatcher
             {"geblttrs_npvt", testing_geblttrs_npvt<false, false, T>},
             {"geblttrs_npvt_batched", testing_geblttrs_npvt<true, true, T>},
             {"geblttrs_npvt_strided_batched", testing_geblttrs_npvt<false, true, T>},
+            // lsvqr
+            {"lsvqr", testing_lsvqr<T>},
         };
 
         // Grab function from the map and execute

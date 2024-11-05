@@ -125,6 +125,11 @@ set(rocrefact_test_source
   refact/csrrf_solve_gtest.cpp
 )
 
+set(rocsparselapack_test_source
+  # sparse least-squares qr solver
+  sparselapack/lsvqr_gtest.cpp
+)
+
 set(others_test_source
   # unified memory model
   managed_malloc_gtest.cpp
@@ -144,6 +149,7 @@ add_executable(rocsolver-test
   ${roclapack_test_source}
   ${rocauxiliary_test_source}
   ${rocrefact_test_source}
+  ${rocsparselapack_test_source}
   ${others_test_source}
   ${rocsolver_test_source}
 )
