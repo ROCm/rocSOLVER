@@ -57,13 +57,9 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
                                           I const tid,
                                           I const i_inc)
 {
-    constexpr bool use_reorder = true;
-
     auto c = [&](auto i) -> const S { return (C_[i - 1]); };
     auto s = [&](auto i) -> const S { return (S_[i - 1]); };
     auto A = [&](auto i, auto j) -> T& { return (A_[i - 1 + (j - 1) * lda]); };
-    const S one = 1;
-    const S zero = 0;
 
     // ---------------------
     // determine path case
@@ -87,36 +83,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Variable && is_direct_Forward)
     {
-        if constexpr(use_reorder)
+        for(I i = 1 + tid; i <= n; i += i_inc)
         {
-            for(I i = 1 + tid; i <= n; i += i_inc)
-            {
-                for(I j = 1; j <= (m - 1); j++)
-                {
-                    const auto ctemp = c(j);
-                    const auto stemp = s(j);
-                    const auto temp = A(j + 1, i);
-                    A(j + 1, i) = ctemp * temp - stemp * A(j, i);
-                    A(j, i) = stemp * temp + ctemp * A(j, i);
-                }
-            }
-        }
-        else
-        {
+            auto temp = A(1, i);
             for(I j = 1; j <= (m - 1); j++)
             {
                 const auto ctemp = c(j);
                 const auto stemp = s(j);
-                if((ctemp != one) || (stemp != zero))
-                {
-                    for(I i = 1 + tid; i <= n; i += i_inc)
-                    {
-                        const auto temp = A(j + 1, i);
-                        A(j + 1, i) = ctemp * temp - stemp * A(j, i);
-                        A(j, i) = stemp * temp + ctemp * A(j, i);
-                    }
-                }
+                const auto temp_hold = A(j + 1, i);
+                A(j, i) = stemp * temp_hold + ctemp * temp;
+                temp = ctemp * temp_hold - stemp * temp;
             }
+            A(m, i) = temp;
         }
 
         return;
@@ -129,41 +107,23 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Variable && is_direct_Backward)
     {
-        auto const jend = (m - 1);
-        auto const jstart = 1;
+        auto const jstart = (m - 1);
+        auto const jend = 1;
         auto const istart = 1;
         auto const iend = n;
 
-        if constexpr(use_reorder)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            for(I i = istart + tid; i <= iend; i += i_inc)
-            {
-                for(I j = jend; j >= jstart; j--)
-                {
-                    const auto ctemp = c(j);
-                    const auto stemp = s(j);
-                    const auto temp = A(j + 1, i);
-                    A(j + 1, i) = ctemp * temp - stemp * A(j, i);
-                    A(j, i) = stemp * temp + ctemp * A(j, i);
-                }
-            }
-        }
-        else
-        {
-            for(I j = jend; j >= jstart; j--)
+            auto temp = A(jstart + 1, i);
+            for(I j = jstart; j >= jend; j--)
             {
                 const auto ctemp = c(j);
                 const auto stemp = s(j);
-                if((ctemp != one) || (stemp != zero))
-                {
-                    for(I i = istart + tid; i <= iend; i += i_inc)
-                    {
-                        const auto temp = A(j + 1, i);
-                        A(j + 1, i) = ctemp * temp - stemp * A(j, i);
-                        A(j, i) = stemp * temp + ctemp * A(j, i);
-                    }
-                }
+                const auto temp_hold = A(j, i);
+                A(j + 1, i) = ctemp * temp - stemp * temp_hold;
+                temp = stemp * temp + ctemp * temp_hold;
             }
+            A(jend, i) = temp;
         }
 
         return;
@@ -176,16 +136,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Top && is_direct_Forward)
     {
-        for(I j = 2; j <= m; j++)
+        for(I i = 1 + tid; i <= n; i += i_inc)
         {
-            const auto ctemp = c(j - 1);
-            const auto stemp = s(j - 1);
-            for(I i = 1 + tid; i <= n; i += i_inc)
+            auto temp_hold = A(1, i);
+            for(I j = 2; j <= m; j++)
             {
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
                 const auto temp = A(j, i);
-                A(j, i) = ctemp * temp - stemp * A(1, i);
-                A(1, i) = stemp * temp + ctemp * A(1, i);
+                A(j, i) = ctemp * temp - stemp * temp_hold;
+                temp_hold = stemp * temp + ctemp * temp_hold;
             }
+            A(1, i) = temp_hold;
         }
 
         return;
@@ -203,20 +165,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = n;
 
-        for(I j = jend; j >= jstart; j--)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j - 1);
-            const auto stemp = s(j - 1);
-            if((ctemp != one) || (stemp != zero))
+            auto temp_hold = A(1, i);
+            for(I j = jend; j >= jstart; j--)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(j, i);
-
-                    A(j, i) = ctemp * temp - stemp * A(1, i);
-                    A(1, i) = stemp * temp + ctemp * A(1, i);
-                }
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
+                const auto temp = A(j, i);
+                A(j, i) = ctemp * temp - stemp * temp_hold;
+                temp_hold = stemp * temp + ctemp * temp_hold;
             }
+            A(1, i) = temp_hold;
         }
 
         return;
@@ -234,19 +194,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = n;
 
-        for(I j = jstart; j <= jend; j++)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j);
-            const auto stemp = s(j);
-            if((ctemp != one) || (stemp != zero))
+            auto temp_hold = A(m, i);
+            for(I j = jstart; j <= jend; j++)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(j, i);
-                    A(j, i) = stemp * A(m, i) + ctemp * temp;
-                    A(m, i) = ctemp * A(m, i) - stemp * temp;
-                }
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                const auto temp = A(j, i);
+                A(j, i) = stemp * temp_hold + ctemp * temp;
+                temp_hold = ctemp * temp_hold - stemp * temp;
             }
+            A(m, i) = temp_hold;
         }
 
         return;
@@ -264,19 +223,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = n;
 
-        for(I j = jend; j >= jstart; j--)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j);
-            const auto stemp = s(j);
-            if((ctemp != one) || (stemp != zero))
+            auto temp_hold = A(m, i);
+            for(I j = jend; j >= jstart; j--)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(j, i);
-                    A(j, i) = stemp * A(m, i) + ctemp * temp;
-                    A(m, i) = ctemp * A(m, i) - stemp * temp;
-                }
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                const auto temp = A(j, i);
+                A(j, i) = stemp * temp_hold + ctemp * temp;
+                temp_hold = ctemp * temp_hold - stemp * temp;
             }
+            A(m, i) = temp_hold;
         }
 
         return;
@@ -294,19 +252,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = m;
 
-        for(I j = jstart; j <= jend; j++)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j);
-            const auto stemp = s(j);
-            if((ctemp != one) || (stemp != zero))
+            auto temp = A(i, jstart);
+            for(I j = jstart; j <= jend; j++)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(i, j + 1);
-                    A(i, j + 1) = ctemp * temp - stemp * A(i, j);
-                    A(i, j) = stemp * temp + ctemp * A(i, j);
-                }
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                const auto temp_hold = A(i, j + 1);
+                A(i, j) = stemp * temp_hold + ctemp * temp;
+                temp = ctemp * temp_hold - stemp * temp;
             }
+            A(i, jend + 1) = temp;
         }
 
         return;
@@ -319,24 +276,23 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Right && is_pivot_Variable && is_direct_Backward)
     {
-        auto const jend = (n - 1);
-        auto const jstart = 1;
+        auto const jstart = n - 1;
+        auto const jend = 1;
         auto const istart = 1;
         auto const iend = m;
 
-        for(I j = jend; j >= jstart; j--)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j);
-            const auto stemp = s(j);
-            if((ctemp != one) || (stemp != zero))
+            auto temp = A(i, jstart + 1);
+            for(I j = jstart; j >= jend; j--)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(i, j + 1);
-                    A(i, j + 1) = ctemp * temp - stemp * A(i, j);
-                    A(i, j) = stemp * temp + ctemp * A(i, j);
-                }
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                const auto temp_hold = A(i, j);
+                A(i, j + 1) = ctemp * temp - stemp * temp_hold;
+                temp = stemp * temp + ctemp * temp_hold;
             }
+            A(i, jend) = temp;
         }
 
         return;
@@ -354,20 +310,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = m;
 
-        for(I j = jstart; j <= jend; j++)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j - 1);
-            const auto stemp = s(j - 1);
-            if((ctemp != one) || (stemp != zero))
+            auto temp_hold = A(i, 1);
+            for(I j = jstart; j <= jend; j++)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(i, j);
-
-                    A(i, j) = ctemp * temp - stemp * A(i, 1);
-                    A(i, 1) = stemp * temp + ctemp * A(i, 1);
-                }
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
+                const auto temp = A(i, j);
+                A(i, j) = ctemp * temp - stemp * temp_hold;
+                temp_hold = stemp * temp + ctemp * temp_hold;
             }
+            A(i, 1) = temp_hold;
         }
 
         return;
@@ -385,20 +339,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = m;
 
-        for(I j = jend; j >= jstart; j--)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j - 1);
-            const auto stemp = s(j - 1);
-            if((ctemp != one) || (stemp != zero))
+            auto temp_hold = A(i, 1);
+            for(I j = jend; j >= jstart; j--)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(i, j);
-
-                    A(i, j) = ctemp * temp - stemp * A(i, 1);
-                    A(i, 1) = stemp * temp + ctemp * A(i, 1);
-                }
+                const auto ctemp = c(j - 1);
+                const auto stemp = s(j - 1);
+                const auto temp = A(i, j);
+                A(i, j) = ctemp * temp - stemp * temp_hold;
+                temp_hold = stemp * temp + ctemp * temp_hold;
             }
+            A(i, 1) = temp_hold;
         }
 
         return;
@@ -416,20 +368,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = m;
 
-        for(I j = jstart; j <= jend; j++)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j);
-            const auto stemp = s(j);
-            if((ctemp != one) || (stemp != zero))
+            auto temp_hold = A(i, n);
+            for(I j = jstart; j <= jend; j++)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(i, j);
-
-                    A(i, j) = stemp * A(i, n) + ctemp * temp;
-                    A(i, n) = ctemp * A(i, n) - stemp * temp;
-                }
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                const auto temp = A(i, j);
+                A(i, j) = stemp * temp_hold + ctemp * temp;
+                temp_hold = ctemp * temp_hold - stemp * temp;
             }
+            A(i, n) = temp_hold;
         }
 
         return;
@@ -447,19 +397,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
         auto const istart = 1;
         auto const iend = m;
 
-        for(I j = jend; j >= jstart; j--)
+        for(I i = istart + tid; i <= iend; i += i_inc)
         {
-            const auto ctemp = c(j);
-            const auto stemp = s(j);
-            if((ctemp != one) || (stemp != zero))
+            auto temp_hold = A(i, n);
+            for(I j = jend; j >= jstart; j--)
             {
-                for(I i = istart + tid; i <= iend; i += i_inc)
-                {
-                    const auto temp = A(i, j);
-                    A(i, j) = stemp * A(i, n) + ctemp * temp;
-                    A(i, n) = ctemp * A(i, n) - stemp * temp;
-                }
+                const auto ctemp = c(j);
+                const auto stemp = s(j);
+                const auto temp = A(i, j);
+                A(i, j) = stemp * temp_hold + ctemp * temp;
+                temp_hold = ctemp * temp_hold - stemp * temp;
             }
+            A(i, n) = temp_hold;
         }
 
         return;
