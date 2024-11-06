@@ -120,6 +120,7 @@ option(BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON)
 # Include helper functions and wrapper functions
 include(util)
 include(CMakeDependentOption)
+include(CheckCXXCompilerFlag)
 
 option(BUILD_TESTING "Build rocSOLVER tests" OFF)
 if(BUILD_TESTING)
@@ -143,6 +144,8 @@ option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
 option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
+check_cxx_compiler_flag("--offload-compress" CXX_COMPILER_SUPPORTS_OFFLOAD_COMPRESS)
+cmake_dependent_option(BUILD_OFFLOAD_COMPRESS "Build with offload compression" ON CXX_COMPILER_SUPPORTS_OFFLOAD_COMPRESS OFF)
 
 cmake_dependent_option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY
   "Build with file/folder reorg backward compatibility enabled" OFF "NOT WIN32" OFF)

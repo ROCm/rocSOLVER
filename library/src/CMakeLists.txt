@@ -405,6 +405,10 @@ if(CMAKE_CXX_COMPILER MATCHES ".*clang\\+\\+.*")
   )
 endif()
 
+if(BUILD_OFFLOAD_COMPRESS)
+  target_compile_options(rocsolver PRIVATE "--offload-compress")
+endif()
+
 target_include_directories(rocsolver
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
