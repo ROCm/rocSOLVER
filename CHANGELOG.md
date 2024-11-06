@@ -9,7 +9,6 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 * Application of a sequence of plane rotations to a given matrix
     - LASR
 
-### Optimized
 ### Changed
 ### Removed
 ### Optimized
