@@ -13,7 +13,7 @@ The auxiliary functions are divided into the following categories:
 
 * :ref:`vecmat`. Some basic operations with vectors and matrices that are not part of the BLAS standard.
 * :ref:`householder`. Generation and application of Householder matrices.
-* :ref:`rotations`. Generation and application of Gives (plane) rotations.
+* :ref:`rotations`. Generation and application of Givens (plane) rotations.
 * :ref:`bidiag`. Computations specialized in bidiagonal matrices.
 * :ref:`tridiag`. Computations specialized in tridiagonal matrices.
 * :ref:`symmetric`. Computations specialized in symmetric matrices.

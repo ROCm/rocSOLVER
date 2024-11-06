@@ -785,7 +785,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
     \f[
         \begin{array}{cl}
         P = P(1)P(2)\cdots P(k) & \: \text{if direct indicates backward direction, or} \\
-        P = P(k)\cdots H(2)H(1) & \: \text{if direct indicates forward direction}
+        P = P(k)\cdots P(2)P(1) & \: \text{if direct indicates forward direction}
         \end{array}
     \f]
 
@@ -798,10 +798,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
         \end{array}\right],
     \f]
 
-    where the \f$c_i\f$ and \f$s_i\f$ are the corresponding sine and cosine factors.
+    where the \f$c_i\f$ and \f$s_i\f$ are the corresponding cosine and sine factors.
 
     The rotations are performed on different planes depending on the value of pivot. If pivot is
-    variable, the rototion R(i) is performed on plane (i,i+1), i.e. P(i) appears as a rank-2
+    variable, the rotation R(i) is performed on plane (i,i+1), i.e. P(i) appears as a rank-2
     modification to the identity matrix in the i-th and (i+1)-th rows and columns. If pivot is
     top, then the modification appears in the first and (i+1)-th rows and columns of P(i),
     and if pivot is bottom, then the modification appears in the i-th and last rows and columns of P(i).

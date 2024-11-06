@@ -50,17 +50,13 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
                                           const rocblas_direct direct,
                                           I const m,
                                           I const n,
-                                          S* C_,
-                                          S* S_,
-                                          T* A_,
+                                          S* c,
+                                          S* s,
+                                          T* A,
                                           I const lda,
                                           I const tid,
                                           I const t_inc)
 {
-    auto c = [&](auto i) -> const S { return (C_[i - 1]); };
-    auto s = [&](auto i) -> const S { return (S_[i - 1]); };
-    auto A = [&](auto i, auto j) -> T& { return (A_[i - 1 + (j - 1) * lda]); };
-
     // ---------------------
     // determine path case
     // ---------------------
@@ -83,18 +79,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Variable && is_direct_Forward)
     {
-        for(I j = 1 + tid; j <= n; j += t_inc)
+        for(I j = tid; j < n; j += t_inc)
         {
-            auto temp = A(1, j);
-            for(I i = 1; i <= (m - 1); i++)
+            auto temp = A[j * lda];
+            for(I i = 0; i <= (m - 2); i++)
             {
-                const auto ctemp = c(i);
-                const auto stemp = s(i);
-                const auto temp_hold = A(i + 1, j);
-                A(i, j) = stemp * temp_hold + ctemp * temp;
+                const auto ctemp = c[i];
+                const auto stemp = s[i];
+                const auto temp_hold = A[(i + 1) + j * lda];
+                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
                 temp = ctemp * temp_hold - stemp * temp;
             }
-            A(m, j) = temp;
+            A[(m - 1) + j * lda] = temp;
         }
         return;
     }
@@ -106,18 +102,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Variable && is_direct_Backward)
     {
-        for(I j = 1 + tid; j <= n; j += t_inc)
+        for(I j = tid; j < n; j += t_inc)
         {
-            auto temp = A(m, j);
-            for(I i = (m - 1); i >= 1; i--)
+            auto temp = A[(m - 1) + j * lda];
+            for(I i = (m - 2); i >= 0; i--)
             {
-                const auto ctemp = c(i);
-                const auto stemp = s(i);
-                const auto temp_hold = A(i, j);
-                A(i + 1, j) = ctemp * temp - stemp * temp_hold;
+                const auto ctemp = c[i];
+                const auto stemp = s[i];
+                const auto temp_hold = A[i + j * lda];
+                A[(i + 1) + j * lda] = ctemp * temp - stemp * temp_hold;
                 temp = stemp * temp + ctemp * temp_hold;
             }
-            A(1, j) = temp;
+            A[j * lda] = temp;
         }
         return;
     }
@@ -129,18 +125,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Top && is_direct_Forward)
     {
-        for(I j = 1 + tid; j <= n; j += t_inc)
+        for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A(1, j);
-            for(I i = 2; i <= m; i++)
+            auto temp_hold = A[j * lda];
+            for(I i = 1; i <= (m - 1); i++)
             {
-                const auto ctemp = c(i - 1);
-                const auto stemp = s(i - 1);
-                const auto temp = A(i, j);
-                A(i, j) = ctemp * temp - stemp * temp_hold;
+                const auto ctemp = c[i - 1];
+                const auto stemp = s[i - 1];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
-            A(1, j) = temp_hold;
+            A[j * lda] = temp_hold;
         }
         return;
     }
@@ -152,18 +148,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Top && is_direct_Backward)
     {
-        for(I j = 1 + tid; j <= n; j += t_inc)
+        for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A(1, j);
-            for(I i = m; i >= 2; i--)
+            auto temp_hold = A[j * lda];
+            for(I i = (m - 1); i >= 1; i--)
             {
-                const auto ctemp = c(i - 1);
-                const auto stemp = s(i - 1);
-                const auto temp = A(i, j);
-                A(i, j) = ctemp * temp - stemp * temp_hold;
+                const auto ctemp = c[i - 1];
+                const auto stemp = s[i - 1];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
-            A(1, j) = temp_hold;
+            A[j * lda] = temp_hold;
         }
         return;
     }
@@ -175,18 +171,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Bottom && is_direct_Forward)
     {
-        for(I j = 1 + tid; j <= n; j += t_inc)
+        for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A(m, j);
-            for(I i = 1; i <= (m - 1); i++)
+            auto temp_hold = A[(m - 1) + j * lda];
+            for(I i = 0; i <= (m - 2); i++)
             {
-                const auto ctemp = c(i);
-                const auto stemp = s(i);
-                const auto temp = A(i, j);
-                A(i, j) = stemp * temp_hold + ctemp * temp;
+                const auto ctemp = c[i];
+                const auto stemp = s[i];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A(m, j) = temp_hold;
+            A[(m - 1) + j * lda] = temp_hold;
         }
         return;
     }
@@ -198,18 +194,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Left && is_pivot_Bottom && is_direct_Backward)
     {
-        for(I j = 1 + tid; j <= n; j += t_inc)
+        for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A(m, j);
-            for(I i = (m - 1); i >= 1; i--)
+            auto temp_hold = A[(m - 1) + j * lda];
+            for(I i = (m - 2); i >= 0; i--)
             {
-                const auto ctemp = c(i);
-                const auto stemp = s(i);
-                const auto temp = A(i, j);
-                A(i, j) = stemp * temp_hold + ctemp * temp;
+                const auto ctemp = c[i];
+                const auto stemp = s[i];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A(m, j) = temp_hold;
+            A[(m - 1) + j * lda] = temp_hold;
         }
         return;
     }
@@ -221,18 +217,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Right && is_pivot_Variable && is_direct_Forward)
     {
-        for(I i = 1 + tid; i <= m; i += t_inc)
+        for(I i = tid; i < m; i += t_inc)
         {
-            auto temp = A(i, 1);
-            for(I j = 1; j <= (n - 1); j++)
+            auto temp = A[i];
+            for(I j = 0; j <= (n - 2); j++)
             {
-                const auto ctemp = c(j);
-                const auto stemp = s(j);
-                const auto temp_hold = A(i, j + 1);
-                A(i, j) = stemp * temp_hold + ctemp * temp;
+                const auto ctemp = c[j];
+                const auto stemp = s[j];
+                const auto temp_hold = A[i + (j + 1) * lda];
+                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
                 temp = ctemp * temp_hold - stemp * temp;
             }
-            A(i, n) = temp;
+            A[i + (n - 1) * lda] = temp;
         }
         return;
     }
@@ -244,18 +240,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Right && is_pivot_Variable && is_direct_Backward)
     {
-        for(I i = 1 + tid; i <= m; i += t_inc)
+        for(I i = tid; i < m; i += t_inc)
         {
-            auto temp = A(i, n);
-            for(I j = (n - 1); j >= 1; j--)
+            auto temp = A[i + (n - 1) * lda];
+            for(I j = (n - 2); j >= 0; j--)
             {
-                const auto ctemp = c(j);
-                const auto stemp = s(j);
-                const auto temp_hold = A(i, j);
-                A(i, j + 1) = ctemp * temp - stemp * temp_hold;
+                const auto ctemp = c[j];
+                const auto stemp = s[j];
+                const auto temp_hold = A[i + j * lda];
+                A[i + (j + 1) * lda] = ctemp * temp - stemp * temp_hold;
                 temp = stemp * temp + ctemp * temp_hold;
             }
-            A(i, 1) = temp;
+            A[i] = temp;
         }
         return;
     }
@@ -267,18 +263,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Right && is_pivot_Top && is_direct_Forward)
     {
-        for(I i = 1 + tid; i <= m; i += t_inc)
+        for(I i = tid; i < m; i += t_inc)
         {
-            auto temp_hold = A(i, 1);
-            for(I j = 2; j <= n; j++)
+            auto temp_hold = A[i];
+            for(I j = 1; j <= (n - 1); j++)
             {
-                const auto ctemp = c(j - 1);
-                const auto stemp = s(j - 1);
-                const auto temp = A(i, j);
-                A(i, j) = ctemp * temp - stemp * temp_hold;
+                const auto ctemp = c[j - 1];
+                const auto stemp = s[j - 1];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
-            A(i, 1) = temp_hold;
+            A[i] = temp_hold;
         }
         return;
     }
@@ -290,18 +286,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Right && is_pivot_Top && is_direct_Backward)
     {
-        for(I i = 1 + tid; i <= m; i += t_inc)
+        for(I i = tid; i < m; i += t_inc)
         {
-            auto temp_hold = A(i, 1);
-            for(I j = n; j >= 2; j--)
+            auto temp_hold = A[i];
+            for(I j = (n - 1); j >= 1; j--)
             {
-                const auto ctemp = c(j - 1);
-                const auto stemp = s(j - 1);
-                const auto temp = A(i, j);
-                A(i, j) = ctemp * temp - stemp * temp_hold;
+                const auto ctemp = c[j - 1];
+                const auto stemp = s[j - 1];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
-            A(i, 1) = temp_hold;
+            A[i] = temp_hold;
         }
         return;
     }
@@ -313,18 +309,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Right && is_pivot_Bottom && is_direct_Forward)
     {
-        for(I i = 1 + tid; i <= m; i += t_inc)
+        for(I i = tid; i < m; i += t_inc)
         {
-            auto temp_hold = A(i, n);
-            for(I j = 1; j <= (n - 1); j++)
+            auto temp_hold = A[i + (n - 1) * lda];
+            for(I j = 0; j <= (n - 2); j++)
             {
-                const auto ctemp = c(j);
-                const auto stemp = s(j);
-                const auto temp = A(i, j);
-                A(i, j) = stemp * temp_hold + ctemp * temp;
+                const auto ctemp = c[j];
+                const auto stemp = s[j];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A(i, n) = temp_hold;
+            A[i + (n - 1) * lda] = temp_hold;
         }
         return;
     }
@@ -336,18 +332,18 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     //  -----------------------------
     if(is_side_Right && is_pivot_Bottom && is_direct_Backward)
     {
-        for(I i = 1 + tid; i <= m; i += t_inc)
+        for(I i = tid; i < m; i += t_inc)
         {
-            auto temp_hold = A(i, n);
-            for(I j = (n - 1); j >= 1; j--)
+            auto temp_hold = A[i + (n - 1) * lda];
+            for(I j = (n - 2); j >= 0; j--)
             {
-                const auto ctemp = c(j);
-                const auto stemp = s(j);
-                const auto temp = A(i, j);
-                A(i, j) = stemp * temp_hold + ctemp * temp;
+                const auto ctemp = c[j];
+                const auto stemp = s[j];
+                const auto temp = A[i + j * lda];
+                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A(i, n) = temp_hold;
+            A[i + (n - 1) * lda] = temp_hold;
         }
         return;
     }
@@ -369,7 +365,8 @@ __global__ static void __launch_bounds__(LASR_MAX_NTHREADS)
                 U AA,
                 const rocblas_stride shiftA,
                 I const lda,
-                const rocblas_stride strideA)
+                const rocblas_stride strideA,
+                const I batch_count)
 {
     const auto nblocks = hipGridDim_x;
     const auto nthreads_per_block = hipBlockDim_x;
@@ -377,13 +374,17 @@ __global__ static void __launch_bounds__(LASR_MAX_NTHREADS)
     I const tid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
     I const t_inc = nthreads;
 
-    // select batch instance
-    const auto bid = hipBlockIdx_z;
-    T* A_ = load_ptr_batch<T>(AA, bid, shiftA, strideA);
-    S* C_ = CA + bid * strideC;
-    S* S_ = SA + bid * strideS;
+    // select batch instance and execute
+    auto const bid_start = hipBlockIdx_z;
+    auto const bid_inc = hipGridDim_z;
+    for(auto bid = bid_start; bid < batch_count; bid += bid_inc)
+    {
+        T* A_ = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+        S* C_ = CA + bid * strideC;
+        S* S_ = SA + bid * strideS;
 
-    lasr_body(side, pivot, direct, m, n, C_, S_, A_, lda, tid, t_inc);
+        lasr_body(side, pivot, direct, m, n, C_, S_, A_, lda, tid, t_inc);
+    }
 }
 
 /***************** GPU Device functions *****************************************/
@@ -432,22 +433,22 @@ rocblas_status rocsolver_lasr_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-template <typename T, typename S, typename U>
+template <typename T, typename S, typename U, typename I>
 rocblas_status rocsolver_lasr_template(rocblas_handle handle,
                                        const rocblas_side side,
                                        const rocblas_pivot pivot,
                                        const rocblas_direct direct,
-                                       const rocblas_int m,
-                                       const rocblas_int n,
+                                       const I m,
+                                       const I n,
                                        S* CA,
                                        const rocblas_stride strideC,
                                        S* SA,
                                        const rocblas_stride strideS,
                                        U AA,
                                        const rocblas_stride shiftA,
-                                       const rocblas_int lda,
+                                       const I lda,
                                        const rocblas_stride strideA,
-                                       const rocblas_int batch_count)
+                                       const I batch_count)
 {
     ROCSOLVER_ENTER("lasr", "side:", side, "pivot:", pivot, "direct:", direct, "m:", m, "n:", n,
                     "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
@@ -470,7 +471,7 @@ rocblas_status rocsolver_lasr_template(rocblas_handle handle,
 
     hipLaunchKernelGGL((lasr_kernel<T>), dim3(nblocks, 1, batch_count), dim3(nthreads, 1, 1), 0,
                        stream, side, pivot, direct, m, n, CA, strideC, SA, strideS, AA, shiftA, lda,
-                       strideA);
+                       strideA, batch_count);
 
     return rocblas_status_success;
 }
