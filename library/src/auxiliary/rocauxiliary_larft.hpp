@@ -57,7 +57,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                      const rocblas_stride strideF,
                                      const rocblas_direct direct,
                                      const rocblas_storev storev,
-                                     const bool inc)
+                                     const bool add_fp)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -78,7 +78,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             {
                 if(storev == rocblas_column_wise)
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(i, j, ldv)];
                     }
@@ -89,7 +89,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 }
                 else
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, i, ldv)];
                     }
@@ -108,7 +108,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             {
                 if(storev == rocblas_column_wise)
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D((n - k + i), j, ldv)];
                     }
@@ -120,7 +120,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 }
                 else
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, (n - k + i), ldv)];
                     }
@@ -151,7 +151,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                                      const rocblas_stride strideF,
                                      const rocblas_direct direct,
                                      const rocblas_storev storev,
-                                     const bool inc)
+                                     const bool add_fp)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -172,7 +172,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             {
                 if(storev == rocblas_column_wise)
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * conj(Vp[idx2D(i, j, ldv)]);
                     }
@@ -184,7 +184,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 }
                 else
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, i, ldv)];
                     }
@@ -203,7 +203,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
             {
                 if(storev == rocblas_column_wise)
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * conj(Vp[idx2D((n - k + i), j, ldv)]);
                     }
@@ -215,7 +215,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 }
                 else
                 {
-                    if(!inc)
+                    if(!add_fp)
                     {
                         Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(j, (n - k + i), ldv)];
                     }
