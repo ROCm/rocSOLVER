@@ -81,16 +81,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I j = tid; j < n; j += t_inc)
         {
-            auto temp = A[j * lda];
+            auto temp = A[idx2D(0, j, lda)];
             for(I i = 0; i <= (m - 2); i++)
             {
                 const auto ctemp = c[i];
                 const auto stemp = s[i];
-                const auto temp_hold = A[(i + 1) + j * lda];
-                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
+                const auto temp_hold = A[idx2D(i + 1, j, lda)];
+                A[idx2D(i, j, lda)] = stemp * temp_hold + ctemp * temp;
                 temp = ctemp * temp_hold - stemp * temp;
             }
-            A[(m - 1) + j * lda] = temp;
+            A[idx2D(m - 1, j, lda)] = temp;
         }
         return;
     }
@@ -104,16 +104,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I j = tid; j < n; j += t_inc)
         {
-            auto temp = A[(m - 1) + j * lda];
+            auto temp = A[idx2D(m - 1, j, lda)];
             for(I i = (m - 2); i >= 0; i--)
             {
                 const auto ctemp = c[i];
                 const auto stemp = s[i];
-                const auto temp_hold = A[i + j * lda];
-                A[(i + 1) + j * lda] = ctemp * temp - stemp * temp_hold;
+                const auto temp_hold = A[idx2D(i, j, lda)];
+                A[idx2D(i + 1, j, lda)] = ctemp * temp - stemp * temp_hold;
                 temp = stemp * temp + ctemp * temp_hold;
             }
-            A[j * lda] = temp;
+            A[idx2D(0, j, lda)] = temp;
         }
         return;
     }
@@ -127,16 +127,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A[j * lda];
+            auto temp_hold = A[idx2D(0, j, lda)];
             for(I i = 1; i <= (m - 1); i++)
             {
                 const auto ctemp = c[i - 1];
                 const auto stemp = s[i - 1];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
-            A[j * lda] = temp_hold;
+            A[idx2D(0, j, lda)] = temp_hold;
         }
         return;
     }
@@ -150,16 +150,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A[j * lda];
+            auto temp_hold = A[idx2D(0, j, lda)];
             for(I i = (m - 1); i >= 1; i--)
             {
                 const auto ctemp = c[i - 1];
                 const auto stemp = s[i - 1];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
-            A[j * lda] = temp_hold;
+            A[idx2D(0, j, lda)] = temp_hold;
         }
         return;
     }
@@ -173,16 +173,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A[(m - 1) + j * lda];
+            auto temp_hold = A[idx2D(m - 1, j, lda)];
             for(I i = 0; i <= (m - 2); i++)
             {
                 const auto ctemp = c[i];
                 const auto stemp = s[i];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A[(m - 1) + j * lda] = temp_hold;
+            A[idx2D(m - 1, j, lda)] = temp_hold;
         }
         return;
     }
@@ -196,16 +196,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I j = tid; j < n; j += t_inc)
         {
-            auto temp_hold = A[(m - 1) + j * lda];
+            auto temp_hold = A[idx2D(m - 1, j, lda)];
             for(I i = (m - 2); i >= 0; i--)
             {
                 const auto ctemp = c[i];
                 const auto stemp = s[i];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A[(m - 1) + j * lda] = temp_hold;
+            A[idx2D(m - 1, j, lda)] = temp_hold;
         }
         return;
     }
@@ -224,11 +224,11 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
             {
                 const auto ctemp = c[j];
                 const auto stemp = s[j];
-                const auto temp_hold = A[i + (j + 1) * lda];
-                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
+                const auto temp_hold = A[idx2D(i, j + 1, lda)];
+                A[idx2D(i, j, lda)] = stemp * temp_hold + ctemp * temp;
                 temp = ctemp * temp_hold - stemp * temp;
             }
-            A[i + (n - 1) * lda] = temp;
+            A[idx2D(i, n - 1, lda)] = temp;
         }
         return;
     }
@@ -242,13 +242,13 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I i = tid; i < m; i += t_inc)
         {
-            auto temp = A[i + (n - 1) * lda];
+            auto temp = A[idx2D(i, n - 1, lda)];
             for(I j = (n - 2); j >= 0; j--)
             {
                 const auto ctemp = c[j];
                 const auto stemp = s[j];
-                const auto temp_hold = A[i + j * lda];
-                A[i + (j + 1) * lda] = ctemp * temp - stemp * temp_hold;
+                const auto temp_hold = A[idx2D(i, j, lda)];
+                A[idx2D(i, j + 1, lda)] = ctemp * temp - stemp * temp_hold;
                 temp = stemp * temp + ctemp * temp_hold;
             }
             A[i] = temp;
@@ -270,8 +270,8 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
             {
                 const auto ctemp = c[j - 1];
                 const auto stemp = s[j - 1];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
             A[i] = temp_hold;
@@ -293,8 +293,8 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
             {
                 const auto ctemp = c[j - 1];
                 const auto stemp = s[j - 1];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = ctemp * temp - stemp * temp_hold;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = ctemp * temp - stemp * temp_hold;
                 temp_hold = stemp * temp + ctemp * temp_hold;
             }
             A[i] = temp_hold;
@@ -311,16 +311,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I i = tid; i < m; i += t_inc)
         {
-            auto temp_hold = A[i + (n - 1) * lda];
+            auto temp_hold = A[idx2D(i, n - 1, lda)];
             for(I j = 0; j <= (n - 2); j++)
             {
                 const auto ctemp = c[j];
                 const auto stemp = s[j];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A[i + (n - 1) * lda] = temp_hold;
+            A[idx2D(i, n - 1, lda)] = temp_hold;
         }
         return;
     }
@@ -334,16 +334,16 @@ __host__ __device__ static void lasr_body(const rocblas_side side,
     {
         for(I i = tid; i < m; i += t_inc)
         {
-            auto temp_hold = A[i + (n - 1) * lda];
+            auto temp_hold = A[idx2D(i, n - 1, lda)];
             for(I j = (n - 2); j >= 0; j--)
             {
                 const auto ctemp = c[j];
                 const auto stemp = s[j];
-                const auto temp = A[i + j * lda];
-                A[i + j * lda] = stemp * temp_hold + ctemp * temp;
+                const auto temp = A[idx2D(i, j, lda)];
+                A[idx2D(i, j, lda)] = stemp * temp_hold + ctemp * temp;
                 temp_hold = ctemp * temp_hold - stemp * temp;
             }
-            A[i + (n - 1) * lda] = temp_hold;
+            A[idx2D(i, n - 1, lda)] = temp_hold;
         }
         return;
     }
