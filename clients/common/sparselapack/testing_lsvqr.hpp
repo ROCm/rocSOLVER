@@ -35,9 +35,59 @@
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
 
+template <bool CPU, bool GPU, typename T>
+void lsvqr_initData(const rocblas_handle handle, const rocblas_int n, const rocblas_int nnz)
+{
+    if(CPU)
+    {
+        std::vector<T> denseA(n * n);
+
+        const rocblas_int max_index = n * n;
+        std::uniform_int_distribution<int> sample_index(0, max_index);
+
+        // scale A to avoid singularities
+
+        for(rocblas_int i = 0; i < m; i++)
+        {
+            for(rocblas_int j = 0; j < n; j++)
+            {
+                if(i == j)
+                    denseA[i + j * n] += 400;
+                else
+                    denseA[i + j * n] -= 4;
+            }
+        }
+
+        const rocblas_int n_zeroes = (n * n) - nnz;
+        rocblas_int target_i = sample_index(rocblas_rng);
+        rocblas_int target_j = sample_index(rocblas_rng);
+        for(rocblas_int i = 0; i < n_zeroes; n++)
+        {
+            while((denseA[target_i + target_j * n] == 0) && (target_i != target_j))
+            {
+                target_i = sample_index(rocblas_rng);
+                target_j = sample_index(rocblas_rng);
+            }
+            denseA[target_i + target_j * n] = 0;
+        }
+
+        // gather into sparse matrices
+    }
+
+    if(GPU)
+    {
+        // now copy pivoting indices and matrices to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dB.transfer_from(hB));
+    }
+}
+
 template <typename T>
 void testing_lsvqr(Arguments& argus)
 {
+    rocblas_local_handle handle;
+    rocblas_int n = argus.get<rocblas_int>("n");
+    rocblas_int nnz = argus.get<rocblas_int>("nnz");
 }
 
 #define EXTERN_TESTING_LSVQR(...) extern template void testing_lsvqr<__VA_ARGS__>(Arguments&);
