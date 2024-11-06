@@ -187,7 +187,7 @@ if(NOT DEFINED AMDGPU_TARGETS)
   endif()
   # Query for compiler support of GPU archs
   rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS TARGETS ${OPTIONAL_TARGETS_QUERY})
-  set(AMDGPU_TARGETS_INIT ${OPTIONAL_AMDGPU_TARGETS} ${DEFAULT_TARETS})
+  set(AMDGPU_TARGETS_INIT ${OPTIONAL_AMDGPU_TARGETS} ${DEFAULT_TARGETS})
 endif()
 
 # Set this before finding hip so that hip::device has the required arch flags
