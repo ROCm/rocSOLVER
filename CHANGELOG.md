@@ -3,7 +3,13 @@
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
 ## (Unreleased) rocSOLVER
+
 ### Added
+
+* Application of a sequence of plane rotations to a given matrix
+    - LASR
+
+### Optimized
 ### Changed
 ### Removed
 ### Optimized
