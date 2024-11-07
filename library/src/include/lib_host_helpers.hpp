@@ -43,12 +43,13 @@ ROCSOLVER_BEGIN_NAMESPACE
  * ===========================================================================
  */
 
-inline int64_t idx2D(const int64_t i, const int64_t j, const int64_t lda)
+__device__ __host__ inline int64_t idx2D(const int64_t i, const int64_t j, const int64_t lda)
 {
     return j * lda + i;
 }
 
-inline int64_t idx2D(const int64_t i, const int64_t j, const int64_t inca, const int64_t lda)
+__device__ __host__ inline int64_t
+    idx2D(const int64_t i, const int64_t j, const int64_t inca, const int64_t lda)
 {
     return j * lda + i * inca;
 }

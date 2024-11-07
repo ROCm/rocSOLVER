@@ -297,6 +297,17 @@ void cpu_larfb(rocblas_side side,
                T* W,
                rocblas_int ldw);
 
+template <typename T, typename SS>
+void cpu_lasr(rocblas_side side,
+              rocblas_pivot pivot,
+              rocblas_direct direct,
+              rocblas_int m,
+              rocblas_int n,
+              SS* C,
+              SS* S,
+              T* A,
+              rocblas_int lda);
+
 template <typename T, typename S>
 void cpu_latrd(rocblas_fill uplo,
                rocblas_int n,

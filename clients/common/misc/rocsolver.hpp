@@ -1291,6 +1291,64 @@ inline rocblas_status rocsolver_larfb(rocblas_handle handle,
 }
 /***************************************************************/
 
+/******************** LASR *************************************/
+inline rocblas_status rocsolver_lasr(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_pivot pivot,
+                                     rocblas_direct direct,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     float* C,
+                                     float* S,
+                                     float* A,
+                                     rocblas_int lda)
+{
+    return rocsolver_slasr(handle, side, pivot, direct, m, n, C, S, A, lda);
+}
+
+inline rocblas_status rocsolver_lasr(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_pivot pivot,
+                                     rocblas_direct direct,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     double* C,
+                                     double* S,
+                                     double* A,
+                                     rocblas_int lda)
+{
+    return rocsolver_dlasr(handle, side, pivot, direct, m, n, C, S, A, lda);
+}
+
+inline rocblas_status rocsolver_lasr(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_pivot pivot,
+                                     rocblas_direct direct,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     float* C,
+                                     float* S,
+                                     rocblas_float_complex* A,
+                                     rocblas_int lda)
+{
+    return rocsolver_clasr(handle, side, pivot, direct, m, n, C, S, A, lda);
+}
+
+inline rocblas_status rocsolver_lasr(rocblas_handle handle,
+                                     rocblas_side side,
+                                     rocblas_pivot pivot,
+                                     rocblas_direct direct,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     double* C,
+                                     double* S,
+                                     rocblas_double_complex* A,
+                                     rocblas_int lda)
+{
+    return rocsolver_zlasr(handle, side, pivot, direct, m, n, C, S, A, lda);
+}
+/***************************************************************/
+
 /******************** LAUUM ********************/
 
 inline rocblas_status rocsolver_lauum(rocblas_handle handle,

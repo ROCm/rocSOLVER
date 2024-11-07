@@ -231,6 +231,8 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_larf.cpp
   auxiliary/rocauxiliary_larft.cpp
   auxiliary/rocauxiliary_larfb.cpp
+  # plane rotations
+  auxiliary/rocauxiliary_lasr.cpp
   # orthonormal/unitary matrices
   auxiliary/rocauxiliary_org2r_ung2r.cpp
   auxiliary/rocauxiliary_orgqr_ungqr.cpp

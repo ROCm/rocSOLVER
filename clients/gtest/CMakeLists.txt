@@ -82,6 +82,8 @@ set(rocauxiliary_test_source
   auxiliary/larfg_gtest.cpp
   auxiliary/larft_gtest.cpp
   auxiliary/larfb_gtest.cpp
+  # plane rotations
+  auxiliary/lasr_gtest.cpp
   # orthonormal/unitary matrices
   auxiliary/orgxr_ungxr_gtest.cpp
   auxiliary/orglx_unglx_gtest.cpp
