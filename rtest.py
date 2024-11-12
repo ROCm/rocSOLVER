@@ -47,8 +47,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description="""
     Checks build arguments
     """)
-    parser.add_argument('-t', '--test', required=True, type=str, action='append',
+    parser.add_argument('-t', '--test', required=False, type=str, default=[], action='append',
                         help='Test set to run from rtest.xml (required, e.g. osdb)')
+    parser.add_argument(      '--emulation', required=False, type=str, default=[], action='append', choices=['smoke', 'regression', 'extended'],
+                        help='Emulation set to run from rtest.xml (required, e.g. smoke)')
+    parser.add_argument(      '--name', required=False, type=str, default=[], action='append',
+                        help='Specifies tests to run from the set (optional, run all tests in the set by default)')
     parser.add_argument('-g', '--debug', required=False, default=False,  action='store_true',
                         help='Test Debug build (optional, default: false)')
     parser.add_argument('-o', '--output', type=str, required=False, default="xml",
@@ -61,7 +65,12 @@ def parse_args():
                         help='Return as if test failed (optional, default: false)')
     # parser.add_argument('-v', '--verbose', required=False, default = False, action='store_true',
     #                     help='Verbose install (optional, default: False)')
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if not (args.test or args.emulation):
+        parser.error('either -t/--test or --emulation is required.')
+
+    return args
 
 
 def vram_detect():
@@ -303,30 +312,33 @@ def batch(script, xml):
                 var_subs[name] = val
             for name, val in args.argument.items():
                 var_subs[name] = val
-            for test in xml.getElementsByTagName('test'):
-                sets = test.getAttribute('sets')
+            available_cases = xml.getElementsByTagName('test') + xml.getElementsByTagName('emulation')
+            requested_cases = args.test + args.emulation
+            for case in available_cases:
+                sets = case.getAttribute('sets')
                 runset = sets.split(',')
-                if len([x for x in args.test if x in runset]):
-                    for run in test.getElementsByTagName('run'):
+                if len([x for x in requested_cases if x in runset]):
+                    for run in case.getElementsByTagName('run'):
                         name = run.getAttribute('name')
-                        vram_limit = run.getAttribute('vram_min')
-                        if vram_limit:
-                            if OS_info["VRAM"] < float(vram_limit):
-                                print( f'***\n*** Skipped: {name} due to VRAM req.\n***')
-                                continue
-                        if name:
-                            print( f'***\n*** Running: {name}\n***')
-                        time_limit = run.getAttribute('time_max')
-                        if time_limit:
-                            timeout = float(time_limit)
-                        else:
-                            timeout = 0
+                        if (not args.name) or (name in args.name):
+                            vram_limit = run.getAttribute('vram_min')
+                            if vram_limit:
+                                if OS_info["VRAM"] < float(vram_limit):
+                                    print( f'***\n*** Skipped: {name} due to VRAM req.\n***')
+                                    continue
+                            if name:
+                                print( f'***\n*** Running: {name}\n***')
+                            time_limit = run.getAttribute('time_max')
+                            if time_limit:
+                                timeout = float(time_limit)
+                            else:
+                                timeout = 0
 
-                        raw_cmd = run.firstChild.data
-                        var_cmd = raw_cmd.format_map(var_subs)
-                        error = run_cmd(var_cmd, True, timeout)
-                        if (error == 2):
-                            print( f'***\n*** Timed out when running: {name}\n***')
+                            raw_cmd = run.firstChild.data
+                            var_cmd = raw_cmd.format_map(var_subs)
+                            error = run_cmd(var_cmd, True, timeout)
+                            if (error == 2):
+                                print( f'***\n*** Timed out when running: {name}\n***')
                     continue
         else:
             error = run_cmd(cmd)
