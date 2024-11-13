@@ -191,6 +191,10 @@ target_compile_definitions(rocsolver-test PRIVATE
   ROCSOLVER_CLIENTS_TEST
 )
 
+if(ROCSOLVER_USE_INTERNAL_BLAS)
+  target_compile_definitions(rocsolver-test PRIVATE USE_INTERNAL_GEMM USE_INTERNAL_TRSM)
+endif()
+
 add_test(
   NAME rocsolver-test
   COMMAND rocsolver-test

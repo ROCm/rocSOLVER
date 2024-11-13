@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -204,7 +204,12 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_managed)
 
     // 12. stop query; required size at the end of query (54MB)
     rocblas_stop_device_memory_size_query(handle, &size);
+#ifndef USE_INTERNAL_TRSM
     EXPECT_GT(size, 2000000);
+#else
+    // internal trsm does not use scratch memory
+    EXPECT_LT(size, 2000000);
+#endif
 
     // 13. device memory size should not change; it should still be 2MB
     rocblas_get_device_memory_size(handle, &size);
@@ -212,7 +217,12 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_managed)
 
     // 14. When executing getrf, device memory is not enough for execution to success
     status = rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc);
+#ifndef USE_INTERNAL_TRSM
     EXPECT_EQ(status, rocblas_status_memory_error);
+#else
+    // internal trsm does not use scratch memory
+    EXPECT_EQ(status, rocblas_status_success);
+#endif
 
     // 15. device memory size should be the same 2MB
     rocblas_get_device_memory_size(handle, &size);
@@ -249,7 +259,12 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_managed)
 
     // 6. stop query
     rocblas_stop_device_memory_size_query(handle, &size);
+#ifndef USE_INTERNAL_TRSM
     EXPECT_GT(size, 2000000);
+#else
+    // internal trsm does not use scratch memory
+    EXPECT_LT(size, 2000000);
+#endif
 
     // 7. device memory size should not change; it should be 2MB
     rocblas_get_device_memory_size(handle, &size);
@@ -257,7 +272,12 @@ TEST_F(checkin_misc_MEMORY_MODEL, user_managed)
 
     // 8. When executing getrf baseline, device memory is not enough for success
     status = rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc);
+#ifndef USE_INTERNAL_TRSM
     EXPECT_EQ(status, rocblas_status_memory_error);
+#else
+    // internal trsm does not use scratch memory
+    EXPECT_EQ(status, rocblas_status_success);
+#endif
 
     // 9. device memory size should be the same 2MB
     rocblas_get_device_memory_size(handle, &size);
@@ -323,7 +343,12 @@ TEST_F(checkin_misc_MEMORY_MODEL, DISABLED_user_owned)
 
     // 10. stop query; required size at the end of query is 54MB
     rocblas_stop_device_memory_size_query(handle, &size);
+#ifndef USE_INTERNAL_TRSM
     EXPECT_GT(size, 2000000);
+#else
+    // internal trsm does not use scratch memory
+    EXPECT_LT(size, 2000000);
+#endif
 
     // 11. device memory size should not change; it should be 2MB
     rocblas_get_device_memory_size(handle, &size);
@@ -331,7 +356,12 @@ TEST_F(checkin_misc_MEMORY_MODEL, DISABLED_user_owned)
 
     // 12. When executing getrf, device memory is not enough for success
     status = rocsolver_dgetrf_strided_batched(handle, m, n, dA, lda, stA, dP, stP, dinfo, bc);
+#ifndef USE_INTERNAL_TRSM
     EXPECT_EQ(status, rocblas_status_memory_error);
+#else
+    // internal trsm does not use scratch memory
+    EXPECT_EQ(status, rocblas_status_success);
+#endif
 
     // 13. device memory size should be the same 2MB
     rocblas_get_device_memory_size(handle, &size);
