@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,77 +25,14 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#include "common/sparselapack/testing_lsvqr.hpp"
+#pragma once
 
-using ::testing::Combine;
-using ::testing::TestWithParam;
-using ::testing::Values;
-using ::testing::ValuesIn;
-using namespace std;
+#include "rocblas.hpp"
+#include "rocsolver/rocsolver.h"
+#include "rocsparse.hpp"
 
-using lsvqr_tuple = tuple<int, int>;
-
-// for checkin_lapack tests
-const vector<int> n_range = {
-    // normal (valid) samples
-    20};
-
-const vector<int> nnz_range = {
-    // normal (valid) samples
-    20};
-
-Arguments lsvqr_setup_arguments(lsvqr_tuple tup)
+struct rocsolver_spinfo_
 {
-    int n = std::get<0>(tup);
-    int nnz = std::get<1>(tup);
-
-    Arguments arg;
-
-    arg.set<rocblas_int>("n", n);
-    arg.set<rocblas_int>("nnz", nnz);
-
-    arg.timing = 0;
-
-    return arg;
-}
-
-class LSVQR : public ::TestWithParam<lsvqr_tuple>
-{
-protected:
-    void TearDown() override
-    {
-        EXPECT_EQ(hipGetLastError(), hipSuccess);
-    }
-
-    template <typename T>
-    void run_tests()
-    {
-        Arguments arg = lsvqr_setup_arguments(GetParam());
-
-        // TODO!: bad arg check
-
-        testing_lsvqr<T>(arg);
-    }
+    rocsparse_handle sphandle;
+    rocsparse_mat_descr descrA;
 };
-
-TEST_P(LSVQR, __float)
-{
-    run_tests<float>();
-}
-
-TEST_P(LSVQR, __double)
-{
-    run_tests<double>();
-}
-
-TEST_P(LSVQR, __float_complex)
-{
-    run_tests<rocblas_float_complex>();
-}
-
-TEST_P(LSVQR, __double_complex)
-{
-    run_tests<rocblas_double_complex>();
-}
-
-INSTANTIATE_TEST_SUITE_P(checkin_lapack, LSVQR, Combine(ValuesIn(n_range), ValuesIn(nnz_range)));

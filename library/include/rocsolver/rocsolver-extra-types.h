@@ -169,4 +169,11 @@ typedef enum rocsolver_rfinfo_mode_
 struct _rocsparse_mat_descr;
 typedef struct _rocsparse_mat_descr* rocsparse_mat_descr;
 
+/*! \brief A handle to a structure containing matrix descriptors and metadata required to interact
+ *with rocSPARSE when using the rocSOLVER sparse functionality. It needs to be initialized
+ *with \ref rocsolver_create_spinfo and destroyed with \ref rocsolver_destroy_spinfo.
+ ********************************************************************************/
+struct rocsolver_spinfo_;
+typedef struct rocsolver_spinfo_* rocsolver_spinfo;
+
 #endif /* ROCSOLVER_EXTRA_TYPES_H */

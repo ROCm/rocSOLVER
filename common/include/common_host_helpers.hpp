@@ -556,6 +556,88 @@ inline void read_matrix(const std::string filenameS,
     }
 }
 
+// single complex:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        rocblas_float_complex* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    int const idebug = 0;
+    if(idebug >= 1)
+    {
+        printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
+    }
+    FILE* mat = fopen(filename, "r");
+
+    if(mat == NULL)
+        throw std::invalid_argument(
+            fmt::format("Error: Could not open file {} with test data...", filename));
+
+    rewind(mat);
+
+    for(rocblas_int i = 0; i < m; ++i)
+    {
+        for(rocblas_int j = 0; j < n; ++j)
+        {
+            float v;
+            int read = fscanf(mat, "%g", &v);
+            if(read != 1)
+                throw std::out_of_range(
+                    fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
+            A[i + j * lda] = {v, 0};
+        }
+    }
+
+    if(fclose(mat) != 0)
+    {
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
+}
+
+// double complex:
+inline void read_matrix(const std::string filenameS,
+                        const rocblas_int m,
+                        const rocblas_int n,
+                        rocblas_double_complex* A,
+                        const rocblas_int lda)
+{
+    const char* filename = filenameS.c_str();
+    int const idebug = 0;
+    if(idebug >= 1)
+    {
+        printf("filename=%s, m=%d, n=%d, lda=%d\n", filename, m, n, lda);
+    }
+    FILE* mat = fopen(filename, "r");
+
+    if(mat == NULL)
+        throw std::invalid_argument(
+            fmt::format("Error: Could not open file {} with test data...", filename));
+
+    rewind(mat);
+
+    for(rocblas_int i = 0; i < m; ++i)
+    {
+        for(rocblas_int j = 0; j < n; ++j)
+        {
+            double v;
+            int read = fscanf(mat, "%lg", &v);
+            if(read != 1)
+                throw std::out_of_range(
+                    fmt::format("Error: Could not read element {},{} from file {}", i, j, filename));
+            A[i + j * lda] = {v, 0};
+        }
+    }
+
+    if(fclose(mat) != 0)
+    {
+        throw std::invalid_argument(
+            fmt::format("Error: Could not close file {} with test data...", filename));
+    }
+}
+
 #ifdef ROCSOLVER_LIBRARY
 ROCSOLVER_END_NAMESPACE
 #endif

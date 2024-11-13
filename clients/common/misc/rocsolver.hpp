@@ -11741,6 +11741,101 @@ inline rocblas_status rocsolver_geblttrs_npvt_interleaved(rocblas_handle handle,
 }
 /********************************************************/
 
+/*************** CREATE_ DESTROY_ SPINFO ****************/
+// local rocsolver_spinfo; automatically created and destroyed
+class rocsolver_local_spinfo
+{
+    rocsolver_spinfo l_spinfo;
+
+public:
+    rocsolver_local_spinfo(rocblas_handle handle)
+    {
+        rocsolver_create_spinfo(&l_spinfo, handle);
+    }
+    ~rocsolver_local_spinfo()
+    {
+        rocsolver_destroy_spinfo(l_spinfo);
+    }
+
+    operator rocsolver_spinfo&()
+    {
+        return l_spinfo;
+    }
+    operator const rocsolver_spinfo&() const
+    {
+        return l_spinfo;
+    }
+};
+
+/******************** CSRLSVQR ********************/
+inline rocblas_status rocsolver_csrlsvqr(rocblas_handle handle,
+                                         const rocblas_int n,
+                                         const rocblas_int nnz,
+                                         float* A,
+                                         int* ptrA,
+                                         int* indA,
+                                         float* b,
+                                         const float tol,
+                                         const rocblas_int reorder,
+                                         float* x,
+                                         rocblas_int* singularity,
+                                         rocsolver_spinfo spinfo)
+{
+    return rocsolver_scsrlsvqr(handle, n, nnz, A, ptrA, indA, b, tol, reorder, x, singularity,
+                               spinfo);
+}
+
+inline rocblas_status rocsolver_csrlsvqr(rocblas_handle handle,
+                                         const rocblas_int n,
+                                         const rocblas_int nnz,
+                                         double* A,
+                                         int* ptrA,
+                                         int* indA,
+                                         double* b,
+                                         const double tol,
+                                         const rocblas_int reorder,
+                                         double* x,
+                                         rocblas_int* singularity,
+                                         rocsolver_spinfo spinfo)
+{
+    return rocsolver_dcsrlsvqr(handle, n, nnz, A, ptrA, indA, b, tol, reorder, x, singularity,
+                               spinfo);
+}
+
+inline rocblas_status rocsolver_csrlsvqr(rocblas_handle handle,
+                                         const rocblas_int n,
+                                         const rocblas_int nnz,
+                                         rocblas_float_complex* A,
+                                         int* ptrA,
+                                         int* indA,
+                                         rocblas_float_complex* b,
+                                         const rocblas_float_complex tol,
+                                         const rocblas_int reorder,
+                                         rocblas_float_complex* x,
+                                         rocblas_int* singularity,
+                                         rocsolver_spinfo spinfo)
+{
+    return rocsolver_ccsrlsvqr(handle, n, nnz, A, ptrA, indA, b, tol, reorder, x, singularity,
+                               spinfo);
+}
+
+inline rocblas_status rocsolver_csrlsvqr(rocblas_handle handle,
+                                         const rocblas_int n,
+                                         const rocblas_int nnz,
+                                         rocblas_double_complex* A,
+                                         int* ptrA,
+                                         int* indA,
+                                         rocblas_double_complex* b,
+                                         const rocblas_double_complex tol,
+                                         const rocblas_int reorder,
+                                         rocblas_double_complex* x,
+                                         rocblas_int* singularity,
+                                         rocsolver_spinfo spinfo)
+{
+    return rocsolver_zcsrlsvqr(handle, n, nnz, A, ptrA, indA, b, tol, reorder, x, singularity,
+                               spinfo);
+}
+
 /*************** CREATE_ DESTROY_ RFINFO ****************/
 // local rocsolver_rfinfo; automatically created and destroyed
 class rocsolver_local_rfinfo

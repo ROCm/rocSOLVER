@@ -35,59 +35,139 @@
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
 
-template <bool CPU, bool GPU, typename T>
-void lsvqr_initData(const rocblas_handle handle, const rocblas_int n, const rocblas_int nnz)
+template <bool CPU, bool GPU, typename T, typename Td, typename Ud, typename Th, typename Uh>
+void lsvqr_initData(const rocblas_handle handle,
+                    const rocblas_int n,
+                    const rocblas_int nnz,
+                    Ud& dptrA,
+                    Ud& dindA,
+                    Td& dvalA,
+                    Td& dB,
+                    Td& dX,
+                    Uh& hptrA,
+                    Uh& hindA,
+                    Th& hvalA,
+                    Th& hB,
+                    Th& hX,
+                    const fs::path testcase)
 {
     if(CPU)
     {
-        std::vector<T> denseA(n * n);
+        fs::path file;
 
-        const rocblas_int max_index = n * n;
-        std::uniform_int_distribution<int> sample_index(0, max_index);
+        // read-in A
+        file = testcase / "ptrA";
+        read_matrix(file.string(), 1, n + 1, hptrA.data(), 1);
+        file = testcase / "indA";
+        read_matrix(file.string(), 1, nnz, hindA.data(), 1);
+        file = testcase / "valA";
+        read_matrix(file.string(), 1, nnz, hvalA.data(), 1);
 
-        // scale A to avoid singularities
+        // read-in B
+        file = testcase / "B";
+        read_matrix(file.string(), 1, n, hB.data(), 1);
 
-        for(rocblas_int i = 0; i < m; i++)
-        {
-            for(rocblas_int j = 0; j < n; j++)
-            {
-                if(i == j)
-                    denseA[i + j * n] += 400;
-                else
-                    denseA[i + j * n] -= 4;
-            }
-        }
-
-        const rocblas_int n_zeroes = (n * n) - nnz;
-        rocblas_int target_i = sample_index(rocblas_rng);
-        rocblas_int target_j = sample_index(rocblas_rng);
-        for(rocblas_int i = 0; i < n_zeroes; n++)
-        {
-            while((denseA[target_i + target_j * n] == 0) && (target_i != target_j))
-            {
-                target_i = sample_index(rocblas_rng);
-                target_j = sample_index(rocblas_rng);
-            }
-            denseA[target_i + target_j * n] = 0;
-        }
-
-        // gather into sparse matrices
+        // read-in X
+        file = testcase / "X";
+        read_matrix(file.string(), 1, n, hX.data(), 1);
     }
 
     if(GPU)
     {
-        // now copy pivoting indices and matrices to the GPU
-        CHECK_HIP_ERROR(dA.transfer_from(hA));
+        CHECK_HIP_ERROR(dptrA.transfer_from(hptrA));
+        CHECK_HIP_ERROR(dindA.transfer_from(hindA));
+        CHECK_HIP_ERROR(dvalA.transfer_from(hvalA));
         CHECK_HIP_ERROR(dB.transfer_from(hB));
+        CHECK_HIP_ERROR(dX.transfer_from(hX));
     }
+}
+
+template <typename T, typename Td, typename Ud, typename Th, typename Uh>
+void lsvqr_getError(const rocblas_handle handle,
+                    const rocblas_int n,
+                    const rocblas_int nnz,
+                    Ud& dptrA,
+                    Ud& dindA,
+                    Td& dvalA,
+                    Td& dB,
+                    Td& dX,
+                    Uh& hptrA,
+                    Uh& hindA,
+                    Th& hvalA,
+                    Th& hB,
+                    Th& hX,
+                    Th& hXres,
+                    rocsolver_spinfo spinfo,
+                    double* max_error,
+                    const fs::path testcase)
+{
+    lsvqr_initData<true, true, T>(handle, n, nnz, dptrA, dindA, dvalA, dB, dX, hptrA, hindA, hvalA,
+                                  hB, hX, testcase);
+
+    CHECK_ROCBLAS_ERROR(
+        rocsolver_csrlsvqr(handle, n, nnz, dvalA, dptrA, dindA, dB, 0, 0, dX, nullptr, spinfo));
+
+    CHECK_HIP_ERROR(hXres.transfer_from(dX));
+
+    *max_error = norm_error('I', n, 1, n, hX[0], hXres[0]);
 }
 
 template <typename T>
 void testing_lsvqr(Arguments& argus)
 {
     rocblas_local_handle handle;
+    rocsolver_local_spinfo spinfo(handle);
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int nnz = argus.get<rocblas_int>("nnz");
+    T tol = 0;
+    rocblas_int reorder = 0;
+    rocblas_int singularity = 0;
+
+    fs::path testcase;
+    if(n > 0)
+    {
+        std::string matname;
+        matname = fmt::format("sqmat_{}_{}", n, nnz);
+        testcase = get_sparse_data_dir() / fs::path(matname);
+    }
+
+    double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+
+    size_t size_ptrA = n + 1;
+    size_t size_indA = nnz;
+    size_t size_valA = nnz;
+    size_t size_B = n;
+    size_t size_X = n;
+
+    host_strided_batch_vector<rocblas_int> hptrA(size_ptrA, 1, size_ptrA, 1);
+    host_strided_batch_vector<rocblas_int> hindA(size_indA, 1, size_indA, 1);
+    host_strided_batch_vector<T> hvalA(size_valA, 1, size_valA, 1);
+    host_strided_batch_vector<T> hB(size_B, 1, size_B, 1);
+    host_strided_batch_vector<T> hX(size_X, 1, size_X, 1);
+    host_strided_batch_vector<T> hXres(size_X, 1, size_X, 1);
+
+    device_strided_batch_vector<rocblas_int> dptrA(size_ptrA, 1, size_ptrA, 1);
+    device_strided_batch_vector<rocblas_int> dindA(size_indA, 1, size_indA, 1);
+    device_strided_batch_vector<T> dvalA(size_valA, 1, size_valA, 1);
+    device_strided_batch_vector<T> dB(size_B, 1, size_B, 1);
+    device_strided_batch_vector<T> dX(size_X, 1, size_X, 1);
+    CHECK_HIP_ERROR(dptrA.memcheck());
+    if(size_indA)
+        CHECK_HIP_ERROR(dindA.memcheck());
+    if(size_valA)
+        CHECK_HIP_ERROR(dvalA.memcheck());
+    if(size_X)
+        CHECK_HIP_ERROR(dB.memcheck());
+    if(size_X)
+        CHECK_HIP_ERROR(dB.memcheck());
+
+    lsvqr_getError<T>(handle, n, nnz, dptrA, dindA, dvalA, dB, dX, hptrA, hindA, hvalA, hB, hX,
+                      hXres, spinfo, &max_error, testcase);
+
+    // validate results for rocsolver-test
+    // using 20 * n * machine_precision as tolerance
+    if(argus.unit_check)
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * n);
 }
 
 #define EXTERN_TESTING_LSVQR(...) extern template void testing_lsvqr<__VA_ARGS__>(Arguments&);

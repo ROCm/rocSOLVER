@@ -57,5 +57,9 @@ fp_rocsparse_ssctr g_sparse_ssctr;
 fp_rocsparse_dsctr g_sparse_dsctr;
 fp_rocsparse_csctr g_sparse_csctr;
 fp_rocsparse_zsctr g_sparse_zsctr;
+fp_rocsparse_scsr2dense g_sparse_scsr2dense;
+fp_rocsparse_dcsr2dense g_sparse_dcsr2dense;
+fp_rocsparse_ccsr2dense g_sparse_ccsr2dense;
+fp_rocsparse_zcsr2dense g_sparse_zcsr2dense;
 
 ROCSOLVER_END_NAMESPACE

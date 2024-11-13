@@ -821,6 +821,106 @@ typedef rocsparse_status (*fp_rocsparse_zsctr)(rocsparse_handle handle,
 extern fp_rocsparse_zsctr g_sparse_zsctr;
 #define rocsparse_zsctr ::rocsolver::g_sparse_zsctr
 
+typedef rocsparse_status (*fp_rocsparse_sdense2csr)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const float* A,
+                                                    rocsparse_int ld,
+                                                    const rocsparse_int* nnz_per_rows,
+                                                    float* csr_val,
+                                                    rocsparse_int* csr_row_ptr,
+                                                    rocsparse_int* csr_col_ind);
+extern fp_rocsparse_sdense2csr g_sparse_sdense2csr;
+#define rocsparse_sdense2csr ::rocsolver::g_sparse_sdense2csr
+
+typedef rocsparse_status (*fp_rocsparse_ddense2csr)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const double* A,
+                                                    rocsparse_int ld,
+                                                    const rocsparse_int* nnz_per_rows,
+                                                    double* csr_val,
+                                                    rocsparse_int* csr_row_ptr,
+                                                    rocsparse_int* csr_col_ind);
+extern fp_rocsparse_ddense2csr g_sparse_ddense2csr;
+#define rocsparse_ddense2csr ::rocsolver::g_sparse_ddense2csr
+
+typedef rocsparse_status (*fp_rocsparse_cdense2csr)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const rocsparse_float_complex* A,
+                                                    rocsparse_int ld,
+                                                    const rocsparse_int* nnz_per_rows,
+                                                    rocsparse_float_complex* csr_val,
+                                                    rocsparse_int* csr_row_ptr,
+                                                    rocsparse_int* csr_col_ind);
+extern fp_rocsparse_cdense2csr g_sparse_cdense2csr;
+#define rocsparse_cdense2csr ::rocsolver::g_sparse_cdense2csr
+
+typedef rocsparse_status (*fp_rocsparse_zdense2csr)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const rocsparse_double_complex* A,
+                                                    rocsparse_int ld,
+                                                    const rocsparse_int* nnz_per_rows,
+                                                    rocsparse_double_complex* csr_val,
+                                                    rocsparse_int* csr_row_ptr,
+                                                    rocsparse_int* csr_col_ind);
+extern fp_rocsparse_zdense2csr g_sparse_zdense2csr;
+#define rocsparse_zdense2csr ::rocsolver::g_sparse_zdense2csr
+
+typedef rocsparse_status (*fp_rocsparse_scsr2dense)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const float* csr_val,
+                                                    const rocsparse_int* csr_row_ptr,
+                                                    const rocsparse_int* csr_col_ind,
+                                                    float* A,
+                                                    rocsparse_int ld);
+extern fp_rocsparse_scsr2dense g_sparse_scsr2dense;
+#define rocsparse_scsr2dense ::rocsolver::g_sparse_scsr2dense
+
+typedef rocsparse_status (*fp_rocsparse_dcsr2dense)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const double* csr_val,
+                                                    const rocsparse_int* csr_row_ptr,
+                                                    const rocsparse_int* csr_col_ind,
+                                                    double* A,
+                                                    rocsparse_int ld);
+extern fp_rocsparse_dcsr2dense g_sparse_dcsr2dense;
+#define rocsparse_dcsr2dense ::rocsolver::g_sparse_dcsr2dense
+
+typedef rocsparse_status (*fp_rocsparse_ccsr2dense)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const rocsparse_float_complex* csr_val,
+                                                    const rocsparse_int* csr_row_ptr,
+                                                    const rocsparse_int* csr_col_ind,
+                                                    rocsparse_float_complex* A,
+                                                    rocsparse_int ld);
+extern fp_rocsparse_ccsr2dense g_sparse_ccsr2dense;
+#define rocsparse_ccsr2dense ::rocsolver::g_sparse_ccsr2dense
+
+typedef rocsparse_status (*fp_rocsparse_zcsr2dense)(rocsparse_handle handle,
+                                                    rocsparse_int m,
+                                                    rocsparse_int n,
+                                                    const rocsparse_mat_descr descr,
+                                                    const rocsparse_double_complex* csr_val,
+                                                    const rocsparse_int* csr_row_ptr,
+                                                    const rocsparse_int* csr_col_ind,
+                                                    rocsparse_double_complex* A,
+                                                    rocsparse_int ld);
+extern fp_rocsparse_zcsr2dense g_sparse_zcsr2dense;
+#define rocsparse_zcsr2dense ::rocsolver::g_sparse_zcsr2dense
+
 ROCSOLVER_END_NAMESPACE
 
 #endif /* HAVE_ROCSPARSE */
@@ -1176,6 +1276,120 @@ inline rocsparse_status rocsparseCall_sctr(rocsparse_handle sphandle,
 {
     return rocsparse_zsctr(sphandle, nnz, (rocsparse_double_complex*)x_val, x_ind,
                            (rocsparse_double_complex*)y, idx_base);
+}
+
+inline rocsparse_status rocsparseCall_dense2csr(rocsparse_handle sphandle,
+                                                rocsparse_int m,
+                                                rocsparse_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const float* A,
+                                                rocsparse_int ld,
+                                                const rocsparse_int* nnz_per_rows,
+                                                float* csr_val,
+                                                rocsparse_int* csr_row_ptr,
+                                                rocsparse_int* csr_col_ind)
+{
+    return rocsparse_sdense2csr(sphandle, m, n, descr, A, ld, nnz_per_rows, csr_val, csr_row_ptr,
+                                csr_col_ind);
+}
+
+inline rocsparse_status rocsparseCall_dense2csr(rocsparse_handle sphandle,
+                                                rocsparse_int m,
+                                                rocsparse_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const double* A,
+                                                rocsparse_int ld,
+                                                const rocsparse_int* nnz_per_rows,
+                                                double* csr_val,
+                                                rocsparse_int* csr_row_ptr,
+                                                rocsparse_int* csr_col_ind)
+{
+    return rocsparse_ddense2csr(sphandle, m, n, descr, A, ld, nnz_per_rows, csr_val, csr_row_ptr,
+                                csr_col_ind);
+}
+
+inline rocsparse_status rocsparseCall_dense2csr(rocsparse_handle sphandle,
+                                                rocsparse_int m,
+                                                rocsparse_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const rocblas_float_complex* A,
+                                                rocsparse_int ld,
+                                                const rocsparse_int* nnz_per_rows,
+                                                rocblas_float_complex* csr_val,
+                                                rocsparse_int* csr_row_ptr,
+                                                rocsparse_int* csr_col_ind)
+{
+    return rocsparse_cdense2csr(sphandle, m, n, descr, (rocsparse_float_complex*)A, ld, nnz_per_rows,
+                                (rocsparse_float_complex*)csr_val, csr_row_ptr, csr_col_ind);
+}
+
+inline rocsparse_status rocsparseCall_dense2csr(rocsparse_handle sphandle,
+                                                rocsparse_int m,
+                                                rocsparse_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const rocblas_double_complex* A,
+                                                rocsparse_int ld,
+                                                const rocsparse_int* nnz_per_rows,
+                                                rocblas_double_complex* csr_val,
+                                                rocsparse_int* csr_row_ptr,
+                                                rocsparse_int* csr_col_ind)
+{
+    return rocsparse_zdense2csr(sphandle, m, n, descr, (rocsparse_double_complex*)A, ld, nnz_per_rows,
+                                (rocsparse_double_complex*)csr_val, csr_row_ptr, csr_col_ind);
+}
+
+inline rocsparse_status rocsparseCall_csr2dense(rocsparse_handle sphandle,
+                                                rocblas_int m,
+                                                rocblas_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const float* csr_val,
+                                                const rocblas_int* csr_row_ptr,
+                                                const rocblas_int* csr_col_ind,
+                                                float* A,
+                                                rocblas_int ld)
+{
+    return rocsparse_scsr2dense(sphandle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, A, ld);
+}
+
+inline rocsparse_status rocsparseCall_csr2dense(rocsparse_handle sphandle,
+                                                rocblas_int m,
+                                                rocblas_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const double* csr_val,
+                                                const rocblas_int* csr_row_ptr,
+                                                const rocblas_int* csr_col_ind,
+                                                double* A,
+                                                rocblas_int ld)
+{
+    return rocsparse_dcsr2dense(sphandle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, A, ld);
+}
+
+inline rocsparse_status rocsparseCall_csr2dense(rocsparse_handle sphandle,
+                                                rocblas_int m,
+                                                rocblas_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const rocblas_float_complex* csr_val,
+                                                const rocblas_int* csr_row_ptr,
+                                                const rocblas_int* csr_col_ind,
+                                                rocblas_float_complex* A,
+                                                rocblas_int ld)
+{
+    return rocsparse_ccsr2dense(sphandle, m, n, descr, (rocsparse_float_complex*)csr_val,
+                                csr_row_ptr, csr_col_ind, (rocsparse_float_complex*)A, ld);
+}
+
+inline rocsparse_status rocsparseCall_csr2dense(rocsparse_handle sphandle,
+                                                rocblas_int m,
+                                                rocblas_int n,
+                                                const rocsparse_mat_descr descr,
+                                                const rocblas_double_complex* csr_val,
+                                                const rocblas_int* csr_row_ptr,
+                                                const rocblas_int* csr_col_ind,
+                                                rocblas_double_complex* A,
+                                                rocblas_int ld)
+{
+    return rocsparse_zcsr2dense(sphandle, m, n, descr, (rocsparse_double_complex*)csr_val,
+                                csr_row_ptr, csr_col_ind, (rocsparse_double_complex*)A, ld);
 }
 
 ROCSOLVER_END_NAMESPACE

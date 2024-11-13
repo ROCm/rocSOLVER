@@ -268,6 +268,8 @@ set(rocsolver_auxiliary_source
 )
 
 set(rocsolver_sparse_source
+  # spinfo create/destroy
+  sparselapack/rocsolver_spinfo.cpp
   # lsvqr
   sparselapack/rocsparselapack_csrlsvqr.cpp
 )
