@@ -37,6 +37,11 @@ LAPACK auxiliary functions
     :ref:`rocsolver_larft <larft>`, x, x, x, x
     :ref:`rocsolver_larfb <larfb>`, x, x, x, x
 
+.. csv-table:: Givens (plane) rotations
+    :header: "Function", "single", "double", "single complex", "double complex"
+
+    :ref:`rocsolver_lasr <lasr>`, x, x, x, x
+
 .. csv-table:: Bidiagonal forms
     :header: "Function", "single", "double", "single complex", "double complex"
 

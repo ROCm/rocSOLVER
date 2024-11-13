@@ -41,6 +41,7 @@
 #include "common/auxiliary/testing_larfb.hpp"
 #include "common/auxiliary/testing_larfg.hpp"
 #include "common/auxiliary/testing_larft.hpp"
+#include "common/auxiliary/testing_lasr.hpp"
 #include "common/auxiliary/testing_laswp.hpp"
 #include "common/auxiliary/testing_lasyf.hpp"
 #include "common/auxiliary/testing_latrd.hpp"
@@ -134,6 +135,7 @@ class rocsolver_dispatcher
     {
         // Map for functions that support all precisions
         static const func_map map = {
+            // auxiliaries
             {"laswp", testing_laswp<T>},
             {"larfg", testing_larfg<T, rocblas_int>},
             {"larfg_64", testing_larfg<T, int64_t>},
@@ -141,6 +143,7 @@ class rocsolver_dispatcher
             {"larf_64", testing_larf<T, int64_t>},
             {"larft", testing_larft<T>},
             {"larfb", testing_larfb<T>},
+            {"lasr", testing_lasr<T>},
             {"latrd", testing_latrd<T>},
             {"labrd", testing_labrd<T>},
             {"bdsqr", testing_bdsqr<T>},
@@ -324,6 +327,7 @@ class rocsolver_dispatcher
     {
         // Map for functions that support only single and double precisions
         static const func_map map_real = {
+            // auxiliaries
             {"sterf", testing_sterf<T>},
             {"stebz", testing_stebz<T>},
             {"bdsvdx", testing_bdsvdx<T>},
@@ -432,6 +436,7 @@ class rocsolver_dispatcher
     {
         // Map for functions that support only single-complex and double-complex precisions
         static const func_map map_complex = {
+            // auxiliaries
             {"lacgv", testing_lacgv<T, rocblas_int>},
             {"lacgv_64", testing_lacgv<T, int64_t>},
             // ungxx

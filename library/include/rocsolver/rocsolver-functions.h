@@ -765,6 +765,129 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zlarfb(rocblas_handle handle,
 //! @}
 
 /*! @{
+    \brief LASR applies a sequence of Givens plane rotations, represented as a transformation P,
+    to a general m-by-n matrix A.
+
+    \details
+    The transformation P is applied in one of the following forms, depending on
+    the value of side:
+
+    \f[
+        \begin{array}{cl}
+        PA & \: \text{(No transpose from the left),}\\
+        AP^T & \: \text{(Transpose from the right).}
+        \end{array}
+    \f]
+
+    P is defined as the product of k plane rotations, with k = m - 1 when applied from the left, and
+    k = n - 1 when applied from the right, as follows:
+
+    \f[
+        \begin{array}{cl}
+        P = P(1)P(2)\cdots P(k) & \: \text{if direct indicates backward direction, or} \\
+        P = P(k)\cdots P(2)P(1) & \: \text{if direct indicates forward direction}
+        \end{array}
+    \f]
+
+    Each P(i) is defined by a Givens rotation
+
+    \f[
+        R(i) = \left[\begin{array}{cc}
+        c_i & s_i \\
+        -s_i & c_i
+        \end{array}\right],
+    \f]
+
+    where the \f$c_i\f$ and \f$s_i\f$ are the corresponding cosine and sine factors.
+
+    The rotations are performed on different planes depending on the value of pivot. If pivot is
+    variable, the rotation R(i) is performed on plane (i,i+1), i.e. P(i) appears as a rank-2
+    modification to the identity matrix in the i-th and (i+1)-th rows and columns. If pivot is
+    top, then the modification appears in the first and (i+1)-th rows and columns of P(i),
+    and if pivot is bottom, then the modification appears in the i-th and last rows and columns of P(i).
+
+    All rotations are applied directly without ever forming P(i) explicitly.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    side        rocblas_side.
+                Specifies from which side to apply P.
+    @param[in]
+    pivot       #rocblas_pivot.
+                Specifies the planes on which the rotations are applied.
+    @param[in]
+    direct      #rocblas_direct.
+                Specifies the direction in which the plane rotations are to be applied to generate P.
+    @param[in]
+    m           rocblas_int. m >= 0.
+                Number of rows of matrix A.
+    @param[in]
+    n           rocblas_int. n >= 0.
+                Number of columns of matrix A.
+    @param[in]
+    C           pointer to real type. Array on the GPU of size n-1 if side is right, or m-1
+                if side is left.
+                Contains the series of cosine factors defining the Givens rotations.
+    @param[in]
+    S           pointer to real type. Array on the GPU of size n-1 if side is right, or m-1
+                if side is left.
+                Contains the series of sine factors defining the Givens rotations.
+    @param[inout]
+    A           pointer to type. Array on the GPU of size lda*n.
+                On entry, the matrix A. On exit, it is overwritten with
+                P*A, or A*P^T.
+    @param[in]
+    lda         rocblas_int. lda >= m.
+                Leading dimension of A.
+    ****************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_slasr(rocblas_handle handle,
+                                                const rocblas_side side,
+                                                const rocblas_pivot pivot,
+                                                const rocblas_direct direct,
+                                                const rocblas_int m,
+                                                const rocblas_int n,
+                                                float* C,
+                                                float* S,
+                                                float* A,
+                                                const rocblas_int lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_dlasr(rocblas_handle handle,
+                                                const rocblas_side side,
+                                                const rocblas_pivot pivot,
+                                                const rocblas_direct direct,
+                                                const rocblas_int m,
+                                                const rocblas_int n,
+                                                double* C,
+                                                double* S,
+                                                double* A,
+                                                const rocblas_int lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_clasr(rocblas_handle handle,
+                                                const rocblas_side side,
+                                                const rocblas_pivot pivot,
+                                                const rocblas_direct direct,
+                                                const rocblas_int m,
+                                                const rocblas_int n,
+                                                float* C,
+                                                float* S,
+                                                rocblas_float_complex* A,
+                                                const rocblas_int lda);
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_zlasr(rocblas_handle handle,
+                                                const rocblas_side side,
+                                                const rocblas_pivot pivot,
+                                                const rocblas_direct direct,
+                                                const rocblas_int m,
+                                                const rocblas_int n,
+                                                double* C,
+                                                double* S,
+                                                rocblas_double_complex* A,
+                                                const rocblas_int lda);
+//! @}
+
+/*! @{
     \brief LABRD computes the bidiagonal form of the first k rows and columns of
     a general m-by-n matrix A, as well as the matrices X and Y needed to reduce
     the remaining part of A.

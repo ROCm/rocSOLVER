@@ -764,6 +764,27 @@ void zlarfb_(char* side,
              rocblas_double_complex* W,
              int* ldw);
 
+void slasr_(char* side, char* pivot, char* direct, int* m, int* n, float* C, float* S, float* A, int* lda);
+void dlasr_(char* side, char* pivot, char* direct, int* m, int* n, double* C, double* S, double* A, int* lda);
+void clasr_(char* side,
+            char* pivot,
+            char* direct,
+            int* m,
+            int* n,
+            float* C,
+            float* S,
+            rocblas_float_complex* A,
+            int* lda);
+void zlasr_(char* side,
+            char* pivot,
+            char* direct,
+            int* m,
+            int* n,
+            double* C,
+            double* S,
+            rocblas_double_complex* A,
+            int* lda);
+
 void slatrd_(char* uplo, int* n, int* k, float* A, int* lda, float* E, float* tau, float* W, int* ldw);
 void dlatrd_(char* uplo, int* n, int* k, double* A, int* lda, double* E, double* tau, double* W, int* ldw);
 void clatrd_(char* uplo,
@@ -3080,6 +3101,76 @@ void cpu_larfb<rocblas_double_complex>(rocblas_side sideR,
     char direct = rocblas2char_direct(directR);
     char storev = rocblas2char_storev(storevR);
     zlarfb_(&side, &trans, &direct, &storev, &m, &n, &k, V, &ldv, T, &ldt, A, &lda, W, &ldw);
+}
+
+// lasr
+
+template <>
+void cpu_lasr<float>(rocblas_side sideR,
+                     rocblas_pivot pivotR,
+                     rocblas_direct directR,
+                     rocblas_int m,
+                     rocblas_int n,
+                     float* C,
+                     float* S,
+                     float* A,
+                     rocblas_int lda)
+{
+    char side = rocblas2char_side(sideR);
+    char pivot = rocblas2char_pivot(pivotR);
+    char direct = rocblas2char_direct(directR);
+    slasr_(&side, &pivot, &direct, &m, &n, C, S, A, &lda);
+}
+
+template <>
+void cpu_lasr<double>(rocblas_side sideR,
+                      rocblas_pivot pivotR,
+                      rocblas_direct directR,
+                      rocblas_int m,
+                      rocblas_int n,
+                      double* C,
+                      double* S,
+                      double* A,
+                      rocblas_int lda)
+{
+    char side = rocblas2char_side(sideR);
+    char pivot = rocblas2char_pivot(pivotR);
+    char direct = rocblas2char_direct(directR);
+    dlasr_(&side, &pivot, &direct, &m, &n, C, S, A, &lda);
+}
+
+template <>
+void cpu_lasr<rocblas_float_complex>(rocblas_side sideR,
+                                     rocblas_pivot pivotR,
+                                     rocblas_direct directR,
+                                     rocblas_int m,
+                                     rocblas_int n,
+                                     float* C,
+                                     float* S,
+                                     rocblas_float_complex* A,
+                                     rocblas_int lda)
+{
+    char side = rocblas2char_side(sideR);
+    char pivot = rocblas2char_pivot(pivotR);
+    char direct = rocblas2char_direct(directR);
+    clasr_(&side, &pivot, &direct, &m, &n, C, S, A, &lda);
+}
+
+template <>
+void cpu_lasr<rocblas_double_complex>(rocblas_side sideR,
+                                      rocblas_pivot pivotR,
+                                      rocblas_direct directR,
+                                      rocblas_int m,
+                                      rocblas_int n,
+                                      double* C,
+                                      double* S,
+                                      rocblas_double_complex* A,
+                                      rocblas_int lda)
+{
+    char side = rocblas2char_side(sideR);
+    char pivot = rocblas2char_pivot(pivotR);
+    char direct = rocblas2char_direct(directR);
+    zlasr_(&side, &pivot, &direct, &m, &n, C, S, A, &lda);
 }
 
 // lauum

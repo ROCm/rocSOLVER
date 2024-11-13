@@ -120,6 +120,7 @@ option(BUILD_SHARED_LIBS "Build rocSOLVER as a shared library" ON)
 # Include helper functions and wrapper functions
 include(util)
 include(CMakeDependentOption)
+include(CheckCXXCompilerFlag)
 
 option(BUILD_TESTING "Build rocSOLVER tests" OFF)
 if(BUILD_TESTING)
@@ -143,6 +144,8 @@ option(BUILD_ADDRESS_SANITIZER "Build with address sanitizer enabled" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSOLVER with code coverage enabled" OFF)
 option(WERROR "Treat warnings as errors" OFF)
 option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
+check_cxx_compiler_flag("--offload-compress" CXX_COMPILER_SUPPORTS_OFFLOAD_COMPRESS)
+cmake_dependent_option(BUILD_OFFLOAD_COMPRESS "Build with offload compression" ON CXX_COMPILER_SUPPORTS_OFFLOAD_COMPRESS OFF)
 
 cmake_dependent_option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY
   "Build with file/folder reorg backward compatibility enabled" OFF "NOT WIN32" OFF)
@@ -161,27 +164,33 @@ message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
 if(NOT DEFINED AMDGPU_TARGETS)
+  set(XNACK_PLUS_TARGETS
+    gfx90a:xnack+
+    gfx908:xnack+
+    gfx942:xnack+)
+  set(XNACK_MINUS_TARGETS gfx90a:xnack-)
+  set(MISC_TARGETS
+    gfx942
+    gfx1100
+    gfx1101
+    gfx1102
+    gfx1151
+    gfx1200
+    gfx1201)
+  if(BUILD_ADDRESS_SANITIZER)
+    set(OPTIONAL_TARGETS_QUERY ${XNACK_PLUS_TARGETS})
+  else()
+    set(OPTIONAL_TARGETS_QUERY ${XNACK_MINUS_TARGETS} ${MISC_TARGETS})
+    set(DEFAULT_TARGETS
+      gfx900
+      gfx906:xnack-
+      gfx908:xnack-
+      gfx1010
+      gfx1030)
+  endif()
   # Query for compiler support of GPU archs
-  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
-    TARGETS
-      gfx90a:xnack-
-      gfx90a:xnack+
-      gfx942
-      gfx1100
-      gfx1101
-      gfx1102
-      gfx1151
-      gfx1200
-      gfx1201
-  )
-  set(AMDGPU_TARGETS_INIT
-    gfx900
-    gfx906:xnack-
-    gfx908:xnack-
-    gfx1010
-    gfx1030
-    ${OPTIONAL_AMDGPU_TARGETS}
-  )
+  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS TARGETS ${OPTIONAL_TARGETS_QUERY})
+  set(AMDGPU_TARGETS_INIT ${OPTIONAL_AMDGPU_TARGETS} ${DEFAULT_TARGETS})
 endif()
 
 # Set this before finding hip so that hip::device has the required arch flags

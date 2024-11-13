@@ -42,13 +42,13 @@ typedef enum rocblas_layer_mode_ex_
     rocblas_layer_mode_ex_log_kernel = 0x10, /**< Enable logging for kernel calls. */
 } rocblas_layer_mode_ex;
 
-/*! \brief Used to specify the order in which multiple Householder matrices are
- *applied together
+/*! \brief Used to specify the order in which multiple Householder matrices or plane rotations are
+ *applied together (see the documentation of the specific routines for more details).
  ********************************************************************************/
 typedef enum rocblas_direct_
 {
-    rocblas_forward_direction = 171, /**< Householder matrices applied from the right. */
-    rocblas_backward_direction = 172, /**< Householder matrices applied from the left. */
+    rocblas_forward_direction = 171, /**< Forward ordering. */
+    rocblas_backward_direction = 172, /**< Backward ordering. */
 } rocblas_direct;
 
 /*! \brief Used to specify how householder vectors are stored in a matrix of
@@ -164,16 +164,20 @@ typedef enum rocsolver_rfinfo_mode_
     = 272, /**< To work with Cholesky factorization (for symmetric positive definite sparse matrices). */
 } rocsolver_rfinfo_mode;
 
-/*! \brief Forward-declaration of opaque struct containing data used to describe sparse matrices
- ********************************************************************************/
-struct _rocsparse_mat_descr;
-typedef struct _rocsparse_mat_descr* rocsparse_mat_descr;
-
 /*! \brief A handle to a structure containing matrix descriptors and metadata required to interact
  *with rocSPARSE when using the rocSOLVER sparse functionality. It needs to be initialized
  *with \ref rocsolver_create_spinfo and destroyed with \ref rocsolver_destroy_spinfo.
  ********************************************************************************/
 struct rocsolver_spinfo_;
 typedef struct rocsolver_spinfo_* rocsolver_spinfo;
+
+/*! \brief Used to specify the planes on which a sequence of Givens rotations is applied.
+ ********************************************************************************/
+typedef enum rocblas_pivot_
+{
+    rocblas_pivot_variable = 281, /**< The i-th rotation is applied on plane (i,i+1). */
+    rocblas_pivot_top = 282, /**< The i-th rotation is applied on plane (1,i+1). */
+    rocblas_pivot_bottom = 283, /**< The i-th rotation is applied on plane (i,m) or (i,n). */
+} rocblas_pivot;
 
 #endif /* ROCSOLVER_EXTRA_TYPES_H */
