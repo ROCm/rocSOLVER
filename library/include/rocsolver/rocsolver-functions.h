@@ -26446,16 +26446,19 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_destroy_spinfo(rocsolver_spinfo spinfo
                 Enum to control how much reordering is to be done to reduce fill-in.
     @param[out]
     x           pointer to type. Array on the GPU of dimension m.
-                Solution vector satisfying $A^(-1) \cdot b = x$
+                Solution vector satisfying \f$A^(-1) \cdot b = x\f$
     @param[out]
     singularity pointer to rocblas_int. Value on CPU.
-                -1 if A is invertible, otherwise the first index $i$ such that $R(i, i) \approx 0$
+                -1 if A is invertible, otherwise the first index $i$ such that \f$R(i, i) \approx 0\f$
+    @param[in]
+    spinfo      rocsolver_spinfo.
+                Structure that holds the metadata for sparse solvers
     ********************************************************************/
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_scsrlsvqr(rocblas_handle handle,
-                                                    const rocblas_int m,
+                                                    const rocblas_int n,
                                                     const rocblas_int nnz,
-                                                    float* A,
+                                                    float* valA,
                                                     int* ptrA,
                                                     int* indA,
                                                     float* b,
@@ -26466,9 +26469,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_scsrlsvqr(rocblas_handle handle,
                                                     rocsolver_spinfo spinfo);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrlsvqr(rocblas_handle handle,
-                                                    const rocblas_int m,
+                                                    const rocblas_int n,
                                                     const rocblas_int nnz,
-                                                    double* A,
+                                                    double* valA,
                                                     rocblas_int* ptrA,
                                                     rocblas_int* indA,
                                                     double* b,
@@ -26479,9 +26482,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dcsrlsvqr(rocblas_handle handle,
                                                     rocsolver_spinfo spinfo);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrlsvqr(rocblas_handle handle,
-                                                    const rocblas_int m,
+                                                    const rocblas_int n,
                                                     const rocblas_int nnz,
-                                                    rocblas_float_complex* A,
+                                                    rocblas_float_complex* valA,
                                                     rocblas_int* ptrA,
                                                     rocblas_int* indA,
                                                     rocblas_float_complex* b,
@@ -26492,9 +26495,9 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_ccsrlsvqr(rocblas_handle handle,
                                                     rocsolver_spinfo spinfo);
 
 ROCSOLVER_EXPORT rocblas_status rocsolver_zcsrlsvqr(rocblas_handle handle,
-                                                    const rocblas_int m,
+                                                    const rocblas_int n,
                                                     const rocblas_int nnz,
-                                                    rocblas_double_complex* A,
+                                                    rocblas_double_complex* valA,
                                                     rocblas_int* ptrA,
                                                     rocblas_int* indA,
                                                     rocblas_double_complex* b,
