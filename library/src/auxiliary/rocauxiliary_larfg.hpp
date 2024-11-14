@@ -219,12 +219,12 @@ rocblas_status
     return rocblas_status_continue;
 }
 
-template <typename T, typename I, typename U, typename UB, bool COMPLEX = rocblas_is_complex<T>>
+template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larfg_template(rocblas_handle handle,
                                         const I n,
                                         U alpha,
                                         const rocblas_stride shifta,
-                                        UB beta,
+                                        T* beta,
                                         const rocblas_stride shiftb,
                                         const rocblas_stride strideb,
                                         U x,
