@@ -631,8 +631,8 @@ void testing_sygvdx_hegvdx(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stWRes = (argus.unit_check || argus.norm_check) ? stW : 0;
-    rocblas_stride stZRes = (argus.unit_check || argus.norm_check) ? stZ : 0;
+    rocblas_stride stWRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stW : 0;
+    rocblas_stride stZRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stZ : 0;
 
     // check non-supported values
     if(uplo == rocblas_fill_full || evect == rocblas_evect_tridiagonal)
@@ -664,9 +664,10 @@ void testing_sygvdx_hegvdx(Arguments& argus)
     size_t size_W = size_t(n);
     size_t size_Z = size_t(ldz) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+    size_t hashA = 0, hashZ = 0;
 
-    size_t size_WRes = (argus.unit_check || argus.norm_check) ? size_W : 0;
-    size_t size_ZRes = (argus.unit_check || argus.norm_check) ? size_Z : 0;
+    size_t size_WRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_W : 0;
+    size_t size_ZRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_Z : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || ldb < n || (evect != rocblas_evect_none && ldz < n)
@@ -771,7 +772,7 @@ void testing_sygvdx_hegvdx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
             sygvdx_hegvdx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
                                                dB, ldb, stB, vl, vu, il, iu, dNev, dW, stW, dZ, ldz,
                                                stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ,
@@ -818,7 +819,7 @@ void testing_sygvdx_hegvdx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
             sygvdx_hegvdx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
                                                dB, ldb, stB, vl, vu, il, iu, dNev, dW, stW, dZ, ldz,
                                                stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ,
@@ -831,6 +832,12 @@ void testing_sygvdx_hegvdx(Arguments& argus)
                 dNev, dW, stW, dZ, ldz, stZ, dInfo, bc, hA, hB, hNev, hW, hZ, hInfo, &gpu_time_used,
                 &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels, argus.perf,
                 argus.singular);
+
+        if(argus.hash_check)
+        {
+            hashA = deterministic_hash(hA.data(), hA.size());
+            hashZ = deterministic_hash(hZRes.data(), hZRes.size());
+        }
     }
 
     // validate results for rocsolver-test
@@ -878,6 +885,12 @@ void testing_sygvdx_hegvdx(Arguments& argus)
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();
+            if(argus.hash_check)
+            {
+                rocsolver_bench_output("hash(A)", "hash(Z)");
+                rocsolver_bench_output(ROCSOLVER_FORMAT_HASH(hashA), ROCSOLVER_FORMAT_HASH(hashZ));
+                rocsolver_bench_endl();
+            }
         }
         else
         {
