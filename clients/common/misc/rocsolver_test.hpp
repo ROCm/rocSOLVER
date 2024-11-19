@@ -208,7 +208,7 @@ std::size_t hash_combine(std::size_t seed, T const* array, std::size_t array_siz
 
 /// Wrapper for hash_combine
 template <typename T>
-std::size_t deterministic_hash(T const* array, std::size_t array_size)
+std::size_t deterministic_hash(T& vector)
 {
-    return hash_combine(1, array, array_size);
+    return hash_combine(1, vector.data(), vector.size());
 }

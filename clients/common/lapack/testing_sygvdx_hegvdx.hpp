@@ -825,6 +825,12 @@ void testing_sygvdx_hegvdx(Arguments& argus)
                                                stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ,
                                                hZRes, hInfo, hInfoRes, &max_error, argus.singular);
 
+        if(argus.hash_check)
+        {
+            hashA = deterministic_hash(hA);
+            hashZ = deterministic_hash(hZRes);
+        }
+
         // collect performance data
         if(argus.timing)
             sygvdx_hegvdx_getPerfData<STRIDED, T>(
@@ -832,12 +838,6 @@ void testing_sygvdx_hegvdx(Arguments& argus)
                 dNev, dW, stW, dZ, ldz, stZ, dInfo, bc, hA, hB, hNev, hW, hZ, hInfo, &gpu_time_used,
                 &cpu_time_used, hot_calls, argus.profile, argus.profile_kernels, argus.perf,
                 argus.singular);
-
-        if(argus.hash_check)
-        {
-            hashA = deterministic_hash(hA.data(), hA.size());
-            hashZ = deterministic_hash(hZRes.data(), hZRes.size());
-        }
     }
 
     // validate results for rocsolver-test

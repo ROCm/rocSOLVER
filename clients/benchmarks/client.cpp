@@ -168,6 +168,7 @@ try
             "Validate GPU results with CPU? 0 = No, 1 = Yes.\n"
             "                           This will additionally print the relative error of the computations.\n"
             "                           ")
+
         ("hash",
          value<rocblas_int>(&argus.hash_check)->default_value(0),
             "Print hash of GPU results? 0 = No, 1 = Yes.\n"
