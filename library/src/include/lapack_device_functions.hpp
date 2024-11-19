@@ -1111,4 +1111,81 @@ ROCSOLVER_KERNEL void axpy_kernel(const rocblas_int n,
     }
 }
 
+/** ROT applies a Givens rotation between to vector x y of dimension n.
+    Launch this kernel with a desired number of threads organized in
+    NG groups in the x direction with NT threads in the x direction. **/
+template <typename S, typename T, typename I>
+ROCSOLVER_KERNEL void
+    rot_kernel(I const n, T* const x, I const incx, T* const y, I const incy, S const c, S const s)
+{
+    if(n <= 0)
+        return;
+
+    I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    I const i_inc = hipBlockDim_x * hipGridDim_x;
+
+    if((incx == 1) && (incy == 1))
+    {
+        // ------------
+        // special case
+        // ------------
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const temp = c * x[i] + s * y[i];
+            y[i] = c * y[i] - s * x[i];
+            x[i] = temp;
+        }
+    }
+    else
+    {
+        // ---------------------------
+        // code for unequal increments
+        // ---------------------------
+
+        for(auto i = i_start; i < n; i += i_inc)
+        {
+            auto const ix = i * static_cast<int64_t>(incx);
+            auto const iy = i * static_cast<int64_t>(incy);
+            auto const temp = c * x[ix] + s * y[iy];
+            y[iy] = c * y[iy] - s * x[ix];
+            x[ix] = temp;
+        }
+    }
+}
+
+/** SCAL scales a vector x of dimension n by a factor da.
+    Launch this kernel with a desired number of threads organized in
+    NG groups in the x direction with NT threads in the x direction. **/
+template <typename S, typename T, typename I>
+ROCSOLVER_KERNEL void scal_kernel(I const n, S const da, T* const x, I const incx)
+{
+    if(n <= 0)
+        return;
+
+    I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    I const i_inc = hipBlockDim_x * hipGridDim_x;
+
+    S const zero = 0;
+    bool const is_da_zero = (da == zero);
+    if(incx == 1)
+    {
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            x[i] = da * x[i];
+        }
+    }
+    else
+    {
+        // ---------------------------
+        // code for non-unit increments
+        // ---------------------------
+
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const ix = i * static_cast<int64_t>(incx);
+            x[ix] = da * x[ix];
+        }
+    }
+}
+
 ROCSOLVER_END_NAMESPACE

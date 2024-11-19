@@ -173,4 +173,21 @@ typedef enum rocblas_pivot_
     rocblas_pivot_bottom = 283, /**< The i-th rotation is applied on plane (i,m) or (i,n). */
 } rocblas_pivot;
 
+/*! \brief Used by specific functions to specify the algorithm mode.
+ ********************************************************************************/
+typedef enum rocsolver_alg_mode_
+{
+    rocsolver_alg_mode_gpu
+    = 291, /**< Computations are all performed on the GPU. This is the default mode. */
+    rocsolver_alg_mode_hybrid = 292, /**< Computations are performed on the CPU and GPU. */
+} rocsolver_alg_mode;
+
+/*! \brief Used to specify a function with multiple supported algorithm modes.
+ ********************************************************************************/
+typedef enum rocsolver_function_
+{
+    rocsolver_function_bdsqr = 401,
+    rocsolver_function_gesvd = 402,
+} rocsolver_function;
+
 #endif /* ROCSOLVER_EXTRA_TYPES_H */

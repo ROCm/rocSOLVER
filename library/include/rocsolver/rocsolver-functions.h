@@ -143,6 +143,45 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_log_flush_profile(void);
 
 /*
  * ===========================================================================
+ *      Hybrid algorithm enablement
+ * ===========================================================================
+ */
+
+/*! \brief SET_ALG_MODE sets the algorithm mode to be used by the specified function.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    func        #rocsolver_function.
+                The function that will use the selected algorithm mode.
+    @param[in]
+    mode        #rocsolver_alg_mode.
+                The algorithm mode that will be used by the specified function.
+    *************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_set_alg_mode(rocblas_handle handle,
+                                                       const rocsolver_function func,
+                                                       const rocsolver_alg_mode mode);
+
+/*! \brief GET_ALG_MODE gets the algorithm mode being used by the specified function.
+
+    @param[in]
+    handle      rocblas_handle.
+    @param[in]
+    func        #rocsolver_function.
+                The specified function.
+    @param[out]
+    mode        pointer to #rocsolver_alg_mode.
+                On exit, the value is overwritten by the algorithm mode used
+                by the specified function.
+    *************************************************************************/
+
+ROCSOLVER_EXPORT rocblas_status rocsolver_get_alg_mode(rocblas_handle handle,
+                                                       const rocsolver_function func,
+                                                       rocsolver_alg_mode* mode);
+
+/*
+ * ===========================================================================
  *      Auxiliary functions
  * ===========================================================================
  */
@@ -3830,6 +3869,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zunmtr(rocblas_handle handle,
     \note
     In order to carry out calculations, this method may synchronize the stream contained within the
     rocblas_handle.
+
+    \note
+    A hybrid (CPU+GPU) approach is available for BDSQR, primarily intended for homogeneous architectures.
+    Use \ref rocsolver_set_alg_mode to enable it.
 
     @param[in]
     handle      rocblas_handle.
@@ -12566,8 +12609,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zpotri_strided_batched(rocblas_handle 
     the "Tuning rocSOLVER performance" and "Memory model" sections of the documentation.
 
     \note
-    In order to carry out calculations, this method may synchronize the stream contained within the
-    rocblas_handle.
+    In order to carry out calculations, this method may synchronize the stream contained
+    within the rocblas_handle.
+
+    \note
+    A hybrid (CPU+GPU) approach is available for GESVD, primarily intended for homogeneous architectures.
+    Use \ref rocsolver_set_alg_mode to enable it.
 
     @param[in]
     handle      rocblas_handle.
@@ -12743,8 +12790,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd(rocblas_handle handle,
     and "Memory model" sections of the documentation.
 
     \note
-    In order to carry out calculations, this method may synchronize the stream contained within the
-    rocblas_handle.
+    In order to carry out calculations, this method may synchronize the stream contained
+    within the rocblas_handle.
+
+    \note
+    A hybrid (CPU+GPU) approach is available for GESVD_BATCHED, primarily intended for
+    homogeneous architectures. Use \ref rocsolver_set_alg_mode to enable it.
 
     @param[in]
     handle      rocblas_handle.
@@ -12961,8 +13012,12 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_batched(rocblas_handle handle,
     and "Memory model" sections of the documentation.
 
     \note
-    In order to carry out calculations, this method may synchronize the stream contained within the
-    rocblas_handle.
+    In order to carry out calculations, this method may synchronize the stream contained
+    within the rocblas_handle.
+
+    \note
+    A hybrid (CPU+GPU) approach is available for GESVD_STRIDED_BATCHED, primarily intended
+    for homogeneous architectures. Use \ref rocsolver_set_alg_mode to enable it.
 
     @param[in]
     handle      rocblas_handle.
