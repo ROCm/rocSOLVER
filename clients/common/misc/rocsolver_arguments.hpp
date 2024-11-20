@@ -50,6 +50,7 @@ public:
     // test options
     rocblas_int norm_check = 0;
     rocblas_int unit_check = 1;
+    rocblas_int hash_check = 0;
     rocblas_int timing = 0;
     rocblas_int perf = 0;
     rocblas_int singular = 0;
@@ -120,6 +121,7 @@ public:
         to_consume.erase("perf");
         to_consume.erase("singular");
         to_consume.erase("device");
+        to_consume.erase("hash");
     }
 
     void clear()

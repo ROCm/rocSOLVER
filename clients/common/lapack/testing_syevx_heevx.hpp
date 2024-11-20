@@ -313,7 +313,10 @@ void syevx_heevx_getError(const rocblas_handle handle,
                           Ih& hIfailRes,
                           Ih& hinfo,
                           Ih& hinfoRes,
-                          double* max_err)
+                          double* max_err,
+                          size_t& hashA,
+                          size_t& hashW,
+                          size_t& hashZ)
 {
     using HMat = HostMatrix<T, rocblas_int>;
     using BDesc = typename HMat::BlockDescriptor;
@@ -331,6 +334,9 @@ void syevx_heevx_getError(const rocblas_handle handle,
     // input data initialization
     syevx_heevx_initData<true, true, T>(handle, evect, n, dA, lda, bc, hA, A);
 
+    // hash inputs
+    hashA = deterministic_hash(hA, bc);
+
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_syevx_heevx(
@@ -345,6 +351,11 @@ void syevx_heevx_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(hZRes.transfer_from(dZ));
         CHECK_HIP_ERROR(hIfailRes.transfer_from(dIfail));
     }
+
+    // hash outputs
+    hashW = deterministic_hash(hWRes, bc);
+    if(evect == rocblas_evect_original)
+        hashZ = deterministic_hash(hZRes, bc);
 
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
@@ -619,11 +630,13 @@ void testing_syevx_heevx(Arguments& argus)
     size_t size_W = n;
     size_t size_Z = size_t(ldz) * n;
     size_t size_ifail = n;
-    size_t size_WRes = (argus.unit_check || argus.norm_check) ? size_W : 0;
-    size_t size_ZRes = (argus.unit_check || argus.norm_check) ? size_Z : 0;
-    size_t size_ifailRes = (argus.unit_check || argus.norm_check) ? size_ifail : 0;
+    size_t size_WRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_W : 0;
+    size_t size_ZRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_Z : 0;
+    size_t size_ifailRes
+        = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_ifail : 0;
 
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+    size_t hashA = 0, hashW = 0, hashZ = 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || (evect != rocblas_evect_none && ldz < n) || bc < 0
@@ -729,12 +742,12 @@ void testing_syevx_heevx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
         {
-            syevx_heevx_getError<STRIDED, T>(handle, evect, erange, uplo, n, dA, lda, stA, vl, vu,
-                                             il, iu, abstol, dNev, dW, stW, dZ, ldz, stZ, dIfail,
-                                             stF, dinfo, bc, hA, hNev, hNevRes, hW, hWres, hZ,
-                                             hZRes, hIfail, hIfailRes, hinfo, hinfoRes, &max_error);
+            syevx_heevx_getError<STRIDED, T>(
+                handle, evect, erange, uplo, n, dA, lda, stA, vl, vu, il, iu, abstol, dNev, dW, stW,
+                dZ, ldz, stZ, dIfail, stF, dinfo, bc, hA, hNev, hNevRes, hW, hWres, hZ, hZRes,
+                hIfail, hIfailRes, hinfo, hinfoRes, &max_error, hashA, hashW, hashZ);
         }
 
         // collect performance data
@@ -776,12 +789,12 @@ void testing_syevx_heevx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
         {
-            syevx_heevx_getError<STRIDED, T>(handle, evect, erange, uplo, n, dA, lda, stA, vl, vu,
-                                             il, iu, abstol, dNev, dW, stW, dZ, ldz, stZ, dIfail,
-                                             stF, dinfo, bc, hA, hNev, hNevRes, hW, hWres, hZ,
-                                             hZRes, hIfail, hIfailRes, hinfo, hinfoRes, &max_error);
+            syevx_heevx_getError<STRIDED, T>(
+                handle, evect, erange, uplo, n, dA, lda, stA, vl, vu, il, iu, abstol, dNev, dW, stW,
+                dZ, ldz, stZ, dIfail, stF, dinfo, bc, hA, hNev, hNevRes, hW, hWres, hZ, hZRes,
+                hIfail, hIfailRes, hinfo, hinfoRes, &max_error, hashA, hashW, hashZ);
         }
 
         // collect performance data
@@ -839,6 +852,13 @@ void testing_syevx_heevx(Arguments& argus)
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();
+            if(argus.hash_check)
+            {
+                rocsolver_bench_output("hash(A)", "hash(W)", "hash(Z)");
+                rocsolver_bench_output(ROCSOLVER_FORMAT_HASH(hashA), ROCSOLVER_FORMAT_HASH(hashW),
+                                       ROCSOLVER_FORMAT_HASH(hashZ));
+                rocsolver_bench_endl();
+            }
         }
         else
         {

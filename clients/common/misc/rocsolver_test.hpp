@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -55,6 +55,8 @@ namespace fs = std::experimental::filesystem;
 #else // ROCSOLVER_CLIENTS_BENCH
 #define ROCSOLVER_TEST_CHECK(T, max_error, tol)
 #endif
+
+#define ROCSOLVER_FORMAT_HASH(h) fmt::format("0x{:x}", h)
 
 typedef enum rocsolver_inform_type_
 {
@@ -158,3 +160,70 @@ inline std::ostream& operator<<(std::ostream& os, printable_char x)
 
 // location of the sparse data directory for the re-factorization tests
 fs::path get_sparse_data_dir();
+
+/// Combines `seed` with the hash of `value`, following the spirit of
+/// `boost::hash_combine`.
+///
+/// Extends `std::hash` to combine the hashes of multiple values (e.g.,
+/// from an array).
+///
+/// Attention: hash_combine(0, T(0)) != 0
+template <typename T>
+std::size_t hash_combine(std::size_t seed, T value)
+{
+    using S = decltype(std::real(T{}));
+    auto hasher = std::hash<S>();
+
+    if constexpr(rocblas_is_complex<T>)
+    {
+        seed ^= hasher(std::real(value)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= hasher(std::imag(value)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    else
+    {
+        seed ^= hasher(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+
+    return seed;
+}
+
+/// Hash contents of the given array.
+///
+/// If seed == 0 and array_size == 0, then hash_combine(seed, b++; b < bc_, array_size) == 0
+template <typename T>
+std::size_t hash_combine(std::size_t seed, T const* array, std::size_t array_size)
+{
+    if(array == nullptr)
+        return (std::size_t)0;
+    std::size_t hash = 0;
+    if(array_size > 0)
+    {
+        hash = hash_combine(seed, array_size);
+        for(std::size_t i = 0; i < array_size; ++i)
+        {
+            hash = hash_combine(hash, array[i]);
+        }
+    }
+
+    return hash;
+}
+
+#define ROCSOLVER_DETERMINISTIC_HASH_SEED ((std::size_t)1)
+
+/// Wrapper for hash_combine
+template <typename T>
+std::size_t deterministic_hash(const T& vector)
+{
+    return hash_combine(ROCSOLVER_DETERMINISTIC_HASH_SEED, vector.data(), vector.size());
+}
+
+template <typename T>
+std::size_t deterministic_hash(const T& vector, std::size_t bc)
+{
+    std::size_t hash = ROCSOLVER_DETERMINISTIC_HASH_SEED;
+    for(std::size_t b = 0; b < bc; b++)
+    {
+        hash = hash_combine(hash, vector[b], vector.n() * std::abs(vector.inc()));
+    }
+    return hash;
+}
