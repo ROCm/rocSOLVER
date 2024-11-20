@@ -165,7 +165,7 @@ fs::path get_sparse_data_dir();
 /// `boost::hash_combine`.
 ///
 /// Extends `std::hash` to combine the hashes of multiple values (e.g.,
-/// from an array). Values will be the same across implementations and executions.
+/// from an array).
 ///
 /// Attention: hash_combine(0, T(0)) != 0
 template <typename T>

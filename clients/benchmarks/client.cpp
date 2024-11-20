@@ -172,7 +172,7 @@ try
         ("hash",
          value<rocblas_int>(&argus.hash_check)->default_value(0),
             "Print hash of GPU results? 0 = No, 1 = Yes.\n"
-            "                           Hash values are deterministic across implementations and executions.\n"
+            "                           Meant for checking reproducibility of computations.\n"
             "                           ")
 
         // size options

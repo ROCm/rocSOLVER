@@ -376,7 +376,11 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
                             Vh& hInfo,
                             Vh& hInfoRes,
                             double* max_err,
-                            const bool singular)
+                            const bool singular,
+                            size_t& hashA,
+                            size_t& hashB,
+                            size_t& hashW,
+                            size_t& hashZ)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
@@ -395,6 +399,10 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
     sygvdx_hegvdx_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc,
                                           hA, hB, A, B, true, singular);
 
+    // hash inputs
+    hashA = deterministic_hash(hA, bc);
+    hashB = deterministic_hash(hB, bc);
+
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_sygvdx_hegvdx(
@@ -406,6 +414,11 @@ void sygvdx_hegvdx_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
     if(evect != rocblas_evect_none)
         CHECK_HIP_ERROR(hZRes.transfer_from(dZ));
+
+    // hash outputs
+    hashW = deterministic_hash(hWRes, bc);
+    if(evect != rocblas_evect_none)
+        hashZ = deterministic_hash(hZRes, bc);
 
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
@@ -664,7 +677,7 @@ void testing_sygvdx_hegvdx(Arguments& argus)
     size_t size_W = size_t(n);
     size_t size_Z = size_t(ldz) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
-    size_t hashA = 0, hashZ = 0;
+    size_t hashA = 0, hashB = 0, hashW = 0, hashZ = 0;
 
     size_t size_WRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_W : 0;
     size_t size_ZRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_Z : 0;
@@ -773,10 +786,10 @@ void testing_sygvdx_hegvdx(Arguments& argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check || argus.hash_check)
-            sygvdx_hegvdx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
-                                               dB, ldb, stB, vl, vu, il, iu, dNev, dW, stW, dZ, ldz,
-                                               stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ,
-                                               hZRes, hInfo, hInfoRes, &max_error, argus.singular);
+            sygvdx_hegvdx_getError<STRIDED, T>(
+                handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
+                dNev, dW, stW, dZ, ldz, stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ, hZRes,
+                hInfo, hInfoRes, &max_error, argus.singular, hashA, hashB, hashW, hashZ);
 
         // collect performance data
         if(argus.timing)
@@ -820,16 +833,10 @@ void testing_sygvdx_hegvdx(Arguments& argus)
 
         // check computations
         if(argus.unit_check || argus.norm_check || argus.hash_check)
-            sygvdx_hegvdx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
-                                               dB, ldb, stB, vl, vu, il, iu, dNev, dW, stW, dZ, ldz,
-                                               stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ,
-                                               hZRes, hInfo, hInfoRes, &max_error, argus.singular);
-
-        if(argus.hash_check)
-        {
-            hashA = deterministic_hash(hA);
-            hashZ = deterministic_hash(hZRes);
-        }
+            sygvdx_hegvdx_getError<STRIDED, T>(
+                handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
+                dNev, dW, stW, dZ, ldz, stZ, dInfo, bc, hA, hB, hNev, hNevRes, hW, hWRes, hZ, hZRes,
+                hInfo, hInfoRes, &max_error, argus.singular, hashA, hashB, hashW, hashZ);
 
         // collect performance data
         if(argus.timing)
@@ -887,8 +894,9 @@ void testing_sygvdx_hegvdx(Arguments& argus)
             rocsolver_bench_endl();
             if(argus.hash_check)
             {
-                rocsolver_bench_output("hash(A)", "hash(Z)");
-                rocsolver_bench_output(ROCSOLVER_FORMAT_HASH(hashA), ROCSOLVER_FORMAT_HASH(hashZ));
+                rocsolver_bench_output("hash(A)", "hash(B)", "hash(W)", "hash(Z)");
+                rocsolver_bench_output(ROCSOLVER_FORMAT_HASH(hashA), ROCSOLVER_FORMAT_HASH(hashB),
+                                       ROCSOLVER_FORMAT_HASH(hashW), ROCSOLVER_FORMAT_HASH(hashZ));
                 rocsolver_bench_endl();
             }
         }
