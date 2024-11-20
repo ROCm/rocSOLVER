@@ -189,10 +189,12 @@ std::size_t hash_combine(std::size_t seed, T value)
 
 /// Hash contents of the given array.
 ///
-/// If seed == 0 and array_size == 0, then hash_combine(seed, _, array_size) == 0
+/// If seed == 0 and array_size == 0, then hash_combine(seed, b++; b < bc_, array_size) == 0
 template <typename T>
 std::size_t hash_combine(std::size_t seed, T const* array, std::size_t array_size)
 {
+    if(array == nullptr)
+        return (std::size_t)0;
     std::size_t hash = 0;
     if(array_size > 0)
     {
@@ -206,9 +208,22 @@ std::size_t hash_combine(std::size_t seed, T const* array, std::size_t array_siz
     return hash;
 }
 
+#define ROCSOLVER_DETERMINISTIC_HASH_SEED ((std::size_t)1)
+
 /// Wrapper for hash_combine
 template <typename T>
-std::size_t deterministic_hash(T& vector)
+std::size_t deterministic_hash(const T& vector)
 {
-    return hash_combine(1, vector.data(), vector.size());
+    return hash_combine(ROCSOLVER_DETERMINISTIC_HASH_SEED, vector.data(), vector.size());
+}
+
+template <typename T>
+std::size_t deterministic_hash(const T& vector, std::size_t bc)
+{
+    std::size_t hash = ROCSOLVER_DETERMINISTIC_HASH_SEED;
+    for(std::size_t b = 0; b < bc; b++)
+    {
+        hash = hash_combine(hash, vector[b], vector.n() * std::abs(vector.inc()));
+    }
+    return hash;
 }
