@@ -17,6 +17,9 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Changed
 ### Removed
 ### Optimized
+
+* Improved the performance of SYEVJ
+
 ### Resolved issues
 ### Known issues
 ### Upcoming changes

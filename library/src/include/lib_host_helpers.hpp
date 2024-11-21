@@ -54,6 +54,16 @@ __device__ __host__ inline int64_t
     return j * lda + i * inca;
 }
 
+__device__ __host__ inline int32_t ceil(const int32_t n, const int32_t nb)
+{
+    return ((n - 1) / nb) + 1;
+}
+
+__device__ __host__ inline int64_t ceil(const int64_t n, const int64_t nb)
+{
+    return ((n - 1) / nb) + 1;
+}
+
 template <typename T>
 T const* cast2constType(T* array)
 {
