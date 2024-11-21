@@ -159,37 +159,19 @@ static void bdsqr_single_template(rocblas_handle handle,
         CHECK_HIP(hipStreamSynchronize(stream));
     };
 
-    auto d = [=](auto i) -> S& {
-        assert((1 <= i) && (i <= n));
-        return (d_[i - 1]);
-    };
+    auto d = [=](auto i) -> S& { return (d_[i - 1]); };
 
-    auto e = [=](auto i) -> S& {
-        assert((1 <= i) && (i <= (n - 1)));
-        return (e_[i - 1]);
-    };
+    auto e = [=](auto i) -> S& { return (e_[i - 1]); };
 
     auto work = [=](auto i) -> S& { return (work_[i - 1]); };
 
     auto dwork = [=](auto i) -> S& { return (dwork_[i - 1]); };
 
-    auto c = [=](auto i, auto j) -> T& {
-        assert((1 <= i) && (i <= nrc) && (nrc <= ldc));
-        assert((1 <= j) && (j <= ncc));
-        return (c_[idx2D(i - 1, j - 1, ldc)]);
-    };
+    auto c = [=](auto i, auto j) -> T& { return (c_[idx2D(i - 1, j - 1, ldc)]); };
 
-    auto u = [=](auto i, auto j) -> T& {
-        assert((1 <= i) && (i <= nru) && (nru <= ldu));
-        assert((1 <= j) && (j <= ncu));
-        return (u_[idx2D(i - 1, j - 1, ldu)]);
-    };
+    auto u = [=](auto i, auto j) -> T& { return (u_[idx2D(i - 1, j - 1, ldu)]); };
 
-    auto vt = [=](auto i, auto j) -> T& {
-        assert((1 <= i) && (i <= nrvt) && (nrvt <= ldvt));
-        assert((1 <= j) && (j <= ncvt));
-        return (vt_[idx2D(i - 1, j - 1, ldvt)]);
-    };
+    auto vt = [=](auto i, auto j) -> T& { return (vt_[idx2D(i - 1, j - 1, ldvt)]); };
 
     auto sign = [](auto a, auto b) {
         auto const abs_a = std::abs(a);
