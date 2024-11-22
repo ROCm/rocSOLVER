@@ -2,27 +2,21 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
-## (Unreleased) rocSOLVER
+## rocSOLVER 3.28.0 for ROCm 6.4.0
 
 ### Added
 
 * Application of a sequence of plane rotations to a given matrix
     - LASR
-* Algorithm selection APIs for hybrid computation
-* SVD of bidiagonal matrices routine:
-    - BDSQR now supports hybrid computation
-* SVD of general matrices routine:
-    - GESVD now supports hybrid computation
+* Algorithm selection mechanism for hybrid computation
+* Hybrid computation support for existing routines:
+    - BDSQR
+    - GESVD  
 
-### Changed
-### Removed
 ### Optimized
 
 * Improved the performance of SYEVJ
-
-### Resolved issues
-### Known issues
-### Upcoming changes
+* Improved the performance of GEQRF
 
 
 ## rocSOLVER 3.27.0 for ROCm 6.3.0
