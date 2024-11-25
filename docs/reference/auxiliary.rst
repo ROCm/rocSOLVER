@@ -58,7 +58,7 @@ rocsolver_<type>lacgv()
 .. doxygenfunction:: rocsolver_zlacgv_64
    :outline:
 .. doxygenfunction:: rocsolver_clacgv_64
-   :outline
+   :outline:
 .. doxygenfunction:: rocsolver_zlacgv
    :outline:
 .. doxygenfunction:: rocsolver_clacgv

@@ -95,13 +95,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
     Launchers of specialized  kernels
 *************************************************************/
 
-template <typename T, typename I, typename U, typename UB>
+template <typename T, typename I, typename U>
 rocblas_status larfg_run_small(rocblas_handle handle,
                                const I n,
                                U alpha,
                                const rocblas_stride shiftA,
                                const rocblas_stride strideA,
-                               UB beta,
+                               T* beta,
                                const rocblas_stride shiftB,
                                const rocblas_stride strideB,
                                U x,
@@ -129,7 +129,7 @@ rocblas_status larfg_run_small(rocblas_handle handle,
 *************************************************************/
 
 #define INSTANTIATE_LARFG_SMALL(T, I, U)                                              \
-    template rocblas_status larfg_run_small<T, I, U, T*>(                             \
+    template rocblas_status larfg_run_small<T, I, U>(                                 \
         rocblas_handle handle, const I n, U alpha, const rocblas_stride shiftA,       \
         const rocblas_stride strideA, T* beta, const rocblas_stride shiftB,           \
         const rocblas_stride strideB, U x, const rocblas_stride shiftX, const I incX, \

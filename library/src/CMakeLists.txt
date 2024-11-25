@@ -345,6 +345,7 @@ endif()
 
 set(auxiliaries
   common/buildinfo.cpp
+  common/rocsolver_handle.cpp
   common/rocsolver_logger.cpp
   common/rocsparse.cpp
 )

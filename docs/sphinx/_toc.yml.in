@@ -23,7 +23,7 @@ subtrees:
       - file: reference/lapack.rst
       - file: reference/lapacklike.rst
       - file: reference/refact.rst
-      - file: reference/logging.rst
+      - file: reference/helpers.rst
       - file: reference/tuning.rst
       - file: reference/deprecated.rst
   - file: license.rst

@@ -1237,4 +1237,46 @@ __device__ static void permute_swap(const I n, T* C, I ldc, I* map, const I nev 
 #endif
 }
 
+/** SWAP swaps the values of vectors x and y of dimension n.
+    Launch this kernel with a desired number of threads organized in
+    NG groups in the x direction with NT threads in the x direction. **/
+template <typename S, typename T, typename I>
+ROCSOLVER_KERNEL void swap_kernel(I const n, T* const x, I const incx, T* const y, I const incy)
+{
+    if(n <= 0)
+        return;
+
+    I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    I const i_inc = hipBlockDim_x * hipGridDim_x;
+
+    if((incx == 1) && (incy == 1))
+    {
+        // ------------
+        // special case
+        // ------------
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const temp = y[i];
+            y[i] = x[i];
+            x[i] = temp;
+        }
+    }
+    else
+    {
+        // ---------------------------
+        // code for unequal increments
+        // ---------------------------
+
+        for(I i = i_start; i < n; i += i_inc)
+        {
+            auto const ix = 0 + i * static_cast<int64_t>(incx);
+            auto const iy = 0 + i * static_cast<int64_t>(incy);
+
+            auto const temp = y[iy];
+            y[iy] = x[ix];
+            x[ix] = temp;
+        }
+    }
+}
+
 ROCSOLVER_END_NAMESPACE

@@ -125,6 +125,13 @@ try
             "                           Reported time will be the average.\n"
             "                           ")
 
+        ("alg_mode",
+         value<rocblas_int>(&argus.alg_mode)->default_value(0),
+            "0 = GPU-only, 1 = Hybrid\n"
+            "                           This will change how the algorithm operates.\n"
+            "                           Only applicable to functions with hybrid support.\n"
+            "                           ")
+
         ("mem_query",
          value<rocblas_int>(&argus.mem_query)->default_value(0),
             "Calculate the required amount of device workspace memory? 0 = No, 1 = Yes.\n"
@@ -167,6 +174,12 @@ try
          value<rocblas_int>(&argus.norm_check)->default_value(0),
             "Validate GPU results with CPU? 0 = No, 1 = Yes.\n"
             "                           This will additionally print the relative error of the computations.\n"
+            "                           ")
+
+        ("hash",
+         value<rocblas_int>(&argus.hash_check)->default_value(0),
+            "Print hash of GPU results? 0 = No, 1 = Yes.\n"
+            "                           Meant for checking reproducibility of computations.\n"
             "                           ")
 
         // size options

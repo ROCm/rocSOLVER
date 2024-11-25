@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -91,7 +91,7 @@ ROCSOLVER_DEPRECATED_X("use rocblas_fill") typedef rocblas_fill rocsolver_fill;
  */
 ROCSOLVER_DEPRECATED_X("use rocblas_diagonal") typedef rocblas_diagonal rocsolver_diagonal;
 
-/*! \deprecated Use \c rocblas_stide.
+/*! \deprecated Use \c rocblas_side.
  */
 ROCSOLVER_DEPRECATED_X("use rocblas_side") typedef rocblas_side rocsolver_side;
 
