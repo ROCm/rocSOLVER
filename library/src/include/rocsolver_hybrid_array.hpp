@@ -41,19 +41,19 @@ struct rocsolver_hybrid_array
 
     U src_array;
     T** batch_array;
-    T* curr_array;
+    T* val_array;
 
     rocsolver_hybrid_array()
         : src_array(nullptr)
         , batch_array(nullptr)
-        , curr_array(nullptr)
+        , val_array(nullptr)
     {
     }
     ~rocsolver_hybrid_array()
     {
-        if(curr_array)
+        if(val_array)
         {
-            free(curr_array);
+            free(val_array);
             if(batch_array)
                 free(batch_array);
         }
@@ -65,9 +65,9 @@ struct rocsolver_hybrid_array
                               rocblas_int batch_count,
                               hipStream_t stream)
     {
-        if(curr_array)
+        if(val_array)
         {
-            free(curr_array);
+            free(val_array);
             if(batch_array)
                 free(batch_array);
         }
@@ -82,21 +82,52 @@ struct rocsolver_hybrid_array
 
         if(is_device)
         {
-            size_t bytes = sizeof(T) * dim;
-            curr_array = (T*)malloc(bytes);
+            // allocate space on host for data from device
+            size_t dim_bytes = sizeof(T) * dim;
+            size_t val_bytes = sizeof(T) * dim * batch_count;
+            val_array = (T*)malloc(val_bytes);
 
             if(is_strided)
+            {
+                // data is strided; batch_array not needed
                 batch_array = nullptr;
+
+                // read data to val_array
+                if(batch_count == 1 || stride == dim)
+                {
+                    HIP_CHECK(hipMemcpyAsync(val_array, src_array, val_bytes, hipMemcpyDeviceToHost,
+                                             stream));
+                }
+                else
+                {
+                    for(rocblas_int bid = 0; bid < batch_count; bid++)
+                    {
+                        HIP_CHECK(hipMemcpyAsync(val_array + bid * dim, src_array + bid * stride,
+                                                 dim_bytes, hipMemcpyDeviceToHost, stream));
+                    }
+                }
+            }
             else
             {
-                bytes = sizeof(T*) * batch_count;
-                batch_array = (T**)malloc(bytes);
-                HIP_CHECK(hipMemcpyAsync(batch_array, array, bytes, hipMemcpyDeviceToHost, stream));
+                // data is batched; read device pointers into batch_array
+                size_t batch_bytes = sizeof(T*) * batch_count;
+                batch_array = (T**)malloc(batch_bytes);
+                HIP_CHECK(
+                    hipMemcpyAsync(batch_array, array, batch_bytes, hipMemcpyDeviceToHost, stream));
+                HIP_CHECK(hipStreamSynchronize(stream));
+
+                // read data to val_array
+                for(rocblas_int bid = 0; bid < batch_count; bid++)
+                {
+                    HIP_CHECK(hipMemcpyAsync(val_array + bid * dim, batch_array[bid], dim_bytes,
+                                             hipMemcpyDeviceToHost, stream));
+                }
             }
         }
         else
         {
-            curr_array = nullptr;
+            // data on host; use src_array directly
+            val_array = nullptr;
 
             if(is_strided)
                 batch_array = nullptr;
@@ -106,64 +137,59 @@ struct rocsolver_hybrid_array
 
         return rocblas_status_success;
     }
-
-    rocblas_status get_from_device_async(T** dst, rocblas_int bid, hipStream_t stream)
+    rocblas_status push_to_device_async(hipStream_t stream)
     {
         if(!src_array)
             return rocblas_status_internal_error;
 
-        if(curr_array)
+        if(val_array)
         {
-            *dst = curr_array;
-            size_t bytes = sizeof(T) * dim;
+            size_t dim_bytes = sizeof(T) * dim;
+            size_t val_bytes = sizeof(T) * dim * batch_count;
 
-            if(batch_array)
+            if(!batch_array)
             {
-                HIP_CHECK(hipMemcpyAsync(curr_array, batch_array[bid], bytes, hipMemcpyDeviceToHost,
-                                         stream));
+                if(batch_count == 1 || stride == dim)
+                {
+                    HIP_CHECK(hipMemcpyAsync(src_array, val_array, val_bytes, hipMemcpyHostToDevice,
+                                             stream));
+                }
+                else
+                {
+                    for(rocblas_int bid = 0; bid < batch_count; bid++)
+                    {
+                        HIP_CHECK(hipMemcpyAsync(src_array + bid * stride, val_array + bid * dim,
+                                                 dim_bytes, hipMemcpyHostToDevice, stream));
+                    }
+                }
             }
             else
             {
-                HIP_CHECK(hipMemcpyAsync(curr_array, src_array + bid * stride, bytes,
-                                         hipMemcpyDeviceToHost, stream));
-            }
-        }
-        else
-        {
-            if(batch_array)
-            {
-                *dst = batch_array[bid];
-            }
-            else
-            {
-                *dst = src_array + bid * stride;
+                for(rocblas_int bid = 0; bid < batch_count; bid++)
+                {
+                    HIP_CHECK(hipMemcpyAsync(batch_array[bid], val_array + bid * dim, dim_bytes,
+                                             hipMemcpyHostToDevice, stream));
+                }
             }
         }
 
         return rocblas_status_success;
     }
-    rocblas_status push_to_device_async(rocblas_int bid, hipStream_t stream)
+
+    T* operator[](rocblas_int bid)
     {
         if(!src_array)
-            return rocblas_status_internal_error;
+            return nullptr;
 
-        if(curr_array)
+        if(val_array)
+            return val_array + bid * dim;
+        else
         {
-            size_t bytes = sizeof(T) * dim;
-
             if(batch_array)
-            {
-                HIP_CHECK(hipMemcpyAsync(batch_array[bid], curr_array, bytes, hipMemcpyHostToDevice,
-                                         stream));
-            }
+                return batch_array[bid];
             else
-            {
-                HIP_CHECK(hipMemcpyAsync(src_array + bid * stride, curr_array, bytes,
-                                         hipMemcpyHostToDevice, stream));
-            }
+                return src_array + bid * stride;
         }
-
-        return rocblas_status_success;
     }
 };
 
