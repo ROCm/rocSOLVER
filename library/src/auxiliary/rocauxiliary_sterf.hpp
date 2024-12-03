@@ -35,6 +35,7 @@
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_hybrid_array.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -406,6 +407,33 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
 
     if(alg_mode == rocsolver_alg_mode_hybrid)
     {
+        rocsolver_hybrid_array<T, U> hD_array;
+        rocsolver_hybrid_array<T, U> hE_array;
+        rocsolver_hybrid_array<rocblas_int, rocblas_int*> hInfo_array;
+
+        ROCBLAS_CHECK(hD_array.init_async(n, D + shiftD, strideD, batch_count, stream));
+        ROCBLAS_CHECK(hE_array.init_async(n - 1, E + shiftE, strideE, batch_count, stream));
+        ROCBLAS_CHECK(hInfo_array.init_async(1, info, 1, batch_count, stream));
+        HIP_CHECK(hipStreamSynchronize(stream));
+
+        for(rocblas_int b = 0; b < batch_count; b++)
+        {
+            T *hD, *hE;
+            rocblas_int* hInfo;
+
+            ROCBLAS_CHECK(hD_array.get_from_device_async(&hD, b, stream));
+            ROCBLAS_CHECK(hE_array.get_from_device_async(&hE, b, stream));
+            ROCBLAS_CHECK(hInfo_array.get_from_device_async(&hInfo, b, stream));
+            HIP_CHECK(hipStreamSynchronize(stream));
+
+            run_sterf<T>(n, hD, hE, hInfo, nullptr, 30 * n, eps, ssfmin, ssfmax);
+
+            ROCBLAS_CHECK(hD_array.push_to_device_async(b, stream));
+            ROCBLAS_CHECK(hE_array.push_to_device_async(b, stream));
+            ROCBLAS_CHECK(hInfo_array.push_to_device_async(b, stream));
+        }
+
+        HIP_CHECK(hipStreamSynchronize(stream));
     }
     else
     {

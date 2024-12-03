@@ -1358,26 +1358,6 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
                                                    I* splits_map,
                                                    S* work)
 {
-    // -------------------------------
-    // lambda expression as helper
-    // -------------------------------
-    auto is_device_pointer = [](void* ptr) -> bool {
-        hipPointerAttribute_t dev_attributes;
-        if(ptr == nullptr)
-        {
-            return (false);
-        }
-
-        auto istat = hipPointerGetAttributes(&dev_attributes, ptr);
-        if(istat != hipSuccess)
-        {
-            std::cout << "is_device_pointer: istat = " << istat << " " << hipGetErrorName(istat)
-                      << std::endl;
-        }
-        assert(istat == hipSuccess);
-        return (dev_attributes.type == hipMemoryTypeDevice);
-    };
-
     // -------------------------
     // copy D into hD, E into hE
     // -------------------------
