@@ -5,6 +5,10 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ## (Unreleased) rocSOLVER
 
 ### Added
+
+* Hybrid computation support for existing routines:
+    - STERF
+
 ### Changed
 ### Removed
 ### Optimized
@@ -22,7 +26,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 * Algorithm selection mechanism for hybrid computation
 * Hybrid computation support for existing routines:
     - BDSQR
-    - GESVD  
+    - GESVD
 
 ### Optimized
 
