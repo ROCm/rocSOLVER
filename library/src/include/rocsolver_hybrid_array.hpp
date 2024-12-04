@@ -57,6 +57,8 @@ struct rocsolver_hybrid_array
             free(batch_array);
     }
 
+    /* Initializes internal arrays to hold pointer data. Primarily used to read device pointers
+       from a batched array for use on the host; no other data is read from the device. */
     rocblas_status init_pointers_only(U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
@@ -105,6 +107,8 @@ struct rocsolver_hybrid_array
 
         return rocblas_status_success;
     }
+    /* Initializes internal arrays to hold data from the device. Device pointers are read into batch_array
+       (if applicable), and matrix data is read into val_array. */
     rocblas_status init_async(I dim, U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
@@ -180,6 +184,8 @@ struct rocsolver_hybrid_array
 
         return rocblas_status_success;
     }
+    /* Copies data from val_array back to the device. Returns an error if initialized for pointers
+       only. */
     rocblas_status push_to_device_async(hipStream_t stream)
     {
         if(!src_array)
@@ -221,6 +227,8 @@ struct rocsolver_hybrid_array
         return rocblas_status_success;
     }
 
+    /* Gets a pointer to the data for batch index bid. If initialized for pointers only, the
+       returned pointer may be on the device. Otherwise, the pointer is on the host. */
     T* operator[](I bid)
     {
         if(!src_array)
