@@ -52,13 +52,62 @@ struct rocsolver_hybrid_array
     ~rocsolver_hybrid_array()
     {
         if(val_array)
-        {
             free(val_array);
-            if(batch_array)
-                free(batch_array);
-        }
+        if(batch_array && (val_array || this->dim < 0))
+            free(batch_array);
     }
 
+    rocblas_status init_pointers_only(U array,
+                                      rocblas_stride stride,
+                                      rocblas_int batch_count,
+                                      hipStream_t stream)
+    {
+        if(val_array)
+            free(val_array);
+        if(batch_array && (val_array || this->dim < 0))
+            free(batch_array);
+
+        this->dim = -1;
+        this->src_array = array;
+        this->stride = stride;
+        this->batch_count = batch_count;
+
+        bool constexpr is_strided = (std::is_same<U, T*>::value || std::is_same<U, T* const>::value);
+        bool is_device = is_device_pointer((void*)array);
+
+        if(is_device)
+        {
+            // pointers only; don't allocate val_array
+            val_array = nullptr;
+
+            if(is_strided)
+            {
+                // data is strided; batch_array not needed
+                batch_array = nullptr;
+            }
+            else
+            {
+                // data is batched; read device pointers into batch_array
+                size_t batch_bytes = sizeof(T*) * batch_count;
+                batch_array = (T**)malloc(batch_bytes);
+                HIP_CHECK(
+                    hipMemcpyAsync(batch_array, array, batch_bytes, hipMemcpyDeviceToHost, stream));
+                HIP_CHECK(hipStreamSynchronize(stream));
+            }
+        }
+        else
+        {
+            // data on host; use src_array directly
+            val_array = nullptr;
+
+            if(is_strided)
+                batch_array = nullptr;
+            else
+                batch_array = (T**)src_array;
+        }
+
+        return rocblas_status_success;
+    }
     rocblas_status init_async(rocblas_int dim,
                               U array,
                               rocblas_stride stride,
@@ -66,11 +115,12 @@ struct rocsolver_hybrid_array
                               hipStream_t stream)
     {
         if(val_array)
-        {
             free(val_array);
-            if(batch_array)
-                free(batch_array);
-        }
+        if(batch_array && (val_array || this->dim < 0))
+            free(batch_array);
+
+        if(dim < 0)
+            return rocblas_status_internal_error;
 
         this->dim = dim;
         this->src_array = array;
@@ -78,7 +128,7 @@ struct rocsolver_hybrid_array
         this->batch_count = batch_count;
 
         bool constexpr is_strided = (std::is_same<U, T*>::value || std::is_same<U, T* const>::value);
-        bool is_device = is_device_pointer(array);
+        bool is_device = is_device_pointer((void*)array);
 
         if(is_device)
         {
@@ -141,6 +191,8 @@ struct rocsolver_hybrid_array
     {
         if(!src_array)
             return rocblas_status_internal_error;
+        if(dim < 0)
+            return rocblas_status_internal_error;
 
         if(val_array)
         {
@@ -188,7 +240,7 @@ struct rocsolver_hybrid_array
             if(batch_array)
                 return batch_array[bid];
             else
-                return src_array + bid * stride;
+                return (T*)(src_array + bid * stride);
         }
     }
 };
