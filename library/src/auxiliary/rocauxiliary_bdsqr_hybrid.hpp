@@ -1365,12 +1365,12 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
     // -----------------------------------
     // transfer arrays from device to host
     // -----------------------------------
-    rocsolver_hybrid_array<S, S*> hD;
-    rocsolver_hybrid_array<S, S*> hE;
-    rocsolver_hybrid_array<T, W1> hV;
-    rocsolver_hybrid_array<T, W2> hU;
-    rocsolver_hybrid_array<T, W3> hC;
-    rocsolver_hybrid_array<I, I*> hInfo;
+    rocsolver_hybrid_array<S, I, S*> hD;
+    rocsolver_hybrid_array<S, I, S*> hE;
+    rocsolver_hybrid_array<T, I, W1> hV;
+    rocsolver_hybrid_array<T, I, W2> hU;
+    rocsolver_hybrid_array<T, I, W3> hC;
+    rocsolver_hybrid_array<I, I, I*> hInfo;
 
     ROCBLAS_CHECK(hD.init_async(n, D, strideD, batch_count, stream));
     ROCBLAS_CHECK(hE.init_async(n - 1, E, strideE, batch_count, stream));

@@ -33,10 +33,10 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename U>
+template <typename T, typename I, typename U>
 struct rocsolver_hybrid_array
 {
-    rocblas_int dim, batch_count;
+    I dim, batch_count;
     rocblas_stride stride;
 
     U src_array;
@@ -57,10 +57,7 @@ struct rocsolver_hybrid_array
             free(batch_array);
     }
 
-    rocblas_status init_pointers_only(U array,
-                                      rocblas_stride stride,
-                                      rocblas_int batch_count,
-                                      hipStream_t stream)
+    rocblas_status init_pointers_only(U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
             free(val_array);
@@ -108,11 +105,7 @@ struct rocsolver_hybrid_array
 
         return rocblas_status_success;
     }
-    rocblas_status init_async(rocblas_int dim,
-                              U array,
-                              rocblas_stride stride,
-                              rocblas_int batch_count,
-                              hipStream_t stream)
+    rocblas_status init_async(I dim, U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
             free(val_array);
@@ -150,7 +143,7 @@ struct rocsolver_hybrid_array
                 }
                 else
                 {
-                    for(rocblas_int bid = 0; bid < batch_count; bid++)
+                    for(I bid = 0; bid < batch_count; bid++)
                     {
                         HIP_CHECK(hipMemcpyAsync(val_array + bid * dim, src_array + bid * stride,
                                                  dim_bytes, hipMemcpyDeviceToHost, stream));
@@ -167,7 +160,7 @@ struct rocsolver_hybrid_array
                 HIP_CHECK(hipStreamSynchronize(stream));
 
                 // read data to val_array
-                for(rocblas_int bid = 0; bid < batch_count; bid++)
+                for(I bid = 0; bid < batch_count; bid++)
                 {
                     HIP_CHECK(hipMemcpyAsync(val_array + bid * dim, batch_array[bid], dim_bytes,
                                              hipMemcpyDeviceToHost, stream));
@@ -208,7 +201,7 @@ struct rocsolver_hybrid_array
                 }
                 else
                 {
-                    for(rocblas_int bid = 0; bid < batch_count; bid++)
+                    for(I bid = 0; bid < batch_count; bid++)
                     {
                         HIP_CHECK(hipMemcpyAsync(src_array + bid * stride, val_array + bid * dim,
                                                  dim_bytes, hipMemcpyHostToDevice, stream));
@@ -217,7 +210,7 @@ struct rocsolver_hybrid_array
             }
             else
             {
-                for(rocblas_int bid = 0; bid < batch_count; bid++)
+                for(I bid = 0; bid < batch_count; bid++)
                 {
                     HIP_CHECK(hipMemcpyAsync(batch_array[bid], val_array + bid * dim, dim_bytes,
                                              hipMemcpyHostToDevice, stream));
@@ -228,7 +221,7 @@ struct rocsolver_hybrid_array
         return rocblas_status_success;
     }
 
-    T* operator[](rocblas_int bid)
+    T* operator[](I bid)
     {
         if(!src_array)
             return nullptr;

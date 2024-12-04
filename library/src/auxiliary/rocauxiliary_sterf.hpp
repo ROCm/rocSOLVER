@@ -407,9 +407,9 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
 
     if(alg_mode == rocsolver_alg_mode_hybrid)
     {
-        rocsolver_hybrid_array<T, U> hD;
-        rocsolver_hybrid_array<T, U> hE;
-        rocsolver_hybrid_array<rocblas_int, rocblas_int*> hInfo;
+        rocsolver_hybrid_array<T, rocblas_int, U> hD;
+        rocsolver_hybrid_array<T, rocblas_int, U> hE;
+        rocsolver_hybrid_array<rocblas_int, rocblas_int, rocblas_int*> hInfo;
 
         ROCBLAS_CHECK(hD.init_async(n, D + shiftD, strideD, batch_count, stream));
         ROCBLAS_CHECK(hE.init_async(n - 1, E + shiftE, strideE, batch_count, stream));
