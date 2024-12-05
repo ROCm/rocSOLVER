@@ -421,9 +421,9 @@ rocblas_status rocsolver_sterf_template(rocblas_handle handle,
             run_sterf<T>(n, hD[b], hE[b], hInfo[b], nullptr, 30 * n, eps, ssfmin, ssfmax);
         }
 
-        ROCBLAS_CHECK(hD.push_to_device_async(stream));
-        ROCBLAS_CHECK(hE.push_to_device_async(stream));
-        ROCBLAS_CHECK(hInfo.push_to_device_async(stream));
+        ROCBLAS_CHECK(hD.write_to_device_async(stream));
+        ROCBLAS_CHECK(hE.write_to_device_async(stream));
+        ROCBLAS_CHECK(hInfo.write_to_device_async(stream));
         HIP_CHECK(hipStreamSynchronize(stream));
     }
     else

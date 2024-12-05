@@ -1422,9 +1422,9 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
     // -----------------------------------
     // transfer arrays from host to device
     // -----------------------------------
-    ROCBLAS_CHECK(hD.push_to_device_async(stream));
-    ROCBLAS_CHECK(hE.push_to_device_async(stream));
-    ROCBLAS_CHECK(hInfo.push_to_device_async(stream));
+    ROCBLAS_CHECK(hD.write_to_device_async(stream));
+    ROCBLAS_CHECK(hE.write_to_device_async(stream));
+    ROCBLAS_CHECK(hInfo.write_to_device_async(stream));
     HIP_CHECK(hipStreamSynchronize(stream));
 
     // ----------------------

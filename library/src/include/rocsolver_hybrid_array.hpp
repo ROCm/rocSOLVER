@@ -33,6 +33,20 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
+/* ROCSOLVER_HYBRID_ARRAY provides a wrapper for data arrays that is intended to simplify host memory
+   allocation as well as data transfers to and from the device. Hybrid algorithms can use rocsolver_hybrid_array
+   to read device data to the host so that the data may be operated upon, and then write the resultant data
+   back to the device. Two modes are supported:
+
+   * Standard mode: Used to read device data onto the host, which may then be operated upon by host code.
+     A typical workflow will call init_async to allocate a host buffer and read the data into the buffer,
+     execute host code on the buffered data through the pointer provided by the [] operator, and then call
+     write_to_device_async to write the resultant data back to the device.
+
+   * Pointers only mode: Used to read device pointers from a batched array onto the host, so that device
+     kernels may be called on each individual batch instance. A typical workflow will call init_pointers_only
+     to allocate a host buffer for the device pointers, and then execute device kernels on the pointers
+     provided by the [] operator. */
 template <typename T, typename I, typename U>
 struct rocsolver_hybrid_array
 {
@@ -57,8 +71,8 @@ struct rocsolver_hybrid_array
             free(batch_array);
     }
 
-    /* Initializes internal arrays to hold pointer data. Primarily used to read device pointers
-       from a batched array for use on the host; no other data is read from the device. */
+    /* Used to read device pointers from a batched array for use on the host; no other data is read from the
+       device. */
     rocblas_status init_pointers_only(U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
@@ -107,8 +121,8 @@ struct rocsolver_hybrid_array
 
         return rocblas_status_success;
     }
-    /* Initializes internal arrays to hold data from the device. Device pointers are read into batch_array
-       (if applicable), and matrix data is read into val_array. */
+    /* Used to read device data into a host buffer, which is managed by this class. Data for all batch instances
+       will be read into the buffer. */
     rocblas_status init_async(I dim, U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
@@ -184,9 +198,9 @@ struct rocsolver_hybrid_array
 
         return rocblas_status_success;
     }
-    /* Copies data from val_array back to the device. Returns an error if initialized for pointers
+    /* Copies data from host buffer back to the device. Returns an error if initialized for pointers
        only. */
-    rocblas_status push_to_device_async(hipStream_t stream)
+    rocblas_status write_to_device_async(hipStream_t stream)
     {
         if(!src_array)
             return rocblas_status_internal_error;

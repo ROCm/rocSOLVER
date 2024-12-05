@@ -581,8 +581,8 @@ enum copymat_direction
     copymat_from_buffer
 };
 
-/** A mask that is always true. Typically used to make the mask optional,
-    by acting as the default when no other mask is provided. **/
+/** A mask that is always true. Typically used to make the mask optional, by acting as the default when
+    no other mask is provided. **/
 struct no_mask
 {
     __device__ constexpr bool operator[](rocblas_int) const noexcept
@@ -591,7 +591,9 @@ struct no_mask
     }
 };
 
-/** An mask defined by an integer array (e.g., the info array) **/
+/** An mask defined by an integer array (e.g., the info array). By default, a non-zero value for the ith integer
+    indicates that the data for batch i should be copied over. Data will not be copied if the mask value is zero.
+    This behaviour is reversed if the negate transform is passed to the constructor. **/
 struct info_mask
 {
     enum mask_transform
