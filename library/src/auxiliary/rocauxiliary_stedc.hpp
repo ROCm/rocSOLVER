@@ -2192,23 +2192,16 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     // otherwise use divide and conquer algorithm:
     else
     {
-        size_t s1, s2;
-
         // requirements for solver of small independent blocks
-        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
+        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
 
         // extra requirements for original eigenvectors of small independent blocks
         *size_tempvect = (n * n) * batch_count * sizeof(S);
         *size_tempgemm = 2 * (n * n) * batch_count * sizeof(S);
-        if(COMPLEX)
-            s2 = n * n * batch_count * sizeof(S);
-        else
-            s2 = 0;
         if(BATCHED && !COMPLEX)
             *size_workArr = sizeof(S*) * batch_count;
         else
             *size_workArr = 0;
-        *size_work_stack = std::max(s1, s2);
 
         // size for split blocks and sub-blocks positions
         *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
@@ -2406,8 +2399,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         //----------------------
         // eigenvectors C <- C*tempvect
         local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
-                                        static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
-                                        workArr);
+                                        tempgemm + strideT, 0, ldt, strideT, batch_count, workArr);
 
         // finally sort eigenvalues and eigenvectors
         auto const nblocks = batch_count;
