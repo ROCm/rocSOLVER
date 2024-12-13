@@ -2195,10 +2195,10 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
 
         // extra requirements for original eigenvectors of small independent blocks
         if(evect != rocblas_evect_tridiagonal)
-            *size_tempvect = (n * n) * batch_count * sizeof(S);
+            *size_tempvect = sizeof(S) * (n * n) * batch_count;
         else
             *size_tempvect = 0;
-        *size_tempgemm = 2 * (n * n) * batch_count * sizeof(S);
+        *size_tempgemm = sizeof(S) * 2 * (n * n) * batch_count;
         if(BATCHED && !COMPLEX)
             *size_workArr = sizeof(S*) * batch_count;
         else

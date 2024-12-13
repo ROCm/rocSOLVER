@@ -9,7 +9,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ### Removed
 ### Optimized
 
-* Reduced device memory requirements for STEDC, SYEVD/HEEVD, and SYGVD/HEGVD
+* Reduced the device memory requirements for STEDC, SYEVD/HEEVD, and SYGVD/HEGVD
 
 ### Resolved issues
 ### Known issues
