@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,12 +57,21 @@ struct rocsolver_hybrid_array
     T** batch_array;
     T* val_array;
 
+    /* Constructor */
     rocsolver_hybrid_array()
         : src_array(nullptr)
         , batch_array(nullptr)
         , val_array(nullptr)
     {
     }
+
+    /* Disallow copying. */
+    rocsolver_hybrid_array(const rocsolver_hybrid_array&) = delete;
+
+    /* Disallow assigning. */
+    rocsolver_hybrid_array& operator=(const rocsolver_hybrid_array&) = delete;
+
+    /* Destructor */
     ~rocsolver_hybrid_array()
     {
         if(val_array)
