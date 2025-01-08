@@ -119,6 +119,23 @@ __device__ void scale_tridiag(const rocblas_int start, const rocblas_int end, T*
     }
 }
 
+template <typename T, typename I, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+__device__ T shfl(T val, I src)
+{
+    return __shfl(val, src);
+}
+
+template <typename T, typename I, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+__device__ T shfl(T val, I src)
+{
+    using S = decltype(std::real(T{}));
+
+    auto r = __shfl(val.real(), src);
+    auto i = __shfl(val.imag(), src);
+
+    return rocblas_complex_num<S>(r, i);
+}
+
 // **********************************************************
 // GPU kernels that are used by many rocsolver functions
 // **********************************************************
