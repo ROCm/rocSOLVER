@@ -59,7 +59,7 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
         return;
     }
 
-    size_t s1 = 0, s2;
+    size_t s1 = 0, s2 = 0;
 
     // size required to store temporary matrix W
     if(n > xxTRD_xxTD2_SWITCHSIZE)

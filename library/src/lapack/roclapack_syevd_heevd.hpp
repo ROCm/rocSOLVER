@@ -86,12 +86,12 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     if(evect == rocblas_evect_original)
     {
         // extra requirements for computing eigenvalues and vectors (stedc)
-        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w12,
-                                                     &w22, &w31, size_tmpz, size_splits, &unused);
+        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w31,
+                                                     &w22, &w12, size_tmpz, size_splits, &unused);
 
         // extra requirements for ormtr/unmtr
         rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
-                                                        &unused, &w13, &w23, &w32, &unused);
+                                                        &unused, &w23, &w13, &w32, &unused);
 
         *size_work3 = std::max(w31, w32);
     }
@@ -198,11 +198,11 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
 
         rocsolver_stedc_template<false, ISBATCHED, T>(
             handle, rocblas_evect_tridiagonal, n, D, 0, strideD, E, 0, strideE, tmptau_W, 0, ldw,
-            strideW, info, batch_count, work1, (S*)work2, (S*)work3, tmpz, splits, (S**)workArr);
+            strideW, info, batch_count, work3, (S*)work2, (S*)work1, tmpz, splits, (S**)workArr);
 
         rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
             handle, rocblas_side_left, uplo, rocblas_operation_none, n, n, A, shiftA, lda, strideA,
-            tau, n, tmptau_W, 0, ldw, strideW, batch_count, scalars, (T*)work1, (T*)work2,
+            tau, n, tmptau_W, 0, ldw, strideW, batch_count, scalars, (T*)work2, (T*)work1,
             (T*)work3, workArr);
 
         // copy matrix product into A
