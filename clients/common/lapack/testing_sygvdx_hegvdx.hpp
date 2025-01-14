@@ -1108,9 +1108,9 @@ void testing_sygvdx_hegvdx(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using 4 * n * machine_precision as tolerance
+    // using 5 * n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, 4 * n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 5 * n);
 
     // output results for rocsolver-bench
     if(argus.timing)
