@@ -2,6 +2,20 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
+## (Unreleased) rocSOLVER
+
+### Added
+### Changed
+### Removed
+### Optimized
+
+* Reduced the device memory requirements for STEDC, SYEVD/HEEVD, and SYGVD/HEGVD
+
+### Resolved issues
+### Known issues
+### Upcoming changes
+
+
 ## rocSOLVER 3.28.0 for ROCm 6.4.0
 
 ### Added
@@ -11,7 +25,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 * Algorithm selection mechanism for hybrid computation
 * Hybrid computation support for existing routines:
     - BDSQR
-    - GESVD  
+    - GESVD
 
 ### Optimized
 
