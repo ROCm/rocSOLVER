@@ -27,8 +27,8 @@
 
 #pragma once
 
-#include "rocsolver_run_specialized_kernels.hpp"
 #include "roclapack_gemm_device_functions.hpp"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 #include <climits>
 
@@ -96,27 +96,27 @@ ROCSOLVER_KERNEL void gemm_kernel(const I m,
     and y computes 16 of 'm' rows and 16 of the 'n' columns of C. **/
 template <typename T, typename I, typename V, typename U1, typename U2, typename U3>
 ROCSOLVER_KERNEL void mfma_gemm_kernel(rocblas_operation transA,
-                                  rocblas_operation transB,
-                                  const I m,
-                                  const I n,
-                                  const I p,
-                                  V alpha,
-                                  U1 AA,
-                                  rocblas_stride shiftA,
-                                  I inca,
-                                  I lda,
-                                  rocblas_stride strideA,
-                                  U2 BB,
-                                  rocblas_stride shiftB,
-                                  I incb,
-                                  I ldb,
-                                  rocblas_stride strideB,
-                                  V beta,
-                                  U3 CC,
-                                  rocblas_stride shiftC,
-                                  I incc,
-                                  I ldc,
-                                  rocblas_stride strideC)
+                                       rocblas_operation transB,
+                                       const I m,
+                                       const I n,
+                                       const I p,
+                                       V alpha,
+                                       U1 AA,
+                                       rocblas_stride shiftA,
+                                       I inca,
+                                       I lda,
+                                       rocblas_stride strideA,
+                                       U2 BB,
+                                       rocblas_stride shiftB,
+                                       I incb,
+                                       I ldb,
+                                       rocblas_stride strideB,
+                                       V beta,
+                                       U3 CC,
+                                       rocblas_stride shiftC,
+                                       I incc,
+                                       I ldc,
+                                       rocblas_stride strideC)
 {
     const I bid_x = blockIdx.x;
     const I bid_y = blockIdx.y;
@@ -151,44 +151,36 @@ ROCSOLVER_KERNEL void mfma_gemm_kernel(rocblas_operation transA,
     B += block_col * (transB == rocblas_operation_none ? ldb : incb);
 
     // C(bid_x,bid_y) += A(bid_x,:) * B(:,bid_y)
-    gemm_16x16xp(transA, transB, m_bar, n_bar, p,
-                            a,
-                            A,
-                            inca,
-                            lda,
-                            B,
-                            incb,
-                            ldb,
-                            b,
-                            C + (block_col * ldc + block_row * incc),
-                            incc,
-                            ldc);
+    gemm_16x16xp(transA, transB, m_bar, n_bar, p, a, A, inca, lda, B, incb, ldb, b,
+                 C + (block_col * ldc + block_row * incc), incc, ldc);
 }
 
 #else // ROCSOLVER_MFMA_ENABLED
 template <typename T, typename I, typename V, typename U1, typename U2, typename U3>
 ROCSOLVER_KERNEL void mfma_gemm_kernel(rocblas_operation transA,
-                                  rocblas_operation transB,
-                                  const I m,
-                                  const I n,
-                                  const I p,
-                                  V alpha,
-                                  U1 AA,
-                                  rocblas_stride shiftA,
-                                  I inca,
-                                  I lda,
-                                  rocblas_stride strideA,
-                                  U2 BB,
-                                  rocblas_stride shiftB,
-                                  I incb,
-                                  I ldb,
-                                  rocblas_stride strideB,
-                                  V beta,
-                                  U3 CC,
-                                  rocblas_stride shiftC,
-                                  I incc,
-                                  I ldc,
-                                  rocblas_stride strideC){}
+                                       rocblas_operation transB,
+                                       const I m,
+                                       const I n,
+                                       const I p,
+                                       V alpha,
+                                       U1 AA,
+                                       rocblas_stride shiftA,
+                                       I inca,
+                                       I lda,
+                                       rocblas_stride strideA,
+                                       U2 BB,
+                                       rocblas_stride shiftB,
+                                       I incb,
+                                       I ldb,
+                                       rocblas_stride strideB,
+                                       V beta,
+                                       U3 CC,
+                                       rocblas_stride shiftC,
+                                       I incc,
+                                       I ldc,
+                                       rocblas_stride strideC)
+{
+}
 #endif // ROCSOLVER_MFMA_ENABLED
 
 /*************************************************************
@@ -266,15 +258,15 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
         dim3 threads(numWarpsX * warpSize, numWarpsY, 1);
         if(pmode == rocblas_pointer_mode_device)
         {
-            ROCSOLVER_LAUNCH_KERNEL((mfma_gemm_kernel<T>), grid, threads, 0, stream, transA, transB, m, n, k, alpha,
-                                    A, shiftA, inca, lda, strideA, B, shiftB, incb, ldb,
-                                    strideB, beta, C, shiftC, incc, ldc, strideC);
+            ROCSOLVER_LAUNCH_KERNEL((mfma_gemm_kernel<T>), grid, threads, 0, stream, transA, transB,
+                                    m, n, k, alpha, A, shiftA, inca, lda, strideA, B, shiftB, incb,
+                                    ldb, strideB, beta, C, shiftC, incc, ldc, strideC);
         }
         else
         {
-            ROCSOLVER_LAUNCH_KERNEL((mfma_gemm_kernel<T>), grid, threads, 0, stream, transA, transB, m, n, k, *alpha,
-                                    A, shiftA, inca, lda, strideA, B, shiftB, incb, ldb,
-                                    strideB, *beta, C, shiftC, incc, ldc, strideC);
+            ROCSOLVER_LAUNCH_KERNEL((mfma_gemm_kernel<T>), grid, threads, 0, stream, transA, transB,
+                                    m, n, k, *alpha, A, shiftA, inca, lda, strideA, B, shiftB, incb,
+                                    ldb, strideB, *beta, C, shiftC, incc, ldc, strideC);
         }
     }
     else
@@ -305,15 +297,15 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
         dim3 threads(BS2, BS2, 1);
         if(pmode == rocblas_pointer_mode_device)
         {
-            ROCSOLVER_LAUNCH_KERNEL((gemm_kernel<T>), grid, threads, 0, stream, m, n, k, alpha, conjA,
-                                    A, shiftA, lda1, lda2, strideA, conjB, B, shiftB, ldb1, ldb2,
-                                    strideB, beta, C, shiftC, incc, ldc, strideC);
+            ROCSOLVER_LAUNCH_KERNEL((gemm_kernel<T>), grid, threads, 0, stream, m, n, k, alpha,
+                                    conjA, A, shiftA, lda1, lda2, strideA, conjB, B, shiftB, ldb1,
+                                    ldb2, strideB, beta, C, shiftC, incc, ldc, strideC);
         }
         else
         {
-            ROCSOLVER_LAUNCH_KERNEL((gemm_kernel<T>), grid, threads, 0, stream, m, n, k, *alpha, conjA,
-                                    A, shiftA, lda1, lda2, strideA, conjB, B, shiftB, ldb1, ldb2,
-                                    strideB, *beta, C, shiftC, incc, ldc, strideC);
+            ROCSOLVER_LAUNCH_KERNEL((gemm_kernel<T>), grid, threads, 0, stream, m, n, k, *alpha,
+                                    conjA, A, shiftA, lda1, lda2, strideA, conjB, B, shiftB, ldb1,
+                                    ldb2, strideB, *beta, C, shiftC, incc, ldc, strideC);
         }
     }
 

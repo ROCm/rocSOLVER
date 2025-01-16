@@ -44,7 +44,7 @@ template <typename T>
 struct mfma_16x16x4_base
 {
     using RegT = T;
-    using AccT = __attribute__( (__vector_size__(4 * sizeof(T)) )) T;
+    using AccT = __attribute__((__vector_size__(4 * sizeof(T)))) T;
 };
 
 template <typename T>
@@ -52,7 +52,7 @@ struct mfma_16x16x4;
 
 // float specialization
 template <>
-struct mfma_16x16x4<float>: public mfma_16x16x4_base<float>
+struct mfma_16x16x4<float> : public mfma_16x16x4_base<float>
 {
     __device__ inline auto operator()(const RegT& a, const RegT& b, const AccT& c) const
     {
@@ -62,7 +62,7 @@ struct mfma_16x16x4<float>: public mfma_16x16x4_base<float>
 
 // double specialization
 template <>
-struct mfma_16x16x4<double>: public mfma_16x16x4_base<double>
+struct mfma_16x16x4<double> : public mfma_16x16x4_base<double>
 {
     __device__ inline auto operator()(const RegT& a, const RegT& b, const AccT& c) const
     {
@@ -110,32 +110,38 @@ struct mfma_16x16x4
         // ci += r x i + i x r
         ci += arbi + aibr;
 
-        return AccT{rocblas_complex_num<S>(cr[0], ci[0]),
-                    rocblas_complex_num<S>(cr[1], ci[1]),
-                    rocblas_complex_num<S>(cr[2], ci[2]),
-                    rocblas_complex_num<S>(cr[3], ci[3])};
+        return AccT{rocblas_complex_num<S>(cr[0], ci[0]), rocblas_complex_num<S>(cr[1], ci[1]),
+                    rocblas_complex_num<S>(cr[2], ci[2]), rocblas_complex_num<S>(cr[3], ci[3])};
     }
 };
 
-template <typename T, typename I, std::enable_if_t<std::is_same_v<T, float> || std::is_same_v<T, rocblas_float_complex>, int> = 0>
+template <typename T,
+          typename I,
+          std::enable_if_t<std::is_same_v<T, float> || std::is_same_v<T, rocblas_float_complex>, int> = 0>
 __device__ inline I get_c_col(I li, I lj, I gpri, I inc_C, I ldc)
 {
     return lj;
 }
 
-template <typename T, typename I, std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, rocblas_double_complex>, int> = 0>
+template <typename T,
+          typename I,
+          std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, rocblas_double_complex>, int> = 0>
 __device__ inline I get_c_col(I li, I lj, I gpri, I inc_C, I ldc)
 {
     return lj;
 }
 
-template <typename T, typename I, std::enable_if_t<std::is_same_v<T, float> || std::is_same_v<T, rocblas_float_complex>, int> = 0>
+template <typename T,
+          typename I,
+          std::enable_if_t<std::is_same_v<T, float> || std::is_same_v<T, rocblas_float_complex>, int> = 0>
 __device__ inline I get_c_row(I li, I lj, I gpri, I inc_C, I ldc)
 {
     return gpri + li * 4;
 }
 
-template <typename T, typename I, std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, rocblas_double_complex>, int> = 0>
+template <typename T,
+          typename I,
+          std::enable_if_t<std::is_same_v<T, double> || std::is_same_v<T, rocblas_double_complex>, int> = 0>
 __device__ inline I get_c_row(I li, I lj, I gpri, I inc_C, I ldc)
 {
     return gpri * 4 + li;
@@ -146,28 +152,45 @@ __device__ inline I get_c_row(I li, I lj, I gpri, I inc_C, I ldc)
     Where C is an m x n matrix, A is an m x p matrix, and B is an
     p x n matrix. This is a wave function, every lane of the wave
     must perform call this function.
-     - m: 0 < m <= 16
-     - n: 0 < n <= 16
-     - p: 0 < p
+    
+    transA      form of op(A).
+    transB      form of op(B).
+    m           number of rows of matrix C.
+                0 < m <= 16
+    n           number of columns of matrix C.
+                0 < n <= 16
+    p           number of rows of matrices op(A) and number of rows of matrix op(B).
+                0 < p
+    alpha       scalar alpha.
+    A           pointer to matrix A.
+    inc_A       stride from the start of one row to the next of matrix A.
+    lda         leading dimension of A.
+    B           pointer to matrix B.
+    inc_B       stride from the start of one row to the next of matrix B.
+    ldb         leading dimension of B.
+    C           pointer to matrix C.
+    inc_C       stride from the start of one row to the next of matrix C.
+    ldc         leading dimension of C.
+    
 **/
 // Run with warpSize sized block
 template <typename T, typename I>
 __device__ void gemm_16x16xp(rocblas_operation transA,
-                                   rocblas_operation transB,
-                                   I m,
-                                   I n,
-                                   I p,
-                                   T alpha,
-                                   const T *A,
-                                   I inc_A,
-                                   I lda,
-                                   const T *B,
-                                   I inc_B,
-                                   I ldb,
-                                   T beta,
-                                   T *C,
-                                   I inc_C,
-                                   I ldc)
+                             rocblas_operation transB,
+                             I m,
+                             I n,
+                             I p,
+                             T alpha,
+                             const T* A,
+                             I inc_A,
+                             I lda,
+                             const T* B,
+                             I inc_B,
+                             I ldb,
+                             T beta,
+                             T* C,
+                             I inc_C,
+                             I ldc)
 {
     using T4 = typename mfma_16x16x4<T>::AccT;
 
@@ -182,9 +205,9 @@ __device__ void gemm_16x16xp(rocblas_operation transA,
     const I rmajor_i_4x16 = cmajor_j_16x4;
     const I rmajor_j_4x16 = cmajor_i_16x4;
 
-    // addresses to transpose B from col-major to row-major 
+    // addresses to transpose B from col-major to row-major
     // and transpose C from row-major to col-major
-    const auto c2r_src = rmajor_j_4x16 * 4 +  rmajor_i_4x16;
+    const auto c2r_src = rmajor_j_4x16 * 4 + rmajor_i_4x16;
     const auto r2c_src = cmajor_i_4x16 * 16 + cmajor_j_4x16;
 
     T4 dmn = {0};
@@ -203,7 +226,7 @@ __device__ void gemm_16x16xp(rocblas_operation transA,
                 amk = A[(kb + cmajor_j_16x4) * lda + cmajor_i_16x4 * inc_A];
         }
         else
-        {   
+        {
             // read col major 4x16 op(A)
             if(cmajor_j_4x16 < m && (kb + cmajor_i_4x16) < p)
                 amk = A[cmajor_j_4x16 * lda + (kb + cmajor_i_4x16) * inc_A];
@@ -229,17 +252,17 @@ __device__ void gemm_16x16xp(rocblas_operation transA,
                 bkn = B[(kb + cmajor_j_16x4) * ldb + cmajor_i_16x4 * inc_B];
         }
 
-        if constexpr (rocblas_is_complex<T>)
+        if constexpr(rocblas_is_complex<T>)
             if(transA == rocblas_operation_conjugate_transpose)
                 amk = conj(amk);
-            if(transB == rocblas_operation_conjugate_transpose)
-                bkn = conj(bkn);
+        if(transB == rocblas_operation_conjugate_transpose)
+            bkn = conj(bkn);
 
         dmn = mfma_16x16x4<T>()(amk, bkn, dmn);
     }
 
 #pragma unroll
-    for (I i = 0; i < 4; ++i)
+    for(I i = 0; i < 4; ++i)
     {
         const I c_col = get_c_col<T>(cmajor_i_4x16, cmajor_j_4x16, i, inc_C, ldc);
         const I c_row = get_c_row<T>(cmajor_i_4x16, cmajor_j_4x16, i, inc_C, ldc);
