@@ -159,7 +159,7 @@ __device__ inline I get_c_row(I li, I lj, I gpri, I inc_C, I ldc)
                 0 < m <= 16
     n           number of columns of matrix C.
                 0 < n <= 16
-    p           number of rows of matrices op(A) and number of rows of matrix op(B).
+    p           number of columns of matrix op(A) and number of rows of matrix op(B).
                 0 < p
     alpha       scalar alpha.
     A           pointer to matrix A.
