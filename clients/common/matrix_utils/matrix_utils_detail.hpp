@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -187,6 +187,30 @@ namespace detail
         std::vector<S> work_real(worksize_real, S(0.));
         cpu_syev_heev(rocblas_evect_original, uplo, n, U, n, D, work.data(), worksize,
                       work_real.data(), worksize_real, &info);
+
+        return (info == 0);
+    }
+
+    // Compute singular values and singular vectors of A with lapack_*gesvd
+    template <typename T, typename S>
+    bool lapack_ge_svd(T const* A, const int nrows, const int ncols, T* U, S* D, T* V)
+    {
+        if(A == nullptr || nrows < 1 || ncols < 1)
+        {
+            return false;
+        }
+
+        int info;
+        int worksize = 32 * std::max(1, 2 * std::min(nrows, ncols) + std::max(nrows, ncols));
+        std::vector<T> work(worksize, T(0.));
+        int worksize_real = 5 * std::min(nrows, ncols);
+        std::vector<S> work_real(worksize_real, S(0.));
+        T* Acpy;
+        Acpy = (T*)malloc(sizeof(T) * nrows * ncols);
+        memcpy(Acpy, A, sizeof(T) * nrows * ncols);
+        cpu_gesvd(rocblas_svect_all, rocblas_svect_all, nrows, ncols, Acpy, nrows, D, U, nrows, V,
+                  ncols, work.data(), worksize, work_real.data(), &info);
+        free(Acpy);
 
         return (info == 0);
     }
