@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "rocblas.hpp"
 #include "roclapack_gemm_device_functions.hpp"
 #include "rocsolver_run_specialized_kernels.hpp"
 
@@ -188,31 +189,31 @@ ROCSOLVER_KERNEL void mfma_gemm_kernel(rocblas_operation transA,
 *************************************************************/
 
 template <typename T, typename I, typename U1, typename U2, typename U3>
-rocblas_status rocsolver_gemm(rocblas_handle handle,
-                              rocblas_operation transA,
-                              rocblas_operation transB,
-                              I m,
-                              I n,
-                              I k,
-                              const T* alpha,
-                              U1 A,
-                              rocblas_stride shiftA,
-                              I inca,
-                              I lda,
-                              rocblas_stride strideA,
-                              U2 B,
-                              rocblas_stride shiftB,
-                              I incb,
-                              I ldb,
-                              rocblas_stride strideB,
-                              const T* beta,
-                              U3 C,
-                              rocblas_stride shiftC,
-                              I incc,
-                              I ldc,
-                              rocblas_stride strideC,
-                              I batch_count,
-                              T** work)
+ROCSOLVER_EXPORT rocblas_status rocsolver_gemm(rocblas_handle handle,
+                                               rocblas_operation transA,
+                                               rocblas_operation transB,
+                                               I m,
+                                               I n,
+                                               I k,
+                                               const T* alpha,
+                                               U1 A,
+                                               rocblas_stride shiftA,
+                                               I inca,
+                                               I lda,
+                                               rocblas_stride strideA,
+                                               U2 B,
+                                               rocblas_stride shiftB,
+                                               I incb,
+                                               I ldb,
+                                               rocblas_stride strideB,
+                                               const T* beta,
+                                               U3 C,
+                                               rocblas_stride shiftC,
+                                               I incc,
+                                               I ldc,
+                                               rocblas_stride strideC,
+                                               I batch_count,
+                                               T** work)
 {
     ROCSOLVER_ENTER("gemm", "transA:", transA, "transB:", transB, "m:", m, "n:", n, "k:", k,
                     "shiftA:", shiftA, "inca:", inca, "lda:", lda, "shiftB:", shiftB, "incb:", incb,
@@ -317,28 +318,28 @@ rocblas_status rocsolver_gemm(rocblas_handle handle,
 *************************************************************/
 
 template <typename T, typename I, typename U1, typename U2, typename U3>
-inline rocblas_status rocsolver_gemm(rocblas_handle handle,
-                                     rocblas_operation transA,
-                                     rocblas_operation transB,
-                                     I m,
-                                     I n,
-                                     I k,
-                                     const T* alpha,
-                                     U1 A,
-                                     rocblas_stride shiftA,
-                                     I lda,
-                                     rocblas_stride strideA,
-                                     U2 B,
-                                     rocblas_stride shiftB,
-                                     I ldb,
-                                     rocblas_stride strideB,
-                                     const T* beta,
-                                     U3 C,
-                                     rocblas_stride shiftC,
-                                     I ldc,
-                                     rocblas_stride strideC,
-                                     I batch_count,
-                                     T** work)
+ROCSOLVER_EXPORT inline rocblas_status rocsolver_gemm(rocblas_handle handle,
+                                                      rocblas_operation transA,
+                                                      rocblas_operation transB,
+                                                      I m,
+                                                      I n,
+                                                      I k,
+                                                      const T* alpha,
+                                                      U1 A,
+                                                      rocblas_stride shiftA,
+                                                      I lda,
+                                                      rocblas_stride strideA,
+                                                      U2 B,
+                                                      rocblas_stride shiftB,
+                                                      I ldb,
+                                                      rocblas_stride strideB,
+                                                      const T* beta,
+                                                      U3 C,
+                                                      rocblas_stride shiftC,
+                                                      I ldc,
+                                                      rocblas_stride strideC,
+                                                      I batch_count,
+                                                      T** work)
 {
     return rocsolver_gemm<T, I>(handle, transA, transB, m, n, k, alpha, A, shiftA, 1, lda, strideA,
                                 B, shiftB, 1, ldb, strideB, beta, C, shiftC, 1, ldc, strideC,
@@ -350,7 +351,7 @@ inline rocblas_status rocsolver_gemm(rocblas_handle handle,
 *************************************************************/
 
 #define INSTANTIATE_GEMM(T, I, U1, U2, U3)                                                        \
-    template rocblas_status rocsolver_gemm<T, I, U1, U2, U3>(                                     \
+    template ROCSOLVER_EXPORT rocblas_status rocsolver_gemm<T, I, U1, U2, U3>(                    \
         rocblas_handle handle, rocblas_operation transA, rocblas_operation transB, I m, I n, I k, \
         const T* alpha, U1 A, rocblas_stride shiftA, I lda, rocblas_stride strideA, U2 B,         \
         rocblas_stride shiftB, I ldb, rocblas_stride strideB, const T* beta, U3 C,                \

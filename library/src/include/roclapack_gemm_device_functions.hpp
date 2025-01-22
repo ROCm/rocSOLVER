@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,7 @@
 
 #pragma once
 
-#include "rocblas.hpp"
-#include "rocsolver/rocsolver.h"
+#include "rocblas_utility.hpp"
 
 #if defined(__gfx90a__) || defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)
 #define ROCSOLVER_MFMA_ENABLED 1
@@ -152,7 +151,7 @@ __device__ inline I get_c_row(I li, I lj, I gpri, I inc_C, I ldc)
     Where C is an m x n matrix, A is an m x p matrix, and B is an
     p x n matrix. This is a wave function, every lane of the wave
     must perform call this function.
-    
+
     transA      form of op(A).
     transB      form of op(B).
     m           number of rows of matrix C.
@@ -171,7 +170,7 @@ __device__ inline I get_c_row(I li, I lj, I gpri, I inc_C, I ldc)
     C           pointer to matrix C.
     inc_C       stride from the start of one row to the next of matrix C.
     ldc         leading dimension of C.
-    
+
 **/
 // Run with warpSize sized block
 template <typename T, typename I>
@@ -253,10 +252,12 @@ __device__ void gemm_16x16xp(rocblas_operation transA,
         }
 
         if constexpr(rocblas_is_complex<T>)
+        {
             if(transA == rocblas_operation_conjugate_transpose)
                 amk = conj(amk);
-        if(transB == rocblas_operation_conjugate_transpose)
-            bkn = conj(bkn);
+            if(transB == rocblas_operation_conjugate_transpose)
+                bkn = conj(bkn);
+        }
 
         dmn = mfma_16x16x4<T>()(amk, bkn, dmn);
     }

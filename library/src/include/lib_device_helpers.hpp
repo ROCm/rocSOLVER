@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -117,23 +117,6 @@ __device__ void scale_tridiag(const rocblas_int start, const rocblas_int end, T*
         D[i] *= scale;
         E[i] *= scale;
     }
-}
-
-template <typename T, typename I, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-__device__ T shfl(T val, I src)
-{
-    return __shfl(val, src);
-}
-
-template <typename T, typename I, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-__device__ T shfl(T val, I src)
-{
-    using S = decltype(std::real(T{}));
-
-    auto r = __shfl(val.real(), src);
-    auto i = __shfl(val.imag(), src);
-
-    return rocblas_complex_num<S>(r, i);
 }
 
 // **********************************************************
