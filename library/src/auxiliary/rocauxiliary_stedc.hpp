@@ -2408,7 +2408,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         // the actual number of levels in the split block. We should explore if synchronizing
         // to copy back the actual number of levels makes any difference.
         // TODO: the code computing the context of the level (first part of each kernel) could be
-        // resused.
+        // reused.
         for(rocblas_int k = 0; k < maxlevs; ++k)
         {
             // a. prepare secular equations
@@ -2482,7 +2482,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count,
                                 splits_map);
 
-    rocblas_set_pointer_mode(handle, old_mode);
+        rocblas_set_pointer_mode(handle, old_mode);
     }
 
     return rocblas_status_success;
