@@ -2344,7 +2344,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     {
         // initialize temporary array for vector updates
         size_t size_tempgemm = sizeof(S) * 2 * n * n * batch_count;
-        HIP_CHECK(hipMemsetAsync((void*)tempgemm, 0, size_tempgemm, stream));        
+        HIP_CHECK(hipMemsetAsync((void*)tempgemm, 0, size_tempgemm, stream));
 
         // everything must be executed with scalars on the host
         rocblas_pointer_mode old_mode;
@@ -2360,7 +2360,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         ssfmin = sqrt(ssfmin) / (eps * eps);
         ssfmax = sqrt(ssfmax) / S(3.0);
         rocblas_int blocksn = (n - 1) / BS2 + 1;
-        
+
         // find max number of sub-blocks to consider during the divide phase
         rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
         rocblas_int maxblks = 1 << maxlevs;
