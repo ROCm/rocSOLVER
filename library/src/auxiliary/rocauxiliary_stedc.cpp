@@ -94,13 +94,6 @@ rocblas_status rocsolver_stedc_impl(rocblas_handle handle,
     splits_map = mem[4];
     workArr = mem[5];
 
-    if(size_tempgemm > 0)
-    {
-        hipStream_t stream;
-        rocblas_get_stream(handle, &stream);
-        HIP_CHECK(hipMemsetAsync((void*)tempgemm, 0, size_tempgemm, stream));
-    }
-
     // execution
     return rocsolver_stedc_template<false, false, T>(
         handle, evect, n, D, shiftD, strideD, E, shiftE, strideE, C, shiftC, ldc, strideC, info,

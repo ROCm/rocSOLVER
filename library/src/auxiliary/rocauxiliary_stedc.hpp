@@ -2342,6 +2342,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     // otherwise use divide and conquer algorithm:
     else
     {
+        // initialize temporary array for vector updates
+        size_t size_tempgemm = sizeof(S) * 2 * n * n * batch_count;
+        HIP_CHECK(hipMemsetAsync((void*)tempgemm, 0, size_tempgemm, stream));        
+
         // everything must be executed with scalars on the host
         rocblas_pointer_mode old_mode;
         rocblas_get_pointer_mode(handle, &old_mode);
@@ -2356,6 +2360,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         ssfmin = sqrt(ssfmin) / (eps * eps);
         ssfmax = sqrt(ssfmax) / S(3.0);
         rocblas_int blocksn = (n - 1) / BS2 + 1;
+        
+        // find max number of sub-blocks to consider during the divide phase
+        rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
+        rocblas_int maxblks = 1 << maxlevs;
 
         // initialize identity matrix in V
         // if evect is tridiagonal we can store V directly in C
@@ -2371,10 +2379,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         }
         ROCSOLVER_LAUNCH_KERNEL(init_ident<S>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2),
                                 0, stream, n, n, V, 0, ldv, strideV);
-
-        // find max number of sub-blocks to consider during the divide phase
-        rocblas_int maxlevs = stedc_num_levels<rocsolver_stedc_mode_qr>(n);
-        rocblas_int maxblks = 1 << maxlevs;
 
         // find independent split blocks in matrix
         ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
