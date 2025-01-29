@@ -39,6 +39,10 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 #define MAXSWEEPS 20 // Max number of sweeps for Jacobi solver (when used)
 
+// TODO: using macro STEDCJ_EXTERNAL_GEMM = false for now. We can enable the use of
+// external gemm updates once the development is completed for stedc.
+#define STEDCJ_EXTERNAL_GEMM false
+
 /***************** Device auxiliary functions *****************************************/
 /**************************************************************************************/
 
@@ -450,7 +454,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                 eps, ssfmin, ssfmax);
 
         // c. find merged eigen vectors
-        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_jacobi, S>),
+        ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_jacobi, STEDCJ_EXTERNAL_GEMM, S>),
                                 dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize3, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
                                 strideT, tmpz, tempgemm, splits_map);
