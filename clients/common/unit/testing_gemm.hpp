@@ -215,6 +215,7 @@ void testing_gemm(Arguments& argus)
 {
     // get arguments
     rocblas_local_handle handle;
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
     I m = argus.get<I>("m");
     I n = argus.get<I>("n");
     I k = argus.get<I>("k");
