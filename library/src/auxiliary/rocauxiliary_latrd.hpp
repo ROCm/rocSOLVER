@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,6 +38,8 @@
 #include "rocsolver/rocsolver.h"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
+#include "../auxiliary/rocauxiliary_latrd_coop.hpp"
 
 template <bool BATCHED, typename T>
 void rocsolver_latrd_getMemorySize(const rocblas_int n,
@@ -122,27 +124,27 @@ rocblas_status rocsolver_latrd_argCheck(rocblas_handle handle,
 }
 
 template <typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
-rocblas_status rocsolver_latrd_template(rocblas_handle handle,
-                                        const rocblas_fill uplo,
-                                        const rocblas_int n,
-                                        const rocblas_int k,
-                                        U A,
-                                        const rocblas_int shiftA,
-                                        const rocblas_int lda,
-                                        const rocblas_stride strideA,
-                                        S* E,
-                                        const rocblas_stride strideE,
-                                        T* tau,
-                                        const rocblas_stride strideP,
-                                        T* W,
-                                        const rocblas_int shiftW,
-                                        const rocblas_int ldw,
-                                        const rocblas_stride strideW,
-                                        const rocblas_int batch_count,
-                                        T* scalars,
-                                        T* work,
-                                        T* norms,
-                                        T** workArr)
+rocblas_status rocsolver_latrd_org_template(rocblas_handle handle,
+                                            const rocblas_fill uplo,
+                                            const rocblas_int n,
+                                            const rocblas_int k,
+                                            U A,
+                                            const rocblas_int shiftA,
+                                            const rocblas_int lda,
+                                            const rocblas_stride strideA,
+                                            S* E,
+                                            const rocblas_stride strideE,
+                                            T* tau,
+                                            const rocblas_stride strideP,
+                                            T* W,
+                                            const rocblas_int shiftW,
+                                            const rocblas_int ldw,
+                                            const rocblas_stride strideW,
+                                            const rocblas_int batch_count,
+                                            T* scalars,
+                                            T* work,
+                                            T* norms,
+                                            T** workArr)
 {
     ROCSOLVER_ENTER("latrd", "uplo:", uplo, "n:", n, "k:", k, "shiftA:", shiftA, "lda:", lda,
                     "shiftW:", shiftW, "ldw:", ldw, "bc:", batch_count);
@@ -350,6 +352,49 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
+}
+
+template <typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
+rocblas_status rocsolver_latrd_template(rocblas_handle handle,
+                                        const rocblas_fill uplo,
+                                        const rocblas_int n,
+                                        const rocblas_int k,
+                                        U A,
+                                        const rocblas_int shiftA,
+                                        const rocblas_int lda,
+                                        const rocblas_stride strideA,
+                                        S* E,
+                                        const rocblas_stride strideE,
+                                        T* tau,
+                                        const rocblas_stride strideP,
+                                        T* W,
+                                        const rocblas_int shiftW,
+                                        const rocblas_int ldw,
+                                        const rocblas_stride strideW,
+                                        const rocblas_int batch_count,
+                                        T* scalars,
+                                        T* work,
+                                        T* norms,
+                                        T** workArr)
+{
+    bool constexpr is_complex = rocblas_is_complex<T>;
+    bool constexpr use_latrd_coop = !is_complex;
+    rocblas_status istat = rocblas_status_success;
+
+    if constexpr(use_latrd_coop)
+    {
+        istat = rocsolver_latrd_coop_template(handle, uplo, n, k, A, shiftA, lda, strideA, E,
+                                              strideE, tau, strideP, W, shiftW, ldw, strideW,
+                                              batch_count, scalars, work, norms, workArr);
+    }
+    else
+    {
+        istat = rocsolver_latrd_org_template(handle, uplo, n, k, A, shiftA, lda, strideA, E,
+                                             strideE, tau, strideP, W, shiftW, ldw, strideW,
+                                             batch_count, scalars, work, norms, workArr);
+    }
+
+    return (istat);
 }
 
 ROCSOLVER_END_NAMESPACE
