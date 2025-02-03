@@ -328,7 +328,7 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
         *size_workArr = sizeof(S*) * batch_count;
     else
         *size_workArr = 0;
-    *size_work_stack = max(s1, s2);
+    *size_work_stack = std::max(s1, s2);
 
     // size for split blocks and sub-blocks positions
     *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
@@ -430,7 +430,7 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
 
     // 3. merge phase
     //----------------
-    size_t lmemsize1 = sizeof(S) * maxblks;
+    size_t lmemsize1 = sizeof(S) * 2 * STEDC_BDIM;
     size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
     rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
 
@@ -441,13 +441,13 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     for(rocblas_int k = 0; k < maxlevs; ++k)
     {
         // a. prepare secular equations
+        rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
         ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_jacobi, S>),
-                                dim3(1, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(maxblks),
+                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize1, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
-                                strideT, tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
+                                strideT, tmpz, tempgemm, splits_map, eps);
 
         // b. solve to find merged eigen values
-        rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
         ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_jacobi, S>),
                                 dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 0, stream, k, n, D, strideD, E, strideE, tmpz, tempgemm, splits_map,
@@ -457,13 +457,13 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
         ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_jacobi, STEDCJ_EXTERNAL_GEMM, S>),
                                 dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize3, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
-                                strideT, tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
+                                strideT, tmpz, tempgemm, splits_map);
 
         // c. update level
         ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_jacobi, S>),
                                 dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM),
                                 lmemsize3, stream, k, n, D, strideD, tempvect, 0, ldt, strideT,
-                                tmpz, tempgemm, splits_map, eps, ssfmin, ssfmax);
+                                tmpz, tempgemm, splits_map);
     }
 
     // 4. update and sort
