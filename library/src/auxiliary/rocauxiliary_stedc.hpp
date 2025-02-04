@@ -2083,9 +2083,9 @@ void local_gemm(rocblas_handle handle,
                 S* B,
                 S* temp,
                 S* work,
-                const rocblas_int shiftT,
-                const rocblas_int ldt,
-                const rocblas_stride strideT,
+                const rocblas_int shiftV,
+                const rocblas_int ldv,
+                const rocblas_stride strideV,
                 const rocblas_int batch_count,
                 S** workArr)
 {
@@ -2095,7 +2095,7 @@ void local_gemm(rocblas_handle handle,
     // Execute A*B -> temp -> A
     // temp = A*B
     rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A, shiftA,
-                   lda, strideA, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT,
+                   lda, strideA, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
                    batch_count, workArr);
 
     // A = temp
@@ -2121,9 +2121,9 @@ void local_gemm(rocblas_handle handle,
                 S* B,
                 S* temp,
                 S* work,
-                const rocblas_int shiftT,
-                const rocblas_int ldt,
-                const rocblas_stride strideT,
+                const rocblas_int shiftV,
+                const rocblas_int ldv,
+                const rocblas_stride strideV,
                 const rocblas_int batch_count,
                 S** workArr)
 {
@@ -2136,28 +2136,26 @@ void local_gemm(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
     rocblas_int blocks = (n - 1) / BS2 + 1;
-    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count),
-                            dim3(BS2, BS2), 0, stream, copymat_to_buffer, n, n, A, shiftA, lda,
-                            strideA, work, rocblas_fill_full);
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(BS2, BS2),
+                            0, stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, work);
 
     // temp = work*B
     rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
-                   shiftT, ldt, strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT,
+                   shiftV, ldv, strideV, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
                    batch_count, workArr);
 
     // real(A) = temp
-    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count),
-                            dim3(BS2, BS2), 0, stream, copymat_from_buffer, n, n, A, shiftA, lda,
-                            strideA, temp, rocblas_fill_full);
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(BS2, BS2),
+                            0, stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp);
 
     // work = imag(A)
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count),
                             dim3(BS2, BS2), 0, stream, copymat_to_buffer, n, n, A, shiftA, lda,
-                            strideA, work, rocblas_fill_full);
+                            strideA, work);
 
     // temp = work*B
     rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
-                   shiftT, ldt, strideT, B, shiftT, ldt, strideT, &zero, temp, shiftT, ldt, strideT,
+                   shiftV, ldv, strideV, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
                    batch_count, workArr);
 
     // imag(A) = temp
@@ -2218,23 +2216,19 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     // otherwise use divide and conquer algorithm:
     else
     {
-        size_t s1, s2;
-
         // requirements for solver of small independent blocks
-        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &s1);
+        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
 
         // extra requirements for original eigenvectors of small independent blocks
-        *size_tempvect = (n * n) * batch_count * sizeof(S);
-        *size_tempgemm = 2 * (n * n) * batch_count * sizeof(S);
-        if(COMPLEX)
-            s2 = n * n * batch_count * sizeof(S);
+        if(evect != rocblas_evect_tridiagonal)
+            *size_tempvect = sizeof(S) * (n * n) * batch_count;
         else
-            s2 = 0;
+            *size_tempvect = 0;
+        *size_tempgemm = sizeof(S) * 2 * (n * n) * batch_count;
         if(BATCHED && !COMPLEX)
             *size_workArr = sizeof(S*) * batch_count;
         else
             *size_workArr = 0;
-        *size_work_stack = std::max(s1, s2);
 
         // size for split blocks and sub-blocks positions
         *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
@@ -2400,8 +2394,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         //-----------------------------
         ROCSOLVER_LAUNCH_KERNEL((stedc_solve_kernel<S>),
                                 dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(1), 0,
-                                stream, n, D + shiftD, strideD, E + shiftE, strideE, tempvect, 0,
-                                ldt, strideT, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
+                                stream, n, D + shiftD, strideD, E + shiftE, strideE, V, 0, ldv,
+                                strideV, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
 
         // 3. merge phase
         //----------------
@@ -2422,8 +2416,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize1, stream, k, n, D + shiftD, strideD,
-                                    E + shiftE, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm,
-                                    splits, eps);
+                                    E + shiftE, strideE, V, 0, ldv, strideV, tmpz, tempgemm, splits,
+                                    eps);
 
             // b. solve to find merged eigen values
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_qr, S>),
@@ -2435,8 +2429,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, STEDC_EXTERNAL_GEMM, S>),
                                     dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
-                                    E + shiftE, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm,
-                                    splits);
+                                    E + shiftE, strideE, V, 0, ldv, strideV, tmpz, tempgemm, splits);
 
             if(STEDC_EXTERNAL_GEMM)
             {
@@ -2454,15 +2447,34 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
-                                    tempvect, 0, ldt, strideT, tmpz, tempgemm, splits);
+                                    V, 0, ldv, strideV, tmpz, tempgemm, splits);
         }
 
         // 4. update and sort
         //----------------------
-        // eigenvectors C <- C*tempvect
-        local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, tempvect, tempgemm,
-                                        static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
-                                        workArr);
+        if(evect != rocblas_evect_tridiagonal)
+        {
+            // eigenvectors C <- C*V
+            local_gemm<BATCHED, STRIDED, T>(handle, n, C, shiftC, ldc, strideC, V, tempgemm,
+                                            tempgemm + strideV, 0, ldv, strideV, batch_count,
+                                            workArr);
+        }
+        else if constexpr(rocblas_is_complex<T>)
+        {
+            // V is stored in C but is of type S; need to convert to type T
+            // tempgemm = V
+            ROCSOLVER_LAUNCH_KERNEL(copy_mat<S>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2),
+                                    0, stream, copymat_to_buffer, n, n, V, 0, ldv, strideV, tempgemm);
+
+            // imag(C) = zeros
+            ROCSOLVER_LAUNCH_KERNEL(set_zero<T>, dim3(blocksn, blocksn, batch_count),
+                                    dim3(BS2, BS2), 0, stream, n, n, C, shiftC, ldc, strideC);
+
+            // real(C) = tempgemm
+            ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocksn, blocksn, batch_count),
+                                    dim3(BS2, BS2), 0, stream, copymat_from_buffer, n, n, C, shiftC,
+                                    ldc, strideC, tempgemm);
+        }
 
         // finally sort eigenvalues and eigenvectors
         auto const nblocks = batch_count;
