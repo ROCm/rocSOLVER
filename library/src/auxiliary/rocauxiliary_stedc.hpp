@@ -2094,7 +2094,7 @@ void local_gemm(rocblas_handle handle,
 
     // Execute A*B -> temp -> A
     // temp = A*B
-    rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A, shiftA,
+    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A, shiftA,
                    lda, strideA, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
                    batch_count, workArr);
 
@@ -2140,7 +2140,7 @@ void local_gemm(rocblas_handle handle,
                             0, stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, work);
 
     // temp = work*B
-    rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
                    shiftV, ldv, strideV, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
                    batch_count, workArr);
 
@@ -2154,7 +2154,7 @@ void local_gemm(rocblas_handle handle,
                             strideA, work);
 
     // temp = work*B
-    rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+    rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
                    shiftV, ldv, strideV, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
                    batch_count, workArr);
 
@@ -2438,7 +2438,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // TODO: using macro STEDC_EXTERNAL_GEMM = true for now. In the future we can pass
                 // STEDC_EXTERNAL_GEMM at run time to switch between internal vector updates and
                 // external gemm based updates.
-                rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n,
+                rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n,
                     &one, V, 0, ldv, strideV, tempgemm, n*n, n, 2*n*n, &zero, tempgemm, 0, n, 2*n*n,
                     batch_count, workArr);
             }
