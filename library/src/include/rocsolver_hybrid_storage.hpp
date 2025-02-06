@@ -31,6 +31,12 @@
 #include "lib_host_helpers.hpp"
 #include "rocsolver/rocsolver.h"
 
+#ifdef _WIN32
+#include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
+
 ROCSOLVER_BEGIN_NAMESPACE
 
 /* ROCSOLVER_HYBRID_STORAGE provides a wrapper for data arrays that is intended to simplify host memory
@@ -82,12 +88,20 @@ struct rocsolver_hybrid_storage
         if(val_array)
         {
             memset(val_array, 0, sizeof(T) * this->dim * this->batch_count);
+#ifdef _WIN32
+            _aligned_free(val_array);
+#else
             free(val_array);
+#endif
         }
         if(batch_array && (val_array || this->dim < 0))
         {
             memset(batch_array, 0, sizeof(T*) * this->batch_count);
+#ifdef _WIN32
+            _aligned_free(batch_array);
+#else
             free(batch_array);
+#endif
         }
     }
 
@@ -98,13 +112,21 @@ struct rocsolver_hybrid_storage
         if(val_array)
         {
             memset(val_array, 0, sizeof(T) * this->dim * this->batch_count);
+#ifdef _WIN32
+            _aligned_free(val_array);
+#else
             free(val_array);
+#endif
             val_array = nullptr;
         }
         if(batch_array && (val_array || this->dim < 0))
         {
             memset(batch_array, 0, sizeof(T*) * this->batch_count);
+#ifdef _WIN32
+            _aligned_free(batch_array);
+#else
             free(batch_array);
+#endif
             batch_array = nullptr;
         }
 
@@ -124,9 +146,14 @@ struct rocsolver_hybrid_storage
             {
                 // data is batched; read device pointers into batch_array
                 size_t batch_bytes = sizeof(T*) * batch_count;
-                batch_array = (T**)malloc(batch_bytes);
+#ifdef _WIN32
+                batch_array = (T**)_aligned_malloc(batch_bytes, sizeof(void*));
                 if(!batch_array)
                     return rocblas_status_memory_error;
+#else
+                if(posix_memalign((void**)&batch_array, sizeof(void*), batch_bytes) != 0)
+                    return rocblas_status_memory_error;
+#endif
                 memset(batch_array, 0, batch_bytes);
                 HIP_CHECK(
                     hipMemcpyAsync(batch_array, array, batch_bytes, hipMemcpyDeviceToHost, stream));
@@ -150,13 +177,21 @@ struct rocsolver_hybrid_storage
         if(val_array)
         {
             memset(val_array, 0, sizeof(T) * this->dim * this->batch_count);
+#ifdef _WIN32
+            _aligned_free(val_array);
+#else
             free(val_array);
+#endif
             val_array = nullptr;
         }
         if(batch_array && (val_array || this->dim < 0))
         {
             memset(batch_array, 0, sizeof(T*) * this->batch_count);
+#ifdef _WIN32
+            _aligned_free(batch_array);
+#else
             free(batch_array);
+#endif
             batch_array = nullptr;
         }
 
@@ -184,9 +219,14 @@ struct rocsolver_hybrid_storage
             // allocate space on host for data from device
             size_t dim_bytes = sizeof(T) * dim;
             size_t val_bytes = sizeof(T) * dim * batch_count;
-            val_array = (T*)malloc(val_bytes);
+#ifdef _WIN32
+            val_array = (T**)_aligned_malloc(val_bytes, sizeof(void*));
             if(!val_array)
                 return rocblas_status_memory_error;
+#else
+            if(posix_memalign((void**)&val_array, sizeof(void*), val_bytes) != 0)
+                return rocblas_status_memory_error;
+#endif
             memset(val_array, 0, val_bytes);
 
             if(is_strided)
@@ -212,9 +252,14 @@ struct rocsolver_hybrid_storage
             {
                 // data is batched; read device pointers into batch_array
                 size_t batch_bytes = sizeof(T*) * batch_count;
-                batch_array = (T**)malloc(batch_bytes);
+#ifdef _WIN32
+                batch_array = (T**)_aligned_malloc(batch_bytes, sizeof(void*));
                 if(!batch_array)
                     return rocblas_status_memory_error;
+#else
+                if(posix_memalign((void**)&batch_array, sizeof(void*), batch_bytes) != 0)
+                    return rocblas_status_memory_error;
+#endif
                 memset(batch_array, 0, batch_bytes);
                 HIP_CHECK(
                     hipMemcpyAsync(batch_array, array, batch_bytes, hipMemcpyDeviceToHost, stream));
