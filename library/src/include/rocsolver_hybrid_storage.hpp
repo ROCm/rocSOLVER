@@ -33,8 +33,8 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-/* ROCSOLVER_HYBRID_ARRAY provides a wrapper for data arrays that is intended to simplify host memory
-   allocation as well as data transfers to and from the device. Hybrid algorithms can use rocsolver_hybrid_array
+/* ROCSOLVER_HYBRID_STORAGE provides a wrapper for data arrays that is intended to simplify host memory
+   allocation as well as data transfers to and from the device. Hybrid algorithms can use rocsolver_hybrid_storage
    to read device data to the host so that the data may be operated upon, and then write the resultant data
    back to the device. Two modes are supported:
 
@@ -47,8 +47,13 @@ ROCSOLVER_BEGIN_NAMESPACE
      kernels may be called on each individual batch instance. A typical workflow will call init_pointers_only
      to allocate a host buffer for the device pointers, and then execute device kernels on the pointers
      provided by the [] operator. */
-template <typename T, typename I, typename U>
-struct rocsolver_hybrid_array
+template <typename T,
+          typename I,
+          typename U,
+          std::enable_if_t<std::is_trivial<T>::value && std::is_standard_layout<T>::value
+                               && !std::is_pointer<T>::value,
+                           int> = 0>
+struct rocsolver_hybrid_storage
 {
     I dim, batch_count;
     rocblas_stride stride;
@@ -58,7 +63,7 @@ struct rocsolver_hybrid_array
     T* val_array;
 
     /* Constructor */
-    rocsolver_hybrid_array()
+    rocsolver_hybrid_storage()
         : src_array(nullptr)
         , batch_array(nullptr)
         , val_array(nullptr)
@@ -66,18 +71,24 @@ struct rocsolver_hybrid_array
     }
 
     /* Disallow copying. */
-    rocsolver_hybrid_array(const rocsolver_hybrid_array&) = delete;
+    rocsolver_hybrid_storage(const rocsolver_hybrid_storage&) = delete;
 
     /* Disallow assigning. */
-    rocsolver_hybrid_array& operator=(const rocsolver_hybrid_array&) = delete;
+    rocsolver_hybrid_storage& operator=(const rocsolver_hybrid_storage&) = delete;
 
     /* Destructor */
-    ~rocsolver_hybrid_array()
+    ~rocsolver_hybrid_storage()
     {
         if(val_array)
+        {
+            memset(val_array, 0, sizeof(T) * this->dim * this->batch_count);
             free(val_array);
+        }
         if(batch_array && (val_array || this->dim < 0))
+        {
+            memset(batch_array, 0, sizeof(T*) * this->batch_count);
             free(batch_array);
+        }
     }
 
     /* Used to read device pointers from a batched array for use on the host; no other data is read from the
@@ -85,9 +96,17 @@ struct rocsolver_hybrid_array
     rocblas_status init_pointers_only(U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
+        {
+            memset(val_array, 0, sizeof(T) * this->dim * this->batch_count);
             free(val_array);
+            val_array = nullptr;
+        }
         if(batch_array && (val_array || this->dim < 0))
+        {
+            memset(batch_array, 0, sizeof(T*) * this->batch_count);
             free(batch_array);
+            batch_array = nullptr;
+        }
 
         this->dim = -1;
         this->src_array = array;
@@ -100,18 +119,15 @@ struct rocsolver_hybrid_array
         if(is_device)
         {
             // pointers only; don't allocate val_array
-            val_array = nullptr;
 
-            if(is_strided)
-            {
-                // data is strided; batch_array not needed
-                batch_array = nullptr;
-            }
-            else
+            if(!is_strided)
             {
                 // data is batched; read device pointers into batch_array
                 size_t batch_bytes = sizeof(T*) * batch_count;
                 batch_array = (T**)malloc(batch_bytes);
+                if(!batch_array)
+                    return rocblas_status_memory_error;
+                memset(batch_array, 0, batch_bytes);
                 HIP_CHECK(
                     hipMemcpyAsync(batch_array, array, batch_bytes, hipMemcpyDeviceToHost, stream));
                 HIP_CHECK(hipStreamSynchronize(stream));
@@ -120,11 +136,8 @@ struct rocsolver_hybrid_array
         else
         {
             // data on host; use src_array directly
-            val_array = nullptr;
 
-            if(is_strided)
-                batch_array = nullptr;
-            else
+            if(!is_strided)
                 batch_array = (T**)src_array;
         }
 
@@ -135,12 +148,28 @@ struct rocsolver_hybrid_array
     rocblas_status init_async(I dim, U array, rocblas_stride stride, I batch_count, hipStream_t stream)
     {
         if(val_array)
+        {
+            memset(val_array, 0, sizeof(T) * this->dim * this->batch_count);
             free(val_array);
+            val_array = nullptr;
+        }
         if(batch_array && (val_array || this->dim < 0))
+        {
+            memset(batch_array, 0, sizeof(T*) * this->batch_count);
             free(batch_array);
+            batch_array = nullptr;
+        }
 
         if(dim < 0)
             return rocblas_status_internal_error;
+        if(dim == 0)
+        {
+            this->dim = 0;
+            this->src_array = 0;
+            this->stride = 0;
+            this->batch_count = 0;
+            return rocblas_status_success;
+        }
 
         this->dim = dim;
         this->src_array = array;
@@ -156,11 +185,13 @@ struct rocsolver_hybrid_array
             size_t dim_bytes = sizeof(T) * dim;
             size_t val_bytes = sizeof(T) * dim * batch_count;
             val_array = (T*)malloc(val_bytes);
+            if(!val_array)
+                return rocblas_status_memory_error;
+            memset(val_array, 0, val_bytes);
 
             if(is_strided)
             {
                 // data is strided; batch_array not needed
-                batch_array = nullptr;
 
                 // read data to val_array
                 if(batch_count == 1 || stride == dim)
@@ -182,6 +213,9 @@ struct rocsolver_hybrid_array
                 // data is batched; read device pointers into batch_array
                 size_t batch_bytes = sizeof(T*) * batch_count;
                 batch_array = (T**)malloc(batch_bytes);
+                if(!batch_array)
+                    return rocblas_status_memory_error;
+                memset(batch_array, 0, batch_bytes);
                 HIP_CHECK(
                     hipMemcpyAsync(batch_array, array, batch_bytes, hipMemcpyDeviceToHost, stream));
                 HIP_CHECK(hipStreamSynchronize(stream));
@@ -197,11 +231,8 @@ struct rocsolver_hybrid_array
         else
         {
             // data on host; use src_array directly
-            val_array = nullptr;
 
-            if(is_strided)
-                batch_array = nullptr;
-            else
+            if(!is_strided)
                 batch_array = (T**)src_array;
         }
 
@@ -215,6 +246,8 @@ struct rocsolver_hybrid_array
             return rocblas_status_internal_error;
         if(dim < 0)
             return rocblas_status_internal_error;
+        if(dim == 0)
+            return rocblas_status_success;
 
         if(val_array)
         {

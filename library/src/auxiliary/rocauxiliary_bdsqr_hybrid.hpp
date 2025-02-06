@@ -5,7 +5,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@
 
 #include "lapack_host_functions.hpp"
 #include "rocauxiliary_lasr.hpp"
-#include "rocsolver_hybrid_array.hpp"
+#include "rocsolver_hybrid_storage.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -1365,12 +1365,12 @@ rocblas_status rocsolver_bdsqr_host_batch_template(rocblas_handle handle,
     // -----------------------------------
     // transfer arrays from device to host
     // -----------------------------------
-    rocsolver_hybrid_array<S, I, S*> hD;
-    rocsolver_hybrid_array<S, I, S*> hE;
-    rocsolver_hybrid_array<T, I, W1> hV;
-    rocsolver_hybrid_array<T, I, W2> hU;
-    rocsolver_hybrid_array<T, I, W3> hC;
-    rocsolver_hybrid_array<I, I, I*> hInfo;
+    rocsolver_hybrid_storage<S, I, S*> hD;
+    rocsolver_hybrid_storage<S, I, S*> hE;
+    rocsolver_hybrid_storage<T, I, W1> hV;
+    rocsolver_hybrid_storage<T, I, W2> hU;
+    rocsolver_hybrid_storage<T, I, W3> hC;
+    rocsolver_hybrid_storage<I, I, I*> hInfo;
 
     ROCBLAS_CHECK(hD.init_async(n, D, strideD, batch_count, stream));
     ROCBLAS_CHECK(hE.init_async(n - 1, E, strideE, batch_count, stream));
