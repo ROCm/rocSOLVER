@@ -37,9 +37,9 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
-ROCSOLVER_BEGIN_NAMESPACE
-
 #include "../auxiliary/rocauxiliary_latrd_coop.hpp"
+
+ROCSOLVER_BEGIN_NAMESPACE
 
 template <bool BATCHED, typename T>
 void rocsolver_latrd_getMemorySize(const rocblas_int n,

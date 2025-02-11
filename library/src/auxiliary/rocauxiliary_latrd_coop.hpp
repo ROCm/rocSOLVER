@@ -33,18 +33,56 @@
 
 #pragma once
 
-#ifndef ROCSOLVER_LATRD_COOP_H
-#define ROCSOLVER_LATRD_COOP_H 1
-
 #include <algorithm>
 #include <cmath>
 #include <complex>
+#include <limits>
 
+#include "hip/hip_cooperative_groups.h"
 #include "hip/hip_runtime.h"
 #include "hip/hip_runtime_api.h"
 
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+
+ROCSOLVER_BEGIN_NAMESPACE
+
+namespace cg = cooperative_groups;
+
+template <typename T>
+__device__ T reduce_sum(cg::thread_group g, T* temp, T val)
+{
+    auto const lane = g.thread_rank();
+    g.sync();
+
+    // Each iteration halves the number of active threads
+    // Each thread adds its partial sum[i] to sum[lane+i]
+    for(auto i = g.size() / 2; i > 0; i /= 2)
+    {
+        temp[lane] = val;
+        g.sync(); // wait for all threads to store
+        if(lane < i)
+            val += temp[lane + i];
+        g.sync(); // wait for all threads to load
+    }
+    return val; // note: only thread 0 will return full sum
+}
+
+#if(0)
+template <typename T>
+__device__ int reduce_sum_shfl(cg::thread_block g, T const val)
+{
+    g.sync();
+    // Each iteration halves the number of active threads
+    // Each thread adds its partial sum[i] to sum[lane+i]
+    for(auto i = g.size() / 2; i > 0; i /= 2)
+    {
+        val += __shfl_down(val, i);
+        g.sync();
+    }
+    return val; // note: only thread 0 will return full sum
+}
+#endif
 
 static int get_num_cu(int deviceId = 0)
 {
@@ -114,7 +152,119 @@ static __device__ __host__ I first_tile(I const ia, I const mb, I const myprow, 
     I const jtile = (itile + ((myprow + nprow - iproc) % nprow));
 
     assert((jtile % nprow) == myprow);
+    if(iproc == myprow)
+    {
+        assert((itile * mb) <= ia);
+        assert(ia <= (itile * mb + (mb - 1)));
+    }
+    else
+    {
+        assert(ia < jtile * mb);
+    }
+
     return (jtile);
+}
+
+template <typename S>
+static __device__ __host__ S lamch(char const ctype)
+{
+    if((ctype == 'E') || (ctype == 'e'))
+    {
+        return (std::numeric_limits<S>::epsilon() / 2);
+    }
+    if((ctype == 'S') || (ctype == 's'))
+    {
+        return (std::numeric_limits<S>::min());
+    }
+    if((ctype == 'B') || (ctype == 'b'))
+    {
+        return (std::numeric_limits<S>::base());
+    }
+    if((ctype == 'P') || (ctype == 'p'))
+    {
+        S const eps = std::numeric_limits<S>::epsilon() / 2;
+        S const base = std::numeric_limits<S>::base();
+        return (eps * base);
+    }
+    if((ctype == 'O') || (ctype == 'o'))
+    {
+        return (std::numeric_limits<S>::max());
+    }
+    return (0);
+}
+
+// --------------------------------------------------------------
+// computes  sqrt( x^2 + y^2 + z^2 ) without unnecessary overflow
+// assume x, y, z are not complex types
+// --------------------------------------------------------------
+template <typename S>
+static __device__ S lapy3(S const x, S const y, S const z)
+{
+    assert(!rocblas_is_complex<S>);
+
+    auto square = [](auto d) { return (d * d); };
+
+    auto const xabs = std::abs(x);
+    auto const yabs = std::abs(y);
+    auto const zabs = std::abs(z);
+    auto const w = std::max(xabs, std::max(yabs, zabs));
+    auto const ans = (w == 0)
+        ? (xabs + yabs + zabs)
+        : w * std::sqrt(square(xabs / w) + square(yabs / w) + square(zabs / w));
+    return (ans);
+}
+
+// -------------------------------------------------------
+// computes sqrt( x^2 + y^2 ) without unnecessary overflow
+// assume x, y are not complex types
+// -------------------------------------------------------
+template <typename S>
+static __device__ S lapy2(S const x, S const y)
+{
+    S const one = 1;
+    S const zero = 0;
+    bool const x_is_nan = std::isnan(x);
+    bool const y_is_nan = std::isnan(y);
+    S dlapy2 = zero;
+    if(x_is_nan)
+    {
+        dlapy2 = x;
+    }
+    if(y_is_nan)
+    {
+        dlapy2 = y;
+    }
+
+    auto const hugeval = lamch<S>('O'); // overflow
+
+    auto square = [](auto d) { return (d * d); };
+
+    if(!(x_is_nan || y_is_nan))
+    {
+        auto const xabs = std::abs(x);
+        auto const yabs = std::abs(y);
+        auto const w = std::max(xabs, yabs);
+        auto const z = std::min(xabs, yabs);
+        if((z == zero) || (w > hugeval))
+        {
+            dlapy2 = w;
+        }
+        else
+        {
+            dlapy2 = w * std::sqrt(one + square(z / w));
+        }
+    }
+    return (dlapy2);
+}
+
+// ---------------------------------------
+// Fortran sign intrinsic
+// return  abs value of a times  sign of b
+// ---------------------------------------
+template <typename S>
+static __device__ S sign(S const a, S const b)
+{
+    return (std::abs(a) * ((b < 0) ? -1 : 1));
 }
 
 template <typename T, typename I>
@@ -134,7 +284,7 @@ __device__ void Xscale_body(I const n,
 
 {
     {
-        bool const has_work = (n >= 1) && (alpha != 1);
+        bool const has_work = (n >= 1);
         if(!has_work)
         {
             return;
@@ -154,8 +304,12 @@ __device__ void Xscale_body(I const n,
     // incx can only be 1 (column) or ldx (row)
     // ----------------------------------------
     bool const is_column_X = (incx == 1);
+    {
+        assert((incx == 1) || (incx == ldx));
+    }
 
-    auto X = [=](auto iix, auto jjx) -> T& { return (X_[idx2D(iix, jjx, ldx)]); };
+    auto const ip_X = idx2D(ix, jx, ldx);
+    auto Xvec = [=](auto i) -> T& { return (X_[ip_X + i * static_cast<int64_t>(incx)]); };
 
     if(is_column_X)
     {
@@ -164,6 +318,7 @@ __device__ void Xscale_body(I const n,
         I const tile_inc = nprow;
 
         I const ntiles = (tile_end - tile_start) / tile_inc;
+        assert((ntiles * tile_inc) == (tile_end - tile_start));
 
         for(auto it = (0 + tiy); it <= ntiles; it += ny)
         {
@@ -171,9 +326,19 @@ __device__ void Xscale_body(I const n,
             I const i_start = std::max(ix, tile * mb);
             I const i_end = std::min(ix + n - 1, tile * mb + (mb - 1));
 
-            for(auto i = (i_start + tix); i <= i_end; i += nx)
+            if(is_alpha_zero)
             {
-                X(i, jx) = (is_alpha_zero) ? zero : alpha * X(i, jx);
+                for(auto i = (i_start + tix); i <= i_end; i += nx)
+                {
+                    Xvec(i - ix) = zero;
+                }
+            }
+            else
+            {
+                for(auto i = (i_start + tix); i <= i_end; i += nx)
+                {
+                    Xvec(i - ix) *= alpha;
+                }
             }
         }
     }
@@ -184,6 +349,7 @@ __device__ void Xscale_body(I const n,
         auto const tile_inc = npcol;
 
         auto const ntiles = (tile_end - tile_start) / tile_inc;
+        assert((ntiles * tile_inc) == (tile_end - tile_start));
 
         for(auto it = (0 + tiy); it <= ntiles; it += ny)
         {
@@ -192,9 +358,19 @@ __device__ void Xscale_body(I const n,
             auto const j_start = std::max(jx, tile * nb);
             auto const j_end = std::min(jx + n - 1, tile * nb + (nb - 1));
 
-            for(auto j = (j_start + tix); j <= j_end; j += nx)
+            if(is_alpha_zero)
             {
-                X(ix, j) = (is_alpha_zero) ? zero : alpha * X(ix, j);
+                for(auto j = (j_start + tix); j <= j_end; j += nx)
+                {
+                    Xvec(j - jx) = zero;
+                }
+            }
+            else
+            {
+                for(auto j = (j_start + tix); j <= j_end; j += nx)
+                {
+                    Xvec(j - jx) *= alpha;
+                }
             }
         }
     }
@@ -227,6 +403,141 @@ static __global__ void Xscale_batch_kernel(I const n,
         auto const Xp = load_ptr_batch(X_, bid, shift_X, stride_X);
         Xscale_body(n, alpha, Xp, ix, jx, ldx, incx, mb, nb, myprow, mypcol, nprow, npcol);
     }
+}
+
+template <typename T, typename I>
+__device__ void Xlacgv_body(I const n,
+                            T* const X_,
+                            I const ix,
+                            I const jx,
+                            I const ldx,
+                            I const incx,
+                            I const mb,
+                            I const nb,
+                            I const myprow,
+                            I const mypcol,
+                            I const nprow,
+                            I const npcol)
+
+{
+    {
+        bool const has_work = (n >= 1);
+        if(!has_work)
+        {
+            return;
+        }
+    }
+
+    I const tix = hipThreadIdx_x;
+    I const tiy = hipThreadIdx_y;
+    I const nx = hipBlockDim_x;
+    I const ny = hipBlockDim_y;
+
+    auto idx2D = [](auto i, auto j, auto ld) { return (i + j * static_cast<int64_t>(ld)); };
+    // ----------------------------------------
+    // incx can only be 1 (column) or ldx (row)
+    // ----------------------------------------
+    bool const is_column_X = (incx == 1);
+    assert((incx == 1) || (incx == ldx));
+
+    auto const ip_X = idx2D(ix, jx, ldx);
+    auto Xvec = [=](auto i) -> T& { return (X_[ip_X + i * static_cast<int64_t>(incx)]); };
+
+    if(is_column_X)
+    {
+        I const tile_start = first_tile(ix, mb, myprow, nprow);
+        I const tile_end = first_tile(ix + n - 1, mb, myprow, nprow);
+        I const tile_inc = nprow;
+
+        I const ntiles = (tile_end - tile_start) / tile_inc;
+
+        for(auto it = (0 + tiy); it <= ntiles; it += ny)
+        {
+            I const tile = tile_start + it * tile_inc;
+            I const i_start = std::max(ix, tile * mb);
+            I const i_end = std::min(ix + n - 1, tile * mb + (mb - 1));
+
+            {
+                for(auto i = (i_start + tix); i <= i_end; i += nx)
+                {
+                    Xvec(i - ix) = conj(Xvec(i - ix));
+                }
+            }
+        }
+    }
+    else
+    {
+        auto const tile_start = first_tile(jx, nb, mypcol, npcol);
+        auto const tile_end = first_tile(jx + n - 1, nb, mypcol, npcol);
+        auto const tile_inc = npcol;
+
+        auto const ntiles = (tile_end - tile_start) / tile_inc;
+
+        for(auto it = (0 + tiy); it <= ntiles; it += ny)
+        {
+            auto const tile = tile_start + it * tile_inc;
+
+            auto const j_start = std::max(jx, tile * nb);
+            auto const j_end = std::min(jx + n - 1, tile * nb + (nb - 1));
+
+            {
+                for(auto j = (j_start + tix); j <= j_end; j += nx)
+                {
+                    Xvec(j - jx) = conj(Xvec(j - jx));
+                }
+            }
+        }
+    }
+}
+
+template <typename T, typename I, typename Istride, typename UX>
+static __global__ void Xlacgv_batch_kernel(I const n,
+                                           UX X_,
+                                           Istride const shift_X,
+                                           I const ix,
+                                           I const jx,
+                                           I const ldx,
+                                           I const incx,
+                                           Istride const stride_X,
+                                           I const batch_count,
+                                           I const mb,
+                                           I const nb)
+{
+    I const myprow = hipBlockIdx_x;
+    I const mypcol = hipBlockIdx_y;
+    I const nprow = hipGridDim_x;
+    I const npcol = hipGridDim_y;
+
+    for(I bid = 0; bid < batch_count; bid++)
+    {
+        auto const Xp = load_ptr_batch(X_, bid, shift_X, stride_X);
+        Xlacgv_body(n, Xp, ix, jx, ldx, incx, mb, nb, myprow, mypcol, nprow, npcol);
+    }
+}
+
+template <typename T, typename I, typename Istride, typename UX>
+static void rocsolverCall_lacgv_template(rocblas_handle handle,
+                                         I const n,
+                                         UX X_,
+                                         Istride const shiftX,
+                                         I const ix,
+                                         I const jx,
+                                         I const ldx,
+                                         I const incx,
+                                         Istride strideX,
+                                         I const batch_count,
+                                         I const mb,
+                                         I const nb)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    size_t const lds_size = 64 * 1024;
+    auto const NX = 32;
+    auto const NY = 32;
+    auto const num_cu = get_num_cu();
+
+    Xlacgv_batch_kernel<T, I, Istride><<<dim3(num_cu, 1, 1), dim3(NX, NY, 1), lds_size, stream>>>(
+        n, X_, shiftX, ix, jx, ldx, incx, strideX, batch_count, mb, nb);
 }
 
 // ----------------------
@@ -265,6 +576,19 @@ static __device__ void Xgemv_body(char const trans,
 {
     bool constexpr is_complex = rocblas_is_complex<T>;
 
+    {
+        bool const has_work = (m >= 1) && (n >= 1) && (alpha != 0);
+        if(!has_work)
+        {
+            return;
+        }
+    }
+
+    {
+        bool const is_valid_lda = (lda >= 1) && (lda >= m);
+        assert(is_valid_lda);
+    }
+
     I const tix = hipThreadIdx_x;
     I const tiy = hipThreadIdx_y;
     I const nx = hipBlockDim_x;
@@ -272,53 +596,95 @@ static __device__ void Xgemv_body(char const trans,
 
     bool const is_transpose = (trans == 'T') || (trans == 't');
     bool const is_conj_transpose = (trans == 'C') || (trans == 'c');
-    bool const is_no_transpose = (!is_transpose) && (!is_conj_transpose);
+    bool const is_no_transpose = (trans == 'N') || (trans == 'n');
+    {
+        bool const is_valid_trans = is_transpose || is_conj_transpose || is_no_transpose;
+        assert(is_valid_trans);
+    }
 
     bool const is_column_Y = (incy == 1);
     bool const is_column_X = (incx == 1);
 
+    {
+        bool const is_valid_incx = ((incx == 1) || (incx == ldx));
+        bool const is_valid_incy = ((incy == 1) || (incy == ldy));
+
+        assert(is_valid_incx);
+        assert(is_valid_incy);
+    }
+
     auto idx2D = [](auto i, auto j, auto ld) { return (i + j * static_cast<int64_t>(ld)); };
 
+    auto const ip_Y = idx2D(iy, jy, ldy);
     auto Yvec = [=](auto i) -> T& {
-        auto const iiy = (is_column_Y) ? iy + i : iy;
-        auto const jjy = (is_column_Y) ? jy : jy + i;
-        return (Y_[idx2D(iiy, jjy, ldy)]);
+        assert((0 <= i) && (i < ((is_no_transpose) ? m : n)));
+        return (Y_[ip_Y + i * static_cast<int64_t>(incy)]);
     };
 
+    auto const ip_X = idx2D(ix, jx, ldx);
     auto Xvec = [=](auto i) {
-        auto const iix = (is_column_X) ? ix + i : ix;
-        auto const jjx = (is_column_X) ? jx : jx + i;
-        return (X_[idx2D(iix, jjx, ldx)]);
+        assert((0 <= i) && (i < ((is_no_transpose) ? n : m)));
+        return (X_[ip_X + i * static_cast<int64_t>(incx)]);
     };
 
-    auto A = [=](auto i, auto j) { return (A_[idx2D(i, j, lda)]); };
+    auto A = [=](auto i, auto j) {
+        assert((ia <= i) && (i <= (ia + m - 1)));
+        assert((ja <= j) && (j <= (ja + n - 1)));
+        return (A_[idx2D(i, j, lda)]);
+    };
 
-    bool const need_atomic_update = (is_no_transpose) ? (npcol > 1) : (nprow > 1);
+    // bool const need_atomic_update = (is_no_transpose) ? (npcol > 1) : (nprow > 1);
+    bool const need_atomic_update = true;
 
     I const itileA_start = first_tile(ia, mb, myprow, nprow);
-    I const jtileA_start = first_tile(ja, nb, mypcol, npcol);
     I const itileA_end = first_tile(ia + m - 1, mb, myprow, nprow);
-    I const jtileA_end = first_tile(ja + n - 1, nb, mypcol, npcol);
     I const itile_inc = nprow;
-    I const jtile_inc = npcol;
 
-    extern __shared__ double lmem[];
-    T* const ytmp = (T*)&(lmem[0]);
+    I const jtileA_start = first_tile(ja, nb, mypcol, npcol);
+    I const jtileA_end = first_tile(ja + n - 1, nb, mypcol, npcol);
+    I const jtile_inc = npcol;
 
     I const tixy = tix + tiy * nx;
     I const nxny = nx * ny;
-    I const mbnb = (is_no_transpose) ? mb : nb;
+    I const mbnb = (is_no_transpose) ? nb : mb;
+
+    extern __shared__ double lmem[];
+    T* const Xvec_sh = (T*)&(lmem[0]);
+    T* const rsum_sh_ = Xvec_sh + mbnb;
+
+    auto is_even = [](auto n) -> bool { return ((n % 2) == 0); };
+
+    auto const ld_rsum_sh = is_even(nx) ? nx + 1 : nx;
+
+    auto rsum_sh = [=](auto tx, auto ty) -> T& { return (rsum_sh_[tx + ty * ld_rsum_sh]); };
+
+    for(auto i = (0 + tixy); i < (ld_rsum_sh)*ny; i += nxny)
+    {
+        rsum_sh_[i] = 0;
+    }
 
     for(auto i = (0 + tixy); i < mbnb; i += nxny)
     {
-        ytmp[i] = 0;
+        Xvec_sh[i] = 0;
     }
+
     __syncthreads();
+
+    auto cgwave = cg::tiled_partition(cg::this_thread_block(), nx);
+
+#if(0)
+    {
+        if(cg::this_grid().thread_rank() == 0)
+        {
+            printf("trans=%c, m=%d, n=%d, ia=%d, ja=%d\n", trans, m, n, ia, ja);
+        }
+    }
+#endif
 
     if(is_no_transpose)
     {
         // -----------------
-        // Y = alpha * A * X
+        // Y += alpha * A * X
         // -----------------
         for(auto jtileA = jtileA_start; jtileA <= jtileA_end; jtileA += jtile_inc)
         {
@@ -334,32 +700,38 @@ static __device__ void Xgemv_body(char const trans,
                 auto const istart = std::max(ia, itileA * mb);
                 auto const iend = std::min(ia + m - 1, itileA * mb + (mb - 1));
 
-                for(auto jja = (jstart + tiy); jja <= jend; jja += ny)
+                for(auto jja = (jstart + tixy); jja <= jend; jja += nxny)
                 {
-                    auto const xj = Xvec((jja - ja));
-                    for(auto iia = (istart + tix); iia <= iend; iia += nx)
-                    {
-                        auto const aij = A(iia, jja);
-                        gatomicAdd(&(ytmp[(iia - istart)]), aij * xj);
-                    }
+                    Xvec_sh[(jja - jstart)] = Xvec(jja - ja);
                 }
+
                 __syncthreads();
 
-                for(auto iia = (istart + tixy); iia <= iend; iia += nxny)
+                for(auto iia = (istart + tiy); iia <= iend; iia += ny)
                 {
-                    auto const iiy = (iia - ia);
-                    auto const ioff = (iia - istart);
-                    auto const alpha_ytmp = alpha * ytmp[ioff];
+                    T rsum = 0;
+                    for(auto jja = (jstart + tix); jja <= jend; jja += nx)
+                    {
+                        auto const xj = Xvec_sh[(jja - jstart)];
+                        auto const aij = A(iia, jja);
+                        rsum += aij * xj;
+                    }
+                    rsum_sh(tix, tiy) = rsum;
+                    rsum = reduce_sum(cgwave, &(rsum_sh(0, tiy)), rsum);
 
-                    if(need_atomic_update)
+                    if(cgwave.thread_rank() == 0)
                     {
-                        gatomicAdd(&(Yvec(iiy)), alpha_ytmp);
+                        auto const alpha_rsum = alpha * rsum;
+                        auto const ioff = (iia - ia);
+                        if(need_atomic_update)
+                        {
+                            gatomicAdd(&(Yvec(ioff)), alpha_rsum);
+                        }
+                        else
+                        {
+                            Yvec(ioff) += alpha_rsum;
+                        }
                     }
-                    else
-                    {
-                        Yvec(iiy) += alpha_ytmp;
-                    }
-                    ytmp[ioff] = 0;
                 }
 
                 __syncthreads();
@@ -370,11 +742,7 @@ static __device__ void Xgemv_body(char const trans,
     else
     {
         // -----------------
-        // Y = alpha * op(A) * X
-        // -----------------
-
-        // -----------------
-        // Y = alpha * A * X
+        // Yvec(0:(n-1)) += alpha * trans(A(0:(m-1),0:(n-1)) * Xvec(0:(m-1))
         // -----------------
         for(auto jtileA = jtileA_start; jtileA <= jtileA_end; jtileA += jtile_inc)
         {
@@ -383,42 +751,54 @@ static __device__ void Xgemv_body(char const trans,
                 // ------------------------------
                 // process tile "(itileA,jtileA)"
                 // ------------------------------
-
                 auto const jstart = std::max(ja, jtileA * nb);
-                auto const jend = std::min(ja + n - 1, jstart + nb - 1);
+                auto const jend = std::min(ja + n - 1, jtileA * nb + (nb - 1));
 
                 auto const istart = std::max(ia, itileA * mb);
-                auto const iend = std::min(ia + m - 1, istart + mb - 1);
+                auto const iend = std::min(ia + m - 1, itileA * mb + (mb - 1));
+
+                for(auto iia = (istart + tixy); iia <= iend; iia += nxny)
+                {
+                    Xvec_sh[(iia - istart)] = Xvec((iia - ia));
+                }
+
+                __syncthreads();
 
                 for(auto jja = (jstart + tiy); jja <= jend; jja += ny)
                 {
+                    T rsum = 0;
                     for(auto iia = (istart + tix); iia <= iend; iia += nx)
                     {
                         T const aij = A(iia, jja);
-                        T const atji = (is_complex && is_conj_transpose) ? conj(aij) : aij;
-                        T const xi = Xvec((iia - ia));
+                        T const xi = Xvec_sh[(iia - istart)];
 
-                        gatomicAdd(&(ytmp[(jja - jstart)]), atji * xi);
+                        if(is_complex && is_conj_transpose)
+                        {
+                            rsum += conj(aij) * xi;
+                        }
+                        else
+                        {
+                            rsum += aij * xi;
+                        }
                     }
-                }
-                __syncthreads();
 
-                for(auto jja = (jstart + tixy); jja <= jend; jja += nxny)
-                {
-                    auto const jjy = (jja - ja);
-                    auto const joff = (jja - jstart);
-                    auto const alpha_ytmp = alpha * ytmp[joff];
+                    rsum_sh(tix, tiy) = rsum;
+                    rsum = reduce_sum(cgwave, &(rsum_sh(0, tiy)), rsum);
 
-                    if(need_atomic_update)
+                    if(cgwave.thread_rank() == 0)
                     {
-                        gatomicAdd(&(Yvec(jjy)), alpha_ytmp);
+                        auto const alpha_rsum = alpha * rsum;
+                        auto const joff = (jja - ja);
+                        if(need_atomic_update)
+                        {
+                            gatomicAdd(&(Yvec(joff)), alpha_rsum);
+                        }
+                        else
+                        {
+                            Yvec(joff) += alpha_rsum;
+                        }
                     }
-                    else
-                    {
-                        Yvec(jjy) += alpha_ytmp;
-                    }
-                    ytmp[joff] = 0;
-                }
+                } // end for jja
 
                 __syncthreads();
 
@@ -476,6 +856,442 @@ static __global__ void Xgemv_batch_kernel(char const trans,
     }
 }
 
+template <typename T, typename I, typename Istride, typename UA, typename UX, typename UY>
+static void rocsolverCall_gemv(rocblas_handle handle,
+                               rocblas_operation trans,
+                               I const mm,
+                               I const nn,
+                               T const* const p_alpha,
+                               Istride const stride_alpha,
+                               UA A,
+                               I const shiftA,
+                               I const ia,
+                               I const ja,
+                               I const lda,
+                               Istride const strideA,
+                               UX X,
+                               I const shiftX,
+                               I const ix,
+                               I const jx,
+                               I const ldx,
+                               I const incx,
+                               Istride const strideX,
+                               T const* const p_beta,
+                               Istride const stride_beta,
+                               UY Y,
+                               I const shiftY,
+                               I const iy,
+                               I const jy,
+                               I const ldy,
+                               I const incy,
+                               Istride const strideY,
+                               I const batch_count,
+                               I const mb,
+                               I const nb,
+                               void* work_Arr)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    auto const num_cu = get_num_cu();
+    size_t const lds_size = 64 * 1024;
+
+    // -----------------------------
+    // scale output Y vector by beta
+    // -----------------------------
+    auto const nx = 32;
+    auto const ny = 32;
+
+    {
+        bool const is_valid_trans = (trans == rocblas_operation_none)
+            || (trans == rocblas_operation_transpose)
+            || (trans == rocblas_operation_conjugate_transpose);
+        assert(is_valid_trans);
+    }
+
+    char const ctrans = (trans == rocblas_operation_none)  ? 'N'
+        : (trans == rocblas_operation_transpose)           ? 'T'
+        : (trans == rocblas_operation_conjugate_transpose) ? 'C'
+                                                           : '?';
+
+    bool const is_no_transpose = (trans == rocblas_operation_none);
+    auto const len_Yvec = is_no_transpose ? mm : nn;
+
+    Xscale_batch_kernel<T, I, Istride><<<dim3(num_cu, 1, 1), dim3(nx, ny, 1), lds_size, stream>>>(
+        len_Yvec, p_beta, stride_beta, Y, shiftY, iy, jy, ldy, incy, strideY, batch_count, mb, nb);
+
+    Xgemv_batch_kernel<T, I, Istride><<<dim3(num_cu, 1, 1), dim3(nx, ny, 1), lds_size, stream>>>(
+        ctrans, mm, nn, p_alpha, stride_alpha, A, shiftA, ia, ja, lda, strideA, X, shiftX, ix, jx,
+        ldx, incx, strideX, Y, shiftY, iy, jy, ldy, incy, strideY, batch_count, mb, nb);
+}
+
+// ----------------------
+// matrix vector multiple
+// y = alpha * op(A) * x
+// where
+// op(A) can be  A
+//     or transpose(A)
+//     or conj(transpose(A))
+// ----------------------
+template <typename T, typename I>
+static __device__ void Xsymv_body(char const c_uplo,
+                                  I const n,
+                                  T const alpha,
+                                  T const* const A_,
+                                  I const ia,
+                                  I const ja,
+                                  I const lda,
+                                  T const* const X_,
+                                  I const ix,
+                                  I const jx,
+                                  I const ldx,
+                                  I const incx,
+                                  T* const Y_,
+                                  I const iy,
+                                  I const jy,
+                                  I const ldy,
+                                  I const incy,
+                                  I const mb,
+                                  I const nb,
+                                  I const myprow,
+                                  I const mypcol,
+                                  I const nprow,
+                                  I const npcol)
+{
+    bool const is_complex = rocblas_is_complex<T>;
+    auto const m = n;
+
+    auto const tix = hipThreadIdx_x;
+    auto const tiy = hipThreadIdx_y;
+    auto const nx = hipBlockDim_x;
+    auto const ny = hipBlockDim_y;
+
+    bool const is_upper = (c_uplo == 'U') || (c_uplo == 'u');
+    bool const is_lower = (c_uplo == 'L') || (c_uplo == 'l');
+    {
+        bool const is_valid = (is_lower || is_upper);
+        assert(is_valid);
+    }
+
+    bool const is_column_X = (incx == 1);
+    bool const is_column_Y = (incy == 1);
+    assert((incx == 1) || (incx == ldx));
+    assert((incy == 1) || (incy == ldy));
+
+    auto idx2D = [](auto i, auto j, auto ld) { return (i + j * static_cast<int64_t>(ld)); };
+
+    auto const ip_Y = idx2D(iy, jy, ldy);
+    auto Yvec = [=](auto i) -> T& { return (Y_[ip_Y + i * static_cast<int64_t>(incy)]); };
+
+    auto const ip_X = idx2D(ix, jx, ldx);
+    auto Xvec = [=](auto i) { return (X_[ip_X + i * static_cast<int64_t>(incx)]); };
+
+    auto A = [=](auto i, auto j) { return (A_[idx2D(i, j, lda)]); };
+
+    auto const itileA_start = first_tile(ia, mb, myprow, nprow);
+    auto const jtileA_start = first_tile(ja, nb, mypcol, npcol);
+    auto const itileA_end = first_tile(ia + n - 1, mb, myprow, nprow);
+    auto const jtileA_end = first_tile(ja + n - 1, nb, mypcol, npcol);
+    auto const itile_inc = nprow;
+    auto const jtile_inc = npcol;
+
+    extern __shared__ double lmem[];
+    T* const ytmp_row = (T*)&(lmem[0]);
+    T* const ytmp_col = ytmp_row + mb;
+
+    {
+        size_t const lds_size = 64 * 1024;
+        bool const lds_ok = ((sizeof(T) * (mb + nb)) <= lds_size);
+        assert(lds_ok);
+    }
+
+    auto const tixy = tix + tiy * nx;
+    auto const nxny = nx * ny;
+
+    for(auto i = (0 + tixy); i < mb; i += nxny)
+    {
+        ytmp_row[i] = 0;
+    }
+    for(auto i = (0 + tixy); i < nb; i += nxny)
+    {
+        ytmp_col[i] = 0;
+    }
+    __syncthreads();
+
+    // -----------------
+    // Y1 = [D1  L21' ]  * X1
+    // Y2 = [L21   D2 ]    X2
+    //
+    //
+    // Y1 = (D1 * X1) + (L21' * X2)
+    // Y2 = (L21 * X1) + ( D2 * X2 )
+    // -----------------
+    for(auto jtileA = jtileA_start; jtileA <= jtileA_end; jtileA += jtile_inc)
+    {
+        for(auto itileA = itileA_start; itileA <= itileA_end; itileA += itile_inc)
+        {
+            // ------------------------------
+            // process tile "(itileA,jtileA)"
+            // ------------------------------
+
+            auto const jstart = std::max(ja, jtileA * nb);
+            auto const jend = std::min(ja + n - 1, jtileA * nb + (nb - 1));
+
+            auto const istart = std::max(ia, itileA * mb);
+            auto const iend = std::min(ia + m - 1, itileA * mb + (mb - 1));
+
+            bool const is_strictly_lower = ((istart - ia) > (jend - ja));
+            bool const is_strictly_upper = ((jstart - ja) > (iend - ia));
+            bool const can_skip_tile
+                = (is_lower && is_strictly_upper) || (is_upper && is_strictly_lower);
+            if(can_skip_tile)
+            {
+                continue;
+            }
+
+            for(auto jja = (jstart + tiy); jja <= jend; jja += ny)
+            {
+                auto const xj = Xvec((jja - ja));
+                for(auto iia = (istart + tix); iia <= iend; iia += nx)
+                {
+                    auto const ioff = (iia - istart);
+                    auto const joff = (jja - jstart);
+                    bool const is_diagonal = ((iia - ia) == (jja - ja));
+                    bool const is_strictly_lower = ((iia - ia) > (jja - ja));
+                    bool const is_strictly_upper = ((iia - ia) < (jja - ja));
+
+                    bool const can_skip
+                        = (is_lower && is_strictly_upper) || (is_upper && is_strictly_lower);
+
+                    if(can_skip)
+                    {
+                        continue;
+                    };
+
+                    if(is_diagonal)
+                    {
+                        auto const ajj = std::real(A(iia, jja));
+                        gatomicAdd(&(ytmp_row[ioff]), ajj * xj);
+                    }
+                    else
+                    {
+                        // ------------------
+                        // off-diagonal entry
+                        // ------------------
+                        T const aij = A(iia, jja);
+                        T const atji = (is_complex) ? conj(aij) : aij;
+
+                        T const xi = Xvec((iia - ia));
+
+                        gatomicAdd(&(ytmp_row[ioff]), aij * xj);
+                        gatomicAdd(&(ytmp_col[joff]), atji * xi);
+                    }
+                }
+            }
+
+            __syncthreads();
+
+            if(tiy == 0)
+            {
+                for(auto iia = (istart + tix); iia <= iend; iia += nx)
+                {
+                    auto const iiy = (iia - ia);
+                    auto const ioff = (iia - istart);
+                    auto const alpha_ytmp_row = alpha * ytmp_row[ioff];
+
+                    bool const need_atomic_update = true;
+                    if(need_atomic_update)
+                    {
+                        gatomicAdd(&(Yvec(iiy)), alpha_ytmp_row);
+                    }
+                    else
+                    {
+                        Yvec(iiy) += alpha_ytmp_row;
+                    }
+                    ytmp_row[ioff] = 0;
+                }
+
+                for(auto jja = (jstart + tix); jja <= jend; jja += nx)
+                {
+                    auto const jjy = (jja - ja);
+                    auto const joff = (jja - jstart);
+                    auto const alpha_ytmp_col = alpha * ytmp_col[joff];
+
+                    bool const need_atomic_update = true;
+                    if(need_atomic_update)
+                    {
+                        gatomicAdd(&(Yvec(jjy)), alpha_ytmp_col);
+                    }
+                    else
+                    {
+                        Yvec(jjy) += alpha_ytmp_col;
+                    }
+                    ytmp_col[joff] = 0;
+                }
+            }
+            __syncthreads();
+
+        } // end for itileA
+    } // end for jtileA
+
+    __syncthreads();
+}
+
+// compute Yvec(0:(n-1)) += alpha * op(A) * Xvec(0:(n-1))
+// where A is symmetric/hermitian matrix
+// op(A) is lower triangular or upper triangular
+//
+template <typename T, typename I, typename Istride, typename UA, typename UX, typename UY>
+static __global__ void Xsymv_batch_kernel(char c_uplo,
+                                          I const n,
+                                          T const* const p_alpha,
+                                          Istride const stride_alpha,
+                                          UA A_,
+                                          Istride const shiftA,
+                                          I const ia,
+                                          I const ja,
+                                          I const lda,
+                                          Istride const strideA,
+                                          UX X_,
+                                          Istride const shiftX,
+                                          I const ix,
+                                          I const jx,
+                                          I const ldx,
+                                          I const incx,
+                                          Istride const strideX,
+                                          UY Y_,
+                                          Istride const shiftY,
+                                          I const iy,
+                                          I const jy,
+                                          I const ldy,
+                                          I const incy,
+                                          Istride const strideY,
+                                          I const batch_count,
+                                          I const mb,
+                                          I const nb)
+{
+    I const myprow = hipBlockIdx_x;
+    I const mypcol = hipBlockIdx_y;
+    I const nprow = hipGridDim_x;
+    I const npcol = hipGridDim_y;
+
+    for(I bid = 0; bid < batch_count; bid++)
+    {
+        T const alpha = *(p_alpha + bid * stride_alpha);
+        T const* const Ap = load_ptr_batch(A_, bid, shiftA, strideA);
+        T const* const Xp = load_ptr_batch(X_, bid, shiftX, strideX);
+        T* const Yp = load_ptr_batch(Y_, bid, shiftY, strideY);
+
+        Xsymv_body(c_uplo, n, alpha, Ap, ia, ja, lda, Xp, ix, jx, ldx, incx, Yp, iy, jy, ldy, incy,
+                   mb, nb, myprow, mypcol, nprow, npcol);
+    }
+}
+
+template <typename T, typename I, typename Istride, typename UA, typename UX, typename UY>
+rocblas_status rocsolverCall_symv_hemv(rocblas_handle handle,
+                                       rocblas_fill const uplo,
+                                       I const n,
+                                       T const* const p_alpha,
+                                       Istride const stride_alpha,
+                                       UA A,
+                                       Istride const shiftA,
+                                       I const ia,
+                                       I const ja,
+                                       I const lda,
+                                       Istride const strideA,
+                                       UX X,
+                                       Istride const shiftX,
+                                       I const ix,
+                                       I const jx,
+                                       I const ldx,
+                                       I const incx,
+                                       Istride const strideX,
+                                       T const* const p_beta,
+                                       Istride stride_beta,
+                                       UY Y,
+                                       Istride const shiftY,
+                                       I const iy,
+                                       I const jy,
+                                       I const ldy,
+                                       I const incy,
+                                       Istride const strideY,
+                                       I const batch_count,
+                                       I const mb,
+                                       I const nb,
+                                       T* work,
+                                       T** workArr)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    auto const num_cu = get_num_cu();
+    size_t const lds_size = 64 * 1024;
+
+    // -----------------------------
+    // scale output Y vector by beta
+    // -----------------------------
+    auto const nx = 32;
+    auto const ny = 32;
+
+    Xscale_batch_kernel<T, I, Istride><<<dim3(num_cu, 1, 1), dim3(nx, ny, 1), lds_size, stream>>>(
+        n, p_beta, stride_beta, Y, shiftY, iy, jy, ldy, incy, strideY, batch_count, mb, nb);
+
+    char const c_uplo = (uplo == rocblas_fill_upper) ? 'U'
+        : (uplo == rocblas_fill_lower)               ? 'L'
+                                                     : '?';
+
+    Xsymv_batch_kernel<T, I, Istride><<<dim3(num_cu, 1, 1), dim3(nx, ny, 1), lds_size, stream>>>(
+        c_uplo, n, p_alpha, stride_alpha, A, shiftA, ia, ja, lda, strideA, X, shiftX, ix, jx, ldx,
+        incx, strideX, Y, shiftY, iy, jy, ldy, incy, strideY, batch_count, mb, nb);
+
+    return (rocblas_status_success);
+}
+
+/** set_offdiag kernel copies the off-diagonal element of A, which is the non-zero element
+    resulting by applying the Householder reflector to the working column, to E. Then set it
+    to 1 to prepare for the application of the Householder reflector to the rest of the matrix **/
+
+template <typename T, typename I, typename Istride, typename UA, typename UE>
+static __global__ void set_offdiag_batch_kernel(const rocblas_int batch_count,
+                                                UA A_,
+                                                I const shiftA,
+                                                Istride const strideA,
+                                                UE E_,
+                                                Istride const strideE)
+{
+    I const nthreads_per_block = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+    I const nblocks = hipGridDim_x * hipGridDim_y * hipGridDim_z;
+    I const bid_inc = nthreads_per_block * nblocks;
+
+    I const ithread = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+        + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
+
+    I const iblock = hipBlockIdx_x + hipBlockIdx_y * hipGridDim_x
+        + hipBlockIdx_z * (hipGridDim_x * hipGridDim_y);
+
+    I const bid_start = ithread + iblock * nthreads_per_block;
+
+    Istride const shiftE = 0;
+
+    bool constexpr is_complex = rocblas_is_complex<T>;
+
+    for(I bid = (0 + bid_start); bid < batch_count; bid += bid_inc)
+    {
+        T* const A = load_ptr_batch(A_, bid, shiftA, strideA);
+        auto const E = load_ptr_batch(E_, bid, shiftE, strideE);
+
+        if constexpr(is_complex)
+        {
+            E[0] = std::real(A[0]);
+        }
+        else
+        {
+            E[0] = A[0];
+        }
+        A[0] = T(1);
+    }
+}
+
 template <typename T, typename S, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
                                              const rocblas_fill uplo,
@@ -521,7 +1337,7 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
     blocks = (n - 1) / BS1 + 1;
     dim3 grid_n(blocks, batch_count);
 
-    bool const use_rocblas = false;
+    bool const use_org = false;
     size_t lds_size = 64 * 1024;
     auto const mb = k;
     auto const nb = k;
@@ -536,10 +1352,21 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
         {
             // update column j of A with reflector computed in step j-1
             if(COMPLEX)
-                rocsolver_lacgv_template<T>(handle, j, W, shiftW + idx2D(j, 0, ldw), ldw, strideW,
-                                            batch_count);
+            {
+                if(use_org)
+                {
+                    rocsolver_lacgv_template<T>(handle, j, W, shiftW + idx2D(j, 0, ldw), ldw,
+                                                strideW, batch_count);
+                }
+                else
+                {
+                    auto const incw = ldw;
+                    rocsolverCall_lacgv_template<T, rocblas_int, rocblas_stride>(
+                        handle, j, W, shiftW, j, 0, ldw, incw, strideW, batch_count, mb, nb);
+                }
+            }
 
-            if(use_rocblas)
+            if(use_org)
             {
                 rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j, j,
                                     cast2constType<T>(scalars), 0, A, shiftA + idx2D(j, 0, lda),
@@ -549,52 +1376,36 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
             }
             else
             {
-                auto const mm = n - j;
-                auto const nn = j;
+                auto const incw = ldw;
                 auto const p_alpha = cast2constType<T>(scalars);
                 rocblas_stride const stride_alpha = 0;
                 auto const p_beta = cast2constType<T>(scalars + 2);
                 rocblas_stride const stride_beta = 0;
 
-                auto const Y = A;
-                auto const shift_Y = shiftA;
-                auto const iy = j;
-                auto const jy = j;
-                auto const ldy = lda;
-                auto const incy = 1;
-                auto const stride_Y = strideA;
-
-                Xscale_batch_kernel<T, rocblas_int, rocblas_stride>
-                    <<<dim3(num_cu, 1, 1), dim3(32, 32, 1), lds_size, stream>>>(
-                        mm, p_beta, stride_beta, Y, shift_Y, iy, jy, ldy, incy, stride_Y,
-                        batch_count, mb, nb);
-
-                // rocblasCall_gemv<T>(handle, rocblas_operation_none, mm, nn,
-                //            cast2constType<T>(scalars), 0, A, shiftA + idx2D(j, 0, lda), lda,
-                //            strideA, W, shiftW + idx2D(j, 0, ldw), ldw, strideW,
-                //            cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j, j, lda), 1,
-                //            strideA, batch_count, workArr);
-
-                char const ctrans = 'N';
-                auto const ia = j;
-                auto const ja = 0;
-                auto const iw = j;
-                auto const jw = 0;
-                auto const incw = ldw;
-
-                Xgemv_batch_kernel<T, rocblas_int, rocblas_stride>
-                    <<<dim3(num_cu, 1, 1), dim3(32, 32, 1), lds_size, stream>>>(
-                        ctrans, mm, nn, p_alpha, stride_alpha, A, shiftA, ia, ja, lda, strideA, W,
-                        shiftW, iw, jw, ldw, incw, strideW, Y, shift_Y, iy, jy, ldy, incy, stride_Y,
-                        batch_count, mb, nb);
+                rocsolverCall_gemv<T>(handle, rocblas_operation_none, n - j, j, p_alpha,
+                                      stride_alpha, A, shiftA, j, 0, lda, strideA, W, shiftW, j, 0,
+                                      ldw, incw, strideW, p_beta, stride_beta, A, shiftA, j, j, lda,
+                                      1, strideA, batch_count, mb, nb, workArr);
             }
 
             if(COMPLEX)
             {
-                rocsolver_lacgv_template<T>(handle, j, W, shiftW + idx2D(j, 0, ldw), ldw, strideW,
-                                            batch_count);
-                rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda, strideA,
-                                            batch_count);
+                if(use_org)
+                {
+                    rocsolver_lacgv_template<T>(handle, j, W, shiftW + idx2D(j, 0, ldw), ldw,
+                                                strideW, batch_count);
+                    rocsolver_lacgv_template<T>(handle, j, A, shiftA + idx2D(j, 0, lda), lda,
+                                                strideA, batch_count);
+                }
+                else
+                {
+                    auto const incw = ldw;
+                    rocsolverCall_lacgv_template<T, rocblas_int, rocblas_stride>(
+                        handle, j, W, shiftW, j, 0, ldw, incw, strideW, batch_count, mb, nb);
+                    auto const inca = lda;
+                    rocsolverCall_lacgv_template<T, rocblas_int, rocblas_stride>(
+                        handle, j, A, shiftA, j, 0, lda, inca, strideA, batch_count, mb, nb);
+                }
             }
 
             rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j, j,
@@ -613,20 +1424,65 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
                                      (tau + j), strideP, batch_count, work, norms);
 
             // copy to E(j) the corresponding off-diagonal element of A, which is set to 1
-            ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
-                                    shiftA + idx2D(j + 1, j, lda), strideA, (E + j), strideE);
+            if(use_org)
+            {
+                ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
+                                        shiftA + idx2D(j + 1, j, lda), strideA, (E + j), strideE);
+            }
+            else
+            {
+                set_offdiag_batch_kernel<T, rocblas_int, rocblas_stride>
+                    <<<dim3(num_cu, 1, 1), dim3(32, 32, 1), 0, stream>>>(
+                        batch_count, A, shiftA + idx2D(j + 1, j, lda), strideA, (E + j), strideE);
+            }
 
             // compute/update column j of W
-            rocblasCall_symv_hemv<T>(
-                handle, uplo, n - 1 - j, (scalars + 2), 0, A, shiftA + idx2D(j + 1, j + 1, lda),
-                lda, strideA, A, shiftA + idx2D(j + 1, j, lda), 1, strideA, (scalars + 1), 0, W,
-                shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, work, workArr);
+            if(use_org)
+            {
+                rocblasCall_symv_hemv<T>(
+                    handle, uplo, n - 1 - j, (scalars + 2), 0, A, shiftA + idx2D(j + 1, j + 1, lda),
+                    lda, strideA, A, shiftA + idx2D(j + 1, j, lda), 1, strideA, (scalars + 1), 0, W,
+                    shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, work, workArr);
+            }
+            else
+            {
+                T const* const p_alpha = (scalars + 2);
+                rocblas_stride const stride_alpha = 0;
+                T const* const p_beta = (scalars + 1);
+                rocblas_stride const stride_beta = 0;
 
-            rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
-                                cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, 0, ldw),
-                                ldw, strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                                cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw), 1,
-                                strideW, batch_count, workArr);
+                rocblas_int const incx = 1;
+                rocblas_int const incy = 1;
+                rocsolverCall_symv_hemv<T, rocblas_int, rocblas_stride>(
+                    handle, uplo, n - 1 - j, p_alpha, stride_alpha, A, shiftA, j + 1, j + 1, lda,
+                    strideA, A, shiftA, j + 1, j, lda, incx, strideA, p_beta, stride_beta, W,
+                    shiftW, j + 1, j, ldw, incy, strideW, batch_count, mb, nb, work, workArr);
+            }
+
+            if(use_org)
+            {
+                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
+                                    cast2constType<T>(scalars + 2), 0, W,
+                                    shiftW + idx2D(j + 1, 0, ldw), ldw, strideW, A,
+                                    shiftA + idx2D(j + 1, j, lda), 1, strideA,
+                                    cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw),
+                                    1, strideW, batch_count, workArr);
+            }
+            else
+            {
+                auto const mm = n - j - 1;
+                auto const nn = j;
+                bool const has_work = (mm >= 1) && (nn >= 1);
+                if(has_work)
+                {
+                    rocsolverCall_gemv<T, rocblas_int, rocblas_stride>(
+                        handle, rocblas_operation_conjugate_transpose, mm, nn,
+                        cast2constType<T>(scalars + 2), 0, W, shiftW, j + 1, 0, ldw, strideW, A,
+                        shiftA, j + 1, j, lda, 1, strideA, cast2constType<T>(scalars + 1), 0, W,
+                        shiftW, 0, j, ldw, 1, strideW, batch_count, mb, nb, workArr);
+
+                } // if has_work
+            }
 
             rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
                                 cast2constType<T>(scalars), 0, A, shiftA + idx2D(j + 1, 0, lda),
@@ -659,9 +1515,8 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms,
                                     tau + j, strideP, A, shiftA + idx2D(j + 1, j, lda), strideA, W,
                                     shiftW + idx2D(j + 1, j, ldw), strideW);
-        }
+        } // end for j
     }
-
     else
     {
         // reduce the last k columns of A
@@ -757,4 +1612,5 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
 }
-#endif
+
+ROCSOLVER_END_NAMESPACE
