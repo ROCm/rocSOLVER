@@ -220,7 +220,7 @@ struct rocsolver_hybrid_storage
             size_t dim_bytes = sizeof(T) * dim;
             size_t val_bytes = sizeof(T) * dim * batch_count;
 #ifdef _WIN32
-            val_array = (T**)_aligned_malloc(val_bytes, sizeof(void*));
+            val_array = (T*)_aligned_malloc(val_bytes, sizeof(void*));
             if(!val_array)
                 return rocblas_status_memory_error;
 #else
