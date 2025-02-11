@@ -30,7 +30,8 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
 
     List<String> getDeps = []
     getDeps << auxiliary.getLibrary('hipBLAS-common', platform.jenkinsLabel, null, sameOrg)
-    if (isStatic == false){
+    if (isStatic == false)
+    {
         getDeps << auxiliary.getLibrary('hipBLASLt', platform.jenkinsLabel, null, sameOrg)
     }
     getDeps << auxiliary.getLibrary('rocBLAS', platform.jenkinsLabel, null, sameOrg)
