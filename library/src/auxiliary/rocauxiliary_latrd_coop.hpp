@@ -267,6 +267,123 @@ static __device__ S sign(S const a, S const b)
     return (std::abs(a) * ((b < 0) ? -1 : 1));
 }
 
+// -------------------------------------------
+// compute complex division in real arithmetic
+// p + I * q = (a + I * b)/( c + I * d )
+// -------------------------------------------
+template <typename S>
+static __device__ __host__ void ladiv(S const a, S const b, S const c, S const d, S& p, S& q)
+{
+    {
+        assert(!rocblas_is_complex<S>);
+    }
+
+    S const bs = 2.0;
+    S const half = 0.5;
+    S const two = 2.0;
+    S const one = 1.0;
+
+    auto ladiv2 = [](S const a, S const b, S const c, S const d, S const r, S const t) -> S {
+        S dladiv2 = 0;
+        if(r != 0)
+        {
+            auto const br = b * r;
+            if(br != 0)
+            {
+                dladiv2 = (a + br) * t;
+            }
+            else
+            {
+                dladiv2 = a * t + (b * t) * r;
+            }
+        }
+        else
+        {
+            dladiv2 = (a + d * (b / c)) * t;
+        }
+        return (dladiv2);
+    };
+
+    auto ladiv1 = [](S& a, S& b, S& c, S& d, S& p, S& q) {
+        S const one = 1.0;
+        auto r = d / c;
+        auto t = one / (c + d * r);
+        p = ladiv2(a, b, c, d, r, t);
+        a = -a;
+        q = ladiv2(b, a, c, d, r, t);
+    };
+
+    S aa = a;
+    S bb = b;
+    S cc = c;
+    S dd = d;
+
+    S const ab = std::max(std::abs(a), std::abs(b));
+    S const cd = std::max(std::abs(c), std::abs(d));
+    S s = one;
+
+    auto const ov = lamch<S>('O'); // overflow
+    auto const un = lamch<S>('S'); // safe min
+    auto const eps = lamch<S>('E'); // epsilon
+    auto const be = bs / (eps * eps);
+
+    if(cd >= half * ov)
+    {
+        cc = half * cc;
+        dd = half * dd;
+        s = half * s;
+    }
+
+    if(ab <= un * bs / eps)
+    {
+        aa *= be;
+        bb *= be;
+        s = s / be;
+    }
+
+    if(cd <= un * bs / eps)
+    {
+        cc *= be;
+        dd *= be;
+        s *= be;
+    }
+
+    if(std::abs(d) <= std::abs(c))
+    {
+        ladiv1(aa, bb, cc, dd, p, q);
+    }
+    else
+    {
+        ladiv1(bb, aa, dd, cc, p, q);
+        q = -q;
+    }
+
+    p *= s;
+    q *= s;
+
+#ifdef NDEBUG
+#else
+    {
+        // -------------------------------------
+        // extra check
+        //
+        // p + I * q = (a + I * b)/( c + I * d )
+        //
+        // or
+        //
+        // (p + I * q) * (c + I * d ) == (a + I * b )
+        // -------------------------------------
+        double const tol = 20 * eps;
+        auto const zpq = rocblas_complex_num<double>{double{p}, double{q}};
+        auto const zcd = rocblas_complex_num<double>{double{c}, double{d}};
+        auto const zab = rocblas_complex_num<double>{double{a}, double{b}};
+
+        bool const isok = (std::abs(zpq * zcd - zab) <= tol * std::abs(zpq));
+        assert(isok);
+    }
+#endif
+}
+
 template <typename T, typename I>
 __device__ void Xscale_body(I const n,
                             T const alpha,
@@ -403,6 +520,145 @@ static __global__ void Xscale_batch_kernel(I const n,
         auto const Xp = load_ptr_batch(X_, bid, shift_X, stride_X);
         Xscale_body(n, alpha, Xp, ix, jx, ldx, incx, mb, nb, myprow, mypcol, nprow, npcol);
     }
+}
+
+// -------------------------------
+// compute the L2 norm of a vector
+// and return in "ans"
+// -------------------------------
+template <typename T, typename I, typename S>
+static void __device__ Xnrm2_body(cg::grid_group cg_grid,
+                                  I const n,
+                                  T const* const X_,
+                                  I const ix,
+                                  I const jx,
+                                  I const ldx,
+                                  I const incx,
+                                  I const mb,
+                                  I const nb,
+                                  I const myprow,
+                                  I const mypcol,
+                                  I const nprow,
+                                  I const npcol,
+                                  S* const ans)
+{
+    if(n <= 0)
+    {
+        return;
+    };
+
+    bool constexpr is_complex = rocblas_is_complex<T>;
+
+    {
+        assert(cg_grid.is_valid());
+    }
+
+    if(cg_grid.thread_rank() == 0)
+    {
+        *ans = 0;
+    }
+    cg_grid.sync();
+
+    I const tix = hipThreadIdx_x;
+    I const tiy = hipThreadIdx_y;
+    I const nx = hipBlockDim_x;
+    I const ny = hipBlockDim_y;
+
+    auto idx2D = [](auto i, auto j, auto ld) { return (i + j * static_cast<int64_t>(ld)); };
+
+    bool const is_column_X = (incx == 1);
+    {
+        assert((incx == 1) || (incx == ldx));
+    }
+
+    auto const ip_X = idx2D(ix, jx, ldx);
+    auto Xvec = [=](auto const i) -> T& { return (X_[ip_X + i * static_cast<int64_t>(incx)]); };
+
+    extern __shared__ double lmem[];
+
+    double* dnorm_sh = (double*)&(lmem[0]);
+
+    double dnorm = 0;
+    if(is_column_X)
+    {
+        auto const itile_start = find_next_tile(ix, mb, myprow, nprow);
+        auto const itile_end = find_next_tile(ix + n - 1, mb, myprow, nprow);
+        auto const ntiles = (itile_end - itile_start) / nprow;
+
+        {
+            assert(itile_start <= itile_end);
+            assert(ntiles * nprow == (itile_end - itile_start));
+        }
+
+        for(auto it = (0 + tiy); it <= ntiles; it += ny)
+        {
+            auto const itile = itile_start + it * nprow;
+            auto const istart = std::max(ix, itile * mb);
+            auto const iend = std::min(ix + n - 1, itile * mb + (mb - 1));
+
+            for(auto iix = (istart + tix); iix <= iend; iix += nx)
+            {
+                T const xi = Xvec((iix - ix));
+                if(is_complex)
+                {
+                    dnorm += std::norm(xi);
+                }
+                else
+                {
+                    dnorm += xi * xi;
+                }
+            }
+        }
+    }
+    else
+    {
+        auto const jtile_start = find_next_tile(jx, nb, mypcol, npcol);
+        auto const jtile_end = find_next_tile(jx + n - 1, nb, mypcol, npcol);
+        auto const ntiles = (jtile_end - jtile_start) / npcol;
+
+        {
+            assert(jtile_start <= jtile_end);
+            assert(ntiles * npcol == (jtile_end - jtile_start));
+        }
+
+        for(auto it = (0 + tiy); it <= ntiles; it += ny)
+        {
+            auto const jtile = jtile_start + it * npcol;
+            auto const jstart = std::max(jx, it * nb);
+            auto const jend = std::min(jx + n - 1, it * nb + (nb - 1));
+
+            for(auto jjx = (jstart + tix); jjx <= jend; jjx += nx)
+            {
+                T const xj = Xvec((jjx - jx));
+                if(is_complex)
+                {
+                    dnorm += std::norm(xj);
+                }
+                else
+                {
+                    dnorm += xj * xj;
+                }
+            }
+        }
+    }
+
+    auto const cg_block = cg::this_thread_block();
+    dnorm = reduce_sum(cg_block, dnorm_sh, dnorm);
+
+    bool const need_atomic_update = (is_column_X) ? (nprow > 1) : (npcol > 1);
+    if(cg_block.thread_rank() == 0)
+    {
+        if(need_atomic_update)
+        {
+            atomicAdd(ans, static_cast<S>(dnorm));
+        }
+        else
+        {
+            *ans += static_cast<S>(dnorm);
+        }
+    }
+
+    cg_grid.sync();
 }
 
 template <typename T, typename I>
