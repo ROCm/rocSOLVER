@@ -115,6 +115,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/lapack/testing_getrs.cpp
     common/lapack/testing_gesv.cpp
     common/lapack/testing_gesvd.cpp
+    common/lapack/testing_gesdd.cpp
     common/lapack/testing_gesvdj.cpp
     common/lapack/testing_gesvdx.cpp
     common/lapack/testing_trtri.cpp

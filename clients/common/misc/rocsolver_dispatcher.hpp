@@ -75,6 +75,7 @@
 #include "common/lapack/testing_gerq2_gerqf.hpp"
 #include "common/lapack/testing_gesv.hpp"
 #include "common/lapack/testing_gesvd.hpp"
+#include "common/lapack/testing_gesdd.hpp"
 #include "common/lapack/testing_gesvdj.hpp"
 #include "common/lapack/testing_gesvdx.hpp"
 #include "common/lapack/testing_getf2_getrf.hpp"
@@ -250,6 +251,10 @@ class rocsolver_dispatcher
             {"gesvd", testing_gesvd<false, false, T>},
             {"gesvd_batched", testing_gesvd<true, true, T>},
             {"gesvd_strided_batched", testing_gesvd<false, true, T>},
+            // gesdd
+            {"gesdd", testing_gesdd<false, false, T>},
+            {"gesdd_batched", testing_gesdd<true, true, T>},
+            {"gesdd_strided_batched", testing_gesdd<false, true, T>},
             // gesvdj
             {"gesvdj", testing_gesvdj<false, false, T>},
             {"gesvdj_batched", testing_gesvdj<true, true, T>},
