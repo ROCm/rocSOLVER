@@ -152,15 +152,6 @@ static __device__ __host__ I first_tile(I const ia, I const mb, I const myprow, 
     I const jtile = (itile + ((myprow + nprow - iproc) % nprow));
 
     assert((jtile % nprow) == myprow);
-    if(iproc == myprow)
-    {
-        assert((itile * mb) <= ia);
-        assert(ia <= (itile * mb + (mb - 1)));
-    }
-    else
-    {
-        assert(ia < jtile * mb);
-    }
 
     return (jtile);
 }
@@ -581,8 +572,8 @@ static void __device__ Xnrm2_body(cg::grid_group cg_grid,
     double dnorm = 0;
     if(is_column_X)
     {
-        auto const itile_start = find_next_tile(ix, mb, myprow, nprow);
-        auto const itile_end = find_next_tile(ix + n - 1, mb, myprow, nprow);
+        auto const itile_start = first_tile(ix, mb, myprow, nprow);
+        auto const itile_end = first_tile(ix + n - 1, mb, myprow, nprow);
         auto const ntiles = (itile_end - itile_start) / nprow;
 
         {
@@ -612,8 +603,8 @@ static void __device__ Xnrm2_body(cg::grid_group cg_grid,
     }
     else
     {
-        auto const jtile_start = find_next_tile(jx, nb, mypcol, npcol);
-        auto const jtile_end = find_next_tile(jx + n - 1, nb, mypcol, npcol);
+        auto const jtile_start = first_tile(jx, nb, mypcol, npcol);
+        auto const jtile_end = first_tile(jx + n - 1, nb, mypcol, npcol);
         auto const ntiles = (jtile_end - jtile_start) / npcol;
 
         {
@@ -659,6 +650,238 @@ static void __device__ Xnrm2_body(cg::grid_group cg_grid,
     }
 
     cg_grid.sync();
+}
+
+// -------------------------------
+// compute the dot product
+// and return in "ans"
+//
+//
+// NOTE: assume *ans has been set to zero
+// -------------------------------
+template <typename T, typename I>
+static void __device__ Xdot_body(I const n,
+
+                                 T const* const X_,
+                                 I const ix,
+                                 I const jx,
+                                 I const ldx,
+                                 I const incx,
+
+                                 T const* const Y_,
+                                 I const iy,
+                                 I const jy,
+                                 I const ldy,
+                                 I const incy,
+
+                                 T* const ans,
+
+                                 I const mb,
+                                 I const nb,
+                                 I const myprow,
+                                 I const mypcol,
+                                 I const nprow,
+                                 I const npcol)
+{
+    if(n <= 0)
+    {
+        return;
+    };
+
+    bool constexpr is_complex = rocblas_is_complex<T>;
+
+    I const tix = hipThreadIdx_x;
+    I const tiy = hipThreadIdx_y;
+    I const nx = hipBlockDim_x;
+    I const ny = hipBlockDim_y;
+
+    auto idx2D = [](auto i, auto j, auto ld) { return (i + j * static_cast<int64_t>(ld)); };
+
+    bool const is_column_X = (incx == 1);
+    bool const is_column_Y = (incy == 1);
+    {
+        assert((incx == 1) || (incx == ldx));
+        assert((incy == 1) || (incy == ldy));
+    }
+
+    auto const ip_X = idx2D(ix, jx, ldx);
+    auto Xvec = [=](auto const i) -> T { return (X_[ip_X + i * static_cast<int64_t>(incx)]); };
+
+    auto const ip_Y = idx2D(iy, jy, ldy);
+    auto Yvec = [=](auto const i) -> T { return (Y_[ip_Y + i * static_cast<int64_t>(incy)]); };
+
+    extern __shared__ double lmem[];
+
+    T* dsum_sh = (T*)&(lmem[0]);
+
+    T dsum = 0;
+    if(is_column_X)
+    {
+        auto const itile_start = first_tile(ix, mb, myprow, nprow);
+        auto const itile_end = first_tile(ix + n - 1, mb, myprow, nprow);
+        auto const ntiles = (itile_end - itile_start) / nprow;
+
+        {
+            assert(itile_start <= itile_end);
+            assert(ntiles * nprow == (itile_end - itile_start));
+        }
+
+        for(auto it = (0 + tiy); it <= ntiles; it += ny)
+        {
+            auto const itile = itile_start + it * nprow;
+            auto const istart = std::max(ix, itile * mb);
+            auto const iend = std::min(ix + n - 1, itile * mb + (mb - 1));
+
+            for(auto iix = (istart + tix); iix <= iend; iix += nx)
+            {
+                T const xi = Xvec((iix - ix));
+                T const yi = Yvec((iix - ix));
+                if constexpr(is_complex)
+                {
+                    dsum += conj(xi) * yi;
+                }
+                else
+                {
+                    dsum += xi * yi;
+                }
+            }
+        }
+    }
+    else
+    {
+        auto const jtile_start = first_tile(jx, nb, mypcol, npcol);
+        auto const jtile_end = first_tile(jx + n - 1, nb, mypcol, npcol);
+        auto const ntiles = (jtile_end - jtile_start) / npcol;
+
+        {
+            assert(jtile_start <= jtile_end);
+            assert(ntiles * npcol == (jtile_end - jtile_start));
+        }
+
+        for(auto it = (0 + tiy); it <= ntiles; it += ny)
+        {
+            auto const jtile = jtile_start + it * npcol;
+            auto const jstart = std::max(jx, it * nb);
+            auto const jend = std::min(jx + n - 1, it * nb + (nb - 1));
+
+            for(auto jjx = (jstart + tix); jjx <= jend; jjx += nx)
+            {
+                T const xj = Xvec((jjx - jx));
+                T const yj = Yvec((jjx - jx));
+                if constexpr(is_complex)
+                {
+                    dsum += conj(xj) * yj;
+                }
+                else
+                {
+                    dsum += xj * yj;
+                }
+            }
+        }
+    }
+
+    auto const cg_block = cg::this_thread_block();
+    dsum = reduce_sum(cg_block, dsum_sh, dsum);
+
+    bool const need_atomic_update = (is_column_X) ? (nprow > 1) : (npcol > 1);
+    if(cg_block.thread_rank() == 0)
+    {
+        if(need_atomic_update)
+        {
+            atomicAdd(ans, (dsum));
+        }
+        else
+        {
+            *ans += (dsum);
+        }
+    }
+}
+
+template <typename T, typename I, typename Istride, typename UX, typename UY>
+__global__ static void Xdot_batch_kernel(I const n,
+
+                                         UX X_,
+                                         Istride const shiftX,
+                                         I const ix,
+                                         I const jx,
+                                         I const ldx,
+                                         I const incx,
+                                         Istride const strideX,
+
+                                         UY Y_,
+                                         Istride const shiftY,
+                                         I const iy,
+                                         I const jy,
+                                         I const ldy,
+                                         I const incy,
+                                         Istride const strideY,
+
+                                         I const batch_count,
+                                         I const mb,
+                                         I const nb,
+                                         T* const ans,
+                                         T* const work)
+{
+    I const myprow = hipBlockIdx_x;
+    I const mypcol = hipBlockIdx_y;
+    I const nprow = hipGridDim_x;
+    I const npcol = hipGridDim_y;
+
+    for(I bid = 0; bid < batch_count; bid++)
+    {
+        T const* const Xp = load_ptr_batch(X_, bid, shiftX, strideX);
+        T const* const Yp = load_ptr_batch(Y_, bid, shiftY, strideY);
+        T* const ansp = ans + bid;
+
+        Xdot_body<T, I>(n, Xp, ix, jx, ldx, incx, Yp, iy, jy, ldy, incy, ansp,
+
+                        mb, nb, myprow, mypcol, nprow, npcol);
+    }
+}
+
+template <typename T, typename I, typename Istride, typename UX, typename UY, typename Tex>
+static void rocsolverCall_dot(rocblas_handle handle,
+                              I const n,
+
+                              UX X_,
+                              Istride const shiftX,
+                              I const ix,
+                              I const jx,
+                              I const ldx,
+                              I const incx,
+                              Istride const strideX,
+
+                              UY Y_,
+                              Istride const shiftY,
+                              I const iy,
+                              I const jy,
+                              I const ldy,
+                              I const incy,
+                              Istride const strideY,
+
+                              I const batch_count,
+                              T* const norms,
+                              I const mb,
+                              I const nb,
+                              Tex* const workspace,
+                              T** const workArr)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    auto const nx = 32;
+    auto const ny = 32;
+    auto const num_cu = get_num_cu();
+    size_t const ld_size = 64 * 1024;
+
+    {
+        auto const istat = hipMemset(norms, 0, sizeof(T) * batch_count);
+        assert(istat == hipSuccess);
+    }
+
+    Xdot_batch_kernel<T, I, Istride><<<dim3(num_cu, 1, 1), dim3(nx, ny, 1), ld_size, stream>>>(
+        n, X_, shiftX, ix, jx, ldx, incx, strideX, Y_, shiftY, iy, jy, ldy, incy, strideY,
+        batch_count, mb, nb, norms, workspace);
 }
 
 template <typename T, typename I>
@@ -1231,8 +1454,10 @@ static __device__ void Xsymv_body(char const c_uplo,
 
     bool const is_column_X = (incx == 1);
     bool const is_column_Y = (incy == 1);
-    assert((incx == 1) || (incx == ldx));
-    assert((incy == 1) || (incy == ldy));
+    {
+        assert((incx == 1) || (incx == ldx));
+        assert((incy == 1) || (incy == ldy));
+    }
 
     auto idx2D = [](auto i, auto j, auto ld) { return (i + j * static_cast<int64_t>(ld)); };
 
@@ -1761,9 +1986,18 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
             rocblasCall_scal<T>(handle, n - j - 1, (tau + j), strideP, W,
                                 shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count);
 
-            rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j + 1, j, ldw), 1,
-                                        strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                                        batch_count, norms, work, workArr);
+            if(use_org)
+            {
+                rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j + 1, j, ldw), 1,
+                                            strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
+                                            batch_count, norms, work, workArr);
+            }
+            else
+            {
+                rocsolverCall_dot<T, rocblas_int, rocblas_stride>(
+                    handle, n - 1 - j, W, shiftW, j + 1, j, ldw, 1, strideW, A, shiftA, j + 1, j,
+                    lda, 1, strideA, batch_count, norms, mb, nb, work, workArr);
+            }
 
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel, if it provides
