@@ -13225,11 +13225,7 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
 
     The singular values are computed by applying QR factorization to AV if m >= n
     (resp. LQ factorization to U'A if m < n), where V (resp. U) is found as the
-    eigenvectors of A'A (resp. AA') using the Jacobi eigenvalue algorithm.
-
-    \note
-    In order to carry out calculations, this method may synchronize the stream contained within the
-    rocblas_handle.
+    eigenvectors of A'A (resp. AA') using the Divide-and-Conquer eigenvalue algorithm.
 
     @param[in]
     handle      rocblas_handle.
@@ -13254,21 +13250,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesvd_strided_batched(rocblas_handle 
     @param[in]
     lda         rocblas_int. lda >= m.
                 The leading dimension of A.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. The algorithm is considered to have converged once off(A'A)
-                is <= norm(A'A) * abstol [resp. off(AA') <= norm(AA') * abstol]. If abstol <= 0,
-                then the tolerance will be set to machine precision.
-    @param[out]
-    residual    pointer to real type on the GPU.
-                The Frobenius norm of the off-diagonal elements of A'A (resp. AA') at the final
-                iteration.
-    @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.
-                Maximum number of sweeps (iterations) to be used by the algorithm.
-    @param[out]
-    n_sweeps    pointer to a rocblas_int on the GPU.
-                The actual number of sweeps (iterations) used by the algorithm.
     @param[out]
     S           pointer to real type. Array on the GPU of dimension min(m,n).
                 The singular values of A in decreasing order.
@@ -13300,10 +13281,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesdd(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   float* A,
                                                   const rocblas_int lda,
-                                                  const float abstol,
-                                                  float* residual,
-                                                  const rocblas_int max_sweeps,
-                                                  rocblas_int* n_sweeps,
                                                   float* S,
                                                   float* U,
                                                   const rocblas_int ldu,
@@ -13318,10 +13295,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesdd(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   double* A,
                                                   const rocblas_int lda,
-                                                  const double abstol,
-                                                  double* residual,
-                                                  const rocblas_int max_sweeps,
-                                                  rocblas_int* n_sweeps,
                                                   double* S,
                                                   double* U,
                                                   const rocblas_int ldu,
@@ -13336,10 +13309,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesdd(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   rocblas_float_complex* A,
                                                   const rocblas_int lda,
-                                                  const float abstol,
-                                                  float* residual,
-                                                  const rocblas_int max_sweeps,
-                                                  rocblas_int* n_sweeps,
                                                   float* S,
                                                   rocblas_float_complex* U,
                                                   const rocblas_int ldu,
@@ -13354,10 +13323,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesdd(rocblas_handle handle,
                                                   const rocblas_int n,
                                                   rocblas_double_complex* A,
                                                   const rocblas_int lda,
-                                                  const double abstol,
-                                                  double* residual,
-                                                  const rocblas_int max_sweeps,
-                                                  rocblas_int* n_sweeps,
                                                   double* S,
                                                   rocblas_double_complex* U,
                                                   const rocblas_int ldu,
@@ -13399,12 +13364,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesdd(rocblas_handle handle,
 
     The singular values are computed by applying QR factorization to \f$A_lV_l\f$ if m >= n
     (resp. LQ factorization to \f$U_l'A_l\f$ if m < n), where \f$V_l\f$ (resp. \f$U_l\f$) is
-    found as the eigenvectors of \f$A_l'A_l\f$ (resp. \f$A_lA_l'\f$) using the Jacobi
+    found as the eigenvectors of \f$A_l'A_l\f$ (resp. \f$A_lA_l'\f$) using the Divide-and-Conquer
     eigenvalue algorithm.
-
-    \note
-    In order to carry out calculations, this method may synchronize the stream contained within the
-    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -13430,21 +13391,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesdd(rocblas_handle handle,
     @param[in]
     lda         rocblas_int. lda >= m.
                 The leading dimension of A_l.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. The algorithm is considered to have converged once off(A_l'A_l)
-                is <= norm(A_l'A_l) * abstol [resp. off(A_lA_l') <= norm(A_lA_l') * abstol]. If abstol <= 0,
-                then the tolerance will be set to machine precision.
-    @param[out]
-    residual    pointer to real type on the GPU.
-                The Frobenius norm of the off-diagonal elements of A_l'A_l (resp. A_lA_l') at the final
-                iteration.
-    @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.
-                Maximum number of sweeps (iterations) to be used by the algorithm.
-    @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
-                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
     S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The singular values of A_l in decreasing order.
@@ -13494,10 +13440,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesdd_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           float* const A[],
                                                           const rocblas_int lda,
-                                                          const float abstol,
-                                                          float* residual,
-                                                          const rocblas_int max_sweeps,
-                                                          rocblas_int* n_sweeps,
                                                           float* S,
                                                           const rocblas_stride strideS,
                                                           float* U,
@@ -13516,10 +13458,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesdd_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           double* const A[],
                                                           const rocblas_int lda,
-                                                          const double abstol,
-                                                          double* residual,
-                                                          const rocblas_int max_sweeps,
-                                                          rocblas_int* n_sweeps,
                                                           double* S,
                                                           const rocblas_stride strideS,
                                                           double* U,
@@ -13538,10 +13476,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesdd_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           rocblas_float_complex* const A[],
                                                           const rocblas_int lda,
-                                                          const float abstol,
-                                                          float* residual,
-                                                          const rocblas_int max_sweeps,
-                                                          rocblas_int* n_sweeps,
                                                           float* S,
                                                           const rocblas_stride strideS,
                                                           rocblas_float_complex* U,
@@ -13560,10 +13494,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesdd_batched(rocblas_handle handle,
                                                           const rocblas_int n,
                                                           rocblas_double_complex* const A[],
                                                           const rocblas_int lda,
-                                                          const double abstol,
-                                                          double* residual,
-                                                          const rocblas_int max_sweeps,
-                                                          rocblas_int* n_sweeps,
                                                           double* S,
                                                           const rocblas_stride strideS,
                                                           rocblas_double_complex* U,
@@ -13609,12 +13539,8 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesdd_batched(rocblas_handle handle,
 
     The singular values are computed by applying QR factorization to \f$A_lV_l\f$ if m >= n
     (resp. LQ factorization to \f$U_l'A_l\f$ if m < n), where \f$V_l\f$ (resp. \f$U_l\f$) is
-    found as the eigenvectors of \f$A_l'A_l\f$ (resp. \f$A_lA_l'\f$) using the Jacobi
+    found as the eigenvectors of \f$A_l'A_l\f$ (resp. \f$A_lA_l'\f$) using the Divide-and-Conquer
     eigenvalue algorithm.
-
-    \note
-    In order to carry out calculations, this method may synchronize the stream contained within the
-    rocblas_handle.
 
     @param[in]
     handle      rocblas_handle.
@@ -13644,21 +13570,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesdd_batched(rocblas_handle handle,
                 Stride from the start of one matrix A_l to the next one A_(l+1).
                 There is no restriction for the value of strideA.
                 Normal use case is strideA >= lda*n.
-    @param[in]
-    abstol      real type.
-                The absolute tolerance. The algorithm is considered to have converged once off(A_l'A_l)
-                is <= norm(A_l'A_l) * abstol [resp. off(A_lA_l') <= norm(A_lA_l') * abstol]. If abstol <= 0,
-                then the tolerance will be set to machine precision.
-    @param[out]
-    residual    pointer to real type on the GPU.
-                The Frobenius norm of the off-diagonal elements of A_l'A_l (resp. A_lA_l') at the final
-                iteration.
-    @param[in]
-    max_sweeps  rocblas_int. max_sweeps > 0.
-                Maximum number of sweeps (iterations) to be used by the algorithm.
-    @param[out]
-    n_sweeps    pointer to rocblas_int. Array of batch_count integers on the GPU.
-                The actual number of sweeps (iterations) used by the algorithm for each batch instance.
     @param[out]
     S           pointer to real type. Array on the GPU (the size depends on the value of strideS).
                 The singular values of A_l in decreasing order.
@@ -13709,10 +13620,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_sgesdd_strided_batched(rocblas_handle 
                                                                   float* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  const float abstol,
-                                                                  float* residual,
-                                                                  const rocblas_int max_sweeps,
-                                                                  rocblas_int* n_sweeps,
                                                                   float* S,
                                                                   const rocblas_stride strideS,
                                                                   float* U,
@@ -13732,10 +13639,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_dgesdd_strided_batched(rocblas_handle 
                                                                   double* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  const double abstol,
-                                                                  double* residual,
-                                                                  const rocblas_int max_sweeps,
-                                                                  rocblas_int* n_sweeps,
                                                                   double* S,
                                                                   const rocblas_stride strideS,
                                                                   double* U,
@@ -13755,10 +13658,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_cgesdd_strided_batched(rocblas_handle 
                                                                   rocblas_float_complex* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  const float abstol,
-                                                                  float* residual,
-                                                                  const rocblas_int max_sweeps,
-                                                                  rocblas_int* n_sweeps,
                                                                   float* S,
                                                                   const rocblas_stride strideS,
                                                                   rocblas_float_complex* U,
@@ -13778,10 +13677,6 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgesdd_strided_batched(rocblas_handle 
                                                                   rocblas_double_complex* A,
                                                                   const rocblas_int lda,
                                                                   const rocblas_stride strideA,
-                                                                  const double abstol,
-                                                                  double* residual,
-                                                                  const rocblas_int max_sweeps,
-                                                                  rocblas_int* n_sweeps,
                                                                   double* S,
                                                                   const rocblas_stride strideS,
                                                                   rocblas_double_complex* U,

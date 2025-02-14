@@ -38,6 +38,7 @@
 #include "roclapack_gelqf.hpp"
 #include "roclapack_geqrf.hpp"
 #include "roclapack_syevj_heevj.hpp"
+#include "roclapack_syevd_heevd.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
 
@@ -90,9 +91,6 @@ rocblas_status rocsolver_gesdd_argCheck(rocblas_handle handle,
                                          const rocblas_int n,
                                          W A,
                                          const rocblas_int lda,
-                                         SS* residual,
-                                         const rocblas_int max_sweeps,
-                                         rocblas_int* n_sweeps,
                                          SS* S,
                                          T* U,
                                          const rocblas_int ldu,
@@ -112,7 +110,7 @@ rocblas_status rocsolver_gesdd_argCheck(rocblas_handle handle,
         return rocblas_status_invalid_value;
 
     // 2. invalid size
-    if(n < 0 || m < 0 || lda < m || max_sweeps <= 0 || ldu < 1 || ldv < 1 || batch_count < 0)
+    if(n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || batch_count < 0)
         return rocblas_status_invalid_size;
     if((left_svect == rocblas_svect_all || left_svect == rocblas_svect_singular) && ldu < m)
         return rocblas_status_invalid_size;
@@ -125,8 +123,8 @@ rocblas_status rocsolver_gesdd_argCheck(rocblas_handle handle,
         return rocblas_status_continue;
 
     // 3. invalid pointers
-    if((n * m && !A) || (batch_count && !residual) || (batch_count && !n_sweeps)
-       || (min(m, n) && !S) || (batch_count && !info))
+    if((n * m && !A)
+       || (std::min(m, n) && !S) || (batch_count && !info))
         return rocblas_status_invalid_pointer;
     if((left_svect == rocblas_svect_all && m && !U)
        || (left_svect == rocblas_svect_singular && min(m, n) && !U))
@@ -145,26 +143,36 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
                                     const rocblas_int m,
                                     const rocblas_int n,
                                     const rocblas_int batch_count,
-                                    size_t* size_scalars,
                                     size_t* size_VUtmp,
-                                    size_t* size_work1_UVtmp,
+                                    size_t* size_UVtmpZ,
+                                    size_t* size_scalars,
+                                    size_t* size_work1,
                                     size_t* size_work2,
                                     size_t* size_work3,
                                     size_t* size_work4,
                                     size_t* size_work5_ipiv,
-                                    size_t* size_work6_workArr)
+                                    size_t* size_splits,
+                                    size_t* size_tmptau_W,
+                                    size_t* size_tau,
+                                    size_t* size_workArr,
+                                    size_t* size_workArr2)
 {
     // if quick return, set workspace to zero
     if(n == 0 || m == 0 || batch_count == 0)
     {
         *size_scalars = 0;
         *size_VUtmp = 0;
-        *size_work1_UVtmp = 0;
+        *size_UVtmpZ = 0;
+        *size_work1 = 0;
         *size_work2 = 0;
         *size_work3 = 0;
         *size_work4 = 0;
         *size_work5_ipiv = 0;
-        *size_work6_workArr = 0;
+        *size_splits = 0;
+        *size_tmptau_W = 0;
+        *size_tau = 0;
+        *size_workArr = 0;
+        *size_workArr2 = 0;
         return;
     }
 
@@ -172,12 +180,16 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     bool rightv = right_svect != rocblas_svect_none;
     bool left_full = left_svect == rocblas_svect_all;
     bool right_full = right_svect == rocblas_svect_all;
+    size_t size_UVtmp = 0;
+    size_t aj1 = 0, bj1 = 0, cj1 = 0, dj1 = 0, ej1 = 0, fj1 = 0;
     size_t a1 = 0, a2 = 0;
     size_t b1 = 0, b2 = 0, b3 = 0;
     size_t c1 = 0, c2 = 0, c3 = 0;
     size_t d1 = 0, d2 = 0, d3 = 0;
     size_t e1 = 0, e2 = 0;
     size_t f1 = 0, f2 = 0, f3 = 0, f4 = 0;
+    size_t g1 = 0;
+    size_t h1 = 0;
     size_t unused;
 
     *size_VUtmp = 0;
@@ -185,12 +197,15 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     if(m >= n)
     {
         // requirements for Jacobi eigensolver
-        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
+        rocsolver_syevd_heevd_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
                                                             rocblas_fill_upper, n, batch_count, &a1,
-                                                            &b1, &c1, &d1, &e1, &f1);
+                                                            &b1, &c1, &d1, &e1, &f1, &g1, &h1, size_workArr2);
+        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
+                                                            rocblas_fill_upper, n, batch_count, &aj1,
+                                                            &bj1, &cj1, &dj1, &ej1, &fj1);
 
         // requirements for QR factorization
-        rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
+        rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, &a2, &b2, &c2, &d2,
                                                   &f2);
         if(left_svect != rocblas_svect_none)
             rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, (left_full ? m : n), n, batch_count,
@@ -199,17 +214,20 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
         // extra requirements for temporary V & U storage
         *size_VUtmp = sizeof(T) * n * n * batch_count;
         if(!leftv)
-            a2 = sizeof(T) * m * n * batch_count;
+            size_UVtmp = sizeof(T) * m * n * batch_count;
     }
     else
     {
         // requirements for Jacobi eigensolver
         rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
-                                                            rocblas_fill_upper, m, batch_count, &a1,
-                                                            &b1, &c1, &d1, &e1, &f1);
+                                                            rocblas_fill_upper, m, batch_count, &aj1,
+                                                            &bj1, &cj1, &dj1, &ej1, &fj1);
+        rocsolver_syevd_heevd_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
+                                                            rocblas_fill_upper, n, batch_count, &a1,
+                                                            &b1, &c1, &d1, &e1, &f1, &g1, &h1, size_workArr2);
 
         // requirements for LQ factorization
-        rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, size_scalars, &b2, &c2, &d2,
+        rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, &a2, &b2, &c2, &d2,
                                                   &f2);
         if(right_svect != rocblas_svect_none)
             rocsolver_orglq_unglq_getMemorySize<BATCHED, T>((right_full ? n : m), n, m, batch_count,
@@ -219,7 +237,7 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
         if(!leftv)
             *size_VUtmp = sizeof(T) * m * m * batch_count;
         if(!rightv)
-            a2 = sizeof(T) * m * n * batch_count;
+            size_UVtmp = sizeof(T) * m * n * batch_count;
     }
 
     // extra requirements for temporary Householder scalars
@@ -229,12 +247,18 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     if(BATCHED)
         f4 = sizeof(T*) * 2 * batch_count;
 
-    *size_work1_UVtmp = std::max({a1, a2});
-    *size_work2 = std::max({b1, b2, b3});
-    *size_work3 = std::max({c1, c2, c3});
-    *size_work4 = std::max({d1, d2, d3});
-    *size_work5_ipiv = std::max({e1, e2});
-    *size_work6_workArr = std::max({f1, f2, f3, f4});
+    *size_UVtmpZ = std::max({aj1, e1, size_UVtmp});
+    *size_scalars = std::max({a1, a2});
+    *size_work1 = std::max({b1});
+    *size_work2 = std::max({bj1, c1, b2, b3});
+    *size_work3 = std::max({cj1, d1, c2, c3});
+    *size_work4 = std::max({dj1, d2, d3});
+    *size_work5_ipiv = std::max({e2});
+    *size_splits = std::max({f1});
+    *size_tmptau_W = std::max({g1});
+    *size_tau = std::max({h1});
+    *size_workArr = sizeof(T) * std::max({m, n}) * std::max({m, n}) * batch_count;
+    *size_workArr = std::max({*size_workArr, fj1, f2, f3, f4});
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename SS, typename W>
@@ -247,10 +271,6 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
                                          const rocblas_int shiftA,
                                          const rocblas_int lda,
                                          const rocblas_stride strideA,
-                                         const SS abstol,
-                                         SS* residual,
-                                         const rocblas_int max_sweeps,
-                                         rocblas_int* n_sweeps,
                                          SS* S,
                                          const rocblas_stride strideS,
                                          T* U,
@@ -261,18 +281,28 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
                                          const rocblas_stride strideV,
                                          rocblas_int* info,
                                          const rocblas_int batch_count,
-                                         T* scalars,
                                          T* VUtmp,
-                                         void* work1_UVtmp,
+                                         void* UVtmpZ,
+                                         T* scalars,
+                                         void* work1,
                                          void* work2,
                                          void* work3,
                                          void* work4,
                                          void* work5_ipiv,
-                                         void* work6_workArr)
+                                         void* splits,
+                                         void* tmptau_W,
+                                         void* tau,
+                                         void* workArr,
+                                         void* workArr2)
 {
+    SS abstol = get_epsilon<SS>();
+    const rocblas_int max_sweeps = 100;
     ROCSOLVER_ENTER("gesdd", "leftsv:", left_svect, "rightsv:", right_svect, "m:", m, "n:", n,
-                    "shiftA:", shiftA, "lda:", lda, "abstol:", abstol, "max_sweeps:", max_sweeps,
-                    "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
+                    "shiftA:", shiftA, "lda:", lda, "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
+    SS* residual;
+    HIP_CHECK(hipMalloc((void **)&residual, sizeof(SS)));
+    rocblas_int* n_sweeps;
+    HIP_CHECK(hipMalloc((void **)&n_sweeps, sizeof(rocblas_int)));
 
     // quick return
     if(batch_count == 0)
@@ -288,12 +318,10 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
         dim3 gridReset(blocksReset, 1, 1);
         dim3 threadsReset(BS1, 1, 1);
 
-        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, residual,
-                                batch_count, 0);
-        ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, n_sweeps,
-                                batch_count, 0);
         ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, info, batch_count, 0);
 
+        HIP_CHECK(hipFree((void *)residual));
+        HIP_CHECK(hipFree((void *)n_sweeps));
         return rocblas_status_success;
     }
 
@@ -306,7 +334,7 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
     bool rightv = right_svect != rocblas_svect_none;
     bool left_full = left_svect == rocblas_svect_all;
     bool right_full = right_svect == rocblas_svect_all;
-    T minone = T(-1);
+    T neg_one = T(-1);
     T one = T(1);
     T zero = T(0);
 
@@ -318,29 +346,35 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
         rocblas_int strideV_gemm = n * n;
 
         rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, n, n,
-                       m, &minone, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, V_gemm,
-                       0, ldv_gemm, strideV_gemm, batch_count, (T**)work6_workArr);
+                       m, &neg_one, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, V_gemm,
+                       0, ldv_gemm, strideV_gemm, batch_count, (T**)workArr);
 
         // apply eigenvalue decomposition to -A'A, obtaining V as eigenvectors
-        rocsolver_syevj_heevj_template<false, STRIDED, T>(
-            handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, n, V_gemm,
-            0, ldv_gemm, strideV_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info,
-            batch_count, (T*)work1_UVtmp, (T*)work2, (SS*)work3, (rocblas_int*)work4,
-            (rocblas_int*)work5_ipiv, (rocblas_int*)work6_workArr);
+        /* rocsolver_syevj_heevj_template<false, STRIDED, T>( */
+        /*     handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, n, V_gemm, */
+        /*     0, ldv_gemm, strideV_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info, */
+        /*     batch_count, (T*)UVtmpZ, (T*)work2, (SS*)work3, (rocblas_int*)work4, */
+        /*     (rocblas_int*)work5_ipiv, (rocblas_int*)workArr); */
+
+        rocsolver_syevd_heevd_template<false, STRIDED, T>(
+            handle, rocblas_evect_original, rocblas_fill_upper, n, V_gemm,
+            0, ldv_gemm, strideV_gemm, S, strideS, (SS*)workArr, strideS, info,
+            batch_count, scalars, work1, work2, work3, (SS*)UVtmpZ,
+            (rocblas_int*)splits, (T*)tmptau_W, (T*)tau, (T**)workArr2);
 
         // compute AV
-        T* U_gemm = (leftv ? U : (T*)work1_UVtmp);
+        T* U_gemm = (leftv ? U : (T*)UVtmpZ);
         rocblas_int ldu_gemm = (leftv ? ldu : m);
         rocblas_int strideU_gemm = (leftv ? strideU : m * n);
 
         rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, m, n, n, &one, A,
                        shiftA, lda, strideA, V_gemm, 0, ldv_gemm, strideV_gemm, &zero, U_gemm, 0,
-                       ldu_gemm, strideU_gemm, batch_count, (T**)work6_workArr);
+                       ldu_gemm, strideU_gemm, batch_count, (T**)workArr);
 
         // apply QR factorization to AV, obtaining U = Q and S = R
         rocsolver_geqrf_template<false, STRIDED, T>(handle, m, n, U_gemm, 0, ldu_gemm, strideU_gemm,
                                                     (T*)work5_ipiv, n, batch_count, scalars, work2,
-                                                    (T*)work3, (T*)work4, (T**)work6_workArr);
+                                                    (T*)work3, (T*)work4, (T**)workArr);
 
         rocblas_int blocks = (n - 1) / BS1 + 1;
         ROCSOLVER_LAUNCH_KERNEL(gesdd_finalize<T>, dim3(blocks, batch_count, 1), dim3(BS1, 1, 1),
@@ -350,7 +384,7 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
         if(leftv)
             rocsolver_orgqr_ungqr_template<false, STRIDED, T>(
                 handle, m, (left_full ? m : n), n, U_gemm, 0, ldu_gemm, strideU_gemm, (T*)work5_ipiv,
-                n, batch_count, scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
+                n, batch_count, scalars, (T*)work2, (T*)work3, (T*)work4, (T**)workArr);
 
         // transpose V
         if(rightv)
@@ -370,29 +404,35 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
         rocblas_int strideU_gemm = (leftv ? strideU : m * m);
 
         rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, m, m,
-                       n, &minone, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, U_gemm,
-                       0, ldu_gemm, strideU_gemm, batch_count, (T**)work6_workArr);
+                       n, &neg_one, A, shiftA, lda, strideA, A, shiftA, lda, strideA, &zero, U_gemm,
+                       0, ldu_gemm, strideU_gemm, batch_count, (T**)workArr);
 
         // apply eigenvalue decomposition to -AA', obtaining U as eigenvectors
-        rocsolver_syevj_heevj_template<false, STRIDED, T>(
-            handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, m, U_gemm,
-            0, ldu_gemm, strideU_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info,
-            batch_count, (T*)work1_UVtmp, (T*)work2, (SS*)work3, (rocblas_int*)work4,
-            (rocblas_int*)work5_ipiv, (rocblas_int*)work6_workArr);
+        /* rocsolver_syevj_heevj_template<false, STRIDED, T>( */
+        /*     handle, rocblas_esort_ascending, rocblas_evect_original, rocblas_fill_upper, m, U_gemm, */
+        /*     0, ldu_gemm, strideU_gemm, abstol, residual, max_sweeps, n_sweeps, S, strideS, info, */
+        /*     batch_count, (T*)UVtmpZ, (T*)work2, (SS*)work3, (rocblas_int*)work4, */
+        /*     (rocblas_int*)work5_ipiv, (rocblas_int*)workArr); */
+
+        rocsolver_syevd_heevd_template<false, STRIDED, T>(
+            handle, rocblas_evect_original, rocblas_fill_upper, m, U_gemm,
+            0, ldu_gemm, strideU_gemm, S, strideS, (SS*)workArr, strideS, info,
+            batch_count, scalars, work1, work2, work3, (SS*)UVtmpZ,
+            (rocblas_int*)splits, (T*)tmptau_W, (T*)tau, (T**)workArr2);
 
         // compute U'A
-        T* V_gemm = (rightv ? V : (T*)work1_UVtmp);
+        T* V_gemm = (rightv ? V : (T*)UVtmpZ);
         rocblas_int ldv_gemm = (rightv ? ldv : m);
         rocblas_int strideV_gemm = (rightv ? strideV : m * n);
 
         rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, m, n,
                        m, &one, U_gemm, 0, ldu_gemm, strideU_gemm, A, shiftA, lda, strideA, &zero,
-                       V_gemm, 0, ldv_gemm, strideV_gemm, batch_count, (T**)work6_workArr);
+                       V_gemm, 0, ldv_gemm, strideV_gemm, batch_count, (T**)workArr);
 
         // apply LQ factorization to U'A, obtaining S = L and V' = Q
         rocsolver_gelqf_template<false, STRIDED, T>(handle, m, n, V_gemm, 0, ldv_gemm, strideV_gemm,
                                                     (T*)work5_ipiv, m, batch_count, scalars, work2,
-                                                    (T*)work3, (T*)work4, (T**)work6_workArr);
+                                                    (T*)work3, (T*)work4, (T**)workArr);
 
         rocblas_int blocks = (m - 1) / BS1 + 1;
         ROCSOLVER_LAUNCH_KERNEL(gesdd_finalize<T>, dim3(blocks, batch_count, 1), dim3(BS1, 1, 1),
@@ -402,10 +442,12 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
         if(rightv)
             rocsolver_orglq_unglq_template<false, STRIDED, T>(
                 handle, (right_full ? n : m), n, m, V_gemm, 0, ldv_gemm, strideV_gemm, (T*)work5_ipiv,
-                m, batch_count, scalars, (T*)work2, (T*)work3, (T*)work4, (T**)work6_workArr);
+                m, batch_count, scalars, (T*)work2, (T*)work3, (T*)work4, (T**)workArr);
     }
 
     rocblas_set_pointer_mode(handle, old_mode);
+    HIP_CHECK(hipFree((void *)residual));
+    HIP_CHECK(hipFree((void *)n_sweeps));
     return rocblas_status_success;
 }
 

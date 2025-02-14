@@ -4197,10 +4197,12 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int bc)
 {
     return STRIDED ? rocsolver_sgesdd_strided_batched(handle, leftv, rightv, m, n, A, lda, stA,
-                                                       abstol, residual, max_sweeps, n_sweeps, S,
-                                                       stS, U, ldu, stU, V, ldv, stV, info, bc)
-                   : rocsolver_sgesdd(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                       max_sweeps, n_sweeps, S, U, ldu, V, ldv, info);
+                                                       // abstol, residual, max_sweeps, n_sweeps, 
+                                                       S, stS, U, ldu, stU, V, ldv, stV, info, bc)
+                   : rocsolver_sgesdd(handle, leftv, rightv, m, n, A, lda, 
+                                        // abstol, residual,
+                                       // max_sweeps, n_sweeps, 
+                                       S, U, ldu, V, ldv, info);
 }
 
 inline rocblas_status rocsolver_gesdd(bool STRIDED,
@@ -4228,10 +4230,12 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int bc)
 {
     return STRIDED ? rocsolver_dgesdd_strided_batched(handle, leftv, rightv, m, n, A, lda, stA,
-                                                       abstol, residual, max_sweeps, n_sweeps, S,
+                                                       // abstol, residual, max_sweeps, n_sweeps, 
+                                                       S,
                                                        stS, U, ldu, stU, V, ldv, stV, info, bc)
-                   : rocsolver_dgesdd(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                       max_sweeps, n_sweeps, S, U, ldu, V, ldv, info);
+                   : rocsolver_dgesdd(handle, leftv, rightv, m, n, A, lda, // abstol, residual,
+                                       /* max_sweeps, n_sweeps, */ 
+                                       S, U, ldu, V, ldv, info);
 }
 
 inline rocblas_status rocsolver_gesdd(bool STRIDED,
@@ -4259,10 +4263,10 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int bc)
 {
     return STRIDED ? rocsolver_cgesdd_strided_batched(handle, leftv, rightv, m, n, A, lda, stA,
-                                                       abstol, residual, max_sweeps, n_sweeps, S,
+                                                       /* abstol, residual, max_sweeps, n_sweeps,*/ S,
                                                        stS, U, ldu, stU, V, ldv, stV, info, bc)
-                   : rocsolver_cgesdd(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                       max_sweeps, n_sweeps, S, U, ldu, V, ldv, info);
+                   : rocsolver_cgesdd(handle, leftv, rightv, m, n, A, lda, /*abstol, residual,
+                                       max_sweeps, n_sweeps,*/ S, U, ldu, V, ldv, info);
 }
 
 inline rocblas_status rocsolver_gesdd(bool STRIDED,
@@ -4290,10 +4294,10 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int bc)
 {
     return STRIDED ? rocsolver_zgesdd_strided_batched(handle, leftv, rightv, m, n, A, lda, stA,
-                                                       abstol, residual, max_sweeps, n_sweeps, S,
+                                                       /* abstol, residual, max_sweeps, n_sweeps,*/ S,
                                                        stS, U, ldu, stU, V, ldv, stV, info, bc)
-                   : rocsolver_zgesdd(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                       max_sweeps, n_sweeps, S, U, ldu, V, ldv, info);
+                   : rocsolver_zgesdd(handle, leftv, rightv, m, n, A, lda, /* abstol, residual,
+                                       max_sweeps, n_sweeps,*/ S, U, ldu, V, ldv, info);
 }
 
 // batched
@@ -4321,8 +4325,8 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int* info,
                                        rocblas_int bc)
 {
-    return rocsolver_sgesdd_batched(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                     max_sweeps, n_sweeps, S, stS, U, ldu, stU, V, ldv, stV, info,
+    return rocsolver_sgesdd_batched(handle, leftv, rightv, m, n, A, lda, /* abstol, residual,
+                                     max_sweeps, n_sweeps,*/ S, stS, U, ldu, stU, V, ldv, stV, info,
                                      bc);
 }
 
@@ -4350,8 +4354,8 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int* info,
                                        rocblas_int bc)
 {
-    return rocsolver_dgesdd_batched(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                     max_sweeps, n_sweeps, S, stS, U, ldu, stU, V, ldv, stV, info,
+    return rocsolver_dgesdd_batched(handle, leftv, rightv, m, n, A, lda, /*abstol, residual,
+                                     max_sweeps, n_sweeps,*/ S, stS, U, ldu, stU, V, ldv, stV, info,
                                      bc);
 }
 
@@ -4379,8 +4383,8 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int* info,
                                        rocblas_int bc)
 {
-    return rocsolver_cgesdd_batched(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                     max_sweeps, n_sweeps, S, stS, U, ldu, stU, V, ldv, stV, info,
+    return rocsolver_cgesdd_batched(handle, leftv, rightv, m, n, A, lda, /* abstol, residual,
+                                     max_sweeps, n_sweeps,*/ S, stS, U, ldu, stU, V, ldv, stV, info,
                                      bc);
 }
 
@@ -4408,8 +4412,8 @@ inline rocblas_status rocsolver_gesdd(bool STRIDED,
                                        rocblas_int* info,
                                        rocblas_int bc)
 {
-    return rocsolver_zgesdd_batched(handle, leftv, rightv, m, n, A, lda, abstol, residual,
-                                     max_sweeps, n_sweeps, S, stS, U, ldu, stU, V, ldv, stV, info,
+    return rocsolver_zgesdd_batched(handle, leftv, rightv, m, n, A, lda, /* abstol, residual,
+                                     max_sweeps, n_sweeps,*/ S, stS, U, ldu, stU, V, ldv, stV, info,
                                      bc);
 }
 /********************************************************/
