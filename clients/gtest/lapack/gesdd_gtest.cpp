@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -125,9 +125,6 @@ Arguments gesdd_setup_arguments(gesdd_tuple tup, bool notransv)
         arg.set<char>("right_svect", 'S');
     else
         arg.set<char>("right_svect", 'A');
-
-    arg.set<double>("abstol", 0);
-    arg.set<rocblas_int>("max_sweeps", 100);
 
     // only testing standard use case/defaults for strides
 
