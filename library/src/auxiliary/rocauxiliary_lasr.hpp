@@ -469,9 +469,9 @@ rocblas_status rocsolver_lasr_template(rocblas_handle handle,
     auto const mn = (is_side_left) ? n : m;
     auto const nblocks = (mn - 1) / nthreads + 1;
 
-    hipLaunchKernelGGL((lasr_kernel<T>), dim3(nblocks, 1, batch_count), dim3(nthreads, 1, 1), 0,
-                       stream, side, pivot, direct, m, n, CA, strideC, SA, strideS, AA, shiftA, lda,
-                       strideA, batch_count);
+    ROCSOLVER_LAUNCH_KERNEL((lasr_kernel<T>), dim3(nblocks, 1, batch_count), dim3(nthreads, 1, 1),
+                            0, stream, side, pivot, direct, m, n, CA, strideC, SA, strideS, AA,
+                            shiftA, lda, strideA, batch_count);
 
     return rocblas_status_success;
 }
