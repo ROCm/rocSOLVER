@@ -176,18 +176,18 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
     rocblas_direct direc = (t2b ? rocblas_forward_direction : rocblas_backward_direction);
     if(V && nv)
     {
-        lasr_body(rocblas_side_left, rocblas_pivot_variable, direc, n, nv, rots, rots + n, V, ldv,
-                  tid, tid_inc);
+        run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, n, nv, rots, rots + n, V, ldv,
+                 tid, tid_inc);
     }
     if(U && nu)
     {
-        lasr_body(rocblas_side_right, rocblas_pivot_variable, direc, nu, n, rots + nr,
-                  rots + nr + n, U, ldu, tid, tid_inc);
+        run_lasr(rocblas_side_right, rocblas_pivot_variable, direc, nu, n, rots + nr, rots + nr + n,
+                 U, ldu, tid, tid_inc);
     }
     if(C && nc)
     {
-        lasr_body(rocblas_side_left, rocblas_pivot_variable, direc, n, nc, rots + nr, rots + nr + n,
-                  C, ldc, tid, tid_inc);
+        run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, n, nc, rots + nr, rots + nr + n,
+                 C, ldc, tid, tid_inc);
     }
 }
 
@@ -473,13 +473,13 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
     // update singular vectors
     if(nu)
     {
-        lasr_body(rocblas_side_right, rocblas_pivot_variable, rocblas_forward_direction, nu, n,
-                  rots, rots + n, U, ldu, tid, tid_inc);
+        run_lasr(rocblas_side_right, rocblas_pivot_variable, rocblas_forward_direction, nu, n, rots,
+                 rots + n, U, ldu, tid, tid_inc);
     }
     if(nc)
     {
-        lasr_body(rocblas_side_left, rocblas_pivot_variable, rocblas_forward_direction, n, nc, rots,
-                  rots + n, C, ldc, tid, tid_inc);
+        run_lasr(rocblas_side_left, rocblas_pivot_variable, rocblas_forward_direction, n, nc, rots,
+                 rots + n, C, ldc, tid, tid_inc);
     }
 }
 
@@ -692,18 +692,18 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
             rocblas_direct direc = (dir > 0 ? rocblas_forward_direction : rocblas_backward_direction);
             if(V && nv)
             {
-                lasr_body(rocblas_side_left, rocblas_pivot_variable, direc, nn, nv, rots, rots + nn,
-                          V + k_start, ldv, tid, tid_inc);
+                run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, nn, nv, rots, rots + nn,
+                         V + k_start, ldv, tid, tid_inc);
             }
             if(U && nu)
             {
-                lasr_body(rocblas_side_right, rocblas_pivot_variable, direc, nu, nn, rots + nr,
-                          rots + nr + nn, U + k_start * ldu, ldu, tid, tid_inc);
+                run_lasr(rocblas_side_right, rocblas_pivot_variable, direc, nu, nn, rots + nr,
+                         rots + nr + nn, U + k_start * ldu, ldu, tid, tid_inc);
             }
             if(C && nc)
             {
-                lasr_body(rocblas_side_left, rocblas_pivot_variable, direc, nn, nc, rots + nr,
-                          rots + nr + nn, C + k_start, ldc, tid, tid_inc);
+                run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, nn, nc, rots + nr,
+                         rots + nr + nn, C + k_start, ldc, tid, tid_inc);
             }
         }
     }

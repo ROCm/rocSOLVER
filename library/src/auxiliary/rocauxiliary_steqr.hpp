@@ -129,8 +129,8 @@ __device__ void run_steqr(const rocblas_int n,
                     laev2(D[l], E[l], D[l + 1], rt1, rt2, c, s);
                     work[l] = c;
                     work[n - 1 + l] = s;
-                    lasr_body(rocblas_side_right, rocblas_pivot_variable, rocblas_backward_direction,
-                              n, 2, work + l, work + n - 1 + l, C + 0 + l * ldc, ldc, 0, 1);
+                    run_lasr(rocblas_side_right, rocblas_pivot_variable, rocblas_backward_direction,
+                             n, 2, work + l, work + n - 1 + l, C + 0 + l * ldc, ldc, 0, 1);
 
                     D[l] = rt1;
                     D[l + 1] = rt2;
@@ -178,8 +178,8 @@ __device__ void run_steqr(const rocblas_int n,
                     }
 
                     // Apply saved rotations
-                    lasr_body(rocblas_side_right, rocblas_pivot_variable, rocblas_backward_direction,
-                              n, m - l + 1, work + l, work + n - 1 + l, C + 0 + l * ldc, ldc, 0, 1);
+                    run_lasr(rocblas_side_right, rocblas_pivot_variable, rocblas_backward_direction,
+                             n, m - l + 1, work + l, work + n - 1 + l, C + 0 + l * ldc, ldc, 0, 1);
 
                     D[l] -= p;
                     E[l] = g;
@@ -212,8 +212,8 @@ __device__ void run_steqr(const rocblas_int n,
                     laev2(D[l - 1], E[l - 1], D[l], rt1, rt2, c, s);
                     work[m] = c;
                     work[n - 1 + m] = s;
-                    lasr_body(rocblas_side_right, rocblas_pivot_variable, rocblas_forward_direction,
-                              n, 2, work + m, work + n - 1 + m, C + 0 + (l - 1) * ldc, ldc, 0, 1);
+                    run_lasr(rocblas_side_right, rocblas_pivot_variable, rocblas_forward_direction,
+                             n, 2, work + m, work + n - 1 + m, C + 0 + (l - 1) * ldc, ldc, 0, 1);
 
                     D[l - 1] = rt1;
                     D[l] = rt2;
@@ -261,8 +261,8 @@ __device__ void run_steqr(const rocblas_int n,
                     }
 
                     // Apply saved rotations
-                    lasr_body(rocblas_side_right, rocblas_pivot_variable, rocblas_forward_direction,
-                              n, l - m + 1, work + m, work + n - 1 + m, C + 0 + m * ldc, ldc, 0, 1);
+                    run_lasr(rocblas_side_right, rocblas_pivot_variable, rocblas_forward_direction,
+                             n, l - m + 1, work + m, work + n - 1 + m, C + 0 + m * ldc, ldc, 0, 1);
 
                     D[l] -= p;
                     E[l - 1] = g;

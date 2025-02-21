@@ -75,7 +75,7 @@ static void scal_template(I const n, S const da, T* const x, I const incx, hipSt
 }
 
 /** Call to lasr functionality.
-    lasr_body can be executed as a host or device function **/
+    run_lasr can be executed as a host or device function **/
 template <typename S, typename T, typename I>
 static void call_lasr(rocblas_side& side,
                       rocblas_pivot& pivot,
@@ -90,7 +90,7 @@ static void call_lasr(rocblas_side& side,
     I const tid = 0;
     I const i_inc = 1;
 
-    lasr_body<T, S, I>(side, pivot, direct, m, n, &c, &s, &A, lda, tid, i_inc);
+    run_lasr<T, S, I>(side, pivot, direct, m, n, &c, &s, &A, lda, tid, i_inc);
 }
 
 /************************************************************************************/
