@@ -180,7 +180,6 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     bool left_full = left_svect == rocblas_svect_all;
     bool right_full = right_svect == rocblas_svect_all;
     size_t size_UVtmp = 0;
-    size_t aj1 = 0, bj1 = 0, cj1 = 0, dj1 = 0, ej1 = 0, fj1 = 0;
     size_t a1 = 0, a2 = 0;
     size_t b1 = 0, b2 = 0, b3 = 0;
     size_t c1 = 0, c2 = 0, c3 = 0;
@@ -195,13 +194,10 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
 
     if(m >= n)
     {
-        // requirements for Jacobi eigensolver
+        // requirements for Divide-and-Conquer eigensolver
         rocsolver_syevd_heevd_getMemorySize<BATCHED, T, SS>(
             rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1,
             &f1, &g1, &h1, size_workArr2);
-        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
-                                                            rocblas_fill_upper, n, batch_count,
-                                                            &aj1, &bj1, &cj1, &dj1, &ej1, &fj1);
 
         // requirements for QR factorization
         rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, &a2, &b2, &c2, &d2, &f2);
@@ -216,10 +212,7 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     }
     else
     {
-        // requirements for Jacobi eigensolver
-        rocsolver_syevj_heevj_getMemorySize<BATCHED, T, SS>(rocblas_evect_original,
-                                                            rocblas_fill_upper, m, batch_count,
-                                                            &aj1, &bj1, &cj1, &dj1, &ej1, &fj1);
+        // requirements for Divide-and-Conquer eigensolver
         rocsolver_syevd_heevd_getMemorySize<BATCHED, T, SS>(
             rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1,
             &f1, &g1, &h1, size_workArr2);
@@ -244,18 +237,18 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     if(BATCHED)
         f4 = sizeof(T*) * 2 * batch_count;
 
-    *size_UVtmpZ = std::max({aj1, e1, size_UVtmp});
+    *size_UVtmpZ = std::max({e1, size_UVtmp});
     *size_scalars = std::max({a1, a2});
     *size_work1 = std::max({b1});
-    *size_work2 = std::max({bj1, c1, b2, b3});
-    *size_work3 = std::max({cj1, d1, c2, c3});
-    *size_work4 = std::max({dj1, d2, d3});
+    *size_work2 = std::max({c1, b2, b3});
+    *size_work3 = std::max({d1, c2, c3});
+    *size_work4 = std::max({d2, d3});
     *size_work5_ipiv = std::max({e2});
     *size_splits = std::max({f1});
     *size_tmptau_W = std::max({g1});
     *size_tau = std::max({h1});
     *size_workArr = sizeof(T) * std::max({m, n}) * std::max({m, n}) * batch_count;
-    *size_workArr = std::max({*size_workArr, fj1, f2, f3, f4});
+    *size_workArr = std::max({*size_workArr, f2, f3, f4});
 }
 
 template <bool BATCHED, bool STRIDED, typename T, typename SS, typename W>
