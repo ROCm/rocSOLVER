@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "common/matrix_utils/matrix_utils.hpp"
 #include "common/misc/client_util.hpp"
 #include "common/misc/clientcommon.hpp"
 #include "common/misc/lapack_host_reference.hpp"
@@ -182,7 +183,8 @@ void gesdd_initData(const rocblas_handle handle,
                     const rocblas_int bc,
                     Th& hA,
                     std::vector<T>& A,
-                    bool test = true)
+                    const bool test = true,
+                    const bool singular = false)
 {
     if(CPU)
     {
@@ -190,15 +192,29 @@ void gesdd_initData(const rocblas_handle handle,
 
         for(rocblas_int b = 0; b < bc; ++b)
         {
-            // scale A to avoid singularities
-            for(rocblas_int i = 0; i < m; i++)
+            if(!singular)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                // scale A to avoid singularities
+                for(rocblas_int i = 0; i < m; i++)
                 {
-                    if(i == j)
-                        hA[b][i + j * lda] += 400;
-                    else
-                        hA[b][i + j * lda] -= 4;
+                    for(rocblas_int j = 0; j < n; j++)
+                    {
+                        if(i == j)
+                            hA[b][i + j * lda] += 400;
+                        else
+                            hA[b][i + j * lda] -= 4;
+                    }
+                }
+            }
+            else
+            {
+                // form a singular matrix consisting of all ones
+                for(rocblas_int i = 0; i < m; i++)
+                {
+                    for(rocblas_int j = 0; j < n; j++)
+                    {
+                        hA[b][i + j * lda] = 1;
+                    }
                 }
             }
 
@@ -274,6 +290,8 @@ void gesdd_getError(const rocblas_handle handle,
                     double* max_err,
                     double* max_errv)
 {
+    using HMat = HostMatrix<T, rocblas_int>;
+    using BDesc = typename HMat::BlockDescriptor;
     rocblas_int lwork = 5 * std::max(m, n);
     rocblas_int lrwork = (rocblas_is_complex<T> ? 5 * std::min(m, n) : 0);
     std::vector<T> work(lwork);
@@ -283,8 +301,8 @@ void gesdd_getError(const rocblas_handle handle,
     // input data initialization
     gesdd_initData<true, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
 
-    // execute computations:
-    // complementary execution to compute all singular vectors if needed
+    // If one of `left_svect` or `right_svect` was requested, this will guarantee
+    // that the other is computed as well
     CHECK_ROCBLAS_ERROR(rocsolver_gesdd(STRIDED, handle, left_svectT, right_svectT, mT, nT,
                                         dA.data(), lda, stA, dS.data(), stS, dUT.data(), lduT, stUT,
                                         dVT.data(), ldvT, stVT, dinfo.data(), bc));
@@ -295,11 +313,6 @@ void gesdd_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(Vres.transfer_from(dVT));
 
     gesdd_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
-
-    // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
-        cpu_gesvd(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
-                  hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
 
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_gesdd(STRIDED, handle, left_svect, right_svect, m, n, dA.data(),
@@ -314,46 +327,86 @@ void gesdd_getError(const rocblas_handle handle,
     if(right_svect == rocblas_svect_singular || right_svect == rocblas_svect_all)
         CHECK_HIP_ERROR(Vres.transfer_from(dV));
 
-    // Check info for non-convergence
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
-    {
-        EXPECT_EQ(hinfo[b][0], hinfoRes[b][0]) << "where b = " << b;
-        if(hinfo[b][0] != hinfoRes[b][0])
-            *max_err += 1;
-    }
-
-    // (We expect the used input matrices to always converge. Testing
-    // implicitly the equivalent non-converged matrix is very complicated and it boils
-    // down to essentially run the algorithm again and until convergence is achieved).
-
-    double err;
     *max_errv = 0;
+    double err;
+    const bool no_singular_vectors
+        = (left_svect == rocblas_svect_none) && (right_svect == rocblas_svect_none);
 
     for(rocblas_int b = 0; b < bc; ++b)
     {
-        // error is ||hS - hSres||
-        err = norm_error('F', 1, std::min(m, n), 1, hS[b], hSres[b]);
-        *max_err = err > *max_err ? err : *max_err;
-
-        // Check the singular vectors if required
-        if(hinfo[b][0] == 0 && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
+        // We expect gesdd to converge for all input matrices
+        EXPECT_EQ(hinfoRes[b][0], 0) << "where b = " << b;
+        if(hinfoRes[b][0] != 0)
         {
-            err = 0;
-            // check singular vectors implicitly (A*v_k = s_k*u_k)
-            for(rocblas_int k = 0; k < std::min(m, n); ++k)
+            *max_err += 1;
+            continue;
+        }
+        err = 0.;
+
+        // Number of singular values (i.e., dimension of S) is always smallest
+        // number between rows and columns of input matrix A
+        rocblas_int dim_S = std::min(m, n);
+        rocblas_int ncols_U = dim_S;
+        rocblas_int nrows_V = dim_S;
+
+        // Only check singular values
+        if(no_singular_vectors)
+        {
+            // CPU lapack
+            cpu_gesvd(rocblas_svect_none, rocblas_svect_none, m, n, hA[b], lda, hS[b], hU[b], ldu,
+                      hV[b], ldv, work.data(), lwork, rwork.data(), hinfo[b]);
+
+            // err = ||hS - hSres||_F / ||hS||_F
+            err = norm_error('F', 1, dim_S, 1, hS[b], hSres[b]);
+            *max_err = err > *max_err ? err : *max_err;
+        }
+        // Check singular vectors and singular values
+        else
+        {
+            // Get input matrix A
+            auto AWrap = HMat::Wrap(A.data() + b * lda * n, lda, n);
+            auto A = (*AWrap).block(BDesc().nrows(m).ncols(n));
+
+            // Get computed singular values (convert singular values from type
+            // S to type T, if required)
+            auto svals = *HMat::Convert(hSres[b], dim_S, 1);
+            auto S = HMat::Zeros(dim_S, dim_S);
+            S.diag(svals);
+
+            // Get computed eigenvectors
+            auto U = (*HMat::Wrap(Ures[b], ldures, ncols_U)).block(BDesc().nrows(m).ncols(ncols_U));
+            auto Vt = (*HMat::Wrap(Vres[b], ldvres, n)).block(BDesc().nrows(nrows_V).ncols(n));
+
+            // Check orthogonality of left singular vectors if they were requested
+            if(left_svect != rocblas_svect_none)
             {
-                for(rocblas_int i = 0; i < m; ++i)
-                {
-                    T tmp = 0;
-                    for(rocblas_int j = 0; j < n; ++j)
-                        tmp += A[b * lda * n + i + j * lda] * sconj(Vres[b][k + j * ldvres]);
-                    tmp -= hSres[b][k] * Ures[b][i + k * ldures];
-                    err += std::abs(tmp) * std::abs(tmp);
-                }
+                auto UE = adjoint(U) * U - HMat::Eye(ncols_U, ncols_U);
+                err = UE.norm();
+                *max_errv = err > *max_errv ? err : *max_errv;
             }
-            err = std::sqrt(err) / double(snorm('F', m, n, A.data() + b * lda * n, lda));
-            *max_errv = err > *max_errv ? err : *max_errv;
+
+            // Check orthogonality of right singular vectors if they were requested
+            if(right_svect != rocblas_svect_none)
+            {
+                auto VE = Vt * adjoint(Vt) - HMat::Eye(nrows_V, nrows_V);
+                err = VE.norm();
+                *max_errv = err > *max_errv ? err : *max_errv;
+            }
+
+            // Check residual error of reconstructed A
+            double a_bound = 1.;
+            if(m >= n)
+            {
+                a_bound = (adjoint(A) * A).norm();
+            }
+            else // (m < n)
+            {
+                a_bound = (A * adjoint(A)).norm();
+            }
+            auto AE = A - U * S * Vt;
+            err = AE.norm() / a_bound;
+            *max_err = err > *max_err ? err : *max_err;
         }
     }
 }
@@ -505,10 +558,13 @@ void testing_gesdd(Arguments& argus)
         return;
     }
 
-    /** TESTING OF SINGULAR VECTORS IS DONE IMPLICITLY, NOT EXPLICITLY COMPARING
-        WITH LAPACK. SO, WE ALWAYS NEED TO COMPUTE THE SAME NUMBER OF ELEMENTS OF
-        THE RIGHT AND LEFT VECTORS. WHILE DOING THIS, IF MORE VECTORS THAN THE
-        SPECIFIED IN THE MAIN CALL NEED TO BE COMPUTED, WE DO SO WITH AN EXTRA CALL **/
+    /** Orthogonality and reconstruction errors will be computed explicitly as
+     * part of `gesdd_getError` method, which may require an extra call to
+     * `rocsolver_gesdd` for the cases in which only one of `left_svect` or
+     * `right_svect` is requested.  If such extra call is required, initialize
+     * variables `leftvT`, `rightvT`, `ldvT`, `lduT`, `mT`, and `nT`
+     * accordingly.
+     **/
 
     rocblas_svect leftvT = rocblas_svect_none;
     rocblas_svect rightvT = rocblas_svect_none;
@@ -758,9 +814,9 @@ void testing_gesdd(Arguments& argus)
     // using 2 * min(m, n) * machine_precision as tolerance
     if(argus.unit_check)
     {
-        ROCSOLVER_TEST_CHECK(T, max_error, 2 * 20 * std::min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, 2 * std::min(m, n));
         if(svects)
-            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * 20 * std::min(m, n));
+            ROCSOLVER_TEST_CHECK(T, max_errorv, 2 * std::min(m, n));
     }
 
     // output results for rocsolver-bench
