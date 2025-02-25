@@ -44,41 +44,48 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, typename SS>
-ROCSOLVER_KERNEL void gesdd_finalize(const rocblas_int n,
-                                     SS* SA,
-                                     const rocblas_stride strideS,
-                                     T* AA,
-                                     const rocblas_int lda,
-                                     const rocblas_stride strideA,
-                                     T* BA,
-                                     const rocblas_int ldb,
-                                     const rocblas_stride strideB)
+template <typename T, typename S>
+ROCSOLVER_KERNEL void gesdd_flip_signs(const rocblas_int n,
+                                       S* SS,
+                                       const rocblas_stride strideS,
+                                       T* R,
+                                       const rocblas_int ldr,
+                                       const rocblas_stride strideR,
+                                       T* Q,
+                                       const rocblas_int ldq,
+                                       const rocblas_stride strideQ,
+                                       const rocblas_int batch_count)
 {
-    rocblas_int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    rocblas_int bid = hipBlockIdx_y;
-
-    // array pointers
-    SS* S = SA + bid * strideS;
-    T* A = AA + bid * strideA;
-    T* B = BA + bid * strideB;
+    rocblas_int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    rocblas_int bid = blockIdx.y;
 
     // local variables
-    rocblas_int j;
-    SS sigma;
+    rocblas_int b, j, k;
+    S sigma;
 
-    if(tid >= n)
-        return;
-
-    for(j = 0; j < n; j++)
+    for(b = bid; b < batch_count; b += gridDim.y)
     {
-        sigma = std::real(A[j + j * lda]);
+        // array pointers
+        S* Sigma = SS + b * strideS;
+        T* D = R + b * strideR;
+        T* U = Q + b * strideQ;
 
-        if(tid == 0)
-            S[j] = std::abs(sigma);
+        for(j = tid; j < n; j += gridDim.x * blockDim.x)
+        {
+            for(k = 0; k < n; k++)
+            {
+                sigma = std::real(D[k + k * ldr]);
+                if(sigma < 0)
+                {
+                    U[j + k * ldq] = -U[j + k * ldq];
+                }
 
-        if(sigma < 0)
-            B[tid + j * ldb] = -B[tid + j * ldb];
+                if(j == 0)
+                {
+                    Sigma[k] = std::abs(sigma);
+                }
+            }
+        }
     }
 }
 
@@ -99,38 +106,95 @@ rocblas_status rocsolver_gesdd_argCheck(rocblas_handle handle,
                                         rocblas_int* info,
                                         const rocblas_int batch_count = 1)
 {
-    // order is important for unit tests:
+    // Order is important: must avoid pointer check if querying memory size;
+    // also, unit tests may depend on order of checks
 
-    // 1. invalid/non-supported values
-    if(left_svect != rocblas_svect_all && left_svect != rocblas_svect_singular
-       && left_svect != rocblas_svect_none)
-        return rocblas_status_invalid_value;
-    if(right_svect != rocblas_svect_all && right_svect != rocblas_svect_singular
-       && right_svect != rocblas_svect_none)
-        return rocblas_status_invalid_value;
+    auto is_svect_all = [](auto s) -> bool { return s == rocblas_svect_all; };
 
-    // 2. invalid size
+    auto is_svect_singular = [](auto s) -> bool { return s == rocblas_svect_singular; };
+
+    auto is_svect_none = [](auto s) -> bool { return s == rocblas_svect_none; };
+
+    auto is_svect = [&](auto s) -> bool { return is_svect_all(s) || is_svect_singular(s); };
+
+    auto invalid_svect_option = [&](auto s) -> bool {
+        return !(is_svect_all(s) || is_svect_singular(s) || is_svect_none(s));
+    };
+
+    //
+    // 1. Invalid and non-supported values
+    //
+    if(invalid_svect_option(left_svect) || invalid_svect_option(right_svect))
+    {
+        return rocblas_status_invalid_value;
+    }
+
+    //
+    // 2. Invalid sizes
+    //
     if(n < 0 || m < 0 || lda < m || ldu < 1 || ldv < 1 || batch_count < 0)
+    {
         return rocblas_status_invalid_size;
-    if((left_svect == rocblas_svect_all || left_svect == rocblas_svect_singular) && ldu < m)
-        return rocblas_status_invalid_size;
-    if((right_svect == rocblas_svect_all && ldv < n)
-       || (right_svect == rocblas_svect_singular && ldv < min(m, n)))
-        return rocblas_status_invalid_size;
+    }
 
-    // skip pointer check if querying memory size
+    // Left singular vectors need ldu >= m
+    if(is_svect(left_svect) && (ldu < m))
+    {
+        return rocblas_status_invalid_size;
+    }
+
+    // Right singular vectors need ldv >= n or ldv >= min(m, n),
+    // depending on choice of svect_all or svect_singular
+    if(is_svect_all(right_svect) && (ldv < n))
+    {
+        return rocblas_status_invalid_size;
+    }
+
+    if(is_svect_singular(right_svect) && (ldv < std::min(m, n)))
+    {
+        return rocblas_status_invalid_size;
+    }
+
+    // Skip pointer check if querying memory size
     if(rocblas_is_device_memory_size_query(handle))
+    {
         return rocblas_status_continue;
+    }
 
-    // 3. invalid pointers
-    if((n * m && !A) || (std::min(m, n) && !S) || (batch_count && !info))
+    //
+    // 3. Invalid pointers
+    //
+    auto invalid_pointer = [](auto ptr, auto size) -> bool { return (ptr == nullptr) && (size > 0); };
+
+    if(batch_count && !info)
+    {
         return rocblas_status_invalid_pointer;
-    if((left_svect == rocblas_svect_all && m && !U)
-       || (left_svect == rocblas_svect_singular && min(m, n) && !U))
+    }
+
+    if(invalid_pointer(A, m * n) || invalid_pointer(S, std::min(m, n)))
+    {
         return rocblas_status_invalid_pointer;
-    if((right_svect == rocblas_svect_all && n && !V)
-       || (right_svect == rocblas_svect_singular && min(m, n) && !V))
+    }
+
+    if(is_svect_all(left_svect) && invalid_pointer(U, m))
+    {
         return rocblas_status_invalid_pointer;
+    }
+
+    if(is_svect_singular(left_svect) && invalid_pointer(U, std::min(m, n)))
+    {
+        return rocblas_status_invalid_pointer;
+    }
+
+    if(is_svect_all(right_svect) && invalid_pointer(V, n))
+    {
+        return rocblas_status_invalid_pointer;
+    }
+
+    if(is_svect_singular(right_svect) && invalid_pointer(V, std::min(m, n)))
+    {
+        return rocblas_status_invalid_pointer;
+    }
 
     return rocblas_status_continue;
 }
@@ -156,7 +220,7 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
                                    size_t* size_workArr,
                                    size_t* size_workArr2)
 {
-    // if quick return, set workspace to zero
+    // If quick return, set workspace to zero
     if(n == 0 || m == 0 || batch_count == 0)
     {
         *size_scalars = 0;
@@ -194,46 +258,46 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
 
     if(m >= n)
     {
-        // requirements for Divide-and-Conquer eigensolver
+        // Requirements for Divide-and-Conquer eigensolver
         rocsolver_syevd_heevd_getMemorySize<BATCHED, T, SS>(
             rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1,
             &f1, &g1, &h1, size_workArr2);
 
-        // requirements for QR factorization
+        // Requirements for QR factorization
         rocsolver_geqrf_getMemorySize<BATCHED, T>(m, n, batch_count, &a2, &b2, &c2, &d2, &f2);
         if(left_svect != rocblas_svect_none)
             rocsolver_orgqr_ungqr_getMemorySize<BATCHED, T>(m, (left_full ? m : n), n, batch_count,
                                                             &unused, &b3, &c3, &d3, &f3);
 
-        // extra requirements for temporary V & U storage
+        // Extra requirements for temporary V & U storage
         *size_VUtmp = sizeof(T) * n * n * batch_count;
         if(!leftv)
             size_UVtmp = sizeof(T) * m * n * batch_count;
     }
     else
     {
-        // requirements for Divide-and-Conquer eigensolver
+        // Requirements for Divide-and-Conquer eigensolver
         rocsolver_syevd_heevd_getMemorySize<BATCHED, T, SS>(
             rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1,
             &f1, &g1, &h1, size_workArr2);
 
-        // requirements for LQ factorization
+        // Requirements for LQ factorization
         rocsolver_gelqf_getMemorySize<BATCHED, T>(m, n, batch_count, &a2, &b2, &c2, &d2, &f2);
         if(right_svect != rocblas_svect_none)
             rocsolver_orglq_unglq_getMemorySize<BATCHED, T>((right_full ? n : m), n, m, batch_count,
                                                             &unused, &b3, &c3, &d3, &f3);
 
-        // extra requirements for temporary U & V storage
+        // Extra requirements for temporary U & V storage
         if(!leftv)
             *size_VUtmp = sizeof(T) * m * m * batch_count;
         if(!rightv)
             size_UVtmp = sizeof(T) * m * n * batch_count;
     }
 
-    // extra requirements for temporary Householder scalars
+    // Extra requirements for temporary Householder scalars
     e2 = sizeof(T) * min(m, n) * batch_count;
 
-    // size of array of pointers (batched cases)
+    // Size of array of pointers (batched cases)
     if(BATCHED)
         f4 = sizeof(T*) * 2 * batch_count;
 
@@ -285,19 +349,17 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
                                         void* workArr,
                                         void* workArr2)
 {
-    SS abstol = get_epsilon<SS>();
-    const rocblas_int max_sweeps = 100;
     ROCSOLVER_ENTER("gesdd", "leftsv:", left_svect, "rightsv:", right_svect, "m:", m, "n:", n,
                     "shiftA:", shiftA, "lda:", lda, "ldu:", ldu, "ldv:", ldv, "bc:", batch_count);
 
-    // quick return
+    // Quick return
     if(batch_count == 0)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    // quick return
+    // Quick return
     if(m == 0 || n == 0)
     {
         rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
@@ -309,7 +371,7 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
         return rocblas_status_success;
     }
 
-    // everything must be executed with scalars on the host
+    // Everything is executed with scalars on the host
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
@@ -322,9 +384,26 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
     T one = T(1);
     T zero = T(0);
 
+    rocblas_int device_id;
+    HIP_CHECK(hipGetDevice(&device_id));
+    hipDeviceProp_t properties;
+    HIP_CHECK(hipGetDeviceProperties(&properties, device_id));
+
+    // The general idea is as follows: Given a m by n (m >= n) matrix A, we
+    // compute the eigendecomposition of A^*A with Divide-and-Conquer to obtain
+    //
+    // A^*A |--> (V, D); such that V^*A^*AV = D.
+    //
+    // Discard the computed eigenvalues D, and use the eigenvectors V as the
+    // right singular vectors of A, obtaining the left singular vectors (U) and
+    // the singular values (S) from the QR decomposition of AV (see code for
+    // necessary changes when m < n and AA^* is used instead of A^*A).
+
     if(m >= n)
     {
-        // compute -A'A
+        // Compute -A'A; negative sign is necessary as `gesdd` outputs singular
+        // values in non-ascending order, while `syevd` outputs eigenvalues in
+        // non-decreasing order.
         T* V_gemm = VUtmp;
         rocblas_int ldv_gemm = n;
         rocblas_int strideV_gemm = n * n;
@@ -338,7 +417,7 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
             strideV_gemm, S, strideS, (SS*)workArr, strideS, info, batch_count, scalars, work1,
             work2, work3, (SS*)UVtmpZ, (rocblas_int*)splits, (T*)tmptau_W, (T*)tau, (T**)workArr2);
 
-        // compute AV
+        // Compute AV
         T* U_gemm = (leftv ? U : (T*)UVtmpZ);
         rocblas_int ldu_gemm = (leftv ? ldu : m);
         rocblas_int strideU_gemm = (leftv ? strideU : m * n);
@@ -347,22 +426,28 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
                        shiftA, lda, strideA, V_gemm, 0, ldv_gemm, strideV_gemm, &zero, U_gemm, 0,
                        ldu_gemm, strideU_gemm, batch_count, (T**)workArr);
 
-        // apply QR factorization to AV, obtaining U = Q and S = R
+        // Apply QR factorization to AV, obtaining U from Q and S from the
+        // diagonal of R; notice that, since the QR decomposition is not
+        // unique, we are required to make sure that all of the diagonals of R
+        // are positive and flip the signs of the respective columns of Q
+        // otherwise.
         rocsolver_geqrf_template<false, STRIDED, T>(handle, m, n, U_gemm, 0, ldu_gemm, strideU_gemm,
                                                     (T*)work5_ipiv, n, batch_count, scalars, work2,
                                                     (T*)work3, (T*)work4, (T**)workArr);
 
         rocblas_int blocks = (n - 1) / BS1 + 1;
-        ROCSOLVER_LAUNCH_KERNEL(gesdd_finalize<T>, dim3(blocks, batch_count, 1), dim3(BS1, 1, 1), 0,
+        blocks = std::min(blocks, properties.maxGridSize[0]);
+        auto bc = std::min(batch_count, properties.maxGridSize[1]);
+        ROCSOLVER_LAUNCH_KERNEL(gesdd_flip_signs<T>, dim3(blocks, bc, 1), dim3(BS1, 1, 1), 0,
                                 stream, n, S, strideS, U_gemm, ldu_gemm, strideU_gemm, V_gemm,
-                                ldv_gemm, strideV_gemm);
+                                ldv_gemm, strideV_gemm, batch_count);
 
         if(leftv)
             rocsolver_orgqr_ungqr_template<false, STRIDED, T>(
                 handle, m, (left_full ? m : n), n, U_gemm, 0, ldu_gemm, strideU_gemm, (T*)work5_ipiv,
                 n, batch_count, scalars, (T*)work2, (T*)work3, (T*)work4, (T**)workArr);
 
-        // transpose V
+        // Transpose V (for consistency with LAPACK's API)
         if(rightv)
         {
             rocblas_int blocks_n = (n - 1) / BS2 + 1;
@@ -374,7 +459,7 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
     }
     else
     {
-        // compute -AA'
+        // Compute -AA'
         T* U_gemm = (leftv ? U : VUtmp);
         rocblas_int ldu_gemm = (leftv ? ldu : m);
         rocblas_int strideU_gemm = (leftv ? strideU : m * m);
@@ -388,7 +473,7 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
             strideU_gemm, S, strideS, (SS*)workArr, strideS, info, batch_count, scalars, work1,
             work2, work3, (SS*)UVtmpZ, (rocblas_int*)splits, (T*)tmptau_W, (T*)tau, (T**)workArr2);
 
-        // compute U'A
+        // Compute U^*A
         T* V_gemm = (rightv ? V : (T*)UVtmpZ);
         rocblas_int ldv_gemm = (rightv ? ldv : m);
         rocblas_int strideV_gemm = (rightv ? strideV : m * n);
@@ -397,15 +482,17 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
                        m, &one, U_gemm, 0, ldu_gemm, strideU_gemm, A, shiftA, lda, strideA, &zero,
                        V_gemm, 0, ldv_gemm, strideV_gemm, batch_count, (T**)workArr);
 
-        // apply LQ factorization to U'A, obtaining S = L and V' = Q
+        // Apply LQ factorization to U^*A, obtaining S from the diagonal of L and V^* from Q
         rocsolver_gelqf_template<false, STRIDED, T>(handle, m, n, V_gemm, 0, ldv_gemm, strideV_gemm,
                                                     (T*)work5_ipiv, m, batch_count, scalars, work2,
                                                     (T*)work3, (T*)work4, (T**)workArr);
 
         rocblas_int blocks = (m - 1) / BS1 + 1;
-        ROCSOLVER_LAUNCH_KERNEL(gesdd_finalize<T>, dim3(blocks, batch_count, 1), dim3(BS1, 1, 1), 0,
+        blocks = std::min(blocks, properties.maxGridSize[0]);
+        auto bc = std::min(batch_count, properties.maxGridSize[1]);
+        ROCSOLVER_LAUNCH_KERNEL(gesdd_flip_signs<T>, dim3(blocks, bc, 1), dim3(BS1, 1, 1), 0,
                                 stream, m, S, strideS, V_gemm, ldv_gemm, strideV_gemm, U_gemm,
-                                ldu_gemm, strideU_gemm);
+                                ldu_gemm, strideU_gemm, batch_count);
 
         if(rightv)
             rocsolver_orglq_unglq_template<false, STRIDED, T>(
