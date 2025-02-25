@@ -84,6 +84,7 @@ def runTestCommand (platform, project, gfilter, boolean rocmExamples=false)
                     set -ex
                     cd ${project.paths.project_build_prefix}/build/release/package
                     ${buildString}
+                    cd ../../..
                     testDirs=("Libraries/rocSOLVER")
                     git clone https://github.com/ROCm/rocm-examples.git
                     rocm_examples_dir=\$(readlink -f rocm-examples)
