@@ -83,10 +83,8 @@ def runTestCommand (platform, project, gfilter, boolean rocmExamples=false)
         testCommand = """#!/usr/bin/env bash
                     set -ex
                     cd ${project.paths.project_build_prefix}/build/release/package
-                    ls
                     ${buildString}
-                    cd ../../..
-                    testDirs=("Libraries/rocPRIM")
+                    testDirs=("Libraries/rocSOLVER")
                     git clone https://github.com/ROCm/rocm-examples.git
                     rocm_examples_dir=\$(readlink -f rocm-examples)
                     for testDir in \${testDirs[@]}; do
