@@ -1129,8 +1129,7 @@ static __device__ void Xgemv_body(char const trans,
         return (A_[idx2D(i, j, lda)]);
     };
 
-    // bool const need_atomic_update = (is_no_transpose) ? (npcol > 1) : (nprow > 1);
-    bool const need_atomic_update = true;
+    bool const need_atomic_update = (is_no_transpose) ? (npcol > 1) : (nprow > 1);
 
     I const itileA_start = first_tile(ia, mb, myprow, nprow);
     I const itileA_end = first_tile(ia + m - 1, mb, myprow, nprow);
@@ -1154,28 +1153,9 @@ static __device__ void Xgemv_body(char const trans,
 
     auto rsum_sh = [=](auto tx, auto ty) -> T& { return (rsum_sh_[tx + ty * ld_rsum_sh]); };
 
-    for(auto i = (0 + tixy); i < (ld_rsum_sh)*ny; i += nxny)
-    {
-        rsum_sh_[i] = 0;
-    }
-
-    for(auto i = (0 + tixy); i < mbnb; i += nxny)
-    {
-        Xvec_sh[i] = 0;
-    }
-
-    __syncthreads();
+    bool constexpr use_Xvec_sh = false;
 
     auto cgwave = cg::tiled_partition(cg::this_thread_block(), nx);
-
-#if(0)
-    {
-        if(cg::this_grid().thread_rank() == 0)
-        {
-            printf("trans=%c, m=%d, n=%d, ia=%d, ja=%d\n", trans, m, n, ia, ja);
-        }
-    }
-#endif
 
     if(is_no_transpose)
     {
@@ -1196,19 +1176,22 @@ static __device__ void Xgemv_body(char const trans,
                 auto const istart = std::max(ia, itileA * mb);
                 auto const iend = std::min(ia + m - 1, itileA * mb + (mb - 1));
 
-                for(auto jja = (jstart + tixy); jja <= jend; jja += nxny)
+                if(use_Xvec_sh)
                 {
-                    Xvec_sh[(jja - jstart)] = Xvec(jja - ja);
-                }
+                    for(auto jja = (jstart + tixy); jja <= jend; jja += nxny)
+                    {
+                        Xvec_sh[(jja - jstart)] = Xvec(jja - ja);
+                    }
 
-                __syncthreads();
+                    __syncthreads();
+                }
 
                 for(auto iia = (istart + tiy); iia <= iend; iia += ny)
                 {
                     T rsum = 0;
                     for(auto jja = (jstart + tix); jja <= jend; jja += nx)
                     {
-                        auto const xj = Xvec_sh[(jja - jstart)];
+                        auto const xj = (use_Xvec_sh) ? Xvec_sh[(jja - jstart)] : Xvec(jja - ja);
                         auto const aij = A(iia, jja);
                         rsum += aij * xj;
                     }
@@ -1253,12 +1236,15 @@ static __device__ void Xgemv_body(char const trans,
                 auto const istart = std::max(ia, itileA * mb);
                 auto const iend = std::min(ia + m - 1, itileA * mb + (mb - 1));
 
-                for(auto iia = (istart + tixy); iia <= iend; iia += nxny)
+                if(use_Xvec_sh)
                 {
-                    Xvec_sh[(iia - istart)] = Xvec((iia - ia));
-                }
+                    for(auto iia = (istart + tixy); iia <= iend; iia += nxny)
+                    {
+                        Xvec_sh[(iia - istart)] = Xvec((iia - ia));
+                    }
 
-                __syncthreads();
+                    __syncthreads();
+                }
 
                 for(auto jja = (jstart + tiy); jja <= jend; jja += ny)
                 {
@@ -1266,7 +1252,7 @@ static __device__ void Xgemv_body(char const trans,
                     for(auto iia = (istart + tix); iia <= iend; iia += nx)
                     {
                         T const aij = A(iia, jja);
-                        T const xi = Xvec_sh[(iia - istart)];
+                        T const xi = (use_Xvec_sh) ? Xvec_sh[(iia - istart)] : Xvec(iia - ia);
 
                         if(is_complex && is_conj_transpose)
                         {
@@ -2025,7 +2011,7 @@ static __global__ void lower_stage1(I const n,
                                     I const ldw,
                                     Istride const strideW,
 
-                                    T* const A_,
+                                    UA A_,
                                     Istride const shiftA,
                                     I const lda,
                                     Istride const strideA,
@@ -2096,13 +2082,17 @@ static __global__ void lower_stage1(I const n,
 
             I const len_Y = mm;
 
-            Xscale_body(mm, beta,
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta,
 
-                        A, j, j, lda, 1,
+                            A, j, j, lda, 1,
 
-                        mb, nb, myprow, mypcol, nprow, npcol);
+                            mb, nb, myprow, mypcol, nprow, npcol);
 
-            cg_grid.sync();
+                cg_grid.sync();
+            }
 
             Xgemv_body(trans, mm, nn, alpha,
 
@@ -2173,12 +2163,17 @@ static __global__ void lower_stage1(I const n,
             T const alpha = *scalars;
             T const beta = *(scalars + 2);
 
-            Xscale_body(len_Y, beta,
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta,
 
-                        A, j, j, lda, 1,
+                            A, j, j, lda, 1,
 
-                        mb, mb, myprow, mypcol, nprow, npcol);
-            cg_grid.sync();
+                            mb, mb, myprow, mypcol, nprow, npcol);
+
+                cg_grid.sync();
+            }
 
             Xgemv_body(trans, mm, nn, alpha,
 
@@ -2294,13 +2289,17 @@ static __global__ void upper_stage1(I const n,
             auto const beta = *(scalars + 2);
 
             I const len_Y = mm;
-            Xscale_body(len_Y, beta,
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta,
 
-                        A, 0, j, lda, 1,
+                            A, 0, j, lda, 1,
 
-                        mb, nb, myprow, mypcol, nprow, npcol);
+                            mb, nb, myprow, mypcol, nprow, npcol);
 
-            cg_grid.sync();
+                cg_grid.sync();
+            }
 
             Xgemv_body(trans, mm, nn, alpha,
 
@@ -2373,9 +2372,13 @@ static __global__ void upper_stage1(I const n,
             auto const alpha = *scalars;
             auto const beta = *(scalars + 2);
 
-            Xscale_body(len_Y, beta, A, 0, j, lda, 1, mb, nb, myprow, mypcol, nprow, npcol);
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta, A, 0, j, lda, 1, mb, nb, myprow, mypcol, nprow, npcol);
 
-            cg_grid.sync();
+                cg_grid.sync();
+            }
 
             Xgemv_body(trans, mm, nn, alpha,
 
@@ -2409,6 +2412,274 @@ static __global__ void upper_stage1(I const n,
 
             cg_grid.sync();
         }
+#endif
+    } // end for bid
+}
+
+template <typename T, typename I, typename Istride, typename UA>
+static __global__ void lower_stage2(I const n,
+                                    I const j,
+
+                                    T* const scalars,
+                                    T* const tau,
+                                    Istride const strideP,
+                                    T* const norms,
+
+                                    T* const W_,
+                                    Istride const shiftW,
+                                    I const ldw,
+                                    Istride const strideW,
+
+                                    UA A_,
+                                    Istride const shiftA,
+                                    I const lda,
+                                    Istride const strideA,
+
+                                    I const batch_count,
+                                    I const mb,
+                                    I const nb)
+{
+    bool constexpr is_complex = rocblas_is_complex<T>;
+
+    I const myprow = hipBlockIdx_x;
+    I const mypcol = hipBlockIdx_y;
+    I const nprow = hipGridDim_x;
+    I const npcol = hipGridDim_y;
+
+    auto cg_grid = cg::this_grid();
+
+    for(I bid = 0; bid < batch_count; bid++)
+    {
+        T* const W = load_ptr_batch(W_, bid, shiftW, strideW);
+        T* const A = load_ptr_batch(A_, bid, shiftA, strideA);
+
+#if(0)
+        rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
+                            cast2constType<T>(scalars + 2), 0,
+
+                            W, shiftW + idx2D(j + 1, 0, ldw), ldw, strideW,
+
+                            A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
+
+                            cast2constType<T>(scalars + 1), 0,
+
+                            W, shiftW + idx2D(0, j, ldw), 1, strideW,
+
+                            batch_count, workArr);
+#else
+        {
+            T const alpha = *(scalars + 2);
+            T const beta = *(scalars + 1);
+            I const mm = n - j - 1;
+            I const nn = j;
+
+            char const trans = 'C';
+            I const len_Y = nn;
+
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta,
+
+                            W, 0, j, ldw, 1,
+
+                            mb, nb, myprow, mypcol, nprow, npcol);
+                cg_grid.sync();
+            }
+
+            Xgemv_body(trans, mm, nn, alpha,
+
+                       W, j + 1, 0, ldw,
+
+                       A, j + 1, j, lda, 1,
+
+                       W, 0, j, ldw, 1,
+
+                       mb, nb, myprow, mypcol, nprow, npcol);
+
+            cg_grid.sync();
+        }
+#endif
+
+#if(0)
+
+        rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
+                            cast2constType<T>(scalars), 0,
+
+                            A, shiftA + idx2D(j + 1, 0, lda), lda, strideA,
+
+                            W, shiftW + idx2D(0, j, ldw), 1, strideW,
+
+                            cast2constType<T>(scalars + 2), 0,
+
+                            W, shiftW + idx2D(j + 1, j, ldw), 1, strideW,
+
+                            batch_count, workArr);
+#else
+        {
+            char const trans = 'N';
+            I const mm = n - j - 1;
+            I const nn = j;
+
+            T const alpha = *scalars;
+            T const beta = *(scalars + 2);
+
+            I const len_Y = mm;
+
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta, W, j + 1, j, ldw, 1, mb, nb, myprow, mypcol, nprow, npcol);
+
+                cg_grid.sync();
+            }
+
+            Xgemv_body(trans, mm, nn, alpha,
+
+                       A, j + 1, 0, lda,
+
+                       W, 0, j, ldw, 1,
+
+                       W, j + 1, j, ldw, 1,
+
+                       mb, nb, myprow, mypcol, nprow, npcol);
+            cg_grid.sync();
+        }
+#endif
+
+#if(0)
+        rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
+                            cast2constType<T>(scalars + 2), 0,
+
+                            A, shiftA + idx2D(j + 1, 0, lda), lda, strideA,
+
+                            A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
+
+                            cast2constType<T>(scalars + 1), 0,
+
+                            W, shiftW + idx2D(0, j, ldw), 1, strideW,
+
+                            batch_count, workArr);
+#else
+        {
+            char const trans = 'C';
+            I const mm = n - j - 1;
+            I const nn = j;
+            T const alpha = *(scalars + 2);
+            T const beta = *(scalars + 1);
+
+            I const len_Y = nn;
+
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta, W, 0, j, ldw, 1, mb, nb, myprow, mypcol, nprow, npcol);
+
+                cg_grid.sync();
+            }
+
+            Xgemv_body(trans, mm, nn, alpha,
+
+                       A, j + 1, 0, lda,
+
+                       A, j + 1, j, lda, 1,
+
+                       W, 0, j, ldw, 1,
+
+                       mb, nb, myprow, mypcol, nprow, npcol);
+
+            cg_grid.sync();
+        }
+#endif
+
+#if(0)
+
+        rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
+                            cast2constType<T>(scalars), 0,
+
+                            W, shiftW + idx2D(j + 1, 0, ldw), ldw, strideW,
+
+                            W, shiftW + idx2D(0, j, ldw), 1, strideW,
+
+                            cast2constType<T>(scalars + 2), 0,
+
+                            W, shiftW + idx2D(j + 1, j, ldw), 1, strideW,
+
+                            batch_count, workArr);
+#else
+        {
+            char const trans = 'N';
+            I const mm = n - j - 1;
+            I const nn = j;
+            T const alpha = *scalars;
+            T const beta = *(scalars + 2);
+
+            I const len_Y = mm;
+
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body(len_Y, beta,
+
+                            W, j + 1, j, ldw, 1,
+
+                            mb, nb, myprow, mypcol, nprow, npcol);
+
+                cg_grid.sync();
+            }
+
+            Xgemv_body(trans, mm, nn, alpha,
+
+                       W, j + 1, 0, ldw,
+
+                       W, 0, j, ldw, 1,
+
+                       W, j + 1, j, ldw, 1,
+
+                       mb, nb, myprow, mypcol, nprow, npcol);
+
+            cg_grid.sync();
+        }
+#endif
+
+#if(0)
+        rocblasCall_scal<T>(handle, n - j - 1, (tau + j), strideP, W, shiftW + idx2D(j + 1, j, ldw),
+                            1, strideW, batch_count);
+#else
+        {
+            I const nn = n - j - 1;
+            T* const p_alpha = (tau + j);
+            T const alpha = *(p_alpha + bid * strideP);
+
+            Xscale_body(nn, alpha, W, j + 1, j, ldw, 1, mb, nb, myprow, mypcol, nprow, npcol);
+
+            cg_grid.sync();
+        }
+#endif
+
+#if(0)
+        rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j,
+
+                                    W, shiftW + idx2D(j + 1, j, ldw), 1, strideW,
+
+                                    A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
+
+                                    batch_count, norms, work, workArr);
+
+#else
+        {
+            I const nn = n - 1 - j;
+            Xdot_body(nn, W, j + 1, j, ldw, 1,
+
+                      A, j + 1, j, lda, 1,
+
+                      &(norms[bid]),
+
+                      mb, nb, myprow, mypcol, nprow, npcol);
+
+            cg_grid.sync();
+        }
+
 #endif
     } // end for bid
 }
@@ -2472,10 +2743,14 @@ static __global__ void upper_stage2(I const n,
             T const alpha = *(scalars + 2);
             T const beta = *(scalars + 1);
 
-            Xscale_body<T, I>(len_Y, beta, W, j + 1, jw, ldw, 1, mb, nb, myprow, mypcol, nprow,
-                              npcol);
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body<T, I>(len_Y, beta, W, j + 1, jw, ldw, 1, mb, nb, myprow, mypcol, nprow,
+                                  npcol);
 
-            cg_grid.sync();
+                cg_grid.sync();
+            }
 
             Xgemv_body<T, I>(trans, mm, nn, alpha,
 
@@ -2513,13 +2788,17 @@ static __global__ void upper_stage2(I const n,
             T const alpha = *scalars;
             T const beta = *(scalars + 2);
 
-            Xscale_body<T, I>(len_Y, beta,
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body<T, I>(len_Y, beta,
 
-                              W, 0, jw, ldw, 1,
+                                  W, 0, jw, ldw, 1,
 
-                              mb, nb, myprow, mypcol, nprow, npcol);
+                                  mb, nb, myprow, mypcol, nprow, npcol);
 
-            cg_grid.sync();
+                cg_grid.sync();
+            }
 
             Xgemv_body<T, I>(trans, mm, nn, alpha,
 
@@ -2557,9 +2836,13 @@ static __global__ void upper_stage2(I const n,
             T const alpha = *(scalars + 2);
             T const beta = *(scalars + 1);
 
-            Xscale_body<T, I>(len_Y, beta, W, j + 1, jw, ldw, 1, mb, nb, myprow, mypcol, nprow,
-                              npcol);
-            cg_grid.sync();
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body<T, I>(len_Y, beta, W, j + 1, jw, ldw, 1, mb, nb, myprow, mypcol, nprow,
+                                  npcol);
+                cg_grid.sync();
+            }
 
             Xgemv_body<T, I>(trans, mm, nn, alpha,
 
@@ -2598,13 +2881,17 @@ static __global__ void upper_stage2(I const n,
             T const alpha = *(scalars);
             T const beta = *(scalars + 2);
 
-            Xscale_body<T, I>(len_Y, beta,
+            bool const has_work = (len_Y >= 1) && (beta != 1);
+            if(has_work)
+            {
+                Xscale_body<T, I>(len_Y, beta,
 
-                              W, 0, jw, ldw, 1,
+                                  W, 0, jw, ldw, 1,
 
-                              mb, nb, myprow, mypcol, nprow, npcol);
+                                  mb, nb, myprow, mypcol, nprow, npcol);
 
-            cg_grid.sync();
+                cg_grid.sync();
+            }
 
             Xgemv_body<T, I>(trans, mm, nn, alpha,
 
@@ -2729,7 +3016,8 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
         for(rocblas_int j = 0; j < k; ++j)
         {
             // update column j of A with reflector computed in step j-1
-            if(use_coop)
+            bool const use_lower_stage1 = true;
+            if(use_lower_stage1)
             {
 #if(0)
 
@@ -2741,14 +3029,14 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
 
                     T* const W_, Istride const shiftW, I const ldw, Istride const strideW,
 
-                    T* const A_, Istride const shiftA, I const lda, Istride const strideA,
+                    U A_, Istride const shiftA, I const lda, Istride const strideA,
 
                     I const batch_count,
 
                     I const mb, I const nb)
 #else
-                rocblas_stride const lshiftW = shiftW;
-                rocblas_stride const lshiftA = shiftA;
+                rocblas_stride lshiftW = shiftW;
+                rocblas_stride lshiftA = shiftA;
 
                 void* args[]
                     = {(void*)&n,           (void*)&j,       (void*)&scalars,
@@ -2825,58 +3113,88 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
             }
 
             // compute/update column j of W
-            if(use_org)
             {
                 rocblasCall_symv_hemv<T>(
                     handle, uplo, n - 1 - j, (scalars + 2), 0, A, shiftA + idx2D(j + 1, j + 1, lda),
                     lda, strideA, A, shiftA + idx2D(j + 1, j, lda), 1, strideA, (scalars + 1), 0, W,
                     shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, work, workArr);
             }
+
+            bool use_lower_stage2 = true;
+            if(use_lower_stage2)
+            {
+#if(0)
+
+                template <typename T, typename I, typename Istride, typename UA>
+                static __global__ void lower_stage2(
+                    I const n, I const j,
+
+                    T* const scalars, T* const tau, Istride const strideP,
+
+                    T* const W_, Istride const shiftW, I const ldw, Istride const strideW,
+
+                    UA A_, Istride const shiftA, I const lda, Istride const strideA,
+
+                    I const batch_count, I const mb, I const nb)
+#else
+                rocblas_stride lshiftA = shiftA;
+                rocblas_stride lshiftW = shiftW;
+
+                void* args[]
+                    = {(void*)&n,           (void*)&j,
+
+                       (void*)&scalars,     (void*)&tau,     (void*)&strideP, (void*)&norms,
+
+                       (void*)&W,           (void*)&lshiftW, (void*)&ldw,     (void*)&strideW,
+
+                       (void*)&A,           (void*)&lshiftA, (void*)&lda,     (void*)&strideA,
+
+                       (void*)&batch_count, (void*)&mb,      (void*)&nb};
+
+                auto const nx = 32;
+                auto const ny = 32;
+                auto const lds_size = 64 * 1024;
+
+                LAUNCH_CHECK(hipLaunchCooperativeKernel(
+                    (void*)(lower_stage2<T, rocblas_int, rocblas_stride, U>), dim3(num_cu, 1, 1),
+                    dim3(nx, ny, 1), args, lds_size, stream));
+#endif
+            }
             else
             {
-                T const* const p_alpha = (scalars + 2);
-                rocblas_stride const stride_alpha = 0;
-                T const* const p_beta = (scalars + 1);
-                rocblas_stride const stride_beta = 0;
+                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
+                                    cast2constType<T>(scalars + 2), 0, W,
+                                    shiftW + idx2D(j + 1, 0, ldw), ldw, strideW, A,
+                                    shiftA + idx2D(j + 1, j, lda), 1, strideA,
+                                    cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw),
+                                    1, strideW, batch_count, workArr);
 
-                rocblas_int const incx = 1;
-                rocblas_int const incy = 1;
-                rocsolverCall_symv_hemv<T, rocblas_int, rocblas_stride>(
-                    handle, uplo, n - 1 - j, p_alpha, stride_alpha, A, shiftA, j + 1, j + 1, lda,
-                    strideA, A, shiftA, j + 1, j, lda, incx, strideA, p_beta, stride_beta, W,
-                    shiftW, j + 1, j, ldw, incy, strideW, batch_count, mb, nb, work, workArr);
+                rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
+                                    cast2constType<T>(scalars), 0, A, shiftA + idx2D(j + 1, 0, lda),
+                                    lda, strideA, W, shiftW + idx2D(0, j, ldw), 1, strideW,
+                                    cast2constType<T>(scalars + 2), 0, W,
+                                    shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, workArr);
+
+                rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
+                                    cast2constType<T>(scalars + 2), 0, A,
+                                    shiftA + idx2D(j + 1, 0, lda), lda, strideA, A,
+                                    shiftA + idx2D(j + 1, j, lda), 1, strideA,
+                                    cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw),
+                                    1, strideW, batch_count, workArr);
+
+                rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
+                                    cast2constType<T>(scalars), 0, W, shiftW + idx2D(j + 1, 0, ldw),
+                                    ldw, strideW, W, shiftW + idx2D(0, j, ldw), 1, strideW,
+                                    cast2constType<T>(scalars + 2), 0, W,
+                                    shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, workArr);
+
+                rocblasCall_scal<T>(handle, n - j - 1, (tau + j), strideP, W,
+                                    shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count);
+
+                rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j + 1, j, ldw), 1,
+                                            strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
+                                            batch_count, norms, work, workArr);
             }
-
-            rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
-                                cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, 0, ldw),
-                                ldw, strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                                cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw), 1,
-                                strideW, batch_count, workArr);
-
-            rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
-                                cast2constType<T>(scalars), 0, A, shiftA + idx2D(j + 1, 0, lda),
-                                lda, strideA, W, shiftW + idx2D(0, j, ldw), 1, strideW,
-                                cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, j, ldw),
-                                1, strideW, batch_count, workArr);
-
-            rocblasCall_gemv<T>(handle, rocblas_operation_conjugate_transpose, n - j - 1, j,
-                                cast2constType<T>(scalars + 2), 0, A, shiftA + idx2D(j + 1, 0, lda),
-                                lda, strideA, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                                cast2constType<T>(scalars + 1), 0, W, shiftW + idx2D(0, j, ldw), 1,
-                                strideW, batch_count, workArr);
-
-            rocblasCall_gemv<T>(handle, rocblas_operation_none, n - j - 1, j,
-                                cast2constType<T>(scalars), 0, W, shiftW + idx2D(j + 1, 0, ldw),
-                                ldw, strideW, W, shiftW + idx2D(0, j, ldw), 1, strideW,
-                                cast2constType<T>(scalars + 2), 0, W, shiftW + idx2D(j + 1, j, ldw),
-                                1, strideW, batch_count, workArr);
-
-            rocblasCall_scal<T>(handle, n - j - 1, (tau + j), strideP, W,
-                                shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count);
-
-            rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j + 1, j, ldw), 1,
-                                        strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
-                                        batch_count, norms, work, workArr);
 
             // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
             //  available, we can use it instead of the scale_axpy kernel, if it provides
@@ -3000,8 +3318,8 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
 
                         I const batch_count, I const mb, I const nb)
 #else
-                rocblas_stride const lshiftA = shiftA;
-                rocblas_stride const lshiftW = shiftW;
+                rocblas_stride lshiftA = shiftA;
+                rocblas_stride lshiftW = shiftW;
 
                 void* args[]
                     = {(void*)&n,           (void*)&j,       (void*)&jw,
