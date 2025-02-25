@@ -52,7 +52,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
     platform.runCommand(this, command)
 }
 
-def runTestCommand (platform, project, gfilter)
+def runTestCommand (platform, project, gfilter, boolean rocmExamples=false)
 {
     String buildType = project.buildName.contains('Debug') ? 'debug' : 'release'
     String hmmTestCommand = platform.jenkinsLabel.contains('gfx90a') ? 'HSA_XNACK=1 ./rocsolver-test --gtest_filter=*MANAGED_MALLOC* || true' : ''
@@ -71,6 +71,34 @@ def runTestCommand (platform, project, gfilter)
 
 
     platform.runCommand(this, command)
+    if (rocmExamples)
+    {
+        String buildString = ""
+        if (platform.os.contains("ubuntu")){
+            buildString += "sudo dpkg -i *.deb"
+        }
+        else {
+            buildString += "sudo rpm -i *.rpm"
+        }
+        testCommand = """#!/usr/bin/env bash
+                    set -ex
+                    cd ${project.paths.project_build_prefix}/build/release/package
+                    ls
+                    ${buildString}
+                    cd ../../..
+                    testDirs=("Libraries/rocPRIM")
+                    git clone https://github.com/ROCm/rocm-examples.git
+                    rocm_examples_dir=\$(readlink -f rocm-examples)
+                    for testDir in \${testDirs[@]}; do
+                        cd \${rocm_examples_dir}/\${testDir}
+                        cmake -S . -B build
+                        cmake --build build
+                        cd ./build
+                        ctest --output-on-failure
+                    done
+                """
+        platform.runCommand(this, testCommand, "ROCM Examples")  
+    }
     junit "${project.paths.project_build_prefix}/build/${buildType}/clients/staging/*.xml"
 }
 
