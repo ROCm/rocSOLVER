@@ -382,7 +382,7 @@ void gesdd_getError(const rocblas_handle handle,
             if(left_svect != rocblas_svect_none)
             {
                 auto UE = adjoint(U) * U - HMat::Eye(ncols_U, ncols_U);
-                err = UE.norm();
+                err = UE.max_col_norm();
                 *max_errv = err > *max_errv ? err : *max_errv;
             }
 
@@ -390,7 +390,7 @@ void gesdd_getError(const rocblas_handle handle,
             if(right_svect != rocblas_svect_none)
             {
                 auto VE = Vt * adjoint(Vt) - HMat::Eye(nrows_V, nrows_V);
-                err = VE.norm();
+                err = VE.max_col_norm();
                 *max_errv = err > *max_errv ? err : *max_errv;
             }
 
