@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -83,7 +83,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w11, &w21, &t1,
                                                     &unused);
 
-    if(evect == rocblas_evect_original)
+    // if(evect == rocblas_evect_original)
     {
         // extra requirements for computing eigenvalues and vectors (stedc)
         rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w31,
@@ -95,15 +95,15 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
 
         *size_work3 = std::max(w31, w32);
     }
-    else
-    {
-        // extra requirements for computing only the eigenvalues (sterf)
-        rocsolver_sterf_getMemorySize<T>(n, batch_count, &w12);
+    // else
+    // {
+    //     // extra requirements for computing only the eigenvalues (sterf)
+    //     rocsolver_sterf_getMemorySize<T>(n, batch_count, &w12);
 
-        *size_work3 = 0;
-        *size_tmpz = 0;
-        *size_splits = 0;
-    }
+    //     *size_work3 = 0;
+    //     *size_tmpz = 0;
+    //     *size_splits = 0;
+    // }
 
     // size of array for temporary matrix products
     t2 = sizeof(T) * n * n * batch_count;
@@ -184,13 +184,13 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
                                             strideE, tau, n, batch_count, scalars, (T*)work1,
                                             (T*)work2, tmptau_W, workArr);
 
-    if(evect != rocblas_evect_original)
-    {
-        // only compute eigenvalues
-        rocsolver_sterf_template<S>(handle, n, D, 0, strideD, E, 0, strideE, info, batch_count,
-                                    (rocblas_int*)work1);
-    }
-    else
+    // if(evect != rocblas_evect_original)
+    // {
+    //     // only compute eigenvalues
+    //     rocsolver_sterf_template<S>(handle, n, D, 0, strideD, E, 0, strideE, info, batch_count,
+    //                                 (rocblas_int*)work1);
+    // }
+    // else
     {
         constexpr bool ISBATCHED = BATCHED || STRIDED;
         const rocblas_int ldw = n;
@@ -200,16 +200,19 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
             handle, rocblas_evect_tridiagonal, n, D, 0, strideD, E, 0, strideE, tmptau_W, 0, ldw,
             strideW, info, batch_count, work3, (S*)work2, (S*)work1, tmpz, splits, (S**)workArr);
 
-        rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
-            handle, rocblas_side_left, uplo, rocblas_operation_none, n, n, A, shiftA, lda, strideA,
-            tau, n, tmptau_W, 0, ldw, strideW, batch_count, scalars, (T*)work2, (T*)work1,
-            (T*)work3, workArr);
+        if(evect == rocblas_evect_original)
+        {
+            rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
+                handle, rocblas_side_left, uplo, rocblas_operation_none, n, n, A, shiftA, lda,
+                strideA, tau, n, tmptau_W, 0, ldw, strideW, batch_count, scalars, (T*)work2,
+                (T*)work1, (T*)work3, workArr);
 
-        // copy matrix product into A
-        const rocblas_int copyblocks = (n - 1) / BS2 + 1;
-        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count),
-                                dim3(BS2, BS2), 0, stream, n, n, tmptau_W, 0, ldw, strideW, A,
-                                shiftA, lda, strideA);
+            // copy matrix product into A
+            const rocblas_int copyblocks = (n - 1) / BS2 + 1;
+            ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count),
+                                    dim3(BS2, BS2), 0, stream, n, n, tmptau_W, 0, ldw, strideW, A,
+                                    shiftA, lda, strideA);
+        }
     }
 
     return rocblas_status_success;
