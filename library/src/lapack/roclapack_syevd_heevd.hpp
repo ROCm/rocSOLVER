@@ -83,27 +83,16 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w11, &w21, &t1,
                                                     &unused);
 
-    // if(evect == rocblas_evect_original)
-    {
-        // extra requirements for computing eigenvalues and vectors (stedc)
-        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w31,
-                                                     &w22, &w12, size_tmpz, size_splits, &unused);
+    // extra requirements for computing eigenvalues and vectors (stedc)
+    rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w31,
+                                                 &w22, &w12, size_tmpz, size_splits, &unused);
 
+    if(evect == rocblas_evect_original)
+    {
         // extra requirements for ormtr/unmtr
         rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
                                                         &unused, &w23, &w13, &w32, &unused);
-
-        *size_work3 = std::max(w31, w32);
     }
-    // else
-    // {
-    //     // extra requirements for computing only the eigenvalues (sterf)
-    //     rocsolver_sterf_getMemorySize<T>(n, batch_count, &w12);
-
-    //     *size_work3 = 0;
-    //     *size_tmpz = 0;
-    //     *size_splits = 0;
-    // }
 
     // size of array for temporary matrix products
     t2 = sizeof(T) * n * n * batch_count;
@@ -111,6 +100,7 @@ void rocsolver_syevd_heevd_getMemorySize(const rocblas_evect evect,
     // get max values
     *size_work1 = std::max({w11, w12, w13});
     *size_work2 = std::max({w21, w22, w23});
+    *size_work3 = std::max(w31, w32);
     *size_tmptau_W = std::max(t1, t2);
 
     // size of array for temporary householder scalars
@@ -158,6 +148,9 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    rocsolver_alg_mode sterf_mode;
+    ROCBLAS_CHECK(rocsolver_get_alg_mode(handle, rocsolver_function_sterf, &sterf_mode));
+
     rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
@@ -184,13 +177,13 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
                                             strideE, tau, n, batch_count, scalars, (T*)work1,
                                             (T*)work2, tmptau_W, workArr);
 
-    // if(evect != rocblas_evect_original)
-    // {
-    //     // only compute eigenvalues
-    //     rocsolver_sterf_template<S>(handle, n, D, 0, strideD, E, 0, strideE, info, batch_count,
-    //                                 (rocblas_int*)work1);
-    // }
-    // else
+    if(sterf_mode == rocsolver_alg_mode_hybrid && evect != rocblas_evect_original)
+    {
+        // only compute eigenvalues
+        rocsolver_sterf_template<S>(handle, n, D, 0, strideD, E, 0, strideE, info, batch_count,
+                                    (rocblas_int*)work1);
+    }
+    else
     {
         constexpr bool ISBATCHED = BATCHED || STRIDED;
         const rocblas_int ldw = n;
