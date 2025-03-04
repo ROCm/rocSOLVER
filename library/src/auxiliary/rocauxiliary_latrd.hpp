@@ -762,10 +762,11 @@ rocblas_status rocsolver_latrd_template(rocblas_handle handle,
     size_t lmemsize = sizeof(T) * (threadsr * threadsc);
     size_t lmemsize1 = sizeof(T) * 1024;
 
-int dr = 4;//atoi(getenv("DR"));
-int thr;// = atoi(getenv("TR"));
-int dc = 2;//atoi(getenv("DC"));
-int thc = (n <= 2048) ? 16 : 64;//atoi(getenv("TC"));
+int dr = atoi(getenv("DR"));
+int thr = atoi(getenv("TR"));
+int dc = atoi(getenv("DC"));
+int thc = atoi(getenv("TC"));
+/*int thc = (n <= 2048) ? 16 : 64;//atoi(getenv("TC"));
 if(n <= 512)
     thr = 4;
 else if(n <= 2048)
@@ -773,7 +774,7 @@ else if(n <= 2048)
 else if(n <= 8192)
     thr = 4;
 else
-    thr = 8;
+    thr = 8;*/
 
     if(uplo == rocblas_fill_lower)
     {
