@@ -424,7 +424,7 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_kernel(const rocblas_int mm,
     int rpgr = (ngrp - 1) / groupsr + 1;
     ngrp = (n - 1) / threadsc + 1;
     int rpgc = (ngrp - 1) / groupsc + 1;
-    int i, j, it;
+    int i, j, it, it2;
 
     // Registers/LDS:
     // ac, acs -> accumulator
@@ -443,6 +443,7 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_kernel(const rocblas_int mm,
         it = (i < c) ? i : i - c;
         a = (i < c) ? A1 : A2;
         ld = (i < c) ? lda1 : lda2;
+        it2 = it - c - 1;
 
         for(int jj = 0; jj < rpgc; ++jj)
         {
@@ -452,7 +453,9 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_kernel(const rocblas_int mm,
 
             // operation for all rows
             if(i < m && j < n && it != c)
-                ac += (it < c) ? conj(a[j + it * ld]) * sx : a[it - c - 1 + (j + c + 1) * ld] * sx;
+                ac += (it < c) ? conj(a[j + it * ld]) * sx : 
+                      (j > it2) ? conj(a[j + (it2 + c + 1) * ld]) * sx:
+                      a[it2 + (j + c + 1) * ld] * sx;
         }
         acs[tidr + tidc * threadsr] = ac;
         __syncthreads();
@@ -781,11 +784,11 @@ else
         rocblas_stride strideblk = k;
 
 //print_device_matrix(std::cout,"Original A",n,n,A,lda);
-blocks = (n - 1) / BS2 + 1;
-ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
+//blocks = (n - 1) / BS2 + 1;
+/*ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
                                     dim3(BS2, BS2, 1), 0, stream, rocblas_operation_conjugate_transpose,
                                     n, n, A, shiftA, lda, strideA, A, shiftA, lda, strideA, no_mask{},
-                                    uplo, rocblas_diagonal_unit);
+                                    uplo, rocblas_diagonal_unit);*/
 //print_device_matrix(std::cout,"A original",n,n,A,lda);
 
 
