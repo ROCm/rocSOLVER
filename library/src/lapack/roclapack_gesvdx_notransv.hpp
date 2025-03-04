@@ -452,7 +452,7 @@ rocblas_status rocsolver_gesvdx_notransv_template(rocblas_handle handle,
                                 ldu, strideU);
 
         // copy left vectors to matrix U
-        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_nsv, batch_count),
+        ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<TT, T>), dim3(blocks_k, blocks_nsv, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream,
                                 rocblas_operation_none, k, nsv_max, tmpZ, 0, ldz, strideZ, U, 0,
                                 ldu, strideU);
@@ -503,7 +503,7 @@ rocblas_status rocsolver_gesvdx_notransv_template(rocblas_handle handle,
                                 ldv, strideV);
 
         // copy right vectors to matrix V
-        ROCSOLVER_LAUNCH_KERNEL(copy_trans_mat, dim3(blocks_k, blocks_nsv, batch_count),
+        ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<TT, T>), dim3(blocks_k, blocks_nsv, batch_count),
                                 dim3(thread_count, thread_count, 1), 0, stream,
                                 rocblas_operation_none, k, nsv_max, tmpZ, k, ldz, strideZ, V, 0,
                                 ldv, strideV);
