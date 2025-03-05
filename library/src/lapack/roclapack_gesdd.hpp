@@ -205,6 +205,7 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
                                    const rocblas_svect right_svect,
                                    const rocblas_int m,
                                    const rocblas_int n,
+                                   const rocblas_int stride,
                                    const rocblas_int batch_count,
                                    size_t* size_VUtmp,
                                    size_t* size_UVtmpZ,
@@ -311,7 +312,7 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     *size_splits = std::max({f1});
     *size_tmptau_W = std::max({g1});
     *size_tau = std::max({h1});
-    *size_workArr = sizeof(T) * std::max({m, n}) * std::max({m, n}) * batch_count;
+    *size_workArr = sizeof(T) * std::min({m, n}) * std::max({stride, 1}) * batch_count;
     *size_workArr = std::max({*size_workArr, f2, f3, f4});
 }
 

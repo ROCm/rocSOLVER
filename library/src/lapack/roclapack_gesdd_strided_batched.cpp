@@ -76,9 +76,9 @@ rocblas_status rocsolver_gesdd_strided_batched_impl(rocblas_handle handle,
         size_splits, size_tmptau_W, size_tau, size_workArr, size_workArr2;
 
     rocsolver_gesdd_getMemorySize<false, T, SS>(
-        left_svect, right_svect, m, n, batch_count, &size_VUtmp, &size_UVtmpZ, &size_scalars,
-        &size_work1, &size_work2, &size_work3, &size_work4, &size_work5_ipiv, &size_splits,
-        &size_tmptau_W, &size_tau, &size_workArr, &size_workArr2);
+        left_svect, right_svect, m, n, strideS, batch_count, &size_VUtmp, &size_UVtmpZ,
+        &size_scalars, &size_work1, &size_work2, &size_work3, &size_work4, &size_work5_ipiv,
+        &size_splits, &size_tmptau_W, &size_tau, &size_workArr, &size_workArr2);
 
     if(rocblas_is_device_memory_size_query(handle))
         return rocblas_set_optimal_device_memory_size(handle, size_VUtmp, size_UVtmpZ, size_scalars,
