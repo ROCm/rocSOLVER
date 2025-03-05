@@ -784,11 +784,11 @@ else
         rocblas_stride strideblk = k;
 
 //print_device_matrix(std::cout,"Original A",n,n,A,lda);
-//blocks = (n - 1) / BS2 + 1;
-/*ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
+blocks = (n - 1) / BS2 + 1;
+ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
                                     dim3(BS2, BS2, 1), 0, stream, rocblas_operation_conjugate_transpose,
                                     n, n, A, shiftA, lda, strideA, A, shiftA, lda, strideA, no_mask{},
-                                    uplo, rocblas_diagonal_unit);*/
+                                    uplo, rocblas_diagonal_unit);
 //print_device_matrix(std::cout,"A original",n,n,A,lda);
 
 
