@@ -221,22 +221,24 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
                                    size_t* size_workArr,
                                    size_t* size_workArr2)
 {
-    // If quick return, set workspace to zero
+    // Make sure workspace is initialized
+    *size_scalars = 0;
+    *size_VUtmp = 0;
+    *size_UVtmpZ = 0;
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
+    *size_work5_ipiv = 0;
+    *size_splits = 0;
+    *size_tmptau_W = 0;
+    *size_tau = 0;
+    *size_workArr = 0;
+    *size_workArr2 = 0;
+
+    // Quick return
     if(n == 0 || m == 0 || batch_count == 0)
     {
-        *size_scalars = 0;
-        *size_VUtmp = 0;
-        *size_UVtmpZ = 0;
-        *size_work1 = 0;
-        *size_work2 = 0;
-        *size_work3 = 0;
-        *size_work4 = 0;
-        *size_work5_ipiv = 0;
-        *size_splits = 0;
-        *size_tmptau_W = 0;
-        *size_tau = 0;
-        *size_workArr = 0;
-        *size_workArr2 = 0;
         return;
     }
 
