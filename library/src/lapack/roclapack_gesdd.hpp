@@ -429,9 +429,9 @@ rocblas_status rocsolver_gesdd_template(rocblas_handle handle,
 
         // Apply QR factorization to AV, obtaining U from Q and S from the
         // diagonal of R; notice that, since the QR decomposition is not
-        // unique, we are required to make sure that all of the diagonals of R
-        // are positive and flip the signs of the respective columns of Q
-        // otherwise.
+        // unique, we are required to make sure that all of the diagonal
+        // elements of R are positive and flip the signs of the respective
+        // columns of Q otherwise.
         rocsolver_geqrf_template<false, STRIDED, T>(handle, m, n, U_gemm, 0, ldu_gemm, strideU_gemm,
                                                     (T*)work5_ipiv, n, batch_count, scalars, work2,
                                                     (T*)work3, (T*)work4, (T**)workArr);
