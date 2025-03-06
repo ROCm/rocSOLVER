@@ -422,7 +422,7 @@ void testing_syevd_heevd(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    if(argus.alg_mode)
+    if(argus.alg_mode == 1)
     {
         EXPECT_ROCBLAS_STATUS(
             rocsolver_set_alg_mode(handle, rocsolver_function_sterf, rocsolver_alg_mode_hybrid),
