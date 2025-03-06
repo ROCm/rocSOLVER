@@ -117,8 +117,10 @@ __device__ __host__ void scale_tridiag(const rocblas_int start,
                                        const rocblas_int tid = 0,
                                        const rocblas_int tid_inc = 1)
 {
-    D[end] *= scale;
-    for(int i = tid; i < end; i += tid_inc)
+    if(tid == 0)
+        D[end] *= scale;
+
+    for(int i = tid + start; i < end; i += tid_inc)
     {
         D[i] *= scale;
         E[i] *= scale;
