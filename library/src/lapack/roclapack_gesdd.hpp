@@ -281,7 +281,7 @@ void rocsolver_gesdd_getMemorySize(const rocblas_svect left_svect,
     {
         // Requirements for Divide-and-Conquer eigensolver
         rocsolver_syevd_heevd_getMemorySize<BATCHED, T, SS>(
-            rocblas_evect_original, rocblas_fill_upper, n, batch_count, &a1, &b1, &c1, &d1, &e1,
+            rocblas_evect_original, rocblas_fill_upper, m, batch_count, &a1, &b1, &c1, &d1, &e1,
             &f1, &g1, &h1, size_workArr2);
 
         // Requirements for LQ factorization
