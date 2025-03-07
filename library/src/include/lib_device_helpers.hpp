@@ -128,11 +128,18 @@ __device__ __host__ T find_max_tridiag(const rocblas_int start, const rocblas_in
 /** SCALE_TRIDIAG scales the elements of the tridiagonal matrix by a given
     scale factor **/
 template <typename T>
-__device__ __host__ void
-    scale_tridiag(const rocblas_int start, const rocblas_int end, T* D, T* E, T scale)
+__device__ __host__ void scale_tridiag(const rocblas_int start,
+                                       const rocblas_int end,
+                                       T* D,
+                                       T* E,
+                                       T scale,
+                                       const rocblas_int tid = 0,
+                                       const rocblas_int tid_inc = 1)
 {
-    D[end] *= scale;
-    for(int i = start; i < end; i++)
+    if(tid == 0)
+        D[end] *= scale;
+
+    for(int i = tid + start; i < end; i += tid_inc)
     {
         D[i] *= scale;
         E[i] *= scale;
