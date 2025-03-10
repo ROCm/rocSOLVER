@@ -859,14 +859,6 @@ rocblas_status rocsolver_trsm_lower(rocblas_handle handle,
     }
 #endif
 
-    // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
-    int device;
-    HIP_CHECK(hipGetDevice(&device));
-    hipDeviceProp_t deviceProperties;
-    HIP_CHECK(hipGetDeviceProperties(&deviceProperties, device));
-    std::string deviceFullString(deviceProperties.gcnArchName);
-    std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
-
     // ****** MAIN LOOP ***********
     if(isleft)
     {
@@ -1129,14 +1121,6 @@ rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
                                 optim_mem, work1, work2, work3, work4);
     }
 #endif
-
-    // TODO: Some architectures require synchronization between rocSOLVER and rocBLAS kernels; more investigation needed
-    int device;
-    HIP_CHECK(hipGetDevice(&device));
-    hipDeviceProp_t deviceProperties;
-    HIP_CHECK(hipGetDeviceProperties(&deviceProperties, device));
-    std::string deviceFullString(deviceProperties.gcnArchName);
-    std::string deviceString = deviceFullString.substr(0, deviceFullString.find(":"));
 
     // ****** MAIN LOOP ***********
     if(isleft)
