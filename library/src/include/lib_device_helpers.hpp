@@ -204,7 +204,7 @@ __device__ static void shell_sort_ascending(const I n, S* a, I* map = nullptr)
         for(auto k = k_start; k < (n - 1); k += k_inc)
         {
             // if NaN
-            if(a[k] != a[k])
+            if(std::isnan(a[k]) || std::isnan(a[k + 1]))
                 continue;
 
             assert(a[k] <= a[k + 1]);
@@ -292,7 +292,7 @@ __device__ static void shell_sort_descending(const I n, S* a, I* map = nullptr)
         for(auto k = k_start; k < (n - 1); k += k_inc)
         {
             // if NaN
-            if(a[k] != a[k])
+            if(std::isnan(a[k]) || std::isnan(a[k + 1]))
                 continue;
 
             assert(a[k] >= a[k + 1]);
