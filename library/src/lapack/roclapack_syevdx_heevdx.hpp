@@ -136,7 +136,7 @@ void rocsolver_syevdx_heevdx_getMemorySize(const rocblas_evect evect,
 
     // requirements for tridiagonalization (sytrd/hetrd)
     rocsolver_sytrd_hetrd_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &a1, &b1, &c1,
-                                                    size_nsplit_workArr);
+                                                    size_nsplit_workArr, false);
     // requirements for ormtr/unmtr
     rocsolver_ormtr_unmtr_getMemorySize<BATCHED, T>(rocblas_side_left, uplo, n, n, batch_count,
                                                     &unused, &a2, &b2, &c2, &unused);
@@ -250,7 +250,7 @@ rocblas_status rocsolver_syevdx_heevdx_template(rocblas_handle handle,
     // reduce A to tridiagonal form
     rocsolver_sytrd_hetrd_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, stride,
                                                E, stride, tau, stride, batch_count, scalars,
-                                               (T*)work1, (T*)work2, (T*)work3, (T**)nsplit_workArr);
+                                               (T*)work1, (T*)work2, (T*)work3, (T**)nsplit_workArr, false);
 
     if(evect != rocblas_evect_original || n < SYEVDX_MIN_DC_SIZE)
     {

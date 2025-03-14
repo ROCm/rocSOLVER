@@ -83,6 +83,10 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
     *size_work = std::max(w1, w2);
     *size_norms = std::max(n1, n2);
 
+    // when recovering the non-referenced part of A is necessary,
+    // add the required buffer size to hold a copy
+    // TODO: Actually we only need to hold half of the elements (upper or lower part)
+    // The methods to do the copies can be modified for this new data layout in the future
     if(recover_A)
         *size_work += sizeof(T) * n * n * batch_count;
 }
