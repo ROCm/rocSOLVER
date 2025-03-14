@@ -51,7 +51,7 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-#define PRINT_PROFILE
+#undef PRINT_PROFILE
 #ifdef PRINT_PROFILE
 #define CLOCK64() clock64()
 #else
@@ -78,10 +78,30 @@ __device__ T reduce_sum_shfl_wsize(I const wsize, T val)
 {
     // Each iteration halves the number of active threads
     // Each thread adds its partial sum[i] to sum[lane+i]
-    for(auto offset = wsize / 2; offset > 0; offset /= 2)
+    if(wsize == 64)
     {
-        val += __shfl_down(val, offset);
-        // g.sync();
+        val += __shfl_down(val, 32); // offset = 32
+        val += __shfl_down(val, 16); // offset = 16
+        val += __shfl_down(val, 8); // offset = 8
+        val += __shfl_down(val, 4); // offset = 4
+        val += __shfl_down(val, 2); // offset = 2
+        val += __shfl_down(val, 1); // offset = 1
+    }
+    else if(wsize == 32)
+    {
+        val += __shfl_down(val, 16); // offset = 16
+        val += __shfl_down(val, 8); // offset = 8
+        val += __shfl_down(val, 4); // offset = 4
+        val += __shfl_down(val, 2); // offset = 2
+        val += __shfl_down(val, 1); // offset = 1
+    }
+    else
+    {
+        for(auto offset = wsize / 2; offset > 0; offset /= 2)
+        {
+            val += __shfl_down(val, offset);
+            // g.sync();
+        }
     }
     return val; // note: only thread 0 will return full sum
 }
@@ -229,7 +249,8 @@ static __device__ void Xgemv_sh(char const trans,
                                 I const incx,
 
                                 T* const Y_,
-                                I const incy)
+                                I const incy,
+                                T* const tmp_sh)
 {
     bool constexpr is_complex = rocblas_is_complex<T>;
 
@@ -368,6 +389,13 @@ static __device__ void Xgemv_sh(char const trans,
     }
     else
     {
+        for(auto i = (0 + tixy); i < nn; i += nthreads)
+        {
+            tmp_sh[i] = 0;
+        }
+
+        __syncthreads();
+
         // ------------------------------------------------------
         // Y(1:nn) += alpha * tranpose( A(1:mm, 1:nn) ) * X(1:mm)
         // ------------------------------------------------------
@@ -391,8 +419,16 @@ static __device__ void Xgemv_sh(char const trans,
             y_j = reduce_sum_shfl_wsize(wsize, y_j);
             if(is_wave_rank0)
             {
-                gatomicAdd(&(Yvec(ja)), alpha * y_j);
+                // gatomicAdd(&(Yvec(ja)), alpha * y_j);
+                gatomicAdd(&(tmp_sh[ja]), y_j);
             }
+        }
+
+        __syncthreads();
+        for(auto ja = (0 + tixy); ja < nn; ja += nthreads)
+        {
+            T const y_j = tmp_sh[ja];
+            gatomicAdd(&(Yvec(ja)), alpha * y_j);
         }
     }
 }
@@ -549,6 +585,10 @@ static __global__ void lower_stage2(I const n,
     pfree += size_mat;
     total_bytes += size_mat;
 
+    T* const tmp_sh = (T*)pfree;
+    pfree += sizeof(T) * nn;
+    total_bytes += sizeof(T) * nn;
+
     {
         assert(total_bytes <= lds_size);
     }
@@ -665,7 +705,7 @@ static __global__ void lower_stage2(I const n,
 
                                A + idx2D(j + 1, j, lda), 1,
 
-                               W + idx2D(0, j, ldw), 1);
+                               W + idx2D(0, j, ldw), 1, tmp_sh);
 
                 tic = CLOCK64();
 
@@ -711,7 +751,7 @@ static __global__ void lower_stage2(I const n,
 
                                W + idx2D(0, j, ldw), 1,
 
-                               W + idx2D(j + 1, j, ldw), 1);
+                               W + idx2D(j + 1, j, ldw), 1, tmp_sh);
 
                 cg_grid.sync();
                 time_gemv_n1 += CLOCK64() - tic;
@@ -746,7 +786,7 @@ static __global__ void lower_stage2(I const n,
 
                            A + idx2D(j + 1, j, lda), 1,
 
-                           W + idx2D(0, j, ldw), 1);
+                           W + idx2D(0, j, ldw), 1, tmp_sh);
 
             cg_grid.sync();
 
@@ -783,7 +823,7 @@ static __global__ void lower_stage2(I const n,
 
                            W + idx2D(0, j, ldw), 1,
 
-                           W + idx2D(j + 1, j, ldw), 1);
+                           W + idx2D(j + 1, j, ldw), 1, tmp_sh);
 
             cg_grid.sync();
             time_gemv_n2 += CLOCK64() - tic;
@@ -897,6 +937,10 @@ static __global__ void upper_stage2(I const n,
     pfree += mat_size;
     total_bytes += mat_size;
 
+    T* const tmp_sh = (T*)pfree;
+    pfree += sizeof(T) * nn;
+    total_bytes += sizeof(T) * nn;
+
     {
         size_t const ld_size = 64 * 1024;
         assert(total_bytes <= ld_size);
@@ -952,6 +996,7 @@ static __global__ void upper_stage2(I const n,
                 // ------------------
                 I const jj = ixy / ia_size;
                 I const ii = ixy % ia_size;
+                assert(ixy == (ii + jj * ia_size));
 
                 A_sh(ii, jj) = Amat(ii + ia_start, jj);
                 W_sh(ii, jj) = Wmat(ii + ia_start, jj);
@@ -983,7 +1028,7 @@ static __global__ void upper_stage2(I const n,
 
                      A + idx2D(0, j, lda), 1,
 
-                     W + idx2D(j + 1, jw, ldw), 1);
+                     W + idx2D(j + 1, jw, ldw), 1, tmp_sh);
             cg_grid.sync();
         }
 
@@ -1027,7 +1072,7 @@ static __global__ void upper_stage2(I const n,
 
                      W + idx2D(j + 1, jw, ldw), 1,
 
-                     W + idx2D(0, jw, ldw), 1);
+                     W + idx2D(0, jw, ldw), 1, tmp_sh);
             cg_grid.sync();
         }
 #endif
@@ -1068,7 +1113,7 @@ static __global__ void upper_stage2(I const n,
 
                      A + idx2D(0, j, lda), 1,
 
-                     W + idx2D(j + 1, jw, ldw), 1);
+                     W + idx2D(j + 1, jw, ldw), 1, tmp_sh);
 
             cg_grid.sync();
         }
@@ -1114,7 +1159,7 @@ static __global__ void upper_stage2(I const n,
 
                      W + idx2D(j + 1, jw, ldw), 1,
 
-                     W + idx2D(0, jw, ldw), 1);
+                     W + idx2D(0, jw, ldw), 1, tmp_sh);
 
             cg_grid.sync();
         }
@@ -1202,7 +1247,7 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
         auto const mb = ceil(mm, num_cu);
 
         auto ld = is_even(mb) ? mb + 1 : mb;
-        return (sizeof_T * (ld * nn) * 2);
+        return (sizeof_T * ((ld * nn) * 2 + nn));
     };
 
     if(uplo == rocblas_fill_lower)
@@ -1261,7 +1306,7 @@ rocblas_status rocsolver_latrd_coop_template(rocblas_handle handle,
                     shiftW + idx2D(j + 1, j, ldw), 1, strideW, batch_count, work, workArr);
             }
 
-            bool use_lower_stage2
+            bool const use_lower_stage2
                 = get_cooperative_launch() && (need_lds_size(n - j - 1, j, sizeof(T)) <= lds_size);
 #ifdef NDEBUG
 #else
