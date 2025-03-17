@@ -1,4 +1,4 @@
-/************************************************************************ 
+/************************************************************************
  * Derived from the BSD3-licensed
  * LAPACK routine (version 3.7.1) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
@@ -407,7 +407,7 @@ ROCSOLVER_KERNEL void latrd_reduce_kernel(const rocblas_fill uplo,
     {
         i = ii * totalthsr + idr;
         val = 0;
-        
+
         it = (i < c) ? i : i - c;
         y = (i < c) ? y1 : y2;
 
@@ -545,7 +545,7 @@ ROCSOLVER_KERNEL void latrd_upper_updateA_kernel(const rocblas_int mm,
             __syncthreads();
         }
 
-        // write results 
+        // write results
         if(tidc == 0 && i < m)
             y[i] = ac;
     }
@@ -654,7 +654,7 @@ ROCSOLVER_KERNEL void latrd_lower_updateA_kernel(const rocblas_int mm,
             __syncthreads();
         }
 
-        // write results 
+        // write results
         if(tidc == 0 && i < m)
             y[i] = ac;
     }
@@ -708,7 +708,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_symv_kernel(const rocblas_int mm,
             dac = temporary buffer
 
         operation:
-                  [   A1(:, 0:c-1)   ] 
+                  [   A1(:, 0:c-1)   ]
                   [        0         ]
             dac = [ A1(:, c+1:mm-1)' ] * x
                   [        A2'       ]
@@ -716,7 +716,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_symv_kernel(const rocblas_int mm,
         Notes:
             1. Here A1(:, 0:c-1) is symmetric (data referenced only above diagonal)
             2. dac is further reduced by reduce_kernel; results stored in
-                  [ y1 ] 
+                  [ y1 ]
                   [ 0  ]
                   [ y2 ] <- reduce(dac)
                   [ y3 ]
@@ -770,7 +770,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_symv_kernel(const rocblas_int mm,
 
             // operation for all rows
             if(i < m && j < n && it != c)
-                ac += (i > c) ? conj(a[j + it * ld]) * sx : 
+                ac += (i > c) ? conj(a[j + it * ld]) * sx :
                       (j < i) ? conj(a[j + i * ld]) * sx :
                       a[i + j * ld] * sx;
         }
@@ -838,23 +838,23 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_symv_kernel(const rocblas_int mm,
             dac = temporary buffer
 
         operation:
-                  [       A1'       ] 
+                  [       A1'       ]
             dac = [  A2(:, 0:c-1)'  ] * x
                   [        0        ]
-                  [ A2(:, c+1:mm-1) ] 
+                  [ A2(:, c+1:mm-1) ]
 
         Notes:
             1. Here A2(:, c+1:mm-1) is symmetric (data referenced only below diagonal)
             2. dac is further reduced by reduce_kernel; results stored in
-                  [ y1 ] 
+                  [ y1 ]
                   [ y2 ] <- reduce(dac)
-                  [ 0  ]  
-                  [ y3 ] 
+                  [ 0  ]
+                  [ y3 ]
               where
                     y1   = work (temp buffer)
                   [ y2 ]
                   [ 0  ] = W(:, c)
-                  [ y3 ] 
+                  [ y3 ]
     ------------------------------ */
     int n = mm - c - 1;
     int m = mm + c;
@@ -899,7 +899,7 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_symv_kernel(const rocblas_int mm,
 
             // operation for all rows
             if(i < m && j < n && it != c)
-                ac += (it < c) ? conj(a[j + it * ld]) * sx : 
+                ac += (it < c) ? conj(a[j + it * ld]) * sx :
                       (j > it2) ? conj(a[j + (it2 + c + 1) * ld]) * sx:
                       a[it2 + (j + c + 1) * ld] * sx;
         }
@@ -969,7 +969,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_gemv_kernel(const rocblas_int mm,
             dac = temporary buffer
 
         operation:
-                  [   A1(:, 0:c-1)   ] 
+                  [   A1(:, 0:c-1)   ]
                   [        0         ]
             dac = [ A1(:, c+1:mm-1)' ] * x
                   [        A2'       ]
@@ -977,7 +977,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_gemv_kernel(const rocblas_int mm,
         Notes:
             1. Here A1(:, 0:c-1) is full/general matrix (data below and above diagonal)
             2. dac is further reduced by reduce_kernel; results stored in
-                  [ y1 ] 
+                  [ y1 ]
                   [ 0  ]
                   [ y2 ] <- reduce(dac)
                   [ y3 ]
@@ -1031,7 +1031,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_gemv_kernel(const rocblas_int mm,
 
             // operation for all rows
             if(i < m && j < n && it != c)
-                ac += (i > c) ? conj(a[j + it * ld]) * sx : 
+                ac += (i > c) ? conj(a[j + it * ld]) * sx :
                       a[i + j * ld] * sx;
         }
         acs[tidr + tidc * threadsr] = ac;
@@ -1159,7 +1159,7 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_gemv_kernel(const rocblas_int mm,
 
             // operation for all rows
             if(i < m && j < n && it != c)
-                ac += (it < c) ? conj(a[j + it * ld]) * sx : 
+                ac += (it < c) ? conj(a[j + it * ld]) * sx :
                       a[it2 + (j + c + 1) * ld] * sx;
         }
         acs[tidr + tidc * threadsr] = ac;
@@ -1721,8 +1721,8 @@ rocsolver_latrd_mode latrd_get_mode(const rocblas_int n, const rocblas_int k)
 // Method to determine configuration for update kernels depending on n and k
 // TODO: fine tuning may be required
 template<typename T>
-void latrd_get_config_for_updates(const rocblas_int n, 
-                            const rocblas_int k, 
+void latrd_get_config_for_updates(const rocblas_int n,
+                            const rocblas_int k,
                             rocblas_int* dr,
                             rocblas_int* thr,
                             rocblas_int* dc,
@@ -1748,7 +1748,7 @@ void latrd_get_config_for_updates(const rocblas_int n,
         *thr = 64;
         *thc = 8;
     }
-    
+
     *dr = 4;
     *dc = 0;
 }
@@ -1756,8 +1756,8 @@ void latrd_get_config_for_updates(const rocblas_int n,
 // Method to determine configuration for compute kernels depending on n, k and the mode
 // TODO: fine tuning may be required
 template<typename T>
-void latrd_get_config_for_compute(const rocblas_int n, 
-                            const rocblas_int k, 
+void latrd_get_config_for_compute(const rocblas_int n,
+                            const rocblas_int k,
                             rocblas_int* dr,
                             rocblas_int* thr,
                             rocblas_int* dc,
@@ -1765,7 +1765,7 @@ void latrd_get_config_for_compute(const rocblas_int n,
                             rocsolver_latrd_mode mode)
 {
     if(mode == rocsolver_latrd_mode_symv)
-    { 
+    {
         if(n < 256)
         {
             *dr = 4;
@@ -1961,7 +1961,7 @@ rocblas_status rocsolver_latrd_forsytrd_template(rocblas_handle handle,
     dim3 threads(BS1, 1, 1);
     blocks = (n - 1) / BS1 + 1;
     dim3 grid_n(blocks, batch_count);
-    
+
     // configure updateA and updateW kernels:
     rocblas_int dr, dc;
     rocblas_int thr_updates, thc_updates;
@@ -1983,16 +1983,16 @@ rocblas_status rocsolver_latrd_forsytrd_template(rocblas_handle handle,
     rocblas_int thr_reduce = 64;
     rocblas_int thc_reduce = 16;
     size_t lmemsize_reduce = sizeof(T) * (thr_reduce * thc_reduce);
-    rocblas_int grr_reduce = (ss - 1) / thr_reduce + 1; 
+    rocblas_int grr_reduce = (ss - 1) / thr_reduce + 1;
     rocblas_stride strideblk = k;
     rocblas_stride strideD = ss * grc_compute;
     rocblas_int ldd = ss;
-    
+
     if(uplo == rocblas_fill_lower)
     {
         // reduce the first k columns of A
         // main loop running forwards (for each column)
-        for(rocblas_int j = 0; j < k; ++j) 
+        for(rocblas_int j = 0; j < k; ++j)
         {
             // update column j of A with reflector computed in step j-1
             //----------------------------------------------------------
@@ -2032,7 +2032,7 @@ rocblas_status rocsolver_latrd_forsytrd_template(rocblas_handle handle,
             else if(mode == rocsolver_latrd_mode_gemv_in)
                 ROCSOLVER_LAUNCH_KERNEL(latrd_lower_computeW_gemv_kernel<T>,
                                         dim3(grr_compute, grc_compute, batch_count), dim3(thr_compute, thc_compute, 1),
-                                        lmemsize_compute, stream, n, j, A, shiftA, lda, strideA, W, shiftW, ldw, strideW,  
+                                        lmemsize_compute, stream, n, j, A, shiftA, lda, strideA, W, shiftW, ldw, strideW,
                                         norms, ldd, strideD);
             else
                 ROCSOLVER_LAUNCH_KERNEL(latrd_lower_computeW_symv_kernel<T>,
@@ -2043,7 +2043,7 @@ rocblas_status rocsolver_latrd_forsytrd_template(rocblas_handle handle,
             rocblas_int mm = (mode == rocsolver_latrd_mode_gemv_out) ? 2 * j : n + j;
             ROCSOLVER_LAUNCH_KERNEL(latrd_reduce_kernel<T>, dim3(grr_reduce, 1, batch_count),
                                     dim3(thr_reduce, thc_reduce, 1), lmemsize_reduce, stream,
-                                    uplo, mm, grc_compute, j, norms, ldd, strideD, W, shiftW + idx2D(0, j, ldw), 
+                                    uplo, mm, grc_compute, j, norms, ldd, strideD, W, shiftW + idx2D(0, j, ldw),
                                     ldw, strideW, work, strideblk);
             //------------------------------------------------------------------
 
