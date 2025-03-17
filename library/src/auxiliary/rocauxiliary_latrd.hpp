@@ -398,7 +398,7 @@ ROCSOLVER_KERNEL void latrd_reduce_kernel(const rocblas_fill uplo,
     int i, it;
 
     // Registers/LDS:
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* tmp = reinterpret_cast<T*>(smem);
     T val;
     T* y;
@@ -508,7 +508,7 @@ ROCSOLVER_KERNEL void latrd_upper_updateA_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac;
     T sx1, sx2;
@@ -617,7 +617,7 @@ ROCSOLVER_KERNEL void latrd_lower_updateA_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac;
     T sx1, sx2;
@@ -747,7 +747,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_symv_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac, sx;
     T const* a;
@@ -875,7 +875,7 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_symv_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac, sx;
     T* a;
@@ -1008,7 +1008,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_gemv_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac, sx;
     T const* a;
@@ -1135,7 +1135,7 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_gemv_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac, sx;
     T const* a;
@@ -1260,7 +1260,7 @@ ROCSOLVER_KERNEL void latrd_upper_computeW_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac, sx;
     T* a;
@@ -1379,7 +1379,7 @@ ROCSOLVER_KERNEL void latrd_lower_computeW_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac, sx;
     T* a;
@@ -1501,7 +1501,7 @@ ROCSOLVER_KERNEL void latrd_upper_updateW_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac;
     T sx1, sx2;
@@ -1616,7 +1616,7 @@ ROCSOLVER_KERNEL void latrd_lower_updateW_kernel(const rocblas_int mm,
     // Registers/LDS:
     // ac, acs -> accumulator
     // sx -> hold the elements of 'x'
-    extern __shared__ double smem[];
+    extern __shared__ double smem[]; //min size should be threadsr x threadsc
     T* acs = reinterpret_cast<T*>(smem);
     T ac;
     T sx1, sx2;
@@ -1674,7 +1674,7 @@ typedef enum rocsolver_latrd_mode_
 // Method to determine the mode depending on n and k
 // TODO: fine tuning may be required
 template<typename T>
-rocsolver_latrd_mode get_mode(const rocblas_int n, const rocblas_int k)
+rocsolver_latrd_mode latrd_get_mode(const rocblas_int n, const rocblas_int k)
 {
     rocsolver_latrd_mode mode;
 
@@ -1721,7 +1721,7 @@ rocsolver_latrd_mode get_mode(const rocblas_int n, const rocblas_int k)
 // Method to determine configuration for update kernels depending on n and k
 // TODO: fine tuning may be required
 template<typename T>
-void get_config_for_updates(const rocblas_int n, 
+void latrd_get_config_for_updates(const rocblas_int n, 
                             const rocblas_int k, 
                             rocblas_int* dr,
                             rocblas_int* thr,
@@ -1756,7 +1756,7 @@ void get_config_for_updates(const rocblas_int n,
 // Method to determine configuration for compute kernels depending on n, k and the mode
 // TODO: fine tuning may be required
 template<typename T>
-void get_config_for_compute(const rocblas_int n, 
+void latrd_get_config_for_compute(const rocblas_int n, 
                             const rocblas_int k, 
                             rocblas_int* dr,
                             rocblas_int* thr,
@@ -1965,15 +1965,15 @@ rocblas_status rocsolver_latrd_forsytrd_template(rocblas_handle handle,
     // configure updateA and updateW kernels:
     rocblas_int dr, dc;
     rocblas_int thr_updates, thc_updates;
-    get_config_for_updates<T>(n, k, &dr, &thr_updates, &dc, &thc_updates);
+    latrd_get_config_for_updates<T>(n, k, &dr, &thr_updates, &dc, &thc_updates);
     size_t lmemsize_updates = sizeof(T) * (thr_updates * thc_updates);
     rocblas_int grr_updates = (n * dr / 4 - 1) / thr_updates + 1;
     rocblas_int grc_updates = (k * dc / 4 - 1) / thc_updates + 1;
 
     // configure computeW kernels:
     rocblas_int thr_compute, thc_compute;
-    rocsolver_latrd_mode mode = get_mode<T>(n, k);
-    get_config_for_compute<T>(n, k, &dr, &thr_compute, &dc, &thc_compute, mode);
+    rocsolver_latrd_mode mode = latrd_get_mode<T>(n, k);
+    latrd_get_config_for_compute<T>(n, k, &dr, &thr_compute, &dc, &thc_compute, mode);
     size_t lmemsize_compute = sizeof(T) * (thr_compute * thc_compute);
     rocblas_int ss = (mode == rocsolver_latrd_mode_gemv_out) ? 2 * k : n + k;
     rocblas_int grr_compute = (ss * dr / 4 - 1) / thr_compute + 1;
