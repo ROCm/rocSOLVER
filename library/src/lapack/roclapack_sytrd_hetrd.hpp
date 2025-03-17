@@ -163,14 +163,11 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                                               E, strideE, tau, strideP, batch_count, scalars, work_Acpy,
                                               norms, tmptau_W, workArr);
 
-    // everything must be executed with scalars on the host
+    // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
-    // scalars for rocblas calls
-    T minone = -1; 
-    T one = 1; 
     rocblas_int ldw = n;
     rocblas_stride strideW = n * k;
     rocblas_int j;
@@ -218,14 +215,14 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
             // update trailing matrix
             // A = A - V*W' - W*V'
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, n - j - k, n - j - k, k,
-                                &minone, A, shiftA + idx2D(j + k, j, lda), lda, strideA, 
+                                scalars, A, shiftA + idx2D(j + k, j, lda), lda, strideA, 
                                 tmptau_W, idx2D(k, 0, ldw), ldw, strideW,
-                                &one, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA,
+                                scalars + 2, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA,
                                 batch_count, workArr);
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, n - j - k, n - j - k, k,
-                                &minone, tmptau_W, idx2D(k, 0, ldw), ldw, strideW,
+                                scalars, tmptau_W, idx2D(k, 0, ldw), ldw, strideW,
                                 A, shiftA + idx2D(j + k, j, lda), lda, strideA,
-                                &one, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA,
+                                scalars + 2, A, shiftA + idx2D(j + k, j + k, lda), lda, strideA,
                                 batch_count, workArr);
 
             j += k;
@@ -248,19 +245,19 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
         while(j >= upkk)
         {
             // reduce columns j:j+k-1
-            rocsolver_latrd_template<T>(handle, uplo, j + k, k, A, shiftA, lda, strideA, E, strideE,
+            rocsolver_latrd_forsytrd_template<T>(handle, uplo, j + k, k, A, shiftA, lda, strideA, E, strideE,
                                         tau, strideP, tmptau_W, 0, ldw, strideW, batch_count,
                                         scalars, work, norms, workArr);
 
             // update unreduced block as a rank-2k update
             // A = A - V*W' - W*V'
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, j, j, k,
-                                &minone, A, shiftA + idx2D(0, j, lda), lda, strideA,
-                                tmptau_W, 0, ldw, strideW, &one, A, shiftA, lda, strideA,
+                                scalars, A, shiftA + idx2D(0, j, lda), lda, strideA,
+                                tmptau_W, 0, ldw, strideW, scalars + 2, A, shiftA, lda, strideA,
                                 batch_count, workArr);
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, j, j, k,
-                                &minone, tmptau_W, 0, ldw, strideW, A, shiftA + idx2D(0, j, lda), lda, strideA,
-                                &one, A, shiftA, lda, strideA, batch_count, workArr);
+                                scalars, tmptau_W, 0, ldw, strideW, A, shiftA + idx2D(0, j, lda), lda, strideA,
+                                scalars + 2, A, shiftA, lda, strideA, batch_count, workArr);
 
             j -= k;
         }
