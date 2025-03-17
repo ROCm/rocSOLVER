@@ -88,7 +88,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.28.0")
+set(VERSION_STRING "3.29.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -167,10 +167,12 @@ if(NOT DEFINED AMDGPU_TARGETS)
   set(XNACK_PLUS_TARGETS
     gfx90a:xnack+
     gfx908:xnack+
-    gfx942:xnack+)
+    gfx942:xnack+
+    gfx950:xnack+)
   set(XNACK_MINUS_TARGETS gfx90a:xnack-)
   set(MISC_TARGETS
     gfx942
+    gfx950
     gfx1100
     gfx1101
     gfx1102

@@ -46,6 +46,10 @@ def parse_args():
                         help='Specify path to an existing rocSOLVER install directory (optional, default: /opt/rocm/rocsolver)')
     parser.add_argument('-a', '--architecture', dest='gpu_architecture', type=str, required=False, default=None,
                         help='Set GPU architectures to build for (optional)')
+    parser.add_argument(      '--ci_labels', nargs='?', type=str, required=False, default="",
+                        help='Semicolon (";") separated list of GitHub Labels with build options (not implemented, silently ignored)')
+    parser.add_argument(      '--ci_gfx', nargs='?', type=str, required=False, default="",
+                        help='Semicolon (";") separated list of gfx targets expected on test runs (not implemented, silently ignored)')
 
     return parser.parse_args()
 
