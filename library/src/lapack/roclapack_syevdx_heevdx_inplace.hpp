@@ -1,10 +1,10 @@
-/************************************************************************ 
+/************************************************************************
  * Derived from the BSD3-licensed
  * LAPACK routine (version 3.7.0) --
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -263,9 +263,9 @@ rocblas_status rocsolver_syevdx_heevdx_inplace_template(rocblas_handle handle,
     dim3 threadsA(BS2, BS2, 1);
 
     // reduce A to tridiagonal form
-    rocsolver_sytrd_hetrd_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, stride,
-                                               E, stride, tau, stride, batch_count, scalars,
-                                               (T*)work1, (T*)work2, (T*)work3, (T**)nsplit_workArr, false);
+    rocsolver_sytrd_hetrd_template<BATCHED, T>(handle, uplo, n, A, shiftA, lda, strideA, D, stride, E,
+                                               stride, tau, stride, batch_count, scalars, (T*)work1,
+                                               (T*)work2, (T*)work3, (T**)nsplit_workArr, false);
 
     if(evect != rocblas_evect_original || n < SYEVDX_MIN_DC_SIZE)
     {
