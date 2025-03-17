@@ -91,9 +91,9 @@ rocblas_status rocsolver_latrd_impl(rocblas_handle handle,
         init_scalars(handle, (T*)scalars);
 
     // execution
-    return rocsolver_latrd_forsytrd_template<T>(
-        handle, uplo, n, k, A, shiftA, lda, strideA, E, strideE, tau, strideP, W, shiftW, ldw,
-        strideW, batch_count, (T*)scalars, (T*)work, (T*)norms, (T**)workArr);
+    return rocsolver_latrd_template<T>(handle, uplo, n, k, A, shiftA, lda, strideA, E, strideE, tau,
+                                       strideP, W, shiftW, ldw, strideW, batch_count, (T*)scalars,
+                                       (T*)work, (T*)norms, (T**)workArr);
 }
 
 ROCSOLVER_END_NAMESPACE

@@ -245,7 +245,7 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
                                                  strideE, tau, strideP, tmptau_W, 0, ldw, strideW,
                                                  batch_count, scalars, work, norms, workArr);
 
-            // update unreduced block as a rank-2k update
+            // update trailing matrix
             // A = A - V*W' - W*V'
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, j,
                            j, k, scalars, A, shiftA + idx2D(0, j, lda), lda, strideA, tmptau_W, 0,

@@ -372,13 +372,13 @@ ROCSOLVER_KERNEL void latrd_reduce_kernel(const rocblas_fill uplo,
 {
     int bid = hipBlockIdx_z;
     int bidr = hipBlockIdx_x;
-    int bidc = 0;
+    int bidc = hipBlockIdx_y;
     int tidr = hipThreadIdx_x;
     int tidc = hipThreadIdx_y;
     int threadsr = hipBlockDim_x;
     int threadsc = hipBlockDim_y;
     int groupsr = hipGridDim_x;
-    int groupsc = 1;
+    int groupsc = hipGridDim_y;
     int totalthsr = groupsr * threadsr;
     int totalthsc = groupsc * threadsc;
     int idr = bidr * threadsr + tidr;
