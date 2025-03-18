@@ -457,7 +457,7 @@ if(ROCSOLVER_USE_INTERNAL_BLAS)
   target_compile_definitions(rocsolver PRIVATE USE_INTERNAL_GEMM USE_INTERNAL_TRSM)
 endif()
 target_compile_options(rocsolver PRIVATE -fgpu-rdc)
-target_link_options(rocsolver PRIVATE -fgpu-rdc -Xoffload-linker --lto-partitions=16) 
+target_link_options(rocsolver PRIVATE -fgpu-rdc) 
 target_compile_definitions(rocsolver PRIVATE
   ROCM_USE_FLOAT16
   ROCBLAS_INTERNAL_API
