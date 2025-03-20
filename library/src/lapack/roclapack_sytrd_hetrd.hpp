@@ -212,11 +212,11 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
             // update trailing matrix
             // A = A - V*W' - W*V'
-            rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
+            rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
                            n - j - k, n - j - k, k, scalars, A, shiftA + idx2D(j + k, j, lda), lda,
                            strideA, tmptau_W, idx2D(k, 0, ldw), ldw, strideW, scalars + 2, A,
                            shiftA + idx2D(j + k, j + k, lda), lda, strideA, batch_count, workArr);
-            rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
+            rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose,
                            n - j - k, n - j - k, k, scalars, tmptau_W, idx2D(k, 0, ldw), ldw,
                            strideW, A, shiftA + idx2D(j + k, j, lda), lda, strideA, scalars + 2, A,
                            shiftA + idx2D(j + k, j + k, lda), lda, strideA, batch_count, workArr);
@@ -247,10 +247,10 @@ rocblas_status rocsolver_sytrd_hetrd_template(rocblas_handle handle,
 
             // update trailing matrix
             // A = A - V*W' - W*V'
-            rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, j,
+            rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, j,
                            j, k, scalars, A, shiftA + idx2D(0, j, lda), lda, strideA, tmptau_W, 0,
                            ldw, strideW, scalars + 2, A, shiftA, lda, strideA, batch_count, workArr);
-            rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, j,
+            rocblasCall_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, j,
                            j, k, scalars, tmptau_W, 0, ldw, strideW, A, shiftA + idx2D(0, j, lda),
                            lda, strideA, scalars + 2, A, shiftA, lda, strideA, batch_count, workArr);
 
