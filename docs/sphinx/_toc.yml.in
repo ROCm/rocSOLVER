@@ -34,7 +34,7 @@ subtrees:
       - file: reference/intro.rst
         title: rocSOLVER API introduction
       - file: reference/types.rst
-        title: rocSOLVER types
+      - file: reference/precision.rst
       - file: reference/auxiliary.rst
         title: LAPACK auxiliary functions
       - file: reference/lapack.rst
