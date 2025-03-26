@@ -32,21 +32,12 @@ The rocSOLVER public repository is located at `<https://github.com/ROCm/rocSOLVE
   .. grid-item-card:: Examples
 
     * `Client samples <https://github.com/ROCm/rocSOLVER/tree/develop/clients/samples>`_
-    * :ref:`intro`
-    * :ref:`rocsolver-types`
-    * :ref:`rocsolver-precision-support`
-    * :ref:`rocsolver_auxiliary_functions`
-    * :ref:`lapackfunc`
-    * :ref:`lapack-like`
-    * :ref:`refactor`
-    * :ref:`helpers`
-    * :ref:`tuning_label`
-    * :ref:`deprecated`
 
   .. grid-item-card:: API reference
 
     * :doc:`rocSOLVER API introduction <./reference/intro>`
     * :doc:`rocSOLVER types <./reference/types>`
+    * :doc:`rocSOLVER precision support <./reference/precision>`
     * :doc:`LAPACK auxiliary functions <./reference/auxiliary>`
     * :doc:`LAPACK functions <./reference/lapack>`
     * :doc:`LAPACK-like functions <./reference/lapacklike>`

@@ -6,7 +6,7 @@
 .. _using:
 
 *************************
-Using rocSOLVER Library
+Using the rocSOLVER library
 *************************
 
 Once installed, rocSOLVER can be used just like any other library with a C API.
