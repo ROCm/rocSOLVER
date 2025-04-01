@@ -11,12 +11,13 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 * Algorithm selection mechanism for hybrid computation
 * Hybrid computation support for existing routines:
     - BDSQR
-    - GESVD  
+    - GESVD
 
 ### Optimized
 
 * Improved the performance of SYEVJ
 * Improved the performance of GEQRF
+* Improved the performance of STEQR and downstream functions such as SYEV/HEEV
 
 
 ## rocSOLVER 3.27.0 for ROCm 6.3.0
