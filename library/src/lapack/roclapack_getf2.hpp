@@ -80,8 +80,8 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const I n,
                                               const rocblas_stride stridePI)
 {
     using S = decltype(std::real(T{}));
-    rocblas_stride const lda = lda_arg;
-    rocblas_stride const inca = inca_arg;
+#define lda (static_cast<int64_t>(lda_arg))
+#define inca (static_cast<int64_t>(inca_arg))
 
     const I id = hipBlockIdx_y;
     I tid = hipBlockIdx_x * static_cast<I>(hipBlockDim_x) + hipThreadIdx_x;
@@ -122,6 +122,8 @@ ROCSOLVER_KERNEL void getf2_check_singularity(const I n,
                 pivot_val[id] = S(1) / A[j * inca + j * lda];
         }
     }
+#undef lda
+#undef inca
 }
 
 /** Non-pivoting version **/
@@ -137,8 +139,8 @@ ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const I j,
                                                    const I offset)
 {
     using S = decltype(std::real(T{}));
-    rocblas_stride const lda = lda_arg;
-    rocblas_stride const inca = inca_arg;
+#define lda (static_cast<int64_t>(lda_arg))
+#define inca (static_cast<int64_t>(inca_arg))
 
     const I id = hipBlockIdx_y;
 
@@ -154,6 +156,9 @@ ROCSOLVER_KERNEL void getf2_npvt_check_singularity(const I j,
     }
     else
         pivot_val[id] = S(1) / A[j * inca + j * lda];
+
+#undef lda
+#undef inca
 }
 
 /** This kernel executes an optimized reduction to find the index of the

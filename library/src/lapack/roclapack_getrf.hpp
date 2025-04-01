@@ -205,8 +205,8 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const I n,
                                           I* pividx,
                                           const rocblas_stride stridePI)
 {
-    rocblas_stride const lda = lda_arg;
-    rocblas_stride const inca = inca_arg;
+#define lda (static_cast<int64_t>(lda_arg))
+#define inca (static_cast<int64_t>(inca_arg))
 
     I id = hipBlockIdx_z;
     I tx = hipThreadIdx_x;
@@ -236,6 +236,8 @@ ROCSOLVER_KERNEL void getrf_row_permutate(const I n,
         // copy temp results back to A
         A[tx * inca + j * lda] = temp[tx + ty * bdx];
     }
+#undef lda
+#undef inca
 }
 
 /** This function returns the outer block size based on defined variables
