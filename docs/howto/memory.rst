@@ -36,7 +36,7 @@ This scheme has the disadvantage that automatic reallocation is synchronizing, a
 User-owned workspace
 ================================================
 
-Alternatively, the user may opt to manage the workspace memory manually using HIP. This involves querying rocSOLVER to determine the minimum amount of memory required,
+Alternatively, the user can opt to manage the workspace memory manually using HIP. This involves querying rocSOLVER to determine the minimum amount of memory required,
 allocating the memory with ``hipMalloc``, and then passing the resulting pointer to rocBLAS.
 
 Minimum required size
@@ -61,7 +61,7 @@ For more details on the rocBLAS APIs, see :doc:`Device Memory Allocation Functio
 Setting the workspace
 ------------------------------
 
-By calling the function ``rocblas_set_workspace``, the user may pass a pointer to device memory to rocBLAS that will be used as the workspace for rocSOLVER. For example:
+By calling the function ``rocblas_set_workspace``, the user can pass a pointer to device memory to rocBLAS that will be used as the workspace for rocSOLVER. For example:
 
 .. code-block:: cpp
 
