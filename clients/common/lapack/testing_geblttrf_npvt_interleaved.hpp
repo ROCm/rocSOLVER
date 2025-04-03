@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -168,7 +168,7 @@ void geblttrf_npvt_interleaved_initData(const rocblas_handle handle,
 
         rocblas_int n = nb * nblocks;
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             T* A = hA[0] + b * stA;
             T* B = hB[0] + b * stB;
@@ -176,11 +176,11 @@ void geblttrf_npvt_interleaved_initData(const rocblas_handle handle,
 
             // scale to avoid singularities
             // leaving matrix as diagonal dominant so that pivoting is not required
-            for(rocblas_int i = 0; i < nb; i++)
+            for(int64_t i = 0; i < nb; i++)
             {
-                for(rocblas_int j = 0; j < nb; j++)
+                for(int64_t j = 0; j < nb; j++)
                 {
-                    for(rocblas_int k = 0; k < nblocks; k++)
+                    for(int64_t k = 0; k < nblocks; k++)
                     {
                         if(i == j)
                             B[i * incb + j * ldb + k * ldb * nb] += 400;
@@ -188,7 +188,7 @@ void geblttrf_npvt_interleaved_initData(const rocblas_handle handle,
                             B[i * incb + j * ldb + k * ldb * nb] -= 4;
                     }
 
-                    for(rocblas_int k = 0; k < nblocks - 1; k++)
+                    for(int64_t k = 0; k < nblocks - 1; k++)
                     {
                         A[i * inca + j * lda + k * lda * nb] -= 4;
                         C[i * incc + j * ldc + k * ldc * nb] -= 4;
@@ -205,7 +205,7 @@ void geblttrf_npvt_interleaved_initData(const rocblas_handle handle,
                 jj -= (jj / n) * n;
                 rocblas_int j = jj % nb;
                 rocblas_int k = jj / nb;
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     // zero the jj-th column
                     B[i * incb + j * ldb + k * ldb * nb] = 0;
@@ -219,7 +219,7 @@ void geblttrf_npvt_interleaved_initData(const rocblas_handle handle,
                 jj -= (jj / n) * n;
                 j = jj % nb;
                 k = jj / nb;
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     // zero the jj-th column
                     B[i * incb + j * ldb + k * ldb * nb] = 0;
@@ -233,7 +233,7 @@ void geblttrf_npvt_interleaved_initData(const rocblas_handle handle,
                 jj -= (jj / n) * n;
                 j = jj % nb;
                 k = jj / nb;
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     // zero the jj-th column
                     B[i * incb + j * ldb + k * ldb * nb] = 0;
@@ -307,7 +307,7 @@ void geblttrf_npvt_interleaved_getError(const rocblas_handle handle,
     // check info for singularities
     double err = 0;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
         {
@@ -324,16 +324,16 @@ void geblttrf_npvt_interleaved_getError(const rocblas_handle handle,
     }
     *max_err += err;
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(hInfoRes[b][0] == 0)
         {
             // compute diagonal blocks and store in full matrix L
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
-                    for(rocblas_int j = 0; j < nb; j++)
+                    for(int64_t j = 0; j < nb; j++)
                     {
                         Btmp[i + j * nb + k * nb * nb]
                             = hBRes[0][i * incb + j * ldb + k * ldb * nb + b * stB];
@@ -351,13 +351,13 @@ void geblttrf_npvt_interleaved_getError(const rocblas_handle handle,
             }
 
             // move blocks A, updated C, and I into full matrices L and U
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     if(k < nblocks - 1)
                     {
-                        for(rocblas_int j = 0; j < nb; j++)
+                        for(int64_t j = 0; j < nb; j++)
                         {
                             U[i + (j + nb) * n + k * (n + 1) * nb]
                                 = hCRes[0][i * incc + j * ldc + k * ldc * nb + b * stC];
@@ -375,11 +375,11 @@ void geblttrf_npvt_interleaved_getError(const rocblas_handle handle,
                      U.data(), n, T(0), MRes.data(), n);
 
             // form original matrix from original blocks
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
-                    for(rocblas_int j = 0; j < nb; j++)
+                    for(int64_t j = 0; j < nb; j++)
                     {
                         M[i + j * n + k * (n + 1) * nb]
                             = hB[0][i * incb + j * ldb + k * ldb * nb + b * stB];
@@ -446,7 +446,7 @@ void geblttrf_npvt_interleaved_getPerfData(const rocblas_handle handle,
                                                        hB, hC, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         geblttrf_npvt_interleaved_initData<false, true, T>(handle, nb, nblocks, dA, inca, lda, stA,
                                                            dB, incb, ldb, stB, dC, incc, ldc, stC,
@@ -472,7 +472,7 @@ void geblttrf_npvt_interleaved_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         geblttrf_npvt_interleaved_initData<false, true, T>(handle, nb, nblocks, dA, inca, lda, stA,
                                                            dB, incb, ldb, stB, dC, incc, ldc, stC,
@@ -500,9 +500,9 @@ void testing_geblttrf_npvt_interleaved(Arguments& argus)
     rocblas_int lda = argus.get<rocblas_int>("lda", nb);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", nb);
     rocblas_int ldc = argus.get<rocblas_int>("ldc", nb);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * nb * nblocks);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nb * nblocks);
-    rocblas_stride stC = argus.get<rocblas_stride>("strideC", ldc * nb * nblocks);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * nb * nblocks);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nb * nblocks);
+    rocblas_stride stC = argus.get<rocblas_stride>("strideC", rocblas_stride(ldc) * nb * nblocks);
 
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;

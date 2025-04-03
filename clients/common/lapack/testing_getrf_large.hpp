@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -78,12 +78,12 @@ void getrf_large_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, false);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale A to avoid singularities
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -94,9 +94,9 @@ void getrf_large_initData(const rocblas_handle handle,
 
             // shuffle rows to test pivoting
             // always the same permuation for debugging purposes
-            for(rocblas_int i = 0; i < n / 2; i++)
+            for(int64_t i = 0; i < n / 2; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     tmp = hA[b][i + j * lda];
                     hA[b][i + j * lda] = hA[b][n - 1 - i + j * lda];
@@ -112,15 +112,15 @@ void getrf_large_initData(const rocblas_handle handle,
                 // matrices in the batch that are singular
                 rocblas_int j = n / 4 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
                 j = n / 2 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
                 j = n - 1 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
             }
         }
@@ -169,12 +169,12 @@ void getrf_large_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, false);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale A to avoid singularities
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += T(400, 400);
@@ -185,9 +185,9 @@ void getrf_large_initData(const rocblas_handle handle,
 
             // shuffle rows to test pivoting
             // always the same permuation for debugging purposes
-            for(rocblas_int i = 0; i < n / 2; i++)
+            for(int64_t i = 0; i < n / 2; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     tmp = hA[b][i + j * lda];
                     hA[b][i + j * lda] = hA[b][n - 1 - i + j * lda];
@@ -203,15 +203,15 @@ void getrf_large_initData(const rocblas_handle handle,
                 // matrices in the batch that are singular
                 rocblas_int j = n / 4 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
                 j = n / 2 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
                 j = n - 1 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
             }
         }
@@ -275,7 +275,7 @@ void getrf_large_getError(const rocblas_handle handle,
 
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     { // Pass the matrices here
         err = norm_error('F', n, nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -318,8 +318,8 @@ void testing_getrf_large(Arguments& argus)
     rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nrhs);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", n);
 
     rocblas_int bc = argus.batch_count;

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -139,11 +139,11 @@ void gerq2_gerqf_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < m; i++)
+            for(int64_t i = 0; i < m; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -188,7 +188,7 @@ void gerq2_gerqf_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         GERQF ? cpu_gerqf(m, n, hA[b], lda, hIpiv[b], hW.data(), m)
               : cpu_gerq2(m, n, hA[b], lda, hIpiv[b], hW.data());
@@ -200,7 +200,7 @@ void gerq2_gerqf_getError(const rocblas_handle handle,
     // using frobenius norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('F', m, n, lda, hA[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -234,7 +234,7 @@ void gerq2_gerqf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             GERQF ? cpu_gerqf(m, n, hA[b], lda, hIpiv[b], hW.data(), m)
                   : cpu_gerq2(m, n, hA[b], lda, hIpiv[b], hW.data());
@@ -245,7 +245,7 @@ void gerq2_gerqf_getPerfData(const rocblas_handle handle,
     gerq2_gerqf_initData<true, false, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA, hIpiv);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         gerq2_gerqf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA, hIpiv);
 
@@ -268,7 +268,7 @@ void gerq2_gerqf_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         gerq2_gerqf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA, hIpiv);
 
@@ -288,7 +288,7 @@ void testing_gerq2_gerqf(Arguments& argus)
     rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
 
     rocblas_int bc = argus.batch_count;

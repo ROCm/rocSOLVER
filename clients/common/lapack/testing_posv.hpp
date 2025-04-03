@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -156,10 +156,10 @@ void posv_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, true);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale to ensure positive definiteness
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
                 hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
@@ -222,7 +222,7 @@ void posv_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_posv(uplo, n, nrhs, hA[b], lda, hB[b], ldb, hInfo[b]);
     }
@@ -233,7 +233,7 @@ void posv_getError(const rocblas_handle handle,
     // using vector-induced infinity norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('I', n, nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -241,7 +241,7 @@ void posv_getError(const rocblas_handle handle,
 
     // also check info for non positive definite cases
     err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -281,7 +281,7 @@ void posv_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_posv(uplo, n, nrhs, hA[b], lda, hB[b], ldb, hInfo[b]);
         }
@@ -292,7 +292,7 @@ void posv_getPerfData(const rocblas_handle handle,
                                   singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         posv_initData<false, true, T>(handle, uplo, n, nrhs, dA, lda, stA, dB, ldb, stB, bc, hA, hB,
                                       singular);
@@ -316,7 +316,7 @@ void posv_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         posv_initData<false, true, T>(handle, uplo, n, nrhs, dA, lda, stA, dB, ldb, stB, bc, hA, hB,
                                       singular);
@@ -339,8 +339,8 @@ void testing_posv(Arguments& argus)
     rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nrhs);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_int bc = argus.batch_count;

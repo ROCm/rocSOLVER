@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -138,7 +138,7 @@ void getf2_getrf_initData(const rocblas_handle handle,
                           const I m,
                           const I n,
                           Td& dA,
-                          const I lda,
+                          const I lda_arg,
                           const rocblas_stride stA,
                           Id& dIpiv,
                           const rocblas_stride stP,
@@ -148,17 +148,19 @@ void getf2_getrf_initData(const rocblas_handle handle,
                           Uh& hIpiv,
                           const bool singular)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+
     if(CPU)
     {
         T tmp;
         rocblas_init<T>(hA, true);
 
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale A to avoid singularities
-            for(I i = 0; i < m; i++)
+            for(int64_t i = 0; i < m; i++)
             {
-                for(I j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -169,9 +171,9 @@ void getf2_getrf_initData(const rocblas_handle handle,
 
             // shuffle rows to test pivoting
             // always the same permuation for debugging purposes
-            for(I i = 0; i < m / 2; i++)
+            for(int64_t i = 0; i < m / 2; i++)
             {
-                for(I j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     tmp = hA[b][i + j * lda];
                     hA[b][i + j * lda] = hA[b][m - 1 - i + j * lda];
@@ -187,15 +189,15 @@ void getf2_getrf_initData(const rocblas_handle handle,
                 // matrices in the batch that are singular
                 I j = n / 4 + b;
                 j -= (j / n) * n;
-                for(I i = 0; i < m; i++)
+                for(int64_t i = 0; i < m; i++)
                     hA[b][i + j * lda] = 0;
                 j = n / 2 + b;
                 j -= (j / n) * n;
-                for(I i = 0; i < m; i++)
+                for(int64_t i = 0; i < m; i++)
                     hA[b][i + j * lda] = 0;
                 j = n - 1 + b;
                 j -= (j / n) * n;
-                for(I i = 0; i < m; i++)
+                for(int64_t i = 0; i < m; i++)
                     hA[b][i + j * lda] = 0;
             }
         }
@@ -206,6 +208,7 @@ void getf2_getrf_initData(const rocblas_handle handle,
         // now copy data to the GPU
         CHECK_HIP_ERROR(dA.transfer_from(hA));
     }
+#undef lda
 }
 
 template <bool STRIDED, bool GETRF, typename T, typename I, typename Td, typename Id, typename Th, typename Ih, typename Uh>
@@ -247,7 +250,7 @@ void getf2_getrf_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         GETRF ? cpu_getrf(m, n, hA[b], lda, hIpiv[b], hInfo[b])
               : cpu_getf2(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
@@ -264,14 +267,14 @@ void getf2_getrf_getError(const rocblas_handle handle,
     // using frobenius norm
     double err;
     *max_err = 0;
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('F', m, n, lda, hA[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
 
         // also check pivoting (count the number of incorrect pivots)
         err = 0;
-        for(I i = 0; i < min(m, n); ++i)
+        for(int64_t i = 0; i < min(m, n); ++i)
         {
             EXPECT_EQ(hIpiv[b][i], hIpivRes[b][i]) << "where b = " << b << ", i = " << i;
             if(hIpiv[b][i] != hIpivRes[b][i])
@@ -282,7 +285,7 @@ void getf2_getrf_getError(const rocblas_handle handle,
 
     // also check info for singularities
     err = 0;
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -320,7 +323,7 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             GETRF ? cpu_getrf(m, n, hA[b], lda, hIpiv[b], hInfo[b])
                   : cpu_getf2(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
@@ -332,7 +335,7 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
                                          hIpiv, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         getf2_getrf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
                                              hIpiv, singular);
@@ -356,7 +359,7 @@ void getf2_getrf_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         getf2_getrf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
                                              hIpiv, singular);
@@ -377,7 +380,7 @@ void testing_getf2_getrf(Arguments& argus)
     I m = argus.get<rocblas_int>("m");
     I n = argus.get<rocblas_int>("n", m);
     I lda = argus.get<rocblas_int>("lda", m);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
 
     I bc = argus.batch_count;

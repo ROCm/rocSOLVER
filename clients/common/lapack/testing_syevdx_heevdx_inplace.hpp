@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -185,11 +185,11 @@ void syevdx_heevdx_inplace_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // construct well conditioned matrix A such that all eigenvalues are in (-20, 20)
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = i; j < n; j++)
+                for(int64_t j = i; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 10;
@@ -211,9 +211,9 @@ void syevdx_heevdx_inplace_initData(const rocblas_handle handle,
             // make copy of original data to test vectors if required
             if(test && evect == rocblas_evect_original)
             {
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                         A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
                 }
             }
@@ -286,14 +286,14 @@ void syevdx_heevdx_inplace_getError(const rocblas_handle handle,
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
     S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
         cpu_syevx_heevx(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b], hW[b],
                         Z.data(), ldz, work.data(), lwork, rwork.data(), iwork.data(), ifail.data(),
                         hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hinfo[b][0], hinfoRes[b][0]) << "where b = " << b;
         if(hinfo[b][0] != hinfoRes[b][0])
@@ -302,7 +302,7 @@ void syevdx_heevdx_inplace_getError(const rocblas_handle handle,
 
     // Check number of returned eigenvalues
     double err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hNev[b][0], hNevRes[b][0]) << "where b = " << b;
         if(hNev[b][0] != hNevRes[b][0])
@@ -314,7 +314,7 @@ void syevdx_heevdx_inplace_getError(const rocblas_handle handle,
     // implicitly the equivalent non-converged matrix is very complicated and it boils
     // down to essentially run the algorithm again and until convergence is achieved).
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(evect != rocblas_evect_original)
         {
@@ -336,7 +336,7 @@ void syevdx_heevdx_inplace_getError(const rocblas_handle handle,
                 // eigenvalues
                 T alpha;
                 T beta = 0;
-                for(int j = 0; j < hNev[b][0]; j++)
+                for(int64_t j = 0; j < hNev[b][0]; j++)
                 {
                     alpha = T(1) / hWRes[b][j];
                     cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hARes[b] + j * lda,
@@ -405,7 +405,7 @@ void syevdx_heevdx_inplace_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
             cpu_syevx_heevx(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b],
                             hW[b], Z.data(), ldz, work.data(), lwork, rwork.data(), iwork.data(),
                             ifail.data(), hinfo[b]);
@@ -415,7 +415,7 @@ void syevdx_heevdx_inplace_getPerfData(const rocblas_handle handle,
     syevdx_heevdx_inplace_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         syevdx_heevdx_inplace_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -439,7 +439,7 @@ void syevdx_heevdx_inplace_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         syevdx_heevdx_inplace_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -464,7 +464,7 @@ void testing_syevdx_heevdx_inplace(Arguments& argus)
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stW = argus.get<rocblas_stride>("strideW", n);
 
     S vl = S(argus.get<double>("vl", 0));

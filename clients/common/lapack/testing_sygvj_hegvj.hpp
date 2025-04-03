@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -218,11 +218,11 @@ void sygvj_hegvj_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_init<T>(hB, false);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                     {
@@ -256,9 +256,9 @@ void sygvj_hegvj_initData(const rocblas_handle handle,
             // store A and B for testing purposes
             if(test && evect != rocblas_evect_none)
             {
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                     {
                         if(itype != rocblas_eform_bax)
                         {
@@ -323,8 +323,8 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
     rocblas_int lrwork = (COMPLEX ? 3 * n - 2 : 0);
     std::vector<T> work(lwork);
     std::vector<S> rwork(lrwork);
-    host_strided_batch_vector<T> A(lda * n, 1, lda * n, bc);
-    host_strided_batch_vector<T> B(ldb * n, 1, ldb * n, bc);
+    host_strided_batch_vector<T> A(lda * n, 1, size_t(lda) * n, bc);
+    host_strided_batch_vector<T> B(ldb * n, 1, size_t(ldb) * n, bc);
 
     // input data initialization
     sygvj_hegvj_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc, hA,
@@ -344,7 +344,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_sygv_hegv(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hW[b], work.data(), lwork,
                       rwork.data(), hInfo[b]);
@@ -353,7 +353,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
     // (We expect the used input matrices to always converge)
     // check info for non-convergence and/or positive-definiteness
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -361,7 +361,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
     }
 
     // Also check validity of residual
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
         if(hInfoRes[b][0] == 0)
         {
             EXPECT_GE(hResidualRes[b][0], 0) << "where b = " << b;
@@ -370,7 +370,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
         }
 
     // Also check validity of sweeps
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
         if(hInfoRes[b][0] == 0)
         {
             EXPECT_GE(hSweepsRes[b][0], 0) << "where b = " << b;
@@ -381,7 +381,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
 
     double err;
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(evect == rocblas_evect_none)
         {
@@ -414,7 +414,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
                     // problem is A*x = (lambda)*B*x
 
                     // compute (1/lambda)*A*x and store in hA
-                    for(int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                     {
                         alpha = T(1) / hWRes[b][j];
                         cpu_symv_hemv(uplo, n, alpha, A[b], lda, hARes[b] + j * lda, 1, beta,
@@ -422,8 +422,8 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
                     }
 
                     // move B*x into hARes
-                    for(rocblas_int i = 0; i < n; i++)
-                        for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t i = 0; i < n; i++)
+                        for(int64_t j = 0; j < n; j++)
                             hARes[b][i + j * lda] = hB[b][i + j * ldb];
                 }
                 else
@@ -431,7 +431,7 @@ void sygvj_hegvj_getError(const rocblas_handle handle,
                     // problem is A*B*x = (lambda)*x or B*A*x = (lambda)*x
 
                     // compute (1/lambda)*A*B*x or (1/lambda)*B*A*x and store in hA
-                    for(int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                     {
                         alpha = T(1) / hWRes[b][j];
                         cpu_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + j * ldb, 1, beta,
@@ -496,7 +496,7 @@ void sygvj_hegvj_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_sygv_hegv(itype, evect, uplo, n, hA[b], lda, hB[b], ldb, hW[b], work.data(), lwork,
                           rwork.data(), hInfo[b]);
@@ -508,7 +508,7 @@ void sygvj_hegvj_getPerfData(const rocblas_handle handle,
                                          hA, hB, A, B, false, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         sygvj_hegvj_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB,
                                              bc, hA, hB, A, B, false, singular);
@@ -533,7 +533,7 @@ void sygvj_hegvj_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         sygvj_hegvj_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB,
                                              bc, hA, hB, A, B, false, singular);
@@ -560,8 +560,8 @@ void testing_sygvj_hegvj(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * n);
     rocblas_stride stW = argus.get<rocblas_stride>("strideD", n);
 
     S abstol = S(argus.get<double>("abstol", 0));

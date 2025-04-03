@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -169,15 +169,15 @@ void geblttrf_npvt_initData(const rocblas_handle handle,
 
         rocblas_int n = nb * nblocks;
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale to avoid singularities
             // leaving matrix as diagonal dominant so that pivoting is not required
-            for(rocblas_int i = 0; i < nb; i++)
+            for(int64_t i = 0; i < nb; i++)
             {
-                for(rocblas_int j = 0; j < nb; j++)
+                for(int64_t j = 0; j < nb; j++)
                 {
-                    for(rocblas_int k = 0; k < nblocks; k++)
+                    for(int64_t k = 0; k < nblocks; k++)
                     {
                         if(i == j)
                             hB[b][i + j * ldb + k * ldb * nb] += 400;
@@ -185,7 +185,7 @@ void geblttrf_npvt_initData(const rocblas_handle handle,
                             hB[b][i + j * ldb + k * ldb * nb] -= 4;
                     }
 
-                    for(rocblas_int k = 0; k < nblocks - 1; k++)
+                    for(int64_t k = 0; k < nblocks - 1; k++)
                     {
                         hA[b][i + j * lda + k * lda * nb] -= 4;
                         hC[b][i + j * ldc + k * ldc * nb] -= 4;
@@ -202,7 +202,7 @@ void geblttrf_npvt_initData(const rocblas_handle handle,
                 jj -= (jj / n) * n;
                 rocblas_int j = jj % nb;
                 rocblas_int k = jj / nb;
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     // zero the jj-th column
                     hB[b][i + j * ldb + k * ldb * nb] = 0;
@@ -216,7 +216,7 @@ void geblttrf_npvt_initData(const rocblas_handle handle,
                 jj -= (jj / n) * n;
                 j = jj % nb;
                 k = jj / nb;
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     // zero the jj-th column
                     hB[b][i + j * ldb + k * ldb * nb] = 0;
@@ -230,7 +230,7 @@ void geblttrf_npvt_initData(const rocblas_handle handle,
                 jj -= (jj / n) * n;
                 j = jj % nb;
                 k = jj / nb;
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     // zero the jj-th column
                     hB[b][i + j * ldb + k * ldb * nb] = 0;
@@ -299,7 +299,7 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     // check info for singularities
     double err = 0;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
         {
@@ -316,16 +316,16 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
     }
     *max_err += err;
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(hInfoRes[b][0] == 0)
         {
             // compute diagonal blocks and store in full matrix L
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
-                    for(rocblas_int j = 0; j < nb; j++)
+                    for(int64_t j = 0; j < nb; j++)
                     {
                         if(i <= j)
                             L[i + j * n + k * (n + 1) * nb] = hBRes[b][i + j * ldb + k * ldb * nb];
@@ -340,13 +340,13 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
             }
 
             // move blocks A, updated C, and I into full matrices L and U
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
                     if(k < nblocks - 1)
                     {
-                        for(rocblas_int j = 0; j < nb; j++)
+                        for(int64_t j = 0; j < nb; j++)
                         {
                             U[i + (j + nb) * n + k * (n + 1) * nb]
                                 = hCRes[b][i + j * ldc + k * ldc * nb];
@@ -364,11 +364,11 @@ void geblttrf_npvt_getError(const rocblas_handle handle,
                      U.data(), n, T(0), MRes.data(), n);
 
             // form original matrix from original blocks
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
-                    for(rocblas_int j = 0; j < nb; j++)
+                    for(int64_t j = 0; j < nb; j++)
                     {
                         M[i + j * n + k * (n + 1) * nb] = hB[b][i + j * ldb + k * ldb * nb];
 
@@ -430,7 +430,7 @@ void geblttrf_npvt_getPerfData(const rocblas_handle handle,
                                            hB, hC, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         geblttrf_npvt_initData<false, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc,
                                                hA, hB, hC, singular);
@@ -455,7 +455,7 @@ void geblttrf_npvt_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         geblttrf_npvt_initData<false, true, T>(handle, nb, nblocks, dA, lda, dB, ldb, dC, ldc, bc,
                                                hA, hB, hC, singular);

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -106,7 +106,7 @@ void lacgv_getError(const rocblas_handle handle,
     // error |hA - hAr| (elements must be identical)
     *max_err = 0;
     double diff;
-    for(int j = 0; j < n; j++)
+    for(int64_t j = 0; j < n; j++)
     {
         diff = std::abs(hAr[0][j * abs(inc)] - hA[0][j * abs(inc)]);
         *max_err = diff > *max_err ? diff : *max_err;
@@ -139,7 +139,7 @@ void lacgv_getPerfData(const rocblas_handle handle,
     lacgv_initData<true, false, T>(handle, n, dA, inc, hA);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         lacgv_initData<false, true, T>(handle, n, dA, inc, hA);
 
@@ -161,7 +161,7 @@ void lacgv_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         lacgv_initData<false, true, T>(handle, n, dA, inc, hA);
 

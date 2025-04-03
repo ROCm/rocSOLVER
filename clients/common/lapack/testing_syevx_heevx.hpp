@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -216,11 +216,11 @@ void syevx_heevx_initData(const rocblas_handle handle,
         // construct well conditioned matrix A such that all eigenvalues are in (-20, 20)
 #ifdef ROCSOLVER_TESTS_USE_DEPRECATED_INITIALIZERS
         // Old matrix initialization
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = i; j < n; j++)
+                for(int64_t j = i; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 10;
@@ -243,7 +243,7 @@ void syevx_heevx_initData(const rocblas_handle handle,
         using HMat = HostMatrix<T, rocblas_int>;
         using BDesc = typename HMat::BlockDescriptor;
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             auto hAw = HMat::Wrap(hA[b], lda, n);
             if(hAw) // update matrix hA if n >= 1
@@ -262,9 +262,9 @@ void syevx_heevx_initData(const rocblas_handle handle,
             // make copy of original data to test vectors if required
             if(test && evect == rocblas_evect_original)
             {
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                         A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
                 }
             }
@@ -360,14 +360,14 @@ void syevx_heevx_getError(const rocblas_handle handle,
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
     S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
         cpu_syevx_heevx(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b], hW[b],
                         hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(), hIfail[b],
                         hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hinfo[b][0], hinfoRes[b][0]) << "where b = " << b;
         if(hinfo[b][0] != hinfoRes[b][0])
@@ -376,7 +376,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
 
     // Check number of returned eigenvalues
     double err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hNev[b][0], hNevRes[b][0]) << "where b = " << b;
         if(hNev[b][0] != hNevRes[b][0])
@@ -388,7 +388,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
     // implicitly the equivalent non-converged matrix is very complicated and it boils
     // down to essentially run the algorithm again and until convergence is achieved).
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         // Number of eigenvalues
         auto num_eigs = hNev[b][0];
@@ -399,7 +399,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
             {
                 // check ifail
                 err = 0;
-                for(int j = 0; j < hinfo[b][0]; j++)
+                for(int64_t j = 0; j < hinfo[b][0]; j++)
                 {
                     EXPECT_NE(hIfailRes[b][j], 0) << "where b = " << b << ", j = " << j;
                     if(hIfailRes[b][j] == 0)
@@ -431,7 +431,7 @@ void syevx_heevx_getError(const rocblas_handle handle,
             // eigenvectors due to non-uniqueness of eigenvectors under scaling
             // check ifail
             err = 0;
-            for(int j = 0; j < hNev[b][0]; j++)
+            for(int64_t j = 0; j < hNev[b][0]; j++)
             {
                 EXPECT_EQ(hIfailRes[b][j], 0) << "where b = " << b << ", j = " << j;
                 if(hIfailRes[b][j] != 0)
@@ -524,7 +524,7 @@ void syevx_heevx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
             cpu_syevx_heevx(evect, erange, uplo, n, hA[b], lda, vl, vu, il, iu, atol, hNev[b],
                             hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(),
                             hIfail[b], hinfo[b]);
@@ -534,7 +534,7 @@ void syevx_heevx_getPerfData(const rocblas_handle handle,
     syevx_heevx_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         syevx_heevx_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -558,7 +558,7 @@ void syevx_heevx_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         syevx_heevx_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -584,9 +584,9 @@ void testing_syevx_heevx(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldz = argus.get<rocblas_int>("ldz", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stW = argus.get<rocblas_stride>("strideW", n);
-    rocblas_stride stZ = argus.get<rocblas_stride>("strideZ", ldz * n);
+    rocblas_stride stZ = argus.get<rocblas_stride>("strideZ", rocblas_stride(ldz) * n);
     rocblas_stride stF = argus.get<rocblas_stride>("strideF", n);
 
     S vl = S(argus.get<double>("vl", 0));

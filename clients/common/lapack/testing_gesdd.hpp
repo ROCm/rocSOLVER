@@ -190,14 +190,14 @@ void gesdd_initData(const rocblas_handle handle,
     {
         rocblas_init<T>(hA, true);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             if(!singular)
             {
                 // scale A to avoid singularities
-                for(rocblas_int i = 0; i < m; i++)
+                for(int64_t i = 0; i < m; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                     {
                         if(i == j)
                             hA[b][i + j * lda] += 400;
@@ -209,9 +209,9 @@ void gesdd_initData(const rocblas_handle handle,
             else
             {
                 // form a singular matrix consisting of all ones
-                for(rocblas_int i = 0; i < m; i++)
+                for(int64_t i = 0; i < m; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                     {
                         hA[b][i + j * lda] = 1;
                     }
@@ -221,9 +221,9 @@ void gesdd_initData(const rocblas_handle handle,
             // make copy of original data to test vectors if required
             if(test && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
             {
-                for(rocblas_int i = 0; i < m; i++)
+                for(int64_t i = 0; i < m; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                         A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
                 }
             }
@@ -333,7 +333,7 @@ void gesdd_getError(const rocblas_handle handle,
     const bool no_singular_vectors
         = (left_svect == rocblas_svect_none) && (right_svect == rocblas_svect_none);
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         // We expect gesdd to converge for all input matrices
         EXPECT_EQ(hinfoRes[b][0], 0) << "where b = " << b;
@@ -464,7 +464,7 @@ void gesdd_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
             cpu_gesvd(left_svect, right_svect, m, n, hA[b], lda, hS[b], hU[b], ldu, hV[b], ldv,
                       work.data(), lwork, rwork.data(), hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
@@ -473,7 +473,7 @@ void gesdd_getPerfData(const rocblas_handle handle,
     gesdd_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         gesdd_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
@@ -497,7 +497,7 @@ void gesdd_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         gesdd_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
@@ -523,11 +523,11 @@ void testing_gesdd(Arguments& argus)
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
     rocblas_int ldv = argus.get<rocblas_int>("ldv", (rightvC == 'A' ? n : std::min(m, n)));
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stS = argus.get<rocblas_stride>("strideS", std::min(m, n));
-    rocblas_stride stU
-        = argus.get<rocblas_stride>("strideU", (leftvC == 'A' ? ldu * m : ldu * std::min(m, n)));
-    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
+    rocblas_stride stU = argus.get<rocblas_stride>(
+        "strideU", (leftvC == 'A' ? rocblas_stride(ldu) * m : rocblas_stride(ldu) * std::min(m, n)));
+    rocblas_stride stV = argus.get<rocblas_stride>("strideV", rocblas_stride(ldv) * n);
 
     rocblas_svect leftv = char2rocblas_svect(leftvC);
     rocblas_svect rightv = char2rocblas_svect(rightvC);

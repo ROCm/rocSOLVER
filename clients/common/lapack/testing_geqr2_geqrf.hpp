@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -139,11 +139,11 @@ void geqr2_geqrf_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(I i = 0; i < m; i++)
+            for(int64_t i = 0; i < m; i++)
             {
-                for(I j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -188,7 +188,7 @@ void geqr2_geqrf_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
     // CPU lapack
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         GEQRF ? cpu_geqrf(m, n, hA[b], lda, hIpiv[b], hW.data(), n)
               : cpu_geqr2(m, n, hA[b], lda, hIpiv[b], hW.data());
@@ -200,7 +200,7 @@ void geqr2_geqrf_getError(const rocblas_handle handle,
     // using frobenius norm
     double err;
     *max_err = 0;
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('F', m, n, lda, hA[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -234,7 +234,7 @@ void geqr2_geqrf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             GEQRF ? cpu_geqrf(m, n, hA[b], lda, hIpiv[b], hW.data(), n)
                   : cpu_geqr2(m, n, hA[b], lda, hIpiv[b], hW.data());
@@ -245,7 +245,7 @@ void geqr2_geqrf_getPerfData(const rocblas_handle handle,
     geqr2_geqrf_initData<true, false, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA, hIpiv);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         geqr2_geqrf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA, hIpiv);
 
@@ -268,7 +268,7 @@ void geqr2_geqrf_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         geqr2_geqrf_initData<false, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, bc, hA, hIpiv);
 
@@ -288,7 +288,7 @@ void testing_geqr2_geqrf(Arguments& argus)
     I m = argus.get<I>("m");
     I n = argus.get<I>("n", m);
     I lda = argus.get<I>("lda", m);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
 
     I bc = argus.batch_count;

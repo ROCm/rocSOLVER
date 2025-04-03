@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -197,7 +197,7 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
         // initialize solution vectors
         rocblas_init<T>(hX, false);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             T* A = hA[0] + b * stA;
             T* B = hB[0] + b * stB;
@@ -206,11 +206,11 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
             T* RHS = hRHS[0] + b * stX;
 
             // form original matrix M and scale to avoid singularities
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
-                    for(rocblas_int j = 0; j < nb; j++)
+                    for(int64_t j = 0; j < nb; j++)
                     {
                         if(i == j)
                             M[i + j * n + k * (n + 1) * nb]
@@ -231,9 +231,9 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
             }
 
             // move blocks of X to full matrix XX
-            for(rocblas_int k = 0; k < nblocks; k++)
-                for(rocblas_int i = 0; i < nb; i++)
-                    for(rocblas_int j = 0; j < nrhs; j++)
+            for(int64_t k = 0; k < nblocks; k++)
+                for(int64_t i = 0; i < nb; i++)
+                    for(int64_t j = 0; j < nrhs; j++)
                         XX[i + j * n + k * nb] = X[i * incx + j * ldx + k * ldx * nrhs];
 
             // generate the full matrix of right-hand-side vectors XB by computing M * XX
@@ -241,14 +241,14 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
                      XX.data(), n, T(0), XB.data(), n);
 
             // move XB to block format in hRHS
-            for(rocblas_int k = 0; k < nblocks; k++)
-                for(rocblas_int i = 0; i < nb; i++)
-                    for(rocblas_int j = 0; j < nrhs; j++)
+            for(int64_t k = 0; k < nblocks; k++)
+                for(int64_t i = 0; i < nb; i++)
+                    for(int64_t j = 0; j < nrhs; j++)
                         RHS[i * incx + j * ldx + k * ldx * nrhs] = XB[i + j * n + k * nb];
 
             // factorize M
             cpu_getrf(nb, nb, M.data(), n, ipiv.data(), &info);
-            for(rocblas_int k = 0; k < nblocks - 1; k++)
+            for(int64_t k = 0; k < nblocks - 1; k++)
             {
                 cpu_getrs(rocblas_operation_none, nb, nb, M.data() + k * (n + 1) * nb, n,
                           ipiv.data(), M.data() + nb * n + k * (n + 1) * nb, n);
@@ -261,11 +261,11 @@ void geblttrs_npvt_interleaved_initData(const rocblas_handle handle,
             }
 
             // move factorized blocks from M into hA, hB, and hC
-            for(rocblas_int k = 0; k < nblocks; k++)
+            for(int64_t k = 0; k < nblocks; k++)
             {
-                for(rocblas_int i = 0; i < nb; i++)
+                for(int64_t i = 0; i < nb; i++)
                 {
-                    for(rocblas_int j = 0; j < nb; j++)
+                    for(int64_t j = 0; j < nb; j++)
                     {
                         B[i * incb + j * ldb + k * ldb * nb] = M[i + j * n + k * (n + 1) * nb];
 
@@ -343,14 +343,14 @@ void geblttrs_npvt_interleaved_getError(const rocblas_handle handle,
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         // put X and XRes into Xtmp and XtmpRes in column-major format
-        for(rocblas_int k = 0; k < nblocks; k++)
+        for(int64_t k = 0; k < nblocks; k++)
         {
-            for(rocblas_int i = 0; i < nb; i++)
+            for(int64_t i = 0; i < nb; i++)
             {
-                for(rocblas_int j = 0; j < nrhs; j++)
+                for(int64_t j = 0; j < nrhs; j++)
                 {
                     Xtmp[i + j * nb + k * nb * nrhs]
                         = hX[0][i * incx + j * ldx + k * ldx * nrhs + b * stX];
@@ -411,7 +411,7 @@ void geblttrs_npvt_interleaved_getPerfData(const rocblas_handle handle,
                                                        incx, ldx, stX, bc, hA, hB, hC, hX, hXRes);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         geblttrs_npvt_interleaved_initData<false, true, T>(
             handle, nb, nblocks, nrhs, dA, inca, lda, stA, dB, incb, ldb, stB, dC, incc, ldc, stC,
@@ -437,7 +437,7 @@ void geblttrs_npvt_interleaved_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         geblttrs_npvt_interleaved_initData<false, true, T>(
             handle, nb, nblocks, nrhs, dA, inca, lda, stA, dB, incb, ldb, stB, dC, incc, ldc, stC,
@@ -468,10 +468,10 @@ void testing_geblttrs_npvt_interleaved(Arguments& argus)
     rocblas_int ldb = argus.get<rocblas_int>("ldb", nb);
     rocblas_int ldc = argus.get<rocblas_int>("ldc", nb);
     rocblas_int ldx = argus.get<rocblas_int>("ldx", nb);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * nb * nblocks);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nb * nblocks);
-    rocblas_stride stC = argus.get<rocblas_stride>("strideC", ldc * nb * nblocks);
-    rocblas_stride stX = argus.get<rocblas_stride>("strideX", ldx * nrhs * nblocks);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * nb * nblocks);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nb * nblocks);
+    rocblas_stride stC = argus.get<rocblas_stride>("strideC", rocblas_stride(ldc) * nb * nblocks);
+    rocblas_stride stX = argus.get<rocblas_stride>("strideX", rocblas_stride(ldx) * nrhs * nblocks);
 
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;

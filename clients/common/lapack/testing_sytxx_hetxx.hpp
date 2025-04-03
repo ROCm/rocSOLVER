@@ -1,4 +1,4 @@
-/* ************************************************************************** 
+/* **************************************************************************
  * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -156,11 +156,11 @@ void sytxx_hetxx_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j || i == j + 1 || i == j - 1)
                         hA[b][i + j * lda] += 400;
@@ -191,11 +191,11 @@ void sytxx_hetxx_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = hA[b][i + j * lda].real() + 400;
@@ -254,26 +254,26 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
     // A = H(n-1)...H(2)H(1)*T*H(1)'H(2)'...H(n-1)' if upper
     // A = H(1)H(2)...H(n-1)*T*H(n-1)'...H(2)'H(1)' if lower
     std::vector<T> v(n);
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         T* a = hARes[b];
         T* t = hTau[b];
 
         if(uplo == rocblas_fill_lower)
         {
-            for(rocblas_int i = 0; i < n - 2; ++i)
+            for(int64_t i = 0; i < n - 2; ++i)
                 a[i + (n - 1) * lda] = 0;
             a[(n - 2) + (n - 1) * lda] = a[(n - 1) + (n - 2) * lda];
 
             // for each column
-            for(rocblas_int j = n - 2; j >= 0; --j)
+            for(int64_t j = n - 2; j >= 0; --j)
             {
                 // prepare T and v
-                for(rocblas_int i = 0; i < j - 1; ++i)
+                for(int64_t i = 0; i < j - 1; ++i)
                     a[i + j * lda] = 0;
                 if(j > 0)
                     a[(j - 1) + j * lda] = a[j + (j - 1) * lda];
-                for(rocblas_int i = j + 2; i < n; ++i)
+                for(int64_t i = j + 2; i < n; ++i)
                 {
                     v[i - j - 1] = a[i + j * lda];
                     a[i + j * lda] = 0;
@@ -293,14 +293,14 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
         else
         {
             a[1] = a[lda];
-            for(rocblas_int i = 2; i < n; ++i)
+            for(int64_t i = 2; i < n; ++i)
                 a[i] = 0;
 
             // for each column
-            for(rocblas_int j = 1; j <= n - 1; ++j)
+            for(int64_t j = 1; j <= n - 1; ++j)
             {
                 // prepare T and v
-                for(rocblas_int i = 0; i < j - 1; ++i)
+                for(int64_t i = 0; i < j - 1; ++i)
                 {
                     v[i] = a[i + j * lda];
                     a[i + j * lda] = 0;
@@ -308,7 +308,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
                 v[j - 1] = 1;
                 if(j < n - 1)
                     a[(j + 1) + j * lda] = a[j + (j + 1) * lda];
-                for(rocblas_int i = j + 2; i < n; ++i)
+                for(int64_t i = j + 2; i < n; ++i)
                     a[i + j * lda] = 0;
 
                 // apply householder reflector
@@ -324,7 +324,7 @@ void sytxx_hetxx_getError(const rocblas_handle handle,
     // using frobenius norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         *max_err = (uplo == rocblas_fill_lower)
             ? norm_error_lowerTr('F', n, n, lda, hA[b], hARes[b])
@@ -365,7 +365,7 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             SYTRD
             ? cpu_sytrd_hetrd(uplo, n, hA[b], lda, hD[b], hE[b], hTau[b], hW.data(), 32 * n)
@@ -377,7 +377,7 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
     sytxx_hetxx_initData<true, false, T>(handle, n, dA, lda, bc, hA);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         sytxx_hetxx_initData<false, true, T>(handle, n, dA, lda, bc, hA);
 
@@ -401,7 +401,7 @@ void sytxx_hetxx_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         sytxx_hetxx_initData<false, true, T>(handle, n, dA, lda, bc, hA);
 
@@ -423,7 +423,7 @@ void testing_sytxx_hetxx(Arguments& argus)
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stD = argus.get<rocblas_stride>("strideD", n);
     rocblas_stride stE = argus.get<rocblas_stride>("strideE", n - 1);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", n - 1);

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -133,12 +133,12 @@ void trtri_initData(const rocblas_handle handle,
         T tmp;
         rocblas_init<T>(hA, true);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale A to avoid singularities
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = hA[b][i + j * lda] / 10.0 + 1;
@@ -202,7 +202,7 @@ void trtri_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_trtri(uplo, diag, n, hA[b], lda, hInfo[b]);
     }
@@ -210,7 +210,7 @@ void trtri_getError(const rocblas_handle handle,
     // check info for singularities
     double err = 0;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -222,7 +222,7 @@ void trtri_getError(const rocblas_handle handle,
     // (THIS DOES NOT ACCOUNT FOR NUMERICAL REPRODUCIBILITY ISSUES.
     // IT MIGHT BE REVISITED IN THE FUTURE)
     // using frobenius norm
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(hInfoRes[b][0] == 0)
         {
@@ -258,7 +258,7 @@ void trtri_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_trtri(uplo, diag, n, hA[b], lda, hInfo[b]);
         }
@@ -268,7 +268,7 @@ void trtri_getPerfData(const rocblas_handle handle,
     trtri_initData<true, false, T>(handle, n, dA, lda, bc, hA, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         trtri_initData<false, true, T>(handle, n, dA, lda, bc, hA, singular);
 
@@ -291,7 +291,7 @@ void trtri_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         trtri_initData<false, true, T>(handle, n, dA, lda, bc, hA, singular);
 
@@ -309,7 +309,7 @@ void testing_trtri(Arguments& argus)
     rocblas_local_handle handle;
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     char uploC = argus.get<char>("uplo");
     rocblas_fill uplo = char2rocblas_fill(uploC);
     char diagC = argus.get<char>("diag");

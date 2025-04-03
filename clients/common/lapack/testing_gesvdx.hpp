@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -224,15 +224,15 @@ void gesvdx_initData(const rocblas_handle handle,
         rocblas_int nn = std::min(m, n);
 
         // construct non singular matrix A such that all singular values are in (0, 20]
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < m; i++)
+            for(int64_t i = 0; i < m; i++)
             {
                 if(i == nn / 4 || i == nn / 2 || i == nn - 1 || i == nn / 7 || i == nn / 5
                    || i == nn / 3)
                     hA[b][i + i * lda] = 0;
 
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = 2 * std::real(hA[b][i + j * lda]) - 21;
@@ -259,9 +259,9 @@ void gesvdx_initData(const rocblas_handle handle,
             // make copy of original data to test vectors if required
             if(test && (left_svect != rocblas_svect_none || right_svect != rocblas_svect_none))
             {
-                for(rocblas_int i = 0; i < m; i++)
+                for(int64_t i = 0; i < m; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                         A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
                 }
             }
@@ -398,7 +398,7 @@ void gesvdx_getError(const rocblas_handle handle,
     gesvdx_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A);
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         //cpu_gesvdx(rocblas_svect_none, rocblas_svect_none, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
         //               work.data(), lwork, rwork.data(), hifail[b], hinfo[b]);
@@ -415,7 +415,7 @@ void gesvdx_getError(const rocblas_handle handle,
         }
         else if(srange == rocblas_srange_value)
         {
-            for(int j = 0; j < minn; ++j)
+            for(int64_t j = 0; j < minn; ++j)
             {
                 if(hS[b][j] < vu && hS[b][j] >= vl)
                 {
@@ -455,12 +455,12 @@ void gesvdx_getError(const rocblas_handle handle,
     // Check info and ifail for non-convergence
     // (NOTE: With the workaround in place, info and ifail cannot be tested as they have different
     //  meaning in gesvd_, however, We expect the used input matrices to always converge)
-    /*for(rocblas_int b = 0; b < bc; ++b)
+    /*for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hinfo[b][0], hinfoRes[b][0]) << "where b = " << b;
         if(hinfo[b][0] != hinfoRes[b][0])
             *max_err += 1;
-        for(int j = 0; j < hNsv[b][0]; ++j)
+        for(int64_t j = 0; j < hNsv[b][0]; ++j)
         {
             EXPECT_EQ(hifail[b][j], hifailRes[b][j]) << "where b = " << b << ", j = " << j;
             if(hifail[b][j] != hifailRes[b][j])
@@ -469,7 +469,7 @@ void gesvdx_getError(const rocblas_handle handle,
     }*/
 
     double err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         // check number of computed singular values
         rocblas_int nn = hNsvRes[b][0];
@@ -490,7 +490,7 @@ void gesvdx_getError(const rocblas_handle handle,
                 std::vector<T> VVres(nn * nn, 0.0);
                 std::vector<T> I(nn * nn, 0.0);
 
-                for(rocblas_int i = 0; i < nn; i++)
+                for(int64_t i = 0; i < nn; i++)
                     I[i + i * nn] = T(1);
 
                 cpu_gemm(rocblas_operation_conjugate_transpose, rocblas_operation_none, nn, nn, m,
@@ -506,7 +506,7 @@ void gesvdx_getError(const rocblas_handle handle,
 
             err = 0;
             // check singular vectors implicitly (A*v_k = s_k*u_k)
-            for(rocblas_int k = 0; k < hNsv[b][0]; ++k)
+            for(int64_t k = 0; k < hNsv[b][0]; ++k)
             {
                 T tmp = 0;
                 double tmp2 = 0;
@@ -514,10 +514,10 @@ void gesvdx_getError(const rocblas_handle handle,
                 // (Comparing absolute values to deal with the fact that the pair of singular vectors (u,-v) or (-u,v) are
                 //  both ok and we could get either one with the complementary or main executions when only
                 //  one side set of vectors is required. May be revisited in the future.)
-                for(rocblas_int i = 0; i < m; ++i)
+                for(int64_t i = 0; i < m; ++i)
                 {
                     tmp = 0;
-                    for(rocblas_int j = 0; j < n; ++j)
+                    for(int64_t j = 0; j < n; ++j)
                         tmp += A[b * lda * n + i + j * lda] * sconj(hVres[b][k + j * ldvres]);
                     tmp2 = std::abs(tmp) - std::abs(hSres[b][k] * hUres[b][i + k * ldures]);
                     err += tmp2 * tmp2;
@@ -609,7 +609,7 @@ void gesvdx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         //*cpu_time_used = get_time_us_no_sync();
-        //for(rocblas_int b = 0; b < bc; ++b)
+        //for(int64_t b = 0; b < bc; ++b)
         //    cpu_gesvdx(left_svect, right_svect, srange, m, n, hA[b], lda, vl, vu, il, iu, hNsv[b], hS[b], hU[b], ldu, hV[b], ldv,
         //                   work.data(), lwork, rwork.data(), hifail[b], hinfo[b]);
         //*cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
@@ -619,7 +619,7 @@ void gesvdx_getPerfData(const rocblas_handle handle,
     gesvdx_initData<true, false, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         gesvdx_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
@@ -644,7 +644,7 @@ void gesvdx_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         gesvdx_initData<false, true, T>(handle, left_svect, right_svect, m, n, dA, lda, bc, hA, A, 0);
 
@@ -683,11 +683,11 @@ void testing_gesvdx(Arguments& argus)
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldu = argus.get<rocblas_int>("ldu", m);
     rocblas_int ldv = argus.get<rocblas_int>("ldv", nsv_max);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stS = argus.get<rocblas_stride>("strideS", nsv_max);
     rocblas_stride stF = argus.get<rocblas_stride>("strideF", nn);
-    rocblas_stride stU = argus.get<rocblas_stride>("strideU", ldu * nsv_max);
-    rocblas_stride stV = argus.get<rocblas_stride>("strideV", ldv * n);
+    rocblas_stride stU = argus.get<rocblas_stride>("strideU", rocblas_stride(ldu) * nsv_max);
+    rocblas_stride stV = argus.get<rocblas_stride>("strideV", rocblas_stride(ldv) * n);
 
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;

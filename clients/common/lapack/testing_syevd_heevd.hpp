@@ -161,11 +161,11 @@ void syevd_heevd_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 400;
@@ -177,9 +177,9 @@ void syevd_heevd_initData(const rocblas_handle handle,
             // make copy of original data to test vectors if required
             if(test && evect == rocblas_evect_original)
             {
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                         A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
                 }
             }
@@ -250,13 +250,13 @@ void syevd_heevd_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(hAres.transfer_from(dA));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
         cpu_syevd_heevd(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
                         iwork.data(), liwork, hinfo[b]);
 
     // Check info for non-convergence
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hinfo[b][0], hinfoRes[b][0]) << "where b = " << b;
         if(hinfo[b][0] != hinfoRes[b][0])
@@ -269,7 +269,7 @@ void syevd_heevd_getError(const rocblas_handle handle,
 
     double err = 0;
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(evect != rocblas_evect_original)
         {
@@ -291,7 +291,7 @@ void syevd_heevd_getError(const rocblas_handle handle,
                 // eigenvalues
                 T alpha;
                 T beta = 0;
-                for(int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     alpha = T(1) / hDres[b][j];
                     cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hAres[b] + j * lda,
@@ -358,7 +358,7 @@ void syevd_heevd_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
             cpu_syevd_heevd(evect, uplo, n, hA[b], lda, hD[b], work.data(), lwork, hE.data(), sizeE,
                             iwork.data(), liwork, hinfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
@@ -367,7 +367,7 @@ void syevd_heevd_getPerfData(const rocblas_handle handle,
     syevd_heevd_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         syevd_heevd_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -390,7 +390,7 @@ void syevd_heevd_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         syevd_heevd_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -413,7 +413,7 @@ void testing_syevd_heevd(Arguments& argus)
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stD = argus.get<rocblas_stride>("strideD", n);
     rocblas_stride stE = argus.get<rocblas_stride>("strideE", n);
 

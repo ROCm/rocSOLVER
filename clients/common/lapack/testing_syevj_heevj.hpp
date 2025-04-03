@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -191,11 +191,11 @@ void syevj_heevj_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 400;
@@ -207,9 +207,9 @@ void syevj_heevj_initData(const rocblas_handle handle,
             // make copy of original data to test vectors if required
             if(test)
             {
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                         A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
                 }
             }
@@ -276,14 +276,14 @@ void syevj_heevj_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(hARes.transfer_from(dA));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
         cpu_syev_heev(evect, uplo, n, hA[b], lda, hW[b], work.data(), lwork, rwork.data(), lrwork,
                       hInfo[b]);
 
     // (We expect the used input matrices to always converge)
     // Check info for non-convergence
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfoRes[b][0], 0) << "where b = " << b;
         if(hInfoRes[b][0] != 0)
@@ -291,7 +291,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
     }
 
     // Also check validity of residual
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_GE(hResidualRes[b][0], 0) << "where b = " << b;
         if(hResidualRes[b][0] < 0)
@@ -306,7 +306,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
     }
 
     // Also check validity of sweeps
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_GE(hSweepsRes[b][0], 0) << "where b = " << b;
         EXPECT_LE(hSweepsRes[b][0], max_sweeps) << "where b = " << b;
@@ -316,7 +316,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
 
     double err = 0;
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(evect != rocblas_evect_original)
         {
@@ -339,7 +339,7 @@ void syevj_heevj_getError(const rocblas_handle handle,
                 // eigenvalues
                 T alpha;
                 T beta = 0;
-                for(int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     alpha = T(1) / hWRes[b][j];
                     cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hARes[b] + j * lda,
@@ -396,7 +396,7 @@ void syevj_heevj_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
             cpu_syev_heev(evect, uplo, n, hA[b], lda, hW[b], work.data(), lwork, rwork.data(),
                           lrwork, hInfo[b]);
         *cpu_time_used = get_time_us_no_sync() - *cpu_time_used;
@@ -405,7 +405,7 @@ void syevj_heevj_getPerfData(const rocblas_handle handle,
     syevj_heevj_initData<true, false, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         syevj_heevj_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -429,7 +429,7 @@ void syevj_heevj_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         syevj_heevj_initData<false, true, T>(handle, evect, n, dA, lda, bc, hA, A, 0);
 
@@ -454,7 +454,7 @@ void testing_syevj_heevj(Arguments& argus)
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stW = argus.get<rocblas_stride>("strideD", n);
 
     S abstol = S(argus.get<double>("abstol", 0));

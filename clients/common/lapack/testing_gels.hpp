@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -185,11 +185,11 @@ void gels_initData(const rocblas_handle handle,
         std::bernoulli_distribution coinflip(0.5);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < m; i++)
+            for(int64_t i = 0; i < m; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -207,15 +207,15 @@ void gels_initData(const rocblas_handle handle,
                     if(n <= m)
                     {
                         // zero random col
-                        rocblas_int j = sample_index(rocblas_rng);
-                        for(rocblas_int i = 0; i < m; i++)
+                        int64_t j = sample_index(rocblas_rng);
+                        for(int64_t i = 0; i < m; i++)
                             hA[b][i + j * lda] = 0;
                     }
                     else
                     {
                         // zero random row
-                        rocblas_int i = sample_index(rocblas_rng);
-                        for(rocblas_int j = 0; j < n; j++)
+                        int64_t i = sample_index(rocblas_rng);
+                        for(int64_t j = 0; j < n; j++)
                             hA[b][i + j * lda] = 0;
                     }
                 } while(coinflip(rocblas_rng));
@@ -268,7 +268,7 @@ void gels_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_gels(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW, hInfo[b]);
     }
@@ -279,7 +279,7 @@ void gels_getError(const rocblas_handle handle,
     // using vector-induced infinity norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('I', std::max(m, n), nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -287,7 +287,7 @@ void gels_getError(const rocblas_handle handle,
 
     // also check info for singularities
     err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -330,7 +330,7 @@ void gels_getPerfData(const rocblas_handle handle,
                                       bc, hA, hB, hInfo, singular);
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_gels(trans, m, n, nrhs, hA[b], lda, hB[b], ldb, hW.data(), sizeW, hInfo[b]);
         }
@@ -339,7 +339,7 @@ void gels_getPerfData(const rocblas_handle handle,
     gels_initData<true, false, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo, bc,
                                   hA, hB, hInfo, singular);
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
                                       bc, hA, hB, hInfo, singular);
@@ -362,7 +362,7 @@ void gels_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         gels_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb, stB, dInfo,
                                       bc, hA, hB, hInfo, singular);
@@ -386,8 +386,8 @@ void testing_gels(Arguments& argus)
     rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", std::max(m, n));
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nrhs);
 
     rocblas_operation trans = char2rocblas_operation(transC);
     rocblas_int bc = argus.batch_count;

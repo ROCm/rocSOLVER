@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -155,14 +155,14 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_init<T>(U, true);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // for testing purposes, we start with the reduced matrix M of the standard equivalent problem.
             // Then we construct the generalized pair (A, B) from there
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
                 // scale matrices and set hA = M (symmetric/hermitian), hB = U (upper triangular) or hB = U'
-                for(rocblas_int j = i; j < n; j++)
+                for(int64_t j = i; j < n; j++)
                 {
                     if(i == j)
                     {
@@ -193,8 +193,8 @@ void sygsx_hegsx_initData(const rocblas_handle handle,
             // store M = hA for implicit testing
             if(test)
             {
-                for(rocblas_int i = 0; i < n; i++)
-                    for(rocblas_int j = 0; j < n; j++)
+                for(int64_t i = 0; i < n; i++)
+                    for(int64_t j = 0; j < n; j++)
                         M[b][i + j * lda] = hA[b][i + j * lda];
             }
 
@@ -264,7 +264,7 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
     else
     {
         // CPU lapack
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             memcpy(hARes[b], hA[b], lda * n * sizeof(T));
             SYGST ? cpu_sygst_hegst(itype, uplo, n, hARes[b], lda, hB[b], ldb)
@@ -276,7 +276,7 @@ void sygsx_hegsx_getError(const rocblas_handle handle,
     // using frobenius norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(uplo == rocblas_fill_upper)
             err = norm_error_upperTr('F', n, n, lda, M[b], hARes[b]);
@@ -316,7 +316,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             SYGST ? cpu_sygst_hegst(itype, uplo, n, hA[b], lda, hB[b], ldb)
                   : cpu_sygs2_hegs2(itype, uplo, n, hA[b], lda, hB[b], ldb);
@@ -328,7 +328,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
                                          hB, M, false);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
                                              hA, hB, M, false);
@@ -352,7 +352,7 @@ void sygsx_hegsx_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         sygsx_hegsx_initData<false, true, T>(handle, itype, uplo, n, dA, lda, stA, dB, ldb, stB, bc,
                                              hA, hB, M, false);
@@ -375,8 +375,8 @@ void testing_sygsx_hegsx(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * n);
 
     rocblas_eform itype = char2rocblas_eform(itypeC);
     rocblas_fill uplo = char2rocblas_fill(uploC);

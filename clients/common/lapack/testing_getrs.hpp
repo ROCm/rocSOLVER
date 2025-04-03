@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -162,11 +162,11 @@ void getrs_initData(const rocblas_handle handle,
         rocblas_init<T>(hB, true);
 
         // scale A to avoid singularities
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(I i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(I j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -177,12 +177,12 @@ void getrs_initData(const rocblas_handle handle,
         }
 
         // do the LU decomposition of matrix A w/ the reference LAPACK routine
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             int info;
             cpu_getrf(n, n, hA[b], lda, hIpiv_cpu[b], &info);
 
-            for(I i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
                 hIpiv[b][i] = hIpiv_cpu[b][i];
         }
     }
@@ -228,7 +228,7 @@ void getrs_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hBRes.transfer_from(dB));
 
     // CPU lapack
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_getrs(trans, n, nrhs, hA[b], lda, hIpiv_cpu[b], hB[b], ldb);
     }
@@ -239,7 +239,7 @@ void getrs_getError(const rocblas_handle handle,
     // using vector-induced infinity norm
     double err;
     *max_err = 0;
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('I', n, nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -278,7 +278,7 @@ void getrs_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_getrs(trans, n, nrhs, hA[b], lda, hIpiv_cpu[b], hB[b], ldb);
         }
@@ -289,7 +289,7 @@ void getrs_getPerfData(const rocblas_handle handle,
                                    bc, hA, hIpiv, hIpiv_cpu, hB);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         getrs_initData<false, true, T>(handle, trans, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb,
                                        stB, bc, hA, hIpiv, hIpiv_cpu, hB);
@@ -313,7 +313,7 @@ void getrs_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         getrs_initData<false, true, T>(handle, trans, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb,
                                        stB, bc, hA, hIpiv, hIpiv_cpu, hB);
@@ -336,9 +336,9 @@ void testing_getrs(Arguments& argus)
     I nrhs = argus.get<rocblas_int>("nrhs", n);
     I lda = argus.get<rocblas_int>("lda", n);
     I ldb = argus.get<rocblas_int>("ldb", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nrhs);
 
     rocblas_operation trans = char2rocblas_operation(transC);
     I bc = argus.batch_count;

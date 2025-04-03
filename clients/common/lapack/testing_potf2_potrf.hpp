@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -139,10 +139,10 @@ void potf2_potrf_initData(const rocblas_handle handle,
     {
         rocblas_init<T>(hA, true);
 
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale to ensure positive definiteness
-            for(I i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
                 hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             if(singular && (b == bc / 4 || b == bc / 2 || b == bc - 1))
@@ -207,7 +207,7 @@ void potf2_potrf_getError(const rocblas_handle handle,
     hashARes = deterministic_hash(hARes, bc);
 
     // CPU lapack
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         POTRF ? cpu_potrf(uplo, n, hA[b], lda, hInfo[b]) : cpu_potf2(uplo, n, hA[b], lda, hInfo[b]);
     }
@@ -219,7 +219,7 @@ void potf2_potrf_getError(const rocblas_handle handle,
     double err;
     I nn;
     *max_err = 0;
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         nn = hInfoRes[b][0] == 0 ? n : hInfoRes[b][0];
         // (TODO: For now, the algorithm is modifying the whole input matrix even when
@@ -232,7 +232,7 @@ void potf2_potrf_getError(const rocblas_handle handle,
 
     // also check info for non positive definite cases
     err = 0;
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -267,7 +267,7 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             POTRF ? cpu_potrf(uplo, n, hA[b], lda, hInfo[b])
                   : cpu_potf2(uplo, n, hA[b], lda, hInfo[b]);
@@ -279,7 +279,7 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
                                          singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         potf2_potrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo,
                                              singular);
@@ -303,7 +303,7 @@ void potf2_potrf_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         potf2_potrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo,
                                              singular);
@@ -323,7 +323,7 @@ void testing_potf2_potrf(Arguments& argus)
     char uploC = argus.get<char>("uplo");
     I n = argus.get<I>("n");
     I lda = argus.get<I>("lda", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
     I bc = argus.batch_count;

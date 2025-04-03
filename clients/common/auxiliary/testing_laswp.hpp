@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -104,7 +104,7 @@ void laswp_initData(const rocblas_handle handle,
 
         // put indices in range [1, x]
         // for simplicity, consider x = lda as this is the number of rows
-        for(rocblas_int i = 0; i < hIpiv.n(); ++i)
+        for(int64_t i = 0; i < hIpiv.n(); ++i)
             hIpiv[0][i] = hIpiv[0][i] * lda < 10 ? 1 : hIpiv[0][i] * lda / 10;
     }
 
@@ -144,9 +144,9 @@ void laswp_getError(const rocblas_handle handle,
     // error |hA - hAr| (elements must be identical)
     *max_err = 0;
     double diff;
-    for(int i = 0; i < lda; i++)
+    for(int64_t i = 0; i < lda; i++)
     {
-        for(int j = 0; j < n; j++)
+        for(int64_t j = 0; j < n; j++)
         {
             diff = std::abs(hAr[0][i + j * lda] - hA[0][i + j * lda]);
             *max_err = diff > *max_err ? diff : *max_err;

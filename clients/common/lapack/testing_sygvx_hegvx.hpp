@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -258,15 +258,15 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
         rocblas_init<T>(U, true);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // for testing purposes, we start with a reduced matrix M for the standard equivalent problem
             // with spectrum in a desired range (-20, 20). Then we construct the generalized pair
             // (A, B) from there.
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
                 // scale matrices and set hA = M (symmetric/hermitian), hB = U (upper triangular)
-                for(rocblas_int j = i; j < n; j++)
+                for(int64_t j = i; j < n; j++)
                 {
                     if(i == j)
                     {
@@ -337,9 +337,9 @@ void sygvx_hegvx_initData(const rocblas_handle handle,
             // store A and B for testing purposes
             if(test && evect != rocblas_evect_none)
             {
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
-                    for(rocblas_int j = 0; j < n; j++)
+                    for(int64_t j = 0; j < n; j++)
                     {
                         if(itype != rocblas_eform_bax)
                         {
@@ -456,7 +456,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
     S atol = (abstol == 0) ? 2 * get_safemin<S>() : abstol;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_sygvx_hegvx(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu, atol,
                         hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(), iwork.data(),
@@ -470,7 +470,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
 
     // check info for non-convergence and/or positive-definiteness
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -478,7 +478,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     }
 
     // Check number of returned eigenvalues
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hNev[b][0], hNevRes[b][0]) << "where b = " << b;
         if(hNev[b][0] != hNevRes[b][0])
@@ -487,7 +487,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
 
     double err;
 
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         if(evect == rocblas_evect_none)
         {
@@ -509,7 +509,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
             {
                 // check ifail
                 err = 0;
-                for(int j = 0; j < hNev[b][0]; j++)
+                for(int64_t j = 0; j < hNev[b][0]; j++)
                 {
                     EXPECT_EQ(hIfailRes[b][j], 0) << "where b = " << b << ", j = " << j;
                     if(hIfailRes[b][j] != 0)
@@ -530,7 +530,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                     // problem is A*x = (lambda)*B*x
 
                     // compute (1/lambda)*A*x and store in hA
-                    for(int j = 0; j < hNev[b][0]; j++)
+                    for(int64_t j = 0; j < hNev[b][0]; j++)
                     {
                         alpha = T(1) / hWRes[b][j];
                         cpu_symv_hemv(uplo, n, alpha, A[b], lda, hZRes[b] + j * ldz, 1, beta,
@@ -538,8 +538,8 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                     }
 
                     // move B*x into hZRes
-                    for(rocblas_int i = 0; i < n; i++)
-                        for(rocblas_int j = 0; j < hNev[b][0]; j++)
+                    for(int64_t i = 0; i < n; i++)
+                        for(int64_t j = 0; j < hNev[b][0]; j++)
                             hZRes[b][i + j * ldz] = hB[b][i + j * ldb];
                 }
                 else
@@ -547,7 +547,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                     // problem is A*B*x = (lambda)*x or B*A*x = (lambda)*x
 
                     // compute (1/lambda)*A*B*x or (1/lambda)*B*A*x and store in hA
-                    for(int j = 0; j < hNev[b][0]; j++)
+                    for(int64_t j = 0; j < hNev[b][0]; j++)
                     {
                         alpha = T(1) / hWRes[b][j];
                         cpu_symv_hemv(uplo, n, alpha, A[b], lda, hB[b] + j * ldb, 1, beta,
@@ -564,7 +564,7 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
             {
                 // check ifail
                 err = 0;
-                for(int j = 0; j < hInfo[b][0]; j++)
+                for(int64_t j = 0; j < hInfo[b][0]; j++)
                 {
                     EXPECT_NE(hIfailRes[b][j], 0) << "where b = " << b << ", j = " << j;
                     if(hIfailRes[b][j] == 0)
@@ -641,7 +641,7 @@ void sygvx_hegvx_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_sygvx_hegvx(itype, evect, erange, uplo, n, hA[b], lda, hB[b], ldb, vl, vu, il, iu,
                             atol, hNev[b], hW[b], hZ[b], ldz, work.data(), lwork, rwork.data(),
@@ -654,7 +654,7 @@ void sygvx_hegvx_getPerfData(const rocblas_handle handle,
                                          hA, hB, A, B, false, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         sygvx_hegvx_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB,
                                              bc, hA, hB, A, B, false, singular);
@@ -680,7 +680,7 @@ void sygvx_hegvx_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         sygvx_hegvx_initData<false, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB,
                                              bc, hA, hB, A, B, false, singular);
@@ -709,11 +709,11 @@ void testing_sygvx_hegvx(Arguments& argus)
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
     rocblas_int ldz = argus.get<rocblas_int>("ldz", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * n);
     rocblas_stride stW = argus.get<rocblas_stride>("strideW", n);
     rocblas_stride stF = argus.get<rocblas_stride>("strideF", n);
-    rocblas_stride stZ = argus.get<rocblas_stride>("strideZ", ldz * n);
+    rocblas_stride stZ = argus.get<rocblas_stride>("strideZ", rocblas_stride(ldz) * n);
 
     S vl = S(argus.get<double>("vl", 0));
     S vu = S(argus.get<double>("vu", erangeC == 'V' ? 1 : 0));

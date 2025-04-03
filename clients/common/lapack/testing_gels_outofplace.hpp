@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -205,12 +205,12 @@ void gels_outofplace_initData(const rocblas_handle handle,
         const rocblas_int rowsB = (trans == rocblas_operation_none) ? m : n;
         const rocblas_int ldx = std::max(m, n);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale A to avoid singularities
-            for(rocblas_int i = 0; i < m; i++)
+            for(int64_t i = 0; i < m; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -220,8 +220,8 @@ void gels_outofplace_initData(const rocblas_handle handle,
             }
 
             // populate hX with values from hB
-            for(rocblas_int i = 0; i < rowsB; i++)
-                for(rocblas_int j = 0; j < nrhs; j++)
+            for(int64_t i = 0; i < rowsB; i++)
+                for(int64_t j = 0; j < nrhs; j++)
                     hX[b][i + j * ldx] = hB[b][i + j * ldb];
 
             // add some singularities
@@ -234,14 +234,14 @@ void gels_outofplace_initData(const rocblas_handle handle,
                     {
                         // zero random col
                         rocblas_int j = sample_index(rocblas_rng);
-                        for(rocblas_int i = 0; i < m; i++)
+                        for(int64_t i = 0; i < m; i++)
                             hA[b][i + j * lda] = 0;
                     }
                     else
                     {
                         // zero random row
                         rocblas_int i = sample_index(rocblas_rng);
-                        for(rocblas_int j = 0; j < n; j++)
+                        for(int64_t j = 0; j < n; j++)
                             hA[b][i + j * lda] = 0;
                     }
                 } while(coinflip(rocblas_rng));
@@ -301,7 +301,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], std::max(m, n), hW.data(), sizeW, hInfo[b]);
     }
@@ -312,7 +312,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
     // using vector-induced infinity norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         const rocblas_int rowsB = (trans == rocblas_operation_none) ? m : n;
         err = norm_error('F', rowsB, nrhs, ldb, hB[b], hBRes[b]);
@@ -328,7 +328,7 @@ void gels_outofplace_getError(const rocblas_handle handle,
 
     // also check info for singularities
     err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -376,7 +376,7 @@ void gels_outofplace_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_gels(trans, m, n, nrhs, hA[b], lda, hX[b], std::max(m, n), hW.data(), sizeW,
                      hInfo[b]);
@@ -388,7 +388,7 @@ void gels_outofplace_getPerfData(const rocblas_handle handle,
                                              dInfo, bc, hA, hB, hX, hInfo, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         gels_outofplace_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb,
                                                  stB, dInfo, bc, hA, hB, hX, hInfo, singular);
@@ -413,7 +413,7 @@ void gels_outofplace_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         gels_outofplace_initData<false, true, T>(handle, trans, m, n, nrhs, dA, lda, stA, dB, ldb,
                                                  stB, dInfo, bc, hA, hB, hX, hInfo, singular);
@@ -438,9 +438,9 @@ void testing_gels_outofplace(Arguments& argus)
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", transC == 'N' ? m : n);
     rocblas_int ldx = argus.get<rocblas_int>("ldx", transC == 'N' ? n : m);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
-    rocblas_stride stX = argus.get<rocblas_stride>("strideX", ldx * nrhs);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nrhs);
+    rocblas_stride stX = argus.get<rocblas_stride>("strideX", rocblas_stride(ldx) * nrhs);
 
     rocblas_operation trans = char2rocblas_operation(transC);
     rocblas_int bc = argus.batch_count;

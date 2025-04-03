@@ -112,9 +112,9 @@ void latrd_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int i = 0; i < n; i++)
+        for(int64_t i = 0; i < n; i++)
         {
-            for(rocblas_int j = 0; j < n; j++)
+            for(int64_t j = 0; j < n; j++)
             {
                 if(i == j || (i == j + 1) || (i == j - 1))
                     hA[0][i + j * lda] += 400;
@@ -143,9 +143,9 @@ void latrd_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int i = 0; i < n; i++)
+        for(int64_t i = 0; i < n; i++)
         {
-            for(rocblas_int j = 0; j < n; j++)
+            for(int64_t j = 0; j < n; j++)
             {
                 if(i == j)
                     hA[0][i + j * lda] = hA[0][i + j * lda].real() + 400;
@@ -244,7 +244,7 @@ void latrd_getPerfData(const rocblas_handle handle,
     latrd_initData<true, false, T>(handle, n, dA, lda, hA);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         latrd_initData<false, true, T>(handle, n, dA, lda, hA);
 
@@ -267,7 +267,7 @@ void latrd_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         latrd_initData<false, true, T>(handle, n, dA, lda, hA);
 
@@ -308,10 +308,10 @@ void testing_latrd(Arguments& argus)
     }
 
     // determine sizes
-    size_t size_A = lda * n;
+    size_t size_A = size_t(lda) * n;
     size_t size_E = n;
     size_t size_tau = n;
-    size_t size_W = ldw * k;
+    size_t size_W = size_t(ldw) * k;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;

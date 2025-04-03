@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -148,10 +148,10 @@ void potrs_initData(const rocblas_handle handle,
         rocblas_init<T>(hB, true);
         int info;
 
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale to ensure positive definiteness
-            for(I i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
                 hA[b][i + i * lda] = hA[b][i + i * lda] * sconj(hA[b][i + i * lda]) * 400;
 
             // do the Cholesky factorization of matrix A w/ the reference LAPACK routine
@@ -194,7 +194,7 @@ void potrs_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hBRes.transfer_from(dB));
 
     // CPU lapack
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_potrs(uplo, n, nrhs, hA[b], lda, hB[b], ldb);
     }
@@ -205,7 +205,7 @@ void potrs_getError(const rocblas_handle handle,
     // using vector-induced infinity norm
     double err;
     *max_err = 0;
-    for(I b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('I', n, nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -239,7 +239,7 @@ void potrs_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(I b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_potrs(uplo, n, nrhs, hA[b], lda, hB[b], ldb);
         }
@@ -249,7 +249,7 @@ void potrs_getPerfData(const rocblas_handle handle,
     potrs_initData<true, false, T>(handle, uplo, n, nrhs, dA, lda, stA, dB, ldb, stB, bc, hA, hB);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         potrs_initData<false, true, T>(handle, uplo, n, nrhs, dA, lda, stA, dB, ldb, stB, bc, hA, hB);
 
@@ -272,7 +272,7 @@ void potrs_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         potrs_initData<false, true, T>(handle, uplo, n, nrhs, dA, lda, stA, dB, ldb, stB, bc, hA, hB);
 
@@ -293,8 +293,8 @@ void testing_potrs(Arguments& argus)
     I nrhs = argus.get<I>("nrhs", n);
     I lda = argus.get<I>("lda", n);
     I ldb = argus.get<I>("ldb", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nrhs);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);
     I bc = argus.batch_count;

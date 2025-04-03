@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -153,12 +153,12 @@ void sytf2_sytrf_initData(const rocblas_handle handle,
         T tmp;
         rocblas_init<T>(hA, true);
 
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             // scale A to avoid singularities
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -169,9 +169,9 @@ void sytf2_sytrf_initData(const rocblas_handle handle,
 
             // shuffle rows to test pivoting
             // always the same permuation for debugging purposes
-            for(rocblas_int i = 0; i < n / 2; i++)
+            for(int64_t i = 0; i < n / 2; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     tmp = hA[b][i + j * lda];
                     hA[b][i + j * lda] = hA[b][n - 1 - i + j * lda];
@@ -187,21 +187,21 @@ void sytf2_sytrf_initData(const rocblas_handle handle,
                 // matrices in the batch that are singular
                 rocblas_int j = n / 4 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
                     hA[b][i + j * lda] = 0;
                     hA[b][j + i * lda] = 0;
                 }
                 j = n / 2 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
                     hA[b][i + j * lda] = 0;
                     hA[b][j + i * lda] = 0;
                 }
                 j = n - 1 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                 {
                     hA[b][i + j * lda] = 0;
                     hA[b][j + i * lda] = 0;
@@ -253,7 +253,7 @@ void sytf2_sytrf_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         SYTRF ? cpu_sytrf(uplo, n, hA[b], lda, hIpiv[b], work.data(), lwork, hInfo[b])
               : cpu_sytf2(uplo, n, hA[b], lda, hIpiv[b], hInfo[b]);
@@ -265,14 +265,14 @@ void sytf2_sytrf_getError(const rocblas_handle handle,
     // using frobenius norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('F', n, n, lda, hA[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
 
         // also check pivoting (count the number of incorrect pivots)
         err = 0;
-        for(rocblas_int i = 0; i < n; ++i)
+        for(int64_t i = 0; i < n; ++i)
         {
             EXPECT_EQ(hIpiv[b][i], hIpivRes[b][i]) << "where b = " << b << ", i = " << i;
             if(hIpiv[b][i] != hIpivRes[b][i])
@@ -283,7 +283,7 @@ void sytf2_sytrf_getError(const rocblas_handle handle,
 
     // also check info
     err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -324,7 +324,7 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             SYTRF ? cpu_sytrf(uplo, n, hA[b], lda, hIpiv[b], work.data(), lwork, hInfo[b])
                   : cpu_sytf2(uplo, n, hA[b], lda, hIpiv[b], hInfo[b]);
@@ -336,7 +336,7 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
                                          hIpiv, hInfo, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         sytf2_sytrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc,
                                              hA, hIpiv, hInfo, singular);
@@ -360,7 +360,7 @@ void sytf2_sytrf_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         sytf2_sytrf_initData<false, true, T>(handle, uplo, n, dA, lda, stA, dIpiv, stP, dInfo, bc,
                                              hA, hIpiv, hInfo, singular);
@@ -381,7 +381,7 @@ void testing_sytf2_sytrf(Arguments& argus)
     char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", n);
 
     rocblas_fill uplo = char2rocblas_fill(uploC);

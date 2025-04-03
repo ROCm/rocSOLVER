@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -184,11 +184,11 @@ void gebd2_gebrd_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < m; i++)
+            for(int64_t i = 0; i < m; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j || (m >= n && j == i + 1) || (m < n && i == j + 1))
                         hA[b][i + j * lda] += 400;
@@ -255,7 +255,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     else
     {
         // CPU lapack
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             memcpy(hARes[b], hA[b], lda * n * sizeof(T));
             GEBRD
@@ -268,7 +268,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     // reconstruct A from the factorization for implicit testing
     std::vector<T> vec(std::max(m, n));
     vec[0] = 1;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         T* a = hARes[b];
         T* tauq = hTauq[b];
@@ -276,7 +276,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
 
         if(m >= n)
         {
-            for(int j = n - 1; j >= 0; j--)
+            for(int64_t j = n - 1; j >= 0; j--)
             {
                 if(j < n - 1)
                 {
@@ -285,7 +285,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
                         cpu_lacgv(1, taup + j, 1);
                         cpu_lacgv(n - j - 1, a + j + (j + 1) * lda, lda);
                     }
-                    for(int i = 1; i < n - j - 1; i++)
+                    for(int64_t i = 1; i < n - j - 1; i++)
                     {
                         vec[i] = a[j + (j + i + 1) * lda];
                         a[j + (j + i + 1) * lda] = 0;
@@ -296,7 +296,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
                         cpu_lacgv(1, taup + j, 1);
                 }
 
-                for(int i = 1; i < m - j; i++)
+                for(int64_t i = 1; i < m - j; i++)
                 {
                     vec[i] = a[(j + i) + j * lda];
                     a[(j + i) + j * lda] = 0;
@@ -307,11 +307,11 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
         }
         else
         {
-            for(int j = m - 1; j >= 0; j--)
+            for(int64_t j = m - 1; j >= 0; j--)
             {
                 if(j < m - 1)
                 {
-                    for(int i = 1; i < m - j - 1; i++)
+                    for(int64_t i = 1; i < m - j - 1; i++)
                     {
                         vec[i] = a[(j + i + 1) + j * lda];
                         a[(j + i + 1) + j * lda] = 0;
@@ -325,7 +325,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
                     cpu_lacgv(1, taup + j, 1);
                     cpu_lacgv(n - j, a + j + j * lda, lda);
                 }
-                for(int i = 1; i < n - j; i++)
+                for(int64_t i = 1; i < n - j; i++)
                 {
                     vec[i] = a[j + (j + i) * lda];
                     a[j + (j + i) * lda] = 0;
@@ -342,7 +342,7 @@ void gebd2_gebrd_getError(const rocblas_handle handle,
     // using frobenius norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('F', m, n, lda, hA[b], hARes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -386,7 +386,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             GEBRD
             ? cpu_gebrd(m, n, hA[b], lda, hD[b], hE[b], hTauq[b], hTaup[b], hW.data(), std::max(m, n))
@@ -399,7 +399,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
                                          dTaup, stP, bc, hA, hD, hE, hTauq, hTaup);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         gebd2_gebrd_initData<false, true, T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq,
                                              stQ, dTaup, stP, bc, hA, hD, hE, hTauq, hTaup);
@@ -424,7 +424,7 @@ void gebd2_gebrd_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         gebd2_gebrd_initData<false, true, T>(handle, m, n, dA, lda, stA, dD, stD, dE, stE, dTauq,
                                              stQ, dTaup, stP, bc, hA, hD, hE, hTauq, hTaup);
@@ -447,7 +447,7 @@ void testing_gebd2_gebrd(Arguments& argus)
     rocblas_int m = argus.get<rocblas_int>("m");
     rocblas_int n = argus.get<rocblas_int>("n", m);
     rocblas_int lda = argus.get<rocblas_int>("lda", m);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stD = argus.get<rocblas_stride>("strideD", std::min(m, n));
     rocblas_stride stE = argus.get<rocblas_stride>("strideE", std::min(m, n) - 1);
     rocblas_stride stQ = argus.get<rocblas_stride>("strideQ", std::min(m, n));

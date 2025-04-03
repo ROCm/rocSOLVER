@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -165,11 +165,11 @@ void gesv_initData(const rocblas_handle handle,
         rocblas_init<T>(hB, true);
 
         // scale A to avoid singularities
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
-            for(rocblas_int i = 0; i < n; i++)
+            for(int64_t i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(int64_t j = 0; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] += 400;
@@ -186,15 +186,15 @@ void gesv_initData(const rocblas_handle handle,
                 // diagonal of those matrices in the batch that are singular
                 rocblas_int j = n / 4 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
                 j = n / 2 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
                 j = n - 1 + b;
                 j -= (j / n) * n;
-                for(rocblas_int i = 0; i < n; i++)
+                for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
             }
         }
@@ -244,7 +244,7 @@ void gesv_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
 
     // CPU lapack
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         cpu_gesv(n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb, hInfo[b]);
     }
@@ -255,7 +255,7 @@ void gesv_getError(const rocblas_handle handle,
     // using vector-induced infinity norm
     double err;
     *max_err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         err = norm_error('I', n, nrhs, ldb, hB[b], hBRes[b]);
         *max_err = err > *max_err ? err : *max_err;
@@ -263,7 +263,7 @@ void gesv_getError(const rocblas_handle handle,
 
     // also check info for singularities
     err = 0;
-    for(rocblas_int b = 0; b < bc; ++b)
+    for(int64_t b = 0; b < bc; ++b)
     {
         EXPECT_EQ(hInfo[b][0], hInfoRes[b][0]) << "where b = " << b;
         if(hInfo[b][0] != hInfoRes[b][0])
@@ -305,7 +305,7 @@ void gesv_getPerfData(const rocblas_handle handle,
 
         // cpu-lapack performance (only if not in perf mode)
         *cpu_time_used = get_time_us_no_sync();
-        for(rocblas_int b = 0; b < bc; ++b)
+        for(int64_t b = 0; b < bc; ++b)
         {
             cpu_gesv(n, nrhs, hA[b], lda, hIpiv[b], hB[b], ldb, hInfo[b]);
         }
@@ -316,7 +316,7 @@ void gesv_getPerfData(const rocblas_handle handle,
                                   hIpiv, hB, singular);
 
     // cold calls
-    for(int iter = 0; iter < 2; iter++)
+    for(int64_t iter = 0; iter < 2; iter++)
     {
         gesv_initData<false, true, T>(handle, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc,
                                       hA, hIpiv, hB, singular);
@@ -340,7 +340,7 @@ void gesv_getPerfData(const rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         gesv_initData<false, true, T>(handle, n, nrhs, dA, lda, stA, dIpiv, stP, dB, ldb, stB, bc,
                                       hA, hIpiv, hB, singular);
@@ -362,9 +362,9 @@ void testing_gesv(Arguments& argus)
     rocblas_int nrhs = argus.get<rocblas_int>("nrhs", n);
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
     rocblas_int ldb = argus.get<rocblas_int>("ldb", n);
-    rocblas_stride stA = argus.get<rocblas_stride>("strideA", lda * n);
+    rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
     rocblas_stride stP = argus.get<rocblas_stride>("strideP", n);
-    rocblas_stride stB = argus.get<rocblas_stride>("strideB", ldb * nrhs);
+    rocblas_stride stB = argus.get<rocblas_stride>("strideB", rocblas_stride(ldb) * nrhs);
 
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
