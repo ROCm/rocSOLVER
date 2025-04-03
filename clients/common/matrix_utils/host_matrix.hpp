@@ -105,7 +105,7 @@ public:
             ptr = nullptr;
         }
 
-        for(I i = 0; i < ptr->size(); ++i)
+        for(int64_t i = 0; i < ptr->size(); ++i)
         {
             ptr->operator[](i) = T(in_data[i]);
         }
@@ -118,7 +118,7 @@ public:
     {
         HostMatrix<T_, I_> Out(In.nrows(), In.ncols());
 
-        for(I i = 0; i < Out.size(); ++i)
+        for(int64_t i = 0; i < Out.size(); ++i)
         {
             Out[i] = T_(In[i]);
         }
@@ -150,7 +150,7 @@ public:
         if(!Id.empty())
         {
             I dim = std::min(Id.nrows(), Id.ncols());
-            for(I i = 0; i < dim; ++i)
+            for(int64_t i = 0; i < dim; ++i)
             {
                 Id(i, i) = T_(1.);
             }
@@ -170,7 +170,7 @@ public:
 
         if(!ones.empty())
         {
-            for(I i = 0; i < ones.size(); ++i)
+            for(int64_t i = 0; i < ones.size(); ++i)
             {
                 ones[i] = T_(1.);
             }
@@ -193,7 +193,7 @@ public:
 
         I dim = std::max(d.nrows(), d.ncols());
         HostMatrix<T_, I_> Z(dim, dim);
-        for(I i = 0; i < dim; ++i)
+        for(int64_t i = 0; i < dim; ++i)
         {
             Z(i, i) = d[i];
         }
@@ -233,7 +233,7 @@ public:
         T t = (end_val - start_val) / static_cast<T>(nvals - 1);
 
         HostMatrix<T_, I_> Z(1, nvals);
-        for(I i = 0; i < Z.size(); ++i)
+        for(int64_t i = 0; i < Z.size(); ++i)
         {
             Z[i] = start_val + t * static_cast<T>(i);
         }
@@ -370,9 +370,9 @@ public:
 
         /* [[maybe_unused]] auto volatile mptr */
         /* = memmove(this->data(), src.data(), src.num_bytes()); */
-        for(I j = 0; j < src.ncols(); ++j)
+        for(int64_t j = 0; j < src.ncols(); ++j)
         {
-            for(I i = 0; i < src.nrows(); ++i)
+            for(int64_t i = 0; i < src.nrows(); ++i)
             {
                 this->operator()(i, j) = src(i, j);
             }
@@ -468,7 +468,7 @@ public:
     virtual S max_coeff_norm() const override
     {
         S norm = S(0.);
-        for(I i = 0; i < size(); ++i)
+        for(int64_t i = 0; i < size(); ++i)
         {
             S el = detail::abs(this->operator[](i));
             norm = (norm > el) ? norm : el;
@@ -482,9 +482,9 @@ public:
         S norm = S(0.);
         auto col_norm = HostMatrix<S, I_>::Zeros(1, ncols());
 
-        for(I j = 0; j < ncols(); ++j)
+        for(int64_t j = 0; j < ncols(); ++j)
         {
-            for(I i = 0; i < nrows(); ++i)
+            for(int64_t i = 0; i < nrows(); ++i)
             {
                 col_norm(0, j) += detail::norm(this->operator()(i, j));
             }
@@ -499,15 +499,15 @@ public:
         S norm = S(0.);
         auto col_norm = HostMatrix<S, I_>::Zeros(1, ncols());
 
-        for(I j = 0; j < ncols(); ++j)
+        for(int64_t j = 0; j < ncols(); ++j)
         {
-            for(I i = 0; i < nrows(); ++i)
+            for(int64_t i = 0; i < nrows(); ++i)
             {
                 col_norm(0, j) += detail::norm(this->operator()(i, j));
             }
         }
 
-        for(I i = 0; i < col_norm.size(); ++i)
+        for(int64_t i = 0; i < col_norm.size(); ++i)
         {
             norm += col_norm[i];
         }
@@ -523,7 +523,7 @@ public:
 
         HostMatrix<T_, I_> out(1, ncols());
 
-        for(I i = 0; i < ncols(); ++i)
+        for(int64_t i = 0; i < ncols(); ++i)
         {
             out[i] = this->operator()(k, i);
         }
@@ -540,7 +540,7 @@ public:
 
         HostMatrix<T_, I_> out(nrows(), 1);
 
-        for(I i = 0; i < nrows(); ++i)
+        for(int64_t i = 0; i < nrows(); ++i)
         {
             out[i] = this->operator()(i, k);
         }
@@ -555,7 +555,7 @@ public:
 
         if(!out.empty())
         {
-            for(I i = 0; i < dim; ++i)
+            for(int64_t i = 0; i < dim; ++i)
             {
                 out[i] = this->operator()(i, i);
             }
@@ -571,7 +571,7 @@ public:
 
         if(!out.empty())
         {
-            for(I i = 0; i < dim; ++i)
+            for(int64_t i = 0; i < dim; ++i)
             {
                 out[i] = this->operator()(i + 1, i);
             }
@@ -587,7 +587,7 @@ public:
 
         if(!out.empty())
         {
-            for(I i = 0; i < dim; ++i)
+            for(int64_t i = 0; i < dim; ++i)
             {
                 out[i] = this->operator()(i, i + 1);
             }
@@ -675,9 +675,9 @@ public:
 
         HostMatrix<T_, I_> out(bd.nrows_, bd.ncols_);
 
-        for(I j = 0; j < out.ncols(); ++j)
+        for(int64_t j = 0; j < out.ncols(); ++j)
         {
-            for(I i = 0; i < out.nrows(); ++i)
+            for(int64_t i = 0; i < out.nrows(); ++i)
             {
                 out(i, j) = this->operator()(i + bd.from_row_, j + bd.from_col_);
             }
@@ -691,7 +691,7 @@ public:
         auto b = BlockDescriptor().from_col(0).ncols(ncols()).from_row(k).nrows(1);
         if(!empty() || b.range_check(nrows(), ncols()))
         {
-            for(I i = 0; i < ncols(); ++i)
+            for(int64_t i = 0; i < ncols(); ++i)
             {
                 this->operator()(k, i) = r[i];
             }
@@ -705,7 +705,7 @@ public:
         auto b = BlockDescriptor().from_row(0).nrows(nrows()).from_col(k).ncols(1);
         if(!empty() || b.range_check(nrows(), ncols()))
         {
-            for(I i = 0; i < nrows(); ++i)
+            for(int64_t i = 0; i < nrows(); ++i)
             {
                 this->operator()(i, k) = c[i];
             }
@@ -719,7 +719,7 @@ public:
         I dim = std::min(nrows(), ncols());
         if(!empty() && (dim == d.size()))
         {
-            for(I i = 0; i < dim; ++i)
+            for(int64_t i = 0; i < dim; ++i)
             {
                 this->operator()(i, i) = d[i];
             }
@@ -734,7 +734,7 @@ public:
 
         if(!empty() && (dim == f.size()))
         {
-            for(I i = 0; i < dim; ++i)
+            for(int64_t i = 0; i < dim; ++i)
             {
                 this->operator()(i + 1, i) = f[i];
             }
@@ -749,7 +749,7 @@ public:
 
         if(!empty() && (dim == e.size()))
         {
-            for(I i = 0; i < dim; ++i)
+            for(int64_t i = 0; i < dim; ++i)
             {
                 this->operator()(i, i + 1) = e[i];
             }
@@ -762,9 +762,9 @@ public:
     {
         if(!empty() && bd.range_check(nrows(), ncols()))
         {
-            for(I j = 0; j < bd.ncols_; ++j)
+            for(int64_t j = 0; j < bd.ncols_; ++j)
             {
-                for(I i = 0; i < bd.nrows_; ++i)
+                for(int64_t i = 0; i < bd.nrows_; ++i)
                 {
                     this->operator()(i + bd.from_row_, j + bd.from_col_) = b(i, j);
                 }
@@ -784,9 +784,9 @@ public:
         /*         else */
         /*             std::cout << "\n" << std::flush; */
         /* } */
-        for(I i = 0; i < nrows_; ++i)
+        for(int64_t i = 0; i < nrows_; ++i)
         {
-            for(I j = 0; j < ncols_; ++j)
+            for(int64_t j = 0; j < ncols_; ++j)
             {
                 std::cout << this->operator()(i, j);
                 if(j != ncols_ - 1)
@@ -968,7 +968,7 @@ auto operator+(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
     I size = A.size();
     HostMatrix_<T, I> Z(nrows, ncols);
 
-    for(I i = 0; i < size; ++i)
+    for(int64_t i = 0; i < size; ++i)
     {
         Z[i] = A[i] + B[i];
     }
@@ -994,7 +994,7 @@ auto operator-(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
     I size = A.size();
     HostMatrix_<T, I> Z(nrows, ncols);
 
-    for(I i = 0; i < size; ++i)
+    for(int64_t i = 0; i < size; ++i)
     {
         Z[i] = A[i] - B[i];
     }
@@ -1016,7 +1016,7 @@ auto operator-(const HostMatrix_<T, I>& A)
     I size = A.size();
     HostMatrix_<T, I> Z(nrows, ncols);
 
-    for(I i = 0; i < size; ++i)
+    for(int64_t i = 0; i < size; ++i)
     {
         Z[i] = -A[i];
     }
@@ -1031,9 +1031,9 @@ auto operator*(const HostMatrix_<T, I>& A, S alpha)
     I ncols = A.ncols();
     HostMatrix_<T, I> Z(nrows, ncols);
 
-    for(I j = 0; j < ncols; ++j)
+    for(int64_t j = 0; j < ncols; ++j)
     {
-        for(I i = 0; i < nrows; ++i)
+        for(int64_t i = 0; i < nrows; ++i)
         {
             Z(i, j) = A(i, j) * static_cast<T>(alpha);
         }
@@ -1049,9 +1049,9 @@ auto operator*(S alpha, const HostMatrix_<T, I>& A)
     I ncols = A.ncols();
     HostMatrix_<T, I> Z(nrows, ncols);
 
-    for(I j = 0; j < ncols; ++j)
+    for(int64_t j = 0; j < ncols; ++j)
     {
-        for(I i = 0; i < nrows; ++i)
+        for(int64_t i = 0; i < nrows; ++i)
         {
             Z(i, j) = static_cast<T>(alpha) * A(i, j);
         }
@@ -1095,9 +1095,9 @@ auto operator*(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
         else
         {
             I dim = A.ncols();
-            for(I j = 0; j < ncols; ++j)
-                for(I i = 0; i < nrows; ++i)
-                    for(I k = 0; k < dim; ++k)
+            for(int64_t j = 0; j < ncols; ++j)
+                for(int64_t i = 0; i < nrows; ++i)
+                    for(int64_t k = 0; k < dim; ++k)
                         Z(i, j) += A(i, k) * B(k, j);
         }
     }
@@ -1112,9 +1112,9 @@ auto operator/(const HostMatrix_<T, I>& A, S alpha)
     I ncols = A.ncols();
     HostMatrix_<T, I> Z(nrows, ncols);
 
-    for(I j = 0; j < ncols; ++j)
+    for(int64_t j = 0; j < ncols; ++j)
     {
-        for(I i = 0; i < nrows; ++i)
+        for(int64_t i = 0; i < nrows; ++i)
         {
             Z(i, j) = A(i, j) / static_cast<T>(alpha);
         }
@@ -1153,13 +1153,13 @@ auto cat(const HostMatrix_<T, I>& A, const HostMatrix_<T, I>& B)
     }
     HostMatrix_<T, I> Z(nrows, ncols);
 
-    for(I i = 0; i < A.size(); ++i)
+    for(int64_t i = 0; i < A.size(); ++i)
     {
         Z[i] = A[i];
     }
 
     I a_size = A.size();
-    for(I i = 0; i < B.size(); ++i)
+    for(int64_t i = 0; i < B.size(); ++i)
     {
         Z[i + a_size] = B[i];
     }
@@ -1172,9 +1172,9 @@ HostMatrix_<T, I> transpose(const HostMatrix_<T, I>& A)
 {
     HostMatrix_<T, I> Z(A.ncols(), A.nrows());
 
-    for(I j = 0; j < Z.ncols(); ++j)
+    for(int64_t j = 0; j < Z.ncols(); ++j)
     {
-        for(I i = 0; i < Z.nrows(); ++i)
+        for(int64_t i = 0; i < Z.nrows(); ++i)
         {
             Z(i, j) = A(j, i);
         }
@@ -1188,7 +1188,7 @@ HostMatrix_<T, I> conjugate(const HostMatrix_<T, I>& A)
     HostMatrix_<T, I> Z(A.nrows(), A.ncols());
 
     // TODO: avoid for loop when `T` is real
-    for(I i = 0; i < A.size(); ++i)
+    for(int64_t i = 0; i < A.size(); ++i)
     {
         Z[i] = detail::conj(A[i]);
     }
@@ -1374,7 +1374,7 @@ auto inv(const HostMatrix_<T, I>& A) -> HostMatrix_<T, I> /* Pseudo-Inverse of A
     I ncols = A.ncols();
     I dim = std::min(nrows, ncols);
 
-    for(I i = 0; i < dim; ++i)
+    for(int64_t i = 0; i < dim; ++i)
     {
         if(std::abs(Sigma(i, i)) > std::max(std::numeric_limits<S>::min(), S(0)))
         {

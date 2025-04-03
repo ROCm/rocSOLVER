@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -82,7 +82,7 @@ double csr_norm_error(char const norm_type,
 
     double norm_err = static_cast<double>(0);
 
-    for(Iint irow = 0; irow < nrow; irow++)
+    for(int64_t irow = 0; irow < nrow; irow++)
     {
         // ------------------------------------
         // copy data into temporary full vector
@@ -92,7 +92,7 @@ double csr_norm_error(char const norm_type,
         Ilong const kstartB = Bp[irow];
         Ilong const kendB = Bp[irow + 1];
 
-        for(Ilong k = kstartA; k < kendA; k++)
+        for(int64_t k = kstartA; k < kendA; k++)
         {
             auto const colA = Ai[k];
             assert((0 <= colA) && (colA < ncol));
@@ -106,7 +106,7 @@ double csr_norm_error(char const norm_type,
             };
         };
 
-        for(Ilong k = kstartB; k < kendB; k++)
+        for(int64_t k = kstartB; k < kendB; k++)
         {
             Iint const colB = Bi[k];
             assert((0 <= colB) && (colB < ncol));
@@ -123,7 +123,7 @@ double csr_norm_error(char const norm_type,
         // ----------------------
         // evaluate norm of difference
         // ----------------------
-        for(Ilong k = kstartA; k < kendA; k++)
+        for(int64_t k = kstartA; k < kendA; k++)
         {
             Iint const colA = Ai[k];
 
@@ -146,7 +146,7 @@ double csr_norm_error(char const norm_type,
             };
         };
 
-        for(Ilong k = kstartB; k < kendB; k++)
+        for(int64_t k = kstartB; k < kendB; k++)
         {
             Iint const colB = Bi[k];
             bool const is_lower = (irow >= colB);

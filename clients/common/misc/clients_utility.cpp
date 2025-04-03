@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -119,7 +119,7 @@ rocblas_int query_device_property()
     }
     fmt::print("Query device success: there are {} devices\n", device_count);
 
-    for(int i = 0;; i++)
+    for(int64_t i = 0;; i++)
     {
         fmt::print("{:-<79}\n", ""); // horizontal rule
         if(i >= device_count)

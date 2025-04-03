@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -242,19 +242,19 @@ void csrrf_splitlu_getError(rocblas_handle handle,
     // if not matrix zero, compare computed results with golden result
     if(!mat_zero)
     {
-        for(rocblas_int i = 0; i <= n; ++i)
+        for(int64_t i = 0; i <= n; ++i)
         {
             err += (hptrL[0][i] - hptrLres[0][i]);
             err += (hptrU[0][i] - hptrUres[0][i]);
         }
 
-        for(rocblas_int i = 0; i < nnzL; ++i)
+        for(int64_t i = 0; i < nnzL; ++i)
         {
             err += (hindL[0][i] - hindLres[0][i]);
             err += (hvalL[0][i] - hvalLres[0][i]);
         }
 
-        for(rocblas_int i = 0; i < nnzU; ++i)
+        for(int64_t i = 0; i < nnzU; ++i)
         {
             err += (hindU[0][i] - hindUres[0][i]);
             err += (hvalU[0][i] - hvalUres[0][i]);
@@ -263,7 +263,7 @@ void csrrf_splitlu_getError(rocblas_handle handle,
     // otherwise simply check that L = identity and ptrU = 0
     else
     {
-        for(rocblas_int i = 0; i < n; ++i)
+        for(int64_t i = 0; i < n; ++i)
         {
             err += i - hptrLres[0][i];
             err += i - hindLres[0][i];
@@ -340,7 +340,7 @@ void csrrf_splitlu_getPerfData(rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         csrrf_splitlu_initData<false, true, T>(handle, n, nnzT, nnzL, nnzU, dptrT, dindT, dvalT,
                                                hptrT, hindT, hvalT, hptrL, hindL, hvalL, hptrU,

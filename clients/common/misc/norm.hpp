@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -57,12 +57,12 @@ double norm_error(char norm_type,
     if(lda_comp <= 0)
         lda_comp = lda_gold;
 
-    std::vector<DoublePrecisionType> gold_double(N * lda);
-    std::vector<DoublePrecisionType> comp_double(N * lda);
+    std::vector<DoublePrecisionType> gold_double(N * size_t(lda));
+    std::vector<DoublePrecisionType> comp_double(N * size_t(lda));
 
-    for(rocblas_int j = 0; j < N; j++)
+    for(int64_t j = 0; j < N; j++)
     {
-        for(rocblas_int i = 0; i < M; i++)
+        for(int64_t i = 0; i < M; i++)
         {
             gold_double[i + j * lda] = DoublePrecisionType(gold[i + j * lda_gold]);
             comp_double[i + j * lda] = DoublePrecisionType(comp[i + j * lda_comp]);
@@ -72,10 +72,31 @@ double norm_error(char norm_type,
     std::vector<double> work(M);
     rocblas_int incx = 1;
     DoublePrecisionType alpha = -1.0;
-    rocblas_int size = lda * N;
+    auto size = size_t(lda) * N;
+
+    auto axpy = [](auto n, auto alpha, auto x, auto incx, auto y, auto incy) {
+        if((incx == 1) && (incy == 1))
+        {
+            for(int64_t i = 0; i < n; i++)
+            {
+                y[i] += alpha * x[i];
+            }
+        }
+        else
+        {
+            for(int64_t i = 0; i < n; i++)
+            {
+                auto const ix = 0 + i * incx;
+                auto const iy = 0 + i * incy;
+                y[iy] += alpha * x[ix];
+            }
+        }
+    };
 
     double gold_norm = cpu_lange(norm_type, M, N, gold_double.data(), lda, work.data());
-    cpu_axpy(size, alpha, gold_double.data(), incx, comp_double.data(), incx);
+    // cpu_axpy(size, alpha, gold_double.data(), incx, comp_double.data(), incx);
+    axpy(size, alpha, gold_double.data(), incx, comp_double.data(), incx);
+
     double error = cpu_lange(norm_type, M, N, comp_double.data(), lda, work.data());
     if(gold_norm > 0)
         error /= gold_norm;
@@ -86,9 +107,9 @@ double norm_error(char norm_type,
 template <typename T>
 double norm_error_upperTr(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp)
 {
-    for(rocblas_int i = 0; i < M; ++i)
+    for(int64_t i = 0; i < M; ++i)
     {
-        for(rocblas_int j = 0; j < N; ++j)
+        for(int64_t j = 0; j < N; ++j)
         {
             if(i > j)
             {
@@ -103,9 +124,9 @@ double norm_error_upperTr(char norm_type, rocblas_int M, rocblas_int N, rocblas_
 template <typename T>
 double norm_error_lowerTr(char norm_type, rocblas_int M, rocblas_int N, rocblas_int lda, T* gold, T* comp)
 {
-    for(rocblas_int i = 0; i < M; ++i)
+    for(int64_t i = 0; i < M; ++i)
     {
-        for(rocblas_int j = 0; j < N; ++j)
+        for(int64_t j = 0; j < N; ++j)
         {
             if(i < j)
             {

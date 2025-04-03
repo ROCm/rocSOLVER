@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -111,11 +111,11 @@ void print_strided_batched(const char* name,
     std::string s = fmt::format("----------{}----------\n", name);
     int max_size = 8;
 
-    for(int i3 = 0; i3 < n3 && i3 < max_size; i3++)
+    for(int64_t i3 = 0; i3 < n3 && i3 < max_size; i3++)
     {
-        for(int i1 = 0; i1 < n1 && i1 < max_size; i1++)
+        for(int64_t i1 = 0; i1 < n1 && i1 < max_size; i1++)
         {
-            for(int i2 = 0; i2 < n2 && i2 < max_size; i2++)
+            for(int64_t i2 = 0; i2 < n2 && i2 < max_size; i2++)
             {
                 s += fmt::format("{}|", A[(i1 * s1) + (i2 * s2) + (i3 * s3)]);
             }

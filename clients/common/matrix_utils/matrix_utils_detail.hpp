@@ -130,10 +130,10 @@ namespace detail
         {
             auto volatile mptr = memset(R, 0, sizeof(T) * nrowsR * ncolsR);
         }
-        for(int i = 0; i < rank; ++i)
+        for(int64_t i = 0; i < rank; ++i)
         {
             R[i + i * static_cast<std::int64_t>(ldR)] = Q[i + i * static_cast<std::int64_t>(ldQ)];
-            for(int j = i + 1; j < ncolsR; ++j)
+            for(int64_t j = i + 1; j < ncolsR; ++j)
             {
                 R[i + j * static_cast<std::int64_t>(ldR)] = Q[i + j * static_cast<std::int64_t>(ldQ)];
             }

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2023-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2023-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -241,10 +241,10 @@ void csrrf_sumlu_getError(rocblas_handle handle,
     // if not matrix zero, compare computed results with golden result
     if(!mat_zero)
     {
-        for(rocblas_int i = 0; i <= n; ++i)
+        for(int64_t i = 0; i <= n; ++i)
             err += (hptrT[0][i] - hptrTres[0][i]);
 
-        for(rocblas_int i = 0; i < nnzT; ++i)
+        for(int64_t i = 0; i < nnzT; ++i)
         {
             err += (hindT[0][i] - hindTres[0][i]);
             err += (hvalT[0][i] - hvalTres[0][i]);
@@ -253,7 +253,7 @@ void csrrf_sumlu_getError(rocblas_handle handle,
     // otherwise simply check that ptrT = 0
     else
     {
-        for(rocblas_int i = 0; i <= n; ++i)
+        for(int64_t i = 0; i <= n; ++i)
             err += hptrTres[0][i];
     }
 
@@ -324,7 +324,7 @@ void csrrf_sumlu_getPerfData(rocblas_handle handle,
         rocsolver_log_set_max_levels(profile);
     }
 
-    for(rocblas_int iter = 0; iter < hot_calls; iter++)
+    for(int64_t iter = 0; iter < hot_calls; iter++)
     {
         csrrf_sumlu_initData<false, true, T>(handle, n, nnzT, nnzL, nnzU, dptrL, dindL, dvalL,
                                              dptrU, dindU, dvalU, hptrL, hindL, hvalL, hptrU, hindU,

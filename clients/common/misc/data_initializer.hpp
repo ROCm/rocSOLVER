@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -366,13 +366,13 @@ void random_sparse_matrix(rocblas_int n,
 
     // initialize ptrA
     nnz = (!randomdiag) ? n : 0;
-    for(rocblas_int j = 0; j <= n; ++j)
+    for(int64_t j = 0; j <= n; ++j)
         ptrA[j] = (!randomdiag) ? j : 0;
 
     while(nnz < nnzA)
     {
         // for each row in matrix
-        for(rocblas_int i = 0; i < n; ++i)
+        for(int64_t i = 0; i < n; ++i)
         {
             // set the number of non-zeros
             // op is the max number of non-zeros in a row
@@ -388,7 +388,7 @@ void random_sparse_matrix(rocblas_int n,
                 nn = 0;
 
             // update ptrA
-            for(rocblas_int j = i + 1; j <= n; ++j)
+            for(int64_t j = i + 1; j <= n; ++j)
                 ptrA[j] += nn;
         }
     }
@@ -398,11 +398,11 @@ void random_sparse_matrix(rocblas_int n,
     /////////////////////////////
 
     // random non-zero values
-    for(rocblas_int i = 0; i < nnzA; ++i)
+    for(int64_t i = 0; i < nnzA; ++i)
         valA[i] = random_generator<T>(1, 10);
 
     // for each row in matrix
-    for(rocblas_int i = 0; i < n; ++i)
+    for(int64_t i = 0; i < n; ++i)
     {
         nn = ptrA[i + 1] - ptrA[i];
 
@@ -413,19 +413,19 @@ void random_sparse_matrix(rocblas_int n,
             if(fullmatrix)
             {
                 // full matrix
-                for(rocblas_int j = 0; j < n; ++j)
+                for(int64_t j = 0; j < n; ++j)
                     ops[j] = j;
             }
             else if(lowertriang)
             {
                 // lower triangular
-                for(rocblas_int j = 0; j <= i; ++j)
+                for(int64_t j = 0; j <= i; ++j)
                     ops[j] = j;
             }
             else
             {
                 // upper triangular
-                for(rocblas_int j = i; j < n; ++j)
+                for(int64_t j = i; j < n; ++j)
                     ops[j - i] = j;
             }
 
@@ -442,7 +442,7 @@ void random_sparse_matrix(rocblas_int n,
             // choose the other non-zero positions
             // op is the max number of non-zeros in a row
             op = (fullmatrix) ? n : (lowertriang) ? i + 1 : n - i;
-            for(rocblas_int j = in; j < nn; ++j)
+            for(int64_t j = in; j < nn; ++j)
             {
                 pp = random_generator<rocblas_int>(0, op - 1);
                 p = pp;
@@ -458,11 +458,11 @@ void random_sparse_matrix(rocblas_int n,
             }
 
             // order non-zero positions in increasing order
-            for(rocblas_int j = 0; j < nn - 1; ++j)
+            for(int64_t j = 0; j < nn - 1; ++j)
             {
                 m = j;
                 p = z[j];
-                for(rocblas_int k = j + 1; k < nn; ++k)
+                for(int64_t k = j + 1; k < nn; ++k)
                 {
                     if(z[k] < p)
                     {
@@ -478,7 +478,7 @@ void random_sparse_matrix(rocblas_int n,
             }
 
             // update indA and valA if necessary
-            for(rocblas_int j = 0; j < nn; ++j)
+            for(int64_t j = 0; j < nn; ++j)
             {
                 indA[ptrA[i] + j] = z[j];
                 if(unitdiag && z[j] == i)
@@ -503,13 +503,13 @@ void cpu_sumlu(const rocblas_int n,
                T* valT)
 {
     // generate ptrT
-    for(rocblas_int i = 0; i <= n; ++i)
+    for(int64_t i = 0; i <= n; ++i)
         ptrT[i] = ptrL[i] + ptrU[i] - i;
 
     // generate indT and valT
     rocblas_int p = 0;
     rocblas_int nzL, nzU, iL, iU;
-    for(rocblas_int i = 0; i < n; ++i)
+    for(int64_t i = 0; i < n; ++i)
     {
         iL = ptrL[i];
         iU = ptrU[i];
@@ -517,7 +517,7 @@ void cpu_sumlu(const rocblas_int n,
         nzU = ptrU[i + 1] - iU;
 
         // insert lower part - I
-        for(rocblas_int j = 0; j < nzL; ++j)
+        for(int64_t j = 0; j < nzL; ++j)
         {
             indT[p] = indL[iL + j];
             valT[p] = valL[iL + j];
@@ -525,7 +525,7 @@ void cpu_sumlu(const rocblas_int n,
         }
 
         // insert upper part
-        for(rocblas_int j = 0; j < nzU; ++j)
+        for(int64_t j = 0; j < nzU; ++j)
         {
             indT[p] = indU[iU + j];
             valT[p] = valU[iU + j];

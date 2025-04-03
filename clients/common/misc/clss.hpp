@@ -397,7 +397,7 @@ public:
             os << ">>> Input: \n";
 
             os << ":: :: a = {";
-            for(I i = 0; i < a_size; ++i)
+            for(int64_t i = 0; i < a_size; ++i)
             {
                 os << a[i];
                 if(i != a_size - 1)
@@ -408,7 +408,7 @@ public:
             os << "}\n\n";
 
             os << ":: :: b = {";
-            for(I i = 0; i < b_size; ++i)
+            for(int64_t i = 0; i < b_size; ++i)
             {
                 os << b[i];
                 if(i != b_size - 1)
