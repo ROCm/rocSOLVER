@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -189,6 +189,7 @@ typedef enum rocsolver_function_
     rocsolver_function_bdsqr = 401,
     rocsolver_function_gesvd = 402,
     rocsolver_function_sterf = 403,
+    rocsolver_function_steqr = 404,
 } rocsolver_function;
 
 #endif /* ROCSOLVER_EXTRA_TYPES_H */
