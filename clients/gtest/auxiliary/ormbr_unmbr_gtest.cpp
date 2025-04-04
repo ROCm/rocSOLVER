@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -119,7 +119,7 @@ Arguments ormbr_setup_arguments(ormbr_tuple tup)
     if(store[4] == 0)
         arg.set<rocblas_int>("lda", nq + store[0] * 10);
     else
-        arg.set<rocblas_int>("lda", min(nq, k) + store[0] * 10);
+        arg.set<rocblas_int>("lda", std::min(nq, k) + store[0] * 10);
     arg.set<rocblas_int>("ldc", m + store[1] * 10);
     arg.set<char>("side", store[2] == 0 ? 'L' : 'R');
     arg.set<char>("trans", (store[3] == 0 ? 'N' : (store[3] == 1 ? 'T' : 'C')));

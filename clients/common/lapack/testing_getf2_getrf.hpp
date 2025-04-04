@@ -138,7 +138,7 @@ void getf2_getrf_initData(const rocblas_handle handle,
                           const I m,
                           const I n,
                           Td& dA,
-                          const I lda_arg,
+                          const I lda,
                           const rocblas_stride stA,
                           Id& dIpiv,
                           const rocblas_stride stP,
@@ -148,8 +148,6 @@ void getf2_getrf_initData(const rocblas_handle handle,
                           Uh& hIpiv,
                           const bool singular)
 {
-#define lda (static_cast<int64_t>(lda_arg))
-
     if(CPU)
     {
         T tmp;
@@ -187,7 +185,7 @@ void getf2_getrf_initData(const rocblas_handle handle,
                 // (always the same elements for debugging purposes).
                 // The algorithm must detect the first zero pivot in those
                 // matrices in the batch that are singular
-                I j = n / 4 + b;
+                int64_t j = n / 4 + b;
                 j -= (j / n) * n;
                 for(int64_t i = 0; i < m; i++)
                     hA[b][i + j * lda] = 0;
@@ -208,7 +206,6 @@ void getf2_getrf_initData(const rocblas_handle handle,
         // now copy data to the GPU
         CHECK_HIP_ERROR(dA.transfer_from(hA));
     }
-#undef lda
 }
 
 template <bool STRIDED, bool GETRF, typename T, typename I, typename Td, typename Id, typename Th, typename Ih, typename Uh>
@@ -274,7 +271,7 @@ void getf2_getrf_getError(const rocblas_handle handle,
 
         // also check pivoting (count the number of incorrect pivots)
         err = 0;
-        for(int64_t i = 0; i < min(m, n); ++i)
+        for(int64_t i = 0; i < std::min(m, n); ++i)
         {
             EXPECT_EQ(hIpiv[b][i], hIpivRes[b][i]) << "where b = " << b << ", i = " << i;
             if(hIpiv[b][i] != hIpivRes[b][i])
@@ -381,7 +378,7 @@ void testing_getf2_getrf(Arguments& argus)
     I n = argus.get<rocblas_int>("n", m);
     I lda = argus.get<rocblas_int>("lda", m);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
-    rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
+    rocblas_stride stP = argus.get<rocblas_stride>("strideP", std::min(m, n));
 
     I bc = argus.batch_count;
     int hot_calls = argus.iters;
@@ -394,7 +391,7 @@ void testing_getf2_getrf(Arguments& argus)
 
     // determine sizes
     size_t size_A = size_t(lda) * n;
-    size_t size_P = size_t(min(m, n));
+    size_t size_P = size_t(std::min(m, n));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
     size_t hashA = 0, hashARes = 0, hashIpivRes = 0;
 
@@ -534,7 +531,7 @@ void testing_getf2_getrf(Arguments& argus)
     // validate results for rocsolver-test
     // using min(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, std::min(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

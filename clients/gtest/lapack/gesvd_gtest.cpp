@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -129,7 +129,7 @@ Arguments gesvd_setup_arguments(gesvd_tuple tup)
     if(opt[4] == 2)
         arg.set<rocblas_int>("ldv", n + opt[2] * 10);
     else
-        arg.set<rocblas_int>("ldv", min(m, n) + opt[2] * 10);
+        arg.set<rocblas_int>("ldv", std::min(m, n) + opt[2] * 10);
 
     // vector options
     if(opt[3] == 0)

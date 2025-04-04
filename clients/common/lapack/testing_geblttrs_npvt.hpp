@@ -179,9 +179,9 @@ void geblttrs_npvt_initData(const rocblas_handle handle,
     {
         int info;
         int n = nb * nblocks;
-        std::vector<T> M(n * n);
-        std::vector<T> XX(n * nrhs);
-        std::vector<T> XB(n * nrhs);
+        std::vector<T> M(size_t(n) * n);
+        std::vector<T> XX(size_t(n) * nrhs);
+        std::vector<T> XB(size_t(n) * nrhs);
         std::vector<rocblas_int> ipiv(nb);
 
         // initialize blocks of the original matrix

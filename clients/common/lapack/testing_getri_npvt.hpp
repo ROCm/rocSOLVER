@@ -146,7 +146,7 @@ void getri_npvt_initData(const rocblas_handle handle,
                 // always the same elements for debugging purposes
                 // the algorithm must detect the first zero pivot in those
                 // matrices in the batch that are singular
-                rocblas_int i = n / 4 + b;
+                int64_t i = n / 4 + b;
                 i -= (i / n) * n;
                 hA[b][i + i * lda] = 0;
                 i = n / 2 + b;

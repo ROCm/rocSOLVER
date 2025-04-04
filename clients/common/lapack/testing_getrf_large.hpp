@@ -110,7 +110,7 @@ void getrf_large_initData(const rocblas_handle handle,
                 // (always the same elements for debugging purposes).
                 // The algorithm must detect the first zero pivot in those
                 // matrices in the batch that are singular
-                rocblas_int j = n / 4 + b;
+                int64_t j = n / 4 + b;
                 j -= (j / n) * n;
                 for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
@@ -201,7 +201,7 @@ void getrf_large_initData(const rocblas_handle handle,
                 // (always the same elements for debugging purposes).
                 // The algorithm must detect the first zero pivot in those
                 // matrices in the batch that are singular
-                rocblas_int j = n / 4 + b;
+                int64_t j = n / 4 + b;
                 j -= (j / n) * n;
                 for(int64_t i = 0; i < n; i++)
                     hA[b][i + j * lda] = 0;
@@ -469,7 +469,7 @@ void testing_getrf_large(Arguments& argus)
     // validate results for rocsolver-test
     // using min(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, min(n, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, std::min(n, n));
     // output results for rocsolver-bench
     if(argus.timing)
     {

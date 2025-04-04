@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,7 +71,7 @@ void rocblas_init_template(U& that, bool seedReset = false)
         auto n = that.n();
         if(inc < 0)
         {
-            batched_data -= (n - 1) * inc;
+            batched_data -= int64_t(n - 1) * inc;
         }
 
         for(int64_t i = 0; i < n; ++i)
@@ -102,7 +102,7 @@ void rocblas_init_nan_template(U& that, bool seedReset = false)
         auto n = that.n();
         if(inc < 0)
         {
-            batched_data -= (n - 1) * inc;
+            batched_data -= int64_t(n - 1) * inc;
         }
 
         for(int64_t i = 0; i < n; ++i)

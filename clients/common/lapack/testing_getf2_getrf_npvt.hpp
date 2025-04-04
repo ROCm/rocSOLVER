@@ -320,7 +320,7 @@ void testing_getf2_getrf_npvt(Arguments& argus)
     I n = argus.get<rocblas_int>("n", m);
     I lda = argus.get<rocblas_int>("lda", m);
     rocblas_stride stA = argus.get<rocblas_stride>("strideA", rocblas_stride(lda) * n);
-    rocblas_stride stP = argus.get<rocblas_stride>("strideP", min(m, n));
+    rocblas_stride stP = argus.get<rocblas_stride>("strideP", std::min(m, n));
 
     I bc = argus.batch_count;
     int hot_calls = argus.iters;
@@ -332,7 +332,7 @@ void testing_getf2_getrf_npvt(Arguments& argus)
 
     // determine sizes
     size_t size_A = size_t(lda) * n;
-    size_t size_P = size_t(min(m, n));
+    size_t size_P = size_t(std::min(m, n));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
@@ -462,7 +462,7 @@ void testing_getf2_getrf_npvt(Arguments& argus)
     // validate results for rocsolver-test
     // using min(m,n) * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, min(m, n));
+        ROCSOLVER_TEST_CHECK(T, max_error, std::min(m, n));
 
     // output results for rocsolver-bench
     if(argus.timing)

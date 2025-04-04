@@ -109,7 +109,7 @@ Arguments gesdd_setup_arguments(gesdd_tuple tup, bool notransv)
     if(notransv)
         arg.set<rocblas_int>("ldv", n + opt[2] * 10);
     else
-        arg.set<rocblas_int>("ldv", min(m, n) + opt[2] * 10);
+        arg.set<rocblas_int>("ldv", std::min(m, n) + opt[2] * 10);
 
     // vector options
     if(opt[3] == 0)
