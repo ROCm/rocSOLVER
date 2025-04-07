@@ -185,11 +185,16 @@ void potf2_potrf_getError(const rocblas_handle handle,
                           Uh& hInfo,
                           Ih& hInfoRes,
                           double* max_err,
-                          const bool singular)
+                          const bool singular,
+                          size_t& hashA,
+                          size_t& hashARes)
 {
     // input data initialization
     potf2_potrf_initData<true, true, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA, hInfo,
                                         singular);
+
+    // hash input
+    hashA = deterministic_hash(hA, bc);
 
     // execute computations
     // GPU lapack
@@ -197,6 +202,9 @@ void potf2_potrf_getError(const rocblas_handle handle,
                                               dInfo.data(), bc));
     CHECK_HIP_ERROR(hARes.transfer_from(dA));
     CHECK_HIP_ERROR(hInfoRes.transfer_from(dInfo));
+
+    // hash output
+    hashARes = deterministic_hash(hARes, bc);
 
     // CPU lapack
     for(I b = 0; b < bc; ++b)
@@ -321,7 +329,7 @@ void testing_potf2_potrf(Arguments& argus)
     I bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
+    rocblas_stride stARes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stA : 0;
 
     // check non-supported values
     if(uplo != rocblas_fill_upper && uplo != rocblas_fill_lower)
@@ -344,8 +352,9 @@ void testing_potf2_potrf(Arguments& argus)
     // determine sizes
     size_t size_A = size_t(lda) * n;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+    size_t hashA = 0, hashARes = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_A : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -414,10 +423,10 @@ void testing_potf2_potrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
             potf2_potrf_getError<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA,
                                                     hARes, hInfo, hInfoRes, &max_error,
-                                                    argus.singular);
+                                                    argus.singular, hashA, hashARes);
 
         // collect performance data
         if(argus.timing)
@@ -452,10 +461,10 @@ void testing_potf2_potrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
             potf2_potrf_getError<STRIDED, POTRF, T>(handle, uplo, n, dA, lda, stA, dInfo, bc, hA,
                                                     hARes, hInfo, hInfoRes, &max_error,
-                                                    argus.singular);
+                                                    argus.singular, hashA, hashARes);
 
         // collect performance data
         if(argus.timing)
@@ -502,6 +511,12 @@ void testing_potf2_potrf(Arguments& argus)
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();
+            if(argus.hash_check)
+            {
+                rocsolver_bench_output("hash(A)", "hash(ARes)");
+                rocsolver_bench_output(ROCSOLVER_FORMAT_HASH(hashA), ROCSOLVER_FORMAT_HASH(hashARes));
+                rocsolver_bench_endl();
+            }
         }
         else
         {

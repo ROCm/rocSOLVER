@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2018-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2018-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -113,14 +113,14 @@ public:
         return ptr;
     }
 
-    template <typename S_>
-    static auto Convert(const HostMatrix<S_, I_>& In) -> HostMatrix<T_, I_>
+    template <template <typename, typename> class HostMatrix_, typename TT_, typename II_>
+    static auto Convert(const HostMatrix_<TT_, II_>& In) -> HostMatrix<T_, I_>
     {
         HostMatrix<T_, I_> Out(In.nrows(), In.ncols());
 
         for(I i = 0; i < Out.size(); ++i)
         {
-            Out[i] = T(In[i]);
+            Out[i] = T_(In[i]);
         }
 
         return Out;
@@ -440,6 +440,7 @@ public:
 
         nrows_ = nrows;
         ncols_ = ncols;
+        ld_ = nrows;
 
         return true;
     }
@@ -1314,6 +1315,79 @@ auto eig_lower(const HostMatrix_<T, I>& A)
     }
 
     return std::make_tuple(U, Lambda);
+}
+
+template <template <typename, typename> class HostMatrix_, typename T, typename I>
+auto svd(const HostMatrix_<T, I>& A) -> std::tuple<HostMatrix_<T, I> /* Left Singular Vectors: U */,
+                                                   HostMatrix_<T, I> /* Singular Values */,
+                                                   HostMatrix_<T, I> /* Right Singular Vectors */>
+{
+    using S = typename HostMatrix_<T, I>::S;
+
+    I nrows = A.nrows();
+    I ncols = A.ncols();
+
+    I dim = std::min(nrows, ncols);
+    HostMatrix_<T, I> U(nrows, nrows), V(ncols, ncols), Sigma(nrows, ncols);
+    HostMatrix_<S, I> sigma_diag(dim, 1);
+
+    if constexpr(std::is_same<std::decay_t<I>, int>::value)
+    {
+        detail::lapack_ge_svd(A.data(), nrows, ncols, U.data(), sigma_diag.data(), V.data());
+    }
+    else
+    {
+        bool within_lapack_limits
+            = static_cast<std::int64_t>(nrows) * static_cast<std::int64_t>(ncols)
+                <= static_cast<std::int64_t>(std::numeric_limits<int>::max())
+            && static_cast<std::int64_t>(nrows)
+                <= static_cast<std::int64_t>(std::numeric_limits<int>::max())
+            && static_cast<std::int64_t>(ncols)
+                <= static_cast<std::int64_t>(std::numeric_limits<int>::max());
+
+        if(within_lapack_limits)
+        {
+            detail::lapack_ge_svd(A.data(), static_cast<int>(nrows), static_cast<int>(ncols),
+                                  U.data(), sigma_diag.data(), V.data());
+        }
+        else
+        {
+            throw std::domain_error(
+                "Error computing svd(A): A.nrows(), A.ncols(), A.nrows()*A.ncols() must be "
+                "smaller or equal to INT_MAX");
+        }
+    }
+
+    // Lapack *gesvd returns V^* instead of V.
+    Sigma.diag(HostMatrix_<T, I>::Convert(sigma_diag));
+    V = adjoint(V);
+    return std::make_tuple(U, Sigma, V);
+}
+
+template <template <typename, typename> class HostMatrix_, typename T, typename I>
+auto inv(const HostMatrix_<T, I>& A) -> HostMatrix_<T, I> /* Pseudo-Inverse of A */
+{
+    using S = typename HostMatrix_<T, I>::S;
+
+    auto [U, Sigma, V] = svd(A);
+    I nrows = A.nrows();
+    I ncols = A.ncols();
+    I dim = std::min(nrows, ncols);
+
+    for(I i = 0; i < dim; ++i)
+    {
+        if(std::abs(Sigma(i, i)) > std::max(std::numeric_limits<S>::min(), S(0)))
+        {
+            Sigma(i, i) = T(1) / Sigma(i, i);
+        }
+        else
+        {
+            Sigma(i, i) = T(0);
+        }
+    }
+
+    auto iA = adjoint(U * Sigma * adjoint(V));
+    return iA;
 }
 
 } // namespace matxu

@@ -226,11 +226,17 @@ void getf2_getrf_getError(const rocblas_handle handle,
                           Uh& hInfo,
                           Ih& hInfoRes,
                           double* max_err,
-                          const bool singular)
+                          const bool singular,
+                          size_t& hashA,
+                          size_t& hashARes,
+                          size_t& hashIpivRes)
 {
     // input data initialization
     getf2_getrf_initData<true, true, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA,
                                         hIpiv, singular);
+
+    // compute input hashes
+    hashA = deterministic_hash(hA, bc);
 
     // execute computations
     // GPU lapack
@@ -246,6 +252,10 @@ void getf2_getrf_getError(const rocblas_handle handle,
         GETRF ? cpu_getrf(m, n, hA[b], lda, hIpiv[b], hInfo[b])
               : cpu_getf2(m, n, hA[b], lda, hIpiv[b], hInfo[b]);
     }
+
+    // compute output hashes
+    hashARes = deterministic_hash(hARes, bc);
+    hashIpivRes = deterministic_hash(hIpivRes);
 
     // expecting original matrix to be non-singular
     // error is ||hA - hARes|| / ||hA|| (ideally ||LU - Lres Ures|| / ||LU||)
@@ -373,8 +383,8 @@ void testing_getf2_getrf(Arguments& argus)
     I bc = argus.batch_count;
     int hot_calls = argus.iters;
 
-    rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
-    rocblas_stride stPRes = (argus.unit_check || argus.norm_check) ? stP : 0;
+    rocblas_stride stARes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stA : 0;
+    rocblas_stride stPRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stP : 0;
 
     // check non-supported values
     // N/A
@@ -383,9 +393,10 @@ void testing_getf2_getrf(Arguments& argus)
     size_t size_A = size_t(lda) * n;
     size_t size_P = size_t(min(m, n));
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+    size_t hashA = 0, hashARes = 0, hashIpivRes = 0;
 
-    size_t size_ARes = (argus.unit_check || argus.norm_check) ? size_A : 0;
-    size_t size_PRes = (argus.unit_check || argus.norm_check) ? size_P : 0;
+    size_t size_ARes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_A : 0;
+    size_t size_PRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_P : 0;
 
     // check invalid sizes
     bool invalid_size = (m < 0 || n < 0 || lda < m || bc < 0);
@@ -460,10 +471,10 @@ void testing_getf2_getrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
-            getf2_getrf_getError<STRIDED, GETRF, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo,
-                                                    bc, hA, hARes, hIpiv, hIpivRes, hInfo, hInfoRes,
-                                                    &max_error, argus.singular);
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
+            getf2_getrf_getError<STRIDED, GETRF, T>(
+                handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hARes, hIpiv, hIpivRes,
+                hInfo, hInfoRes, &max_error, argus.singular, hashA, hashARes, hashIpivRes);
 
         // collect performance data
         if(argus.timing)
@@ -504,10 +515,10 @@ void testing_getf2_getrf(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
-            getf2_getrf_getError<STRIDED, GETRF, T>(handle, m, n, dA, lda, stA, dIpiv, stP, dInfo,
-                                                    bc, hA, hARes, hIpiv, hIpivRes, hInfo, hInfoRes,
-                                                    &max_error, argus.singular);
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
+            getf2_getrf_getError<STRIDED, GETRF, T>(
+                handle, m, n, dA, lda, stA, dIpiv, stP, dInfo, bc, hA, hARes, hIpiv, hIpivRes,
+                hInfo, hInfoRes, &max_error, argus.singular, hashA, hashARes, hashIpivRes);
 
         // collect performance data
         if(argus.timing)
@@ -555,6 +566,13 @@ void testing_getf2_getrf(Arguments& argus)
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();
+            if(argus.hash_check)
+            {
+                rocsolver_bench_output("hash(A)", "hash(ARes)", "hash(ipivRes)");
+                rocsolver_bench_output(ROCSOLVER_FORMAT_HASH(hashA), ROCSOLVER_FORMAT_HASH(hashARes),
+                                       ROCSOLVER_FORMAT_HASH(hashIpivRes));
+                rocsolver_bench_endl();
+            }
         }
         else
         {

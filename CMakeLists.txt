@@ -88,7 +88,7 @@ get_os_id(OS_ID)
 message(STATUS "OS detected is ${OS_ID}")
 
 # Versioning via rocm-cmake
-set(VERSION_STRING "3.28.0")
+set(VERSION_STRING "3.30.0")
 rocm_setup_version(VERSION ${VERSION_STRING})
 
 # Workaround until llvm and hip CMake modules fix symlink logic in their config files
@@ -164,27 +164,35 @@ message(STATUS "Benchmarks: ${BUILD_CLIENTS_BENCHMARKS}")
 message(STATUS "Samples: ${BUILD_CLIENTS_SAMPLES}")
 
 if(NOT DEFINED AMDGPU_TARGETS)
+  set(XNACK_PLUS_TARGETS
+    gfx90a:xnack+
+    gfx908:xnack+
+    gfx942:xnack+
+    gfx950:xnack+)
+  set(XNACK_MINUS_TARGETS gfx90a:xnack-)
+  set(MISC_TARGETS
+    gfx942
+    gfx950
+    gfx1100
+    gfx1101
+    gfx1102
+    gfx1151
+    gfx1200
+    gfx1201)
+  if(BUILD_ADDRESS_SANITIZER)
+    set(OPTIONAL_TARGETS_QUERY ${XNACK_PLUS_TARGETS})
+  else()
+    set(OPTIONAL_TARGETS_QUERY ${XNACK_MINUS_TARGETS} ${MISC_TARGETS})
+    set(DEFAULT_TARGETS
+      gfx900
+      gfx906:xnack-
+      gfx908:xnack-
+      gfx1010
+      gfx1030)
+  endif()
   # Query for compiler support of GPU archs
-  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS
-    TARGETS
-      gfx90a:xnack-
-      gfx90a:xnack+
-      gfx942
-      gfx1100
-      gfx1101
-      gfx1102
-      gfx1151
-      gfx1200
-      gfx1201
-  )
-  set(AMDGPU_TARGETS_INIT
-    gfx900
-    gfx906:xnack-
-    gfx908:xnack-
-    gfx1010
-    gfx1030
-    ${OPTIONAL_AMDGPU_TARGETS}
-  )
+  rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS TARGETS ${OPTIONAL_TARGETS_QUERY})
+  set(AMDGPU_TARGETS_INIT ${OPTIONAL_AMDGPU_TARGETS} ${DEFAULT_TARGETS})
 endif()
 
 # Set this before finding hip so that hip::device has the required arch flags
@@ -198,7 +206,7 @@ find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
 find_package(rocblas REQUIRED CONFIG PATHS ${ROCM_PATH})
 get_imported_target_location(location roc::rocblas)
 message(STATUS "Found rocBLAS: ${location}")
-set(rocblas_minimum 4.1)
+set(rocblas_minimum 4.4)
 rocm_package_add_dependencies(SHARED_DEPENDS "rocblas >= ${rocblas_minimum}")
 rocm_package_add_rpm_dependencies(STATIC_DEPENDS "rocblas-static-devel >= ${rocblas_minimum}")
 rocm_package_add_deb_dependencies(STATIC_DEPENDS "rocblas-static-dev >= ${rocblas_minimum}")

@@ -264,6 +264,15 @@ public:
         return ((bool)*this) ? hipSuccess : hipErrorOutOfMemory;
     }
 
+    //!
+    //! @brief Get size of vector
+    //! @return number of elements
+    //!
+    size_t size() const
+    {
+        return this->m_nmemb;
+    }
+
 private:
     storage m_storage{storage::block};
     int64_t m_n{};

@@ -406,7 +406,11 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
                           Vh& hInfo,
                           Vh& hInfoRes,
                           double* max_err,
-                          const bool singular)
+                          const bool singular,
+                          size_t& hashA,
+                          size_t& hashB,
+                          size_t& hashW,
+                          size_t& hashZ)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
 
@@ -424,6 +428,10 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
     sygvx_hegvx_initData<true, true, T>(handle, itype, evect, n, dA, lda, stA, dB, ldb, stB, bc, hA,
                                         hB, A, B, true, singular);
 
+    // hash inputs
+    hashA = deterministic_hash(hA, bc);
+    hashB = deterministic_hash(hB, bc);
+
     // execute computations
     // GPU lapack
     CHECK_ROCBLAS_ERROR(rocsolver_sygvx_hegvx(STRIDED, handle, itype, evect, erange, uplo, n,
@@ -439,6 +447,11 @@ void sygvx_hegvx_getError(const rocblas_handle handle,
         CHECK_HIP_ERROR(hZRes.transfer_from(dZ));
         CHECK_HIP_ERROR(hIfailRes.transfer_from(dIfail));
     }
+
+    // hash outputs
+    hashW = deterministic_hash(hWRes, bc);
+    if(evect != rocblas_evect_none)
+        hashZ = deterministic_hash(hZRes, bc);
 
     // CPU lapack
     // abstol = 0 ensures max accuracy in rocsolver; for lapack we should use 2*safemin
@@ -715,9 +728,9 @@ void testing_sygvx_hegvx(Arguments& argus)
     rocblas_int bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
-    rocblas_stride stWRes = (argus.unit_check || argus.norm_check) ? stW : 0;
-    rocblas_stride stZRes = (argus.unit_check || argus.norm_check) ? stZ : 0;
-    rocblas_stride stFRes = (argus.unit_check || argus.norm_check) ? stF : 0;
+    rocblas_stride stWRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stW : 0;
+    rocblas_stride stZRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stZ : 0;
+    rocblas_stride stFRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? stF : 0;
 
     // check non-supported values
     if(uplo == rocblas_fill_full || evect == rocblas_evect_tridiagonal)
@@ -751,10 +764,12 @@ void testing_sygvx_hegvx(Arguments& argus)
     size_t size_Z = size_t(ldz) * n;
     size_t size_ifail = size_W;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+    size_t hashA = 0, hashB = 0, hashW = 0, hashZ = 0;
 
-    size_t size_WRes = (argus.unit_check || argus.norm_check) ? size_W : 0;
-    size_t size_ZRes = (argus.unit_check || argus.norm_check) ? size_Z : 0;
-    size_t size_ifailRes = (argus.unit_check || argus.norm_check) ? size_ifail : 0;
+    size_t size_WRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_W : 0;
+    size_t size_ZRes = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_Z : 0;
+    size_t size_ifailRes
+        = (argus.unit_check || argus.norm_check || argus.hash_check) ? size_ifail : 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || ldb < n || (evect != rocblas_evect_none && ldz < n)
@@ -867,12 +882,12 @@ void testing_sygvx_hegvx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
-            sygvx_hegvx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
-                                             dB, ldb, stB, vl, vu, il, iu, abstol, dNev, dW, stW,
-                                             dZ, ldz, stZ, dIfail, stF, dInfo, bc, hA, hB, hNev,
-                                             hNevRes, hW, hWRes, hZ, hZRes, hIfail, hIfailRes,
-                                             hInfo, hInfoRes, &max_error, argus.singular);
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
+            sygvx_hegvx_getError<STRIDED, T>(
+                handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
+                abstol, dNev, dW, stW, dZ, ldz, stZ, dIfail, stF, dInfo, bc, hA, hB, hNev, hNevRes,
+                hW, hWRes, hZ, hZRes, hIfail, hIfailRes, hInfo, hInfoRes, &max_error,
+                argus.singular, hashA, hashB, hashW, hashZ);
 
         // collect performance data
         if(argus.timing)
@@ -916,12 +931,12 @@ void testing_sygvx_hegvx(Arguments& argus)
         }
 
         // check computations
-        if(argus.unit_check || argus.norm_check)
-            sygvx_hegvx_getError<STRIDED, T>(handle, itype, evect, erange, uplo, n, dA, lda, stA,
-                                             dB, ldb, stB, vl, vu, il, iu, abstol, dNev, dW, stW,
-                                             dZ, ldz, stZ, dIfail, stF, dInfo, bc, hA, hB, hNev,
-                                             hNevRes, hW, hWRes, hZ, hZRes, hIfail, hIfailRes,
-                                             hInfo, hInfoRes, &max_error, argus.singular);
+        if(argus.unit_check || argus.norm_check || argus.hash_check)
+            sygvx_hegvx_getError<STRIDED, T>(
+                handle, itype, evect, erange, uplo, n, dA, lda, stA, dB, ldb, stB, vl, vu, il, iu,
+                abstol, dNev, dW, stW, dZ, ldz, stZ, dIfail, stF, dInfo, bc, hA, hB, hNev, hNevRes,
+                hW, hWRes, hZ, hZRes, hIfail, hIfailRes, hInfo, hInfoRes, &max_error,
+                argus.singular, hashA, hashB, hashW, hashZ);
 
         // collect performance data
         if(argus.timing)
@@ -978,6 +993,13 @@ void testing_sygvx_hegvx(Arguments& argus)
                 rocsolver_bench_output(cpu_time_used, gpu_time_used);
             }
             rocsolver_bench_endl();
+            if(argus.hash_check)
+            {
+                rocsolver_bench_output("hash(A)", "hash(B)", "hash(W)", "hash(Z)");
+                rocsolver_bench_output(ROCSOLVER_FORMAT_HASH(hashA), ROCSOLVER_FORMAT_HASH(hashB),
+                                       ROCSOLVER_FORMAT_HASH(hashW), ROCSOLVER_FORMAT_HASH(hashZ));
+                rocsolver_bench_endl();
+            }
         }
         else
         {
