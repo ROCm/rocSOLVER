@@ -8,17 +8,19 @@
 rocSOLVER Memory Model
 *******************************
 
-Almost all LAPACK and rocSOLVER routines require workspace memory in order to compute their results. In contrast to LAPACK, however, pointers to the workspace are not explicitly passed to rocSOLVER functions as arguments; instead, they are managed behind-the-scenes using a configurable device memory model.
+Almost all LAPACK and rocSOLVER routines require workspace memory in order to compute their results. In contrast to LAPACK,
+however, pointers to the workspace are not explicitly passed to rocSOLVER functions as arguments; instead, they are
+managed behind-the-scenes using a configurable device memory model.
 
-rocSOLVER makes use of and is integrated with :doc:`the rocBLAS memory model <rocblas:reference/memory-alloc>`. Workspace memory, and the scheme used to manage it, is tracked on a per- ``rocblas_handle`` basis. The same functionality that is used to manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory.
+rocSOLVER makes use of and is integrated with :doc:`the rocBLAS memory model <rocblas:reference/memory-alloc>`. Workspace memory,
+and the scheme used to manage it, is tracked on a per- ``rocblas_handle`` basis. The same functionality that is used to
+manipulate rocBLAS's workspace memory will also affect rocSOLVER's workspace memory.
 You can also refer to the rocBLAS :ref:`rocblas:Device Memory allocation in detail` documentation.
 
-There are four schemes for device memory management:
+There are two schemes for device memory management:
 
 * Automatic (managed by rocSOLVER/rocBLAS): The default scheme. Device memory persists between function
   calls and will be automatically reallocated if more memory is required by a function.
-* User-managed (preallocated): The desired workspace size is specified by the user as an environment variable before handle creation, and cannot be altered after the handle is created.
-* User-managed (manual): The desired workspace size can be manipulated using rocBLAS helper functions.
 * User-owned: The user manually allocates device memory and calls a rocBLAS helper function to use it
   as the workspace.
 
