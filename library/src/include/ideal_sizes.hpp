@@ -275,14 +275,14 @@
     within the LDS share memory using compact storage.
     The amount of LDS shared memory is assumed to be at least (64 * 1024) bytes. */
 #ifndef POTF2_MAX_SMALL_SIZE
-#define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
+#define POTF2_MAX_SMALL_SIZE(T) ((sizeof(T) == 4) ? 128 : (sizeof(T) == 8) ? 127 : 90)
 #endif
 
 /*! \brief Determines the size of the leading block that is factorized at each step
     when using the blocked algorithm (POTRF). It also applies to the
     corresponding batched and strided-batched routines.*/
 #ifndef POTRF_BLOCKSIZE
-#define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4) ? 180 : (sizeof(T) == 8) ? 127 : 90)
+#define POTRF_BLOCKSIZE(T) ((sizeof(T) == 4) ? 128 : (sizeof(T) == 8) ? 127 : 90)
 #endif
 
 /*! \brief Determines the size at which rocSOLVER switches from

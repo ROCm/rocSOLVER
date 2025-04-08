@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -51,12 +51,8 @@ ROCSOLVER_BEGIN_NAMESPACE
  **/
 
 template <typename I>
-__device__ static I idx_upper(I i, I j, I n)
+inline __device__ static I idx_upper(I i, I j, I n)
 {
-    assert((0 <= i) && (i <= (n - 1)));
-    assert((0 <= j) && (j <= (n - 1)));
-    assert(i <= j);
-
     return (i + (j * (j + 1)) / 2);
 }
 
@@ -73,12 +69,8 @@ __device__ static I idx_upper(I i, I j, I n)
  * ---------------------------
  **/
 template <typename I>
-__device__ static I idx_lower(I i, I j, I n)
+inline __device__ static I idx_lower(I i, I j, I n)
 {
-    assert((0 <= i) && (i <= (n - 1)));
-    assert((0 <= j) && (j <= (n - 1)));
-    assert(i >= j);
-
     return ((i - j) + (j * (2 * n + 1 - j)) / 2);
 }
 
@@ -89,23 +81,24 @@ __device__ static I idx_lower(I i, I j, I n)
  * ------------------------------------------------------
 **/
 template <typename T, typename I, typename INFO>
-__device__ static void potf2_simple(bool const is_upper, I const n, T* const A, INFO* const info)
+inline __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, INFO* const info)
 {
-    auto const lda = n;
+    bool constexpr is_complex = rocblas_is_complex<T>;
+    I const lda = n;
     bool const is_lower = (!is_upper);
 
-    auto const i_start = hipThreadIdx_x;
-    auto const i_inc = hipBlockDim_x;
-    auto const j_start = hipThreadIdx_y;
-    auto const j_inc = hipBlockDim_y;
+    I const i_start = hipThreadIdx_x;
+    I const i_inc = hipBlockDim_x;
+    I const j_start = hipThreadIdx_y;
+    I const j_inc = hipBlockDim_y;
     assert(hipBlockDim_z == 1);
 
-    auto const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
+    I const tid = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x
         + hipThreadIdx_z * (hipBlockDim_x * hipBlockDim_y);
-    auto const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
+    I const nthreads = (hipBlockDim_x * hipBlockDim_y) * hipBlockDim_z;
 
-    auto const j0_start = tid;
-    auto const j0_inc = nthreads;
+    I const j0_start = tid;
+    I const j0_inc = nthreads;
 
     if(is_lower)
     {
@@ -154,13 +147,11 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
             // ------------------------------------------------------------
 
             auto const conj_lkk = conj(lkk);
-            auto const inv_conj_lkk = 1.0 / conj_lkk;
             for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
             {
                 auto const j0k = idx_lower(j0, kcol, lda);
 
-                // A[j0k] = (A[j0k] / conj_lkk);
-                A[j0k] = (A[j0k] * inv_conj_lkk);
+                A[j0k] = (A[j0k] / conj_lkk);
             }
 
             __syncthreads();
@@ -176,13 +167,10 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
                 auto const vj = A[idx_lower(j, kcol, lda)];
                 for(I i = j + i_start; i < n; i += i_inc)
                 {
-                    assert(i >= j);
-                    {
-                        auto const vi = A[idx_lower(i, kcol, lda)];
-                        auto const ij = idx_lower(i, j, lda);
+                    auto const vi = A[idx_lower(i, kcol, lda)];
+                    auto const ij = idx_lower(i, j, lda);
 
-                        A[ij] = A[ij] - vi * conj(vj);
-                    }
+                    A[ij] = A[ij] - vi * conj(vj);
                 }
             }
 
@@ -233,13 +221,11 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
             // ----------------------------------------------
             // (2) vU12' * u11 = vA12', or u11' * vU12 = vA12
             // ----------------------------------------------
-            auto const inv_ukk = 1.0 / ukk;
             for(I j0 = (kcol + 1) + j0_start; j0 < n; j0 += j0_inc)
             {
                 auto const kj0 = idx_upper(kcol, j0, lda);
 
-                // A[kj0] = A[kj0] / ukk;
-                A[kj0] = A[kj0] * inv_ukk;
+                A[kj0] = A[kj0] / ukk;
             }
 
             __syncthreads();
@@ -254,13 +240,10 @@ __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, 
                 auto const vj = A[idx_upper(kcol, j, lda)];
                 for(I i = (kcol + 1) + i_start; i <= j; i += i_inc)
                 {
-                    assert(i <= j);
-                    {
-                        auto const vi = A[idx_upper(kcol, i, lda)];
-                        auto const ij = idx_upper(i, j, lda);
+                    auto const vi = A[idx_upper(kcol, i, lda)];
+                    auto const ij = idx_upper(i, j, lda);
 
-                        A[ij] = A[ij] - conj(vi) * vj;
-                    }
+                    A[ij] = A[ij] - conj(vi) * vj;
                 }
             }
 
@@ -283,112 +266,121 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
                                          const rocblas_stride shiftA,
                                          const I lda,
                                          const rocblas_stride strideA,
-                                         INFO* const info)
+                                         INFO* const info,
+                                         I const batch_count)
 {
+    bool constexpr is_complex = rocblas_is_complex<T>;
     bool const is_lower = (!is_upper);
 
-    auto const i_start = hipThreadIdx_x;
-    auto const i_inc = hipBlockDim_x;
-    auto const j_start = hipThreadIdx_y;
-    auto const j_inc = hipBlockDim_y;
+    I const i_start = hipThreadIdx_x;
+    I const i_inc = hipBlockDim_x;
+    I const j_start = hipThreadIdx_y;
+    I const j_inc = hipBlockDim_y;
     assert(hipBlockDim_z == 1);
 
     // --------------------------------
     // note hipGridDim_z == batch_count
     // --------------------------------
-    auto const bid = hipBlockIdx_z;
+    I const bid_start = hipBlockIdx_z;
+    I const bid_inc = hipGridDim_z;
+
     assert(AA != nullptr);
     assert(info != nullptr);
 
-    T* const A = load_ptr_batch(AA, bid, shiftA, strideA);
-    INFO* const info_bid = info + bid;
-
-    assert(A != nullptr);
-
-    // -----------------------------------------
-    // assume n by n matrix will fit in LDS cache
-    // -----------------------------------------
-    extern __shared__ rocblas_int lsmem[];
-    T* Ash = reinterpret_cast<T*>(lsmem);
-
-    // --------------------------------------------------------
-    // factoring Lower triangular matrix may be slightly faster
-    // due to simpler index calculation down a column
-    // --------------------------------------------------------
-    bool const use_compute_lower = true;
-
-    // ------------------------------------
-    // copy n by n packed matrix into shared memory
-    // ------------------------------------
-    __syncthreads();
-
-    if(is_lower)
+    for(I bid = bid_start; bid < batch_count; bid += bid_inc)
     {
-        for(I j = j_start; j < n; j += j_inc)
-        {
-            for(I i = j + i_start; i < n; i += i_inc)
-            {
-                auto const ij = i + j * static_cast<int64_t>(lda);
-                auto const ij_packed = idx_lower(i, j, n);
+        T* const __restrict__ A = load_ptr_batch(AA, bid, shiftA, strideA);
+        INFO* const info_bid = info + bid;
 
-                Ash[ij_packed] = A[ij];
+        assert(A != nullptr);
+
+        // -----------------------------------------
+        // assume n by n matrix will fit in LDS cache
+        // -----------------------------------------
+        extern __shared__ rocblas_int lsmem[];
+        T* __restrict__ Ash = reinterpret_cast<T*>(lsmem);
+
+        // --------------------------------------------------------
+        // factoring Lower triangular matrix may be slightly faster
+        // due to simpler index calculation down a column
+        // --------------------------------------------------------
+        bool const use_compute_lower = true;
+
+        // ------------------------------------
+        // copy n by n packed matrix into shared memory
+        // ------------------------------------
+        __syncthreads();
+
+        if(is_lower)
+        {
+            for(I j = j_start; j < n; j += j_inc)
+            {
+                for(I i = j + i_start; i < n; i += i_inc)
+                {
+                    auto const ij = i + j * static_cast<int64_t>(lda);
+                    auto const ij_packed = idx_lower(i, j, n);
+
+                    Ash[ij_packed] = A[ij];
+                }
             }
         }
-    }
-    else
-    {
-        for(I j = j_start; j < n; j += j_inc)
+        else
         {
-            for(I i = i_start; i <= j; i += i_inc)
+            for(I j = j_start; j < n; j += j_inc)
             {
-                auto const ij = i + j * static_cast<int64_t>(lda);
-                auto const ij_packed = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
+                for(I i = i_start; i <= j; i += i_inc)
+                {
+                    auto const ij = i + j * static_cast<int64_t>(lda);
+                    auto const ij_packed
+                        = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
 
-                auto const aij = A[ij];
-                Ash[ij_packed] = (use_compute_lower) ? conj(aij) : aij;
+                    auto const aij = A[ij];
+                    Ash[ij_packed] = (use_compute_lower) ? conj(aij) : aij;
+                }
             }
         }
-    }
 
-    __syncthreads();
+        __syncthreads();
 
-    bool const is_up = (use_compute_lower) ? false : is_upper;
-    potf2_simple<T>(is_up, n, Ash, info_bid);
+        bool const is_up = (use_compute_lower) ? false : is_upper;
+        potf2_simple<T>(is_up, n, Ash, info_bid);
 
-    __syncthreads();
+        __syncthreads();
 
-    // -------------------------------------
-    // copy n by n packed matrix into global memory
-    // -------------------------------------
-    if(is_lower)
-    {
-        for(I j = j_start; j < n; j += j_inc)
+        // -------------------------------------
+        // copy n by n packed matrix into global memory
+        // -------------------------------------
+        if(is_lower)
         {
-            for(I i = j + i_start; i < n; i += i_inc)
+            for(I j = j_start; j < n; j += j_inc)
             {
-                auto const ij = i + j * static_cast<int64_t>(lda);
-                auto const ij_packed = idx_lower(i, j, n);
+                for(I i = j + i_start; i < n; i += i_inc)
+                {
+                    auto const ij = i + j * static_cast<int64_t>(lda);
+                    auto const ij_packed = idx_lower(i, j, n);
 
-                A[ij] = Ash[ij_packed];
+                    A[ij] = Ash[ij_packed];
+                }
             }
         }
-    }
-    else
-    {
-        for(I j = j_start; j < n; j += j_inc)
+        else
         {
-            for(I i = i_start; i <= j; i += i_inc)
+            for(I j = j_start; j < n; j += j_inc)
             {
-                auto const ij = i + j * static_cast<int64_t>(lda);
-                auto const ij_packed = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
+                for(I i = i_start; i <= j; i += i_inc)
+                {
+                    auto const ij = i + j * static_cast<int64_t>(lda);
+                    auto const ij_packed
+                        = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
 
-                auto const aij_packed = Ash[ij_packed];
-                A[ij] = (use_compute_lower) ? conj(aij_packed) : aij_packed;
+                    auto const aij_packed = Ash[ij_packed];
+                    A[ij] = (use_compute_lower) ? conj(aij_packed) : aij_packed;
+                }
             }
         }
-    }
 
-    __syncthreads();
+        __syncthreads();
+    }
 }
 
 /*************************************************************
@@ -406,18 +398,23 @@ rocblas_status potf2_run_small(rocblas_handle handle,
                                INFO* info,
                                const I batch_count)
 {
-    ROCSOLVER_ENTER("potf2_kernel_small", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
+    ROCSOLVER_ENTER("potf2_run_small", "uplo:", uplo, "n:", n, "shiftA:", shiftA, "lda:", lda,
                     "bc:", batch_count);
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    size_t lmemsize = sizeof(T) * (n * (n + 1)) / 2;
+    size_t const lmemsize = sizeof(T) * (n * (n + 1)) / 2;
+    assert((1 <= lmemsize) && (lmemsize <= 64 * 1024));
 
     bool const is_upper = (uplo == rocblas_fill_upper);
-    ROCSOLVER_LAUNCH_KERNEL((potf2_kernel_small<T, I, INFO, U>), dim3(1, 1, batch_count),
-                            dim3(BS2, BS2, 1), lmemsize, stream, is_upper, n, A, shiftA, lda,
-                            strideA, info);
+    I const max_blocks = 1024;
+    I const lbatch_count = std::min(batch_count, max_blocks);
+    I const NX = 32;
+    I const NY = 32;
+    ROCSOLVER_LAUNCH_KERNEL((potf2_kernel_small<T, I, INFO, U>), dim3(1, 1, lbatch_count),
+                            dim3(NX, NY, 1), lmemsize, stream, is_upper, n, A, shiftA, lda, strideA,
+                            info, batch_count);
 
     return rocblas_status_success;
 }
