@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,6 +38,18 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
+
+template <typename I>
+static __device__ __host__ I split_n(I const n)
+{
+    assert(n >= 2);
+    auto const n_over_2 = n / 2;
+    auto const n1 = (rocsolver_is_po2(n_over_2)) ? n_over_2 : rocsolver_previous_po2(n_over_2);
+    auto const n2 = n - n1;
+    bool const is_valid = (n1 >= 1) && (n2 >= 1);
+
+    return ((is_valid) ? n1 : 1);
+};
 
 template <typename I>
 static I get_lds_size()
@@ -138,8 +150,8 @@ void rocsolver_potrf_getMemorySize(const I n,
     else
     {
         // requirements for recursive POTRF
-        auto const n2 = n / 2;
-        auto const n1 = n - n2;
+        auto const n1 = split_n(n);
+        auto const n2 = n - n1;
 
         size_t w11 = 0, w12 = 0, w13 = 0;
         size_t w21 = 0, w22 = 0, w23 = 0;
@@ -230,7 +242,6 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
     dim3 threads(BS1, 1, 1);
 
     // constants for rocblas functions calls
-    T t_one = 1;
     S s_one = 1;
     S s_minone = -1;
 
@@ -332,8 +343,8 @@ rocblas_status rocsolver_potrf_recursive_template(rocblas_handle handle,
     // -------------------------------------------------
     else
     {
-        auto const n2 = n / 2;
-        auto const n1 = n - n2;
+        auto const n1 = split_n(n);
+        auto const n2 = n - n1;
 
         if(uplo == rocblas_fill_upper)
         {
@@ -460,7 +471,6 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
                                            batch_count, scalars, (T*)work1, pivots);
 
     // constants for rocblas functions calls
-    T t_one = 1;
     S s_one = 1;
     S s_minone = -1;
 
