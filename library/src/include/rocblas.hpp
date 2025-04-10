@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -2257,33 +2257,80 @@ rocblas_status rocblasCall_trsm_mem(rocblas_side side,
                                     size_t* invA,
                                     size_t* invA_arr)
 {
-    size_t no_opt_size = 0;
-    /** TODO: For now, we always request the size for optimal performance.
+    *x_temp = 0;
+    *x_temp_arr = 0;
+    *invA = 0;
+    *invA_arr = 0;
+
+    bool const has_work = (m >= 1) && (n >= 1) && (batch_count >= 1);
+    if(!has_work)
+    {
+        return (rocblas_status_success);
+    }
+
+    bool constexpr use_max_size = true;
+
+    if(!use_max_size)
+    {
+        size_t no_opt_size = 0;
+        /** TODO: For now, we always request the size for optimal performance.
         no_opt_size could be used in the future if we generalize the use of
         rocblas_workmode parameter **/
 
-    // can't infer batched based on input params
-    if constexpr(std::is_same<I, int64_t>::value)
-    {
-        if constexpr(BATCHED)
-            return rocblas_internal_trsm_batched_workspace_size_64<T>(
-                side, transA, m, n, lda, ldb, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr,
-                &no_opt_size);
+        // can't infer batched based on input params
+        if constexpr(std::is_same<I, int64_t>::value)
+        {
+            if constexpr(BATCHED)
+                return rocblas_internal_trsm_batched_workspace_size_64<T>(
+                    side, transA, m, n, lda, ldb, batch_count, 0, x_temp, x_temp_arr, invA,
+                    invA_arr, &no_opt_size);
+            else
+                return rocblas_internal_trsm_workspace_size_64<T>(
+                    side, transA, m, n, lda, ldb, batch_count, 0,
+
+                    x_temp, x_temp_arr, invA, invA_arr, &no_opt_size);
+        }
         else
-            return rocblas_internal_trsm_workspace_size_64<T>(side, transA, m, n, lda, ldb,
-                                                              batch_count, 0, x_temp, x_temp_arr,
-                                                              invA, invA_arr, &no_opt_size);
+        {
+            if constexpr(BATCHED)
+                return rocblas_internal_trsm_batched_workspace_size<T>(
+                    side, transA, m, n, batch_count, 0, x_temp, x_temp_arr, invA, invA_arr,
+                    &no_opt_size);
+            else
+                return rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0,
+                                                               x_temp, x_temp_arr, invA, invA_arr,
+                                                               &no_opt_size);
+        }
     }
     else
     {
-        if constexpr(BATCHED)
-            return rocblas_internal_trsm_batched_workspace_size<T>(side, transA, m, n, batch_count,
-                                                                   0, x_temp, x_temp_arr, invA,
-                                                                   invA_arr, &no_opt_size);
-        else
-            return rocblas_internal_trsm_workspace_size<T>(side, transA, m, n, batch_count, 0, x_temp,
-                                                           x_temp_arr, invA, invA_arr, &no_opt_size);
+        // ------------
+        // use max_size
+        // ------------
+
+        int64_t mm = m;
+        int64_t nn = n;
+        int64_t lbatch_count = batch_count;
+
+        size_t w_x_tmp_size = 0;
+        size_t w_x_tmp_arr_size = 0;
+        size_t w_invA_size = 0;
+        size_t w_invA_arr_size = 0;
+        size_t w_x_tmp_size_backup = 0;
+
+        auto const istat = rocblas_internal_trsm_batched_workspace_max_size_64<T>(
+            side, mm, nn, lbatch_count,
+
+            &w_x_tmp_size, &w_x_tmp_arr_size, &w_invA_size, &w_invA_arr_size, &w_x_tmp_size_backup);
+
+        *x_temp = w_x_tmp_size;
+        *x_temp_arr = w_x_tmp_arr_size;
+        *invA = w_invA_size;
+        *invA_arr = w_invA_arr_size;
+
+        return (istat);
     }
+    return (rocblas_status_success);
 }
 
 // trsm

@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1165,8 +1165,6 @@ ROCSOLVER_KERNEL void scal_kernel(I const n, S const da, T* const x, I const inc
     I const i_start = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
     I const i_inc = hipBlockDim_x * hipGridDim_x;
 
-    S const zero = 0;
-    bool const is_da_zero = (da == zero);
     if(incx == 1)
     {
         for(I i = i_start; i < n; i += i_inc)
