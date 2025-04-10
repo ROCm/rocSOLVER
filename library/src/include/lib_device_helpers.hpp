@@ -1289,4 +1289,45 @@ ROCSOLVER_KERNEL void swap_kernel(I const n, T* const x, I const incx, T* const 
     }
 }
 
+// Is power of two
+template <typename I>
+inline static __device__ __host__ I rocsolver_is_po2(I const n)
+{
+    return (n > 0) && ((n & (n - 1)) == 0);
+}
+
+// Return next power of two
+template <typename I>
+inline static __device__ __host__ I rocsolver_next_po2(I n)
+{
+    if(n == 0)
+    {
+        return (1);
+    };
+
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    if(sizeof(I) > 4)
+    {
+        n |= n >> 32;
+    }
+    n++;
+    return n;
+}
+
+// Return previous power of two
+inline static __device__ __host__ constexpr rocblas_int rocsolver_previous_po2(rocblas_int n)
+{
+    if(rocsolver_is_po2(n))
+    {
+        return n;
+    };
+
+    return (rocsolver_next_po2(n) / 2);
+}
+
 ROCSOLVER_END_NAMESPACE
