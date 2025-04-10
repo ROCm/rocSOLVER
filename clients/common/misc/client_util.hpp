@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -70,10 +70,10 @@
     F(STAMP, ##__VA_ARGS__, double)                \
     F(STAMP, ##__VA_ARGS__, rocblas_float_complex) \
     F(STAMP, ##__VA_ARGS__, rocblas_double_complex)
-#define FOREACH_MATRIX_DATA_LAYOUT(STAMP, F, ...) \
-    F(STAMP, ##__VA_ARGS__, false, false) // single  \
-    F(STAMP, ##__VA_ARGS__, true, true)   // batched \
-    F(STAMP, ##__VA_ARGS__, false, true)  // strided_batched
+#define FOREACH_MATRIX_DATA_LAYOUT(STAMP, F, ...)      \
+    F(STAMP, ##__VA_ARGS__, false, false) /* single */ \
+    F(STAMP, ##__VA_ARGS__, true, true) /* batched */  \
+    F(STAMP, ##__VA_ARGS__, false, true) /* strided_batched */
 
 /*  This macro is not strictly necessary. It's does the same thing as any of the FOREACH
     functions, but it doesn't append any values. It exists as the top-level function of the
