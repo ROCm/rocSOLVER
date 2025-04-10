@@ -1311,7 +1311,7 @@ inline static __device__ __host__ I rocsolver_next_po2(I n)
     n |= n >> 4;
     n |= n >> 8;
     n |= n >> 16;
-    if(sizeof(I) > 4)
+    if constexpr(sizeof(I) > 4)
     {
         n |= n >> 32;
     }
