@@ -83,7 +83,6 @@ inline __device__ static I idx_lower(I i, I j, I n)
 template <typename T, typename I, typename INFO>
 inline __device__ static void potf2_simple(bool const is_upper, I const n, T* const A, INFO* const info)
 {
-    bool constexpr is_complex = rocblas_is_complex<T>;
     I const lda = n;
     bool const is_lower = (!is_upper);
 
