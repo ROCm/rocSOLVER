@@ -164,12 +164,13 @@ inline __device__ static void potf2_simple(bool const is_upper, I const n, T* co
             for(I j = (kcol + 1) + j_start; j < n; j += j_inc)
             {
                 auto const vj = A[idx_lower(j, kcol, lda)];
+                auto const conj_vj = conj(vj);
                 for(I i = j + i_start; i < n; i += i_inc)
                 {
                     auto const vi = A[idx_lower(i, kcol, lda)];
                     auto const ij = idx_lower(i, j, lda);
 
-                    A[ij] = A[ij] - vi * conj(vj);
+                    A[ij] = A[ij] - vi * conj_vj;
                 }
             }
 
@@ -250,6 +251,7 @@ inline __device__ static void potf2_simple(bool const is_upper, I const n, T* co
 
         } // end for kcol
     }
+    __syncthreads();
 }
 
 /*************************************************************
