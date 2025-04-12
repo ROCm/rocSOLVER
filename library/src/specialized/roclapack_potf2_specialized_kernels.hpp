@@ -268,7 +268,6 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
                                          INFO* const info,
                                          I const batch_count)
 {
-    bool constexpr is_complex = rocblas_is_complex<T>;
     bool const is_lower = (!is_upper);
 
     I const i_start = hipThreadIdx_x;
@@ -285,6 +284,11 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
 
     assert(AA != nullptr);
     assert(info != nullptr);
+
+    // -------------------------------------------------------
+    // assume small sub-matrix so no need for 64bit arithmetic
+    // -------------------------------------------------------
+    auto idx2D_small = [](auto i, auto j, auto ld) { return (i + j * ld); };
 
     for(I bid = bid_start; bid < batch_count; bid += bid_inc)
     {
@@ -314,10 +318,14 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(I j = j_start; j < n; j += j_inc)
             {
+                I const i = j;
+                auto const ij_offset = idx2D_small(i, j, lda);
+                auto const ij_packed_offset = idx_lower(i, j, n);
+
                 for(I i = j + i_start; i < n; i += i_inc)
                 {
-                    auto const ij = i + j * static_cast<int64_t>(lda);
-                    auto const ij_packed = idx_lower(i, j, n);
+                    auto const ij = (i - j) + ij_offset;
+                    auto const ij_packed = (i - j) + ij_packed_offset;
 
                     Ash[ij_packed] = A[ij];
                 }
@@ -327,9 +335,12 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(I j = j_start; j < n; j += j_inc)
             {
-                for(I i = i_start; i <= j; i += i_inc)
+                I const i = 0;
+                auto const ij_offset = idx2D_small(i, j, lda);
+
+                for(I i = 0 + i_start; i <= j; i += i_inc)
                 {
-                    auto const ij = i + j * static_cast<int64_t>(lda);
+                    auto const ij = (i - 0) + ij_offset;
                     auto const ij_packed
                         = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
 
@@ -353,10 +364,14 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(I j = j_start; j < n; j += j_inc)
             {
+                I const i = j;
+                auto const ij_offset = idx2D_small(i, j, lda);
+                auto const ij_packed_offset = idx_lower(i, j, n);
+
                 for(I i = j + i_start; i < n; i += i_inc)
                 {
-                    auto const ij = i + j * static_cast<int64_t>(lda);
-                    auto const ij_packed = idx_lower(i, j, n);
+                    auto const ij = (i - j) + ij_offset;
+                    auto const ij_packed = (i - j) + ij_packed_offset;
 
                     A[ij] = Ash[ij_packed];
                 }
@@ -366,9 +381,12 @@ ROCSOLVER_KERNEL void potf2_kernel_small(const bool is_upper,
         {
             for(I j = j_start; j < n; j += j_inc)
             {
-                for(I i = i_start; i <= j; i += i_inc)
+                I const i = 0;
+                auto const ij_offset = idx2D_small(i, j, lda);
+
+                for(I i = 0 + i_start; i <= j; i += i_inc)
                 {
-                    auto const ij = i + j * static_cast<int64_t>(lda);
+                    auto const ij = (i - 0) + ij_offset;
                     auto const ij_packed
                         = (use_compute_lower) ? idx_lower(j, i, n) : idx_upper(i, j, n);
 
