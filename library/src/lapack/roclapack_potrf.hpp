@@ -137,13 +137,13 @@ void rocsolver_potrf_getMemorySize(const I n,
         // extra requirements for calling TRSM
         if(uplo == rocblas_fill_upper)
         {
-            rocsolver_trsm_max_mem<BATCHED, STRIDED, T>(
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(
                 rocblas_side_left, rocblas_operation_conjugate_transpose, jb, n - jb, batch_count,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
         }
         else
         {
-            rocsolver_trsm_max_mem<BATCHED, STRIDED, T>(
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(
                 rocblas_side_right, rocblas_operation_conjugate_transpose, n - jb, jb, batch_count,
                 &s2, size_work2, size_work3, size_work4, optim_mem);
         }
@@ -177,15 +177,15 @@ void rocsolver_potrf_getMemorySize(const I n,
         // extra requirements for calling TRSM
         if(uplo == rocblas_fill_upper)
         {
-            rocsolver_trsm_max_mem<BATCHED, STRIDED, T>(rocblas_side_left,
-                                                        rocblas_operation_conjugate_transpose, n1, n2,
-                                                        batch_count, &w13, &w23, &w33, &w43, &opt3);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left,
+                                                    rocblas_operation_conjugate_transpose, n1, n2,
+                                                    batch_count, &w13, &w23, &w33, &w43, &opt3);
         }
         else
         {
-            rocsolver_trsm_max_mem<BATCHED, STRIDED, T>(rocblas_side_right,
-                                                        rocblas_operation_conjugate_transpose, n2, n1,
-                                                        batch_count, &w13, &w23, &w33, &w43, &opt3);
+            rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_right,
+                                                    rocblas_operation_conjugate_transpose, n2, n1,
+                                                    batch_count, &w13, &w23, &w33, &w43, &opt3);
         }
 
         *size_work1 = std::max({w11, w12, w13});
