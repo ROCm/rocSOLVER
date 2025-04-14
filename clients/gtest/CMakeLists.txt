@@ -178,7 +178,7 @@ if(WIN32)
 endif()
 
 target_link_libraries(rocsolver-test PRIVATE
-  GTest::GTest
+  GTest::gtest
   hip::device
   rocsolver-common
   clients-common
