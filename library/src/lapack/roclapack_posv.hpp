@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -171,9 +171,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
     const rocblas_int copyblocksy = (nrhs - 1) / 32 + 1;
 
     // compute Cholesky factorization of A
-    rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, rocblas_int, S>(
+    ROCBLAS_CHECK(rocsolver_potrf_template<BATCHED, STRIDED, T, rocblas_int, rocblas_int, S>(
         handle, uplo, n, A, shiftA, lda, strideA, info, batch_count, scalars, work1, work2, work3,
-        work4, pivots_savedB, iinfo, optim_mem);
+        work4, pivots_savedB, iinfo, optim_mem));
 
     // save elements of B that will be overwritten by POTRS for cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
@@ -181,9 +181,9 @@ rocblas_status rocsolver_posv_template(rocblas_handle handle,
                             strideB, pivots_savedB, info_mask(info));
 
     // solve AX = B, overwriting B with X
-    rocsolver_potrs_template<BATCHED, STRIDED, T>(handle, uplo, n, nrhs, A, shiftA, lda, strideA, B,
-                                                  shiftB, ldb, strideB, batch_count, work1, work2,
-                                                  work3, work4, optim_mem);
+    ROCBLAS_CHECK(rocsolver_potrs_template<BATCHED, STRIDED, T>(
+        handle, uplo, n, nrhs, A, shiftA, lda, strideA, B, shiftB, ldb, strideB, batch_count, work1,
+        work2, work3, work4, optim_mem));
 
     // restore elements of B that were overwritten by POTRS in cases where info is nonzero
     ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, U>), dim3(copyblocksx, copyblocksy, batch_count),
