@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -80,21 +80,21 @@ void rocsolver_potrs_getMemorySize(const I n,
                                    size_t* size_work4,
                                    bool* optim_mem)
 {
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
+    *optim_mem = true;
     // if quick return, no workspace is needed
     if(n == 0 || nrhs == 0 || batch_count == 0)
     {
-        *size_work1 = 0;
-        *size_work2 = 0;
-        *size_work3 = 0;
-        *size_work4 = 0;
-        *optim_mem = true;
         return;
     }
 
     // workspace required for calling TRSM
     // call with both rocblas_operation_none and rocblas_operation_conjugate_transpose and take maximum memory
-    size_t size_work1_temp1, size_work1_temp2, size_work2_temp1, size_work2_temp2, size_work3_temp1,
-        size_work3_temp2, size_work4_temp1, size_work4_temp2;
+    size_t size_work1_temp1 = 0, size_work1_temp2 = 0, size_work2_temp1 = 0, size_work2_temp2 = 0,
+           size_work3_temp1 = 0, size_work3_temp2 = 0, size_work4_temp1 = 0, size_work4_temp2 = 0;
     rocsolver_trsm_mem<BATCHED, STRIDED, T>(rocblas_side_left, rocblas_operation_none, n, nrhs,
                                             batch_count, &size_work1_temp1, &size_work2_temp1,
                                             &size_work3_temp1, &size_work4_temp1, optim_mem);

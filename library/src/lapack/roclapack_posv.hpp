@@ -85,22 +85,22 @@ void rocsolver_posv_getMemorySize(const rocblas_int n,
                                   size_t* size_iinfo,
                                   bool* optim_mem)
 {
+    *size_scalars = 0;
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
+    *size_pivots_savedB = 0;
+    *size_iinfo = 0;
+    *optim_mem = true;
     // if quick return, no workspace is needed
     if(n == 0 || nrhs == 0 || batch_count == 0)
     {
-        *size_scalars = 0;
-        *size_work1 = 0;
-        *size_work2 = 0;
-        *size_work3 = 0;
-        *size_work4 = 0;
-        *size_pivots_savedB = 0;
-        *size_iinfo = 0;
-        *optim_mem = true;
         return;
     }
 
-    bool opt1, opt2;
-    size_t w1, w2, w3, w4;
+    bool opt1 = true, opt2 = true;
+    size_t w1 = 0, w2 = 0, w3 = 0, w4 = 0;
 
     // workspace required for potrf
     rocsolver_potrf_getMemorySize<BATCHED, STRIDED, T>(n, uplo, batch_count, size_scalars,
