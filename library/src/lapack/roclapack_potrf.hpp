@@ -39,7 +39,12 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-static bool constexpr use_recursive = true;
+template <typename T, typename I>
+static __device__ __host__ bool get_use_recursive(I n)
+{
+    return (true);
+};
+
 static bool constexpr use_non_recursive_potrf_in_recursion = false;
 
 template <typename I>
@@ -534,6 +539,20 @@ void rocsolver_potrf_getMemorySize(const I n,
     // ---------------------------------------
     using INFO = decltype(I{});
 
+    {
+        // ------------------------------------------------------------------------------
+        // Note: call potrf_non_recursive_getMemorySzie even when using recursive option
+        // for backward compatibility, just in case other code try to reuse
+        // scratch space intended for potrf
+        // ------------------------------------------------------------------------------
+        rocsolver_potrf_non_recursive_getMemorySize<BATCHED, STRIDED, T, I, INFO>(
+            n, uplo, batch_count,
+
+            size_scalars, size_work1, size_work2, size_work3, size_work4, size_pivots, size_iinfo,
+            optim_mem);
+    }
+
+    bool const use_recursive = get_use_recursive<T>(n);
     if(use_recursive)
     {
         size_t size_work = 0;
@@ -544,14 +563,6 @@ void rocsolver_potrf_getMemorySize(const I n,
         // all workspace for recursive routine allocated in array work1[]
         // --------------------------------------------------------------
         *size_work1 = std::max(*size_work1, size_work);
-    }
-    else
-    {
-        rocsolver_potrf_non_recursive_getMemorySize<BATCHED, STRIDED, T, I, INFO>(
-            n, uplo, batch_count,
-
-            size_scalars, size_work1, size_work2, size_work3, size_work4, size_pivots, size_iinfo,
-            optim_mem);
     }
 }
 
@@ -1231,6 +1242,8 @@ rocblas_status rocsolver_potrf_template(rocblas_handle handle,
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
     rocblas_status istat = rocblas_status_success;
+
+    bool const use_recursive = get_use_recursive<T>(n);
     if(use_recursive)
     {
         size_t size_work1 = 0;
