@@ -634,18 +634,21 @@ ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
                                const rocblas_int n,
                                U A,
                                const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_int lda_arg,
                                const rocblas_stride strideA,
                                T* buffer,
                                const Mask mask = no_mask{},
                                const rocblas_fill uplo = rocblas_fill_full,
                                const rocblas_diagonal diag = rocblas_diagonal_non_unit)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+#define ldb (static_cast<int64_t>(ldb_arg))
+
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-    const rocblas_int ldb = m;
+    const rocblas_int ldb_arg = m;
     const rocblas_stride strideB = rocblas_stride(ldb) * n;
 
     const bool copy = mask[b];
@@ -668,6 +671,8 @@ ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
                 Ap[i + j * lda] = Bp[i + j * ldb];
         }
     }
+#undef lda
+#undef ldb
 }
 
 /** COPY_MAT copies m-by-n array A into B
@@ -679,16 +684,19 @@ ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
                                const rocblas_int n,
                                U1 A,
                                const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_int lda_arg,
                                const rocblas_stride strideA,
                                U2 B,
                                const rocblas_int shiftB,
-                               const rocblas_int ldb,
+                               const rocblas_int ldb_arg,
                                const rocblas_stride strideB,
                                const Mask mask = no_mask{},
                                const rocblas_fill uplo = rocblas_fill_full,
                                const rocblas_diagonal diag = rocblas_diagonal_non_unit)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+#define ldb (static_cast<int64_t>(ldb_arg))
+
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -710,6 +718,8 @@ ROCSOLVER_KERNEL void copy_mat(const rocblas_int m,
             Bp[i + j * ldb] = Ap[i + j * lda];
         }
     }
+#undef lda
+#undef ldb
 }
 
 /** COPY_MAT copies m-by-n array A into buffer if copymat_to_buffer, or buffer into A if copymat_from_buffer
@@ -723,17 +733,20 @@ ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
                                const rocblas_int n,
                                U A,
                                const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_int lda_arg,
                                const rocblas_stride strideA,
                                S* buffer,
                                const rocblas_fill uplo = rocblas_fill_full,
                                const rocblas_diagonal diag = rocblas_diagonal_non_unit)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+#define ldb (static_cast<int64_t>(ldb_arg))
+
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-    const rocblas_int ldb = m;
+    const rocblas_int ldb_arg = m;
     const rocblas_stride strideB = rocblas_stride(ldb) * n;
 
     const bool lower = (uplo == rocblas_fill_lower);
@@ -756,6 +769,8 @@ ROCSOLVER_KERNEL void copy_mat(copymat_direction direction,
                 Ap[i + j * lda] = rocblas_complex_num<S>(Ap[i + j * lda].real(), Bp[i + j * ldb]);
         }
     }
+#undef lda
+#undef ldb
 }
 
 /** COPY_TRANS_MAT copies m-by-n array A into B and transpose it depending on the value of trans.
@@ -768,11 +783,11 @@ ROCSOLVER_KERNEL void copy_trans_mat(const rocblas_operation trans,
                                      const rocblas_int n,
                                      U1 A,
                                      const rocblas_int shiftA,
-                                     const rocblas_int lda,
+                                     const rocblas_int lda_arg,
                                      const rocblas_stride strideA,
                                      U2 B,
                                      const rocblas_int shiftB,
-                                     const rocblas_int ldb,
+                                     const rocblas_int ldb_arg,
                                      const rocblas_stride strideB,
                                      const Mask mask = no_mask{},
                                      const rocblas_fill uplo = rocblas_fill_full,
@@ -789,6 +804,9 @@ ROCSOLVER_KERNEL void copy_trans_mat(const rocblas_operation trans,
     const bool lower = (uplo == rocblas_fill_lower);
     const bool cdiag = (diag == rocblas_diagonal_non_unit);
 
+#define lda (static_cast<int64_t>(lda_arg))
+#define ldb (static_cast<int64_t>(ldb_arg))
+
     if(i < m && j < n && copy)
     {
         if(full || (upper && j > i) || (lower && i > j) || (cdiag && i == j))
@@ -804,6 +822,8 @@ ROCSOLVER_KERNEL void copy_trans_mat(const rocblas_operation trans,
                 Bp[i + j * ldb] = T2(Ap[i + j * lda]);
         }
     }
+#undef lda
+#undef ldb
 }
 
 template <typename T, typename U>
@@ -811,9 +831,11 @@ ROCSOLVER_KERNEL void init_ident(const rocblas_int m,
                                  const rocblas_int n,
                                  U A,
                                  const rocblas_int shiftA,
-                                 const rocblas_int lda,
+                                 const rocblas_int lda_arg,
                                  const rocblas_stride strideA)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto b = hipBlockIdx_z;
@@ -827,6 +849,7 @@ ROCSOLVER_KERNEL void init_ident(const rocblas_int m,
         else
             a[i + j * lda] = 0.0;
     }
+#undef lda
 }
 
 template <typename T, typename I, typename U>
@@ -872,11 +895,13 @@ ROCSOLVER_KERNEL void subtract_tau(const rocblas_int i,
                                    const rocblas_int j,
                                    U A,
                                    const rocblas_int shiftA,
-                                   const rocblas_int lda,
+                                   const rocblas_int lda_arg,
                                    const rocblas_stride strideA,
                                    T* ipiv,
                                    const rocblas_stride strideP)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+
     const auto b = hipBlockIdx_x;
     T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
     T* tau = ipiv + b * strideP;
@@ -884,6 +909,8 @@ ROCSOLVER_KERNEL void subtract_tau(const rocblas_int i,
     T t = -(*tau);
     *tau = t;
     Ap[i + j * lda] = 1.0 + t;
+
+#undef lda
 }
 
 template <typename T>
@@ -937,11 +964,13 @@ ROCSOLVER_KERNEL void set_diag(S* D,
                                const rocblas_stride strided,
                                U A,
                                const rocblas_stride shifta,
-                               const I lda,
+                               const I lda_arg,
                                const rocblas_stride stridea,
                                const I n,
                                bool set_one)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+
     I b = hipBlockIdx_x;
     I i = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     I j = i + i * lda;
@@ -954,6 +983,7 @@ ROCSOLVER_KERNEL void set_diag(S* D,
         d[i] = a[j].real();
         a[j] = set_one ? T(1) : a[j];
     }
+#undef lda
 }
 
 template <typename T, typename I, typename S, typename U>
@@ -985,10 +1015,12 @@ ROCSOLVER_KERNEL void set_zero(const rocblas_int m,
                                const rocblas_int n,
                                U A,
                                const rocblas_int shiftA,
-                               const rocblas_int lda,
+                               const rocblas_int lda_arg,
                                const rocblas_stride strideA,
                                const rocblas_fill uplo = rocblas_fill_full)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -1004,6 +1036,7 @@ ROCSOLVER_KERNEL void set_zero(const rocblas_int m,
             Ap[i + j * lda] = 0.0;
         }
     }
+#undef lda
 }
 
 template <typename T, typename U>
@@ -1011,13 +1044,16 @@ ROCSOLVER_KERNEL void copyshift_right(const bool copy,
                                       const rocblas_int dim,
                                       U A,
                                       const rocblas_int shiftA,
-                                      const rocblas_int lda,
+                                      const rocblas_int lda_arg,
                                       const rocblas_stride strideA,
                                       T* W,
                                       const rocblas_int shiftW,
-                                      const rocblas_int ldw,
+                                      const rocblas_int ldw_arg,
                                       const rocblas_stride strideW)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+#define ldw (static_cast<int64_t>(ldw_arg))
+
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -1048,6 +1084,8 @@ ROCSOLVER_KERNEL void copyshift_right(const bool copy,
                 Ap[(j + 1) * lda] = 0.0;
         }
     }
+#undef lda
+#undef ldw
 }
 
 template <typename T, typename U>
@@ -1055,13 +1093,16 @@ ROCSOLVER_KERNEL void copyshift_left(const bool copy,
                                      const rocblas_int dim,
                                      U A,
                                      const rocblas_int shiftA,
-                                     const rocblas_int lda,
+                                     const rocblas_int lda_arg,
                                      const rocblas_stride strideA,
                                      T* W,
                                      const rocblas_int shiftW,
-                                     const rocblas_int ldw,
+                                     const rocblas_int ldw_arg,
                                      const rocblas_stride strideW)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+#define ldw (static_cast<int64_t>(ldw_arg))
+
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -1092,6 +1133,8 @@ ROCSOLVER_KERNEL void copyshift_left(const bool copy,
                 Ap[dim + j * lda] = 0.0;
         }
     }
+#undef lda
+#undef ldw
 }
 
 template <typename T, typename U>
@@ -1099,13 +1142,16 @@ ROCSOLVER_KERNEL void copyshift_down(const bool copy,
                                      const rocblas_int dim,
                                      U A,
                                      const rocblas_int shiftA,
-                                     const rocblas_int lda,
+                                     const rocblas_int lda_arg,
                                      const rocblas_stride strideA,
                                      T* W,
                                      const rocblas_int shiftW,
-                                     const rocblas_int ldw,
+                                     const rocblas_int ldw_arg,
                                      const rocblas_stride strideW)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+#define ldw (static_cast<int64_t>(ldw_arg))
+
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -1136,6 +1182,8 @@ ROCSOLVER_KERNEL void copyshift_down(const bool copy,
                 Ap[i + 1] = 0.0;
         }
     }
+#undef lda
+#undef ldw
 }
 
 /** set_offdiag kernel copies the off-diagonal element of A, which is the non-zero element
@@ -1216,10 +1264,12 @@ template <typename T, typename U>
 ROCSOLVER_KERNEL void check_singularity(const rocblas_int n,
                                         U A,
                                         const rocblas_int shiftA,
-                                        const rocblas_int lda,
+                                        const rocblas_int lda_arg,
                                         const rocblas_stride strideA,
                                         rocblas_int* info)
 {
+#define lda (static_cast<int64_t>(lda_arg))
+
     // Checks for singularities in the matrix and updates info to indicate where
     // the first singularity (if any) occurs
     int b = hipBlockIdx_x;
@@ -1245,6 +1295,7 @@ ROCSOLVER_KERNEL void check_singularity(const rocblas_int n,
 
     if(hipThreadIdx_y == 0)
         info[b] = _info;
+#undef lda
 }
 
 /** SWAP swaps the values of vectors x and y of dimension n.

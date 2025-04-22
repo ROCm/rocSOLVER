@@ -736,17 +736,18 @@ rocblas_status rocsolver_trsm_mem(const rocblas_side side,
                                   const I lda,
                                   const I ldb,
                                   const I inca,
-                                  const I incb)
+                                  const I incb,
+                                  bool const use_max_mem)
 {
     // always allocate all required memory for TRSM optimal performance
     *optim_mem = true;
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
 
     if(inca != 1 || incb != 1 || ROCSOLVER_INTERNAL_TRSM)
     {
-        *size_work1 = 0;
-        *size_work2 = 0;
-        *size_work3 = 0;
-        *size_work4 = 0;
         return rocblas_status_success;
     }
 
@@ -783,9 +784,91 @@ rocblas_status rocsolver_trsm_mem(const rocblas_side side,
         mm = (m % 128 != 0) ? m : m + 1;
     }
 
-    return rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count, size_work1,
-                                            size_work2, size_work3, size_work4);
+    if(use_max_mem)
+    {
+        return rocblasCall_trsm_max_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count,
+                                                    size_work1, size_work2, size_work3, size_work4);
+    }
+    else
+    {
+        return rocblasCall_trsm_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count,
+                                                size_work1, size_work2, size_work3, size_work4);
+    }
 }
+
+#if(0)
+/** This function determine maximum workspace size for the internal trsm **/
+// ----------------------------------------------------------------
+// This has the property that if there is sufficient scratch space
+// for size (M,N),  then there will be sufficient scratch space for
+// all smaller sizes (m,n) such that (m <= M) && (n <= N)
+// ----------------------------------------------------------------
+template <bool BATCHED, bool STRIDED, typename T, typename I>
+rocblas_status rocsolver_trsm_max_mem(const rocblas_side side,
+                                      const rocblas_operation trans,
+                                      const I m,
+                                      const I n,
+                                      const I batch_count,
+                                      size_t* size_work1,
+                                      size_t* size_work2,
+                                      size_t* size_work3,
+                                      size_t* size_work4,
+                                      bool* optim_mem,
+                                      bool inblocked,
+                                      const I lda,
+                                      const I ldb,
+                                      const I inca,
+                                      const I incb)
+{
+    // always allocate all required memory for TRSM optimal performance
+    *optim_mem = true;
+    *size_work1 = 0;
+    *size_work2 = 0;
+    *size_work3 = 0;
+    *size_work4 = 0;
+
+    if(inca != 1 || incb != 1 || ROCSOLVER_INTERNAL_TRSM)
+    {
+        return rocblas_status_success;
+    }
+
+    I mm = m;
+
+    if(!inblocked)
+    {
+        static constexpr bool ISBATCHED = BATCHED || STRIDED;
+
+        // determine type of system and block size
+        const bool isleft = (side == rocblas_side_left);
+        I blk = isleft ? rocsolver_trsm_blksize<ISBATCHED, T, I>(m, n)
+                       : rocsolver_trsm_blksize<ISBATCHED, T, I>(n, m);
+
+        if(blk > 0)
+        {
+            *size_work1 = 0;
+            *size_work2 = 0;
+            *size_work3 = 0;
+            *size_work4 = 0;
+            return rocblas_status_success;
+        }
+        else
+            mm = m;
+    }
+    else
+    {
+        // inblocked = true when called from inside blocked algorithms like GETRF.
+
+        // (Note: rocblas TRSM workspace size is less than expected when the number of rows is multiple of 128.
+        //  For this reason, when trying to set up a workspace that fits all the TRSM calls for m <= blk,
+        //  blk cannot be multiple of 128.)
+        //    rocblas_int mm = (blk % 128 != 0) ? blk : blk + 1;
+        mm = (m % 128 != 0) ? m : m + 1;
+    }
+
+    return rocblasCall_trsm_max_mem<BATCHED, T>(side, trans, mm, n, lda, ldb, batch_count,
+                                                size_work1, size_work2, size_work3, size_work4);
+}
+#endif
 
 /** Internal TRSM (lower case):
     Optimized function that solves systems
@@ -1381,7 +1464,7 @@ inline rocblas_status rocsolver_trsm_upper(rocblas_handle handle,
         const rocblas_side side, const rocblas_operation trans, const I m, const I n,    \
         const I batch_count, size_t* size_work1, size_t* size_work2, size_t* size_work3, \
         size_t* size_work4, bool* optim_mem, bool inblocked, const I lda, const I ldb,   \
-        const I inca, const I incb)
+        const I inca, const I incb, bool const use_max_mem)
 #define INSTANTIATE_TRSM_LOWER(BATCHED, STRIDED, T, I, U)                                         \
     template rocblas_status rocsolver_trsm_lower<BATCHED, STRIDED, T, I, U>(                      \
         rocblas_handle handle, const rocblas_side side, const rocblas_operation trans,            \

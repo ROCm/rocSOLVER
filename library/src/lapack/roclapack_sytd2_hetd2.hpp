@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -144,14 +144,14 @@ void rocsolver_sytd2_hetd2_getMemorySize(const rocblas_int n,
                                          size_t* size_tmptau,
                                          size_t* size_workArr)
 {
+    *size_scalars = 0;
+    *size_work = 0;
+    *size_norms = 0;
+    *size_tmptau = 0;
+    *size_workArr = 0;
     // if quick return no workspace needed
     if(n == 0 || batch_count == 0)
     {
-        *size_scalars = 0;
-        *size_work = 0;
-        *size_norms = 0;
-        *size_tmptau = 0;
-        *size_workArr = 0;
         return;
     }
 

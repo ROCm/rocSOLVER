@@ -62,7 +62,7 @@ void rocsolver_sytrd_hetrd_getMemorySize(const rocblas_int n,
     size_t s1 = 0, s2 = 0;
     size_t w1 = 0, w2 = 0;
     size_t n1 = 0, n2 = 0;
-    size_t na;
+    size_t na = 0;
 
     // extra requirements to call SYTD2/HETD2
     rocsolver_sytd2_hetd2_getMemorySize<BATCHED, T>(n, batch_count, size_scalars, &w2, &n2, &s2,
