@@ -28,7 +28,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
             }
         }
 
-        // in PR if we are targeting develop branch build ONLY what CI pipeline will test, unless gfxall label
+        // in PRs targeting develop branch build ONLY what CI pipeline will test, unless github gfxall label
         if (env.CHANGE_TARGET == "develop" && !pullRequest.labels.contains("gfxall"))
         {
             // requires at command execution time ${auxiliary.gfxTargetParser()} to set gfx_var variable
