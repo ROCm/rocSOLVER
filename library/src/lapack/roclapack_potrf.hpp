@@ -42,7 +42,7 @@ ROCSOLVER_BEGIN_NAMESPACE
 template <typename T, typename I>
 static __device__ __host__ bool get_use_recursive(I n)
 {
-    return (true);
+    return (n > POTRF_RECURSIVE_SWITCHSIZE(T));
 };
 
 static bool constexpr use_non_recursive_potrf_in_recursion = false;
