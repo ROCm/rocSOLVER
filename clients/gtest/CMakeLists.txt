@@ -177,17 +177,8 @@ if(WIN32)
   )
 endif()
 
-if(TARGET GTest::gtest)
-  target_link_libraries(rocsolver-test PRIVATE
-    GTest::gtest
-  )
-else()
-  target_link_libraries(rocsolver-test PRIVATE
-    GTest::GTest
-  )
-endif()
-
 target_link_libraries(rocsolver-test PRIVATE
+  $<IF:$<TARGET_EXISTS:GTest::gtest>, GTest::gtest, GTest::GTest>
   hip::device
   rocsolver-common
   clients-common

@@ -45,16 +45,8 @@ if(UNIX AND BUILD_SHARED_LIBS)
     target_compile_definitions(test-rocsolver-dlopen PRIVATE
       ROCSOLVER_LIB_NAME="$<TARGET_FILE:rocsolver>"
     )
-    if(TARGET GTest::gtest)
-      target_link_libraries(test-rocsolver-dlopen PRIVATE
-        GTest::gtest
-      )
-    else()
-      target_link_libraries(test-rocsolver-dlopen PRIVATE
-        GTest::GTest
-      )
-    endif()
     target_link_libraries(test-rocsolver-dlopen PRIVATE
+      $<IF:$<TARGET_EXISTS:GTest::gtest>, GTest::gtest, GTest::GTest>
       ${CMAKE_DL_LIBS}
     )
 
