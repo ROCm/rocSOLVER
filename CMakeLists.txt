@@ -203,12 +203,12 @@ else()
     rocm_check_target_ids(OPTIONAL_AMDGPU_TARGETS TARGETS ${OPTIONAL_TARGETS_QUERY})
     set(AMDGPU_TARGETS_INIT ${OPTIONAL_AMDGPU_TARGETS} ${DEFAULT_TARGETS})
   endif()
-endif()
 
-# Set this before finding hip so that hip::device has the required arch flags
-# added as usage requirements on its interface
-set(AMDGPU_TARGETS "${AMDGPU_TARGETS_INIT}"
-  CACHE STRING "List of specific machine types for library to target")
+  # Set this before finding hip so that hip::device has the required arch flags
+  # added as usage requirements on its interface
+  set(AMDGPU_TARGETS "${AMDGPU_TARGETS_INIT}"
+    CACHE STRING "List of specific machine types for library to target")
+endif()
 
 # Find HIP dependencies
 find_package(hip REQUIRED CONFIG PATHS ${ROCM_PATH} /opt/rocm)
