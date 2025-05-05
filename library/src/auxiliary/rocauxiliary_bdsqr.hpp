@@ -1136,6 +1136,9 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threadsReset, 0, stream, completed,
                             batch_count + 2, 0);
 
+    // clear workspace
+    HIP_CHECK(hipMemsetAsync((void*)work, 0, sizeof(S) * strideW * batch_count, stream));
+
     // check for NaNs and Infs in input
     ROCSOLVER_LAUNCH_KERNEL((bdsqr_init<T>), gridBasic, threadsBasic, 0, stream, n, D, strideD, E,
                             strideE, info, maxiter, sfm, tol, splits_map, work, strideW, completed);
