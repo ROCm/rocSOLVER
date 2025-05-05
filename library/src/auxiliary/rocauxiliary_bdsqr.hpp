@@ -96,14 +96,15 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
                              T* C,
                              const rocblas_int ldc,
                              const S sh,
-                             S* rots)
+                             S* rots,
+                             rocblas_int incW)
 {
     S f, g, c, s, r;
     T temp1, temp2;
 
     const rocblas_int b2t = 1 - t2b;
     const rocblas_int dir = t2b - b2t; // +1 for t2b, -1 for b2t
-    const rocblas_int nr = nv ? 2 * n : 0;
+    const rocblas_int nr = 2 * n;
 
     if(tid == 0)
     {
@@ -129,12 +130,12 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             D[dk + dir] = c * D[dk + dir];
 
             // save rotations to update singular vectors
-            if(t2b && nv)
+            if(t2b && incW)
             {
                 rots[ek] = c;
                 rots[ek + n] = -s;
             }
-            if(b2t && (nu || nc))
+            if(b2t && incW)
             {
                 rots[ek + nr] = c;
                 rots[ek + nr + n] = s;
@@ -152,12 +153,12 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             }
 
             // save rotations to update singular vectors
-            if(b2t && nv)
+            if(b2t && incW)
             {
                 rots[ek] = c;
                 rots[ek + n] = s;
             }
-            if(t2b && (nu || nc))
+            if(t2b && incW)
             {
                 rots[ek + nr] = c;
                 rots[ek + nr + n] = -s;
@@ -605,7 +606,7 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
                 splits[4 * sid] = (t2b ? 1 : -1);
 
             bdsqr_QRstep(tid, tid_inc, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv,
-                         U + i * ldu, ldu, C + i, ldc, smin, rots + incW * i);
+                         U + i * ldu, ldu, C + i, ldc, smin, rots + incW * i, incW);
         }
         else
         {
@@ -687,7 +688,7 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
             S* rots = work + 4 + incW * k_start;
 
             rocblas_int nn = k_end - k_start + 1;
-            rocblas_int nr = nv ? 2 * nn : 0;
+            rocblas_int nr = 2 * nn;
 
             rocblas_direct direc = (dir > 0 ? rocblas_forward_direction : rocblas_backward_direction);
             if(V && nv)
@@ -983,7 +984,7 @@ ROCSOLVER_KERNEL void bdsqr_finalize(const rocblas_int n,
 /****** Template function, workspace size and argument validation **********/
 /***************************************************************************/
 
-template <typename T>
+template <typename S>
 void rocsolver_bdsqr_getMemorySize(const rocblas_int n,
                                    const rocblas_int nv,
                                    const rocblas_int nu,
@@ -1007,11 +1008,9 @@ void rocsolver_bdsqr_getMemorySize(const rocblas_int n,
 
     // size of workspace
     rocblas_int incW = 0;
-    if(nv)
-        incW += 2;
-    if(nu || nc)
-        incW += 2;
-    *size_work = sizeof(T) * (4 + incW * n) * batch_count;
+    if(nv || nu || nc)
+        incW = 4;
+    *size_work = sizeof(S) * (4 + incW * n) * batch_count;
 
     // size of temporary workspace to indicate problem completion
     *size_completed = sizeof(rocblas_int) * (batch_count + 2);
@@ -1115,10 +1114,8 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     S minshift = std::max(eps, tol / S(100)) / (n * tol);
 
     rocblas_int incW = 0;
-    if(nv)
-        incW += 2;
-    if(nu || nc)
-        incW += 2;
+    if(nv || nu || nc)
+        incW = 4;
     rocblas_stride strideW = 4 + incW * n;
 
     // grid dimensions
