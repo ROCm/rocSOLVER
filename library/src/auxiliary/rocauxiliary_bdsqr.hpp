@@ -180,8 +180,8 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
     rocblas_direct direc = (t2b ? rocblas_forward_direction : rocblas_backward_direction);
     if(V && nv)
     {
-        run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, n, nv, rots, rots + n, V + shiftV, ldv,
-                 tid, tid_inc);
+        run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, n, nv, rots, rots + n,
+                 V + shiftV, ldv, tid, tid_inc);
     }
     if(U && nu)
     {
@@ -608,8 +608,8 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
             if(tid == 0)
                 splits[4 * sid] = (t2b ? 1 : -1);
 
-            bdsqr_QRstep(tid, tid_inc, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V, i, ldv,
-                         U, i * ldu, ldu, C, i, ldc, smin, rots + incW * i, incW);
+            bdsqr_QRstep(tid, tid_inc, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V, i, ldv, U,
+                         i * ldu, ldu, C, i, ldc, smin, rots + incW * i, incW);
         }
         else
         {
