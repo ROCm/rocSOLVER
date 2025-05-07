@@ -199,6 +199,7 @@ if(WIN32)
 endif()
 
 target_link_libraries(rocsolver-test PRIVATE
+  $<IF:$<TARGET_EXISTS:GTest::gtest>,GTest::gtest,GTest::GTest>
   GTest::GTest
   hip::host
   rocsolver-common
