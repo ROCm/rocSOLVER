@@ -207,7 +207,7 @@ static bool syevdx_heevdx_use_legacy_tests()
     return status;
 }
 
-#define ROCSOLVER_LAX_EIGENSOLVERS_TESTS2 1
+/* #define ROCSOLVER_LAX_EIGENSOLVERS_TESTS2 1 */
 
 static bool test_for_equality_of_number_of_computed_eigenvalues2()
 {
@@ -411,6 +411,7 @@ void syevdx_heevdx_getError(const rocblas_handle handle,
                 *max_err += 1;
                 std::cout << clss[b].print_debug_str();
             }
+            std::cout << clss[b].print_debug_str();
         }
         else
         {
