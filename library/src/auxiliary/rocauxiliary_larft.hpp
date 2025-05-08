@@ -168,7 +168,6 @@ template <typename T, typename U>
 ROCSOLVER_KERNEL void larft_kernel_forward(const rocblas_storev storev,
                                            const rocblas_int n,
                                            const rocblas_int k,
-                                           const rocblas_int kk,
                                            U VA,
                                            const rocblas_int shiftV,
                                            const rocblas_int ldv,
@@ -176,7 +175,7 @@ ROCSOLVER_KERNEL void larft_kernel_forward(const rocblas_storev storev,
                                            T* tauA,
                                            const rocblas_stride strideT,
                                            T* FA,
-                                           const rocblas_int ldf,
+                                           const rocblas_int ldfA,
                                            const rocblas_stride strideF,
                                            T* workA,
                                            const rocblas_stride stridew)
@@ -185,12 +184,37 @@ ROCSOLVER_KERNEL void larft_kernel_forward(const rocblas_storev storev,
     const rocblas_int tid = hipThreadIdx_x;
     const rocblas_int tid_inc = hipBlockDim_x;
 
+    // select batch instance
     T* V = load_ptr_batch<T>(VA, bid, shiftV, strideV);
     T* tau = tauA + bid * strideT;
-    T* F = FA + bid * strideF;
-    T* work = workA + bid * stridew;
 
-    // for(rocblas_int kk = 1; kk < k; kk++)
+    // shared memory setup
+    T* F;
+    T* work;
+    rocblas_int ldf;
+    if(workA)
+    {
+        F = FA + bid * strideF;
+        work = workA + bid * stridew;
+        ldf = ldfA;
+    }
+    else
+    {
+        extern __shared__ double lmem[];
+        work = reinterpret_cast<T*>(lmem);
+        F = work + k;
+        ldf = k;
+
+        // copy F to shared memory
+        T* Ftemp = FA + bid * strideF;
+        for(rocblas_int i = tid; i < k; i += tid_inc)
+            for(rocblas_int j = i; j < k; j++)
+                F[i + j * ldf] = Ftemp[i + j * ldfA];
+        __syncthreads();
+    }
+
+    // --------- MAIN BODY ---------
+    for(rocblas_int kk = 1; kk < k; kk++)
     {
         const rocblas_int mm = kk;
         const rocblas_int nn = n - 1 - kk;
@@ -241,13 +265,22 @@ ROCSOLVER_KERNEL void larft_kernel_forward(const rocblas_storev storev,
 
         __syncthreads();
     }
+
+    // shared memory finalize
+    if(!workA)
+    {
+        // copy shared memory back to F
+        T* Ftemp = FA + bid * strideF;
+        for(rocblas_int i = tid; i < k; i += tid_inc)
+            for(rocblas_int j = i; j < k; j++)
+                Ftemp[i + j * ldfA] = F[i + j * ldf];
+    }
 }
 
 template <typename T, typename U>
 ROCSOLVER_KERNEL void larft_kernel_backward(const rocblas_storev storev,
                                             const rocblas_int n,
                                             const rocblas_int k,
-                                            const rocblas_int kk,
                                             U VA,
                                             const rocblas_int shiftV,
                                             const rocblas_int ldv,
@@ -255,7 +288,7 @@ ROCSOLVER_KERNEL void larft_kernel_backward(const rocblas_storev storev,
                                             T* tauA,
                                             const rocblas_stride strideT,
                                             T* FA,
-                                            const rocblas_int ldf,
+                                            const rocblas_int ldfA,
                                             const rocblas_stride strideF,
                                             T* workA,
                                             const rocblas_stride stridew)
@@ -264,12 +297,37 @@ ROCSOLVER_KERNEL void larft_kernel_backward(const rocblas_storev storev,
     const rocblas_int tid = hipThreadIdx_x;
     const rocblas_int tid_inc = hipBlockDim_x;
 
+    // select batch instance
     T* V = load_ptr_batch<T>(VA, bid, shiftV, strideV);
     T* tau = tauA + bid * strideT;
-    T* F = FA + bid * strideF;
-    T* work = workA + bid * stridew;
 
-    // for(rocblas_int kk = k - 2; kk >= 0; kk--)
+    // shared memory setup
+    T* F;
+    T* work;
+    rocblas_int ldf;
+    if(workA)
+    {
+        F = FA + bid * strideF;
+        work = workA + bid * stridew;
+        ldf = ldfA;
+    }
+    else
+    {
+        extern __shared__ double lmem[];
+        work = reinterpret_cast<T*>(lmem);
+        F = work + k;
+        ldf = k;
+
+        // copy F to shared memory
+        T* Ftemp = FA + bid * strideF;
+        for(rocblas_int i = tid; i < k; i += tid_inc)
+            for(rocblas_int j = 0; j <= i; j++)
+                F[i + j * ldf] = Ftemp[i + j * ldfA];
+        __syncthreads();
+    }
+
+    // --------- MAIN BODY ---------
+    for(rocblas_int kk = k - 2; kk >= 0; kk--)
     {
         const rocblas_int mm = k - kk - 1;
         const rocblas_int nn = n - k + kk;
@@ -320,6 +378,16 @@ ROCSOLVER_KERNEL void larft_kernel_backward(const rocblas_storev storev,
         }
 
         __syncthreads();
+    }
+
+    // shared memory finalize
+    if(!workA)
+    {
+        // copy shared memory back to F
+        T* Ftemp = FA + bid * strideF;
+        for(rocblas_int i = tid; i < k; i += tid_inc)
+            for(rocblas_int j = 0; j <= i; j++)
+                Ftemp[i + j * ldfA] = F[i + j * ldf];
     }
 }
 
@@ -444,6 +512,12 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
                             strideT);
 
+    int device;
+    HIP_CHECK(hipGetDevice(&device));
+    hipDeviceProp_t props;
+    HIP_CHECK(hipGetDeviceProperties(&props, device));
+    size_t lmemsize = sizeof(T) * (k + 1) * k;
+
     if(direct == rocblas_forward_direction)
     {
         uplo = rocblas_fill_upper;
@@ -453,11 +527,20 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
         //      ZERO ENTRIES ****
 
-        for(rocblas_int i = 1; i < k; ++i)
+        // for(rocblas_int i = 1; i < k; ++i)
         {
-            ROCSOLVER_LAUNCH_KERNEL(larft_kernel_forward, dim3(1, batch_count), dim3(BS1, 1), 0,
-                                    stream, storev, n, k, i, V, shiftV, ldv, strideV, tau, strideT,
-                                    F, ldf, strideF, work, stridew);
+            if(lmemsize <= props.sharedMemPerBlock)
+            {
+                ROCSOLVER_LAUNCH_KERNEL(larft_kernel_forward, dim3(1, batch_count), dim3(BS1, 1),
+                                        lmemsize, stream, storev, n, k, V, shiftV, ldv, strideV,
+                                        tau, strideT, F, ldf, strideF, (T*)nullptr, stridew);
+            }
+            else
+            {
+                ROCSOLVER_LAUNCH_KERNEL(larft_kernel_forward, dim3(1, batch_count), dim3(BS1, 1), 0,
+                                        stream, storev, n, k, V, shiftV, ldv, strideV, tau, strideT,
+                                        F, ldf, strideF, work, stridew);
+            }
 
             // // compute the matrix vector product, using the householder vectors
             // if(storev == rocblas_column_wise)
@@ -500,11 +583,20 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
         //      ZERO ENTRIES ****
 
-        for(rocblas_int i = k - 2; i >= 0; --i)
+        // for(rocblas_int i = k - 2; i >= 0; --i)
         {
-            ROCSOLVER_LAUNCH_KERNEL(larft_kernel_backward, dim3(1, batch_count), dim3(BS1, 1), 0,
-                                    stream, storev, n, k, i, V, shiftV, ldv, strideV, tau, strideT,
-                                    F, ldf, strideF, work, stridew);
+            if(lmemsize <= props.sharedMemPerBlock)
+            {
+                ROCSOLVER_LAUNCH_KERNEL(larft_kernel_backward, dim3(1, batch_count), dim3(BS1, 1),
+                                        lmemsize, stream, storev, n, k, V, shiftV, ldv, strideV,
+                                        tau, strideT, F, ldf, strideF, (T*)nullptr, stridew);
+            }
+            else
+            {
+                ROCSOLVER_LAUNCH_KERNEL(larft_kernel_backward, dim3(1, batch_count), dim3(BS1, 1),
+                                        0, stream, storev, n, k, V, shiftV, ldv, strideV, tau,
+                                        strideT, F, ldf, strideF, work, stridew);
+            }
 
             // // compute the matrix vector product, using the householder vectors
             // if(storev == rocblas_column_wise)
