@@ -112,7 +112,8 @@ Arguments bdsqr_setup_arguments(bdsqr_tuple tup)
     return arg;
 }
 
-class BDSQR : public ::TestWithParam<bdsqr_tuple>
+template <rocblas_int MODE>
+class BDSQR_BASE : public ::TestWithParam<bdsqr_tuple>
 {
 protected:
     void TearDown() override
@@ -124,12 +125,21 @@ protected:
     void run_tests()
     {
         Arguments arg = bdsqr_setup_arguments(GetParam());
+        arg.alg_mode = MODE;
 
         if(arg.peek<rocblas_int>("n") == 0 && arg.peek<char>("uplo") == 'L')
             testing_bdsqr_bad_arg<T>();
 
         testing_bdsqr<T>(arg);
     }
+};
+
+class BDSQR : public BDSQR_BASE<0>
+{
+};
+
+class BDSQR_HYBRID : public BDSQR_BASE<1>
+{
 };
 
 // non-batch tests
@@ -154,8 +164,36 @@ TEST_P(BDSQR, __double_complex)
     run_tests<rocblas_double_complex>();
 }
 
+TEST_P(BDSQR_HYBRID, __float)
+{
+    run_tests<float>();
+}
+
+TEST_P(BDSQR_HYBRID, __double)
+{
+    run_tests<double>();
+}
+
+TEST_P(BDSQR_HYBRID, __float_complex)
+{
+    run_tests<rocblas_float_complex>();
+}
+
+TEST_P(BDSQR_HYBRID, __double_complex)
+{
+    run_tests<rocblas_double_complex>();
+}
+
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          BDSQR,
                          Combine(ValuesIn(large_size_range), ValuesIn(large_opt_range)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack, BDSQR, Combine(ValuesIn(size_range), ValuesIn(opt_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         BDSQR_HYBRID,
+                         Combine(ValuesIn(large_size_range), ValuesIn(large_opt_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         BDSQR_HYBRID,
+                         Combine(ValuesIn(size_range), ValuesIn(opt_range)));

@@ -13,6 +13,7 @@ The auxiliary functions are divided into the following categories:
 
 * :ref:`vecmat`. Some basic operations with vectors and matrices that are not part of the BLAS standard.
 * :ref:`householder`. Generation and application of Householder matrices.
+* :ref:`rotations`. Generation and application of Givens (plane) rotations.
 * :ref:`bidiag`. Computations specialized in bidiagonal matrices.
 * :ref:`tridiag`. Computations specialized in tridiagonal matrices.
 * :ref:`symmetric`. Computations specialized in symmetric matrices.
@@ -57,7 +58,7 @@ rocsolver_<type>lacgv()
 .. doxygenfunction:: rocsolver_zlacgv_64
    :outline:
 .. doxygenfunction:: rocsolver_clacgv_64
-   :outline
+   :outline:
 .. doxygenfunction:: rocsolver_zlacgv
    :outline:
 .. doxygenfunction:: rocsolver_clacgv
@@ -160,6 +161,30 @@ rocsolver_<type>larfb()
 .. doxygenfunction:: rocsolver_dlarfb
    :outline:
 .. doxygenfunction:: rocsolver_slarfb
+
+
+
+.. _rotations:
+
+Givens (plane) rotations
+==================================
+
+.. contents:: List of plane rotations functions
+   :local:
+   :backlinks: top
+
+.. _lasr:
+
+rocsolver_<type>lasr()
+---------------------------------------
+.. doxygenfunction:: rocsolver_zlasr
+   :outline:
+.. doxygenfunction:: rocsolver_clasr
+   :outline:
+.. doxygenfunction:: rocsolver_dlasr
+   :outline:
+.. doxygenfunction:: rocsolver_slasr
+
 
 
 

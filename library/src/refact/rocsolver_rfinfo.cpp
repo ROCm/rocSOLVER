@@ -33,11 +33,11 @@
 #include "rocsolver/rocsolver.h"
 
 #ifndef HAVE_ROCSPARSE
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)
 #include <windows.h>
-#else /* _WIN32 */
+#elif !defined(ROCSOLVER_STATIC_LIB) /* defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB) */
 #include <dlfcn.h>
-#endif /* _WIN32 */
+#endif /* defined(_WIN32) && !defined(ROCSOLVER_STATIC_LIB)*/
 #endif /* HAVE_ROCSPARSE */
 
 #define GOTO_IF_ROCBLAS_ERROR(fcn, result, error_label) \
@@ -67,6 +67,7 @@ ROCSOLVER_BEGIN_NAMESPACE
 template <typename Fn>
 static bool load_function(void* handle, const char* symbol, Fn& fn)
 {
+#ifndef ROCSOLVER_STATIC_LIB
 #ifdef _WIN32
     fn = (Fn)(GetProcAddress((HMODULE)handle, symbol));
     bool err = !fn;
@@ -76,13 +77,17 @@ static bool load_function(void* handle, const char* symbol, Fn& fn)
 #ifndef NDEBUG
     if(err)
         fmt::print(stderr, "rocsolver: error loading {:s}: {:s}\n", symbol, err);
-#endif
+#endif /* NDEBUG */
 #endif /* _WIN32 */
     return !err;
+#else
+    return false;
+#endif /* ROCSOLVER_STATIC_LIB */
 }
 
 static bool load_rocsparse()
 {
+#ifndef ROCSOLVER_STATIC_LIB
 #ifdef _WIN32
     // Library users will need to call SetErrorMode(SEM_FAILCRITICALERRORS) if
     // they wish to avoid an error message box when this library is not found.
@@ -95,7 +100,7 @@ static bool load_rocsparse()
 #ifndef NDEBUG
     if(!handle)
         fmt::print(stderr, "rocsolver: error loading librocsparse.so.1: {:s}\n", err);
-#endif
+#endif /* NDEBUG */
 #endif /* _WIN32 */
     if(!handle)
         return false;
@@ -197,6 +202,9 @@ static bool load_rocsparse()
         return false;
 
     return true;
+#else /* ROCSOLVER_STATIC_LIB */
+    return false;
+#endif
 }
 
 static bool try_load_rocsparse()

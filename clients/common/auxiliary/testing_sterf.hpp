@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -212,6 +212,19 @@ void testing_sterf(Arguments& argus)
     rocblas_int n = argus.get<rocblas_int>("n");
 
     rocblas_int hot_calls = argus.iters;
+
+    if(argus.alg_mode == 1)
+    {
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_set_alg_mode(handle, rocsolver_function_sterf, rocsolver_alg_mode_hybrid),
+            rocblas_status_success);
+
+        rocsolver_alg_mode alg_mode;
+        EXPECT_ROCBLAS_STATUS(rocsolver_get_alg_mode(handle, rocsolver_function_sterf, &alg_mode),
+                              rocblas_status_success);
+
+        EXPECT_EQ(alg_mode, rocsolver_alg_mode_hybrid);
+    }
 
     // check non-supported values
     // N/A

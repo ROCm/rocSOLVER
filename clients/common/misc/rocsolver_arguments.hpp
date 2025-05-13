@@ -50,10 +50,12 @@ public:
     // test options
     rocblas_int norm_check = 0;
     rocblas_int unit_check = 1;
+    rocblas_int hash_check = 0;
     rocblas_int timing = 0;
     rocblas_int perf = 0;
     rocblas_int singular = 0;
     rocblas_int iters = 5;
+    rocblas_int alg_mode = 0;
     rocblas_int mem_query = 0;
     rocblas_int profile = 0;
     rocblas_int profile_kernels = 0;
@@ -112,12 +114,14 @@ public:
         to_consume.erase("batch_count");
         to_consume.erase("verify");
         to_consume.erase("iters");
+        to_consume.erase("alg_mode");
         to_consume.erase("mem_query");
         to_consume.erase("profile");
         to_consume.erase("profile_kernels");
         to_consume.erase("perf");
         to_consume.erase("singular");
         to_consume.erase("device");
+        to_consume.erase("hash");
     }
 
     void clear()
@@ -190,6 +194,17 @@ public:
 
         char direct = val->second.as<char>();
         if(direct != 'F' && direct != 'B')
+            throw std::invalid_argument("Invalid value for " + name);
+    }
+
+    void validate_pivot(const std::string name) const
+    {
+        auto val = find(name);
+        if(val == end())
+            return;
+
+        char pivot = val->second.as<char>();
+        if(pivot != 'V' && pivot != 'T' && pivot != 'B')
             throw std::invalid_argument("Invalid value for " + name);
     }
 

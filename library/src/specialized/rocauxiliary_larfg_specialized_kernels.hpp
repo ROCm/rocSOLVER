@@ -44,12 +44,15 @@ ROCSOLVER_BEGIN_NAMESPACE
     the library size.
 *************************************************************/
 
-template <typename T, typename I, typename U>
+template <typename T, typename I, typename U, typename UB>
 ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
     larfg_kernel_small(const I n,
                        U alpha,
                        const rocblas_stride shiftA,
                        const rocblas_stride strideA,
+                       UB beta,
+                       const rocblas_stride shiftB,
+                       const rocblas_stride strideB,
                        U xx,
                        const rocblas_stride shiftX,
                        const I incX,
@@ -65,6 +68,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
     T* x = load_ptr_batch<T>(xx, bid, shiftX, strideX);
     T* tau = load_ptr_batch<T>(tauA, bid, 0, strideP);
 
+    T* b = beta ? load_ptr_batch<T>(beta, bid, shiftB, strideB) : nullptr;
+
     // shared variables
     __shared__ T sval[LARFG_SSKER_THREADS];
     __shared__ T sh_x[LARFG_SSKER_MAX_N];
@@ -78,7 +83,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
 
     // set tau, beta, and put scaling factor into sval[0]
     if(tid == 0)
-        run_set_taubeta<T>(tau, sval, a);
+        run_set_taubeta<T>(tau, sval, a, b);
     __syncthreads();
 
     // scale x by scaling factor
@@ -96,6 +101,9 @@ rocblas_status larfg_run_small(rocblas_handle handle,
                                U alpha,
                                const rocblas_stride shiftA,
                                const rocblas_stride strideA,
+                               T* beta,
+                               const rocblas_stride shiftB,
+                               const rocblas_stride strideB,
                                U x,
                                const rocblas_stride shiftX,
                                const I incX,
@@ -110,8 +118,8 @@ rocblas_status larfg_run_small(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    ROCSOLVER_LAUNCH_KERNEL(larfg_kernel_small<T>, grid, block, 0, stream, n, alpha, shiftA,
-                            strideA, x, shiftX, incX, strideX, tau, strideP);
+    ROCSOLVER_LAUNCH_KERNEL((larfg_kernel_small<T>), grid, block, 0, stream, n, alpha, shiftA,
+                            strideA, beta, shiftB, strideB, x, shiftX, incX, strideX, tau, strideP);
 
     return rocblas_status_success;
 }
@@ -123,7 +131,8 @@ rocblas_status larfg_run_small(rocblas_handle handle,
 #define INSTANTIATE_LARFG_SMALL(T, I, U)                                              \
     template rocblas_status larfg_run_small<T, I, U>(                                 \
         rocblas_handle handle, const I n, U alpha, const rocblas_stride shiftA,       \
-        const rocblas_stride strideA, U x, const rocblas_stride shiftX, const I incX, \
+        const rocblas_stride strideA, T* beta, const rocblas_stride shiftB,           \
+        const rocblas_stride strideB, U x, const rocblas_stride shiftX, const I incX, \
         const rocblas_stride strideX, T* tau, const rocblas_stride strideP, const I batch_count)
 
 ROCSOLVER_END_NAMESPACE

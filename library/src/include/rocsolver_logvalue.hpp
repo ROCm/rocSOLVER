@@ -130,6 +130,16 @@ struct formatter<rocsolver_logvalue<rocblas_direct>> : formatter<char>
 };
 
 template <>
+struct formatter<rocsolver_logvalue<rocblas_pivot>> : formatter<char>
+{
+    template <typename FormatCtx>
+    auto format(rocsolver_logvalue<rocblas_pivot> wrapper, FormatCtx& ctx) ROCSOLVER_FMT_CONST
+    {
+        return formatter<char>::format(rocsolver::rocblas2char_pivot(wrapper.value), ctx);
+    }
+};
+
+template <>
 struct formatter<rocsolver_logvalue<rocblas_storev>> : formatter<char>
 {
     template <typename FormatCtx>

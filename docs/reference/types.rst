@@ -19,6 +19,10 @@ rocblas_direct
 ---------------
 .. doxygenenum:: rocblas_direct
 
+rocblas_pivot
+---------------
+.. doxygenenum:: rocblas_pivot
+
 rocblas_storev
 ---------------
 .. doxygenenum:: rocblas_storev
@@ -66,3 +70,11 @@ rocsolver_rfinfo
 rocsolver_rfinfo_mode
 ------------------------
 .. doxygenenum:: rocsolver_rfinfo_mode
+
+rocsolver_alg_mode
+------------------------
+.. doxygenenum:: rocsolver_alg_mode
+
+rocsolver_function
+------------------------
+.. doxygenenum:: rocsolver_function

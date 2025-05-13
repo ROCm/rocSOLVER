@@ -547,7 +547,7 @@ rocsolver_<type>syevdx_strided_batched()
 rocsolver_<type>heevdx()
 ---------------------------------------------------
 .. doxygenfunction:: rocsolver_zheevdx
-   :outline
+   :outline:
 .. doxygenfunction:: rocsolver_cheevdx
 
 rocsolver_<type>heevdx_batched()

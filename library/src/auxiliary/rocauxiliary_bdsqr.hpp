@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2017
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,10 +33,13 @@
 #pragma once
 
 #include "lapack_device_functions.hpp"
+#include "rocauxiliary_lasr.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 
 #include <cmath>
+
+#include "rocauxiliary_bdsqr_hybrid.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -78,6 +81,7 @@ __device__ T bdsqr_estimate(const rocblas_int n, T* D, T* E, int t2b, T tol, int
     the n-by-n bidiagonal matrix given by D and E using shift = sh **/
 template <typename T, typename S>
 __device__ void bdsqr_QRstep(const rocblas_int tid,
+                             const rocblas_int tid_inc,
                              const rocblas_int t2b,
                              const rocblas_int n,
                              const rocblas_int nv,
@@ -128,7 +132,7 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             if(t2b && nv)
             {
                 rots[ek] = c;
-                rots[ek + n] = s;
+                rots[ek + n] = -s;
             }
             if(b2t && (nu || nc))
             {
@@ -156,7 +160,7 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
             if(t2b && (nu || nc))
             {
                 rots[ek + nr] = c;
-                rots[ek + nr + n] = s;
+                rots[ek + nr + n] = -s;
             }
 
             dk += dir;
@@ -169,71 +173,21 @@ __device__ void bdsqr_QRstep(const rocblas_int tid,
     __syncthreads();
 
     // update singular vectors
+    rocblas_direct direc = (t2b ? rocblas_forward_direction : rocblas_backward_direction);
     if(V && nv)
     {
-        // rotate from the left
-        for(rocblas_int j = tid; j < nv; j += hipBlockDim_x)
-        {
-            rocblas_int k = (t2b ? 0 : n - 1);
-            rocblas_int rk = (t2b ? 0 : n - 2);
-
-            temp1 = V[k + j * ldv];
-            for(rocblas_int kk = 0; kk < n - 1; kk++)
-            {
-                temp2 = V[(k + dir) + j * ldv];
-                c = rots[rk];
-                s = rots[rk + n];
-                V[k + j * ldv] = c * temp1 - s * temp2;
-                V[(k + dir) + j * ldv] = temp1 = c * temp2 + s * temp1;
-
-                k += dir;
-                rk += dir;
-            }
-        }
+        run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, n, nv, rots, rots + n, V, ldv,
+                 tid, tid_inc);
     }
     if(U && nu)
     {
-        // rotate from the right
-        for(rocblas_int i = tid; i < nu; i += hipBlockDim_x)
-        {
-            rocblas_int k = (t2b ? 0 : n - 1);
-            rocblas_int rk = (t2b ? nr : (n - 2) + nr);
-
-            temp1 = U[i + k * ldu];
-            for(rocblas_int kk = 0; kk < n - 1; kk++)
-            {
-                temp2 = U[i + (k + dir) * ldu];
-                c = rots[rk];
-                s = rots[rk + n];
-                U[i + k * ldu] = c * temp1 - s * temp2;
-                U[i + (k + dir) * ldu] = temp1 = c * temp2 + s * temp1;
-
-                k += dir;
-                rk += dir;
-            }
-        }
+        run_lasr(rocblas_side_right, rocblas_pivot_variable, direc, nu, n, rots + nr, rots + nr + n,
+                 U, ldu, tid, tid_inc);
     }
     if(C && nc)
     {
-        // rotate from the left
-        for(rocblas_int j = tid; j < nc; j += hipBlockDim_x)
-        {
-            rocblas_int k = (t2b ? 0 : n - 1);
-            rocblas_int rk = (t2b ? nr : (n - 2) + nr);
-
-            temp1 = C[k + j * ldc];
-            for(rocblas_int kk = 0; kk < n - 1; kk++)
-            {
-                temp2 = C[(k + dir) + j * ldc];
-                c = rots[rk];
-                s = rots[rk + n];
-                C[k + j * ldc] = c * temp1 - s * temp2;
-                C[(k + dir) + j * ldc] = temp1 = c * temp2 + s * temp1;
-
-                k += dir;
-                rk += dir;
-            }
-        }
+        run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, n, nc, rots + nr, rots + nr + n,
+                 C, ldc, tid, tid_inc);
     }
 }
 
@@ -473,6 +427,7 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
                                         rocblas_int* completed)
 {
     rocblas_int tid = hipThreadIdx_x;
+    rocblas_int tid_inc = hipBlockDim_x;
     rocblas_int bid = hipBlockIdx_y;
 
     if(completed[bid + 2])
@@ -508,7 +463,7 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
             if(nu || nc)
             {
                 rots[i] = c;
-                rots[i + n] = s;
+                rots[i + n] = -s;
             }
         }
         D[n - 1] = f;
@@ -518,35 +473,13 @@ ROCSOLVER_KERNEL void bdsqr_lower2upper(const rocblas_int n,
     // update singular vectors
     if(nu)
     {
-        // rotate from the right (forward direction)
-        for(i = tid; i < nu; i += hipBlockDim_x)
-        {
-            temp1 = U[i + 0 * ldu];
-            for(j = 0; j < n - 1; j++)
-            {
-                temp2 = U[i + (j + 1) * ldu];
-                c = rots[j];
-                s = rots[j + n];
-                U[i + j * ldu] = c * temp1 - s * temp2;
-                U[i + (j + 1) * ldu] = temp1 = c * temp2 + s * temp1;
-            }
-        }
+        run_lasr(rocblas_side_right, rocblas_pivot_variable, rocblas_forward_direction, nu, n, rots,
+                 rots + n, U, ldu, tid, tid_inc);
     }
     if(nc)
     {
-        // rotate from the left (forward direction)
-        for(j = tid; j < nc; j += hipBlockDim_x)
-        {
-            temp1 = C[0 + j * ldc];
-            for(i = 0; i < n - 1; i++)
-            {
-                temp2 = C[(i + 1) + j * ldc];
-                c = rots[i];
-                s = rots[i + n];
-                C[i + j * ldc] = c * temp1 - s * temp2;
-                C[(i + 1) + j * ldc] = temp1 = c * temp2 + s * temp1;
-            }
-        }
+        run_lasr(rocblas_side_left, rocblas_pivot_variable, rocblas_forward_direction, n, nc, rots,
+                 rots + n, C, ldc, tid, tid_inc);
     }
 }
 
@@ -585,6 +518,7 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
                                     rocblas_int* completed)
 {
     rocblas_int tid = hipThreadIdx_x;
+    rocblas_int tid_inc = hipBlockDim_x;
     rocblas_int sid_start = hipBlockIdx_y;
     rocblas_int bid = hipBlockIdx_z;
 
@@ -670,8 +604,8 @@ ROCSOLVER_KERNEL void bdsqr_compute(const rocblas_int n,
             if(tid == 0)
                 splits[4 * sid] = (t2b ? 1 : -1);
 
-            bdsqr_QRstep(tid, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv, U + i * ldu,
-                         ldu, C + i, ldc, smin, rots + incW * i);
+            bdsqr_QRstep(tid, tid_inc, t2b, k - i + 1, nv, nu, nc, D + i, E + i, V + i, ldv,
+                         U + i * ldu, ldu, C + i, ldc, smin, rots + incW * i);
         }
         else
         {
@@ -708,6 +642,7 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
                                    rocblas_int* completed)
 {
     rocblas_int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocblas_int tid_inc = hipGridDim_x * hipBlockDim_x;
     rocblas_int sid_start = hipBlockIdx_y;
     rocblas_int bid = hipBlockIdx_z;
 
@@ -751,68 +686,24 @@ ROCSOLVER_KERNEL void bdsqr_rotate(const rocblas_int n,
         {
             S* rots = work + 4 + incW * k_start;
 
-            rocblas_int t2b = (dir > 0 ? 1 : 0);
-            rocblas_int b2t = 1 - t2b;
-
             rocblas_int nn = k_end - k_start + 1;
             rocblas_int nr = nv ? 2 * nn : 0;
 
-            if(V && tid < nv)
+            rocblas_direct direc = (dir > 0 ? rocblas_forward_direction : rocblas_backward_direction);
+            if(V && nv)
             {
-                // rotate from the left
-                rocblas_int k = (t2b ? k_start : k_end);
-                rocblas_int rk = (t2b ? 0 : nn - 2);
-
-                temp1 = V[k + tid * ldv];
-                for(rocblas_int kk = k_start; kk < k_end; kk++)
-                {
-                    temp2 = V[(k + dir) + tid * ldv];
-                    c = rots[rk];
-                    s = rots[rk + nn];
-                    V[k + tid * ldv] = c * temp1 - s * temp2;
-                    V[(k + dir) + tid * ldv] = temp1 = c * temp2 + s * temp1;
-
-                    k += dir;
-                    rk += dir;
-                }
+                run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, nn, nv, rots, rots + nn,
+                         V + k_start, ldv, tid, tid_inc);
             }
-            if(U && tid < nu)
+            if(U && nu)
             {
-                // rotate from the right
-                rocblas_int k = (t2b ? k_start : k_end);
-                rocblas_int rk = (t2b ? nr : (nn - 2) + nr);
-
-                temp1 = U[tid + k * ldu];
-                for(rocblas_int kk = k_start; kk < k_end; kk++)
-                {
-                    temp2 = U[tid + (k + dir) * ldu];
-                    c = rots[rk];
-                    s = rots[rk + nn];
-                    U[tid + k * ldu] = c * temp1 - s * temp2;
-                    U[tid + (k + dir) * ldu] = temp1 = c * temp2 + s * temp1;
-
-                    k += dir;
-                    rk += dir;
-                }
+                run_lasr(rocblas_side_right, rocblas_pivot_variable, direc, nu, nn, rots + nr,
+                         rots + nr + nn, U + k_start * ldu, ldu, tid, tid_inc);
             }
-            if(C && tid < nc)
+            if(C && nc)
             {
-                // rotate from the left
-                rocblas_int k = (t2b ? k_start : k_end);
-                rocblas_int rk = (t2b ? nr : (nn - 2) + nr);
-
-                temp1 = C[k + tid * ldc];
-                for(rocblas_int kk = k_start; kk < k_end; kk++)
-                {
-                    temp2 = C[(k + dir) + tid * ldc];
-                    c = rots[rk];
-                    s = rots[rk + nn];
-                    C[k + tid * ldc] = c * temp1 - s * temp2;
-                    C[(k + dir) + tid * ldc] = temp1 = c * temp2 + s * temp1;
-
-                    k += dir;
-                    rk += dir;
-                }
+                run_lasr(rocblas_side_left, rocblas_pivot_variable, direc, nn, nc, rots + nr,
+                         rots + nr + nn, C + k_start, ldc, tid, tid_inc);
             }
         }
     }
@@ -1207,6 +1098,9 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    rocsolver_alg_mode alg_mode;
+    ROCBLAS_CHECK(rocsolver_get_alg_mode(handle, rocsolver_function_bdsqr, &alg_mode));
+
     // set tolerance and max number of iterations:
     // machine precision (considering rounding strategy)
     S eps = get_epsilon<S>() / 2;
@@ -1251,70 +1145,81 @@ rocblas_status rocsolver_bdsqr_template(rocblas_handle handle,
 
     if(n > 1)
     {
-        // rotate to upper bidiagonal if necessary
-        if(uplo == rocblas_fill_lower)
+        if(alg_mode == rocsolver_alg_mode_hybrid)
         {
-            ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), gridBasic, threadsUC, 0, stream, n, nu,
-                                    nc, D, strideD, E, strideE, U, shiftU, ldu, strideU, C, shiftC,
-                                    ldc, strideC, info, work, strideW, completed);
+            ROCBLAS_CHECK(rocsolver_bdsqr_host_batch_template<T, S, W1, W2, W3, rocblas_int>(
+                handle, uplo, n, nv, nu, nc, D, strideD, E, strideE, V, shiftV, ldv, strideV, U,
+                shiftU, ldu, strideU, C, shiftC, ldc, strideC, info, batch_count, splits_map, work));
         }
-
-        rocblas_int h_iter = 0;
-        struct
+        else
         {
-            rocblas_int completed;
-            rocblas_int num_splits;
-        } h_params;
-
-        while(h_iter < maxiter)
-        {
-            // if all instances in the batch have finished, exit the loop
-            HIP_CHECK(hipMemcpyAsync(&h_params, completed, sizeof(h_params), hipMemcpyDeviceToHost,
-                                     stream));
-            HIP_CHECK(hipStreamSynchronize(stream));
-
-            if(h_params.completed == batch_count)
-                break;
-
-            dim3 gridSplits(1, h_params.num_splits, batch_count);
-            dim3 gridVUC((nvuc_max - 1) / BS1 + 1, h_params.num_splits, batch_count);
-
-            for(rocblas_int inner_iters = 0; inner_iters < BDSQR_ITERS_PER_SYNC; inner_iters++)
+            // rotate to upper bidiagonal if necessary
+            if(uplo == rocblas_fill_lower)
             {
-                if(nvuc_max <= BDSQR_SWITCH_SIZE)
-                {
-                    // main computation of SVD
-                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_compute<BS1, T>), gridSplits, threadsBS1, 0,
-                                            stream, n, nv, nu, nc, D, strideD, E, strideE, V,
-                                            shiftV, ldv, strideV, U, shiftU, ldu, strideU, C,
-                                            shiftC, ldc, strideC, maxiter, eps, sfm, tol, minshift,
-                                            splits_map, work, incW, strideW, completed);
-                }
-                else
-                {
-                    // main computation of SVD
-                    ROCSOLVER_LAUNCH_KERNEL(
-                        (bdsqr_compute<BS1, T>), gridSplits, threadsBS1, 0, stream, n, nv, nu, nc,
-                        D, strideD, E, strideE, (W1) nullptr, shiftV, ldv, strideV, (W2) nullptr,
-                        shiftU, ldu, strideU, (W3) nullptr, shiftC, ldc, strideC, maxiter, eps, sfm,
-                        tol, minshift, splits_map, work, incW, strideW, completed);
-
-                    // update singular vectors
-                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_rotate<T>), gridVUC, threadsVUC, 0, stream, n,
-                                            nv, nu, nc, V, shiftV, ldv, strideV, U, shiftU, ldu,
-                                            strideU, C, shiftC, ldc, strideC, maxiter, splits_map,
-                                            work, incW, strideW, completed);
-                }
-
-                // update split block endpoints
-                ROCSOLVER_LAUNCH_KERNEL((bdsqr_update_endpoints<T>), gridSplits, threadsBasic, 0,
-                                        stream, n, E, strideE, splits_map, work, strideW, completed);
+                ROCSOLVER_LAUNCH_KERNEL((bdsqr_lower2upper<T>), gridBasic, threadsUC, 0, stream, n,
+                                        nu, nc, D, strideD, E, strideE, U, shiftU, ldu, strideU, C,
+                                        shiftC, ldc, strideC, info, work, strideW, completed);
             }
 
-            // check for completion
-            h_iter += BDSQR_ITERS_PER_SYNC;
-            ROCSOLVER_LAUNCH_KERNEL((bdsqr_chk_completed<T>), gridBasic, threadsBasic, 0, stream, n,
-                                    maxiter, splits_map, work, strideW, completed);
+            rocblas_int h_iter = 0;
+            struct
+            {
+                rocblas_int completed;
+                rocblas_int num_splits;
+            } h_params;
+
+            while(h_iter < maxiter)
+            {
+                // if all instances in the batch have finished, exit the loop
+                HIP_CHECK(hipMemcpyAsync(&h_params, completed, sizeof(h_params),
+                                         hipMemcpyDeviceToHost, stream));
+                HIP_CHECK(hipStreamSynchronize(stream));
+
+                if(h_params.completed == batch_count)
+                    break;
+
+                dim3 gridSplits(1, h_params.num_splits, batch_count);
+                dim3 gridVUC((nvuc_max - 1) / BS1 + 1, h_params.num_splits, batch_count);
+
+                for(rocblas_int inner_iters = 0; inner_iters < BDSQR_ITERS_PER_SYNC; inner_iters++)
+                {
+                    if(nvuc_max <= BDSQR_SWITCH_SIZE)
+                    {
+                        // main computation of SVD
+                        ROCSOLVER_LAUNCH_KERNEL((bdsqr_compute<BS1, T>), gridSplits, threadsBS1, 0,
+                                                stream, n, nv, nu, nc, D, strideD, E, strideE, V,
+                                                shiftV, ldv, strideV, U, shiftU, ldu, strideU, C,
+                                                shiftC, ldc, strideC, maxiter, eps, sfm, tol,
+                                                minshift, splits_map, work, incW, strideW, completed);
+                    }
+                    else
+                    {
+                        // main computation of SVD
+                        ROCSOLVER_LAUNCH_KERNEL((bdsqr_compute<BS1, T>), gridSplits, threadsBS1, 0,
+                                                stream, n, nv, nu, nc, D, strideD, E, strideE,
+                                                (W1) nullptr, shiftV, ldv, strideV, (W2) nullptr,
+                                                shiftU, ldu, strideU, (W3) nullptr, shiftC, ldc,
+                                                strideC, maxiter, eps, sfm, tol, minshift,
+                                                splits_map, work, incW, strideW, completed);
+
+                        // update singular vectors
+                        ROCSOLVER_LAUNCH_KERNEL((bdsqr_rotate<T>), gridVUC, threadsVUC, 0, stream,
+                                                n, nv, nu, nc, V, shiftV, ldv, strideV, U, shiftU,
+                                                ldu, strideU, C, shiftC, ldc, strideC, maxiter,
+                                                splits_map, work, incW, strideW, completed);
+                    }
+
+                    // update split block endpoints
+                    ROCSOLVER_LAUNCH_KERNEL((bdsqr_update_endpoints<T>), gridSplits, threadsBasic,
+                                            0, stream, n, E, strideE, splits_map, work, strideW,
+                                            completed);
+                }
+
+                // check for completion
+                h_iter += BDSQR_ITERS_PER_SYNC;
+                ROCSOLVER_LAUNCH_KERNEL((bdsqr_chk_completed<T>), gridBasic, threadsBasic, 0,
+                                        stream, n, maxiter, splits_map, work, strideW, completed);
+            }
         }
     }
 
