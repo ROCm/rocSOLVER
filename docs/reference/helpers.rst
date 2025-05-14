@@ -13,7 +13,7 @@ The helper functions are divided into the following categories:
 
 * :ref:`lib_info`: Return information about the library version.
 * :ref:`algo_select`: Select different algorithm modes of certain APIs.
-* :ref:`api_logging`. Control the :ref:`logging-label` capabilities.
+* :ref:`api_logging`: Control the :ref:`logging-label` capabilities.
 
 
 

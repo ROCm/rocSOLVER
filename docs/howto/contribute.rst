@@ -1,5 +1,5 @@
 .. meta::
-  :description: rocSOLVER contribution guide,
+  :description: rocSOLVER contribution guide
   :keywords: rocSOLVER, ROCm, documentation, contributing
 
 .. _contribute:

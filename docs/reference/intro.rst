@@ -14,7 +14,7 @@ routines, see the corresponding reference guides.
 
 .. note::
 
-   The rocSOLVER library is in the early stages of active development, with new features are being continuously added and documented.
+   The rocSOLVER library is in the early stages of active development, with new features being continuously added and documented.
 
 LAPACK auxiliary functions
 ----------------------------
