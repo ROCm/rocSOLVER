@@ -666,9 +666,9 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
 
         if(k <= LARFT_SWITCHSIZE && lmemsize <= props.sharedMemPerBlock)
         {
-            auto tmpShiftV = shiftV + ((storev == rocblas_column_wise) ? idx2D(u2_n, 0, ldv) : idx2D(0, u2_n, ldv));
+            auto shiftU2 = shiftV + ((storev == rocblas_column_wise) ? idx2D(u2_n, 0, ldv) : idx2D(0, u2_n, ldv));
             ROCSOLVER_LAUNCH_KERNEL(larft_kernel_backward, dim3(1, batch_count), dim3(BS1, 1),
-                                    lmemsize, stream, storev, u1_n, k, V, tmpShiftV, ldv, strideV, tau,
+                                    lmemsize, stream, storev, u1_n, k, V, shiftU2, ldv, strideV, tau,
                                     strideT, F, ldf, strideF);
         }
         else
