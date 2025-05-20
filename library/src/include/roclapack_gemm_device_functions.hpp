@@ -152,6 +152,9 @@ __device__ inline I get_c_row(I li, I lj, I gpri, I inc_C, I ldc)
     p x n matrix. This is a wave function, every lane of the wave
     must perform call this function.
 
+    MFMA instruction element and register mapping tool:
+    https://github.com/ROCm/amd_matrix_instruction_calculator
+
     transA      form of op(A).
     transB      form of op(B).
     m           number of rows of matrix C.
