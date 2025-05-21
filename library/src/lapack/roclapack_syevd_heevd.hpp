@@ -157,6 +157,36 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+    {
+        // memory workspace sizes:
+        // size for constants in rocblas calls
+        size_t size_scalars;
+        // size of reusable workspaces
+        size_t size_work1;
+        size_t size_work2;
+        size_t size_work3;
+        size_t size_tmptau_W;
+        // extra space for call stedc
+        size_t size_splits, size_tmpz;
+        // size of array of pointers (only for batched case)
+        size_t size_workArr;
+        // size for temporary householder scalars
+        size_t size_tau;
+
+        rocsolver_syevd_heevd_getMemorySize<BATCHED, T, S>(
+                evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2, &size_work3,
+                &size_tmpz, &size_splits, &size_tmptau_W, &size_tau, &size_workArr);
+
+        // Memory in `scalars` has already been initialized at this point
+        HIP_CHECK(hipMemsetAsync((void*)work1, 0, size_work1, stream));
+        HIP_CHECK(hipMemsetAsync((void*)work2, 0, size_work2, stream));
+        HIP_CHECK(hipMemsetAsync((void*)work3, 0, size_work3, stream));
+        HIP_CHECK(hipMemsetAsync((void*)tmpz, 0, size_tmpz, stream));
+        HIP_CHECK(hipMemsetAsync((void*)splits, 0, size_splits, stream));
+        HIP_CHECK(hipMemsetAsync((void*)tmptau_W, 0, size_tmptau_W, stream));
+        HIP_CHECK(hipMemsetAsync((void*)tau, 0, size_tau, stream));
+        HIP_CHECK(hipMemsetAsync((void*)workArr, 0, size_workArr, stream));
+    }
 
     rocblas_int blocksReset = (batch_count - 1) / BS1 + 1;
     dim3 gridReset(blocksReset, 1, 1);
