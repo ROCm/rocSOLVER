@@ -35,6 +35,7 @@
 #include "rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -425,6 +426,223 @@ rocblas_status rocsolver_larft_argCheck(rocblas_handle handle,
 }
 
 template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+rocblas_status larft_recursive_forward(rocblas_handle handle,
+                                       const rocblas_storev storev,
+                                       const rocblas_int n,
+                                       const rocblas_int k,
+                                       U V,
+                                       const rocblas_int shiftV,
+                                       const rocblas_int ldv,
+                                       const rocblas_stride strideV,
+                                       T* tau,
+                                       const rocblas_stride strideT,
+                                       T* F,
+                                       const rocblas_int shiftF,
+                                       const rocblas_int ldf,
+                                       const rocblas_stride strideF,
+                                       const rocblas_int batch_count,
+                                       T* scalars,
+                                       T* work,
+                                       T** workArr)
+{
+    if(k < 2 || n < 2)
+        return rocblas_status_success;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    rocblas_int blocks = (k - 1) / BS2 + 1;
+    rocblas_int l = k / 2;
+
+    T one = 1;
+    T minone = -1;
+
+    if(storev == rocblas_column_wise) // QR
+    {
+        // F_1_1
+        larft_recursive_forward(handle, storev, n, l, V, shiftV, ldv, strideV, tau, strideT, F,
+                                shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+        // F_2_2
+        larft_recursive_forward(handle, storev, n - l, k - l, V, shiftV + (l * ldv + l), ldv,
+                                strideV, tau, strideT, F, shiftF + (l * ldf + l), ldf, strideF,
+                                batch_count, scalars, work, workArr);
+
+        // F_1_2 = V_2_1^T
+        ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
+                                dim3(BS2, BS2), 0, stream, rocblas_operation_conjugate_transpose,
+                                k - l, l, V, shiftV + l, ldv, strideV, F, shiftF + l * ldf, ldf,
+                                strideF);
+
+        // F_1_2 = F_1_2 * V_2_2
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_lower, rocblas_operation_none,
+                         rocblas_diagonal_unit, l, k - l, &one, 0, V, shiftV + l * ldv + l, ldv,
+                         strideV, F, shiftF + l * ldf, ldf, strideF, batch_count, workArr);
+
+        // F_1_2 = V_3_1^T * V_3_2 + F_1_2
+        rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, l,
+                       k - l, n - k, &one, V, shiftV + k, 1, ldv, strideV, V, shiftV + l * ldv + k,
+                       1, ldv, strideV, &one, F, shiftF + ldf * l, 1, ldf, strideF, batch_count,
+                       workArr);
+
+        // F_1_2 = -F_1_1 * F_1_2
+        rocblasCall_trmm(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &minone, 0, F, shiftF, ldf, strideF,
+                         F, shiftF + l * ldf, ldf, strideF, batch_count, workArr);
+
+        // F_1_2 = F_1_2 * F_2_2
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &one, 0, F, shiftF + ldf * l + l, ldf,
+                         strideF, F, shiftF + l * ldf, ldf, strideF, batch_count, workArr);
+    }
+    else // LQ
+    {
+        // F_1_1
+        larft_recursive_forward(handle, storev, n, l, V, shiftV, ldv, strideV, tau, strideT, F,
+                                shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+        // F_2_2
+        larft_recursive_forward(handle, storev, n - l, k - l, V, shiftV + (l * ldv + l), ldv,
+                                strideV, tau, strideT, F, shiftF + (l * ldf + l), ldf, strideF,
+                                batch_count, scalars, work, workArr);
+
+        // F_1_2 = V_1_2
+        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(BS2, BS2), 0,
+                                stream, l, k - l, V, shiftV + l * ldv, ldv, strideV, F,
+                                shiftF + l * ldf, ldf, strideF);
+
+        // F_1_2 = F_1_2 * V_2_2^T
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_upper,
+                         rocblas_operation_conjugate_transpose, rocblas_diagonal_unit, l, k - l,
+                         &one, 0, V, shiftV + l * ldv + l, ldv, strideV, F, shiftF + l * ldf, ldf,
+                         strideF, batch_count, workArr);
+
+        // F_1_2 = V_1_3 * V_2_3^T + F_1_2
+        rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, l,
+                       k - l, n - k, &one, V, shiftV + ldv * k, 1, ldv, strideV, V,
+                       shiftV + k * ldv + l, 1, ldv, strideV, &one, F, shiftF + ldf * l, 1, ldf,
+                       strideF, batch_count, workArr);
+
+        // F_1_2 = -F_1_1 * F_1_2
+        rocblasCall_trmm(handle, rocblas_side_left, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &minone, 0, F, shiftF, ldf, strideF,
+                         F, shiftF + l * ldf, ldf, strideF, batch_count, workArr);
+
+        // F_1_2 = F_1_2 * F_2_2
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &one, 0, F, shiftF + ldf * l + l, ldf,
+                         strideF, F, shiftF + l * ldf, ldf, strideF, batch_count, workArr);
+    }
+    return rocblas_status_success;
+}
+
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
+rocblas_status larft_recursive_backward(rocblas_handle handle,
+                                        const rocblas_storev storev,
+                                        const rocblas_int n,
+                                        const rocblas_int k,
+                                        U V,
+                                        const rocblas_int shiftV,
+                                        const rocblas_int ldv,
+                                        const rocblas_stride strideV,
+                                        T* tau,
+                                        const rocblas_stride strideT,
+                                        T* F,
+                                        const rocblas_int shiftF,
+                                        const rocblas_int ldf,
+                                        const rocblas_stride strideF,
+                                        const rocblas_int batch_count,
+                                        T* scalars,
+                                        T* work,
+                                        T** workArr)
+{
+    if(k < 2 || n < 2)
+        return rocblas_status_success;
+
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    rocblas_int blocks = (k - 1) / BS2 + 1;
+    rocblas_int l = k / 2;
+
+    T one = 1;
+    T minone = -1;
+
+    if(storev == rocblas_column_wise) // QL
+    {
+        // F_1_1
+        larft_recursive_backward(handle, storev, n - l, k - l, V, shiftV, ldv, strideV, tau, strideT,
+                                 F, shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+        // F_2_2
+        larft_recursive_backward(handle, storev, n, l, V, shiftV + (k - l) * ldv, ldv, strideV, tau,
+                                 strideT, F, shiftF + (k - l) * ldf + (k - l), ldf, strideF,
+                                 batch_count, scalars, work, workArr);
+
+        // F_1_2 = V_2_1^T
+        ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
+                                dim3(BS2, BS2), 0, stream, rocblas_operation_conjugate_transpose,
+                                k - l, l, V, shiftV + (n - k) + ldv * (k - l), ldv, strideV, F,
+                                shiftF + (k - l), ldf, strideF);
+
+        // F_2_1 = F_2_1 * V_2_1
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_upper, rocblas_operation_none,
+                         rocblas_diagonal_unit, l, k - l, &one, 0, V, shiftV + (n - k), ldv,
+                         strideV, F, shiftF + (k - l), ldf, strideF, batch_count, workArr);
+
+        // F_2_1 = V_2_2^T * V_2_1 + F_2_1
+        rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, l,
+                       k - l, n - k, &one, V, shiftV + ldv * (k - l), 1, ldv, strideV, V, shiftV, 1,
+                       ldv, strideV, &one, F, shiftF + (k - l), 1, ldf, strideF, batch_count,
+                       workArr);
+
+        // F_2_1 = -F_2_2 * F_2_1
+        rocblasCall_trmm(handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &minone, 0, F,
+                         shiftF + (k - l) * ldf + (k - l), ldf, strideF, F, shiftF + (k - l), ldf,
+                         strideF, batch_count, workArr);
+
+        // F_2_1 = F_2_1 * F_1_1
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_lower, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &one, 0, F, shiftF, ldf, strideF, F,
+                         shiftF + (k - l), ldf, strideF, batch_count, workArr);
+    }
+    else // RQ
+    {
+        // F_1_1
+        larft_recursive_backward(handle, storev, n - l, k - l, V, shiftV, ldv, strideV, tau, strideT,
+                                 F, shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+        // F_2_2
+        larft_recursive_backward(handle, storev, n, l, V, shiftV + (k - l), ldv, strideV, tau,
+                                 strideT, F, shiftF + (k - l) + ldf * (k - l), ldf, strideF,
+                                 batch_count, scalars, work, workArr);
+
+        // F_2_1 = V_2_2
+        ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(BS2, BS2), 0,
+                                stream, l, k - l, V, shiftV + (k - l) + ldv * (n - k), ldv, strideV,
+                                F, shiftF + (k - l), ldf, strideF);
+
+        // F_2_1 = F_2_1 * V_1_2^T
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_lower,
+                         rocblas_operation_conjugate_transpose, rocblas_diagonal_unit, l, k - l,
+                         &one, 0, V, shiftV + ldv * (n - k), ldv, strideV, F, shiftF + (k - l), ldf,
+                         strideF, batch_count, workArr);
+
+        // F_2_1 = V_2_1 * V_1_1^T + F_2_1
+        rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, l,
+                       k - l, n - k, &one, V, shiftV + (k - l), 1, ldv, strideV, V, shiftV, 1, ldv,
+                       strideV, &one, F, shiftF + (k - l), 1, ldf, strideF, batch_count, workArr);
+
+        // F_2_1 = -F_2_2 * F_2_1
+        rocblasCall_trmm(handle, rocblas_side_left, rocblas_fill_lower, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &minone, 0, F,
+                         shiftF + (k - l) + ldf * (k - l), ldf, strideF, F, shiftF + (k - l), ldf,
+                         strideF, batch_count, workArr);
+
+        // F_2_1 = F_2_1 * F_1_1
+        rocblasCall_trmm(handle, rocblas_side_right, rocblas_fill_lower, rocblas_operation_none,
+                         rocblas_diagonal_non_unit, l, k - l, &one, 0, F, shiftF, ldf, strideF, F,
+                         shiftF + (k - l), ldf, strideF, batch_count, workArr);
+    }
+    return rocblas_status_success;
+}
+
+template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larft_template(rocblas_handle handle,
                                         const rocblas_direct direct,
                                         const rocblas_storev storev,
@@ -454,10 +672,10 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    // everything must be executed with scalars on the device
+    // everything must be executed with scalars on the host
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
     rocblas_stride stridew = rocblas_stride(k);
     rocblas_diagonal diag = rocblas_diagonal_non_unit;
@@ -497,41 +715,9 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         }
         else
         {
-            for(rocblas_int i = 1; i < k; ++i)
-            {
-                // compute the matrix vector product, using the householder vectors
-                if(storev == rocblas_column_wise)
-                {
-                    trans = rocblas_operation_conjugate_transpose;
-                    rocblasCall_gemv<T>(handle, trans, n - 1 - i, i, tau + i, strideT, V,
-                                        shiftV + idx2D(i + 1, 0, ldv), ldv, strideV, V,
-                                        shiftV + idx2D(i + 1, i, ldv), 1, strideV, scalars + 2, 0,
-                                        F, idx2D(0, i, ldf), 1, strideF, batch_count, workArr);
-                }
-                else
-                {
-                    if(COMPLEX)
-                        rocsolver_lacgv_template<T>(handle, n - i - 1, V,
-                                                    shiftV + idx2D(i, i + 1, ldv), ldv, strideV,
-                                                    batch_count);
-
-                    trans = rocblas_operation_none;
-                    rocblasCall_gemv<T>(handle, trans, i, n - 1 - i, tau + i, strideT, V,
-                                        shiftV + idx2D(0, i + 1, ldv), ldv, strideV, V,
-                                        shiftV + idx2D(i, i + 1, ldv), ldv, strideV, scalars + 2, 0,
-                                        F, idx2D(0, i, ldf), 1, strideF, batch_count, workArr);
-
-                    if(COMPLEX)
-                        rocsolver_lacgv_template<T>(handle, n - i - 1, V,
-                                                    shiftV + idx2D(i, i + 1, ldv), ldv, strideV,
-                                                    batch_count);
-                }
-
-                // multiply by the previous triangular factor
-                trans = rocblas_operation_none;
-                rocblasCall_trmv<T>(handle, uplo, trans, diag, i, F, 0, ldf, strideF, F,
-                                    idx2D(0, i, ldf), 1, strideF, work, stridew, batch_count);
-            }
+            larft_recursive_forward<T, U, COMPLEX>(handle, storev, n, k, V, shiftV, ldv, strideV,
+                                                   tau, strideT, F, 0, ldf, strideF, batch_count,
+                                                   scalars, work, workArr);
         }
     }
     else
@@ -551,40 +737,9 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         }
         else
         {
-            for(rocblas_int i = k - 2; i >= 0; --i)
-            {
-                // compute the matrix vector product, using the householder vectors
-                if(storev == rocblas_column_wise)
-                {
-                    trans = rocblas_operation_conjugate_transpose;
-                    rocblasCall_gemv<T>(handle, trans, n - k + i, k - i - 1, tau + i, strideT, V,
-                                        shiftV + idx2D(0, i + 1, ldv), ldv, strideV, V,
-                                        shiftV + idx2D(0, i, ldv), 1, strideV, scalars + 2, 0, F,
-                                        idx2D(i + 1, i, ldf), 1, strideF, batch_count, workArr);
-                }
-                else
-                {
-                    if(COMPLEX)
-                        rocsolver_lacgv_template<T>(handle, n - k + i, V, shiftV + idx2D(i, 0, ldv),
-                                                    ldv, strideV, batch_count);
-
-                    trans = rocblas_operation_none;
-                    rocblasCall_gemv<T>(handle, trans, k - i - 1, n - k + i, tau + i, strideT, V,
-                                        shiftV + idx2D(i + 1, 0, ldv), ldv, strideV, V,
-                                        shiftV + idx2D(i, 0, ldv), ldv, strideV, scalars + 2, 0, F,
-                                        idx2D(i + 1, i, ldf), 1, strideF, batch_count, workArr);
-
-                    if(COMPLEX)
-                        rocsolver_lacgv_template<T>(handle, n - k + i, V, shiftV + idx2D(i, 0, ldv),
-                                                    ldv, strideV, batch_count);
-                }
-
-                // multiply by the previous triangular factor
-                trans = rocblas_operation_none;
-                rocblasCall_trmv<T>(handle, uplo, trans, diag, k - i - 1, F,
-                                    idx2D(i + 1, i + 1, ldf), ldf, strideF, F, idx2D(i + 1, i, ldf),
-                                    1, strideF, work, stridew, batch_count);
-            }
+            larft_recursive_backward<T, U, COMPLEX>(handle, storev, n, k, V, shiftV, ldv, strideV,
+                                                    tau, strideT, F, 0, ldf, strideF, batch_count,
+                                                    scalars, work, workArr);
         }
     }
 
