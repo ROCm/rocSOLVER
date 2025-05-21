@@ -176,6 +176,7 @@ ROCSOLVER_KERNEL void larft_kernel_forward(const rocblas_storev storev,
                                            T* tauA,
                                            const rocblas_stride strideT,
                                            T* FA,
+                                           const rocblas_int shiftF,
                                            const rocblas_int ldfA,
                                            const rocblas_stride strideF)
 {
@@ -186,7 +187,7 @@ ROCSOLVER_KERNEL void larft_kernel_forward(const rocblas_storev storev,
     // select batch instance
     T* V = load_ptr_batch<T>(VA, bid, shiftV, strideV);
     T* tau = tauA + bid * strideT;
-    T* Ftemp = FA + bid * strideF;
+    T* Ftemp = load_ptr_batch<T>(FA, bid, shiftF, strideF);
 
     // shared memory setup
     extern __shared__ double lmem[];
@@ -270,6 +271,7 @@ ROCSOLVER_KERNEL void larft_kernel_backward(const rocblas_storev storev,
                                             T* tauA,
                                             const rocblas_stride strideT,
                                             T* FA,
+                                            const rocblas_int shiftF,
                                             const rocblas_int ldfA,
                                             const rocblas_stride strideF)
 {
@@ -280,7 +282,7 @@ ROCSOLVER_KERNEL void larft_kernel_backward(const rocblas_storev storev,
     // select batch instance
     T* V = load_ptr_batch<T>(VA, bid, shiftV, strideV);
     T* tau = tauA + bid * strideT;
-    T* Ftemp = FA + bid * strideF;
+    T* Ftemp = load_ptr_batch<T>(FA, bid, shiftF, strideF);
 
     // shared memory setup
     extern __shared__ double lmem[];
@@ -443,16 +445,26 @@ rocblas_status larft_recursive_forward(rocblas_handle handle,
                                        const rocblas_int batch_count,
                                        T* scalars,
                                        T* work,
-                                       T** workArr)
+                                       T** workArr,
+                                       size_t sharedMemPerBlock)
 {
     if(k < 2 || n < 2)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    size_t lmemsize = sizeof(T) * (k + 1) * k;
+    if(k <= LARFT_SWITCHSIZE && lmemsize <= sharedMemPerBlock)
+    {
+        ROCSOLVER_LAUNCH_KERNEL(larft_kernel_forward, dim3(1, batch_count),
+                                dim3(LARFT_SWITCHSIZE, 1), lmemsize, stream, storev, n, k, V,
+                                shiftV, ldv, strideV, tau, strideT, F, shiftF, ldf, strideF);
+        return rocblas_status_success;
+    }
+
     rocblas_int blocks = (k - 1) / BS2 + 1;
     rocblas_int l = k / 2;
-
     T one = 1;
     T minone = -1;
 
@@ -460,11 +472,12 @@ rocblas_status larft_recursive_forward(rocblas_handle handle,
     {
         // F_1_1
         larft_recursive_forward(handle, storev, n, l, V, shiftV, ldv, strideV, tau, strideT, F,
-                                shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+                                shiftF, ldf, strideF, batch_count, scalars, work, workArr,
+                                sharedMemPerBlock);
         // F_2_2
         larft_recursive_forward(handle, storev, n - l, k - l, V, shiftV + (l * ldv + l), ldv,
-                                strideV, tau, strideT, F, shiftF + (l * ldf + l), ldf, strideF,
-                                batch_count, scalars, work, workArr);
+                                strideV, tau + l, strideT, F, shiftF + (l * ldf + l), ldf, strideF,
+                                batch_count, scalars, work, workArr, sharedMemPerBlock);
 
         // F_1_2 = V_2_1^T
         ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
@@ -497,11 +510,12 @@ rocblas_status larft_recursive_forward(rocblas_handle handle,
     {
         // F_1_1
         larft_recursive_forward(handle, storev, n, l, V, shiftV, ldv, strideV, tau, strideT, F,
-                                shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+                                shiftF, ldf, strideF, batch_count, scalars, work, workArr,
+                                sharedMemPerBlock);
         // F_2_2
         larft_recursive_forward(handle, storev, n - l, k - l, V, shiftV + (l * ldv + l), ldv,
-                                strideV, tau, strideT, F, shiftF + (l * ldf + l), ldf, strideF,
-                                batch_count, scalars, work, workArr);
+                                strideV, tau + l, strideT, F, shiftF + (l * ldf + l), ldf, strideF,
+                                batch_count, scalars, work, workArr, sharedMemPerBlock);
 
         // F_1_2 = V_1_2
         ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(BS2, BS2), 0,
@@ -551,28 +565,39 @@ rocblas_status larft_recursive_backward(rocblas_handle handle,
                                         const rocblas_int batch_count,
                                         T* scalars,
                                         T* work,
-                                        T** workArr)
+                                        T** workArr,
+                                        size_t sharedMemPerBlock)
 {
     if(k < 2 || n < 2)
         return rocblas_status_success;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
+
+    size_t lmemsize = sizeof(T) * (k + 1) * k;
+    if(k <= LARFT_SWITCHSIZE && lmemsize <= sharedMemPerBlock)
+    {
+        ROCSOLVER_LAUNCH_KERNEL(larft_kernel_backward, dim3(1, batch_count),
+                                dim3(LARFT_SWITCHSIZE, 1), lmemsize, stream, storev, n, k, V,
+                                shiftV, ldv, strideV, tau, strideT, F, shiftF, ldf, strideF);
+        return rocblas_status_success;
+    }
+
     rocblas_int blocks = (k - 1) / BS2 + 1;
     rocblas_int l = k / 2;
-
     T one = 1;
     T minone = -1;
 
     if(storev == rocblas_column_wise) // QL
     {
         // F_1_1
-        larft_recursive_backward(handle, storev, n - l, k - l, V, shiftV, ldv, strideV, tau, strideT,
-                                 F, shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+        larft_recursive_backward(handle, storev, n - l, k - l, V, shiftV, ldv, strideV, tau,
+                                 strideT, F, shiftF, ldf, strideF, batch_count, scalars, work,
+                                 workArr, sharedMemPerBlock);
         // F_2_2
-        larft_recursive_backward(handle, storev, n, l, V, shiftV + (k - l) * ldv, ldv, strideV, tau,
-                                 strideT, F, shiftF + (k - l) * ldf + (k - l), ldf, strideF,
-                                 batch_count, scalars, work, workArr);
+        larft_recursive_backward(handle, storev, n, l, V, shiftV + (k - l) * ldv, ldv, strideV,
+                                 tau + (k - l), strideT, F, shiftF + (k - l) * ldf + (k - l), ldf,
+                                 strideF, batch_count, scalars, work, workArr, sharedMemPerBlock);
 
         // F_1_2 = V_2_1^T
         ROCSOLVER_LAUNCH_KERNEL((copy_trans_mat<T, T>), dim3(blocks, blocks, batch_count),
@@ -605,12 +630,13 @@ rocblas_status larft_recursive_backward(rocblas_handle handle,
     else // RQ
     {
         // F_1_1
-        larft_recursive_backward(handle, storev, n - l, k - l, V, shiftV, ldv, strideV, tau, strideT,
-                                 F, shiftF, ldf, strideF, batch_count, scalars, work, workArr);
+        larft_recursive_backward(handle, storev, n - l, k - l, V, shiftV, ldv, strideV, tau,
+                                 strideT, F, shiftF, ldf, strideF, batch_count, scalars, work,
+                                 workArr, sharedMemPerBlock);
         // F_2_2
-        larft_recursive_backward(handle, storev, n, l, V, shiftV + (k - l), ldv, strideV, tau,
-                                 strideT, F, shiftF + (k - l) + ldf * (k - l), ldf, strideF,
-                                 batch_count, scalars, work, workArr);
+        larft_recursive_backward(handle, storev, n, l, V, shiftV + (k - l), ldv, strideV,
+                                 tau + (k - l), strideT, F, shiftF + (k - l) + ldf * (k - l), ldf,
+                                 strideF, batch_count, scalars, work, workArr, sharedMemPerBlock);
 
         // F_2_1 = V_2_2
         ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(BS2, BS2), 0,
@@ -696,51 +722,28 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     HIP_CHECK(hipGetDevice(&device));
     hipDeviceProp_t props;
     HIP_CHECK(hipGetDeviceProperties(&props, device));
-    size_t lmemsize = sizeof(T) * (k + 1) * k;
 
     if(direct == rocblas_forward_direction)
     {
-        uplo = rocblas_fill_upper;
-
         // **** FOR NOW, IT DOES NOT LOOK FOR TRAILING ZEROS
         //      AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
         //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
         //      ZERO ENTRIES ****
 
-        if(k <= LARFT_SWITCHSIZE && lmemsize <= props.sharedMemPerBlock)
-        {
-            ROCSOLVER_LAUNCH_KERNEL(larft_kernel_forward, dim3(1, batch_count), dim3(BS1, 1),
-                                    lmemsize, stream, storev, n, k, V, shiftV, ldv, strideV, tau,
-                                    strideT, F, ldf, strideF);
-        }
-        else
-        {
-            larft_recursive_forward<T, U, COMPLEX>(handle, storev, n, k, V, shiftV, ldv, strideV,
-                                                   tau, strideT, F, 0, ldf, strideF, batch_count,
-                                                   scalars, work, workArr);
-        }
+        ROCBLAS_CHECK(larft_recursive_forward<T, U, COMPLEX>(
+            handle, storev, n, k, V, shiftV, ldv, strideV, tau, strideT, F, 0, ldf, strideF,
+            batch_count, scalars, work, workArr, props.sharedMemPerBlock));
     }
     else
     {
-        uplo = rocblas_fill_lower;
-
         // **** FOR NOW, IT DOES NOT LOOK FOR TRAILING ZEROS
         //      AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
         //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
         //      ZERO ENTRIES ****
 
-        if(k <= LARFT_SWITCHSIZE && lmemsize <= props.sharedMemPerBlock)
-        {
-            ROCSOLVER_LAUNCH_KERNEL(larft_kernel_backward, dim3(1, batch_count), dim3(BS1, 1),
-                                    lmemsize, stream, storev, n, k, V, shiftV, ldv, strideV, tau,
-                                    strideT, F, ldf, strideF);
-        }
-        else
-        {
-            larft_recursive_backward<T, U, COMPLEX>(handle, storev, n, k, V, shiftV, ldv, strideV,
-                                                    tau, strideT, F, 0, ldf, strideF, batch_count,
-                                                    scalars, work, workArr);
-        }
+        ROCBLAS_CHECK(larft_recursive_backward<T, U, COMPLEX>(
+            handle, storev, n, k, V, shiftV, ldv, strideV, tau, strideT, F, 0, ldf, strideF,
+            batch_count, scalars, work, workArr, props.sharedMemPerBlock));
     }
 
     // restore tau
