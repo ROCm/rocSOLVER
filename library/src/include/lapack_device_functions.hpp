@@ -1188,4 +1188,1243 @@ ROCSOLVER_KERNEL void scal_kernel(I const n, S const da, T* const x, I const inc
     }
 }
 
+template <typename S, typename Int>
+__device__ void slaed6(Int kniter,
+                       Int orgati_,
+                       S rho,
+                       S* d,
+                       S* z,
+                       S finit,
+                       S& tau,
+                       Int& info,
+                       S eps,
+                       S ssfmin,
+                       Int MAXIT = 50)
+{
+    auto ABS = [](auto x) -> auto
+    {
+        return std::abs(x);
+    };
+    auto SQRT = [](auto x) -> auto
+    {
+        return std::sqrt(x);
+    };
+    auto MAX = [](auto x, auto y, auto z) -> auto
+    {
+        return std::max(std::max(x, y), z);
+    };
+    auto MIN = [](auto x, auto y) -> auto
+    {
+        return std::min(x, y);
+    };
+
+    S dscale[3]{}, zscale[3]{};
+    struct X_t
+    {
+        S* x_;
+        __device__ X_t(S* x)
+            : x_(x)
+        {
+        }
+
+        __device__ S& operator()(int j)
+        {
+            return x_[j - 1];
+        }
+
+    } D(d), Z(z), DSCALE(dscale), ZSCALE(zscale);
+
+    bool scale, orgati;
+
+    S a, b, c, ddf, df, erretm, eta, f, fc, sclfac, sclinv, small1, small2, sminv1, sminv2, temp,
+        temp1, temp2, temp3, temp4, lbd, ubd;
+
+    Int iter, niter;
+
+    info = 0;
+
+    if(orgati_ == S(0.))
+    {
+        orgati = false;
+    }
+    else
+    {
+        orgati = true;
+    }
+
+    if(orgati)
+    {
+        lbd = D(2);
+        ubd = D(3);
+    }
+    else
+    {
+        lbd = D(1);
+        ubd = D(2);
+    }
+
+    if(finit < S(0.))
+    {
+        lbd = S(0.);
+    }
+    else
+    {
+        ubd = S(0.);
+    }
+
+    niter = 1;
+    tau = S(0.);
+    if(kniter == 2)
+    {
+        if(orgati)
+        {
+            temp = (D(3) - D(2)) / S(2.);
+            c = rho + Z(1) / ((D(1) - D(2)) - temp);
+            a = c * (D(2) + D(3)) + Z(2) + Z(3);
+            b = c * D(2) * D(3) + Z(2) * D(3) + Z(3) * D(2);
+        }
+        else
+        {
+            temp = (D(1) - D(2)) / S(2.);
+            c = rho + Z(3) / ((D(3) - D(2)) - temp);
+            a = c * (D(1) + D(2)) + Z(1) + Z(2);
+            b = c * D(1) * D(2) + Z(1) * D(2) + Z(2) * D(1);
+        }
+
+        temp = MAX(ABS(a), ABS(b), ABS(c));
+        a = a / temp;
+        b = b / temp;
+        c = c / temp;
+        if(c == S(0.))
+        {
+            tau = b / a;
+        }
+        else if(a <= S(0.))
+        {
+            tau = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+        }
+        else
+        {
+            tau = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+        }
+
+        if(tau < lbd || tau > ubd)
+        {
+            tau = (lbd + ubd) / S(2.);
+        }
+        if(D(1) == tau || D(2) == tau || D(3) == tau)
+        {
+            tau = S(0.);
+        }
+        else
+        {
+            temp = finit + tau * Z(1) / (D(1) * (D(1) - tau)) + tau * Z(2) / (D(2) * (D(2) - tau))
+                + tau * Z(3) / (D(3) * (D(3) - tau));
+            if(temp <= S(0.))
+            {
+                lbd = tau;
+            }
+            else
+            {
+                ubd = tau;
+            }
+
+            if(ABS(finit) <= ABS(temp))
+            {
+                tau = S(0.);
+            }
+        }
+    }
+    //
+    //     get machine parameters for possible scaling to avoid overflow
+    //
+    small1 = std::pow(S(2), (std::log(ssfmin) / std::log(S(2))) / S(3));
+    sminv1 = S(1.) / small1;
+    small2 = small1 * small1;
+    sminv2 = sminv1 * sminv1;
+    //
+    //     Determine if scaling of inputs necessary to avoid overflow
+    //     when computing 1/temp**3
+    //
+    if(orgati)
+    {
+        temp = MIN(ABS(D(2) - tau), ABS(D(3) - tau));
+    }
+    else
+    {
+        temp = MIN(ABS(D(1) - tau), ABS(D(2) - tau));
+    }
+
+    scale = false;
+    if(temp <= small1)
+    {
+        scale = true;
+        if(temp <= small2)
+        {
+            //
+            //        Scale up by power of radix nearest 1/SAFMIN**(2/3)
+            //
+            sclfac = sminv2;
+            sclinv = small2;
+        }
+        else
+        {
+            //
+            //        Scale up by power of radix nearest 1/SAFMIN**(1/3)
+            //
+            sclfac = sminv1;
+            sclinv = small1;
+        }
+        //
+        //        Scaling up safe because D, Z, tau scaled elsewhere to be O(1)
+        //
+        for(int I = 1; I <= 3; ++I)
+        {
+            DSCALE(I) = D(I) * sclfac;
+            ZSCALE(I) = Z(I) * sclfac;
+        }
+        tau = tau * sclfac;
+        lbd = lbd * sclfac;
+        ubd = ubd * sclfac;
+    }
+    else
+    {
+        //
+        //        Copy D and Z to DSCALE and ZSCALE
+        //
+        for(int I = 1; I <= 3; ++I)
+        {
+            DSCALE(I) = D(I);
+            ZSCALE(I) = Z(I);
+        }
+    }
+    fc = S(0.);
+    df = S(0.);
+    ddf = S(0.);
+    for(int I = 1; I <= 3; ++I)
+    {
+        temp = S(1.) / (DSCALE(I) - tau);
+        temp1 = ZSCALE(I) * temp;
+        temp2 = temp1 * temp;
+        temp3 = temp2 * temp;
+        fc = fc + temp1 / DSCALE(I);
+        df = df + temp2;
+        ddf = ddf + temp3;
+    }
+    f = finit + tau * fc;
+    if(ABS(f) <= S(0.))
+    {
+        if(scale)
+        {
+            tau = tau * sclinv;
+        }
+        return;
+    }
+    if(f <= S(0.))
+    {
+        lbd = tau;
+    }
+    else
+    {
+        ubd = tau;
+    }
+    //
+    //        Iteration begins -- Use Gragg-Thornton-Warner cubic convergent
+    //                            scheme
+    //
+    //     It is not hard to see that
+    //
+    //           1) Iterations will go up monotonically
+    //              if finit < 0;
+    //
+    //           2) Iterations will go down monotonically
+    //              if finit > 0.
+    //
+    iter = niter + 1;
+    for(int niter = iter; niter <= MAXIT; ++niter)
+    {
+        if(orgati)
+        {
+            temp1 = DSCALE(2) - tau;
+            temp2 = DSCALE(3) - tau;
+        }
+        else
+        {
+            temp1 = DSCALE(1) - tau;
+            temp2 = DSCALE(2) - tau;
+        }
+
+        a = (temp1 + temp2) * f - temp1 * temp2 * df;
+        b = temp1 * temp2 * f;
+        c = f - (temp1 + temp2) * df + temp1 * temp2 * ddf;
+        temp = MAX(ABS(a), ABS(b), ABS(c));
+        a = a / temp;
+        b = b / temp;
+        c = c / temp;
+        if(c == S(0.))
+        {
+            eta = b / a;
+        }
+        else if(a <= S(0.))
+        {
+            eta = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+        }
+        else
+        {
+            eta = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+        }
+
+        if(f * eta >= S(0.))
+        {
+            eta = -f / df;
+        }
+
+        tau = tau + eta;
+        if(tau < lbd || tau > ubd)
+        {
+            tau = (lbd + ubd) / S(2.);
+        }
+
+        fc = S(0.);
+        erretm = S(0.);
+        df = S(0.);
+        ddf = S(0.);
+        for(int I = 1; I <= 3; ++I)
+        {
+            if((DSCALE(I) - tau) != S(0.))
+            {
+                temp = S(1.) / (DSCALE(I) - tau);
+                temp1 = ZSCALE(I) * temp;
+                temp2 = temp1 * temp;
+                temp3 = temp2 * temp;
+                temp4 = temp1 / DSCALE(I);
+                fc = fc + temp4;
+                erretm = erretm + ABS(temp4);
+                df = df + temp2;
+                ddf = ddf + temp3;
+            }
+            else
+            {
+                if(scale)
+                {
+                    tau = tau * sclinv;
+                }
+                return;
+            }
+        }
+        f = finit + tau * fc;
+        erretm = S(8.) * (ABS(finit) + ABS(tau) * erretm) + ABS(tau) * df;
+        if((ABS(f) <= S(4.) * eps * erretm) || ((ubd - lbd) <= S(4.) * eps * ABS(tau)))
+        {
+            if(scale)
+            {
+                tau = tau * sclinv;
+            }
+            return;
+        }
+        // REVIEW
+        if(f <= S(0.))
+        {
+            lbd = tau;
+        }
+        else
+        {
+            ubd = tau;
+        }
+    }
+    info = 1;
+    //
+    //     Undo scaling
+    //
+    if(scale)
+    {
+        tau = tau * sclinv;
+    }
+
+    return;
+}
+
+template <typename S, typename Int>
+__device__ void
+    slaed4(Int n, Int i, S* delta, S* z, S rho, S& dlam, Int& info, S eps, S ssfmin, Int MAXIT)
+{
+    auto ABS = [](auto x) -> auto
+    {
+        return std::abs(x);
+    };
+    auto POW2 = [](auto x) -> auto
+    {
+        return x * x;
+    };
+    auto SQRT = [](auto x) -> auto
+    {
+        return std::sqrt(x);
+    };
+    auto MAX = [](auto x, auto y) -> auto
+    {
+        return std::max(x, y);
+    };
+    auto MIN = [](auto x, auto y) -> auto
+    {
+        return std::min(x, y);
+    };
+
+    i = i + 1;
+    S zz[3]{};
+    struct X_t
+    {
+        S* x_;
+        __device__ X_t(S* x)
+            : x_(x)
+        {
+        }
+
+        __device__ S& operator()(int j)
+        {
+            return x_[j - 1];
+        }
+
+    } Z(z), ZZ(zz), DELTA(delta);
+
+    S tau, eta = S(0.), dltlb, dltub;
+    S psi, dpsi, phi, dphi, rhoinv, midpt;
+    S del, a, b, c, w, erretm, temp, dw, temp1, prew;
+    Int ii, niter, iter, orgati, iim1, iip1, swtch3, swtch;
+
+    S d1 = DELTA(1);
+    S di = DELTA(i);
+    S dnm1 = DELTA(n - 1);
+    S dn = DELTA(n);
+
+    info = 0;
+    if(n == 1)
+    {
+        dlam = d1 + rho * Z(1) * Z(1);
+        DELTA(1) = S(1.);
+        return;
+    }
+
+    rhoinv = S(1.) / rho;
+
+    //
+    // The case i = n
+    //
+    if(i == n)
+    {
+        ii = n - 1;
+        niter = 1;
+        //
+        //        Initial guess
+        //
+        midpt = rho / S(2.);
+        //
+        //        If ||Z||_2 is not one, then temp should be set to
+        //        rho * ||Z||_2^2 / S(2.)
+        //
+        for(int J = 1; J <= n; ++J)
+        {
+            DELTA(J) = (DELTA(J) - di) - midpt;
+        }
+
+        psi = S(0.);
+        for(int J = 1; J <= n - 2; ++J)
+        {
+            psi = psi + Z(J) * Z(J) / DELTA(J);
+        }
+        c = rhoinv + psi;
+        w = c + Z(ii) * Z(ii) / DELTA(ii) + Z(n) * Z(n) / DELTA(n);
+        if(w <= S(0.))
+        {
+            temp = Z(n - 1) * Z(n - 1) / (dn - dnm1 + rho) + Z(n) * Z(n) / rho;
+            if(c <= temp)
+            {
+                tau = rho;
+            }
+            else
+            {
+                del = dn - dnm1;
+                a = -c * del + Z(n - 1) * Z(n - 1) + Z(n) * Z(n);
+                b = Z(n) * Z(n) * del;
+                if(a < S(0.))
+                {
+                    tau = S(2.) * b / (sqrt(a * a + S(4.) * b * c) - a);
+                }
+                else
+                {
+                    tau = (a + sqrt(a * a + S(4.) * b * c)) / (S(2.) * c);
+                }
+            }
+            //
+            //           It can be proved that
+            //               D(n)+rho/2 <= LAMBDA(n) < D(n)+tau <= D(n)+rho
+            //
+            dltlb = midpt;
+            dltub = rho;
+        }
+        else
+        {
+            del = dn - dnm1;
+            a = -c * del + Z(n - 1) * Z(n - 1) + Z(n) * Z(n);
+            b = Z(n) * Z(n) * del;
+            if(a < S(0.))
+            {
+                tau = S(2.) * b / (sqrt(a * a + S(4.) * b * c) - a);
+            }
+            else
+            {
+                tau = (a + sqrt(a * a + S(4.) * b * c)) / (S(2.) * c);
+            }
+            //
+            //           It can be proved that
+            //               D(n) < D(n)+tau < LAMBDA(n) < D(n)+rho/2
+            //
+            dltlb = S(0.);
+            dltub = midpt;
+        }
+        for(int J = 1; J <= n; ++J)
+        {
+            DELTA(J) = (DELTA(J) + midpt) - tau;
+        }
+        //
+        //        Evaluate psi and the derivative dpsi
+        //
+        dpsi = S(0.);
+        psi = S(0.);
+        erretm = S(0.);
+        for(int J = 1; J <= ii; ++J)
+        {
+            temp = Z(J) / DELTA(J);
+            psi = psi + Z(J) * temp;
+            dpsi = dpsi + temp * temp;
+            erretm = erretm + psi;
+        }
+        erretm = ABS(erretm);
+        //
+        //        Evaluate phi and the derivative dphi
+        //
+        temp = Z(n) / DELTA(n);
+        phi = Z(n) * temp;
+        dphi = temp * temp;
+        erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + ABS(tau) * (dpsi + dphi);
+        w = rhoinv + phi + psi;
+        //
+        //        Test for convergence
+        //
+        if(ABS(w) <= eps * erretm)
+        {
+            dlam = di + tau;
+            return;
+        }
+        if(w <= S(0.))
+        {
+            dltlb = MAX(dltlb, tau);
+        }
+        else
+        {
+            dltub = MIN(dltub, tau);
+        }
+        //
+        //        Calculate the new step
+        //
+        niter = niter + 1;
+        c = w - DELTA(n - 1) * dpsi - DELTA(n) * dphi;
+        a = (DELTA(n - 1) + DELTA(n)) * w - DELTA(n - 1) * DELTA(n) * (dpsi + dphi);
+        b = DELTA(n - 1) * DELTA(n) * w;
+        // REVIEW
+        if(c < S(0.))
+        {
+            c = ABS(c);
+        }
+        if(c <= S(0.))
+        {
+            eta = -w / (dpsi + dphi);
+        }
+        else if(a >= S(0.))
+        {
+            eta = (a + sqrt(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+        }
+        else
+        {
+            eta = S(2.) * b / (a - sqrt(ABS(a * a - S(4.) * b * c)));
+        }
+        //
+        //        Note, eta should be positive if w is negative, and
+        //        eta should be negative otherwise. However,
+        //        if for some reason caused by roundoff, eta*w > 0,
+        //        we simply use one Newton step instead. This way
+        //        will guarantee eta*w < 0.
+        //
+        if(w * eta > S(0.))
+        {
+            eta = -w / (dpsi + dphi);
+        }
+        temp = tau + eta;
+        if(temp > dltub || temp < dltlb)
+        {
+            if(w < S(0.))
+            {
+                eta = (dltub - tau) / S(2.);
+            }
+            else
+            {
+                eta = (dltlb - tau) / S(2.);
+            }
+        }
+        for(int J = 1; J <= n; ++J)
+        {
+            DELTA(J) = DELTA(J) - eta;
+        }
+        tau = tau + eta;
+        //
+        //        Evaluate psi and the derivative dpsi
+        //
+        dpsi = S(0.);
+        psi = S(0.);
+        erretm = S(0.);
+        for(int J = 1; J <= ii; ++J)
+        {
+            temp = Z(J) / DELTA(J);
+            psi = psi + Z(J) * temp;
+            dpsi = dpsi + temp * temp;
+            erretm = erretm + psi;
+        }
+        erretm = ABS(erretm);
+        //
+        //        Evaluate phi and the derivative dphi
+        //
+        temp = Z(n) / DELTA(n);
+        phi = Z(n) * temp;
+        dphi = temp * temp;
+        erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + ABS(tau) * (dpsi + dphi);
+        w = rhoinv + phi + psi;
+        //
+        //        Main loop to update the values of the array   DELTA
+        //
+        iter = niter + 1;
+        for(niter = iter; niter <= MAXIT; ++niter)
+        {
+            //
+            //           Test for convergence
+            //
+            if(ABS(w) <= eps * erretm)
+            {
+                dlam = di + tau;
+                return;
+            }
+            if(w <= S(0.))
+            {
+                dltlb = MAX(dltlb, tau);
+            }
+            else
+            {
+                dltub = MIN(dltub, tau);
+            }
+            //
+            //           Calculate the new step
+            //
+            c = w - DELTA(n - 1) * dpsi - DELTA(n) * dphi;
+            a = (DELTA(n - 1) + DELTA(n)) * w - DELTA(n - 1) * DELTA(n) * (dpsi + dphi);
+            b = DELTA(n - 1) * DELTA(n) * w;
+            if(a >= S(0.))
+            {
+                eta = (a + SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+            }
+            else
+            {
+                eta = S(2.) * b / (a - SQRT(ABS(a * a - S(4.) * b * c)));
+            }
+            //
+            //           Note, eta should be positive if w is negative, and
+            //           eta should be negative otherwise. However,
+            //           if for some reason caused by roundoff, eta*w > 0,
+            //           we simply use one Newton step instead. This way
+            //           will guarantee eta*w < 0.
+            //
+            if(w * eta > S(0.))
+            {
+                eta = -w / (dpsi + dphi);
+            }
+            temp = tau + eta;
+            if(temp > dltub || temp < dltlb)
+            {
+                if(w < S(0.))
+                {
+                    eta = (dltub - tau) / S(2.);
+                }
+                else
+                {
+                    eta = (dltlb - tau) / S(2.);
+                }
+            }
+            for(int J = 1; J <= n; ++J)
+            {
+                DELTA(J) = DELTA(J) - eta;
+            }
+            tau = tau + eta;
+            //
+            //           Evaluate psi and the derivative dpsi
+            //
+            dpsi = S(0.);
+            psi = S(0.);
+            erretm = S(0.);
+            for(int J = 1; J <= ii; ++J)
+            {
+                temp = Z(J) / DELTA(J);
+                psi = psi + Z(J) * temp;
+                dpsi = dpsi + temp * temp;
+                erretm = erretm + psi;
+            }
+            erretm = ABS(erretm);
+            //
+            //           Evaluate phi and the derivative dphi
+            //
+            temp = Z(n) / DELTA(n);
+            phi = Z(n) * temp;
+            dphi = temp * temp;
+            erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + ABS(tau) * (dpsi + dphi);
+            w = rhoinv + phi + psi;
+        }
+        //
+        //        Return with info = 1, niter = MAXIT and not converged
+        //
+        info = 1;
+        dlam = di + tau;
+
+        return;
+    }
+    else
+    {
+        //
+        //        The case for i < n
+        //
+        niter = 1;
+        Int ip1 = i + 1;
+        S dip1 = DELTA(ip1);
+        //
+        //        Calculate initial guess
+        //
+        del = dip1 - di;
+        midpt = del / S(2.);
+        psi = S(0.);
+        for(int J = 1; J <= i - 1; ++J)
+        {
+            S dj = (DELTA(J) - di) - midpt;
+            psi = psi + Z(J) * Z(J) / dj;
+        }
+        phi = S(0.);
+        for(int J = n; J >= i + 2; --J)
+        {
+            S dj = (DELTA(J) - di) - midpt;
+            phi = phi + Z(J) * Z(J) / dj;
+        }
+        c = rhoinv + psi + phi;
+        w = c + Z(i) * Z(i) / (-midpt) + Z(ip1) * Z(ip1) / ((dip1 - di) - midpt);
+        if(w > S(0.))
+        {
+            //
+            //           d(i)< the ith eigenvalue < (d(i)+d(i+1))/2
+            //
+            //           We choose d(i) as origin.
+            //
+            orgati = 1;
+            a = c * del + Z(i) * Z(i) + Z(ip1) * Z(ip1);
+            b = Z(i) * Z(i) * del;
+            if(a > S(0.))
+            {
+                tau = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+            }
+            else
+            {
+                tau = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+            }
+            dltlb = S(0.);
+            dltub = midpt;
+        }
+        else
+        {
+            //
+            //           (d(i)+d(i+1))/2 <= the ith eigenvalue < d(i+1)
+            //
+            //           We choose d(i+1) as origin.
+            //
+            orgati = 0;
+            a = c * del - Z(i) * Z(i) - Z(ip1) * Z(ip1);
+            b = Z(ip1) * Z(ip1) * del;
+            if(a < S(0.))
+            {
+                tau = S(2.) * b / (a - SQRT(ABS(a * a + S(4.) * b * c)));
+            }
+            else
+            {
+                tau = -(a + SQRT(ABS(a * a + S(4.) * b * c))) / (S(2.) * c);
+            }
+            dltlb = -midpt;
+            dltub = S(0.);
+        }
+        if(orgati)
+        {
+            ii = i;
+        }
+        else
+        {
+            ii = i + 1;
+        }
+        iim1 = ii - 1;
+        iip1 = ii + 1;
+        S diim1 = DELTA(iim1);
+        S diip1 = DELTA(iip1);
+        if(orgati)
+        {
+            for(int J = 1; J <= n; ++J)
+            {
+                DELTA(J) = (DELTA(J) - di) - tau;
+            }
+        }
+        else
+        {
+            for(int J = 1; J <= n; ++J)
+            {
+                DELTA(J) = (DELTA(J) - dip1) - tau;
+            }
+        }
+        //
+        //        Evaluate psi and the derivative dpsi
+        //
+        dpsi = S(0.);
+        psi = S(0.);
+        erretm = S(0.);
+        for(int J = 1; J <= iim1; ++J)
+        {
+            temp = Z(J) / DELTA(J);
+            psi = psi + Z(J) * temp;
+            dpsi = dpsi + temp * temp;
+            erretm = erretm + psi;
+        }
+        erretm = ABS(erretm);
+        //
+        //        Evaluate phi and the derivative dphi
+        //
+        dphi = S(0.);
+        phi = S(0.);
+        for(int J = n; J >= iip1; --J)
+        {
+            temp = Z(J) / DELTA(J);
+            phi = phi + Z(J) * temp;
+            dphi = dphi + temp * temp;
+            erretm = erretm + phi;
+        }
+        w = rhoinv + phi + psi;
+        //
+        //        w is the value of the secular function with
+        //        its ii-th element removed.
+        //
+        swtch3 = 0;
+        if(orgati)
+        {
+            if(w < S(0.))
+            {
+                swtch3 = 1;
+            }
+        }
+        else
+        {
+            if(w > S(0.))
+            {
+                swtch3 = 1;
+            }
+        }
+        if(ii == 1 || ii == n)
+        {
+            swtch3 = 0;
+        }
+        temp = Z(ii) / DELTA(ii);
+        dw = dpsi + dphi + temp * temp;
+        temp = Z(ii) * temp;
+        w = w + temp;
+        erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * ABS(temp) + ABS(tau) * dw;
+        //
+        //        Test for convergence
+        //
+        if(ABS(w) <= eps * erretm)
+        {
+            if(orgati)
+            {
+                dlam = di + tau;
+            }
+            else
+            {
+                dlam = dip1 + tau;
+            }
+
+            return;
+        }
+        if(w <= S(0.))
+        {
+            dltlb = MAX(dltlb, tau);
+        }
+        else
+        {
+            dltub = MIN(dltub, tau);
+        }
+        //
+        //        Calculate the new step
+        //
+        niter = niter + 1;
+        if(!swtch3)
+        {
+            if(orgati)
+            {
+                c = w - DELTA(ip1) * dw - (di - dip1) * POW2(Z(i) / DELTA(i));
+            }
+            else
+            {
+                c = w - DELTA(i) * dw - (dip1 - di) * POW2(Z(ip1) / DELTA(ip1));
+            }
+            a = (DELTA(i) + DELTA(ip1)) * w - DELTA(i) * DELTA(ip1) * dw;
+            b = DELTA(i) * DELTA(ip1) * w;
+            if(c == S(0.))
+            {
+                if(a == S(0.))
+                {
+                    if(orgati)
+                    {
+                        a = Z(i) * Z(i) + DELTA(ip1) * DELTA(ip1) * (dpsi + dphi);
+                    }
+                    else
+                    {
+                        a = Z(ip1) * Z(ip1) + DELTA(i) * DELTA(i) * (dpsi + dphi);
+                    }
+                }
+                eta = b / a;
+            }
+            else if(a <= S(0.))
+            {
+                eta = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+            }
+            else
+            {
+                eta = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+            }
+        }
+        else
+        {
+            //
+            //           Interpolation using THREE most relevant poles
+            //
+            temp = rhoinv + psi + phi;
+            if(orgati)
+            {
+                temp1 = Z(iim1) / DELTA(iim1);
+                temp1 = temp1 * temp1;
+                c = temp - DELTA(iip1) * (dpsi + dphi) - (diim1 - diip1) * temp1;
+                ZZ(1) = Z(iim1) * Z(iim1);
+                ZZ(3) = DELTA(iip1) * DELTA(iip1) * ((dpsi - temp1) + dphi);
+            }
+            else
+            {
+                temp1 = Z(iip1) / DELTA(iip1);
+                temp1 = temp1 * temp1;
+                c = temp - DELTA(iim1) * (dpsi + dphi) - (diip1 - diim1) * temp1;
+                ZZ(1) = DELTA(iim1) * DELTA(iim1) * (dpsi + (dphi - temp1));
+                ZZ(3) = Z(iip1) * Z(iip1);
+            }
+            ZZ(2) = Z(ii) * Z(ii);
+            Int ORGATI_ = orgati ? 1 : 0;
+            slaed6(niter, ORGATI_, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin, MAXIT);
+            if(info != 0)
+            {
+                return;
+                /* $         GO TO 250 */
+            }
+        }
+        //
+        //        Note, eta should be positive if w is negative, and
+        //        eta should be negative otherwise. However,
+        //        if for some reason caused by roundoff, eta*w > 0,
+        //        we simply use one Newton step instead. This way
+        //        will guarantee eta*w < 0.
+        //
+        if(w * eta >= S(0.))
+        {
+            eta = -w / dw;
+        }
+        temp = tau + eta;
+        if(temp > dltub || temp < dltlb)
+        {
+            if(w < S(0.))
+            {
+                eta = (dltub - tau) / S(2.);
+            }
+            else
+            {
+                eta = (dltlb - tau) / S(2.);
+            }
+        }
+        prew = w;
+        for(int J = 1; J <= n; ++J)
+        {
+            DELTA(J) = DELTA(J) - eta;
+        }
+        //
+        //        Evaluate psi and the derivative dpsi
+        //
+        dpsi = S(0.);
+        psi = S(0.);
+        erretm = S(0.);
+        for(int J = 1; J <= iim1; ++J)
+        {
+            temp = Z(J) / DELTA(J);
+            psi = psi + Z(J) * temp;
+            dpsi = dpsi + temp * temp;
+            erretm = erretm + psi;
+        }
+        erretm = ABS(erretm);
+        //
+        //        Evaluate phi and the derivative dphi
+        //
+        dphi = S(0.);
+        phi = S(0.);
+        for(int J = n; J >= iip1; --J)
+        {
+            temp = Z(J) / DELTA(J);
+            phi = phi + Z(J) * temp;
+            dphi = dphi + temp * temp;
+            erretm = erretm + phi;
+        }
+        temp = Z(ii) / DELTA(ii);
+        dw = dpsi + dphi + temp * temp;
+        temp = Z(ii) * temp;
+        w = rhoinv + phi + psi + temp;
+        erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * ABS(temp)
+            + ABS(tau + eta) * dw;
+        swtch = 0;
+        if(orgati)
+        {
+            if(-w > ABS(prew) / S(10.))
+            {
+                swtch = 1;
+            }
+        }
+        else
+        {
+            if(w > ABS(prew) / S(10.))
+            {
+                swtch = 1;
+            }
+        }
+        tau = tau + eta;
+        //
+        //        Main loop to update the values of the array   DELTA
+        //
+        iter = niter + 1;
+        for(niter = iter; niter < MAXIT; ++niter)
+        {
+            //
+            //           Test for convergence
+            //
+            if(ABS(w) <= eps * erretm)
+            {
+                if(orgati)
+                {
+                    dlam = di + tau;
+                }
+                else
+                {
+                    dlam = dip1 + tau;
+                }
+
+                return;
+            }
+            if(w <= S(0.))
+            {
+                dltlb = MAX(dltlb, tau);
+            }
+            else
+            {
+                dltub = MIN(dltub, tau);
+            }
+            //
+            //           Calculate the new step
+            //
+            if(!swtch3)
+            {
+                if(!swtch)
+                {
+                    if(orgati)
+                    {
+                        c = w - DELTA(ip1) * dw - (di - dip1) * POW2(Z(i) / DELTA(i));
+                    }
+                    else
+                    {
+                        c = w - DELTA(i) * dw - (dip1 - di) * POW2(Z(ip1) / DELTA(ip1));
+                    }
+                }
+                else
+                {
+                    temp = Z(ii) / DELTA(ii);
+                    if(orgati)
+                    {
+                        dpsi = dpsi + temp * temp;
+                    }
+                    else
+                    {
+                        dphi = dphi + temp * temp;
+                    }
+                    c = w - DELTA(i) * dpsi - DELTA(ip1) * dphi;
+                }
+                a = (DELTA(i) + DELTA(ip1)) * w - DELTA(i) * DELTA(ip1) * dw;
+                b = DELTA(i) * DELTA(ip1) * w;
+                if(c == S(0.))
+                {
+                    if(a == S(0.))
+                    {
+                        if(!swtch)
+                        {
+                            if(orgati)
+                            {
+                                a = Z(i) * Z(i) + DELTA(ip1) * DELTA(ip1) * (dpsi + dphi);
+                            }
+                            else
+                            {
+                                a = Z(ip1) * Z(ip1) + DELTA(i) * DELTA(i) * (dpsi + dphi);
+                            }
+                        }
+                        else
+                        {
+                            a = DELTA(i) * DELTA(i) * dpsi + DELTA(ip1) * DELTA(ip1) * dphi;
+                        }
+                    }
+                    eta = b / a;
+                }
+                else if(a <= S(0.))
+                {
+                    eta = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+                }
+                else
+                {
+                    eta = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+                }
+            }
+            else
+            {
+                //
+                //              Interpolation using 3 most relevant poles
+                //
+                temp = rhoinv + psi + phi;
+                if(swtch)
+                {
+                    c = temp - DELTA(iim1) * dpsi - DELTA(iip1) * dphi;
+                    ZZ(1) = DELTA(iim1) * DELTA(iim1) * dpsi;
+                    ZZ(3) = DELTA(iip1) * DELTA(iip1) * dphi;
+                }
+                else
+                {
+                    if(orgati)
+                    {
+                        temp1 = Z(iim1) / DELTA(iim1);
+                        temp1 = temp1 * temp1;
+                        c = temp - DELTA(iip1) * (dpsi + dphi) - (diim1 - diip1) * temp1;
+                        ZZ(1) = Z(iim1) * Z(iim1);
+                        ZZ(3) = DELTA(iip1) * DELTA(iip1) * ((dpsi - temp1) + dphi);
+                    }
+                    else
+                    {
+                        temp1 = Z(iip1) / DELTA(iip1);
+                        temp1 = temp1 * temp1;
+                        c = temp - DELTA(iim1) * (dpsi + dphi) - (diip1 - diim1) * temp1;
+                        ZZ(1) = DELTA(iim1) * DELTA(iim1) * (dpsi + (dphi - temp1));
+                        ZZ(3) = Z(iip1) * Z(iip1);
+                    }
+                }
+                int ORGATI_ = orgati ? 1 : 0;
+                slaed6(niter, ORGATI_, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin, MAXIT);
+                if(info != 0)
+                {
+                    return;
+                }
+            }
+            //
+            //           Note, eta should be positive if w is negative, and
+            //           eta should be negative otherwise. However,
+            //           if for some reason caused by roundoff, eta*w > 0,
+            //           we simply use one Newton step instead. This way
+            //           will guarantee eta*w < 0.
+            //
+            if(w * eta >= S(0.))
+            {
+                eta = -w / dw;
+            }
+            temp = tau + eta;
+            if(temp > dltub || temp < dltlb)
+            {
+                if(w < S(0.))
+                {
+                    eta = (dltub - tau) / S(2.);
+                }
+                else
+                {
+                    eta = (dltlb - tau) / S(2.);
+                }
+            }
+            /* * */
+            for(int J = 1; J <= n; ++J)
+            {
+                DELTA(J) = DELTA(J) - eta;
+            }
+            tau = tau + eta;
+            prew = w;
+            //
+            //           Evaluate psi and the derivative dpsi
+            //
+            dpsi = S(0.);
+            psi = S(0.);
+            erretm = S(0.);
+            for(int J = 1; J <= iim1; ++J)
+            {
+                temp = Z(J) / DELTA(J);
+                psi = psi + Z(J) * temp;
+                dpsi = dpsi + temp * temp;
+                erretm = erretm + psi;
+            }
+            erretm = ABS(erretm);
+            //
+            //           Evaluate phi and the derivative dphi
+            //
+            dphi = S(0.);
+            phi = S(0.);
+            for(int J = n; J >= iip1; --J)
+            {
+                temp = Z(J) / DELTA(J);
+                phi = phi + Z(J) * temp;
+                dphi = dphi + temp * temp;
+                erretm = erretm + phi;
+            }
+            temp = Z(ii) / DELTA(ii);
+            dw = dpsi + dphi + temp * temp;
+            temp = Z(ii) * temp;
+            w = rhoinv + phi + psi + temp;
+            erretm
+                = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * ABS(temp) + ABS(tau) * dw;
+            if(w * prew > S(0.) && ABS(w) > ABS(prew) / S(10.))
+            {
+                swtch = !swtch;
+            }
+        }
+        //
+        //        Return with info = 1, niter = MAXIT and not converged
+        //
+        info = 1;
+        if(orgati)
+        {
+            dlam = di + tau;
+        }
+        else
+        {
+            dlam = dip1 + tau;
+        }
+    }
+
+    return;
+}
+
 ROCSOLVER_END_NAMESPACE

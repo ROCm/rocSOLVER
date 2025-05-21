@@ -1538,11 +1538,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     // deflated values are not changed.
                     rocblas_int linfo;
                     if(cc == dd - 1)
-                        linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps,
-                                              ssfmin, ssfmax);
+                    {
+                        slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j], linfo, eps, ssfmin, MAXITERS);
+                    }
                     else
-                        linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps,
-                                          ssfmin, ssfmax);
+                    {
+                        slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j], linfo, eps, ssfmin, MAXITERS);
+                    }
                     if(p < 0)
                         ev[j] *= -1;
                 }
