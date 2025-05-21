@@ -703,19 +703,14 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
 
-    rocblas_stride stridew = rocblas_stride(k);
-    rocblas_diagonal diag = rocblas_diagonal_non_unit;
-    rocblas_fill uplo;
-    rocblas_operation trans;
-
     // Fix diagonal of T, make zero the not used triangular part,
     // setup tau (changing signs) and account for the non-stored 1's on the
     // householder vectors
-    rocblas_int blocks = (k - 1) / 32 + 1;
-    ROCSOLVER_LAUNCH_KERNEL(set_triangular, dim3(blocks, blocks, batch_count), dim3(32, 32), 0,
+    rocblas_int blocks = (k - 1) / BS2 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(set_triangular, dim3(blocks, blocks, batch_count), dim3(BS2, BS2), 0,
                             stream, n, k, V, shiftV, ldv, strideV, tau, strideT, F, ldf, strideF,
                             direct, storev);
-    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
+    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(BS2, 1), 0, stream, k, tau,
                             strideT);
 
     int device;
@@ -747,7 +742,7 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     }
 
     // restore tau
-    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
+    ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(BS2, 1), 0, stream, k, tau,
                             strideT);
 
     rocblas_set_pointer_mode(handle, old_mode);
