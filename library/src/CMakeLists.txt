@@ -273,6 +273,8 @@ set(rocsolver_auxiliary_source
   auxiliary/rocauxiliary_lasyf.cpp
   # triangular matrices
   auxiliary/rocauxiliary_lauum.cpp
+  # band diagonal matrices
+  auxiliary/rocauxiliary_sb2st_hb2st.cpp
 )
 
 set(rocsolver_refact_source

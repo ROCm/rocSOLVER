@@ -46,6 +46,38 @@
 extern "C" {
 #endif
 
+rocblas_status rocsolver_ssb2st(rocblas_handle handle,
+                                const rocblas_int n,
+                                const rocblas_int nb,
+                                float* A,
+                                const rocblas_int lda,
+                                float* D,
+                                float* E);
+
+rocblas_status rocsolver_dsb2st(rocblas_handle handle,
+                                const rocblas_int n,
+                                const rocblas_int nb,
+                                double* A,
+                                const rocblas_int lda,
+                                double* D,
+                                double* E);
+
+rocblas_status rocsolver_chb2st(rocblas_handle handle,
+                                const rocblas_int n,
+                                const rocblas_int nb,
+                                rocblas_float_complex* A,
+                                const rocblas_int lda,
+                                float* D,
+                                float* E);
+
+rocblas_status rocsolver_zhb2st(rocblas_handle handle,
+                                const rocblas_int n,
+                                const rocblas_int nb,
+                                rocblas_double_complex* A,
+                                const rocblas_int lda,
+                                double* D,
+                                double* E);
+
 rocblas_status rocsolver_sstedcx(rocblas_handle handle,
                                  const rocblas_evect evect,
                                  const rocblas_erange range,
@@ -1595,6 +1627,52 @@ inline rocblas_status rocsolver_labrd(rocblas_handle handle,
                                       rocblas_int ldy)
 {
     return rocsolver_zlabrd(handle, m, n, nb, A, lda, D, E, tauq, taup, X, ldx, Y, ldy);
+}
+/***************************************************************/
+
+/******************** SB2ST_HB2ST ********************/
+inline rocblas_status rocsolver_sb2st_hb2st(rocblas_handle handle,
+                                            const rocblas_int n,
+                                            const rocblas_int nb,
+                                            float* A,
+                                            const rocblas_int lda,
+                                            float* D,
+                                            float* E)
+{
+    return rocsolver_ssb2st(handle, n, nb, A, lda, D, E);
+}
+
+inline rocblas_status rocsolver_sb2st_hb2st(rocblas_handle handle,
+                                            const rocblas_int n,
+                                            const rocblas_int nb,
+                                            double* A,
+                                            const rocblas_int lda,
+                                            double* D,
+                                            double* E)
+{
+    return rocsolver_dsb2st(handle, n, nb, A, lda, D, E);
+}
+
+inline rocblas_status rocsolver_sb2st_hb2st(rocblas_handle handle,
+                                            const rocblas_int n,
+                                            const rocblas_int nb,
+                                            rocblas_float_complex* A,
+                                            const rocblas_int lda,
+                                            float* D,
+                                            float* E)
+{
+    return rocsolver_chb2st(handle, n, nb, A, lda, D, E);
+}
+
+inline rocblas_status rocsolver_sb2st_hb2st(rocblas_handle handle,
+                                            const rocblas_int n,
+                                            const rocblas_int nb,
+                                            rocblas_double_complex* A,
+                                            const rocblas_int lda,
+                                            double* D,
+                                            double* E)
+{
+    return rocsolver_zhb2st(handle, n, nb, A, lda, D, E);
 }
 /***************************************************************/
 
