@@ -217,14 +217,14 @@ void testing_gemm(Arguments& argus)
     rocblas_local_handle handle;
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
     I m = argus.get<I>("m");
-    I n = argus.get<I>("n");
-    I k = argus.get<I>("k");
+    I n = argus.get<I>("n", m);
+    I k = argus.get<I>("k", m);
     I inca = argus.get<I>("inca", 1);
     I incb = argus.get<I>("incb", 1);
     I incc = argus.get<I>("incc", 1);
 
-    char tA = argus.get<char>("transA");
-    char tB = argus.get<char>("transB");
+    char tA = argus.get<char>("transA", 'N');
+    char tB = argus.get<char>("transB", 'N');
     rocblas_operation transA = char2rocblas_operation(tA);
     rocblas_operation transB = char2rocblas_operation(tB);
     I mk = transA == rocblas_operation_none ? m : k;

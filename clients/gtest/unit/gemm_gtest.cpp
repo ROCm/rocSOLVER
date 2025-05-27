@@ -34,7 +34,7 @@ using ::testing::ValuesIn;
 using namespace std;
 
 template <typename I>
-using gemm_tuple = tuple<vector<I>, I, vector<I>, char, char, double, double>;
+using gemm_tuple = tuple<vector<I>, I, vector<I>, char, char, vector<double>>;
 
 // each m_size_range is a {m, lda, ldc}
 // each k_size_range is a {k, ldb}
@@ -91,8 +91,7 @@ const vector<char> all_operations = {
     'C',
 };
 
-const vector<double> alphas = {1.5};
-const vector<double> betas = {-2.0};
+const vector<vector<double>> alpha_beta = {{1.5, -2.0}};
 
 template <typename T, typename I>
 Arguments gemm_setup_arguments(gemm_tuple<I> tup)
@@ -102,8 +101,7 @@ Arguments gemm_setup_arguments(gemm_tuple<I> tup)
     vector<I> k_size = std::get<2>(tup);
     char transA = std::get<3>(tup);
     char transB = std::get<4>(tup);
-    double alpha = std::get<5>(tup);
-    double beta = std::get<6>(tup);
+    vector<double> scalars = std::get<5>(tup);
 
     Arguments arg;
 
@@ -115,8 +113,8 @@ Arguments gemm_setup_arguments(gemm_tuple<I> tup)
     arg.set<I>("ldc", m_size[2]);
     arg.set<char>("transA", transA);
     arg.set<char>("transB", transB);
-    arg.set<T>("alpha", alpha);
-    arg.set<T>("beta", beta);
+    arg.set<T>("alpha", scalars[0]);
+    arg.set<T>("beta", scalars[1]);
 
     // only testing standard use case/defaults for strides
 
@@ -293,8 +291,7 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
                                  ValuesIn(large_k_size_range),
                                  ValuesIn(all_operations),
                                  ValuesIn(all_operations),
-                                 ValuesIn(alphas),
-                                 ValuesIn(betas)));
+                                 ValuesIn(alpha_beta)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          GEMM,
@@ -303,8 +300,7 @@ INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                                  ValuesIn(k_size_range),
                                  ValuesIn(all_operations),
                                  ValuesIn(all_operations),
-                                 ValuesIn(alphas),
-                                 ValuesIn(betas)));
+                                 ValuesIn(alpha_beta)));
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,
                          GEMM_64,
@@ -313,8 +309,7 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
                                  ValuesIn(large_k_size_range_64),
                                  ValuesIn(all_operations),
                                  ValuesIn(all_operations),
-                                 ValuesIn(alphas),
-                                 ValuesIn(betas)));
+                                 ValuesIn(alpha_beta)));
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          GEMM_64,
@@ -323,5 +318,4 @@ INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                                  ValuesIn(k_size_range_64),
                                  ValuesIn(all_operations),
                                  ValuesIn(all_operations),
-                                 ValuesIn(alphas),
-                                 ValuesIn(betas)));
+                                 ValuesIn(alpha_beta)));
