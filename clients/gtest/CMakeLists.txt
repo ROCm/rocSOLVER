@@ -1,5 +1,5 @@
 # ##########################################################################
-# Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -128,6 +128,11 @@ set(rocrefact_test_source
   refact/csrrf_solve_gtest.cpp
 )
 
+set(rocunit_test_source
+  # gemm
+  unit/gemm_gtest.cpp
+)
+
 set(others_test_source
   # unified memory model
   managed_malloc_gtest.cpp
@@ -147,6 +152,7 @@ add_executable(rocsolver-test
   ${roclapack_test_source}
   ${rocauxiliary_test_source}
   ${rocrefact_test_source}
+  ${rocunit_test_source}
   ${others_test_source}
   ${rocsolver_test_source}
 )

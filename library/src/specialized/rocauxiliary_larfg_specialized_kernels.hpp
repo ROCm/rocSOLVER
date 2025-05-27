@@ -34,6 +34,7 @@
 
 #include "../auxiliary/rocauxiliary_larfg.hpp"
 #include "lib_device_helpers.hpp"
+#include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver_run_specialized_kernels.hpp"
 
