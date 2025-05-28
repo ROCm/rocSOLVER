@@ -3,6 +3,23 @@
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
 ## (Unreleased) rocSOLVER
+## rocSOLVER 3.28.2 for ROCm 6.4.2
+## (Unreleased) rocSOLVER
+
+### Added
+
+* Hybrid computation support for existing routines:
+    - STEQR
+
+### Changed
+### Removed
+### Optimized
+### Resolved issues
+### Known issues
+### Upcoming changes
+
+
+## rocSOLVER 3.29.0 for ROCm 6.5.0
 
 ### Added
 
