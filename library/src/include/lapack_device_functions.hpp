@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1188,32 +1188,23 @@ ROCSOLVER_KERNEL void scal_kernel(I const n, S const da, T* const x, I const inc
     }
 }
 
-template <typename S, typename Int>
-__device__ void slaed6(Int kniter,
-                       Int orgati_,
-                       S rho,
-                       S* d,
-                       S* z,
-                       S finit,
-                       S& tau,
-                       Int& info,
-                       S eps,
-                       S ssfmin,
-                       Int MAXIT = 50)
+template <typename S, typename I>
+__device__ void
+    slaed6(I kniter, bool orgati, S rho, S* d, S* z, S finit, S& tau, I& info, S eps, S ssfmin, I MAXIT = 50)
 {
-    auto ABS = [](auto x) -> auto
+    auto lam_abs = [](auto x) -> auto
     {
         return std::abs(x);
     };
-    auto SQRT = [](auto x) -> auto
+    auto lam_sqrt = [](auto x) -> auto
     {
         return std::sqrt(x);
     };
-    auto MAX = [](auto x, auto y, auto z) -> auto
+    auto lam_max = [](auto x, auto y, auto z) -> auto
     {
         return std::max(std::max(x, y), z);
     };
-    auto MIN = [](auto x, auto y) -> auto
+    auto lam_min = [](auto x, auto y) -> auto
     {
         return std::min(x, y);
     };
@@ -1234,23 +1225,14 @@ __device__ void slaed6(Int kniter,
 
     } D(d), Z(z), DSCALE(dscale), ZSCALE(zscale);
 
-    bool scale, orgati;
+    bool scale;
 
-    S a, b, c, ddf, df, erretm, eta, f, fc, sclfac, sclinv, small1, small2, sminv1, sminv2, temp,
-        temp1, temp2, temp3, temp4, lbd, ubd;
+    S a, b, c, ddf, df, erretm, eta, f, fc, sclfac, sclinv, temp, temp1, temp2, temp3, temp4, lbd,
+        ubd;
 
-    Int iter, niter;
+    I iter, niter;
 
     info = 0;
-
-    if(orgati_ == S(0.))
-    {
-        orgati = false;
-    }
-    else
-    {
-        orgati = true;
-    }
 
     if(orgati)
     {
@@ -1291,7 +1273,7 @@ __device__ void slaed6(Int kniter,
             b = c * D(1) * D(2) + Z(1) * D(2) + Z(2) * D(1);
         }
 
-        temp = MAX(ABS(a), ABS(b), ABS(c));
+        temp = lam_max(lam_abs(a), lam_abs(b), lam_abs(c));
         a = a / temp;
         b = b / temp;
         c = c / temp;
@@ -1301,11 +1283,11 @@ __device__ void slaed6(Int kniter,
         }
         else if(a <= S(0.))
         {
-            tau = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+            tau = (a - lam_sqrt(lam_abs(a * a - S(4.) * b * c))) / (S(2.) * c);
         }
         else
         {
-            tau = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+            tau = S(2.) * b / (a + lam_sqrt(lam_abs(a * a - S(4.) * b * c)));
         }
 
         if(tau < lbd || tau > ubd)
@@ -1329,7 +1311,7 @@ __device__ void slaed6(Int kniter,
                 ubd = tau;
             }
 
-            if(ABS(finit) <= ABS(temp))
+            if(lam_abs(finit) <= lam_abs(temp))
             {
                 tau = S(0.);
             }
@@ -1338,21 +1320,21 @@ __device__ void slaed6(Int kniter,
     //
     //     get machine parameters for possible scaling to avoid overflow
     //
-    small1 = std::pow(S(2), (std::log(ssfmin) / std::log(S(2))) / S(3));
-    sminv1 = S(1.) / small1;
-    small2 = small1 * small1;
-    sminv2 = sminv1 * sminv1;
+    const S small1 = std::pow(S(2.), (std::log(ssfmin) / std::log(S(2.))) / S(3.));
+    const S sminv1 = S(1.) / small1;
+    const S small2 = small1 * small1;
+    const S sminv2 = sminv1 * sminv1;
     //
     //     Determine if scaling of inputs necessary to avoid overflow
     //     when computing 1/temp**3
     //
     if(orgati)
     {
-        temp = MIN(ABS(D(2) - tau), ABS(D(3) - tau));
+        temp = lam_min(lam_abs(D(2) - tau), lam_abs(D(3) - tau));
     }
     else
     {
-        temp = MIN(ABS(D(1) - tau), ABS(D(2) - tau));
+        temp = lam_min(lam_abs(D(1) - tau), lam_abs(D(2) - tau));
     }
 
     scale = false;
@@ -1378,10 +1360,10 @@ __device__ void slaed6(Int kniter,
         //
         //        Scaling up safe because D, Z, tau scaled elsewhere to be O(1)
         //
-        for(int I = 1; I <= 3; ++I)
+        for(int i = 1; i <= 3; ++i)
         {
-            DSCALE(I) = D(I) * sclfac;
-            ZSCALE(I) = Z(I) * sclfac;
+            DSCALE(i) = D(i) * sclfac;
+            ZSCALE(i) = Z(i) * sclfac;
         }
         tau = tau * sclfac;
         lbd = lbd * sclfac;
@@ -1392,27 +1374,27 @@ __device__ void slaed6(Int kniter,
         //
         //        Copy D and Z to DSCALE and ZSCALE
         //
-        for(int I = 1; I <= 3; ++I)
+        for(int i = 1; i <= 3; ++i)
         {
-            DSCALE(I) = D(I);
-            ZSCALE(I) = Z(I);
+            DSCALE(i) = D(i);
+            ZSCALE(i) = Z(i);
         }
     }
     fc = S(0.);
     df = S(0.);
     ddf = S(0.);
-    for(int I = 1; I <= 3; ++I)
+    for(int i = 1; i <= 3; ++i)
     {
-        temp = S(1.) / (DSCALE(I) - tau);
-        temp1 = ZSCALE(I) * temp;
+        temp = S(1.) / (DSCALE(i) - tau);
+        temp1 = ZSCALE(i) * temp;
         temp2 = temp1 * temp;
         temp3 = temp2 * temp;
-        fc = fc + temp1 / DSCALE(I);
+        fc = fc + temp1 / DSCALE(i);
         df = df + temp2;
         ddf = ddf + temp3;
     }
     f = finit + tau * fc;
-    if(ABS(f) <= S(0.))
+    if(lam_abs(f) <= S(0.))
     {
         if(scale)
         {
@@ -1457,7 +1439,7 @@ __device__ void slaed6(Int kniter,
         a = (temp1 + temp2) * f - temp1 * temp2 * df;
         b = temp1 * temp2 * f;
         c = f - (temp1 + temp2) * df + temp1 * temp2 * ddf;
-        temp = MAX(ABS(a), ABS(b), ABS(c));
+        temp = lam_max(lam_abs(a), lam_abs(b), lam_abs(c));
         a = a / temp;
         b = b / temp;
         c = c / temp;
@@ -1467,11 +1449,11 @@ __device__ void slaed6(Int kniter,
         }
         else if(a <= S(0.))
         {
-            eta = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+            eta = (a - lam_sqrt(lam_abs(a * a - S(4.) * b * c))) / (S(2.) * c);
         }
         else
         {
-            eta = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+            eta = S(2.) * b / (a + lam_sqrt(lam_abs(a * a - S(4.) * b * c)));
         }
 
         if(f * eta >= S(0.))
@@ -1489,17 +1471,17 @@ __device__ void slaed6(Int kniter,
         erretm = S(0.);
         df = S(0.);
         ddf = S(0.);
-        for(int I = 1; I <= 3; ++I)
+        for(int i = 1; i <= 3; ++i)
         {
-            if((DSCALE(I) - tau) != S(0.))
+            if((DSCALE(i) - tau) != S(0.))
             {
-                temp = S(1.) / (DSCALE(I) - tau);
-                temp1 = ZSCALE(I) * temp;
+                temp = S(1.) / (DSCALE(i) - tau);
+                temp1 = ZSCALE(i) * temp;
                 temp2 = temp1 * temp;
                 temp3 = temp2 * temp;
-                temp4 = temp1 / DSCALE(I);
+                temp4 = temp1 / DSCALE(i);
                 fc = fc + temp4;
-                erretm = erretm + ABS(temp4);
+                erretm = erretm + lam_abs(temp4);
                 df = df + temp2;
                 ddf = ddf + temp3;
             }
@@ -1513,8 +1495,8 @@ __device__ void slaed6(Int kniter,
             }
         }
         f = finit + tau * fc;
-        erretm = S(8.) * (ABS(finit) + ABS(tau) * erretm) + ABS(tau) * df;
-        if((ABS(f) <= S(4.) * eps * erretm) || ((ubd - lbd) <= S(4.) * eps * ABS(tau)))
+        erretm = S(8.) * (lam_abs(finit) + lam_abs(tau) * erretm) + lam_abs(tau) * df;
+        if((lam_abs(f) <= S(4.) * eps * erretm) || ((ubd - lbd) <= S(4.) * eps * lam_abs(tau)))
         {
             if(scale)
             {
@@ -1544,27 +1526,26 @@ __device__ void slaed6(Int kniter,
     return;
 }
 
-template <typename S, typename Int>
-__device__ void
-    slaed4(Int n, Int i, S* delta, S* z, S rho, S& dlam, Int& info, S eps, S ssfmin, Int MAXIT)
+template <typename S, typename I>
+__device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps, S ssfmin, I MAXIT)
 {
-    auto ABS = [](auto x) -> auto
+    auto lam_abs = [](auto x) -> auto
     {
         return std::abs(x);
     };
-    auto POW2 = [](auto x) -> auto
+    auto lam_sqr = [](auto x) -> auto
     {
         return x * x;
     };
-    auto SQRT = [](auto x) -> auto
+    auto lam_sqrt = [](auto x) -> auto
     {
         return std::sqrt(x);
     };
-    auto MAX = [](auto x, auto y) -> auto
+    auto lam_max = [](auto x, auto y) -> auto
     {
         return std::max(x, y);
     };
-    auto MIN = [](auto x, auto y) -> auto
+    auto lam_min = [](auto x, auto y) -> auto
     {
         return std::min(x, y);
     };
@@ -1589,50 +1570,45 @@ __device__ void
     S tau, eta = S(0.), dltlb, dltub;
     S psi, dpsi, phi, dphi, rhoinv, midpt;
     S del, a, b, c, w, erretm, temp, dw, temp1, prew;
-    Int ii, niter, iter, orgati, iim1, iip1, swtch3, swtch;
+    I ii, niter, iter, orgati, iim1, iip1, swtch3, swtch;
 
     S d1 = DELTA(1);
     S di = DELTA(i);
     S dnm1 = DELTA(n - 1);
     S dn = DELTA(n);
 
+    rhoinv = S(1.) / rho;
     info = 0;
+
     if(n == 1)
     {
         dlam = d1 + rho * Z(1) * Z(1);
         DELTA(1) = S(1.);
-        return;
     }
-
-    rhoinv = S(1.) / rho;
-
-    //
-    // The case i = n
-    //
-    if(i == n)
+    else if(n == 2)
+    {
+        // Not implemented
+        assert(false);
+    }
+    else if(i == n)
     {
         ii = n - 1;
         niter = 1;
         //
         //        Initial guess
         //
-        midpt = rho / S(2.);
-        //
-        //        If ||Z||_2 is not one, then temp should be set to
+        //        If ||Z||_2 is not one, then midpt should be set to
         //        rho * ||Z||_2^2 / S(2.)
         //
-        for(int J = 1; J <= n; ++J)
-        {
-            DELTA(J) = (DELTA(J) - di) - midpt;
-        }
+        midpt = rho / S(2.);
 
         psi = S(0.);
-        for(int J = 1; J <= n - 2; ++J)
+        for(int j = 1; j <= n - 2; ++j)
         {
-            psi = psi + Z(J) * Z(J) / DELTA(J);
+            psi = psi + Z(j) * Z(j) / ((DELTA(j) - di) - midpt);
         }
         c = rhoinv + psi;
-        w = c + Z(ii) * Z(ii) / DELTA(ii) + Z(n) * Z(n) / DELTA(n);
+        w = c + Z(ii) * Z(ii) / ((DELTA(ii) - di) - midpt) + Z(n) * Z(n) / ((dn - di) - midpt);
         if(w <= S(0.))
         {
             temp = Z(n - 1) * Z(n - 1) / (dn - dnm1 + rho) + Z(n) * Z(n) / rho;
@@ -1647,11 +1623,11 @@ __device__ void
                 b = Z(n) * Z(n) * del;
                 if(a < S(0.))
                 {
-                    tau = S(2.) * b / (sqrt(a * a + S(4.) * b * c) - a);
+                    tau = S(2.) * b / (lam_sqrt(a * a + S(4.) * b * c) - a);
                 }
                 else
                 {
-                    tau = (a + sqrt(a * a + S(4.) * b * c)) / (S(2.) * c);
+                    tau = (a + lam_sqrt(a * a + S(4.) * b * c)) / (S(2.) * c);
                 }
             }
             //
@@ -1668,11 +1644,11 @@ __device__ void
             b = Z(n) * Z(n) * del;
             if(a < S(0.))
             {
-                tau = S(2.) * b / (sqrt(a * a + S(4.) * b * c) - a);
+                tau = S(2.) * b / (lam_sqrt(a * a + S(4.) * b * c) - a);
             }
             else
             {
-                tau = (a + sqrt(a * a + S(4.) * b * c)) / (S(2.) * c);
+                tau = (a + lam_sqrt(a * a + S(4.) * b * c)) / (S(2.) * c);
             }
             //
             //           It can be proved that
@@ -1681,9 +1657,9 @@ __device__ void
             dltlb = S(0.);
             dltub = midpt;
         }
-        for(int J = 1; J <= n; ++J)
+        for(int j = 1; j <= n; ++j)
         {
-            DELTA(J) = (DELTA(J) + midpt) - tau;
+            DELTA(j) = (DELTA(j) - di) - tau;
         }
         //
         //        Evaluate psi and the derivative dpsi
@@ -1691,37 +1667,37 @@ __device__ void
         dpsi = S(0.);
         psi = S(0.);
         erretm = S(0.);
-        for(int J = 1; J <= ii; ++J)
+        for(int j = 1; j <= ii; ++j)
         {
-            temp = Z(J) / DELTA(J);
-            psi = psi + Z(J) * temp;
+            temp = Z(j) / DELTA(j);
+            psi = psi + Z(j) * temp;
             dpsi = dpsi + temp * temp;
             erretm = erretm + psi;
         }
-        erretm = ABS(erretm);
+        erretm = lam_abs(erretm);
         //
         //        Evaluate phi and the derivative dphi
         //
         temp = Z(n) / DELTA(n);
         phi = Z(n) * temp;
         dphi = temp * temp;
-        erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + ABS(tau) * (dpsi + dphi);
+        erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + lam_abs(tau) * (dpsi + dphi);
         w = rhoinv + phi + psi;
         //
         //        Test for convergence
         //
-        if(ABS(w) <= eps * erretm)
+        if(lam_abs(w) <= eps * erretm)
         {
             dlam = di + tau;
             return;
         }
         if(w <= S(0.))
         {
-            dltlb = MAX(dltlb, tau);
+            dltlb = lam_max(dltlb, tau);
         }
         else
         {
-            dltub = MIN(dltub, tau);
+            dltub = lam_min(dltub, tau);
         }
         //
         //        Calculate the new step
@@ -1733,7 +1709,7 @@ __device__ void
         // REVIEW
         if(c < S(0.))
         {
-            c = ABS(c);
+            c = lam_abs(c);
         }
         if(c <= S(0.))
         {
@@ -1741,11 +1717,11 @@ __device__ void
         }
         else if(a >= S(0.))
         {
-            eta = (a + sqrt(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+            eta = (a + lam_sqrt(lam_abs(a * a - S(4.) * b * c))) / (S(2.) * c);
         }
         else
         {
-            eta = S(2.) * b / (a - sqrt(ABS(a * a - S(4.) * b * c)));
+            eta = S(2.) * b / (a - lam_sqrt(lam_abs(a * a - S(4.) * b * c)));
         }
         //
         //        Note, eta should be positive if w is negative, and
@@ -1770,9 +1746,9 @@ __device__ void
                 eta = (dltlb - tau) / S(2.);
             }
         }
-        for(int J = 1; J <= n; ++J)
+        for(int j = 1; j <= n; ++j)
         {
-            DELTA(J) = DELTA(J) - eta;
+            DELTA(j) = DELTA(j) - eta;
         }
         tau = tau + eta;
         //
@@ -1781,24 +1757,24 @@ __device__ void
         dpsi = S(0.);
         psi = S(0.);
         erretm = S(0.);
-        for(int J = 1; J <= ii; ++J)
+        for(int j = 1; j <= ii; ++j)
         {
-            temp = Z(J) / DELTA(J);
-            psi = psi + Z(J) * temp;
+            temp = Z(j) / DELTA(j);
+            psi = psi + Z(j) * temp;
             dpsi = dpsi + temp * temp;
             erretm = erretm + psi;
         }
-        erretm = ABS(erretm);
+        erretm = lam_abs(erretm);
         //
         //        Evaluate phi and the derivative dphi
         //
         temp = Z(n) / DELTA(n);
         phi = Z(n) * temp;
         dphi = temp * temp;
-        erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + ABS(tau) * (dpsi + dphi);
+        erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + lam_abs(tau) * (dpsi + dphi);
         w = rhoinv + phi + psi;
         //
-        //        Main loop to update the values of the array   DELTA
+        //        Main loop to update the values of the array DELTA
         //
         iter = niter + 1;
         for(niter = iter; niter <= MAXIT; ++niter)
@@ -1806,18 +1782,18 @@ __device__ void
             //
             //           Test for convergence
             //
-            if(ABS(w) <= eps * erretm)
+            if(lam_abs(w) <= eps * erretm)
             {
                 dlam = di + tau;
                 return;
             }
             if(w <= S(0.))
             {
-                dltlb = MAX(dltlb, tau);
+                dltlb = lam_max(dltlb, tau);
             }
             else
             {
-                dltub = MIN(dltub, tau);
+                dltub = lam_min(dltub, tau);
             }
             //
             //           Calculate the new step
@@ -1827,11 +1803,11 @@ __device__ void
             b = DELTA(n - 1) * DELTA(n) * w;
             if(a >= S(0.))
             {
-                eta = (a + SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+                eta = (a + lam_sqrt(lam_abs(a * a - S(4.) * b * c))) / (S(2.) * c);
             }
             else
             {
-                eta = S(2.) * b / (a - SQRT(ABS(a * a - S(4.) * b * c)));
+                eta = S(2.) * b / (a - lam_sqrt(lam_abs(a * a - S(4.) * b * c)));
             }
             //
             //           Note, eta should be positive if w is negative, and
@@ -1856,9 +1832,9 @@ __device__ void
                     eta = (dltlb - tau) / S(2.);
                 }
             }
-            for(int J = 1; J <= n; ++J)
+            for(int j = 1; j <= n; ++j)
             {
-                DELTA(J) = DELTA(J) - eta;
+                DELTA(j) = DELTA(j) - eta;
             }
             tau = tau + eta;
             //
@@ -1867,21 +1843,21 @@ __device__ void
             dpsi = S(0.);
             psi = S(0.);
             erretm = S(0.);
-            for(int J = 1; J <= ii; ++J)
+            for(int j = 1; j <= ii; ++j)
             {
-                temp = Z(J) / DELTA(J);
-                psi = psi + Z(J) * temp;
+                temp = Z(j) / DELTA(j);
+                psi = psi + Z(j) * temp;
                 dpsi = dpsi + temp * temp;
                 erretm = erretm + psi;
             }
-            erretm = ABS(erretm);
+            erretm = lam_abs(erretm);
             //
             //           Evaluate phi and the derivative dphi
             //
             temp = Z(n) / DELTA(n);
             phi = Z(n) * temp;
             dphi = temp * temp;
-            erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + ABS(tau) * (dpsi + dphi);
+            erretm = S(8.) * (-phi - psi) + erretm - phi + rhoinv + lam_abs(tau) * (dpsi + dphi);
             w = rhoinv + phi + psi;
         }
         //
@@ -1889,16 +1865,14 @@ __device__ void
         //
         info = 1;
         dlam = di + tau;
-
-        return;
     }
     else
     {
         //
-        //        The case for i < n
+        //        The case for i < n; n > 2
         //
         niter = 1;
-        Int ip1 = i + 1;
+        I ip1 = i + 1;
         S dip1 = DELTA(ip1);
         //
         //        Calculate initial guess
@@ -1906,36 +1880,36 @@ __device__ void
         del = dip1 - di;
         midpt = del / S(2.);
         psi = S(0.);
-        for(int J = 1; J <= i - 1; ++J)
+        for(int j = 1; j <= i - 1; ++j)
         {
-            S dj = (DELTA(J) - di) - midpt;
-            psi = psi + Z(J) * Z(J) / dj;
+            S dj = (DELTA(j) - di) - midpt;
+            psi = psi + Z(j) * Z(j) / dj;
         }
         phi = S(0.);
-        for(int J = n; J >= i + 2; --J)
+        for(int j = n; j >= i + 2; --j)
         {
-            S dj = (DELTA(J) - di) - midpt;
-            phi = phi + Z(J) * Z(J) / dj;
+            S dj = (DELTA(j) - di) - midpt;
+            phi = phi + Z(j) * Z(j) / dj;
         }
         c = rhoinv + psi + phi;
         w = c + Z(i) * Z(i) / (-midpt) + Z(ip1) * Z(ip1) / ((dip1 - di) - midpt);
         if(w > S(0.))
         {
             //
-            //           d(i)< the ith eigenvalue < (d(i)+d(i+1))/2
+            //           d(i) < the ith eigenvalue < (d(i)+d(i+1))/2
             //
             //           We choose d(i) as origin.
             //
-            orgati = 1;
+            orgati = true;
             a = c * del + Z(i) * Z(i) + Z(ip1) * Z(ip1);
             b = Z(i) * Z(i) * del;
             if(a > S(0.))
             {
-                tau = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+                tau = S(2.) * b / (a + lam_sqrt(lam_abs(a * a - S(4.) * b * c)));
             }
             else
             {
-                tau = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+                tau = (a - lam_sqrt(lam_abs(a * a - S(4.) * b * c))) / (S(2.) * c);
             }
             dltlb = S(0.);
             dltub = midpt;
@@ -1947,16 +1921,16 @@ __device__ void
             //
             //           We choose d(i+1) as origin.
             //
-            orgati = 0;
+            orgati = false;
             a = c * del - Z(i) * Z(i) - Z(ip1) * Z(ip1);
             b = Z(ip1) * Z(ip1) * del;
             if(a < S(0.))
             {
-                tau = S(2.) * b / (a - SQRT(ABS(a * a + S(4.) * b * c)));
+                tau = S(2.) * b / (a - lam_sqrt(lam_abs(a * a + S(4.) * b * c)));
             }
             else
             {
-                tau = -(a + SQRT(ABS(a * a + S(4.) * b * c))) / (S(2.) * c);
+                tau = -(a + lam_sqrt(lam_abs(a * a + S(4.) * b * c))) / (S(2.) * c);
             }
             dltlb = -midpt;
             dltub = S(0.);
@@ -1975,16 +1949,16 @@ __device__ void
         S diip1 = DELTA(iip1);
         if(orgati)
         {
-            for(int J = 1; J <= n; ++J)
+            for(int j = 1; j <= n; ++j)
             {
-                DELTA(J) = (DELTA(J) - di) - tau;
+                DELTA(j) = (DELTA(j) - di) - tau;
             }
         }
         else
         {
-            for(int J = 1; J <= n; ++J)
+            for(int j = 1; j <= n; ++j)
             {
-                DELTA(J) = (DELTA(J) - dip1) - tau;
+                DELTA(j) = (DELTA(j) - dip1) - tau;
             }
         }
         //
@@ -1993,23 +1967,23 @@ __device__ void
         dpsi = S(0.);
         psi = S(0.);
         erretm = S(0.);
-        for(int J = 1; J <= iim1; ++J)
+        for(int j = 1; j <= iim1; ++j)
         {
-            temp = Z(J) / DELTA(J);
-            psi = psi + Z(J) * temp;
+            temp = Z(j) / DELTA(j);
+            psi = psi + Z(j) * temp;
             dpsi = dpsi + temp * temp;
             erretm = erretm + psi;
         }
-        erretm = ABS(erretm);
+        erretm = lam_abs(erretm);
         //
         //        Evaluate phi and the derivative dphi
         //
         dphi = S(0.);
         phi = S(0.);
-        for(int J = n; J >= iip1; --J)
+        for(int j = n; j >= iip1; --j)
         {
-            temp = Z(J) / DELTA(J);
-            phi = phi + Z(J) * temp;
+            temp = Z(j) / DELTA(j);
+            phi = phi + Z(j) * temp;
             dphi = dphi + temp * temp;
             erretm = erretm + phi;
         }
@@ -2041,11 +2015,12 @@ __device__ void
         dw = dpsi + dphi + temp * temp;
         temp = Z(ii) * temp;
         w = w + temp;
-        erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * ABS(temp) + ABS(tau) * dw;
+        erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * lam_abs(temp)
+            + lam_abs(tau) * dw;
         //
         //        Test for convergence
         //
-        if(ABS(w) <= eps * erretm)
+        if(lam_abs(w) <= eps * erretm)
         {
             if(orgati)
             {
@@ -2060,11 +2035,11 @@ __device__ void
         }
         if(w <= S(0.))
         {
-            dltlb = MAX(dltlb, tau);
+            dltlb = lam_max(dltlb, tau);
         }
         else
         {
-            dltub = MIN(dltub, tau);
+            dltub = lam_min(dltub, tau);
         }
         //
         //        Calculate the new step
@@ -2074,11 +2049,11 @@ __device__ void
         {
             if(orgati)
             {
-                c = w - DELTA(ip1) * dw - (di - dip1) * POW2(Z(i) / DELTA(i));
+                c = w - DELTA(ip1) * dw - (di - dip1) * lam_sqr(Z(i) / DELTA(i));
             }
             else
             {
-                c = w - DELTA(i) * dw - (dip1 - di) * POW2(Z(ip1) / DELTA(ip1));
+                c = w - DELTA(i) * dw - (dip1 - di) * lam_sqr(Z(ip1) / DELTA(ip1));
             }
             a = (DELTA(i) + DELTA(ip1)) * w - DELTA(i) * DELTA(ip1) * dw;
             b = DELTA(i) * DELTA(ip1) * w;
@@ -2099,11 +2074,11 @@ __device__ void
             }
             else if(a <= S(0.))
             {
-                eta = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+                eta = (a - lam_sqrt(lam_abs(a * a - S(4.) * b * c))) / (S(2.) * c);
             }
             else
             {
-                eta = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+                eta = S(2.) * b / (a + lam_sqrt(lam_abs(a * a - S(4.) * b * c)));
             }
         }
         else
@@ -2129,8 +2104,7 @@ __device__ void
                 ZZ(3) = Z(iip1) * Z(iip1);
             }
             ZZ(2) = Z(ii) * Z(ii);
-            Int ORGATI_ = orgati ? 1 : 0;
-            slaed6(niter, ORGATI_, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin, MAXIT);
+            slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin, MAXIT);
             if(info != 0)
             {
                 return;
@@ -2161,9 +2135,9 @@ __device__ void
             }
         }
         prew = w;
-        for(int J = 1; J <= n; ++J)
+        for(int j = 1; j <= n; ++j)
         {
-            DELTA(J) = DELTA(J) - eta;
+            DELTA(j) = DELTA(j) - eta;
         }
         //
         //        Evaluate psi and the derivative dpsi
@@ -2171,23 +2145,23 @@ __device__ void
         dpsi = S(0.);
         psi = S(0.);
         erretm = S(0.);
-        for(int J = 1; J <= iim1; ++J)
+        for(int j = 1; j <= iim1; ++j)
         {
-            temp = Z(J) / DELTA(J);
-            psi = psi + Z(J) * temp;
+            temp = Z(j) / DELTA(j);
+            psi = psi + Z(j) * temp;
             dpsi = dpsi + temp * temp;
             erretm = erretm + psi;
         }
-        erretm = ABS(erretm);
+        erretm = lam_abs(erretm);
         //
         //        Evaluate phi and the derivative dphi
         //
         dphi = S(0.);
         phi = S(0.);
-        for(int J = n; J >= iip1; --J)
+        for(int j = n; j >= iip1; --j)
         {
-            temp = Z(J) / DELTA(J);
-            phi = phi + Z(J) * temp;
+            temp = Z(j) / DELTA(j);
+            phi = phi + Z(j) * temp;
             dphi = dphi + temp * temp;
             erretm = erretm + phi;
         }
@@ -2195,19 +2169,19 @@ __device__ void
         dw = dpsi + dphi + temp * temp;
         temp = Z(ii) * temp;
         w = rhoinv + phi + psi + temp;
-        erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * ABS(temp)
-            + ABS(tau + eta) * dw;
+        erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * lam_abs(temp)
+            + lam_abs(tau + eta) * dw;
         swtch = 0;
         if(orgati)
         {
-            if(-w > ABS(prew) / S(10.))
+            if(-w > lam_abs(prew) / S(10.))
             {
                 swtch = 1;
             }
         }
         else
         {
-            if(w > ABS(prew) / S(10.))
+            if(w > lam_abs(prew) / S(10.))
             {
                 swtch = 1;
             }
@@ -2222,7 +2196,7 @@ __device__ void
             //
             //           Test for convergence
             //
-            if(ABS(w) <= eps * erretm)
+            if(lam_abs(w) <= eps * erretm)
             {
                 if(orgati)
                 {
@@ -2237,11 +2211,11 @@ __device__ void
             }
             if(w <= S(0.))
             {
-                dltlb = MAX(dltlb, tau);
+                dltlb = lam_max(dltlb, tau);
             }
             else
             {
-                dltub = MIN(dltub, tau);
+                dltub = lam_min(dltub, tau);
             }
             //
             //           Calculate the new step
@@ -2252,11 +2226,11 @@ __device__ void
                 {
                     if(orgati)
                     {
-                        c = w - DELTA(ip1) * dw - (di - dip1) * POW2(Z(i) / DELTA(i));
+                        c = w - DELTA(ip1) * dw - (di - dip1) * lam_sqr(Z(i) / DELTA(i));
                     }
                     else
                     {
-                        c = w - DELTA(i) * dw - (dip1 - di) * POW2(Z(ip1) / DELTA(ip1));
+                        c = w - DELTA(i) * dw - (dip1 - di) * lam_sqr(Z(ip1) / DELTA(ip1));
                     }
                 }
                 else
@@ -2298,11 +2272,11 @@ __device__ void
                 }
                 else if(a <= S(0.))
                 {
-                    eta = (a - SQRT(ABS(a * a - S(4.) * b * c))) / (S(2.) * c);
+                    eta = (a - lam_sqrt(lam_abs(a * a - S(4.) * b * c))) / (S(2.) * c);
                 }
                 else
                 {
-                    eta = S(2.) * b / (a + SQRT(ABS(a * a - S(4.) * b * c)));
+                    eta = S(2.) * b / (a + lam_sqrt(lam_abs(a * a - S(4.) * b * c)));
                 }
             }
             else
@@ -2336,8 +2310,8 @@ __device__ void
                         ZZ(3) = Z(iip1) * Z(iip1);
                     }
                 }
-                int ORGATI_ = orgati ? 1 : 0;
-                slaed6(niter, ORGATI_, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin, MAXIT);
+                slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin,
+                       MAXIT);
                 if(info != 0)
                 {
                     return;
@@ -2367,9 +2341,9 @@ __device__ void
                 }
             }
             /* * */
-            for(int J = 1; J <= n; ++J)
+            for(int j = 1; j <= n; ++j)
             {
-                DELTA(J) = DELTA(J) - eta;
+                DELTA(j) = DELTA(j) - eta;
             }
             tau = tau + eta;
             prew = w;
@@ -2379,23 +2353,23 @@ __device__ void
             dpsi = S(0.);
             psi = S(0.);
             erretm = S(0.);
-            for(int J = 1; J <= iim1; ++J)
+            for(int j = 1; j <= iim1; ++j)
             {
-                temp = Z(J) / DELTA(J);
-                psi = psi + Z(J) * temp;
+                temp = Z(j) / DELTA(j);
+                psi = psi + Z(j) * temp;
                 dpsi = dpsi + temp * temp;
                 erretm = erretm + psi;
             }
-            erretm = ABS(erretm);
+            erretm = lam_abs(erretm);
             //
             //           Evaluate phi and the derivative dphi
             //
             dphi = S(0.);
             phi = S(0.);
-            for(int J = n; J >= iip1; --J)
+            for(int j = n; j >= iip1; --j)
             {
-                temp = Z(J) / DELTA(J);
-                phi = phi + Z(J) * temp;
+                temp = Z(j) / DELTA(j);
+                phi = phi + Z(j) * temp;
                 dphi = dphi + temp * temp;
                 erretm = erretm + phi;
             }
@@ -2403,9 +2377,9 @@ __device__ void
             dw = dpsi + dphi + temp * temp;
             temp = Z(ii) * temp;
             w = rhoinv + phi + psi + temp;
-            erretm
-                = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * ABS(temp) + ABS(tau) * dw;
-            if(w * prew > S(0.) && ABS(w) > ABS(prew) / S(10.))
+            erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * lam_abs(temp)
+                + lam_abs(tau) * dw;
+            if(w * prew > S(0.) && lam_abs(w) > lam_abs(prew) / S(10.))
             {
                 swtch = !swtch;
             }
