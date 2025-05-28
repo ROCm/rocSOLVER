@@ -25,22 +25,8 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#pragma once
+#include "testing_gemm.hpp"
 
-#include "common_host_helpers.hpp"
-#include "rocsolver/rocsolver.h"
+#define TESTING_GEMM(...) template void testing_gemm<__VA_ARGS__>(Arguments&);
 
-ROCSOLVER_BEGIN_NAMESPACE
-
-struct rocsolver_handle_data_
-{
-    rocblas_int checksum;
-
-    rocsolver_alg_mode bdsqr_mode = rocsolver_alg_mode_gpu;
-    rocsolver_alg_mode sterf_mode = rocsolver_alg_mode_gpu;
-    rocsolver_alg_mode steqr_mode = rocsolver_alg_mode_gpu;
-};
-
-typedef struct rocsolver_handle_data_* rocsolver_handle_data;
-
-ROCSOLVER_END_NAMESPACE
+INSTANTIATE(TESTING_GEMM, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, FOREACH_INT_TYPE, APPLY_STAMP)
