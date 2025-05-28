@@ -58,6 +58,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   add_library(clients-common INTERFACE)
   target_include_directories(clients-common INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../library/src/include>
   )
   target_link_libraries(clients-common INTERFACE
     ${LAPACK_LIBRARIES}
@@ -155,6 +156,10 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     common/refact/testing_csrrf_solve.cpp
   )
 
+  set(rocunit_inst_files
+    common/unit/testing_gemm.cpp
+  )
+
   set(common_source_files
     common/misc/lapack_host_reference.cpp
     common/misc/rocsolver_test.cpp
@@ -165,6 +170,7 @@ if(BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
     ${rocauxiliary_inst_files}
     ${roclapack_inst_files}
     ${rocrefact_inst_files}
+    ${rocunit_inst_files}
   )
 
   prepend_path("${CMAKE_CURRENT_SOURCE_DIR}/" common_source_files common_source_paths)
