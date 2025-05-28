@@ -2,7 +2,7 @@
 
 Full documentation for rocSOLVER is available at the [rocSOLVER documentation](https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html).
 
-## (Unreleased) rocSOLVER
+## rocSOLVER 3.28.2 for ROCm 6.4.2
 
 ### Added
 
@@ -11,16 +11,11 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 * SVD for general matrices based on Cuppen's Divide and Conquer algorithm:
     - GESDD (with batched and strided\_batched versions)
 
-### Changed
-### Removed
 ### Optimized
 
 * Reduced the device memory requirements for STEDC, SYEVD/HEEVD, and SYGVD/HEGVD
 * Improved the performance of STEDC and divide and conquer Eigensolvers
-
-### Resolved issues
-### Known issues
-### Upcoming changes
+* Improved the performance of SYTRD, the initial step of the Eigensolvers that start with the tridiagonalization of the input matrix
 
 
 ## rocSOLVER 3.28.0 for ROCm 6.4.0
