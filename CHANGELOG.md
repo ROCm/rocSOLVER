@@ -11,8 +11,8 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 ### Optimized
 
-* Improved performance of BDSQR and downstream functions such as GESVD
-* Improved performance of STEQR and downstream functions such as SYEV/HEEV
+* Improved the performance of BDSQR and downstream functions such as GESVD
+* Improved the performance of STEQR and downstream functions such as SYEV/HEEV
 * Improved the performance of LARFT and downstream functions such as GEQR2 and GEQRF
 
 
