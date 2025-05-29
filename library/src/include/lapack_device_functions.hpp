@@ -1189,8 +1189,8 @@ ROCSOLVER_KERNEL void scal_kernel(I const n, S const da, T* const x, I const inc
 }
 
 template <typename S, typename I>
-__device__ void
-    slaed6(I kniter, bool orgati, S rho, S* d, S* z, S finit, S& tau, I& info, S eps, S ssfmin, I MAXIT = 50)
+__device__ I
+    slaed6(I kniter, bool orgati, S rho, S* d, S* z, S finit, S& tau, S eps, S ssfmin, I MAXIT = 50)
 {
     auto lam_abs = [](auto x) -> auto
     {
@@ -1232,7 +1232,7 @@ __device__ void
 
     I iter, niter;
 
-    info = 0;
+    I info = 0;
 
     if(orgati)
     {
@@ -1400,7 +1400,7 @@ __device__ void
         {
             tau = tau * sclinv;
         }
-        return;
+        return info;
     }
     if(f <= S(0.))
     {
@@ -1491,7 +1491,7 @@ __device__ void
                 {
                     tau = tau * sclinv;
                 }
-                return;
+                return info;
             }
         }
         f = finit + tau * fc;
@@ -1502,7 +1502,7 @@ __device__ void
             {
                 tau = tau * sclinv;
             }
-            return;
+            return info;
         }
         // REVIEW
         if(f <= S(0.))
@@ -1523,11 +1523,11 @@ __device__ void
         tau = tau * sclinv;
     }
 
-    return;
+    return info;
 }
 
 template <typename S, typename I>
-__device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps, S ssfmin, I MAXIT)
+__device__ I slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, S eps, S ssfmin, I MAXIT)
 {
     auto lam_abs = [](auto x) -> auto
     {
@@ -1570,7 +1570,8 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
     S tau, eta = S(0.), dltlb, dltub;
     S psi, dpsi, phi, dphi, rhoinv, midpt;
     S del, a, b, c, w, erretm, temp, dw, temp1, prew;
-    I ii, niter, iter, orgati, iim1, iip1, swtch3, swtch;
+    I ii, niter, iter, orgati, iim1, iip1;
+    bool swtch3, swtch;
 
     S d1 = DELTA(1);
     S di = DELTA(i);
@@ -1578,17 +1579,12 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
     S dn = DELTA(n);
 
     rhoinv = S(1.) / rho;
-    info = 0;
+    I info = 0;
 
     if(n == 1)
     {
         dlam = d1 + rho * Z(1) * Z(1);
         DELTA(1) = S(1.);
-    }
-    else if(n == 2)
-    {
-        // Not implemented
-        assert(false);
     }
     else if(i == n)
     {
@@ -1689,7 +1685,7 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
         if(lam_abs(w) <= eps * erretm)
         {
             dlam = di + tau;
-            return;
+            return info;
         }
         if(w <= S(0.))
         {
@@ -1785,7 +1781,7 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
             if(lam_abs(w) <= eps * erretm)
             {
                 dlam = di + tau;
-                return;
+                return info;
             }
             if(w <= S(0.))
             {
@@ -1869,7 +1865,7 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
     else
     {
         //
-        //        The case for i < n; n > 2
+        //        The case for i < n
         //
         niter = 1;
         I ip1 = i + 1;
@@ -1992,24 +1988,24 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
         //        w is the value of the secular function with
         //        its ii-th element removed.
         //
-        swtch3 = 0;
+        swtch3 = false;
         if(orgati)
         {
             if(w < S(0.))
             {
-                swtch3 = 1;
+                swtch3 = true;
             }
         }
         else
         {
             if(w > S(0.))
             {
-                swtch3 = 1;
+                swtch3 = true;
             }
         }
         if(ii == 1 || ii == n)
         {
-            swtch3 = 0;
+            swtch3 = false;
         }
         temp = Z(ii) / DELTA(ii);
         dw = dpsi + dphi + temp * temp;
@@ -2031,7 +2027,7 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
                 dlam = dip1 + tau;
             }
 
-            return;
+            return info;
         }
         if(w <= S(0.))
         {
@@ -2104,11 +2100,10 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
                 ZZ(3) = Z(iip1) * Z(iip1);
             }
             ZZ(2) = Z(ii) * Z(ii);
-            slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin, MAXIT);
+            info = slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, eps, ssfmin, MAXIT);
             if(info != 0)
             {
-                return;
-                /* $         GO TO 250 */
+                return info;
             }
         }
         //
@@ -2171,19 +2166,19 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
         w = rhoinv + phi + psi + temp;
         erretm = S(8.) * (phi - psi) + erretm + S(2.) * rhoinv + S(3.) * lam_abs(temp)
             + lam_abs(tau + eta) * dw;
-        swtch = 0;
+        swtch = false;
         if(orgati)
         {
             if(-w > lam_abs(prew) / S(10.))
             {
-                swtch = 1;
+                swtch = true;
             }
         }
         else
         {
             if(w > lam_abs(prew) / S(10.))
             {
-                swtch = 1;
+                swtch = true;
             }
         }
         tau = tau + eta;
@@ -2207,7 +2202,7 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
                     dlam = dip1 + tau;
                 }
 
-                return;
+                return info;
             }
             if(w <= S(0.))
             {
@@ -2310,11 +2305,11 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
                         ZZ(3) = Z(iip1) * Z(iip1);
                     }
                 }
-                slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, info, eps, ssfmin,
-                       MAXIT);
+                info = slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, eps, ssfmin,
+                              MAXIT);
                 if(info != 0)
                 {
-                    return;
+                    return info;
                 }
             }
             //
@@ -2398,7 +2393,7 @@ __device__ void slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, I& info, S eps,
         }
     }
 
-    return;
+    return info;
 }
 
 ROCSOLVER_END_NAMESPACE

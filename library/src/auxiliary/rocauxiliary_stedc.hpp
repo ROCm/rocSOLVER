@@ -1537,8 +1537,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     // 'tmpd' will be updated with the distances D - lambda_i.
                     // deflated values are not changed.
                     rocblas_int linfo;
-                    slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j], linfo, eps, ssfmin,
-                           MAXITERS);
+                    linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j], eps, ssfmin,
+                                   MAXITERS);
 
                     if(p < 0)
                         ev[j] *= -1;
