@@ -30,7 +30,7 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 
 * Reduced the device memory requirements for STEDC, SYEVD/HEEVD, and SYGVD/HEGVD
 * Improved the performance of STEDC and divide and conquer Eigensolvers
-* Improved the performance of SYTRD, the initial step of the Eigensolvers that start with the tridiagonalization of the input matrix
+* Improved the performance of SYTRD, the initial step for Eigensolvers that start with the tridiagonalization of the input matrix
 
 
 ## rocSOLVER 3.28.0 for ROCm 6.4.0
