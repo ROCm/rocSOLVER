@@ -244,7 +244,7 @@ __device__ void trsm_kernel_right_lower(const rocblas_diagonal diag,
     [  c s ]' * [ f ] = [ r ]
     [ -s c ]    [ g ]   [ 0 ] **/
 template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-__device__ void lartg(T& f, T& g, T& c, T& s, T& r)
+__device__ __host__ void lartg(T& f, T& g, T& c, T& s, T& r)
 {
     if(g == 0)
     {
@@ -415,7 +415,7 @@ __device__ __host__ void lae2(T& a, T& b, T& c, T& rt1, T& rt2)
     [ a b ]
     [ b c ] **/
 template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-__device__ void laev2(T& a, T& b, T& c, T& rt1, T& rt2, T& cs1, T& sn1)
+__device__ __host__ void laev2(T& a, T& b, T& c, T& rt1, T& rt2, T& cs1, T& sn1)
 {
     int sgn1, sgn2;
 
