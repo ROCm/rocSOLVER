@@ -9,6 +9,7 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
     String hipClang = ''
     String debug = project.buildName.contains('Debug') ? '-g' : ''
     String centos = platform.jenkinsLabel.contains('centos') ? 'source scl_source enable devtoolset-7' : ''
+    String dynamicOptions = ''
     List<String> options = []
     Boolean withSparse = true
 
@@ -26,6 +27,15 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
                 withSparse = false
             }
         }
+
+        // in PRs targeting develop branch build ONLY what CI pipeline will test, unless github gfxall label
+        if (env.CHANGE_TARGET == "develop" && !pullRequest.labels.contains("gfxall"))
+        {
+            // requires at command execution time ${auxiliary.gfxTargetParser()} to set gfx_var variable
+            dynamicOptions = dynamicOptions + ' -a \$gfx_arch'
+            // TODO if enabling address sanitizer 
+            // dynamicOptions = dynamicOptions + ' -a \$gfx_arch:xnack+'
+        }
     }
 
     List<String> getDeps = []
@@ -42,11 +52,13 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false, boolean
     getDeps << auxiliary.getLibrary('rocPRIM', platform.jenkinsLabel, null, sameOrg)
     def command = """#!/usr/bin/env bash
                 set -x
+                export VERBOSE=1
                 cd ${project.paths.project_build_prefix}
                 ${getDeps.join('\\n')}
                 ${auxiliary.exitIfNotSuccess()}
                 ${centos}
-                ${project.paths.build_command} ${hipClang} ${debug} ${options.join(' ')}
+                ${auxiliary.gfxTargetParser()}
+                ${project.paths.build_command} ${hipClang} ${debug} ${options.join(' ')} ${dynamicOptions}
                 ${auxiliary.exitIfNotSuccess()}
                 """
     platform.runCommand(this, command)
