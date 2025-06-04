@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2022-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,21 +25,8 @@
  * SUCH DAMAGE.
  * *************************************************************************/
 
-#pragma once
+#include "testing_gesdd.hpp"
 
-#include "common_host_helpers.hpp"
-#include "rocsolver/rocsolver.h"
+#define TESTING_GESDD(...) template void testing_gesdd<__VA_ARGS__>(Arguments&);
 
-ROCSOLVER_BEGIN_NAMESPACE
-
-struct rocsolver_handle_data_
-{
-    rocblas_int checksum;
-
-    rocsolver_alg_mode bdsqr_mode = rocsolver_alg_mode_gpu;
-    rocsolver_alg_mode sterf_mode = rocsolver_alg_mode_gpu;
-};
-
-typedef struct rocsolver_handle_data_* rocsolver_handle_data;
-
-ROCSOLVER_END_NAMESPACE
+INSTANTIATE(TESTING_GESDD, FOREACH_MATRIX_DATA_LAYOUT, FOREACH_SCALAR_TYPE, APPLY_STAMP)
