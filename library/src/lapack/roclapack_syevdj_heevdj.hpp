@@ -29,8 +29,8 @@
 
 #include "auxiliary/rocauxiliary_ormtr_unmtr.hpp"
 #include "auxiliary/rocauxiliary_stedcj.hpp"
+#include "lib_device_helpers.hpp"
 #include "rocblas.hpp"
-#include "roclapack_syev_heev.hpp"
 #include "roclapack_sytrd_hetrd.hpp"
 #include "rocsolver/rocsolver.h"
 

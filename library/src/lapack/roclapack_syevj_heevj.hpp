@@ -6,7 +6,7 @@
  * and
  * Hari & Kovac (2019). On the Convergence of Complex Jacobi Methods.
  *     Linear and Multilinear Algebra 69(3), p. 489-514.
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,8 +35,8 @@
 #pragma once
 
 #include "lapack_device_functions.hpp"
+#include "lib_device_helpers.hpp"
 #include "rocblas.hpp"
-#include "roclapack_syev_heev.hpp"
 #include "rocsolver/rocsolver.h"
 
 ROCSOLVER_BEGIN_NAMESPACE
