@@ -35,12 +35,9 @@
 #include "common/misc/rocsolver_arguments.hpp"
 #include "common/misc/rocsolver_test.hpp"
 
-template <bool CPU,
-          bool GPU,
-          typename T,
-          typename Ud,
-          typename Uh>
+template <bool CPU, bool GPU, typename T, typename Ud, typename Uh>
 void sb2st_hb2st_initData(const rocblas_handle handle,
+                          const rocblas_fill uplo,
                           const rocblas_int n,
                           const rocblas_int nb,
                           Ud& dA,
@@ -53,16 +50,27 @@ void sb2st_hb2st_initData(const rocblas_handle handle,
         rocblas_init<T>(hA, true);
 
         // scale A to avoid singularities
+        // transform A to a banded matrix
         for(rocblas_int b = 0; b < bc; ++b)
         {
             for(rocblas_int i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(rocblas_int j = i; j < n; j++)
                 {
                     if(i == j)
+                    {
                         hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 400;
+                    }
+                    else if(j > i + nb)
+                    {
+                        hA[b][i + j * lda] = 0;
+                    }
                     else
+                    {
                         hA[b][i + j * lda] -= 4;
+                    }
+
+                    hA[b][j + i * lda] = hA[b][i + j * lda];
                 }
             }
         }
@@ -77,22 +85,24 @@ void sb2st_hb2st_initData(const rocblas_handle handle,
 
 template <typename T, typename Ud, typename Td, typename Uh, typename Th>
 void sb2st_hb2st_getError(const rocblas_handle handle,
-                    const rocblas_int n,
-                    const rocblas_int nb,
-                    Ud& dA,
-                    const rocblas_int lda,
-                    Td& dD,
-                    Td& dE,
-                    Uh& hA,
-                    Uh& hARes,
-                    Th& hD,
-                    Th& hDRes,
-                    Th& hE,
-                    Th& hERes,
-                    double* max_err)
+                          const rocblas_fill uplo,
+                          const rocblas_int n,
+                          const rocblas_int nb,
+                          Ud& dA,
+                          const rocblas_int lda,
+                          Td& dD,
+                          Td& dE,
+                          Uh& hA,
+                          Uh& hARes,
+                          Th& hDRes,
+                          Th& hERes,
+                          Th& hW,
+                          double* max_err)
 {
+    using S = decltype(std::real(T{}));
+
     // input data initialization
-    sb2st_hb2st_initData<true, true, T>(handle, n, nb, dA, lda, hA, 1);
+    sb2st_hb2st_initData<true, true, T>(handle, uplo, n, nb, dA, lda, hA, 1);
 
     // execute computations
     // GPU lapack
@@ -101,11 +111,24 @@ void sb2st_hb2st_getError(const rocblas_handle handle,
     CHECK_HIP_ERROR(hDRes.transfer_from(dD));
     CHECK_HIP_ERROR(hERes.transfer_from(dE));
 
+    // Compute eigenvalues of tridiagonal matrix
+    cpu_sterf(n, hDRes.data(), hERes.data());
+
     // CPU lapack
-    // cpu_sb2st_hb2st();
+    // Compute eigenvalues of banded matrix
+    int info;
+    int worksize = n * n;
+    std::vector<T> work(worksize, T(0.));
+    int worksize_real = n * n;
+    std::vector<S> work_real(worksize_real, S(0.));
+    cpu_syev_heev(rocblas_evect_none, uplo, n, hA.data(), lda, hW.data(), work.data(), worksize,
+                  work_real.data(), worksize_real, &info);
 
     double err;
     *max_err = 0;
+    // compare diagonal and off diagonal
+    err = norm_error('F', 1, n, 1, hW.data(), hDRes.data());
+    *max_err = err > *max_err ? err : *max_err;
 }
 
 template <typename T>
@@ -115,16 +138,19 @@ void testing_sb2st_hb2st(Arguments& argus)
 
     // get arguments
     rocblas_local_handle handle;
+    char uploC = argus.get<char>("uplo");
     rocblas_int n = argus.get<rocblas_int>("n");
     rocblas_int nb = argus.get<rocblas_int>("nb");
     rocblas_int lda = argus.get<rocblas_int>("lda", n);
 
+    rocblas_fill uplo = char2rocblas_fill(uploC);
     rocblas_int hot_calls = argus.iters;
 
     // determine sizes
     size_t size_A = lda * n;
     size_t size_D = n;
     size_t size_E = size_D;
+    size_t size_W = size_D;
     double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     size_t size_Ares = (argus.unit_check || argus.norm_check) ? size_A : 0;
@@ -135,8 +161,9 @@ void testing_sb2st_hb2st(Arguments& argus)
     bool invalid_size = (n < 0 || nb < 0 || lda < n);
     if(invalid_size)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_sb2st_hb2st(handle, n, nb, (T*)nullptr, lda, (S*)nullptr, (S*)nullptr),
-                              rocblas_status_invalid_size);
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_sb2st_hb2st(handle, n, nb, (T*)nullptr, lda, (S*)nullptr, (S*)nullptr),
+            rocblas_status_invalid_size);
 
         if(argus.timing)
             rocsolver_bench_inform(inform_invalid_size);
@@ -148,7 +175,8 @@ void testing_sb2st_hb2st(Arguments& argus)
     if(argus.mem_query)
     {
         CHECK_ROCBLAS_ERROR(rocblas_start_device_memory_size_query(handle));
-        CHECK_ALLOC_QUERY(rocsolver_sb2st_hb2st(handle, n, nb, (T*)nullptr, lda, (S*)nullptr, (S*)nullptr));
+        CHECK_ALLOC_QUERY(
+            rocsolver_sb2st_hb2st(handle, n, nb, (T*)nullptr, lda, (S*)nullptr, (S*)nullptr));
 
         size_t size;
         CHECK_ROCBLAS_ERROR(rocblas_stop_device_memory_size_query(handle, &size));
@@ -159,10 +187,9 @@ void testing_sb2st_hb2st(Arguments& argus)
 
     // memory allocations
     host_strided_batch_vector<T> hA(size_A, 1, size_A, 1);
+    host_strided_batch_vector<S> hW(size_W, 1, size_W, 1);
     host_strided_batch_vector<T> hARes(size_Ares, 1, size_Ares, 1);
-    host_strided_batch_vector<S> hD(size_D, 1, size_D, 1);
     host_strided_batch_vector<S> hDRes(size_Dres, 1, size_Dres, 1);
-    host_strided_batch_vector<S> hE(size_E, 1, size_E, 1);
     host_strided_batch_vector<S> hERes(size_Eres, 1, size_Eres, 1);
     device_strided_batch_vector<T> dA(size_A, 1, size_A, 1);
     device_strided_batch_vector<S> dD(size_D, 1, size_D, 1);
@@ -177,8 +204,9 @@ void testing_sb2st_hb2st(Arguments& argus)
     // check quick return
     if(nb == 0 || n == 0)
     {
-        EXPECT_ROCBLAS_STATUS(rocsolver_sb2st_hb2st(handle, n, nb, dA.data(), lda, dD.data(), dE.data()),
-                              rocblas_status_success);
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_sb2st_hb2st(handle, n, nb, dA.data(), lda, dD.data(), dE.data()),
+            rocblas_status_success);
         if(argus.timing)
             rocsolver_bench_inform(inform_quick_return);
 
@@ -187,8 +215,8 @@ void testing_sb2st_hb2st(Arguments& argus)
 
     // check computations
     if(argus.unit_check || argus.norm_check)
-        sb2st_hb2st_getError<T>(handle, n, nb, dA, lda, dD, dE, hA, hARes, hD, hDRes, hE,
-                          hERes, &max_error);
+        sb2st_hb2st_getError<T>(handle, uplo, n, nb, dA, lda, dD, dE, hA, hARes, hDRes, hERes, hW,
+                                &max_error);
 
     // // collect performance data
     // if(argus.timing && hot_calls > 0)
@@ -233,6 +261,7 @@ void testing_sb2st_hb2st(Arguments& argus)
     argus.validate_consumed();
 }
 
-#define EXTERN_TESTING_SB2ST_HB2ST(...) extern template void testing_sb2st_hb2st<__VA_ARGS__>(Arguments&);
+#define EXTERN_TESTING_SB2ST_HB2ST(...) \
+    extern template void testing_sb2st_hb2st<__VA_ARGS__>(Arguments&);
 
 INSTANTIATE(EXTERN_TESTING_SB2ST_HB2ST, FOREACH_SCALAR_TYPE, APPLY_STAMP)
