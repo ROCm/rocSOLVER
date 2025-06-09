@@ -43,6 +43,142 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 #define SB2ST_HB2ST_MAX_THDS 128
 
+template <int MAX_THDS, typename T, typename I, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+__device__ void sb2st_larfg(const I tid, I n, T& alpha, T* x, I incx, T& tau, T* sval)
+{
+    // dot
+    dot<MAX_THDS, false, T>(tid, n - 1, x, incx, x, incx, sval);
+    __syncthreads();
+    T norm2 = sval[0] + alpha * alpha;
+
+    __shared__ T s;
+
+    if(norm2 > 0)
+    {
+        if(tid == 0)
+        {
+            T norm = alpha >= 0 ? -std::sqrt(norm2) : std::sqrt(norm2);
+
+            s = (T)(1.0 / (alpha - norm));
+            tau = (norm - alpha) / norm;
+            alpha = norm;
+        }
+        __syncthreads();
+
+        // scal
+        for(I i = tid; i < n - 1; i += MAX_THDS)
+            x[i * incx] *= s;
+    }
+    else
+    {
+        tau = 0;
+    }
+}
+
+template <int MAX_THDS, typename T, typename I, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+__device__ void sb2st_larfg(const I tid, I n, T& alpha, T* x, I incx, T& tau, T* sval)
+{
+    using S = decltype(std::real(T{}));
+
+    // dot
+    dot<MAX_THDS, true, T>(tid, n - 1, x, incx, x, incx, sval);
+    __syncthreads();
+    T norm2 = sval[0] + alpha * conj(alpha);
+
+    S ar = alpha.real();
+    S ai = alpha.imag();
+    __shared__ T s;
+
+    if(norm2.real() > 0 || ai > 0)
+    {
+        if(tid == 0)
+        {
+            S norm = ar >= 0 ? -std::sqrt(norm2.real()) : std::sqrt(norm2.real());
+
+            // scaling factor
+            S r = (ar - norm) * (ar - norm) + ai * ai;
+            S rr = (ar - norm) / r;
+            S ri = -ai / r;
+            s = rocblas_complex_num<S>(rr, ri);
+
+            // tau
+            rr = (norm - ar) / norm;
+            ri = -ai / norm;
+            tau = rocblas_complex_num<S>(rr, ri);
+
+            // alpha
+            alpha = norm;
+        }
+        __syncthreads();
+
+        // scal
+        for(I i = tid; i < n - 1; i += MAX_THDS)
+            x[i * incx] *= s;
+    }
+    else
+    {
+        tau = 0;
+    }
+}
+
+template <typename T, typename I>
+__device__ void sb2st_larf(const I tid,
+                           const I tid_inc,
+                           rocblas_side side,
+                           I m,
+                           I n,
+                           T* v,
+                           I incv,
+                           T tau,
+                           T* C,
+                           I ldc,
+                           T* work)
+{
+    if(tau == 0)
+        return;
+
+    if(side == rocblas_side_left)
+    {
+        // gemv
+        for(I i = tid; i < n; i += tid_inc)
+        {
+            work[i] = 0;
+            for(I j = 0; j < m; j++)
+                work[i] += conj(C[j + i * ldc]) * v[j * incv];
+        }
+
+        __syncthreads();
+
+        // ger
+        for(rocblas_int idx1d = tid; idx1d < m * n; idx1d += tid_inc)
+        {
+            rocblas_int i = idx1d % m;
+            rocblas_int j = idx1d / m;
+            C[i + j * ldc] -= tau * v[i * incv] * conj(work[j]);
+        }
+    }
+    else
+    {
+        // gemv
+        for(I i = tid; i < m; i += tid_inc)
+        {
+            work[i] = 0;
+            for(I j = 0; j < n; j++)
+                work[i] += C[i + j * ldc] * v[j * incv];
+        }
+
+        __syncthreads();
+
+        // ger
+        for(rocblas_int idx1d = tid; idx1d < m * n; idx1d += tid_inc)
+        {
+            rocblas_int i = idx1d % m;
+            rocblas_int j = idx1d / m;
+            C[i + j * ldc] -= tau * conj(v[j * incv]) * work[i];
+        }
+    }
+}
+
 template <int MAX_THDS, typename T, typename S>
 __device__ void sb2st_hb2st_sweep_step(const rocblas_int tid,
                                        rocblas_int n,
@@ -73,7 +209,7 @@ __device__ void sb2st_hb2st_sweep_step(const rocblas_int tid,
         __syncthreads();
 
         // generate Householder reflector
-        larfg<MAX_THDS>(tid, mm, housev[0], housev + 1, 1, tau, sval);
+        sb2st_larfg<MAX_THDS>(tid, mm, housev[0], housev + 1, 1, tau, sval);
         __syncthreads();
 
         // copy Householder vector to column s of A
@@ -89,11 +225,11 @@ __device__ void sb2st_hb2st_sweep_step(const rocblas_int tid,
 
         // apply Householder reflector
         rocblas_int nn = su_e - sm_i;
-        larf(tid, MAX_THDS, rocblas_side_left, mm, nn, housev, 1, conj(tau), A + sm_i + sm_i * lda,
-             lda, work);
+        sb2st_larf(tid, MAX_THDS, rocblas_side_left, mm, nn, housev, 1, conj(tau),
+                   A + sm_i + sm_i * lda, lda, work);
         __syncthreads();
-        larf(tid, MAX_THDS, rocblas_side_right, mm, mm, housev, 1, tau, A + sm_i + sm_i * lda, lda,
-             work);
+        sb2st_larf(tid, MAX_THDS, rocblas_side_right, mm, mm, housev, 1, tau, A + sm_i + sm_i * lda,
+                   lda, work);
 
         // copy transpose blocks
         nn = su_e - su_i;
@@ -121,7 +257,7 @@ __device__ void sb2st_hb2st_sweep_step(const rocblas_int tid,
         __syncthreads();
 
         // generate Householder reflector
-        larfg<MAX_THDS>(tid, mm, housev[0], housev + 1, 1, tau, sval);
+        sb2st_larfg<MAX_THDS>(tid, mm, housev[0], housev + 1, 1, tau, sval);
         __syncthreads();
 
         // copy Householder vector to column s of A
@@ -140,11 +276,11 @@ __device__ void sb2st_hb2st_sweep_step(const rocblas_int tid,
 
         // apply Householder reflector
         rocblas_int nn = su_e - sd_i - 1;
-        larf(tid, MAX_THDS, rocblas_side_left, mm, nn, housev, 1, conj(tau),
-             A + sm_i + (sd_i + 1) * lda, lda, work);
+        sb2st_larf(tid, MAX_THDS, rocblas_side_left, mm, nn, housev, 1, conj(tau),
+                   A + sm_i + (sd_i + 1) * lda, lda, work);
         __syncthreads();
-        larf(tid, MAX_THDS, rocblas_side_right, mm, mm, housev, 1, tau, A + sm_i + sm_i * lda, lda,
-             work);
+        sb2st_larf(tid, MAX_THDS, rocblas_side_right, mm, mm, housev, 1, tau, A + sm_i + sm_i * lda,
+                   lda, work);
 
         // copy transpose blocks
         nn = su_e - su_i;
