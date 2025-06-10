@@ -186,9 +186,10 @@ __device__ void
         // gemv
         for(I i = tid; i < n; i += tid_inc)
         {
-            work[i] = 0;
+            T temp = 0;
             for(I j = 0; j < m; j++)
-                work[i] += conj(C[j + i * ldc]) * v[j];
+                temp += conj(C[j + i * ldc]) * v[j];
+            work[i] = temp;
         }
 
         __syncthreads();
@@ -206,9 +207,10 @@ __device__ void
         // gemv
         for(I i = tid; i < m; i += tid_inc)
         {
-            work[i] = 0;
+            T temp = 0;
             for(I j = 0; j < n; j++)
-                work[i] += C[i + j * ldc] * v[j];
+                temp += C[i + j * ldc] * v[j];
+            work[i] = temp;
         }
 
         __syncthreads();
