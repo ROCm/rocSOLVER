@@ -276,6 +276,7 @@ __device__ void sb2st_hb2st_sweep_step(const rocblas_int tid,
         __syncthreads();
         sb2st_larf(tid, MAX_THDS, rocblas_side_right, mm, mm, housev, tau, A + sm_i + sm_i * lda,
                    lda, work);
+        __syncthreads();
 
         // copy transpose blocks
         nn = su_e - su_i;
@@ -327,6 +328,7 @@ __device__ void sb2st_hb2st_sweep_step(const rocblas_int tid,
         __syncthreads();
         sb2st_larf(tid, MAX_THDS, rocblas_side_right, mm, mm, housev, tau, A + sm_i + sm_i * lda,
                    lda, work);
+        __syncthreads();
 
         // copy transpose blocks
         nn = su_e - su_i;
@@ -391,6 +393,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(SB2ST_HB2ST_MAX_THDS)
         {
             sb2st_hb2st_sweep_step<SB2ST_HB2ST_MAX_THDS, T, S>(tid, n, nb, s, sm_i, A, lda, D, E,
                                                                housev, sval, work);
+            __syncthreads();
         }
     }
 }
