@@ -130,12 +130,22 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS) latrd_dot_scale_axpy(const I n
 
     // shared variables
     __shared__ T sval[MAX_THDS / warpSize];
+    __shared__ T sh_A[MAX_THDS];
+    __shared__ T sh_W[MAX_THDS];
 
     // dot
     T norm2 = 0;
     for(I i = tid; i < n; i += MAX_THDS)
     {
-        norm2 += A[i] * conj(W[i]);
+        T tempA = A[i];
+        T tempW = W[i];
+        if(i < MAX_THDS)
+        {
+            sh_A[i] = tempA;
+            sh_W[i] = tempW;
+        }
+
+        norm2 += tempA * conj(tempW);
     }
 
     // reduce squared entries to find squared norm of x
@@ -159,7 +169,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS) latrd_dot_scale_axpy(const I n
 
     // axpy
     for(I i = tid; i < n; i += MAX_THDS)
-        W[i] += sval[0] * A[i];
+    {
+        if(i < MAX_THDS)
+            W[i] = sh_W[i] + sval[0] * sh_A[i];
+        else
+            W[i] = W[i] + sval[0] * A[i];
+    }
 }
 
 /********************************************************************************/
