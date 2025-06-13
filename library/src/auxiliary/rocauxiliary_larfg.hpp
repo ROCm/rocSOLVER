@@ -264,7 +264,7 @@ rocblas_status rocsolver_larfg_template(rocblas_handle handle,
     }
 
     // if n is small, use small-size kernel
-    if(n <= LARFG_SSKER_MAX_N)
+    if(true)
     {
         // TODO: Some architectures have failures in sygvx with small-size kernels enabled, more investigation needed
         int device;
