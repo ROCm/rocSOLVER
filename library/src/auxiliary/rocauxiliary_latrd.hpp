@@ -39,25 +39,6 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
-__device__ __inline__ T shift_left(T& value, int lane_delta)
-{
-    T r = value;
-    r = __shfl_down(r, lane_delta);
-    return r;
-}
-
-template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
-__device__ __inline__ T shift_left(T& value, int lane_delta)
-{
-    using S = decltype(std::real(T{}));
-    S r = value.real();
-    S i = value.imag();
-    r = __shfl_down(r, lane_delta);
-    i = __shfl_down(i, lane_delta);
-    return rocblas_complex_num<S>(r, i);
-}
-
 template <int MAX_THDS, typename T, typename I, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS) latrd_larfg_kernel(const I n,
                                                                      U alpha,
