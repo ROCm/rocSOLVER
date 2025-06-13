@@ -45,13 +45,13 @@ ROCSOLVER_BEGIN_NAMESPACE
     the library size.
 *************************************************************/
 
-template <typename T, typename I, typename U, typename UB>
+template <typename T, typename I, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
     larfg_kernel_small(const I n,
                        U alpha,
                        const rocblas_stride shiftA,
                        const rocblas_stride strideA,
-                       UB beta,
+                       S* beta,
                        const rocblas_stride shiftB,
                        const rocblas_stride strideB,
                        U xx,
@@ -69,7 +69,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
     T* x = load_ptr_batch<T>(xx, bid, shiftX, strideX);
     T* tau = load_ptr_batch<T>(tauA, bid, 0, strideP);
 
-    T* b = beta ? load_ptr_batch<T>(beta, bid, shiftB, strideB) : nullptr;
+    S* b = beta ? load_ptr_batch<S>(beta, bid, shiftB, strideB) : nullptr;
 
     // shared variables
     __shared__ T sval[LARFG_SSKER_THREADS];
@@ -96,13 +96,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(LARFG_SSKER_THREADS)
     Launchers of specialized  kernels
 *************************************************************/
 
-template <typename T, typename I, typename U>
+template <typename T, typename I, typename S, typename U>
 rocblas_status larfg_run_small(rocblas_handle handle,
                                const I n,
                                U alpha,
                                const rocblas_stride shiftA,
                                const rocblas_stride strideA,
-                               T* beta,
+                               S* beta,
                                const rocblas_stride shiftB,
                                const rocblas_stride strideB,
                                U x,
@@ -129,10 +129,10 @@ rocblas_status larfg_run_small(rocblas_handle handle,
     Instantiation macros
 *************************************************************/
 
-#define INSTANTIATE_LARFG_SMALL(T, I, U)                                              \
-    template rocblas_status larfg_run_small<T, I, U>(                                 \
+#define INSTANTIATE_LARFG_SMALL(T, I, S, U)                                           \
+    template rocblas_status larfg_run_small<T, I, S, U>(                              \
         rocblas_handle handle, const I n, U alpha, const rocblas_stride shiftA,       \
-        const rocblas_stride strideA, T* beta, const rocblas_stride shiftB,           \
+        const rocblas_stride strideA, S* beta, const rocblas_stride shiftB,           \
         const rocblas_stride strideB, U x, const rocblas_stride shiftX, const I incX, \
         const rocblas_stride strideX, T* tau, const rocblas_stride strideP, const I batch_count)
 
