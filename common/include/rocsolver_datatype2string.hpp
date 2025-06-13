@@ -42,13 +42,13 @@ ROCSOLVER_BEGIN_NAMESPACE
 template <typename>
 static constexpr char rocblas2char_precision = '\0';
 template <>
-static constexpr auto rocblas2char_precision<float> = 's';
+constexpr auto rocblas2char_precision<float> = 's';
 template <>
-static constexpr auto rocblas2char_precision<double> = 'd';
+constexpr auto rocblas2char_precision<double> = 'd';
 template <>
-static constexpr auto rocblas2char_precision<rocblas_float_complex> = 'c';
+constexpr auto rocblas2char_precision<rocblas_float_complex> = 'c';
 template <>
-static constexpr auto rocblas2char_precision<rocblas_double_complex> = 'z';
+constexpr auto rocblas2char_precision<rocblas_double_complex> = 'z';
 
 /* ============================================================================================
  */
