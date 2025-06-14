@@ -280,6 +280,11 @@ set(rocsolver_refact_source
 )
 
 set(rocsolver_specialized_source
+  # larfg
+  specialized/rocauxiliary_larfg_specialized_kernels_s.cpp
+  specialized/rocauxiliary_larfg_specialized_kernels_d.cpp
+  specialized/rocauxiliary_larfg_specialized_kernels_c.cpp
+  specialized/rocauxiliary_larfg_specialized_kernels_z.cpp
   # gemm
   specialized/roclapack_gemm_specialized_kernels_s.cpp
   specialized/roclapack_gemm_specialized_kernels_d.cpp
