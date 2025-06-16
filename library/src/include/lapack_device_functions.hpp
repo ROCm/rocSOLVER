@@ -1189,8 +1189,16 @@ ROCSOLVER_KERNEL void scal_kernel(I const n, S const da, T* const x, I const inc
 }
 
 template <typename S, typename I>
-__device__ I
-    slaed6(I kniter, bool orgati, S rho, S* d, S* z, S finit, S& tau, S eps, S ssfmin, I MAXIT = 50)
+__device__ I slaed6(I kniter,
+                    bool orgati,
+                    S rho,
+                    S* d,
+                    S* z,
+                    S finit,
+                    S& tau,
+                    S eps = std::numeric_limits<S>::epsilon() / S(2.),
+                    S ssfmin = std::numeric_limits<S>::min(),
+                    I MAXIT = 50)
 {
     auto lam_abs = [](auto x) -> auto
     {
@@ -1527,7 +1535,15 @@ __device__ I
 }
 
 template <typename S, typename I>
-__device__ I slaed4(I n, I i, S* delta, S* z, S rho, S& dlam, S eps, S ssfmin, I MAXIT)
+__device__ I slaed4(I n,
+                    I i,
+                    S* delta,
+                    S* z,
+                    S rho,
+                    S& dlam,
+                    S eps = std::numeric_limits<S>::epsilon() / S(2.),
+                    S ssfmin = std::numeric_limits<S>::min(),
+                    I MAXIT = 50)
 {
     auto lam_abs = [](auto x) -> auto
     {
