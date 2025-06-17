@@ -51,7 +51,6 @@ ROCSOLVER_BEGIN_NAMESPACE
 // external gemm-based updates.
 #define STEDC_EXTERNAL_GEMM true
 
-
 typedef enum rocsolver_stedc_mode_
 {
     rocsolver_stedc_mode_qr,
@@ -1540,12 +1539,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     // 'tmpd' will be updated with the distances D - lambda_i.
                     // deflated values are not changed.
                     rocblas_int linfo;
+
+#if defined(ROCSOLVER_USE_REFERENCE_SECULAR_EQUATIONS_SOLVER)
+                    linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j]);
+#else
                     if(cc == dd - 1)
                         linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps,
                                               ssfmin, ssfmax);
                     else
                         linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps,
                                           ssfmin, ssfmax);
+#endif
+
                     if(p < 0)
                         ev[j] *= -1;
                 }
@@ -1562,20 +1567,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     if(mask[j] == 1)
                     {
                         valg = tmpd[i + j * n];
-                        if(p > 0)
-                            valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);
-                        else
-                            valf *= (per[i] == j) ? valg : -valg / (diag[per[i]] - diag[j]);
+                        valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);
                     }
                 }
-                valf = sqrt(-valf);
+                valf = sqrt(std::abs(valf));
                 zz[i] = zz[i] < 0 ? -valf : valf;
             }
             /* ----------------------------------------------------------------- */
         }
     }
 }
-
 
 //--------------------------------------------------------------------------------------//
 /** STEDC_MERGEVECTORS_KERNEL prepares vectors from the secular equation for
@@ -1799,7 +1800,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                                 if(idd[k] == 0)
                                     dd++;
                             }
-                            temps[pers[i - dd] + in + (p2 + j) * n] = vecs[i - dd - in + (p2 + j) * n] / nrm;
+                            temps[pers[i - dd] + in + (p2 + j) * n]
+                                = vecs[i - dd - in + (p2 + j) * n] / nrm;
                         }
                         else
                             temps[i + (p2 + j) * n] = 0;
@@ -1847,7 +1849,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         }
     }
 }
-
 
 //--------------------------------------------------------------------------------------//
 /** STEDC_MERGEUPDATE_KERNEL updates vectors after merges are done. A matrix in the batch
@@ -2426,10 +2427,11 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     E + shiftE, strideE, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
             // c. find merged eigen vectors
-            ROCSOLVER_LAUNCH_KERNEL((stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, STEDC_EXTERNAL_GEMM, S>),
-                                    dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
-                                    dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
-                                    E + shiftE, strideE, V, 0, ldv, strideV, tmpz, tempgemm, splits);
+            ROCSOLVER_LAUNCH_KERNEL(
+                (stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, STEDC_EXTERNAL_GEMM, S>),
+                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize3,
+                stream, k, n, D + shiftD, strideD, E + shiftE, strideE, V, 0, ldv, strideV, tmpz,
+                tempgemm, splits);
 
             if(STEDC_EXTERNAL_GEMM)
             {
@@ -2439,8 +2441,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // STEDC_EXTERNAL_GEMM at run time to switch between internal vector updates and
                 // external gemm based updates.
                 rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n,
-                    &one, V, 0, ldv, strideV, tempgemm, n*n, n, 2*n*n, &zero, tempgemm, 0, n, 2*n*n,
-                    batch_count, workArr);
+                               &one, V, 0, ldv, strideV, tempgemm, n * n, n, 2 * n * n, &zero,
+                               tempgemm, 0, n, 2 * n * n, batch_count, workArr);
             }
 
             // d. update level
