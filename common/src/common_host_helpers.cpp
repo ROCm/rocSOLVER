@@ -85,13 +85,15 @@ int get_device_warp_size()
 
     err = hipGetDevice(&device_id);
 
-    if (err != hipSuccess) {
+    if(err != hipSuccess)
+    {
         return 0;
     }
 
     err = hipDeviceGetAttribute(&warp_size, hipDeviceAttributeWarpSize, device_id);
 
-    if (err != hipSuccess) {
+    if(err != hipSuccess)
+    {
         return 0;
     }
 

@@ -31,8 +31,8 @@
 #include "rocblas_math.hpp"
 #include <cinttypes>
 #include <random>
-#include <type_traits>
 #include <thread>
+#include <type_traits>
 
 /* ============================================================================================
  */

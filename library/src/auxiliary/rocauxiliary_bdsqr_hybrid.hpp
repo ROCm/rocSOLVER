@@ -33,10 +33,10 @@
 
 #pragma once
 
+#include "common_host_helpers.hpp"
 #include "lapack_host_functions.hpp"
 #include "rocauxiliary_lasr.hpp"
 #include "rocsolver_hybrid_storage.hpp"
-#include "common_host_helpers.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 

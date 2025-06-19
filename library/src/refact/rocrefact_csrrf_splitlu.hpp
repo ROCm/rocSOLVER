@@ -31,9 +31,9 @@
 #include <iostream>
 #include <rocprim/rocprim.hpp>
 
+#include "common_host_helpers.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
-#include "common_host_helpers.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -82,7 +82,7 @@ __host__ __device__ static I cal_wave_size(I avg_nnzM)
                                 : (avg_nnzM >= ifactor * (warp_size / 4))  ? (warp_size / 4)
                                 : (avg_nnzM >= ifactor * (warp_size / 8))  ? (warp_size / 8)
                                 : (avg_nnzM >= ifactor * (warp_size / 16)) ? (warp_size / 16)
-                                                                          : 1);
+                                                                           : 1);
     return wave_size;
 }
 
