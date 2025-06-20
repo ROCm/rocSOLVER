@@ -35,8 +35,79 @@
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+#include <hip/hip_cooperative_groups.h>
 
 ROCSOLVER_BEGIN_NAMESPACE
+
+template <int DIMX, int NB_X, typename T, typename I, typename U>
+ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
+                           const I n,
+                           U xx,
+                           const rocblas_stride shiftX,
+                           const I incX,
+                           const rocblas_stride strideX,
+                           const T* tauA,
+                           const rocblas_stride strideP,
+                           U AA,
+                           const rocblas_stride shiftA,
+                           const I lda,
+                           const rocblas_stride strideA)
+{
+    I bid = blockIdx.z;
+    I tx  = threadIdx.x;
+    I col = blockIdx.y;
+
+    // select batch instance
+    T* x = load_ptr_batch<T>(xx, bid, shiftX, strideX);
+    T* A = load_ptr_batch<T>(AA, bid, shiftA, strideA);
+    const T* tau = tauA + bid * strideP;
+
+    A += col * size_t(lda);
+
+    I start = (incX > 0 ? 0 : (m - 1) * -incX);
+
+    T res = 0;
+
+    __shared__ T sdata[NB_X / warpSize];
+    __shared__ T xs[DIMX];
+
+    if(m < DIMX)
+        for(I i = tx; i < m; i += NB_X)
+            xs[i] = x[start + i * int64_t(incX)];
+
+    //
+    // GEMV
+    //
+    for(I i = tx; i < m; i += NB_X)
+        res += conj(A[i]) * ((m < DIMX) ? xs[i] : x[start + i * int64_t(incX)]);
+
+    // inta-group reduction
+    res += shift_left(res, 1);
+    res += shift_left(res, 2);
+    res += shift_left(res, 4);
+    res += shift_left(res, 8);
+    res += shift_left(res, 16);
+    if(warpSize > 32)
+        res += shift_left(res, 32);
+    if(tx % warpSize == 0)
+        sdata[tx / warpSize] = res;
+    __syncthreads();
+    if(tx == 0)
+    {
+        for(I k = 1; k < NB_X / warpSize; k++)
+            res += sdata[k];
+        
+        sdata[0] = res;
+    }
+    __syncthreads();
+
+    //
+    // GER
+    //
+    res = -tau[0] * conj(sdata[0]);
+    for(I i = tx; i < m; i += NB_X)
+        A[i] += res * ((m < DIMX) ? xs[i] : x[start + i * int64_t(incX)]);
+}
 
 template <bool BATCHED, typename T, typename I>
 void rocsolver_larf_getMemorySize(const rocblas_side side,
@@ -171,28 +242,28 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
     rocblas_operation trans = rocblas_operation_none;
     if(leftside)
     {
-        trans = COMPLEX ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
-        order = n;
+        // trans = COMPLEX ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
+        // order = n;
+        static constexpr int NB = 256;
+        static constexpr int DIMX = (65536 / sizeof(T)) - (NB / 64);
+        dim3 grid(1, n, batch_count);
+        dim3 block(NB);
+
+        ROCSOLVER_LAUNCH_KERNEL((larf_left_kernel<DIMX, NB>), grid, block, 0, stream, m, n, x, shiftx,
+                                incx, stridex, alpha, stridep, A, shiftA, lda, stridea);
     }
+    else{
+        // **** FOR NOW, IT DOES NOT DETERMINE "NON-ZERO" DIMENSIONS
+        //      OF A AND X, AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
+        //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
+        //      ZERO ENTRIES ****
 
-    // **** FOR NOW, IT DOES NOT DETERMINE "NON-ZERO" DIMENSIONS
-    //      OF A AND X, AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
-    //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
-    //      ZERO ENTRIES ****
+        // compute the matrix vector product  (W=-A'*X or W=-A*X)
+        rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A, shiftA, lda, stridea,
+                            x, shiftx, incx, stridex, cast2constType<T>(scalars + 1), 0, Abyx, 0, 1,
+                            order, batch_count, workArr);
 
-    // compute the matrix vector product  (W=-A'*X or W=-A*X)
-    rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A, shiftA, lda, stridea,
-                        x, shiftx, incx, stridex, cast2constType<T>(scalars + 1), 0, Abyx, 0, 1,
-                        order, batch_count, workArr);
-
-    // compute the rank-1 update  (A + tau*X*W'  or A + tau*W*X')
-    if(leftside)
-    {
-        rocblasCall_ger<COMPLEX, T, I>(handle, m, n, alpha, stridep, x, shiftx, incx, stridex, Abyx,
-                                       0, 1, order, A, shiftA, lda, stridea, batch_count, workArr);
-    }
-    else
-    {
+        // compute the rank-1 update  (A + tau*X*W'  or A + tau*W*X')
         rocblasCall_ger<COMPLEX, T, I>(handle, m, n, alpha, stridep, Abyx, 0, 1, order, x, shiftx,
                                        incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
     }
