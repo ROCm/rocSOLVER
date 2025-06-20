@@ -271,56 +271,30 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
         // main loop running forwards (for each column)
         for(rocblas_int j = 0; j < n - 1; ++j)
         {
-            // 1. generate Householder reflector to annihilate A(j+2:n-1,j)
+            // 1. generate Householder reflector to annihilate A(j+2:n-1,j) and copy off-diagonal element to E[j]
             rocsolver_larfg_template<T>(handle, n - 1 - j, A, shiftA + idx2D(j + 1, j, lda), E, j,
                                         strideE, A, shiftA + idx2D(std::min(j + 2, n - 1), j, lda),
                                         1, strideA, tmptau, stridet, batch_count, work, norms);
 
-            // // 2. copy to E(j) the corresponding off-diagonal element of A, which is set to 1
-            // ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
-            //                         shiftA + idx2D(j + 1, j, lda), strideA, E + j, strideE);
-
-            // 3. overwrite tau with w = tmptau*A*v - 1/2*tmptau*(tmptau*v'*A*v)*v
-            // a. compute tmptau*A*v -> tau
+            // 2. overwrite tau with w = tmptau*A*v - 1/2*tmptau*(tmptau*v'*A*v)*v
             rocblasCall_symv_hemv<T>(handle, uplo, n - 1 - j, tmptau, stridet, A,
                                      shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
                                      shiftA + idx2D(j + 1, j, lda), 1, strideA, scalars + 1, 0, tau,
                                      j, 1, strideP, batch_count, work, workArr);
-
-            // // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
-            // rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, tau, j, 1, strideP, A,
-            //                             shiftA + idx2D(j + 1, j, lda), 1, strideA, batch_count,
-            //                             norms, work, workArr);
-
-            // // rocblasCall_dot<COMPLEX, T>(handle, n - 1 - j, W, shiftW + idx2D(j + 1, j, ldw), 1,
-            // //                             strideW, A, shiftA + idx2D(j + 1, j, lda), 1, strideA,
-            // //                             batch_count, norms, work, workArr);
-
-            // // c. finally update tau as an axpy: -1/2*tmptau*norms*v + tau -> tau
-            // // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
-            // //  available, we can use it instead of the scale_axpy kernel, if it provides
-            // //  better performance.)
-            // ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms,
-            //                         tmptau, stridet, A, shiftA + idx2D(j + 1, j, lda), strideA, tau,
-            //                         j, strideP);
-
-            // // ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, n - 1 - j, norms,
-            // //                         tau + j, strideP, A, shiftA + idx2D(j + 1, j, lda), strideA, W,
-            // //                         shiftW + idx2D(j + 1, j, ldw), strideW);
 
             ROCSOLVER_LAUNCH_KERNEL((latrd_dot_scale_axpy<64, T>), dim3(1, 1, batch_count),
                                     dim3(64, 1, 1), 0, stream, n - 1 - j, A,
                                     shiftA + idx2D(j + 1, j, lda), strideA, tau, j, strideP, tmptau,
                                     stridet);
 
-            // 4. apply the Householder reflector to A as a rank-2 update:
+            // 3. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'
             rocblasCall_syr2_her2<T>(handle, uplo, n - 1 - j, scalars, A,
                                      shiftA + idx2D(j + 1, j, lda), 1, strideA, tau, j, 1, strideP,
                                      A, shiftA + idx2D(j + 1, j + 1, lda), lda, strideA,
                                      batch_count, workArr);
 
-            // 5. Save the used housedholder scalar
+            // 4. Save the used householder scalar
             ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
                                     tau + j, strideP);
         }
@@ -332,51 +306,27 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
         // main loop running backwards (for each column)
         for(rocblas_int j = n - 1; j > 0; --j)
         {
-            // 1. generate Householder reflector to annihilate A(0:j-2,j)
+            // 1. generate Householder reflector to annihilate A(0:j-2,j) and copy off-diagonal element to E[j-1]
             rocsolver_larfg_template<T>(handle, j, A, shiftA + idx2D(j - 1, j, lda), E, j - 1,
                                         strideE, A, shiftA + idx2D(0, j, lda), 1, strideA, tmptau,
                                         1, batch_count, work, norms);
 
-            // // 2. copy to E(j-1) the corresponding off-diagonal element of A, which is set to 1
-            // ROCSOLVER_LAUNCH_KERNEL(set_offdiag<T>, grid_b, threads, 0, stream, batch_count, A,
-            //                         shiftA + idx2D(j - 1, j, lda), strideA, E + j - 1, strideE);
-
-            // 3. overwrite tau with w = tmptau*A*v - 1/2*tmptau*tmptau*(v'*A*v*)v
-            // a. compute tmptau*A*v -> tau
+            // 2. overwrite tau with w = tmptau*A*v - 1/2*tmptau*tmptau*(v'*A*v*)v
             rocblasCall_symv_hemv<T>(handle, uplo, j, tmptau, stridet, A, shiftA, lda, strideA, A,
                                      shiftA + idx2D(0, j, lda), 1, strideA, scalars + 1, 0, tau, 0,
                                      1, strideP, batch_count, work, workArr);
-
-            // // b. compute scalar tmptau*v'*A*v=tau'*v -> norms
-            // rocblasCall_dot<COMPLEX, T>(handle, j, tau, 0, 1, strideP, A, shiftA + idx2D(0, j, lda),
-            //                             1, strideA, batch_count, norms, work, workArr);
-
-            // // rocblasCall_dot<COMPLEX, T>(handle, j, W, shiftW + idx2D(0, jw, ldw), 1, strideW, A,
-            // //                             shiftA + idx2D(0, j, lda), 1, strideA, batch_count, norms,
-            // //                             work, workArr);
-
-            // // c. finally update tau as an axpy: -1/2*tmptau*norms*v + tau -> tau
-            // // (TODO: rocblas_axpy is not yet ready to be used in rocsolver. When it becomes
-            // //  available, we can use it instead of the scale_axpy kernel if it provides
-            // //  better performance.)
-            // ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms, tmptau,
-            //                         stridet, A, shiftA + idx2D(0, j, lda), strideA, tau, 0, strideP);
-
-            // // ROCSOLVER_LAUNCH_KERNEL(scale_axpy<T>, grid_n, threads, 0, stream, j, norms,
-            // //                         tau + j - 1, strideP, A, shiftA + idx2D(0, j, lda), strideA, W,
-            // //                         shiftW + idx2D(0, jw, ldw), strideW);
 
             ROCSOLVER_LAUNCH_KERNEL((latrd_dot_scale_axpy<64, T>), dim3(1, 1, batch_count),
                                     dim3(64, 1, 1), 0, stream, j, A, shiftA + idx2D(0, j, lda),
                                     strideA, tau, 0, strideP, tmptau, stridet);
 
-            // 4. apply the Householder reflector to A as a rank-2 update:
+            // 3. apply the Householder reflector to A as a rank-2 update:
             // A = A - v*w' - w*v'
             rocblasCall_syr2_her2<T>(handle, uplo, j, scalars, A, shiftA + idx2D(0, j, lda), 1,
                                      strideA, tau, 0, 1, strideP, A, shiftA, lda, strideA,
                                      batch_count, workArr);
 
-            // 5. Save the used housedholder scalar
+            // 4. Save the used householder scalar
             ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
                                     tau + j - 1, strideP);
         }
