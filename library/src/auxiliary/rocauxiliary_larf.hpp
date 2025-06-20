@@ -244,7 +244,7 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
     {
         // trans = COMPLEX ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
         // order = n;
-        static constexpr int NB = 256;
+        static constexpr int NB = 1024;
         static constexpr int DIMX = (65536 / sizeof(T)) - (NB / 64);
         dim3 grid(1, n, batch_count);
         dim3 block(NB);
