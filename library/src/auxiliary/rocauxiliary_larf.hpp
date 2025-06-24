@@ -39,7 +39,7 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-template <int DIMX, int NB_X, typename T, typename I, typename U>
+template <int NB_X, typename T, typename I, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
                            const I n,
                            U xx,
@@ -68,18 +68,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
 
     T res = 0;
 
-    __shared__ T sdata[NB_X / warpSize];
-    __shared__ T xs[DIMX];
+    extern __shared__ double smem[];
+    T* sdata = reinterpret_cast<T*>(smem);
+    T* xs = sdata + (NB_X / warpSize);
 
-    if(m < DIMX)
-        for(I i = tx; i < m; i += NB_X)
-            xs[i] = x[start + i * int64_t(incX)];
+    for(I i = tx; i < m; i += NB_X)
+        xs[i] = x[start + i * int64_t(incX)];
 
     //
     // GEMV
     //
     for(I i = tx; i < m; i += NB_X)
-        res += conj(A[i]) * ((m < DIMX) ? xs[i] : x[start + i * int64_t(incX)]);
+        res += conj(A[i]) * xs[i];
 
     // inta-group reduction
     res += shift_left(res, 1);
@@ -106,7 +106,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
     //
     res = -tau[0] * conj(sdata[0]);
     for(I i = tx; i < m; i += NB_X)
-        A[i] += res * ((m < DIMX) ? xs[i] : x[start + i * int64_t(incX)]);
+        A[i] += res * xs[i];
 }
 
 template <bool BATCHED, typename T, typename I>
@@ -231,39 +231,59 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
                               shiftA, lda, stridea, batch_count);
     }
 
+    // get device prop
+    int device;
+    HIP_CHECK(hipGetDevice(&device));
+    hipDeviceProp_t props;
+    HIP_CHECK(hipGetDeviceProperties(&props, device));
+
+    static constexpr int NB = 1024;
+    const int lds_size = (m + (NB / props.warpSize)) * sizeof(T);
+
+    // determine side
+    bool leftside = (side == rocblas_side_left);
+    if(leftside && lds_size <= props.sharedMemPerBlock && (n <= 1024 || m >= 2048))
+    {
+        dim3 grid(1, n, batch_count);
+        dim3 block(NB);
+
+        ROCSOLVER_LAUNCH_KERNEL((larf_left_kernel<NB>), grid, block, lds_size, stream, m, n, x, shiftx,
+                                incx, stridex, alpha, stridep, A, shiftA, lda, stridea);
+        return rocblas_status_success;
+    }
+
     // everything must be executed with scalars on the device
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
     rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
-    // determine side and order of H
-    bool leftside = (side == rocblas_side_left);
+    // determine order of H
     I order = m;
     rocblas_operation trans = rocblas_operation_none;
     if(leftside)
     {
-        // trans = COMPLEX ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
-        // order = n;
-        static constexpr int NB = 1024;
-        static constexpr int DIMX = (65536 / sizeof(T)) - (NB / 64);
-        dim3 grid(1, n, batch_count);
-        dim3 block(NB);
-
-        ROCSOLVER_LAUNCH_KERNEL((larf_left_kernel<DIMX, NB>), grid, block, 0, stream, m, n, x, shiftx,
-                                incx, stridex, alpha, stridep, A, shiftA, lda, stridea);
+        trans = COMPLEX ? rocblas_operation_conjugate_transpose : rocblas_operation_transpose;
+        order = n;
     }
-    else{
-        // **** FOR NOW, IT DOES NOT DETERMINE "NON-ZERO" DIMENSIONS
-        //      OF A AND X, AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
-        //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
-        //      ZERO ENTRIES ****
 
-        // compute the matrix vector product  (W=-A'*X or W=-A*X)
-        rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A, shiftA, lda, stridea,
-                            x, shiftx, incx, stridex, cast2constType<T>(scalars + 1), 0, Abyx, 0, 1,
-                            order, batch_count, workArr);
+    // **** FOR NOW, IT DOES NOT DETERMINE "NON-ZERO" DIMENSIONS
+    //      OF A AND X, AS THIS WOULD REQUIRE SYNCHRONIZATION WITH GPU.
+    //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
+    //      ZERO ENTRIES ****
 
-        // compute the rank-1 update  (A + tau*X*W'  or A + tau*W*X')
+    // compute the matrix vector product  (W=-A'*X or W=-A*X)
+    rocblasCall_gemv<T>(handle, trans, m, n, cast2constType<T>(scalars), 0, A, shiftA, lda, stridea,
+                        x, shiftx, incx, stridex, cast2constType<T>(scalars + 1), 0, Abyx, 0, 1,
+                        order, batch_count, workArr);
+
+    // compute the rank-1 update  (A + tau*X*W'  or A + tau*W*X')
+    if(leftside)
+    {
+        rocblasCall_ger<COMPLEX, T, I>(handle, m, n, alpha, stridep, x, shiftx, incx, stridex, Abyx,
+                                       0, 1, order, A, shiftA, lda, stridea, batch_count, workArr);
+    }
+    else
+    {
         rocblasCall_ger<COMPLEX, T, I>(handle, m, n, alpha, stridep, Abyx, 0, 1, order, x, shiftx,
                                        incx, stridex, A, shiftA, lda, stridea, batch_count, workArr);
     }
