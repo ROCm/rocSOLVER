@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     June 2013
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -339,8 +339,30 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
 
     // compute: trans(T) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * trans(T)
-    rocblasCall_trmm(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw, order, &one, 0, F,
-                     shiftF, ldf, strideF, tmptr, 0, ldw, strideW, batch_count, workArr);
+    if(colwise && forward && leftside)
+    {
+        size_t size_work1, size_work2, size_work3, size_work4;
+        bool optim_mem;
+        rocsolver_trsm_mem<false, false, T>(side, transt, ldw, order, batch_count, &size_work1,
+                                            &size_work2, &size_work3, &size_work4, &optim_mem);
+        void *work1, *work2, *work3, *work4;
+        HIP_CHECK(hipMalloc(&work1, sizeof(size_work1)));
+        HIP_CHECK(hipMalloc(&work2, sizeof(size_work2)));
+        HIP_CHECK(hipMalloc(&work3, sizeof(size_work3)));
+        HIP_CHECK(hipMalloc(&work4, sizeof(size_work4)));
+        rocsolver_trsm_upper<false, false, T>(handle, side, transt, rocblas_diagonal_non_unit, ldw,
+                                              order, F, shiftF, ldf, strideF, tmptr, 0, ldw, strideW,
+                                              batch_count, optim_mem, work1, work2, work3, work4);
+        HIP_CHECK(hipFree(work1));
+        HIP_CHECK(hipFree(work2));
+        HIP_CHECK(hipFree(work3));
+        HIP_CHECK(hipFree(work4));
+    }
+    else
+    {
+        rocblasCall_trmm(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw, order, &one,
+                         0, F, shiftF, ldf, strideF, tmptr, 0, ldw, strideW, batch_count, workArr);
+    }
 
     // compute: A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'

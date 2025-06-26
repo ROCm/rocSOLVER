@@ -36,6 +36,7 @@
 
 #pragma once
 
+#include "lapack/roclapack_trtri.hpp"
 #include "rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
@@ -74,7 +75,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
         Fp = F + b * strideF;
 
         if(j == i)
-            Fp[idx2D(j, i, ldf)] = tp[i];
+            Fp[j + i * ldf] = 1 / tp[i];
         else if(direct == rocblas_forward_direction)
         {
             if(j < i)
@@ -83,13 +84,14 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 {
                     if(!add_fp)
                     {
-                        Fp[idx2D(j, i, ldf)] = -tp[i] * Vp[idx2D(i, j, ldv)];
+                        Fp[idx2D(j, i, ldf)] = Vp[idx2D(i, j, ldv)];
                     }
                     else
                     {
-                        Fp[idx2D(j, i, ldf)] = -tp[i] * (Fp[idx2D(j, i, ldf)] + Vp[idx2D(i, j, ldv)]);
+                        Fp[idx2D(j, i, ldf)] = (Fp[idx2D(j, i, ldf)] + Vp[idx2D(i, j, ldv)]);
                     }
                 }
+                // Fp[j + i * ldf] = Vp[i + j * ldv];
                 else
                 {
                     if(!add_fp)
@@ -168,7 +170,7 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
         Fp = F + b * strideF;
 
         if(j == i)
-            Fp[idx2D(j, i, ldf)] = tp[i];
+            Fp[j + i * ldf] = 1 / tp[i];
         else if(direct == rocblas_forward_direction)
         {
             if(j < i)
@@ -177,14 +179,14 @@ ROCSOLVER_KERNEL void set_triangular(const rocblas_int n,
                 {
                     if(!add_fp)
                     {
-                        Fp[idx2D(j, i, ldf)] = -tp[i] * conj(Vp[idx2D(i, j, ldv)]);
+                        Fp[idx2D(j, i, ldf)] = conj(Vp[idx2D(i, j, ldv)]);
                     }
                     else
                     {
-                        Fp[idx2D(j, i, ldf)]
-                            = -tp[i] * (Fp[idx2D(j, i, ldf)] + conj(Vp[idx2D(i, j, ldv)]));
+                        Fp[idx2D(j, i, ldf)] = (Fp[idx2D(j, i, ldf)] + conj(Vp[idx2D(i, j, ldv)]));
                     }
                 }
+                // Fp[j + i * ldf] = conj(Vp[i + j * ldv]);
                 else
                 {
                     if(!add_fp)
@@ -508,6 +510,15 @@ rocblas_status rocsolver_larft_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
+template <typename T, typename U>
+rocblas_status rocsolver_trtri_impl(rocblas_handle handle,
+                                    const rocblas_fill uplo,
+                                    const rocblas_diagonal diag,
+                                    const rocblas_int n,
+                                    U A,
+                                    const rocblas_int lda,
+                                    rocblas_int* info);
+
 template <typename T, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_larft_template(rocblas_handle handle,
                                         const rocblas_direct direct,
@@ -612,21 +623,26 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
         //      IT WILL WORK ON THE ENTIRE MATRIX/VECTOR REGARDLESS OF
         //      ZERO ENTRIES ****
 
-        if(k <= LARFT_SWITCHSIZE && lmemsize <= props.sharedMemPerBlock)
-        {
-            ROCSOLVER_LAUNCH_KERNEL(larft_kernel_forward, dim3(1, batch_count), dim3(BS1, 1),
-                                    lmemsize, stream, storev, u1_n, k, V, shiftV, ldv, strideV, tau,
-                                    strideT, F, ldf, strideF);
-        }
-        else
+        // if(k <= LARFT_SWITCHSIZE && lmemsize <= props.sharedMemPerBlock)
+        // {
+        //     ROCSOLVER_LAUNCH_KERNEL(larft_kernel_forward, dim3(1, batch_count), dim3(BS1, 1),
+        //                             lmemsize, stream, storev, u1_n, k, V, shiftV, ldv, strideV, tau,
+        //                             strideT, F, ldf, strideF);
+        // }
+        // else
         {
             for(rocblas_int i = 1; i < k; ++i)
             {
                 // compute the matrix vector product, using the householder vectors
                 if(storev == rocblas_column_wise)
                 {
+                    // trans = rocblas_operation_conjugate_transpose;
+                    // rocblasCall_gemv<T>(handle, trans, n - 1 - i, i, scalars + 2, strideT, V,
+                    //                     shiftV + idx2D(i + 1, 0, ldv), ldv, strideV, V,
+                    //                     shiftV + idx2D(i + 1, i, ldv), 1, strideV, scalars + 2, 0, F,
+                    //                     idx2D(0, i, ldf), 1, strideF, batch_count, workArr);
                     trans = rocblas_operation_conjugate_transpose;
-                    rocblasCall_gemv<T>(handle, trans, u1_n - 1 - i, i, tau + i, strideT, V,
+                    rocblasCall_gemv<T>(handle, trans, u1_n - 1 - i, i, scalars + 2, strideT, V,
                                         shiftV + idx2D(i + 1, 0, ldv), ldv, strideV, V,
                                         shiftV + idx2D(i + 1, i, ldv), 1, strideV, scalars + 2, 0,
                                         F, idx2D(0, i, ldf), 1, strideF, batch_count, workArr);
@@ -651,9 +667,12 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
                 }
 
                 // multiply by the previous triangular factor
-                trans = rocblas_operation_none;
-                rocblasCall_trmv<T>(handle, uplo, trans, diag, i, F, 0, ldf, strideF, F,
-                                    idx2D(0, i, ldf), 1, strideF, work, stridew, batch_count);
+                if(storev != rocblas_column_wise)
+                {
+                    trans = rocblas_operation_none;
+                    rocblasCall_trmv<T>(handle, uplo, trans, diag, i, F, 0, ldf, strideF, F,
+                                        idx2D(0, i, ldf), 1, strideF, work, stridew, batch_count);
+                }
             }
         }
     }
@@ -716,6 +735,56 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     // restore tau
     ROCSOLVER_LAUNCH_KERNEL(set_tau, dim3(blocks, batch_count), dim3(32, 1), 0, stream, k, tau,
                             strideT);
+
+    if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
+    {
+        size_t size_w1, size_w2, size_w3, size_w4, size_tmp, size_work;
+        bool optim_mem;
+        // rocsolver_trtri_getMemorySize(rocblas_diagonal_non_unit, k,
+        //                            batch_count,
+        //                            &size_w1,
+        //                            &size_w2,
+        //                            &size_w3,
+        //                            &size_w4,
+        //                            &size_tmp,
+        //                            &size_work,
+        //                            &optim_mem);
+        void *w1, *w2, *w3, *w4, *tmp, *work1;
+        rocblas_int* info;
+        // HIP_CHECK(hipMalloc(&info, sizeof(rocblas_int)));
+        // HIP_CHECK(hipMalloc(&w1, sizeof(size_w1)));
+        // HIP_CHECK(hipMalloc(&w2, sizeof(size_w2)));
+        // HIP_CHECK(hipMalloc(&w3, sizeof(size_w3)));
+        // HIP_CHECK(hipMalloc(&w4, sizeof(size_w4)));
+        // HIP_CHECK(hipMalloc(&tmp, sizeof(size_tmp)));
+        // HIP_CHECK(hipMalloc(&work1, sizeof(size_work)));
+        // rocsolver_trtri_impl<T>(handle, rocblas_fill_upper, rocblas_diagonal_non_unit, k,
+        //     F,
+        //     ldf,
+        //     info);
+        // rocsolver_trtri_template(handle,
+        //                                 rocblas_fill_upper, rocblas_diagonal_non_unit, k,
+        //                                 F,
+        //                                 0,
+        //                                 ldf,
+        //                                 strideF,
+        //                                 info,
+        //                                 batch_count,
+        //                                 w1,
+        //                                 w2,
+        //                                 w3,
+        //                                 w4,
+        //                                 (T*)tmp,
+        //                                 (T**)work1,
+        //                                 optim_mem);
+        // HIP_CHECK(hipFree(info));
+        // HIP_CHECK(hipFree(w1));
+        // HIP_CHECK(hipFree(w2));
+        // HIP_CHECK(hipFree(w3));
+        // HIP_CHECK(hipFree(w4));
+        // HIP_CHECK(hipFree(tmp));
+        // HIP_CHECK(hipFree(work1));
+    }
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;
