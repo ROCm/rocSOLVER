@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     December 2016
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,20 +41,20 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 template <int NB_X, typename T, typename I, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
-                           const I n,
-                           U xx,
-                           const rocblas_stride shiftX,
-                           const I incX,
-                           const rocblas_stride strideX,
-                           const T* tauA,
-                           const rocblas_stride strideP,
-                           U AA,
-                           const rocblas_stride shiftA,
-                           const I lda,
-                           const rocblas_stride strideA)
+                                                               const I n,
+                                                               U xx,
+                                                               const rocblas_stride shiftX,
+                                                               const I incX,
+                                                               const rocblas_stride strideX,
+                                                               const T* tauA,
+                                                               const rocblas_stride strideP,
+                                                               U AA,
+                                                               const rocblas_stride shiftA,
+                                                               const I lda,
+                                                               const rocblas_stride strideA)
 {
     I bid = blockIdx.z;
-    I tx  = threadIdx.x;
+    I tx = threadIdx.x;
     I col = blockIdx.y;
 
     // select batch instance
@@ -96,7 +96,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
     {
         for(I k = 1; k < NB_X / warpSize; k++)
             res += sdata[k];
-        
+
         sdata[0] = res;
     }
     __syncthreads();
@@ -247,8 +247,8 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
         dim3 grid(1, n, batch_count);
         dim3 block(NB);
 
-        ROCSOLVER_LAUNCH_KERNEL((larf_left_kernel<NB>), grid, block, lds_size, stream, m, n, x, shiftx,
-                                incx, stridex, alpha, stridep, A, shiftA, lda, stridea);
+        ROCSOLVER_LAUNCH_KERNEL((larf_left_kernel<NB>), grid, block, lds_size, stream, m, n, x,
+                                shiftx, incx, stridex, alpha, stridep, A, shiftA, lda, stridea);
         return rocblas_status_success;
     }
 
