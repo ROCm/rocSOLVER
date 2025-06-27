@@ -339,30 +339,8 @@ rocblas_status rocsolver_larfb_template(rocblas_handle handle,
 
     // compute: trans(T) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * trans(T)
-    if(colwise && forward && leftside)
-    {
-        size_t size_work1, size_work2, size_work3, size_work4;
-        bool optim_mem;
-        rocsolver_trsm_mem<false, false, T>(side, transt, ldw, order, batch_count, &size_work1,
-                                            &size_work2, &size_work3, &size_work4, &optim_mem);
-        void *work1, *work2, *work3, *work4;
-        HIP_CHECK(hipMalloc(&work1, sizeof(size_work1)));
-        HIP_CHECK(hipMalloc(&work2, sizeof(size_work2)));
-        HIP_CHECK(hipMalloc(&work3, sizeof(size_work3)));
-        HIP_CHECK(hipMalloc(&work4, sizeof(size_work4)));
-        rocsolver_trsm_upper<false, false, T>(handle, side, transt, rocblas_diagonal_non_unit, ldw,
-                                              order, F, shiftF, ldf, strideF, tmptr, 0, ldw, strideW,
-                                              batch_count, optim_mem, work1, work2, work3, work4);
-        HIP_CHECK(hipFree(work1));
-        HIP_CHECK(hipFree(work2));
-        HIP_CHECK(hipFree(work3));
-        HIP_CHECK(hipFree(work4));
-    }
-    else
-    {
-        rocblasCall_trmm(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw, order, &one,
-                         0, F, shiftF, ldf, strideF, tmptr, 0, ldw, strideW, batch_count, workArr);
-    }
+    rocblasCall_trmm(handle, side, uploT, transt, rocblas_diagonal_non_unit, ldw, order, &one, 0, F,
+                     shiftF, ldf, strideF, tmptr, 0, ldw, strideW, batch_count, workArr);
 
     // compute: A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'
@@ -490,9 +468,10 @@ rocblas_status rocsolver_larfb_inverse_template(rocblas_handle handle,
                                                 T** workArr,
                                                 bool optim_mem)
 {
-    ROCSOLVER_ENTER("larfb", "side:", side, "trans:", trans, "direct:", direct, "storev:", storev,
-                    "m:", m, "n:", n, "k:", k, "shiftV:", shiftV, "ldv:", ldv, "shiftF:", shiftF,
-                    "ldf:", ldf, "shiftA:", shiftA, "lda:", lda, "bc:", batch_count);
+    ROCSOLVER_ENTER("larfb_inverse", "side:", side, "trans:", trans, "direct:", direct,
+                    "storev:", storev, "m:", m, "n:", n, "k:", k, "shiftV:", shiftV, "ldv:", ldv,
+                    "shiftF:", shiftF, "ldf:", ldf, "shiftA:", shiftA, "lda:", lda,
+                    "bc:", batch_count);
 
     // quick return
     if(m == 0 || n == 0 || batch_count == 0)

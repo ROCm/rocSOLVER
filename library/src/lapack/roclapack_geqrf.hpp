@@ -81,7 +81,7 @@ void rocsolver_geqrf_getMemorySize(const I m,
         *size_Abyx_norms_trfact = std::max(s2, *size_Abyx_norms_trfact);
 
         // requirements for calling LARFT
-        rocsolver_larft_inverse_getMemorySize<BATCHED, T>(m, jb, batch_count, &w2, size_workArr);
+        rocsolver_larft_getMemorySize<BATCHED, T>(m, jb, batch_count, &unused, &w2, size_workArr);
 
         // requirements for calling LARFB
         rocsolver_larfb_getMemorySize<BATCHED, T>(rocblas_side_left, m, n - jb, jb, batch_count,
@@ -151,10 +151,10 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
         if(j + jb < n)
         {
             // compute block reflector
-            rocsolver_larft_inverse_template<T>(
-                handle, rocblas_forward_direction, rocblas_column_wise, m - j, jb, A,
-                shiftA + idx2D(j, j, lda), lda, strideA, (ipiv + j), strideP, Abyx_norms_trfact,
-                ldw, strideW, batch_count, (T*)work_workArr, workArr);
+            rocsolver_larft_template<T>(handle, rocblas_forward_direction, rocblas_column_wise,
+                                        m - j, jb, A, shiftA + idx2D(j, j, lda), lda, strideA,
+                                        (ipiv + j), strideP, Abyx_norms_trfact, ldw, strideW,
+                                        batch_count, scalars, (T*)work_workArr, workArr);
 
             // apply the block reflector
             rocsolver_larfb_template<BATCHED, STRIDED, T>(
