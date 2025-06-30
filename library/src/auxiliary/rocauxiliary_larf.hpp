@@ -39,6 +39,12 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
+/*
+*   LARF kernel for the left side case. Each work group of NB_X threads
+*   operates on a column of matrix A. (m + NB_X / warpSize) * sizeof(T)
+*   bytes of LDS memory is required. Grid dimensions = dim3(1, n, batch count)
+*   and block dimensions = dim3(NB_X).
+*/
 template <int NB_X, typename T, typename I, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
                                                                const I n,
@@ -81,7 +87,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(NB_X) larf_left_kernel(const I m,
     for(I i = tx; i < m; i += NB_X)
         res += conj(A[i]) * xs[i];
 
-    // inta-group reduction
+    // reduction
     res += shift_left(res, 1);
     res += shift_left(res, 2);
     res += shift_left(res, 4);
