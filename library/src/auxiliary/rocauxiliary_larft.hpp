@@ -871,16 +871,21 @@ rocblas_status rocsolver_larft_inverse_template(rocblas_handle handle,
     rocblas_int blocks = (k - 1) / 32 + 1;
     dim3 gridTri(blocks, blocks, batch_count);
     dim3 blockTri(32, 32);
+
+    // set V to unit triangular/trapezoidal
     ROCSOLVER_LAUNCH_KERNEL((set_tri), gridTri, blockTri, 0, stream, k, V, shiftV, ldv, strideV,
                             work);
 
+    // compute: V' * V
     rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k, k, n,
                    &one, V, shiftV, ldv, strideV, V, shiftV, ldv, strideV, &zero, F, 0, ldf,
                    strideF, batch_count, workArr);
 
+    // set V diag to 1 / tau
     ROCSOLVER_LAUNCH_KERNEL(set_diag, dim3(blocks, 1, batch_count), dim3(32, 1), 0, stream, k, tau,
                             strideT, F, ldf, strideF);
 
+    // restore original V
     ROCSOLVER_LAUNCH_KERNEL((restore_tri), gridTri, blockTri, 0, stream, k, V, shiftV, ldv, strideV,
                             work);
 
