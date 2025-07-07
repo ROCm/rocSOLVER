@@ -1463,8 +1463,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
             // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
             // This will allow us to find initial intervals for eigenvalue guesses
-#if 1
-            // bubble sort
             for(int i = 0; i < dd; i++)
             {
                 for(int j = 2 * iam + i % 2; j < dd - 1; j += 2 * bdm)
@@ -1478,34 +1476,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 }
                 __syncthreads();
             }
-#else
-            // shell sort
-            for(int m = dd / 2; m > 0; m /= 2)
-            {
-                for(int i = iam; i < m; i += bdm)
-                {
-                    for(int j = m; j < dd - i; j += m)
-                    {
-                        int l = i + j;
-                        auto key_tmpd = tmpd[l];
-                        auto key_zz = zz[l];
-                        auto key_per = per[l];
-                        while(l >= m && tmpd[l - m] > key_tmpd)
-                        {
-                            tmpd[l] = tmpd[l - m];
-                            zz[l] = zz[l - m];
-                            per[l] = per[l - m];
-                            l -= m;
-                        }
-                        tmpd[l] = key_tmpd;
-                        zz[l] = key_zz;
-                        per[l] = key_per;
-                    }
-                }
-                __syncthreads();
-            }
-
-#endif
 
             // make dd copies of the non-deflated ordered diagonal elements
             // (i.e. the poles of the secular eqn) so that the distances to the
