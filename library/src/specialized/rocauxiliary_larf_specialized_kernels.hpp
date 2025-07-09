@@ -194,18 +194,18 @@ rocblas_status larf_run_small(rocblas_handle handle,
     {
         dim3 grid(batch_count, min(m, LARF_SSKER_BLOCKS), 1);
 
-        if(m <= 64)
+        if(n <= 64)
             ROCSOLVER_LAUNCH_KERNEL((larf_right_kernel_small<64, T>), grid, dim3(64), 0, stream, m, n,
                                     x, shiftX, incX, strideX, tau, strideP, A, shiftA, lda, strideA);
-        else if(m <= 128)
+        else if(n <= 128)
             ROCSOLVER_LAUNCH_KERNEL((larf_right_kernel_small<128, T>), grid, dim3(128), 0, stream,
                                     m, n, x, shiftX, incX, strideX, tau, strideP, A, shiftA, lda,
                                     strideA);
-        else if(m <= 256)
+        else if(n <= 256)
             ROCSOLVER_LAUNCH_KERNEL((larf_right_kernel_small<256, T>), grid, dim3(256), 0, stream,
                                     m, n, x, shiftX, incX, strideX, tau, strideP, A, shiftA, lda,
                                     strideA);
-        else if(m <= 512)
+        else if(n <= 512)
             ROCSOLVER_LAUNCH_KERNEL((larf_right_kernel_small<512, T>), grid, dim3(512), 0, stream,
                                     m, n, x, shiftX, incX, strideX, tau, strideP, A, shiftA, lda,
                                     strideA);
