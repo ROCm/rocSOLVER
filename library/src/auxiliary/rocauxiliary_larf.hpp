@@ -326,17 +326,24 @@ rocblas_status rocsolver_larf_template(rocblas_handle handle,
     const int lds_size = leftside ? (m + (NB / props.warpSize)) * sizeof(T)
                                   : (n + (NB / props.warpSize)) * sizeof(T);
 
-    if(lds_size <= props.sharedMemPerBlock && (n <= 1024 || m >= 2048))
+    if(lds_size <= props.sharedMemPerBlock)
     {
-        if(leftside)
+        // Launch larf kernel if tune parameters are met.
+        if(leftside && (n <= 1024 || m >= 2048))
+        {
             ROCSOLVER_LAUNCH_KERNEL((larf_left_kernel<NB>), dim3(1, n, batch_count), dim3(NB),
                                     lds_size, stream, m, n, x, shiftx, incx, stridex, alpha,
                                     stridep, A, shiftA, lda, stridea);
-        else
+            return rocblas_status_success;
+        }
+        // TODO: investigate right side tuning.
+        else if(!leftside && (m <= 1024 || n >= 2048))
+        {
             ROCSOLVER_LAUNCH_KERNEL((larf_right_kernel<NB>), dim3(1, m, batch_count), dim3(NB),
                                     lds_size, stream, m, n, x, shiftx, incx, stridex, alpha,
                                     stridep, A, shiftA, lda, stridea);
-        return rocblas_status_success;
+            return rocblas_status_success;
+        }
     }
 
     // everything must be executed with scalars on the device
