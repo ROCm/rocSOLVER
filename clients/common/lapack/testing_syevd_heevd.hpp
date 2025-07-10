@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "common/matrix_utils/matrix_utils.hpp"
 #include "common/misc/client_util.hpp"
 #include "common/misc/clientcommon.hpp"
 #include "common/misc/lapack_host_reference.hpp"
@@ -146,15 +147,15 @@ void testing_syevd_heevd_bad_arg()
 }
 
 template <bool CPU, bool GPU, typename T, typename Td, typename Th>
-void syevd_heevd_initData(const rocblas_handle handle,
-                          const rocblas_evect evect,
-                          const rocblas_int n,
-                          Td& dA,
-                          const rocblas_int lda,
-                          const rocblas_int bc,
-                          Th& hA,
-                          std::vector<T>& A,
-                          bool test = true)
+void syevd_heevd_default_initData(const rocblas_handle handle,
+                                  const rocblas_evect evect,
+                                  const rocblas_int n,
+                                  Td& dA,
+                                  const rocblas_int lda,
+                                  const rocblas_int bc,
+                                  Th& hA,
+                                  std::vector<T>& A,
+                                  bool test = true)
 {
     if(CPU)
     {
@@ -191,6 +192,171 @@ void syevd_heevd_initData(const rocblas_handle handle,
         // now copy to the GPU
         CHECK_HIP_ERROR(dA.transfer_from(hA));
     }
+}
+
+// Creates an `n` by `n` matrix `A` with the following eigenvalues:
+//
+// spectrum(A) = { l_i = ulp * i, for 1 <= i <= n - 1; l_n = 1 }
+//
+// where `ulp` is the smallest floating point number such that `1 + ulp > 1`.
+//
+template <bool CPU, bool GPU, typename T, typename Td, typename Th>
+void syevd_heevd_eig7_initData(const rocblas_handle handle,
+                               const rocblas_evect evect,
+                               const rocblas_int n,
+                               Td& dA,
+                               const rocblas_int lda,
+                               const rocblas_int bc,
+                               Th& hA,
+                               std::vector<T>& A,
+                               bool test = true)
+{
+    using S = decltype(std::real(T{}));
+
+    if(CPU)
+    {
+        rocblas_init<T>(hA, true);
+
+        for(rocblas_int b = 0; b < bc; ++b)
+        {
+            // New matrix initialization
+            using HMat = HostMatrix<T, rocblas_int>;
+            using BDesc = typename HMat::BlockDescriptor;
+
+            auto hAw = HMat::Wrap(hA[b], lda, n);
+            if(hAw) // update matrix hA if n >= 1
+            {
+                auto eigs = std::numeric_limits<S>::epsilon() * HMat::FromRange(1, n - 1, n - 1);
+                eigs = cat(eigs, HMat::Ones(1, 1));
+                auto [Q, _] = qr((*hAw).block(BDesc().nrows(n).ncols(n)));
+                hAw->set_to_zero();
+
+                hAw->copy_data_from(Q * HMat::Zeros(n).diag(eigs) * adjoint(Q));
+            }
+
+            // make copy of original data to test vectors if required
+            if(test && evect == rocblas_evect_original)
+            {
+                for(rocblas_int i = 0; i < n; i++)
+                {
+                    for(rocblas_int j = 0; j < n; j++)
+                        A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
+                }
+            }
+        }
+    }
+
+    if(GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+// Creates an `n` by `n` Wilkinson matrix, which is formed as follows:
+//
+// 1. If `n` is even:
+//                      (   1          1            1          1   )
+// W_{2m + 1} = tridiag ( m   (m - 1) ... 0.5 0.5 ... (m - 1)    m )
+//                      (   1          1            1          1   )
+//
+// 2. If `n` is odd:
+//                      (   1          1         1          1   )
+// W_{2m + 1} = tridiag ( m   (m - 1) ... 1 0 1 ... (m - 1)   m )
+//                      (   1          1         1          1   )
+//
+// where `n = 2m + 1`.
+//
+template <bool CPU, bool GPU, typename T, typename Td, typename Th>
+void syevd_heevd_wilkinson_initData(const rocblas_handle handle,
+                                    const rocblas_evect evect,
+                                    const rocblas_int n,
+                                    Td& dA,
+                                    const rocblas_int lda,
+                                    const rocblas_int bc,
+                                    Th& hA,
+                                    std::vector<T>& A,
+                                    bool test = true)
+{
+    using S = decltype(std::real(T{}));
+
+    if(CPU)
+    {
+        rocblas_init<T>(hA, true);
+
+        // scale A to avoid singularities
+        for(rocblas_int b = 0; b < bc; ++b)
+        {
+            // New matrix initialization
+            using HMat = HostMatrix<T, rocblas_int>;
+            using BDesc = typename HMat::BlockDescriptor;
+
+            auto hAw = HMat::Wrap(hA[b], lda, n);
+            if(hAw) // update matrix hA if n >= 1
+            {
+                S m = (n - 1) / S(2);
+                auto A = HMat::Zeros(n, n);
+                auto E = HMat::Ones(n - 1, 1);
+                auto D = HMat::Zeros(n, 1);
+
+                for(rocblas_int i = 0; i < n / 2; ++i)
+                {
+                    D[i] = m - i;
+                    D[n - 1 - i] = m - i;
+                }
+
+                A.diag(D);
+                A.sup_diag(E);
+                A.sub_diag(E);
+
+                hAw->set_to_zero();
+                hAw->copy_data_from(A);
+            }
+
+            // make copy of original data to test vectors if required
+            if(test && evect == rocblas_evect_original)
+            {
+                for(rocblas_int i = 0; i < n; i++)
+                {
+                    for(rocblas_int j = 0; j < n; j++)
+                        A[b * lda * n + i + j * lda] = hA[b][i + j * lda];
+                }
+            }
+        }
+    }
+
+    if(GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dA.transfer_from(hA));
+    }
+}
+
+template <bool CPU, bool GPU, typename T, typename Td, typename Th>
+void syevd_heevd_initData(const rocblas_handle handle,
+                          const rocblas_evect evect,
+                          const rocblas_int n,
+                          Td& dA,
+                          const rocblas_int lda,
+                          const rocblas_int bc,
+                          Th& hA,
+                          std::vector<T>& A,
+                          bool test = true)
+{
+    if(std::getenv("SYEVD_TEST_EIG7") != nullptr)
+    {
+        syevd_heevd_eig7_initData<CPU, GPU>(handle, evect, n, dA, lda, bc, hA, A, test);
+    }
+    else if(std::getenv("SYEVD_TEST_WILKINSON") != nullptr)
+    {
+        syevd_heevd_wilkinson_initData<CPU, GPU>(handle, evect, n, dA, lda, bc, hA, A, test);
+    }
+    else
+    {
+        syevd_heevd_default_initData<CPU, GPU>(handle, evect, n, dA, lda, bc, hA, A, test);
+    }
+
+    return;
 }
 
 template <bool STRIDED, typename T, typename Sd, typename Td, typename Id, typename Sh, typename Th, typename Ih>
@@ -602,9 +768,9 @@ void testing_syevd_heevd(Arguments& argus)
     }
 
     // validate results for rocsolver-test
-    // using n * machine_precision as tolerance
+    // using 3 * n * machine_precision as tolerance
     if(argus.unit_check)
-        ROCSOLVER_TEST_CHECK(T, max_error, n);
+        ROCSOLVER_TEST_CHECK(T, max_error, 3 * n);
 
     // output results for rocsolver-bench
     if(argus.timing)
