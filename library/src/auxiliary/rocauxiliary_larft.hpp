@@ -722,7 +722,8 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
 }
 
 template <typename T, typename U>
-ROCSOLVER_KERNEL void set_tri(const rocblas_int k,
+ROCSOLVER_KERNEL void set_tri(const rocblas_fill uplo,
+                              const rocblas_int k,
                               U A,
                               const rocblas_int shiftA,
                               const rocblas_int lda,
@@ -736,9 +737,12 @@ ROCSOLVER_KERNEL void set_tri(const rocblas_int k,
     const rocblas_int ldb = k;
     const rocblas_stride strideB = rocblas_stride(ldb) * k;
 
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool lower = (uplo == rocblas_fill_lower);
+
     if(i < k && j < k)
     {
-        if(j >= i)
+        if((upper && j >= i) || (lower && i >= j))
         {
             T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
             T* Bp = &buffer[b * strideB];
@@ -746,14 +750,15 @@ ROCSOLVER_KERNEL void set_tri(const rocblas_int k,
             // copy A to buffer
             Bp[i + j * ldb] = Ap[i + j * lda];
 
-            // set A to lower unit triangular
+            // set A to unit triangular
             Ap[i + j * lda] = (i == j) ? 1 : 0;
         }
     }
 }
 
 template <typename T, typename U>
-ROCSOLVER_KERNEL void restore_tri(const rocblas_int k,
+ROCSOLVER_KERNEL void restore_tri(const rocblas_fill uplo,
+                                  const rocblas_int k,
                                   U A,
                                   const rocblas_int shiftA,
                                   const rocblas_int lda,
@@ -767,9 +772,12 @@ ROCSOLVER_KERNEL void restore_tri(const rocblas_int k,
     const rocblas_int ldb = k;
     const rocblas_stride strideB = rocblas_stride(ldb) * k;
 
+    const bool upper = (uplo == rocblas_fill_upper);
+    const bool lower = (uplo == rocblas_fill_lower);
+
     if(i < k && j < k)
     {
-        if(j >= i)
+        if((upper && j >= i) || (lower && i >= j))
         {
             T* Ap = load_ptr_batch<T>(A, b, shiftA, strideA);
             T* Bp = &buffer[b * strideB];
@@ -848,11 +856,6 @@ rocblas_status rocsolver_larft_inverse_template(rocblas_handle handle,
     ROCSOLVER_ENTER("larft_inverse", "direct:", direct, "storev:", storev, "n:", n, "k:", k,
                     "shiftV:", shiftV, "ldv:", ldv, "ldf:", ldf, "bc:", batch_count);
 
-    if(direct != rocblas_forward_direction || storev != rocblas_column_wise)
-    {
-        return rocblas_status_not_implemented;
-    }
-
     // quick return
     if(n == 0 || batch_count == 0)
         return rocblas_status_success;
@@ -868,26 +871,47 @@ rocblas_status rocsolver_larft_inverse_template(rocblas_handle handle,
     T one = 1;
     T zero = 0;
 
+    const bool colwise = (storev == rocblas_column_wise);
+    const bool forward = (direct == rocblas_forward_direction);
+
+    rocblas_operation transA
+        = colwise ? rocblas_operation_conjugate_transpose : rocblas_operation_none;
+    rocblas_operation transB
+        = colwise ? rocblas_operation_none : rocblas_operation_conjugate_transpose;
+
+    rocblas_int tri_offset;
+    rocblas_fill tri_uplo;
+
+    if(colwise)
+    {
+        tri_uplo = forward ? rocblas_fill_upper : rocblas_fill_lower;
+        tri_offset = (!forward && n > k) ? idx2D(n - k, 0, ldv) : 0;
+    }
+    else
+    {
+        tri_uplo = forward ? rocblas_fill_lower : rocblas_fill_upper;
+        tri_offset = (!forward && n > k) ? idx2D(0, n - k, ldv) : 0;
+    }
+
     rocblas_int blocks = (k - 1) / 32 + 1;
     dim3 gridTri(blocks, blocks, batch_count);
     dim3 blockTri(32, 32);
 
     // set V to unit triangular/trapezoidal
-    ROCSOLVER_LAUNCH_KERNEL((set_tri), gridTri, blockTri, 0, stream, k, V, shiftV, ldv, strideV,
-                            work);
+    ROCSOLVER_LAUNCH_KERNEL((set_tri), gridTri, blockTri, 0, stream, tri_uplo, k, V,
+                            shiftV + tri_offset, ldv, strideV, work);
 
-    // compute: V' * V
-    rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k, k, n,
-                   &one, V, shiftV, ldv, strideV, V, shiftV, ldv, strideV, &zero, F, 0, ldf,
-                   strideF, batch_count, workArr);
+    // compute: V' * V or V * V'
+    rocsolver_gemm(handle, transA, transB, k, k, n, &one, V, shiftV, ldv, strideV, V, shiftV, ldv,
+                   strideV, &zero, F, 0, ldf, strideF, batch_count, workArr);
 
-    // set V diag to 1 / tau
+    // set F diag to 1 / tau
     ROCSOLVER_LAUNCH_KERNEL(set_diag, dim3(blocks, 1, batch_count), dim3(32, 1), 0, stream, k, tau,
                             strideT, F, ldf, strideF);
 
     // restore original V
-    ROCSOLVER_LAUNCH_KERNEL((restore_tri), gridTri, blockTri, 0, stream, k, V, shiftV, ldv, strideV,
-                            work);
+    ROCSOLVER_LAUNCH_KERNEL((restore_tri), gridTri, blockTri, 0, stream, tri_uplo, k, V,
+                            shiftV + tri_offset, ldv, strideV, work);
 
     rocblas_set_pointer_mode(handle, old_mode);
     return rocblas_status_success;

@@ -611,9 +611,14 @@ rocblas_status rocsolver_larfb_inverse_template(rocblas_handle handle,
 
     // compute: inv(trans(T)) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * inv(trans(T))
-    rocsolver_trsm_upper<BATCHED, STRIDED, T>(handle, side, transt, rocblas_diagonal_non_unit, ldw,
-                                              order, F, shiftF, ldf, strideF, tmptr, 0, ldw, strideW,
-                                              batch_count, optim_mem, work1, work2, work3, work4);
+    if(forward)
+        rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+            handle, side, transt, rocblas_diagonal_non_unit, ldw, order, F, shiftF, ldf, strideF,
+            tmptr, 0, ldw, strideW, batch_count, optim_mem, work1, work2, work3, work4);
+    else
+        rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+            handle, side, transt, rocblas_diagonal_non_unit, ldw, order, F, shiftF, ldf, strideF,
+            tmptr, 0, ldw, strideW, batch_count, optim_mem, work1, work2, work3, work4);
 
     // compute: A2 - V2 * trans(T) * (V1' * A1 + V2' * A2)
     //    or    A2 - (A1 * V1 + A2 * V2) * trans(T) * V2'
