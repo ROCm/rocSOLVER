@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2021-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2021-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -59,13 +59,13 @@ rocblas_status larf_run_small(rocblas_handle handle,
                               const I batch_count);
 
 // larfg
-template <typename T, typename I, typename U>
+template <typename T, typename I, typename S, typename U>
 rocblas_status larfg_run_small(rocblas_handle handle,
                                const I n,
                                U alpha,
                                const rocblas_stride shiftA,
                                const rocblas_stride strideA,
-                               T* beta,
+                               S* beta,
                                const rocblas_stride shiftB,
                                const rocblas_stride strideB,
                                U x,

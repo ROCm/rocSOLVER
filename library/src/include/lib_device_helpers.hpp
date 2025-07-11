@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -73,6 +73,25 @@ __device__ void swap(const rocblas_int n, T* a, const rocblas_int inca, T* b, co
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     if(tid < n)
         swap(a[inca * tid], b[incb * tid]);
+}
+
+template <typename T, std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+__device__ __inline__ T shift_left(T& value, int lane_delta)
+{
+    T r = value;
+    r = __shfl_down(r, lane_delta);
+    return r;
+}
+
+template <typename T, std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+__device__ __inline__ T shift_left(T& value, int lane_delta)
+{
+    using S = decltype(std::real(T{}));
+    S r = value.real();
+    S i = value.imag();
+    r = __shfl_down(r, lane_delta);
+    i = __shfl_down(i, lane_delta);
+    return rocblas_complex_num<S>(r, i);
 }
 
 /** SWAPVECT device function swap vectors a and b of dimension n **/
