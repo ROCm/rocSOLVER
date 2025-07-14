@@ -537,14 +537,14 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     hipDeviceProp_t props;
     HIP_CHECK(hipGetDeviceProperties(&props, device));
 
-    const size_t lmemsize = ((1024 / props.warpSize) + 2 * n + 1) * sizeof(T);
+    const size_t lmemsize = ((256 / props.warpSize) + 2 * n + 1) * sizeof(T);
 
     if(uplo == rocblas_fill_lower)
     {
-        if(lmemsize <= props.sharedMemPerBlock)
+        if(lmemsize <= props.sharedMemPerBlock && n <= xxTD2_SSKER_MAX_N)
         {
-            ROCSOLVER_LAUNCH_KERNEL((sytd2_lower_kernel_small<1024, T>), dim3(1, 1, batch_count),
-                                    dim3(1024), lmemsize, stream, n, A, shiftA, lda, strideA, D,
+            ROCSOLVER_LAUNCH_KERNEL((sytd2_lower_kernel_small<256, T>), dim3(1, 1, batch_count),
+                                    dim3(256), lmemsize, stream, n, A, shiftA, lda, strideA, D,
                                     strideD, E, strideE, tau, strideP);
         }
         else
@@ -586,10 +586,10 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
 
     else
     {
-        if(lmemsize <= props.sharedMemPerBlock)
+        if(lmemsize <= props.sharedMemPerBlock && n <= xxTD2_SSKER_MAX_N)
         {
-            ROCSOLVER_LAUNCH_KERNEL((sytd2_upper_kernel_small<1024, T>), dim3(1, 1, batch_count),
-                                    dim3(1024), lmemsize, stream, n, A, shiftA, lda, strideA, D,
+            ROCSOLVER_LAUNCH_KERNEL((sytd2_upper_kernel_small<256, T>), dim3(1, 1, batch_count),
+                                    dim3(256), lmemsize, stream, n, A, shiftA, lda, strideA, D,
                                     strideD, E, strideE, tau, strideP);
         }
         else
