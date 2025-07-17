@@ -65,9 +65,34 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
     // shared variables
     extern __shared__ double lmem[];
     T* tmptau = reinterpret_cast<T*>(lmem);
-    T* x = reinterpret_cast<T*>(tmptau + 1);
+    T* a = reinterpret_cast<T*>(tmptau + 1);
+    T* x = reinterpret_cast<T*>(a + n * n);
     T* w = reinterpret_cast<T*>(x + n);
     T* sval = reinterpret_cast<T*>(w + n);
+
+    // load A to lds
+    for(I i = tid % (MAX_THDS / 2); i < n; i += (MAX_THDS / 2))
+    {
+        const auto tidy = tid / (MAX_THDS / 2);
+        for(I j = tidy; j < n; j += 2)
+        {
+            a[i + j * n] = A[i + j * lda];
+        }
+    }
+
+    __syncthreads();
+
+    for(I i = tid % (MAX_THDS / 2); i < n; i += (MAX_THDS / 2))
+    {
+        const auto tidy = tid / (MAX_THDS / 2);
+        for(I j = tidy; j < n; j += 2)
+        {
+            if(i < j)
+                a[i + j * n] = conj(a[j + i * n]);
+        }
+    }
+
+    __syncthreads();
 
     // reduce the lower part of A
     // main loop running forwards (for each column)
@@ -78,7 +103,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
         // ----- 1. generate Householder reflector to annihilate A(j+2:n-1,j) and copy off-diagonal element to E[j] -----
         // load A(j+1:n-1,j) into x
         for(I i = tid; i < nn; i += MAX_THDS)
-            x[i] = A[(i + j + 1) + j * lda];
+            x[i] = a[(i + j + 1) + j * n];
         __syncthreads();
 
         // larfg
@@ -120,15 +145,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
         for(I i = tid; i < nn; i += MAX_THDS)
         {
             T temp = 0;
-            T* Atmp = A + (j + 1) + (j + 1) * lda;
+            T* Atmp = a + (j + 1) + (j + 1) * n;
             for(I jj = 0; jj < nn; jj++)
-                temp += (jj > i ? conj(Atmp[jj + i * lda]) : Atmp[i + jj * lda]) * x[jj];
+                temp += Atmp[i + jj * n] * x[jj];
             w[i] = tmptau[0] * temp;
         }
 
         // copy x back to A(j+1:n-1,j)
         for(I i = tid; i < nn; i += MAX_THDS)
-            A[(i + j + 1) + j * lda] = x[i];
+            a[(i + j + 1) + j * n] = x[i];
         __syncthreads();
 
         // dot
@@ -164,13 +189,24 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
         // syr2
         for(I i = tid; i < nn; i += MAX_THDS)
         {
-            for(I jj = 0; jj <= i; jj++)
+            for(I jj = 0; jj <= nn; jj++)
             {
-                T* Atmp = A + (j + 1) + (j + 1) * lda;
-                Atmp[i + jj * lda] = Atmp[i + jj * lda] - x[i] * conj(w[jj]) - w[i] * conj(x[jj]);
+                T* Atmp = a + (j + 1) + (j + 1) * n;
+                Atmp[i + jj * n] = Atmp[i + jj * n] - x[i] * conj(w[jj]) - w[i] * conj(x[jj]);
             }
         }
         __syncthreads();
+    }
+
+    // write lds back to A
+    for(I i = tid % (MAX_THDS / 2); i < n; i += (MAX_THDS / 2))
+    {
+        const auto tidy = tid / (MAX_THDS / 2);
+        for(I j = tidy; j < n; j += 2)
+        {
+            if(i >= j)
+                A[i + j * lda] = a[i + j * n];
+        }
     }
 }
 
@@ -200,9 +236,34 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
     // shared variables
     extern __shared__ double lmem[];
     T* tmptau = reinterpret_cast<T*>(lmem);
-    T* x = reinterpret_cast<T*>(tmptau + 1);
+    T* a = reinterpret_cast<T*>(tmptau + 1);
+    T* x = reinterpret_cast<T*>(a + n * n);
     T* w = reinterpret_cast<T*>(x + n);
     T* sval = reinterpret_cast<T*>(w + n);
+
+    // load A to lds
+    for(I i = tid % (MAX_THDS / 2); i < n; i += (MAX_THDS / 2))
+    {
+        const auto tidy = tid / (MAX_THDS / 2);
+        for(I j = tidy; j < n; j += 2)
+        {
+            a[i + j * n] = A[i + j * lda];
+        }
+    }
+
+    __syncthreads();
+
+    for(I i = tid % (MAX_THDS / 2); i < n; i += (MAX_THDS / 2))
+    {
+        const auto tidy = tid / (MAX_THDS / 2);
+        for(I j = tidy; j < n; j += 2)
+        {
+            if(i > j)
+                a[i + j * n] = conj(a[j + i * n]);
+        }
+    }
+
+    __syncthreads();
 
     // reduce the upper part of A
     // main loop running backwards (for each column)
@@ -213,7 +274,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
         // ----- 1. generate Householder reflector to annihilate A(0:j-2,j) and copy off-diagonal element to E[j-1] -----
         // load A(0:j-1,j) into x
         for(I i = tid; i < nn; i += MAX_THDS)
-            x[i] = A[i + j * lda];
+            x[i] = a[i + j * n];
         __syncthreads();
 
         // larfg
@@ -256,13 +317,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
         {
             T temp = 0;
             for(I jj = 0; jj < nn; jj++)
-                temp += (jj < i ? conj(A[jj + i * lda]) : A[i + jj * lda]) * x[jj];
+                temp += a[i + jj * n] * x[jj];
             w[i] = tmptau[0] * temp;
         }
 
         // copy x back to A(0:j-1,j)
         for(I i = tid; i < nn; i += MAX_THDS)
-            A[i + j * lda] = x[i];
+            a[i + j * n] = x[i];
         __syncthreads();
 
         // dot
@@ -298,10 +359,21 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
         // syr2
         for(I i = tid; i < nn; i += MAX_THDS)
         {
-            for(I jj = i; jj < nn; jj++)
-                A[i + jj * lda] = A[i + jj * lda] - x[i] * conj(w[jj]) - w[i] * conj(x[jj]);
+            for(I jj = 0; jj < nn; jj++)
+                a[i + jj * n] = a[i + jj * n] - x[i] * conj(w[jj]) - w[i] * conj(x[jj]);
         }
         __syncthreads();
+    }
+
+    // write lds back to A
+    for(I i = tid % (MAX_THDS / 2); i < n; i += (MAX_THDS / 2))
+    {
+        const auto tidy = tid / (MAX_THDS / 2);
+        for(I j = tidy; j < n; j += 2)
+        {
+            if(i <= j)
+                A[i + j * lda] = a[i + j * n];
+        }
     }
 }
 
@@ -537,91 +609,92 @@ rocblas_status rocsolver_sytd2_hetd2_template(rocblas_handle handle,
     hipDeviceProp_t props;
     HIP_CHECK(hipGetDeviceProperties(&props, device));
 
-    const size_t lmemsize = ((256 / props.warpSize) + 2 * n + 1) * sizeof(T);
-
     if(uplo == rocblas_fill_lower)
     {
-        if(lmemsize <= props.sharedMemPerBlock && n <= xxTD2_SSKER_MAX_N)
+        // reduce the lower part of A
+        // main loop running forwards (for each column)
+        for(rocblas_int j = 0; j < n - 1; ++j)
         {
-            ROCSOLVER_LAUNCH_KERNEL((sytd2_lower_kernel_small<256, T>), dim3(1, 1, batch_count),
-                                    dim3(256), lmemsize, stream, n, A, shiftA, lda, strideA, D,
-                                    strideD, E, strideE, tau, strideP);
-        }
-        else
-        {
-            // reduce the lower part of A
-            // main loop running forwards (for each column)
-            for(rocblas_int j = 0; j < n - 1; ++j)
+            const rocblas_int nn = n - j;
+            const size_t lmemsize = ((256 / props.warpSize) + 2 * nn + 1 + nn * nn) * sizeof(T);
+            if(lmemsize <= props.sharedMemPerBlock && nn <= xxTD2_SSKER_MAX_N)
             {
-                // 1. generate Householder reflector to annihilate A(j+2:n-1,j) and copy off-diagonal element to E[j]
-                rocsolver_larfg_template<T>(handle, n - 1 - j, A, shiftA + idx2D(j + 1, j, lda), E,
-                                            j, strideE, A,
-                                            shiftA + idx2D(std::min(j + 2, n - 1), j, lda), 1,
-                                            strideA, tmptau, stridet, batch_count, work, norms);
+                ROCSOLVER_LAUNCH_KERNEL((sytd2_lower_kernel_small<256, T>), dim3(1, 1, batch_count),
+                                        dim3(256), lmemsize, stream, nn, A,
+                                        shiftA + idx2D(j, j, lda), lda, strideA, D + j, strideD,
+                                        E + j, strideE, tau + j, strideP);
 
-                // 2. overwrite tau with w = tmptau*A*v - 1/2*tmptau*(tmptau*v'*A*v)*v
-                rocblasCall_symv_hemv<T>(handle, uplo, n - 1 - j, tmptau, stridet, A,
-                                         shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
-                                         shiftA + idx2D(j + 1, j, lda), 1, strideA, scalars + 1, 0,
-                                         tau, j, 1, strideP, batch_count, work, workArr);
-
-                ROCSOLVER_LAUNCH_KERNEL((latrd_dot_scale_axpy<64, T>), dim3(1, 1, batch_count),
-                                        dim3(64, 1, 1), 0, stream, n - 1 - j, A,
-                                        shiftA + idx2D(j + 1, j, lda), strideA, tau, j, strideP,
-                                        tmptau, stridet);
-
-                // 3. apply the Householder reflector to A as a rank-2 update:
-                // A = A - v*w' - w*v'
-                rocblasCall_syr2_her2<T>(handle, uplo, n - 1 - j, scalars, A,
-                                         shiftA + idx2D(j + 1, j, lda), 1, strideA, tau, j, 1,
-                                         strideP, A, shiftA + idx2D(j + 1, j + 1, lda), lda,
-                                         strideA, batch_count, workArr);
-
-                // 4. Save the used householder scalar
-                ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
-                                        tau + j, strideP);
+                break;
             }
+
+            // 1. generate Householder reflector to annihilate A(j+2:n-1,j) and copy off-diagonal element to E[j]
+            rocsolver_larfg_template<T>(handle, n - 1 - j, A, shiftA + idx2D(j + 1, j, lda), E, j,
+                                        strideE, A, shiftA + idx2D(std::min(j + 2, n - 1), j, lda),
+                                        1, strideA, tmptau, stridet, batch_count, work, norms);
+
+            // 2. overwrite tau with w = tmptau*A*v - 1/2*tmptau*(tmptau*v'*A*v)*v
+            rocblasCall_symv_hemv<T>(handle, uplo, n - 1 - j, tmptau, stridet, A,
+                                     shiftA + idx2D(j + 1, j + 1, lda), lda, strideA, A,
+                                     shiftA + idx2D(j + 1, j, lda), 1, strideA, scalars + 1, 0, tau,
+                                     j, 1, strideP, batch_count, work, workArr);
+
+            ROCSOLVER_LAUNCH_KERNEL((latrd_dot_scale_axpy<64, T>), dim3(1, 1, batch_count),
+                                    dim3(64, 1, 1), 0, stream, n - 1 - j, A,
+                                    shiftA + idx2D(j + 1, j, lda), strideA, tau, j, strideP, tmptau,
+                                    stridet);
+
+            // 3. apply the Householder reflector to A as a rank-2 update:
+            // A = A - v*w' - w*v'
+            rocblasCall_syr2_her2<T>(handle, uplo, n - 1 - j, scalars, A,
+                                     shiftA + idx2D(j + 1, j, lda), 1, strideA, tau, j, 1, strideP,
+                                     A, shiftA + idx2D(j + 1, j + 1, lda), lda, strideA,
+                                     batch_count, workArr);
+
+            // 4. Save the used householder scalar
+            ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
+                                    tau + j, strideP);
         }
     }
 
     else
     {
-        if(lmemsize <= props.sharedMemPerBlock && n <= xxTD2_SSKER_MAX_N)
+        // reduce the upper part of A
+        // main loop running backwards (for each column)
+        for(rocblas_int j = n - 1; j > 0; --j)
         {
-            ROCSOLVER_LAUNCH_KERNEL((sytd2_upper_kernel_small<256, T>), dim3(1, 1, batch_count),
-                                    dim3(256), lmemsize, stream, n, A, shiftA, lda, strideA, D,
-                                    strideD, E, strideE, tau, strideP);
-        }
-        else
-        {
-            // reduce the upper part of A
-            // main loop running backwards (for each column)
-            for(rocblas_int j = n - 1; j > 0; --j)
+            const rocblas_int nn = j + 1;
+            const size_t lmemsize = ((256 / props.warpSize) + 2 * nn + 1 + nn * nn) * sizeof(T);
+            if(lmemsize <= props.sharedMemPerBlock && nn <= xxTD2_SSKER_MAX_N)
             {
-                // 1. generate Householder reflector to annihilate A(0:j-2,j) and copy off-diagonal element to E[j-1]
-                rocsolver_larfg_template<T>(handle, j, A, shiftA + idx2D(j - 1, j, lda), E, j - 1,
-                                            strideE, A, shiftA + idx2D(0, j, lda), 1, strideA,
-                                            tmptau, 1, batch_count, work, norms);
-
-                // 2. overwrite tau with w = tmptau*A*v - 1/2*tmptau*tmptau*(v'*A*v*)v
-                rocblasCall_symv_hemv<T>(handle, uplo, j, tmptau, stridet, A, shiftA, lda, strideA,
-                                         A, shiftA + idx2D(0, j, lda), 1, strideA, scalars + 1, 0,
-                                         tau, 0, 1, strideP, batch_count, work, workArr);
-
-                ROCSOLVER_LAUNCH_KERNEL((latrd_dot_scale_axpy<64, T>), dim3(1, 1, batch_count),
-                                        dim3(64, 1, 1), 0, stream, j, A, shiftA + idx2D(0, j, lda),
-                                        strideA, tau, 0, strideP, tmptau, stridet);
-
-                // 3. apply the Householder reflector to A as a rank-2 update:
-                // A = A - v*w' - w*v'
-                rocblasCall_syr2_her2<T>(handle, uplo, j, scalars, A, shiftA + idx2D(0, j, lda), 1,
-                                         strideA, tau, 0, 1, strideP, A, shiftA, lda, strideA,
-                                         batch_count, workArr);
-
-                // 4. Save the used householder scalar
-                ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
-                                        tau + j - 1, strideP);
+                ROCSOLVER_LAUNCH_KERNEL((sytd2_upper_kernel_small<256, T>), dim3(1, 1, batch_count),
+                                        dim3(256), lmemsize, stream, nn, A, shiftA, lda, strideA, D,
+                                        strideD, E, strideE, tau, strideP);
+                break;
             }
+
+            // 1. generate Householder reflector to annihilate A(0:j-2,j) and copy off-diagonal element to E[j-1]
+            rocsolver_larfg_template<T>(handle, j, A, shiftA + idx2D(j - 1, j, lda), E, j - 1,
+                                        strideE, A, shiftA + idx2D(0, j, lda), 1, strideA, tmptau,
+                                        1, batch_count, work, norms);
+
+            // 2. overwrite tau with w = tmptau*A*v - 1/2*tmptau*tmptau*(v'*A*v*)v
+            rocblasCall_symv_hemv<T>(handle, uplo, j, tmptau, stridet, A, shiftA, lda, strideA, A,
+                                     shiftA + idx2D(0, j, lda), 1, strideA, scalars + 1, 0, tau, 0,
+                                     1, strideP, batch_count, work, workArr);
+
+            ROCSOLVER_LAUNCH_KERNEL((latrd_dot_scale_axpy<64, T>), dim3(1, 1, batch_count),
+                                    dim3(64, 1, 1), 0, stream, j, A, shiftA + idx2D(0, j, lda),
+                                    strideA, tau, 0, strideP, tmptau, stridet);
+
+            // 3. apply the Householder reflector to A as a rank-2 update:
+            // A = A - v*w' - w*v'
+            rocblasCall_syr2_her2<T>(handle, uplo, j, scalars, A, shiftA + idx2D(0, j, lda), 1,
+                                     strideA, tau, 0, 1, strideP, A, shiftA, lda, strideA,
+                                     batch_count, workArr);
+
+            // 4. Save the used householder scalar
+            ROCSOLVER_LAUNCH_KERNEL(set_tau<T>, grid_b, threads, 0, stream, batch_count, tmptau,
+                                    tau + j - 1, strideP);
         }
     }
 
