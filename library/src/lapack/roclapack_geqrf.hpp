@@ -4,7 +4,7 @@
  *     Univ. of Tennessee, Univ. of California Berkeley,
  *     Univ. of Colorado Denver and NAG Ltd..
  *     November 2019
- * Copyright (C) 2019-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2019-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -97,6 +97,8 @@ void rocsolver_geqrf_getMemorySize(const I m,
     }
 }
 
+//#define ROCSOLVER_GEQRF_USE_HIPGRAPH
+
 template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
                                         const I m,
@@ -139,6 +141,15 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     I ldw = GEQxF_BLOCKSIZE;
     rocblas_stride strideW = rocblas_stride(ldw) * ldw;
 
+#ifdef ROCSOLVER_GEQRF_USE_HIPGRAPH
+
+    hipStream_t graph_stream;
+    HIP_CHECK(hipStreamCreate(&graph_stream));
+    rocblas_set_stream(handle, graph_stream);
+    HIP_CHECK(hipStreamBeginCapture(graph_stream, hipStreamCaptureModeGlobal));
+
+#endif // ROCSOLVER_GEQRF_USE_HIPGRAPH
+
     while(j < dim - GEQxF_GEQx2_SWITCHSIZE)
     {
         // Factor diagonal and subdiagonal blocks
@@ -165,6 +176,21 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
         }
         j += nb;
     }
+
+#ifdef ROCSOLVER_GEQRF_USE_HIPGRAPH
+
+    hipGraph_t graph;
+    HIP_CHECK(hipStreamEndCapture(graph_stream, &graph));
+    rocblas_set_stream(handle, stream);
+
+    hipGraphExec_t exec;
+    HIP_CHECK(hipGraphInstantiate(&exec, graph, nullptr, nullptr, 0));
+    HIP_CHECK(hipGraphDestroy(graph));
+    HIP_CHECK(hipGraphLaunch(exec, stream));
+    HIP_CHECK(hipGraphExecDestroy(exec));
+    HIP_CHECK(hipStreamDestroy(graph_stream));
+
+#endif // ROCSOLVER_GEQRF_USE_HIPGRAPH
 
     // factor last block
     if(j < dim)
