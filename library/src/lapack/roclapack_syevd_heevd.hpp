@@ -167,6 +167,12 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     dim3 gridReset(blocksReset, 1, 1);
     dim3 threads(BS1, 1, 1);
 
+    hipEvent_t events[4];
+
+    for(int i = 0; i < 4; i++)
+        HIP_CHECK(hipEventCreate(&events[i]));
+
+
     // info = 0
     ROCSOLVER_LAUNCH_KERNEL(reset_info, gridReset, threads, 0, stream, info, batch_count, 0);
 
@@ -185,6 +191,7 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     // TODO: Scale the matrix
 
     // reduce A to tridiagonal form
+    HIP_CHECK(hipEventRecord(events[0], stream));
     rocsolver_sytrd_hetrd_template<BATCHED>(handle, uplo, n, A, shiftA, lda, strideA, D, strideD, E,
                                             strideE, tau, n, batch_count, scalars, (T*)work1,
                                             (T*)work2, tmptau_W, workArr, false);
@@ -202,13 +209,15 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
         const rocblas_int ldw = n;
         const rocblas_stride strideW = n * n;
 
-        rocsolver_stedc_template<false, ISBATCHED, T>(
+        HIP_CHECK(hipEventRecord(events[1], stream));
+        ROCBLAS_CHECK(rocsolver_stedc_template<false, ISBATCHED, T>(
             handle, rocblas_evect_tridiagonal, n, D, 0, strideD, E, 0, strideE, tmptau_W, 0, ldw,
-            strideW, info, batch_count, work3, (S*)work2, (S*)work1, tmpz, splits, (S**)workArr);
+            strideW, info, batch_count, work3, (S*)work2, (S*)work1, tmpz, splits, (S**)workArr));
 
         // update the eigenvectors (if applicable)
         if(evect == rocblas_evect_original)
         {
+            HIP_CHECK(hipEventRecord(events[2], stream));
             rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
                 handle, rocblas_side_left, uplo, rocblas_operation_none, n, n, A, shiftA, lda,
                 strideA, tau, n, tmptau_W, 0, ldw, strideW, batch_count, scalars, (T*)work2,
@@ -219,8 +228,19 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(copyblocks, copyblocks, batch_count),
                                     dim3(BS2, BS2), 0, stream, n, n, tmptau_W, 0, ldw, strideW, A,
                                     shiftA, lda, strideA);
+            HIP_CHECK(hipEventRecord(events[3], stream));
+            HIP_CHECK(hipStreamSynchronize(stream));
+
+            float elapsed[3];
+            for(int i = 0; i < 3; i++)
+                HIP_CHECK(hipEventElapsedTime(&elapsed[i], events[i], events[i+1]));
+
+            printf("\nSYTRD: %f\nSTEDC: %f\nORMTR: %f\n", elapsed[0], elapsed[1], elapsed[2]);
+            printf("------------------\n\n");
         }
     }
+    for(int i = 0; i < 3; i++)
+        HIP_CHECK(hipEventDestroy(events[i]));
 
     return rocblas_status_success;
 }

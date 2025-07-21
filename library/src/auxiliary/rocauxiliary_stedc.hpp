@@ -2328,6 +2328,12 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     // otherwise use divide and conquer algorithm:
     else
     {
+        hipEvent_t setup_events[5];
+
+        for(int i = 0; i < 5; i++)
+            HIP_CHECK(hipEventCreate(&setup_events[i]));
+
+
         // initialize temporary array for vector updates
         size_t size_tempgemm = sizeof(S) * 2 * n * n * batch_count;
         HIP_CHECK(hipMemsetAsync((void*)tempgemm, 0, size_tempgemm, stream));
@@ -2363,18 +2369,23 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             ldv = (rocblas_int)(sizeof(T) / sizeof(S)) * ldc;
             strideV = (rocblas_int)(sizeof(T) / sizeof(S)) * strideC;
         }
+
+        HIP_CHECK(hipEventRecord(setup_events[0], stream));
         ROCSOLVER_LAUNCH_KERNEL(init_ident<S>, dim3(blocksn, blocksn, batch_count), dim3(BS2, BS2),
                                 0, stream, n, n, V, 0, ldv, strideV);
-
+        HIP_CHECK(hipEventRecord(setup_events[1]));
+        
         // find independent split blocks in matrix
         ROCSOLVER_LAUNCH_KERNEL(stedc_split, dim3(batch_count), dim3(1), 0, stream, n, D + shiftD,
                                 strideD, E + shiftE, strideE, splits_map, eps);
+        HIP_CHECK(hipEventRecord(setup_events[2], stream));
 
         // 1. divide phase
         //-----------------------------
         ROCSOLVER_LAUNCH_KERNEL((stedc_divide_kernel<rocsolver_stedc_mode_qr, S>),
                                 dim3(batch_count), dim3(STEDC_BDIM), 0, stream, n, D + shiftD,
                                 strideD, E + shiftE, strideE, splits);
+        HIP_CHECK(hipEventRecord(setup_events[3], stream));
 
         // 2. solve phase
         //-----------------------------
@@ -2382,23 +2393,43 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(1), 0,
                                 stream, n, D + shiftD, strideD, E + shiftE, strideE, V, 0, ldv,
                                 strideV, info, (S*)work_stack, splits, eps, ssfmin, ssfmax);
-
+        HIP_CHECK(hipEventRecord(setup_events[4], stream));
+                    
         // 3. merge phase
         //----------------
         size_t lmemsize1 = sizeof(S) * 2 * STEDC_BDIM;
         size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
         rocblas_int numgrps3 = ((n - 1) / maxblks + 1) * maxblks;
 
+        HIP_CHECK(hipStreamSynchronize(stream));
+
+        float elapsed[4];
+        for(int i = 0; i < 4; i++)
+            HIP_CHECK(hipEventElapsedTime(&elapsed[i], setup_events[i], setup_events[i+1]));
+        for(int i = 0; i < 5; i++)
+            HIP_CHECK(hipEventDestroy(setup_events[i]));
+
+        printf("STEDC Kernel Timings:\n"
+               "\tinit_ident         : %f\n"
+               "\tstedc_split        : %f\n"
+               "\tstedc_divide_kernel: %f\n"
+               "\tstedc_solve_kernel : %f\n",
+                elapsed[0], elapsed[1], elapsed[2], elapsed[3]);
         // launch merge for level k
         // TODO: using max number of levels for now. Kernels return immediately when surpassing
         // the actual number of levels in the split block. We should explore if synchronizing
         // to copy back the actual number of levels makes any difference.
         // TODO: the code computing the context of the level (first part of each kernel) could be
         // reused.
+        hipEvent_t merge_events[6];            
+        for(int i = 0; i < 6; i++)
+            HIP_CHECK(hipEventCreate(&merge_events[i]));
+
         for(rocblas_int k = 0; k < maxlevs; ++k)
         {
             // a. prepare secular equations
             rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
+            HIP_CHECK(hipEventRecord(merge_events[0], stream));
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize1, stream, k, n, D + shiftD, strideD,
@@ -2406,18 +2437,21 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     eps);
 
             // b. solve to find merged eigen values
+            HIP_CHECK(hipEventRecord(merge_events[1], stream));
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, k, n, D + shiftD, strideD,
                                     E + shiftE, strideE, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
             // c. find merged eigen vectors
+            HIP_CHECK(hipEventRecord(merge_events[2], stream));
             ROCSOLVER_LAUNCH_KERNEL(
                 (stedc_mergeVectors_kernel<rocsolver_stedc_mode_qr, STEDC_EXTERNAL_GEMM, S>),
                 dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDC_BDIM), lmemsize3,
                 stream, k, n, D + shiftD, strideD, E + shiftE, strideE, V, 0, ldv, strideV, tmpz,
                 tempgemm, splits);
 
+            HIP_CHECK(hipEventRecord(merge_events[3], stream));
             if(STEDC_EXTERNAL_GEMM)
             {
                 // using external gemms with padded matrices to do the vector update
@@ -2431,11 +2465,32 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             }
 
             // d. update level
+            HIP_CHECK(hipEventRecord(merge_events[4], stream));
+
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeUpdate_kernel<rocsolver_stedc_mode_qr, S>),
                                     dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
                                     dim3(STEDC_BDIM), lmemsize3, stream, k, n, D + shiftD, strideD,
                                     V, 0, ldv, strideV, tmpz, tempgemm, splits);
+            
+            HIP_CHECK(hipEventRecord(merge_events[5], stream));
+
+            HIP_CHECK(hipStreamSynchronize(stream));
+            float merge_elapsed[5];
+
+            for(int i = 0; i < 5; i++)
+                HIP_CHECK(hipEventElapsedTime(&merge_elapsed[i], merge_events[i], merge_events[i+1]));
+            
+            printf("\tmergePrepare       : %f\n"
+                   "\tmergeValues        : %f\n"
+                   "\tmergeVectors       : %f\n"
+                   "\tGEMM               : %f\n"
+                   "\tmergeUpdate        : %f\n",
+                merge_elapsed[0], merge_elapsed[1], merge_elapsed[2], merge_elapsed[3], merge_elapsed[4]);
+            fflush(stdout);
         }
+
+        for(int i = 0; i < 6; i++)
+            HIP_CHECK(hipEventDestroy(merge_events[i]));
 
         // 4. update and sort
         //----------------------
@@ -2465,9 +2520,20 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         // finally sort eigenvalues and eigenvectors
         auto const nblocks = batch_count;
+        hipEvent_t event_sort_start, event_sort_finish;
+        HIP_CHECK(hipEventCreate(&event_sort_start));
+        HIP_CHECK(hipEventCreate(&event_sort_finish));
+
+        HIP_CHECK(hipEventRecord(event_sort_start, stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, nblocks), dim3(BS1), 0, stream, n,
                                 D + shiftD, strideD, C, shiftC, ldc, strideC, batch_count,
                                 splits_map);
+        HIP_CHECK(hipEventRecord(event_sort_finish, stream));
+        HIP_CHECK(hipStreamSynchronize(stream));
+        float elapsed_sort;
+        HIP_CHECK(hipEventElapsedTime(&elapsed_sort, event_sort_start, event_sort_finish));
+
+        printf("\tstedc_sort         : %f\n", elapsed_sort);
 
         rocblas_set_pointer_mode(handle, old_mode);
     }
