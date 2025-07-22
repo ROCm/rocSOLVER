@@ -97,7 +97,7 @@ void rocsolver_geqrf_getMemorySize(const I m,
     }
 }
 
-//#define ROCSOLVER_GEQRF_USE_HIPGRAPH
+#define ROCSOLVER_GEQRF_USE_HIPGRAPH
 
 template <bool BATCHED, bool STRIDED, typename T, typename I, typename U>
 rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
