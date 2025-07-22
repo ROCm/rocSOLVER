@@ -478,19 +478,22 @@ void syevd_heevd_initData(const rocblas_handle handle,
                           std::vector<T>& A,
                           bool test = true)
 {
-    if(std::getenv("SYEVD_TEST_EIG7") != nullptr)
+    if((std::getenv("TEST_EIG7") != nullptr) || (std::getenv("SYEVD_TEST_EIG7") != nullptr))
     {
         syevd_heevd_eig7_initData<CPU, GPU>(handle, evect, n, dA, lda, bc, hA, A, test);
     }
-    else if(std::getenv("SYEVD_TEST_WILKINSON") != nullptr)
+    else if((std::getenv("TEST_WILKINSON") != nullptr)
+            || (std::getenv("SYEVD_TEST_WILKINSON") != nullptr))
     {
         syevd_heevd_wilkinson_initData<CPU, GPU>(handle, evect, n, dA, lda, bc, hA, A, test);
     }
-    else if(std::getenv("SYEVD_TEST_CLEMENT") != nullptr)
+    else if((std::getenv("TEST_CLEMENT") != nullptr)
+            || (std::getenv("SYEVD_TEST_CLEMENT") != nullptr))
     {
         syevd_heevd_clement_initData<CPU, GPU>(handle, evect, n, dA, lda, bc, hA, A, test);
     }
-    else if(std::getenv("SYEVD_TEST_TOEPLITZ") != nullptr)
+    else if((std::getenv("TEST_TOEPLITZ") != nullptr)
+            || (std::getenv("SYEVD_TEST_TOEPLITZ") != nullptr))
     {
         syevd_heevd_toeplitz_initData<CPU, GPU>(handle, evect, n, dA, lda, bc, hA, A, test);
     }
