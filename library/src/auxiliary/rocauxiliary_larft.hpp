@@ -722,13 +722,13 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
 }
 
 template <typename T, typename U>
-ROCSOLVER_KERNEL void set_tri(const rocblas_fill uplo,
-                              const rocblas_int k,
-                              U A,
-                              const rocblas_int shiftA,
-                              const rocblas_int lda,
-                              const rocblas_stride strideA,
-                              T* buffer)
+ROCSOLVER_KERNEL void larft_set_tri(const rocblas_fill uplo,
+                                    const rocblas_int k,
+                                    U A,
+                                    const rocblas_int shiftA,
+                                    const rocblas_int lda,
+                                    const rocblas_stride strideA,
+                                    T* buffer)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -757,13 +757,13 @@ ROCSOLVER_KERNEL void set_tri(const rocblas_fill uplo,
 }
 
 template <typename T, typename U>
-ROCSOLVER_KERNEL void restore_tri(const rocblas_fill uplo,
-                                  const rocblas_int k,
-                                  U A,
-                                  const rocblas_int shiftA,
-                                  const rocblas_int lda,
-                                  const rocblas_stride strideA,
-                                  T* buffer)
+ROCSOLVER_KERNEL void larft_restore_tri(const rocblas_fill uplo,
+                                        const rocblas_int k,
+                                        U A,
+                                        const rocblas_int shiftA,
+                                        const rocblas_int lda,
+                                        const rocblas_stride strideA,
+                                        T* buffer)
 {
     const auto b = hipBlockIdx_z;
     const auto j = hipBlockIdx_y * hipBlockDim_y + hipThreadIdx_y;
@@ -789,12 +789,12 @@ ROCSOLVER_KERNEL void restore_tri(const rocblas_fill uplo,
 }
 
 template <typename T>
-ROCSOLVER_KERNEL void set_diag(rocblas_int k,
-                               T* tau,
-                               const rocblas_stride strideT,
-                               T* F,
-                               const rocblas_int ldf,
-                               const rocblas_stride strideF)
+ROCSOLVER_KERNEL void larft_set_diag(rocblas_int k,
+                                     T* tau,
+                                     const rocblas_stride strideT,
+                                     T* F,
+                                     const rocblas_int ldf,
+                                     const rocblas_stride strideF)
 {
     const auto b = hipBlockIdx_z;
     const auto i = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -898,7 +898,7 @@ rocblas_status rocsolver_larft_inverse_template(rocblas_handle handle,
     dim3 blockTri(32, 32);
 
     // set V to unit triangular/trapezoidal
-    ROCSOLVER_LAUNCH_KERNEL((set_tri), gridTri, blockTri, 0, stream, tri_uplo, k, V,
+    ROCSOLVER_LAUNCH_KERNEL((larft_set_tri), gridTri, blockTri, 0, stream, tri_uplo, k, V,
                             shiftV + tri_offset, ldv, strideV, work);
 
     // compute: V' * V or V * V'
@@ -906,11 +906,11 @@ rocblas_status rocsolver_larft_inverse_template(rocblas_handle handle,
                    strideV, &zero, F, 0, ldf, strideF, batch_count, workArr);
 
     // set F diag to 1 / tau
-    ROCSOLVER_LAUNCH_KERNEL(set_diag, dim3(blocks, 1, batch_count), dim3(32, 1), 0, stream, k, tau,
-                            strideT, F, ldf, strideF);
+    ROCSOLVER_LAUNCH_KERNEL(larft_set_diag, dim3(blocks, 1, batch_count), dim3(32, 1), 0, stream, k,
+                            tau, strideT, F, ldf, strideF);
 
     // restore original V
-    ROCSOLVER_LAUNCH_KERNEL((restore_tri), gridTri, blockTri, 0, stream, tri_uplo, k, V,
+    ROCSOLVER_LAUNCH_KERNEL((larft_restore_tri), gridTri, blockTri, 0, stream, tri_uplo, k, V,
                             shiftV + tri_offset, ldv, strideV, work);
 
     rocblas_set_pointer_mode(handle, old_mode);

@@ -420,8 +420,9 @@ void rocsolver_larfb_inverse_getMemorySize(const rocblas_side side,
         ldw = m;
     }
 
-    rocsolver_trsm_mem<BATCHED, STRIDED, T>(side, transt, ldw, order, batch_count, size_work1,
-                                            size_work2, size_work3, size_work4, optim_mem, true);
+    rocsolver_trsm_mem<false, BATCHED || STRIDED, T>(side, transt, ldw, order, batch_count,
+                                                     size_work1, size_work2, size_work3, size_work4,
+                                                     optim_mem, true);
 
     // size of temporary array for computations with
     // triangular part of V
@@ -612,11 +613,11 @@ rocblas_status rocsolver_larfb_inverse_template(rocblas_handle handle,
     // compute: inv(trans(T)) * (V1' * A1 + V2' * A2)
     //    or    (A1 * V1 + A2 * V2) * inv(trans(T))
     if(forward)
-        rocsolver_trsm_upper<BATCHED, STRIDED, T>(
+        rocsolver_trsm_upper<false, BATCHED || STRIDED, T>(
             handle, side, transt, rocblas_diagonal_non_unit, ldw, order, F, shiftF, ldf, strideF,
             tmptr, 0, ldw, strideW, batch_count, optim_mem, work1, work2, work3, work4);
     else
-        rocsolver_trsm_lower<BATCHED, STRIDED, T>(
+        rocsolver_trsm_lower<false, BATCHED || STRIDED, T>(
             handle, side, transt, rocblas_diagonal_non_unit, ldw, order, F, shiftF, ldf, strideF,
             tmptr, 0, ldw, strideW, batch_count, optim_mem, work1, work2, work3, work4);
 

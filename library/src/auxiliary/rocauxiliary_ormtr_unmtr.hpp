@@ -349,4 +349,45 @@ rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
         diagORtmptr, trfact, workArr + batch_count);
 }
 
+template <bool BATCHED, bool STRIDED, typename T>
+rocblas_status rocsolver_ormtr_unmtr_template(rocblas_handle handle,
+                                              const rocblas_side side,
+                                              const rocblas_fill uplo,
+                                              const rocblas_operation trans,
+                                              const rocblas_int m,
+                                              const rocblas_int n,
+                                              T* const A[],
+                                              const rocblas_int shiftA,
+                                              const rocblas_int lda,
+                                              const rocblas_stride strideA,
+                                              T* ipiv,
+                                              const rocblas_stride strideP,
+                                              T* C,
+                                              const rocblas_int shiftC,
+                                              const rocblas_int ldc,
+                                              const rocblas_stride strideC,
+                                              const rocblas_int batch_count,
+                                              T* scalars,
+                                              T* AbyxORwork,
+                                              void* work2,
+                                              void* work3,
+                                              void* work4,
+                                              T* diagORtmptr,
+                                              T* trfact,
+                                              T** workArr,
+                                              bool optim_mem)
+{
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+
+    rocblas_int blocks = (batch_count - 1) / 256 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(get_array, dim3(blocks), dim3(256), 0, stream, workArr, C, strideC,
+                            batch_count);
+
+    return rocsolver_ormtr_unmtr_template<BATCHED, STRIDED>(
+        handle, side, uplo, trans, m, n, A, shiftA, lda, strideA, ipiv, strideP,
+        cast2constType(workArr), shiftC, ldc, strideC, batch_count, scalars, AbyxORwork, work2,
+        work3, work4, diagORtmptr, trfact, workArr + batch_count, optim_mem);
+}
+
 ROCSOLVER_END_NAMESPACE
