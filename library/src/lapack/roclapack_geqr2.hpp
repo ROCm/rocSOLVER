@@ -103,8 +103,6 @@ rocblas_status rocsolver_geqr2_geqrf_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-//#define ROCSOLVER_GEQR2_USE_HIPGRAPH
-
 template <typename T, typename I, typename U, bool COMPLEX = rocblas_is_complex<T>>
 rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
                                         const I m,
