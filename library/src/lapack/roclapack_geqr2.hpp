@@ -133,15 +133,6 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
 
     I dim = std::min(m, n); // total number of pivots
 
-#ifdef ROCSOLVER_GEQR2_USE_HIPGRAPH
-
-    hipStream_t graph_stream;
-    HIP_CHECK(hipStreamCreate(&graph_stream));
-    rocblas_set_stream(handle, graph_stream);
-    HIP_CHECK(hipStreamBeginCapture(graph_stream, hipStreamCaptureModeGlobal));
-
-#endif // ROCSOLVER_GEQR2_USE_HIPGRAPH
-
     for(I j = 0; j < dim; ++j)
     {
         // generate Householder reflector to work on column j
@@ -173,21 +164,6 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
     ROCSOLVER_LAUNCH_KERNEL((restore_diag<T, I>), dim3(batch_count, blocks, 1),
                             dim3(1, DIAG_NTHREADS, 1), 0, stream, (S*)diag, 0, dim, A, shiftA, lda,
                             strideA, dim);
-
-#ifdef ROCSOLVER_GEQR2_USE_HIPGRAPH
-
-    hipGraph_t graph;
-    HIP_CHECK(hipStreamEndCapture(graph_stream, &graph));
-    rocblas_set_stream(handle, stream);
-
-    hipGraphExec_t exec;
-    HIP_CHECK(hipGraphInstantiate(&exec, graph, nullptr, nullptr, 0));
-    HIP_CHECK(hipGraphDestroy(graph));
-    HIP_CHECK(hipGraphLaunch(exec, stream));
-    HIP_CHECK(hipGraphExecDestroy(exec));
-    HIP_CHECK(hipStreamDestroy(graph_stream));
-
-#endif // ROCSOLVER_GEQR2_USE_HIPGRAPH
 
     return rocblas_status_success;
 }
