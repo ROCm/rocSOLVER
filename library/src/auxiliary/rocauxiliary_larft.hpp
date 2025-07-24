@@ -36,10 +36,14 @@
 
 #pragma once
 
+#include "common_host_helpers.hpp"
 #include "rocauxiliary_lacgv.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
 #include "rocsolver_run_specialized_kernels.hpp"
+#include <hip/driver_types.h>
+#include <rocblas/internal/rocblas-auxiliary.h>
+#include <rocblas/internal/rocblas-types.h>
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -557,34 +561,41 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     // SYRK/HERK can be used alternatively, but GEMM is currently more performant.
     if(use_gemm)
     {
+        rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+        T alpha, beta;
+        hipMemcpyAsync(&alpha, scalars + 2, sizeof(T), hipMemcpyDeviceToHost);
+        hipMemcpyAsync(&beta, scalars + 1, sizeof(T), hipMemcpyDeviceToHost);
         if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k,
-                           k, u2_n, scalars + 2, V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, V,
-                           shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, scalars + 1, F,
-                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+                           k, u2_n, &alpha, V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, V,
+                           shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf),
+                           ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_column_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k,
-                           k, u2_n, scalars + 2, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
-                           shiftV + idx2D(0, 0, ldv), ldv, strideV, scalars + 1, F,
-                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+                           k, u2_n, &alpha, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
+                           shiftV + idx2D(0, 0, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf), ldf,
+                           strideF, batch_count, workArr);
         }
         else if(direct == rocblas_forward_direction && storev == rocblas_row_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k,
-                           k, u2_n, scalars + 2, V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV, V,
-                           shiftV + idx2D(0, u1_n, ldv), ldv, strideV, scalars + 1, F,
-                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+                           k, u2_n, &alpha, V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV, V,
+                           shiftV + idx2D(0, u1_n, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf),
+                           ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_row_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k,
-                           k, u2_n, scalars + 2, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
-                           shiftV + idx2D(0, 0, ldv), ldv, strideV, scalars + 1, F,
-                           idx2D(0, 0, ldf), ldf, strideF, batch_count, workArr);
+                           k, u2_n, &alpha, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
+                           shiftV + idx2D(0, 0, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf), ldf,
+                           strideF, batch_count, workArr);
         }
+        hipMemcpyAsync(scalars + 2, &alpha, sizeof(T), hipMemcpyHostToDevice);
+        hipMemcpyAsync(scalars + 1, &beta, sizeof(T), hipMemcpyHostToDevice);
+        rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
     }
 
     // Fix diagonal of T, make zero the not used triangular part,
