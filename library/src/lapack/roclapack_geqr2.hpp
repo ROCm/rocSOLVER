@@ -41,17 +41,16 @@
 ROCSOLVER_BEGIN_NAMESPACE
 
 template <int MAX_THDS, typename T, typename I, typename S, typename U>
-ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
-    geqr2_kernel_small(const I m,
-                             const I n,
-                             U AA,
-                             const rocblas_stride shiftA,
-                             const I lda,
-                             const rocblas_stride strideA,
-                             S* diagA,
-                             const rocblas_stride strideD,
-                             T* tauA,
-                             const rocblas_stride strideP)
+ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS) geqr2_kernel_small(const I m,
+                                                                     const I n,
+                                                                     U AA,
+                                                                     const rocblas_stride shiftA,
+                                                                     const I lda,
+                                                                     const rocblas_stride strideA,
+                                                                     S* diagA,
+                                                                     const rocblas_stride strideD,
+                                                                     T* tauA,
+                                                                     const rocblas_stride strideP)
 {
     I bid = blockIdx.z;
     I tid = threadIdx.x;
@@ -63,11 +62,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
 
     // shared variables
     extern __shared__ double lmem[];
-    T* tmptau = reinterpret_cast<T*>(lmem);
-    T* a = reinterpret_cast<T*>(tmptau + 1);
-    T* x = reinterpret_cast<T*>(a + m * n);
-    T* w = reinterpret_cast<T*>(x + m);
-    T* sval = reinterpret_cast<T*>(w + n);
+    T* a = reinterpret_cast<T*>(lmem);
+    T* w = reinterpret_cast<T*>(a + m * n);
+    T* tmptau = reinterpret_cast<T*>(w + n);
+    T* sval = reinterpret_cast<T*>(tmptau + 1);
+
+    T* x;
 
     I dim = std::min(m, n); // total number of pivots
 
@@ -91,9 +91,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
 
         // ----- 1. generate Householder reflector to annihilate A(j+1:m-1,j) -----
         // load A(j:m-1,j) into x
-        for(I i = tid; i < mm; i += MAX_THDS)
-            x[i] = a[(i + j) + j * m];
-        __syncthreads();
+        x = a + j + j * m;
 
         // larfg
         T norm2 = 0;
@@ -141,10 +139,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
                 temp += Atmp[jj + (i + 1) * m] * conj(x[jj]);
             w[i] = tmptau[0] * temp;
         }
-
-        // copy x back to A(j:m-1,j)
-        for(I i = tid; i < mm; i += MAX_THDS)
-            a[(i + j) + j * m] = x[i];
         __syncthreads();
 
         // ----- 3. apply the Householder reflector to A as a rank-1 update: A = A - v*w -----
@@ -267,19 +261,20 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
     HIP_CHECK(hipGetDeviceProperties(&props, device));
 
     I dim = std::min(m, n); // total number of pivots
-
-    const size_t lmemsize = ((256 / props.warpSize) + m + n + 1 + m * n) * sizeof(T);
-    if(lmemsize <= props.sharedMemPerBlock)
-    {
-        ROCSOLVER_LAUNCH_KERNEL((geqr2_kernel_small<256, T>), dim3(1, 1, batch_count),
-                                dim3(256), lmemsize, stream, m, n, A,
-                                shiftA, lda, strideA, (S*)diag, dim,
-                                ipiv, strideP);
-    }
-    else
-    {
     for(I j = 0; j < dim; ++j)
     {
+        I mm = m - j;
+        I nn = n - j;
+
+        const size_t lmemsize = ((256 / props.warpSize) + mm + nn + 1 + mm * nn) * sizeof(T);
+        if(lmemsize <= props.sharedMemPerBlock && nn == mm)
+        {
+            ROCSOLVER_LAUNCH_KERNEL((geqr2_kernel_small<256, T>), dim3(1, 1, batch_count), dim3(256),
+                                    lmemsize, stream, mm, nn, A, shiftA + idx2D(j, j, lda), lda,
+                                    strideA, (S*)diag + j, dim, ipiv + j, strideP);
+            break;
+        }
+
         // generate Householder reflector to work on column j
         rocsolver_larfg_template<T>(handle, m - j, A, shiftA + idx2D(j, j, lda), (S*)diag, j, dim,
                                     A, shiftA + idx2D(std::min(j + 1, m - 1), j, lda), (I)1, strideA,
@@ -301,7 +296,6 @@ rocblas_status rocsolver_geqr2_template(rocblas_handle handle,
             if(COMPLEX)
                 rocsolver_lacgv_template<T>(handle, (I)1, ipiv, j, (I)1, strideP, batch_count);
         }
-    }
     }
 
     // restore diagonal values of A
