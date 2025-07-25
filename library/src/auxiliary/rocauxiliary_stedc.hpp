@@ -1288,6 +1288,154 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+
+template <typename S>
+void __device__ inline sort_tmpd_zz(const rocblas_int dd,
+                                    const rocblas_int iam,
+                                    const rocblas_int bdm,
+                                    S* tmpd,
+                                    S* zz,
+                                    rocblas_int* per)
+{
+    // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
+    // This will allow us to find initial intervals for eigenvalue guesses
+    for(int i = 0; i < dd; i++)
+    {
+        for(int j = 2 * iam + i % 2; j < dd - 1; j += 2 * bdm)
+        {
+            if(tmpd[j] > tmpd[j + 1])
+            {
+                swap(tmpd[j], tmpd[j + 1]);
+                swap(zz[j], zz[j + 1]);
+                swap(per[j], per[j + 1]);
+            }
+        }
+        __syncthreads();
+    }
+}
+
+template <typename S>
+void __device__ inline copy_d_ev(const rocblas_int dd,
+                                 const rocblas_int iam,
+                                 const rocblas_int bdm,
+                                 const rocblas_int sz,
+                                 const rocblas_int n,
+                                 S* tmpd,
+                                 S* ev,
+                                 S* diag)
+{
+    // make dd copies of the non-deflated ordered diagonal elements
+    // (i.e. the poles of the secular eqn) so that the distances to the
+    // eigenvalues (D - lambda_i) are updated while computing each eigenvalue.
+    // This will prevent collapses and division by zero when an eigenvalue
+    // is too close to a pole.
+    for(int i = iam; i < dd; i += bdm)
+    {
+        for(int j = i + n; j < i + sz * n; j += n)
+            tmpd[j] = tmpd[i];
+    }
+
+    // finally copy over all diagonal elements in ev. ev will be overwritten
+    // by the new computed eigenvalues of the merged block
+    for(int i = iam; i < sz; i += bdm)
+        ev[i] = diag[i];
+}
+
+template <typename S>
+void __device__ inline solve_seq_eqns(const rocblas_int dd,
+                                      const rocblas_int iam,
+                                      const rocblas_int bdm,
+                                      const rocblas_int sz,
+                                      const rocblas_int n,
+                                      const S p,
+                                      const S eps,
+                                      const S ssfmin,
+                                      const S ssfmax,
+                                      const rocblas_int* mask,
+                                            S* tmpd,
+                                            S* ev,
+                                      const S* zz)
+{
+    /* ----------------------------------------------------------------- */
+
+    // 3e. Solve secular eqns, i.e. find the dd zeros
+    // corresponding to non-deflated new eigenvalues of the merged block
+    /* ----------------------------------------------------------------- */
+    // each thread will find a different zero in parallel
+    S a, b;
+    for(int j = iam; j < sz; j += bdm)
+    {
+        if(mask[j] == 1)
+        {
+            // find position in the ordered array
+            S valf = p < 0 ? -ev[j] : ev[j];
+            int count = dd, cc = 0;
+            while(count > 0)
+            {
+                auto step = count / 2;
+                auto it = cc + step;
+                if(tmpd[it + j * n] < valf)
+                {
+                    cc = ++it;
+                    count -= step + 1;
+                }
+                else
+                    count = step;
+            }
+
+            // computed zero will overwrite 'ev' at the corresponding position.
+            // 'tmpd' will be updated with the distances D - lambda_i.
+            // deflated values are not changed.
+            rocblas_int linfo;
+
+#if defined(ROCSOLVER_USE_REFERENCE_SECULAR_EQUATIONS_SOLVER)
+            linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j]);
+#else
+            if(cc == dd - 1)
+                linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps, ssfmin,
+                                      ssfmax);
+            else
+                linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps, ssfmin,
+                                  ssfmax);
+#endif
+
+            if(p < 0)
+                ev[j] *= -1;
+        }
+    }
+}
+
+
+template <typename S>
+void __device__ inline rescale_z(const rocblas_int dd,
+                                 const rocblas_int iam,
+                                 const rocblas_int bdm,
+                                 const rocblas_int sz,
+                                 const rocblas_int n,
+                                 const rocblas_int* per,
+                                 const rocblas_int* mask,
+                                 const S* tmpd,
+                                 const S* diag,
+                                       S* zz)
+{
+    // Re-scale vector Z to avoid bad numerics when an eigenvalue
+    // is too close to a pole
+    for(int i = iam; i < dd; i += bdm)
+    {
+        S valf = 1;
+        for(int j = 0; j < sz; ++j)
+        {
+            if(mask[j] == 1)
+            {
+                S valg = tmpd[i + j * n];
+                valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);
+            }
+        }
+        valf = sqrt(std::abs(valf));
+        zz[i] = zz[i] < 0 ? -valf : valf;
+    }
+}
+
 //--------------------------------------------------------------------------------------//
 /** STEDC_MERGEVALUES_KERNEL solves the secular equation for
     every pair of sub-blocks that need to be merged in a split block. A matrix in the batch
@@ -1373,7 +1521,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // number of level of division
     rocblas_int levs;
     // other aux variables
-    S p;
     rocblas_int *ns, *ps;
     /* --------------------------------------------------- */
 
@@ -1404,7 +1551,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         if(mid < tn)
         {
             rocblas_int iam, sz, bdm, dim;
-            S valf, valg;
             rocblas_int bd = 1 << k;
             bdm = bd << 1;
             dim = hipBlockDim_x / 2;
@@ -1424,7 +1570,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 sz += ns[tid + j];
             // with this, all threads involved in a merge
             // will point to the same row of C and the same off-diag element
-            p = (iam == 0) ? 2 * E[p2 - 1 + sz] : 2 * E[p2 - 1];
+            S p = (iam == 0) ? 2 * E[p2 - 1 + sz] : 2 * E[p2 - 1];
 
             // determine boundaries of what would be the new merged sub-block
             // 'in' will be its initial position.
@@ -1461,104 +1607,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     dd++;
             }
 
-            // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
-            // This will allow us to find initial intervals for eigenvalue guesses
-            for(int i = 0; i < dd; i++)
-            {
-                for(int j = 2 * iam + i % 2; j < dd - 1; j += 2 * bdm)
-                {
-                    if(tmpd[j] > tmpd[j + 1])
-                    {
-                        swap(tmpd[j], tmpd[j + 1]);
-                        swap(zz[j], zz[j + 1]);
-                        swap(per[j], per[j + 1]);
-                    }
-                }
-                __syncthreads();
-            }
+            sort_tmpd_zz(dd, iam, bdm, tmpd, zz, per);
+            copy_d_ev(dd, iam, bdm, sz, n, tmpd, ev, diag);
 
-            // make dd copies of the non-deflated ordered diagonal elements
-            // (i.e. the poles of the secular eqn) so that the distances to the
-            // eigenvalues (D - lambda_i) are updated while computing each eigenvalue.
-            // This will prevent collapses and division by zero when an eigenvalue
-            // is too close to a pole.
-            for(int i = iam; i < dd; i += bdm)
-            {
-                for(int j = i + n; j < i + sz * n; j += n)
-                    tmpd[j] = tmpd[i];
-            }
-
-            // finally copy over all diagonal elements in ev. ev will be overwritten
-            // by the new computed eigenvalues of the merged block
-            for(int i = iam; i < sz; i += bdm)
-                ev[i] = diag[i];
             __syncthreads();
-            /* ----------------------------------------------------------------- */
+            
+            solve_seq_eqns(dd, iam, bdm, sz, n, p, eps, ssfmin, ssfmax, mask, tmpd, ev, zz);
 
-            // 3e. Solve secular eqns, i.e. find the dd zeros
-            // corresponding to non-deflated new eigenvalues of the merged block
-            /* ----------------------------------------------------------------- */
-            // each thread will find a different zero in parallel
-            S a, b;
-            for(int j = iam; j < sz; j += bdm)
-            {
-                if(mask[j] == 1)
-                {
-                    // find position in the ordered array
-                    valf = p < 0 ? -ev[j] : ev[j];
-                    int count = dd, cc = 0;
-                    while(count > 0)
-                    {
-                        auto step = count / 2;
-                        auto it = cc + step;
-                        if(tmpd[it + j * n] < valf)
-                        {
-                            cc = ++it;
-                            count -= step + 1;
-                        }
-                        else
-                            count = step;
-                    }
-
-                    // computed zero will overwrite 'ev' at the corresponding position.
-                    // 'tmpd' will be updated with the distances D - lambda_i.
-                    // deflated values are not changed.
-                    rocblas_int linfo;
-
-#if defined(ROCSOLVER_USE_REFERENCE_SECULAR_EQUATIONS_SOLVER)
-                    linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j]);
-#else
-                    if(cc == dd - 1)
-                        linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps,
-                                              ssfmin, ssfmax);
-                    else
-                        linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps,
-                                          ssfmin, ssfmax);
-#endif
-
-                    if(p < 0)
-                        ev[j] *= -1;
-                }
-            }
             __syncthreads();
 
-            // Re-scale vector Z to avoid bad numerics when an eigenvalue
-            // is too close to a pole
-            for(int i = iam; i < dd; i += bdm)
-            {
-                valf = 1;
-                for(int j = 0; j < sz; ++j)
-                {
-                    if(mask[j] == 1)
-                    {
-                        valg = tmpd[i + j * n];
-                        valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);
-                    }
-                }
-                valf = sqrt(std::abs(valf));
-                zz[i] = zz[i] < 0 ? -valf : valf;
-            }
-            /* ----------------------------------------------------------------- */
+            rescale_z(dd, iam, bdm, sz, n, per, mask, tmpd, diag, zz);
         }
     }
 }
