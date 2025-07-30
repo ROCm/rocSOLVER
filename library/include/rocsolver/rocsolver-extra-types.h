@@ -181,6 +181,7 @@ typedef enum rocsolver_alg_mode_
     = 291, /**< Computations are all performed on the GPU. This is the default mode. */
     rocsolver_alg_mode_hybrid = 292, /**< Computations are performed on the CPU and GPU. */
     rocsolver_alg_mode_mixed = 293, /**< Nested functions use a mixture of hybrid and GPU-only modes. */
+    rocsolver_alg_mode_graph = 294, /**< Kernel launches are accelerated using hip graphs. */
 } rocsolver_alg_mode;
 
 /*! \brief Used to specify a function with multiple supported algorithm modes.
@@ -192,6 +193,7 @@ typedef enum rocsolver_function_
     rocsolver_function_sterf = 403,
     rocsolver_function_steqr = 404,
     rocsolver_function_syev_heev = 405, /**< Affected by sterf and steqr. */
+    rocsolver_function_geqrf = 406,
 } rocsolver_function;
 
 #endif /* ROCSOLVER_EXTRA_TYPES_H */
