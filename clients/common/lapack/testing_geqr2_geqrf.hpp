@@ -294,6 +294,19 @@ void testing_geqr2_geqrf(Arguments& argus)
     I bc = argus.batch_count;
     rocblas_int hot_calls = argus.iters;
 
+    if(argus.alg_mode == 2)
+    {
+        EXPECT_ROCBLAS_STATUS(
+            rocsolver_set_alg_mode(handle, rocsolver_function_geqrf, rocsolver_alg_mode_graph),
+            rocblas_status_success);
+
+        rocsolver_alg_mode geqrf_mode;
+        EXPECT_ROCBLAS_STATUS(rocsolver_get_alg_mode(handle, rocsolver_function_geqrf, &geqrf_mode),
+                              rocblas_status_success);
+
+        EXPECT_EQ(geqrf_mode, rocsolver_alg_mode_graph);
+    }
+
     rocblas_stride stARes = (argus.unit_check || argus.norm_check) ? stA : 0;
 
     // check non-supported values

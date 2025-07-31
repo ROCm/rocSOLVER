@@ -7349,6 +7349,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgelq2_strided_batched(rocblas_handle 
 
     where the first i-1 elements of the Householder vector \f$v_i\f$ are zero, and \f$v_i[i] = 1\f$.
 
+    \note
+    Kernel launch acceleration using hip graphs is available for GEQRF.
+    Use \ref rocsolver_set_alg_mode to enable it.
+
     @param[in]
     handle      rocblas_handle.
     @param[in]
@@ -7458,6 +7462,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_64(rocblas_handle handle,
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
+
+    \note
+    Kernel launch acceleration using hip graphs is available for GEQRF.
+    Use \ref rocsolver_set_alg_mode to enable it.
 
     @param[in]
     handle      rocblas_handle.
@@ -7592,6 +7600,10 @@ ROCSOLVER_EXPORT rocblas_status rocsolver_zgeqrf_batched_64(rocblas_handle handl
     \f]
 
     where the first i-1 elements of Householder vector \f$v_{l_i}\f$ are zero, and \f$v_{l_i}[i] = 1\f$.
+
+    \note
+    Kernel launch acceleration using hip graphs is available for GEQRF.
+    Use \ref rocsolver_set_alg_mode to enable it.
 
     @param[in]
     handle      rocblas_handle.

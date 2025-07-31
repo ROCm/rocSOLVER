@@ -1,5 +1,5 @@
 /* **************************************************************************
- * Copyright (C) 2020-2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2020-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -118,7 +118,7 @@ Arguments geqrf_setup_arguments(geqrf_tuple<I> tup)
     return arg;
 }
 
-template <bool BLOCKED, typename I>
+template <bool BLOCKED, rocblas_int MODE, typename I>
 class GEQR2_GEQRF : public ::TestWithParam<geqrf_tuple<I>>
 {
 protected:
@@ -131,6 +131,7 @@ protected:
     void run_tests()
     {
         Arguments arg = geqrf_setup_arguments(this->GetParam());
+        arg.alg_mode = MODE;
 
         if(arg.peek<I>("m") == 0 && arg.peek<I>("n") == 0)
             testing_geqr2_geqrf_bad_arg<BATCHED, STRIDED, BLOCKED, T, I>();
@@ -140,19 +141,23 @@ protected:
     }
 };
 
-class GEQR2 : public GEQR2_GEQRF<false, rocblas_int>
+class GEQR2 : public GEQR2_GEQRF<false, 0, rocblas_int>
 {
 };
 
-class GEQRF : public GEQR2_GEQRF<true, rocblas_int>
+class GEQRF : public GEQR2_GEQRF<true, 0, rocblas_int>
 {
 };
 
-class GEQR2_64 : public GEQR2_GEQRF<false, int64_t>
+class GEQR2_64 : public GEQR2_GEQRF<false, 0, int64_t>
 {
 };
 
-class GEQRF_64 : public GEQR2_GEQRF<true, int64_t>
+class GEQRF_64 : public GEQR2_GEQRF<true, 0, int64_t>
+{
+};
+
+class GEQRF_GRAPH : public GEQR2_GEQRF<true, 2, rocblas_int>
 {
 };
 
@@ -194,6 +199,26 @@ TEST_P(GEQRF, __float_complex)
 }
 
 TEST_P(GEQRF, __double_complex)
+{
+    run_tests<false, false, rocblas_double_complex>();
+}
+
+TEST_P(GEQRF_GRAPH, __float)
+{
+    run_tests<false, false, float>();
+}
+
+TEST_P(GEQRF_GRAPH, __double)
+{
+    run_tests<false, false, double>();
+}
+
+TEST_P(GEQRF_GRAPH, __float_complex)
+{
+    run_tests<false, false, rocblas_float_complex>();
+}
+
+TEST_P(GEQRF_GRAPH, __double_complex)
 {
     run_tests<false, false, rocblas_double_complex>();
 }
@@ -240,6 +265,26 @@ TEST_P(GEQRF, batched__double_complex)
     run_tests<true, true, rocblas_double_complex>();
 }
 
+TEST_P(GEQRF_GRAPH, batched__float)
+{
+    run_tests<true, true, float>();
+}
+
+TEST_P(GEQRF_GRAPH, batched__double)
+{
+    run_tests<true, true, double>();
+}
+
+TEST_P(GEQRF_GRAPH, batched__float_complex)
+{
+    run_tests<true, true, rocblas_float_complex>();
+}
+
+TEST_P(GEQRF_GRAPH, batched__double_complex)
+{
+    run_tests<true, true, rocblas_double_complex>();
+}
+
 // strided_batched cases
 
 TEST_P(GEQR2, strided_batched__float)
@@ -278,6 +323,26 @@ TEST_P(GEQRF, strided_batched__float_complex)
 }
 
 TEST_P(GEQRF, strided_batched__double_complex)
+{
+    run_tests<false, true, rocblas_double_complex>();
+}
+
+TEST_P(GEQRF_GRAPH, strided_batched__float)
+{
+    run_tests<false, true, float>();
+}
+
+TEST_P(GEQRF_GRAPH, strided_batched__double)
+{
+    run_tests<false, true, double>();
+}
+
+TEST_P(GEQRF_GRAPH, strided_batched__float_complex)
+{
+    run_tests<false, true, rocblas_float_complex>();
+}
+
+TEST_P(GEQRF_GRAPH, strided_batched__double_complex)
 {
     run_tests<false, true, rocblas_double_complex>();
 }
@@ -468,6 +533,14 @@ INSTANTIATE_TEST_SUITE_P(daily_lapack,
 
 INSTANTIATE_TEST_SUITE_P(checkin_lapack,
                          GEQRF,
+                         Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
+
+INSTANTIATE_TEST_SUITE_P(daily_lapack,
+                         GEQRF_GRAPH,
+                         Combine(ValuesIn(large_matrix_size_range), ValuesIn(large_n_size_range)));
+
+INSTANTIATE_TEST_SUITE_P(checkin_lapack,
+                         GEQRF_GRAPH,
                          Combine(ValuesIn(matrix_size_range), ValuesIn(n_size_range)));
 
 INSTANTIATE_TEST_SUITE_P(daily_lapack,

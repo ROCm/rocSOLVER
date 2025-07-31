@@ -538,10 +538,9 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
-    // everything must be executed with scalars on the device
+    // save old pointer mode
     rocblas_pointer_mode old_mode;
     rocblas_get_pointer_mode(handle, &old_mode);
-    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     rocblas_stride stridew = rocblas_stride(k);
     rocblas_diagonal diag = rocblas_diagonal_non_unit;
@@ -549,6 +548,8 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     rocblas_operation trans;
 
     const bool use_gemm = n > k;
+    const T zero = T(0);
+    const T one = T(1);
 
     const rocblas_int u1_n = use_gemm ? k : n;
     const rocblas_int u2_n = use_gemm ? n - k : 0;
@@ -558,40 +559,32 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     if(use_gemm)
     {
         rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
-        T alpha, beta;
-        hipMemcpyAsync(&alpha, scalars + 2, sizeof(T), hipMemcpyDeviceToHost);
-        hipMemcpyAsync(&beta, scalars + 1, sizeof(T), hipMemcpyDeviceToHost);
         if(direct == rocblas_forward_direction && storev == rocblas_column_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k,
-                           k, u2_n, &alpha, V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, V,
-                           shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf),
-                           ldf, strideF, batch_count, workArr);
+                           k, u2_n, &one, V, shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, V,
+                           shiftV + idx2D(u1_n, 0, ldv), ldv, strideV, &zero, F, 0, ldf, strideF,
+                           batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_column_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_conjugate_transpose, rocblas_operation_none, k,
-                           k, u2_n, &alpha, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
-                           shiftV + idx2D(0, 0, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf), ldf,
-                           strideF, batch_count, workArr);
+                           k, u2_n, &one, V, shiftV, ldv, strideV, V, shiftV, ldv, strideV, &zero,
+                           F, 0, ldf, strideF, batch_count, workArr);
         }
         else if(direct == rocblas_forward_direction && storev == rocblas_row_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k,
-                           k, u2_n, &alpha, V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV, V,
-                           shiftV + idx2D(0, u1_n, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf),
-                           ldf, strideF, batch_count, workArr);
+                           k, u2_n, &one, V, shiftV + idx2D(0, u1_n, ldv), ldv, strideV, V,
+                           shiftV + idx2D(0, u1_n, ldv), ldv, strideV, &zero, F, 0, ldf, strideF,
+                           batch_count, workArr);
         }
         else if(direct == rocblas_backward_direction && storev == rocblas_row_wise)
         {
             rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_conjugate_transpose, k,
-                           k, u2_n, &alpha, V, shiftV + idx2D(0, 0, ldv), ldv, strideV, V,
-                           shiftV + idx2D(0, 0, ldv), ldv, strideV, &beta, F, idx2D(0, 0, ldf), ldf,
-                           strideF, batch_count, workArr);
+                           k, u2_n, &one, V, shiftV, ldv, strideV, V, shiftV, ldv, strideV, &zero,
+                           F, 0, ldf, strideF, batch_count, workArr);
         }
-        hipMemcpyAsync(scalars + 2, &alpha, sizeof(T), hipMemcpyHostToDevice);
-        hipMemcpyAsync(scalars + 1, &beta, sizeof(T), hipMemcpyHostToDevice);
-        rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
     }
 
     // Fix diagonal of T, make zero the not used triangular part,
@@ -609,6 +602,8 @@ rocblas_status rocsolver_larft_template(rocblas_handle handle,
     hipDeviceProp_t props;
     HIP_CHECK(hipGetDeviceProperties(&props, device));
     size_t lmemsize = sizeof(T) * (k + 1) * k;
+
+    rocblas_set_pointer_mode(handle, rocblas_pointer_mode_device);
 
     if(direct == rocblas_forward_direction)
     {

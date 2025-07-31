@@ -5,6 +5,10 @@ Full documentation for rocSOLVER is available at the [rocSOLVER documentation](h
 ## (Unreleased) rocSOLVER
 
 ### Added
+
+* Graph acceleration support for existing routines:
+    - GEQRF (with batched and strided\_batched versions)
+
 ### Changed
 ### Removed
 ### Optimized
