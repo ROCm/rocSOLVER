@@ -189,7 +189,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(MAX_THDS)
         // syr2
         for(I i = tid; i < nn; i += MAX_THDS)
         {
-            for(I jj = 0; jj <= nn; jj++)
+            for(I jj = 0; jj < nn; jj++)
             {
                 T* Atmp = a + (j + 1) + (j + 1) * n;
                 Atmp[i + jj * n] = Atmp[i + jj * n] - x[i] * conj(w[jj]) - w[i] * conj(x[jj]);
