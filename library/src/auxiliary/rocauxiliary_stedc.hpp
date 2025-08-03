@@ -37,7 +37,6 @@
 #include "rocauxiliary_sterf.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
-//#include "rocsolver_run_specialized_kernels.hpp"
 
 #include <algorithm>
 
