@@ -28,8 +28,8 @@
 #pragma once
 
 #include "auxiliary/rocauxiliary_stebz.hpp"
+#include "auxiliary/rocauxiliary_steqr.hpp"
 #include "auxiliary/rocauxiliary_stein.hpp"
-#include "auxiliary/rocauxiliary_stedc.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"

@@ -30,7 +30,6 @@
 #include <algorithm>
 
 #include "lapack/roclapack_syevj_heevj.hpp"
-#include "auxiliary/rocauxiliary_stedc.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
@@ -1525,6 +1524,43 @@ ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedcj_sort(const rocblas_int n,
 
 /******************* Host functions *********************************************/
 /*******************************************************************************/
+
+//--------------------------------------------------------------------------------------//
+/** This helper check argument correctness for stedc API **/
+template <typename T, typename S>
+rocblas_status rocsolver_stedcj_argCheck(rocblas_handle handle,
+                                        const rocblas_evect evect,
+                                        const rocblas_int n,
+                                        S D,
+                                        S E,
+                                        T C,
+                                        const rocblas_int ldc,
+                                        rocblas_int* info)
+{
+    // order is important for unit tests:
+
+    // 1. invalid/non-supported values
+    if(evect != rocblas_evect_none && evect != rocblas_evect_tridiagonal
+       && evect != rocblas_evect_original)
+        return rocblas_status_invalid_value;
+
+    // 2. invalid size
+    if(n < 0)
+        return rocblas_status_invalid_size;
+    if(evect != rocblas_evect_none && ldc < n)
+        return rocblas_status_invalid_size;
+
+    // skip pointer check if querying memory size
+    if(rocblas_is_device_memory_size_query(handle))
+        return rocblas_status_continue;
+
+    // 3. invalid pointers
+    if((n && !D) || (n > 1 && !E) || (evect != rocblas_evect_none && n && !C) || !info)
+        return rocblas_status_invalid_pointer;
+
+    return rocblas_status_continue;
+}
+
 
 //--------------------------------------------------------------------------------------//
 /** This helper calculates required workspace size **/

@@ -30,6 +30,8 @@
 #include "lib_device_helpers.hpp"
 #include "lib_macros.hpp"
 #include "rocsolver/rocsolver.h"
+#include "rocsolver_run_specialized_kernels.hpp"
+#include "rocsolver_logger.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -2986,5 +2988,105 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     *ev = x;
     return converged ? 0 : 1;
 }
+
+
+/** This local gemm adapts rocblas_gemm to multiply complex*real, and
+    overwrite result: A = A*B **/
+template <bool BATCHED,
+          bool STRIDED,
+          typename T,
+          typename S,
+          typename U,
+          std::enable_if_t<!rocblas_is_complex<T>, int> = 0>
+void local_gemm(rocblas_handle handle,
+                const rocblas_int n,
+                U A,
+                const rocblas_int shiftA,
+                const rocblas_int lda,
+                const rocblas_stride strideA,
+                S* B,
+                S* temp,
+                S* work,
+                const rocblas_int shiftV,
+                const rocblas_int ldv,
+                const rocblas_stride strideV,
+                const rocblas_int batch_count,
+                S** workArr)
+{
+    S one = 1.0;
+    S zero = 0.0;
+
+    // Execute A*B -> temp -> A
+    // temp = A*B
+    rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, A, shiftA,
+                   lda, strideA, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
+                   batch_count, workArr);
+
+    // A = temp
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    rocblas_int blocks = (n - 1) / BS2 + 1;
+    ROCSOLVER_LAUNCH_KERNEL(copy_mat<T>, dim3(blocks, blocks, batch_count), dim3(BS2, BS2), 0,
+                            stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp);
+}
+
+template <bool BATCHED,
+          bool STRIDED,
+          typename T,
+          typename S,
+          typename U,
+          std::enable_if_t<rocblas_is_complex<T>, int> = 0>
+void local_gemm(rocblas_handle handle,
+                const rocblas_int n,
+                U A,
+                const rocblas_int shiftA,
+                const rocblas_int lda,
+                const rocblas_stride strideA,
+                S* B,
+                S* temp,
+                S* work,
+                const rocblas_int shiftV,
+                const rocblas_int ldv,
+                const rocblas_stride strideV,
+                const rocblas_int batch_count,
+                S** workArr)
+{
+    S one = 1.0;
+    S zero = 0.0;
+
+    // Execute A -> work; work*B -> temp -> A
+
+    // work = real(A)
+    hipStream_t stream;
+    rocblas_get_stream(handle, &stream);
+    rocblas_int blocks = (n - 1) / BS2 + 1;
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(BS2, BS2),
+                            0, stream, copymat_to_buffer, n, n, A, shiftA, lda, strideA, work);
+
+    // temp = work*B
+    rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+                   shiftV, ldv, strideV, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
+                   batch_count, workArr);
+
+    // real(A) = temp
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, true>), dim3(blocks, blocks, batch_count), dim3(BS2, BS2),
+                            0, stream, copymat_from_buffer, n, n, A, shiftA, lda, strideA, temp);
+
+    // work = imag(A)
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count),
+                            dim3(BS2, BS2), 0, stream, copymat_to_buffer, n, n, A, shiftA, lda,
+                            strideA, work);
+
+    // temp = work*B
+    rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n, &one, work,
+                   shiftV, ldv, strideV, B, shiftV, ldv, strideV, &zero, temp, shiftV, ldv, strideV,
+                   batch_count, workArr);
+
+    // imag(A) = temp
+    ROCSOLVER_LAUNCH_KERNEL((copy_mat<T, S, false>), dim3(blocks, blocks, batch_count),
+                            dim3(BS2, BS2), 0, stream, copymat_from_buffer, n, n, A, shiftA, lda,
+                            strideA, temp);
+}
+
 
 ROCSOLVER_END_NAMESPACE
