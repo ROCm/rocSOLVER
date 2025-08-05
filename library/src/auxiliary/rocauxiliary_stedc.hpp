@@ -853,15 +853,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                                    rocblas_int* splitsA,
                                    const S eps,
                                    const S ssfmin,
-                                   const S ssfmax)
+                                   const S ssfmax,
+                                   const rocblas_int groups_per_merge)
 {
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
     // merge sub-block id
-    rocblas_int sid = hipBlockIdx_x;
+    rocblas_int sid = hipBlockIdx_x / groups_per_merge;
     // thread id
-    rocblas_int tidb = hipThreadIdx_x;
+    rocblas_int group_in_subblock = hipBlockIdx_x % groups_per_merge;
+    rocblas_int tidb = hipThreadIdx_x + group_in_subblock * hipBlockDim_x;
     rocblas_int tid;
 
     // select batch instance to work with
@@ -902,7 +904,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // tid indexes the sub-blocks in the entire split block
         // iam indexes the sub-blocks in the context of the merge
         // (according to its level in the merge tree)
-        dim = hipBlockDim_x / 2;
+        dim = (hipBlockDim_x * groups_per_merge) / 2;
         iam = tidb / dim;
         tid = sid * bdm + iam * bd;
         p2 = ps[tid];
@@ -931,7 +933,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // All threads of the group participating in the merge will work together
         // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
         iam = tidb;
-        bdm = hipBlockDim_x;
+        bdm = hipBlockDim_x * groups_per_merge;
 
         // define shifted arrays
         S* tmpd = temps + in * n;
@@ -1723,10 +1725,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
                 rocblas_int groups_per_merge = (max_n_per_merge + STEDC_BDIM - 1) / STEDC_BDIM;
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Solve_kernel<S>),
-                                        dim3(numgrps2, batch_count),
+                                        dim3(numgrps2 * groups_per_merge, batch_count),
                                         dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
                                         strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
-                                        ssfmin, ssfmax);
+                                        ssfmin, ssfmax, groups_per_merge);
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Rescale_kernel<S>), dim3(numgrps2, batch_count),
                                         dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
                                         strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
