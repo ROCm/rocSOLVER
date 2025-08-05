@@ -721,6 +721,354 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
+    stedc_mergeValues_Sort_kernel(const rocblas_int levs,
+                                  const rocblas_int blks,
+                                  const rocblas_int k,
+                                  const rocblas_int n,
+                                  S* DD,
+                                  const rocblas_stride strideD,
+                                  S* EE,
+                                  const rocblas_stride strideE,
+                                  S* tmpzA,
+                                  S* vecsA,
+                                  rocblas_int* splitsA,
+                                  const S eps,
+                                  const S ssfmin,
+                                  const S ssfmax)
+{
+    // threads and groups indices
+    // batch instance id
+    rocblas_int bid = hipBlockIdx_y;
+    // merge sub-block id
+    rocblas_int sid = hipBlockIdx_x;
+    // thread id
+    rocblas_int tidb = hipThreadIdx_x;
+    rocblas_int tid;
+
+    // select batch instance to work with
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
+
+    // temporary arrays in global memory
+    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    // the sub-blocks sizes
+    rocblas_int* ns = splits + n + 2;
+    // the sub-blocks initial positions
+    rocblas_int* ps = ns + n;
+    // if idd[i] = 0, the value in position i has been deflated
+    rocblas_int* idd = ps + n;
+    // container of permutations when solving the secular eqns
+    rocblas_int* pers = idd + n;
+    // the rank-1 modification vectors in the merges
+    S* z = tmpzA + bid * (2 * n);
+    // roots of secular equations
+    S* evs = z + n;
+    // updated eigenvectors after merges
+    S* vecs = vecsA + bid * 2 * (n * n);
+    // temp values during the merges
+    S* temps = vecs + (n * n);
+
+    // tn is the number of thread-groups needed in level k of the merge
+    rocblas_int bd = 1 << k;
+    rocblas_int bdm = bd << 1;
+    rocblas_int tn = blks / bdm;
+
+    // Work with merges on level k. A thread-group works with two leaves in the merge tree;
+    // all threads work together to solve the secular equation.
+    if(sid < tn)
+    {
+        rocblas_int iam, sz, dim, p2;
+        S valf, valg;
+
+        // tid indexes the sub-blocks in the entire split block
+        // iam indexes the sub-blocks in the context of the merge
+        // (according to its level in the merge tree)
+        dim = hipBlockDim_x / 2;
+        iam = tidb / dim;
+        tid = sid * bdm + iam * bd;
+        p2 = ps[tid];
+
+        // Find off-diagonal element of the merge
+        // Threads with iam = 0 work with components below the merge point;
+        // threads with iam = 1 work above the merge point
+        sz = ns[tid];
+        for(int j = 1; j < bd; ++j)
+            sz += ns[tid + j];
+        // with this, all threads involved in a merge
+        // will point to the same row of C and the same off-diag element
+        S p = (iam == 0) ? 2 * E[p2 - 1 + sz] : 2 * E[p2 - 1];
+
+        // determine boundaries of what would be the new merged sub-block
+        // 'in' will be its initial position.
+        // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
+        rocblas_int in = tid - iam * bd;
+        sz = ns[in];
+        for(int i = 1; i < bdm; ++i)
+            sz += ns[in + i];
+        in = ps[in];
+
+
+        // 1. Organize data with non-deflated values to prepare secular equation
+        // ----------------------------------------------------------------- 
+        // All threads of the group participating in the merge will work together
+        // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
+        iam = tidb;
+        bdm = hipBlockDim_x;
+
+        // define shifted arrays
+        S* tmpd = temps + in * n;
+        S* ev = evs + in;
+        S* diag = D + in;
+        rocblas_int* mask = idd + in;
+        S* zz = z + in;
+        rocblas_int* per = pers + in;
+
+        // find degree of secular equation
+        rocblas_int dd = 0;
+        for(int i = 0; i < sz; ++i)
+        {
+            if(mask[i] == 1)
+                dd++;
+        }
+
+        sort_tmpd_zz(dd, iam, bdm, tmpd, zz, per);
+        copy_d_ev(dd, iam, bdm, sz, n, tmpd, ev, diag);
+    }
+}
+
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
+    stedc_mergeValues_Solve_kernel(const rocblas_int levs,
+                                   const rocblas_int blks,
+                                   const rocblas_int k,
+                                   const rocblas_int n,
+                                   S* DD,
+                                   const rocblas_stride strideD,
+                                   S* EE,
+                                   const rocblas_stride strideE,
+                                   S* tmpzA,
+                                   S* vecsA,
+                                   rocblas_int* splitsA,
+                                   const S eps,
+                                   const S ssfmin,
+                                   const S ssfmax)
+{
+    // threads and groups indices
+    // batch instance id
+    rocblas_int bid = hipBlockIdx_y;
+    // merge sub-block id
+    rocblas_int sid = hipBlockIdx_x;
+    // thread id
+    rocblas_int tidb = hipThreadIdx_x;
+    rocblas_int tid;
+
+    // select batch instance to work with
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
+
+    // temporary arrays in global memory
+    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    // the sub-blocks sizes
+    rocblas_int* ns = splits + n + 2;
+    // the sub-blocks initial positions
+    rocblas_int* ps = ns + n;
+    // if idd[i] = 0, the value in position i has been deflated
+    rocblas_int* idd = ps + n;
+    // container of permutations when solving the secular eqns
+    rocblas_int* pers = idd + n;
+    // the rank-1 modification vectors in the merges
+    S* z = tmpzA + bid * (2 * n);
+    // roots of secular equations
+    S* evs = z + n;
+    // updated eigenvectors after merges
+    S* vecs = vecsA + bid * 2 * (n * n);
+    // temp values during the merges
+    S* temps = vecs + (n * n);
+
+    // tn is the number of thread-groups needed in level k of the merge
+    rocblas_int bd = 1 << k;
+    rocblas_int bdm = bd << 1;
+    rocblas_int tn = blks / bdm;
+
+    // Work with merges on level k. A thread-group works with two leaves in the merge tree;
+    // all threads work together to solve the secular equation.
+    if(sid < tn)
+    {
+        rocblas_int iam, sz, dim, p2;
+        S valf, valg;
+
+        // tid indexes the sub-blocks in the entire split block
+        // iam indexes the sub-blocks in the context of the merge
+        // (according to its level in the merge tree)
+        dim = hipBlockDim_x / 2;
+        iam = tidb / dim;
+        tid = sid * bdm + iam * bd;
+        p2 = ps[tid];
+
+        // Find off-diagonal element of the merge
+        // Threads with iam = 0 work with components below the merge point;
+        // threads with iam = 1 work above the merge point
+        sz = ns[tid];
+        for(int j = 1; j < bd; ++j)
+            sz += ns[tid + j];
+        // with this, all threads involved in a merge
+        // will point to the same row of C and the same off-diag element
+        S p = (iam == 0) ? 2 * E[p2 - 1 + sz] : 2 * E[p2 - 1];
+
+        // determine boundaries of what would be the new merged sub-block
+        // 'in' will be its initial position.
+        // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
+        rocblas_int in = tid - iam * bd;
+        sz = ns[in];
+        for(int i = 1; i < bdm; ++i)
+            sz += ns[in + i];
+        in = ps[in];
+
+        // 1. Organize data with non-deflated values to prepare secular equation
+        // -----------------------------------------------------------------
+        // All threads of the group participating in the merge will work together
+        // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
+        iam = tidb;
+        bdm = hipBlockDim_x;
+
+        // define shifted arrays
+        S* tmpd = temps + in * n;
+        S* ev = evs + in;
+        S* diag = D + in;
+        rocblas_int* mask = idd + in;
+        S* zz = z + in;
+        rocblas_int* per = pers + in;
+
+        // find degree of secular equation
+        rocblas_int dd = 0;
+        for(int i = 0; i < sz; ++i)
+        {
+            if(mask[i] == 1)
+                dd++;
+        }
+
+        solve_seq_eqns(dd, iam, bdm, sz, n, p, eps, ssfmin, ssfmax, mask, tmpd, ev, zz);
+    }
+}
+
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
+    stedc_mergeValues_Rescale_kernel(const rocblas_int levs,
+                                     const rocblas_int blks,
+                                     const rocblas_int k,
+                                     const rocblas_int n,
+                                     S* DD,
+                                     const rocblas_stride strideD,
+                                     S* EE,
+                                     const rocblas_stride strideE,
+                                     S* tmpzA,
+                                     S* vecsA,
+                                     rocblas_int* splitsA,
+                                     const S eps,
+                                     const S ssfmin,
+                                     const S ssfmax)
+{
+    // threads and groups indices
+    // batch instance id
+    rocblas_int bid = hipBlockIdx_y;
+    // merge sub-block id
+    rocblas_int sid = hipBlockIdx_x;
+    // thread id
+    rocblas_int tidb = hipThreadIdx_x;
+    rocblas_int tid;
+
+    // select batch instance to work with
+    S* D = DD + bid * strideD;
+    S* E = EE + bid * strideE;
+
+    // temporary arrays in global memory
+    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    // the sub-blocks sizes
+    rocblas_int* ns = splits + n + 2;
+    // the sub-blocks initial positions
+    rocblas_int* ps = ns + n;
+    // if idd[i] = 0, the value in position i has been deflated
+    rocblas_int* idd = ps + n;
+    // container of permutations when solving the secular eqns
+    rocblas_int* pers = idd + n;
+    // the rank-1 modification vectors in the merges
+    S* z = tmpzA + bid * (2 * n);
+    // roots of secular equations
+    S* evs = z + n;
+    // updated eigenvectors after merges
+    S* vecs = vecsA + bid * 2 * (n * n);
+    // temp values during the merges
+    S* temps = vecs + (n * n);
+
+    // tn is the number of thread-groups needed in level k of the merge
+    rocblas_int bd = 1 << k;
+    rocblas_int bdm = bd << 1;
+    rocblas_int tn = blks / bdm;
+
+    // Work with merges on level k. A thread-group works with two leaves in the merge tree;
+    // all threads work together to solve the secular equation.
+    if(sid < tn)
+    {
+        rocblas_int iam, sz, dim, p2;
+        S valf, valg;
+
+        // tid indexes the sub-blocks in the entire split block
+        // iam indexes the sub-blocks in the context of the merge
+        // (according to its level in the merge tree)
+        dim = hipBlockDim_x / 2;
+        iam = tidb / dim;
+        tid = sid * bdm + iam * bd;
+        p2 = ps[tid];
+
+        // Find off-diagonal element of the merge
+        // Threads with iam = 0 work with components below the merge point;
+        // threads with iam = 1 work above the merge point
+        sz = ns[tid];
+        for(int j = 1; j < bd; ++j)
+            sz += ns[tid + j];
+        // with this, all threads involved in a merge
+        // will point to the same row of C and the same off-diag element
+        S p = (iam == 0) ? 2 * E[p2 - 1 + sz] : 2 * E[p2 - 1];
+
+        // determine boundaries of what would be the new merged sub-block
+        // 'in' will be its initial position.
+        // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
+        rocblas_int in = tid - iam * bd;
+        sz = ns[in];
+        for(int i = 1; i < bdm; ++i)
+            sz += ns[in + i];
+        in = ps[in];
+
+
+        // 1. Organize data with non-deflated values to prepare secular equation
+        // ----------------------------------------------------------------- 
+        // All threads of the group participating in the merge will work together
+        // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
+        iam = tidb;
+        bdm = hipBlockDim_x;
+
+        // define shifted arrays
+        S* tmpd = temps + in * n;
+        S* ev = evs + in;
+        S* diag = D + in;
+        rocblas_int* mask = idd + in;
+        S* zz = z + in;
+        rocblas_int* per = pers + in;
+
+        // find degree of secular equation
+        rocblas_int dd = 0;
+        for(int i = 0; i < sz; ++i)
+        {
+            if(mask[i] == 1)
+                dd++;
+        }
+
+        rescale_z(dd, iam, bdm, sz, n, per, mask, tmpd, diag, zz);
+    }
+}
+
 
 //--------------------------------------------------------------------------------------//
 /** STEDC_MERGEVECTORS_KERNEL prepares vectors from the secular equation for
@@ -1357,10 +1705,33 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     eps);
 
             // b. solve secular eq to find merged eigenvalues
-            ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<S>),
-                                    dim3(numgrps2, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                                    levs, blks, k, n, D + shiftD, strideD,
-                                    E + shiftE, strideE, tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
+            rocblas_int max_n_per_merge = (n + numgrps2 - 1) / numgrps2;
+            if(max_n_per_merge <= STEDC_BDIM)
+            {
+                // compute in one dispatch for small merges
+                ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<S>), dim3(numgrps2, batch_count),
+                                        dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
+                                        strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
+                                        ssfmin, ssfmax);
+            }
+            else {
+                // split mergeValues into stages to run seqular eqns solver using more groups
+                ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Sort_kernel<S>), dim3(numgrps2, batch_count),
+                                        dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
+                                        strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
+                                        ssfmin, ssfmax);
+
+                rocblas_int groups_per_merge = (max_n_per_merge + STEDC_BDIM - 1) / STEDC_BDIM;
+                ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Solve_kernel<S>),
+                                        dim3(numgrps2, batch_count),
+                                        dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
+                                        strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
+                                        ssfmin, ssfmax);
+                ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Rescale_kernel<S>), dim3(numgrps2, batch_count),
+                                        dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
+                                        strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
+                                        ssfmin, ssfmax);
+            }
 
             // c. find merged eigenvectors
             ROCSOLVER_LAUNCH_KERNEL(
