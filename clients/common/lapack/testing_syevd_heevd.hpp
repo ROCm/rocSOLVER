@@ -530,6 +530,12 @@ void syevd_heevd_getError(const rocblas_handle handle,
     constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
 
+    using HMatT = HostMatrix<T, rocblas_int>;
+    using HMatS = HostMatrix<S, rocblas_int>;
+    using BDescT = typename HMatT::BlockDescriptor;
+    using BDescS = typename HMatS::BlockDescriptor;
+
+    int lgn = floor(log(n - 1) / log(2)) + 1;
     int sizeE, lwork;
     if(!COMPLEX)
     {
@@ -597,23 +603,40 @@ void syevd_heevd_getError(const rocblas_handle handle,
         {
             // both eigenvalues and eigenvectors needed; need to implicitly test
             // eigenvectors due to non-uniqueness of eigenvectors under scaling
-            if(hinfo[b][0] == 0)
+            if((hinfo[b][0] == 0) && (n > 0))
             {
-                // multiply A with each of the n eigenvectors and divide by corresponding
-                // eigenvalues
-                T alpha;
-                T beta = 0;
-                for(int j = 0; j < n; j++)
-                {
-                    alpha = T(1) / hDres[b][j];
-                    cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hAres[b] + j * lda,
-                                  1, beta, hA[b] + j * lda, 1);
-                }
+                // New matrix initialization
+                auto M
+                    = HMatT::Wrap(A.data() + b * lda * n, lda, n)->block(BDescT().nrows(n).ncols(n));
+                auto U = HMatT::Wrap(hAres[b], lda, n)->block(BDescT().nrows(n).ncols(n));
+                auto d = HMatT::Convert(hDres[b], 1, n)->block(BDescT().nrows(1).ncols(n));
+                auto D = HMatT::Zeros(n, n).diag(d);
+                /* std::cout << "--- Computed eigenvalues: " << std::endl; */
+                /* d.print(); */
 
-                // error is ||hA - hARes|| / ||hA||
-                // using frobenius norm
-                err = norm_error('F', n, n, lda, hA[b], hAres[b]);
+                auto OE = U * adjoint(U) - HMatT::Eye(n, n);
+                err = OE.max_col_norm();
                 *max_err = err > *max_err ? err : *max_err;
+
+                auto AE = M - U * D * adjoint(U);
+                err = AE.norm() / M.norm();
+                *max_err = err > *max_err ? err : *max_err;
+
+                /* // multiply A with each of the n eigenvectors and divide by corresponding */
+                /* // eigenvalues */
+                /* T alpha; */
+                /* T beta = 0; */
+                /* for(int j = 0; j < n; j++) */
+                /* { */
+                /*     alpha = T(1) / hDres[b][j]; */
+                /*     cpu_symv_hemv(uplo, n, alpha, A.data() + b * lda * n, lda, hAres[b] + j * lda, */
+                /*                   1, beta, hA[b] + j * lda, 1); */
+                /* } */
+
+                /* // error is ||hA - hARes|| / ||hA|| */
+                /* // using frobenius norm */
+                /* err = norm_error('F', n, n, lda, hA[b], hAres[b]); */
+                /* *max_err = err > *max_err ? err : *max_err; */
             }
         }
     }

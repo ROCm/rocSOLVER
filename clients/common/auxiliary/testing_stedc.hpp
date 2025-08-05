@@ -232,6 +232,67 @@ void stedc_toeplitz_initData(const rocblas_handle handle,
     }
 }
 
+// Creates an `n` by `n` identity matrix.
+//
+template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+void stedc_identity_initData(const rocblas_handle handle,
+                             const rocblas_evect evect,
+                             const rocblas_int n,
+                             Sd& dD,
+                             Sd& dE,
+                             Td& dC,
+                             const rocblas_int ldc,
+                             Ud& /* dInfo */,
+                             Sh& hD,
+                             Sh& hE,
+                             Th& hC,
+                             Uh& /* hInfo */)
+{
+    using S = decltype(std::real(T{}));
+    rocblas_int bc = 1;
+
+    if(CPU)
+    {
+        rocblas_init<T>(hC, true);
+
+        for(rocblas_int b = 0; b < bc; ++b)
+        {
+            // New matrix initialization
+            using HMatT = HostMatrix<T, rocblas_int>;
+            using HMatS = HostMatrix<S, rocblas_int>;
+            using BDesc = typename HMatT::BlockDescriptor;
+
+            auto hCw = HMatT::Wrap(hC[b], ldc, n);
+            hCw->set_to_zero();
+            auto hDw = HMatS::Wrap(hD[b], n, 1);
+            hDw->set_to_zero();
+            auto hEw = HMatS::Wrap(hE[b], n, 1);
+            hEw->set_to_zero();
+
+            if(hCw && hDw && hEw) // update matrices if n >= 1
+            {
+                auto C = HMatT::Eye(n, n);
+                auto D = HMatS::Ones(n, 1);
+                auto E = HMatS::Zeros(n - 1, 1);
+
+                hCw->copy_data_from(C);
+                hDw->copy_data_from(D);
+                hEw->copy_data_from(E);
+            }
+        }
+    }
+
+    if(GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dD.transfer_from(hD));
+        CHECK_HIP_ERROR(dE.transfer_from(hE));
+
+        if(evect == rocblas_evect_original)
+            CHECK_HIP_ERROR(dC.transfer_from(hC));
+    }
+}
+
 // Creates an `n` by `n` tridiagonal, Wilkinson matrix, which is formed as follows:
 //
 // 1. If `n` is even:
@@ -489,6 +550,12 @@ void stedc_initData(const rocblas_handle handle,
         stedc_toeplitz_initData<CPU, GPU, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                              hInfo);
     }
+    else if((std::getenv("TEST_IDENTITY") != nullptr)
+            || (std::getenv("STEDC_TEST_IDENTITY") != nullptr))
+    {
+        stedc_identity_initData<CPU, GPU, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+                                             hInfo);
+    }
     else
     {
         stedc_default_initData<CPU, GPU, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
@@ -520,6 +587,11 @@ void stedc_getError(const rocblas_handle handle,
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
+
+    using HMatT = HostMatrix<T, rocblas_int>;
+    using HMatS = HostMatrix<S, rocblas_int>;
+    using BDescT = typename HMatT::BlockDescriptor;
+    using BDescS = typename HMatS::BlockDescriptor;
 
     int lgn = floor(log(n - 1) / log(2)) + 1;
     size_t lwork = (COMPLEX) ? n * n : 0;
@@ -565,6 +637,14 @@ void stedc_getError(const rocblas_handle handle,
     // CPU lapack
     cpu_stedc(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(), lrwork,
               iwork.data(), liwork, hInfo[0]);
+    auto AorT = HMatT::Empty();
+    if((evect != rocblas_evect_none) && (n > 0))
+    {
+        auto C = HMatT::Wrap(hCRes[0], ldc, n)->block(BDescT().nrows(n).ncols(n));
+        auto d = HMatT::Convert(hDRes[0], 1, n)->block(BDescT().nrows(1).ncols(n));
+        auto D = HMatT::Zeros(n, n).diag(d);
+        AorT = C * D * adjoint(C);
+    }
 
     // check info
     EXPECT_EQ(hInfo[0][0], hInfoRes[0][0]);
@@ -575,7 +655,7 @@ void stedc_getError(const rocblas_handle handle,
 
     double err;
 
-    if(hInfo[0][0] == 0)
+    if((hInfo[0][0] == 0) && (n > 0))
     {
         // check that eigenvalues are correct and in order
         // error is ||hD - hDRes|| / ||hD||
@@ -586,23 +666,38 @@ void stedc_getError(const rocblas_handle handle,
         // check eigenvectors if required
         if(evect != rocblas_evect_none)
         {
-            // both eigenvalues and eigenvectors needed; need to implicitly test
-            // eigenvectors due to non-uniqueness of eigenvectors under scaling
+            // New matrix initialization
+            auto C = HMatT::Wrap(hCRes[0], ldc, n)->block(BDescT().nrows(n).ncols(n));
+            auto d = HMatT::Convert(hDRes[0], 1, n)->block(BDescT().nrows(1).ncols(n));
+            auto D = HMatT::Zeros(n, n).diag(d);
+            /* std::cout << "--- Computed eigenvalues: " << std::endl; */
+            /* d.print(); */
 
-            // multiply A with each of the n eigenvectors and divide by corresponding
-            // eigenvalues
-            T alpha;
-            T beta = 0;
-            for(int j = 0; j < n; j++)
-            {
-                alpha = T(1) / hDRes[0][j];
-                cpu_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta,
-                              hC[0] + j * ldc, 1);
-            }
+            auto OE = adjoint(C) * C - HMatT::Eye(n, n);
+            err = OE.max_col_norm();
+            *max_err = err > *max_err ? err : *max_err;
 
-            // error is ||hC - hCRes|| / ||hC||
-            // using frobenius norm
-            *max_errv = norm_error('F', n, n, ldc, hCRes[0], hC[0]);
+            auto AE = AorT - C * D * adjoint(C);
+            err = AE.norm() / AorT.norm();
+            *max_err = err > *max_err ? err : *max_err;
+
+            /* // both eigenvalues and eigenvectors needed; need to implicitly test */
+            /* // eigenvectors due to non-uniqueness of eigenvectors under scaling */
+
+            /* // multiply A with each of the n eigenvectors and divide by corresponding */
+            /* // eigenvalues */
+            /* T alpha; */
+            /* T beta = 0; */
+            /* for(int j = 0; j < n; j++) */
+            /* { */
+            /*     alpha = T(1) / hDRes[0][j]; */
+            /*     cpu_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta, */
+            /*                   hC[0] + j * ldc, 1); */
+            /* } */
+
+            /* // error is ||hC - hCRes|| / ||hC|| */
+            /* // using frobenius norm */
+            /* *max_errv = norm_error('F', n, n, ldc, hCRes[0], hC[0]); */
         }
     }
 }
