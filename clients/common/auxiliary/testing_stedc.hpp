@@ -640,8 +640,8 @@ void stedc_getError(const rocblas_handle handle,
     auto AorT = HMatT::Empty();
     if((evect != rocblas_evect_none) && (n > 0))
     {
-        auto C = HMatT::Wrap(hCRes[0], ldc, n)->block(BDescT().nrows(n).ncols(n));
-        auto d = HMatT::Convert(hDRes[0], 1, n)->block(BDescT().nrows(1).ncols(n));
+        auto C = HMatT::Wrap(hC[0], ldc, n)->block(BDescT().nrows(n).ncols(n));
+        auto d = HMatT::Convert(hD[0], 1, n)->block(BDescT().nrows(1).ncols(n));
         auto D = HMatT::Zeros(n, n).diag(d);
         AorT = C * D * adjoint(C);
     }
@@ -654,6 +654,7 @@ void stedc_getError(const rocblas_handle handle,
         *max_err = 0;
 
     double err;
+    *max_errv = 0;
 
     if((hInfo[0][0] == 0) && (n > 0))
     {
@@ -673,11 +674,13 @@ void stedc_getError(const rocblas_handle handle,
             /* std::cout << "--- Computed eigenvalues: " << std::endl; */
             /* d.print(); */
 
-            auto OE = adjoint(C) * C - HMatT::Eye(n, n);
+            auto OE = C * adjoint(C) - HMatT::Eye(n, n);
             err = OE.max_col_norm();
-            *max_err = err > *max_err ? err : *max_err;
+            /* std::cout << "--- Orthogonal error: " << err << std::endl; */
+            *max_errv = err > *max_err ? err : *max_err;
 
             auto AE = AorT - C * D * adjoint(C);
+            /* std::cout << "--- Residual error: " << err << std::endl; */
             err = AE.norm() / AorT.norm();
             *max_err = err > *max_err ? err : *max_err;
 
@@ -886,7 +889,7 @@ void testing_stedc(Arguments& argus)
     {
         ROCSOLVER_TEST_CHECK(T, max_err, n);
         if(evect != rocblas_evect_none)
-            ROCSOLVER_TEST_CHECK(T, max_errv, n * n);
+            ROCSOLVER_TEST_CHECK(T, max_errv, n);
     }
 
     // output results for rocsolver-bench

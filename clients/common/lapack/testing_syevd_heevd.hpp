@@ -166,12 +166,15 @@ void syevd_heevd_default_initData(const rocblas_handle handle,
         {
             for(rocblas_int i = 0; i < n; i++)
             {
-                for(rocblas_int j = 0; j < n; j++)
+                for(rocblas_int j = i; j < n; j++)
                 {
                     if(i == j)
                         hA[b][i + j * lda] = std::real(hA[b][i + j * lda]) + 400;
                     else
+                    {
                         hA[b][i + j * lda] -= 4;
+                        hA[b][j + i * lda] = hA[b][i + j * lda];
+                    }
                 }
             }
 
@@ -525,7 +528,8 @@ void syevd_heevd_getError(const rocblas_handle handle,
                           Sh& hDres,
                           Ih& hinfo,
                           Ih& hinfoRes,
-                          double* max_err)
+                          double* max_err,
+                          double* max_errv)
 {
     constexpr bool COMPLEX = rocblas_is_complex<T>;
     using S = decltype(std::real(T{}));
@@ -608,6 +612,9 @@ void syevd_heevd_getError(const rocblas_handle handle,
                 // New matrix initialization
                 auto M
                     = HMatT::Wrap(A.data() + b * lda * n, lda, n)->block(BDescT().nrows(n).ncols(n));
+                /* std::cout << "--- Input matrix: " << std::endl; */
+                /* M.print(); */
+
                 auto U = HMatT::Wrap(hAres[b], lda, n)->block(BDescT().nrows(n).ncols(n));
                 auto d = HMatT::Convert(hDres[b], 1, n)->block(BDescT().nrows(1).ncols(n));
                 auto D = HMatT::Zeros(n, n).diag(d);
@@ -616,10 +623,13 @@ void syevd_heevd_getError(const rocblas_handle handle,
 
                 auto OE = U * adjoint(U) - HMatT::Eye(n, n);
                 err = OE.max_col_norm();
-                *max_err = err > *max_err ? err : *max_err;
+                /* std::cout << "--- Orthogonal error: " << err << std::endl; */
+                *max_errv = err > *max_err ? err : *max_err;
 
                 auto AE = M - U * D * adjoint(U);
                 err = AE.norm() / M.norm();
+                /* std::cout << "--- Residual error: " << err << std::endl; */
+                /* AE.print(); */
                 *max_err = err > *max_err ? err : *max_err;
 
                 /* // multiply A with each of the n eigenvectors and divide by corresponding */
@@ -797,7 +807,7 @@ void testing_syevd_heevd(Arguments& argus)
     size_t size_Ares = (argus.unit_check || argus.norm_check) ? size_A : 0;
     size_t size_Dres = (argus.unit_check || argus.norm_check) ? size_D : 0;
 
-    double max_error = 0, gpu_time_used = 0, cpu_time_used = 0;
+    double max_error = 0, max_ortho_error = 0, gpu_time_used = 0, cpu_time_used = 0;
 
     // check invalid sizes
     bool invalid_size = (n < 0 || lda < n || bc < 0);
@@ -883,7 +893,7 @@ void testing_syevd_heevd(Arguments& argus)
         {
             syevd_heevd_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
                                              dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
-                                             &max_error);
+                                             &max_error, &max_ortho_error);
         }
 
         // collect performance data
@@ -923,7 +933,7 @@ void testing_syevd_heevd(Arguments& argus)
         {
             syevd_heevd_getError<STRIDED, T>(handle, evect, uplo, n, dA, lda, stA, dD, stD, dE, stE,
                                              dinfo, bc, hA, hAres, hD, hDres, hinfo, hinfoRes,
-                                             &max_error);
+                                             &max_error, &max_ortho_error);
         }
 
         // collect performance data
@@ -939,7 +949,11 @@ void testing_syevd_heevd(Arguments& argus)
     // validate results for rocsolver-test
     // using 10 * n * machine_precision as tolerance
     if(argus.unit_check)
+    {
         ROCSOLVER_TEST_CHECK(T, max_error, 10 * n);
+        if(evect != rocblas_evect_none)
+            ROCSOLVER_TEST_CHECK(T, max_ortho_error, 10 * n);
+    }
 
     // output results for rocsolver-bench
     if(argus.timing)
