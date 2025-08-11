@@ -449,6 +449,51 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         sz_even = (sz % 2 == 1) ? sz + 1 : sz;
         sz_half = sz_even / 2;
 
+#if 1
+        S piv, val;
+        for(int i = 0; i < sz; ++i)
+        {
+            __syncthreads();
+
+            int base = i + in;
+            if(idd[base] == 1)
+            {
+                piv = D[base];
+                for(int j = i + 1; j < sz; ++j)
+                {
+                    int top = j + in;
+                    val = D[top];
+                    if(idd[top] == 1 && std::abs(piv - val) <= tol)
+                    {
+                        // rotation to eliminate component in z
+                        S g = z[top];
+                        S f = z[base];
+                        S c, s, rr;
+                        lartg(f, g, c, s, rr);
+
+                        // update C with the rotation
+                        for(int ii = tidb; ii < n; ii += hipBlockDim_x)
+                        {
+                            S valf = C[ii + base * ldc];
+                            S valg = C[ii + top * ldc];
+                            C[ii + base * ldc] = valf * c - valg * s;
+                            C[ii + top * ldc] = valf * s + valg * c;
+                        }
+                        __syncthreads();
+
+                        // deflated ev because it is repeated
+                        if(tidb == 0)
+                        {
+                            idd[top] = 0;
+                            z[base] = rr;
+                            z[top] = 0;
+                        }
+                    }
+                }
+            }
+        }
+#else
+
         // the number of rounds needed is sz_even - 1
         for(int r = 0; r < sz_even - 1; ++r)
         {
@@ -504,6 +549,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 __syncthreads();
             }
         }
+#endif
     }
 }
 
