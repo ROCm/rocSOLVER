@@ -50,6 +50,22 @@ ROCSOLVER_BEGIN_NAMESPACE
 #define STEDC_EXTERNAL_GEMM true
 
 
+__host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
+{
+    // splits_map layout:
+    // struct {
+    //      rocblas_int splits[n];   // positions where each block begings
+    //      rocblas_int __unused;    // ??? unused ???
+    //      rocblas_int nb;          // total number of split blocks
+    //      rocblas_int nsA[n];      // the sub-blocks sizes
+    //      rocblas_int psA[n];      // the sub-blocks initial positions
+    //      rocblas_int idd[n];      // if idd[i] = 0, the value in position i has been deflated  (aka mask)
+    //      rocblas_int pers[n];     // container of permutations when solving the secular eqns
+    // };
+    return 5 * n + 2;
+}
+
+
 /*************** Main kernels *********************************************************/
 /**************************************************************************************/
 
@@ -81,7 +97,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
         S* E = EE + bid * strideE;
 
         // temporary arrays in global memory
-        rocblas_int* splits = splitsA + bid * (5 * n + 2);
+        rocblas_int* splits = splitsA + bid * get_splits_size(n);
         // the sub-blocks sizes
         rocblas_int* ns = splits + n + 2;
         // the sub-blocks initial positions
@@ -160,7 +176,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
     rocblas_int* info = iinfo + bid;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -220,7 +236,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -623,7 +639,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -749,7 +765,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -868,7 +884,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -983,7 +999,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -1112,7 +1128,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -1323,7 +1339,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* D = DD + bid * strideD;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
     // the sub-blocks sizes
     rocblas_int* ns = splits + n + 2;
     // the sub-blocks initial positions
@@ -1522,7 +1538,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
             *size_workArr = 0;
 
         // size for split blocks and sub-blocks positions
-        *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
+        *size_splits_map = sizeof(rocblas_int) * get_splits_size(n) * batch_count;
 
         // size for temporary diagonal and rank-1 modif vector
         *size_tmpz = sizeof(S) * (2 * n) * batch_count;
