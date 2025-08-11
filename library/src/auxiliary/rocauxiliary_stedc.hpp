@@ -398,7 +398,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int sid = hipBlockIdx_x;
     // thread id
     rocblas_int tidb = hipThreadIdx_x;
-    rocblas_int tid, tx;
 
     // select batch instance to work with
     S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
@@ -431,53 +430,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // temp values during the merges
     S* temps = vecs + (n * n);
 
-    // tn is the number of thread-groups needed in level k of the merge
-    rocblas_int bd = 1 << k;
-    rocblas_int bdm = bd << 1;
-    rocblas_int tn = blks / bdm;
 
     // Work with merges on level k. A thread-group works with two leaves in the merge tree.
-    if(sid < tn)
+    //if(sid < tn)
     {
-        rocblas_int iam, sz, dim, dim2, p2;
-
-        // tid indexes the sub-blocks in the entire matrix
-        // iam indexes the sub-blocks in the context of the merge
-        // (according to its level in the merge tree)
-        dim = hipBlockDim_x / 2;
-        iam = tidb / dim;
-        tx = tidb % dim;
-        tid = sid * bdm + iam * bd;
-        p2 = ps[tid];
-
-        // 1. find rank-1 modification components (z and p) for this merge
-        // ----------------------------------------------------------------
-        // Threads with iam = 0 work with components below the merge point;
-        // threads with iam = 1 work above the merge point
-        //sz = ns[tid];
-        //for(int j = 1; j < bd; ++j)
-        //    sz += ns[tid + j];
-        sz = szfs[tid];
-        // with this, all threads involved in a merge
-        // will point to the same row of C and the same off-diag element
-        S* ptz = (iam == 0) ? C + p2 - 1 + sz : C + p2;
-        S p = (iam == 0) ? 2 * E[p2 - 1 + sz] : 2 * E[p2 - 1];
-
-
         // 3. deflate eigenvalues
         // ----------------------------------------------------------------
         // determine boundaries of what would be the new merged sub-block
         // 'in' will be its initial position.
         // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-        rocblas_int in = tid - iam * bd;
-        //sz = ns[in];
-        //for(int i = 1; i < bdm; ++i)
-        //    sz += ns[in + i];
-        sz = szs[in];
+        rocblas_int in = sid << (k + 1);
+        rocblas_int sz = szs[in];
         S tol = tols[in];
         in = ps[in];
-
-        __syncthreads();
 
         // now deflate repeated values
         rocblas_int sz_even, sz_half, base, top, com;
