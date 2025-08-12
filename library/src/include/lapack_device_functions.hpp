@@ -30,8 +30,8 @@
 #include "lib_device_helpers.hpp"
 #include "lib_macros.hpp"
 #include "rocsolver/rocsolver.h"
-#include "rocsolver_run_specialized_kernels.hpp"
 #include "rocsolver_logger.hpp"
+#include "rocsolver_run_specialized_kernels.hpp"
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -2989,7 +2989,6 @@ __device__ rocblas_int seq_solve_ext(const rocblas_int dd,
     return converged ? 0 : 1;
 }
 
-
 /** This local gemm adapts rocblas_gemm to multiply complex*real, and
     overwrite result: A = A*B **/
 template <bool BATCHED,
@@ -3087,6 +3086,5 @@ void local_gemm(rocblas_handle handle,
                             dim3(BS2, BS2), 0, stream, copymat_from_buffer, n, n, A, shiftA, lda,
                             strideA, temp);
 }
-
 
 ROCSOLVER_END_NAMESPACE

@@ -28,8 +28,8 @@
 #pragma once
 
 #include "auxiliary/rocauxiliary_stebz.hpp"
-#include "auxiliary/rocauxiliary_steqr.hpp"
 #include "auxiliary/rocauxiliary_stein.hpp"
+#include "auxiliary/rocauxiliary_steqr.hpp"
 #include "lapack_device_functions.hpp"
 #include "rocblas.hpp"
 #include "rocsolver/rocsolver.h"
@@ -49,8 +49,7 @@ ROCSOLVER_BEGIN_NAMESPACE
 /** STEDCX_NUM_LEVELS returns the ideal number of times/levels in which a matrix (or split block)
     will be divided during the divide phase of divide & conquer algorithm.
     i.e. number of sub-blocks = 2^levels **/
-__host__ __device__ inline rocblas_int
-    stedcx_num_levels(const rocblas_int n)
+__host__ __device__ inline rocblas_int stedcx_num_levels(const rocblas_int n)
 {
     rocblas_int levels = 0;
     // return the max number of levels such that the sub-blocks are at least of size 1
@@ -205,12 +204,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEBZ_SPLIT_THDS)
         - If there are actually more split-blocks than STEDCX_BDIM, some threads
    will work with more than one split-block sequentially. **/
 template <typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM) stedcx_divide_kernel(const rocblas_int n,
-                                                                        S* DD,
-                                                                        const rocblas_stride strideD,
-                                                                        S* EE,
-                                                                        const rocblas_stride strideE,
-                                                                        rocblas_int* splitsA)
+ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
+    stedcx_divide_kernel(const rocblas_int n,
+                         S* DD,
+                         const rocblas_stride strideD,
+                         S* EE,
+                         const rocblas_stride strideE,
+                         rocblas_int* splitsA)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -316,21 +316,22 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM) stedcx_divide_kernel(const 
    be analysed in parallel). If there are actually more split-blocks, some
    groups will work with more than one split-block sequentially. **/
 template <typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM) stedcx_solve_kernel(const rocblas_int n,
-                                                                       S* DD,
-                                                                       const rocblas_stride strideD,
-                                                                       S* EE,
-                                                                       const rocblas_stride strideE,
-                                                                       S* CC,
-                                                                       const rocblas_int shiftC,
-                                                                       const rocblas_int ldc,
-                                                                       const rocblas_stride strideC,
-                                                                       rocblas_int* iinfo,
-                                                                       S* WA,
-                                                                       rocblas_int* splitsA,
-                                                                       const S eps,
-                                                                       const S ssfmin,
-                                                                       const S ssfmax)
+ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
+    stedcx_solve_kernel(const rocblas_int n,
+                        S* DD,
+                        const rocblas_stride strideD,
+                        S* EE,
+                        const rocblas_stride strideE,
+                        S* CC,
+                        const rocblas_int shiftC,
+                        const rocblas_int ldc,
+                        const rocblas_stride strideC,
+                        rocblas_int* iinfo,
+                        S* WA,
+                        rocblas_int* splitsA,
+                        const S eps,
+                        const S ssfmin,
+                        const S ssfmax)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -418,7 +419,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM) stedcx_solve_kernel(const r
         }
     }
 }
-
 
 //--------------------------------------------------------------------------------------//
 /** STEDCX_SYNTHESIS_KERNEL synthesizes the results of the partial decomposition **/
@@ -561,7 +561,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
     }
 }
 
-
 //--------------------------------------------------------------------------------------//
 /** STEDCX_MERGEPREPARE_KERNEL performs deflation and prepares the secular equation for
     every pair of sub-blocks that need to be merged in a split block. A matrix in the batch
@@ -578,19 +577,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
     stedcx_mergePrepare_kernel(const rocblas_int k,
-                              const rocblas_int n,
-                              S* DD,
-                              const rocblas_stride strideD,
-                              S* EE,
-                              const rocblas_stride strideE,
-                              S* CC,
-                              const rocblas_int shiftC,
-                              const rocblas_int ldc,
-                              const rocblas_stride strideC,
-                              S* tmpzA,
-                              S* vecsA,
-                              rocblas_int* splitsA,
-                              const S eps)
+                               const rocblas_int n,
+                               S* DD,
+                               const rocblas_stride strideD,
+                               S* EE,
+                               const rocblas_stride strideE,
+                               S* CC,
+                               const rocblas_int shiftC,
+                               const rocblas_int ldc,
+                               const rocblas_stride strideC,
+                               S* tmpzA,
+                               S* vecsA,
+                               rocblas_int* splitsA,
+                               const S eps)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -897,17 +896,17 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
     stedcx_mergeValues_kernel(const rocblas_int k,
-                             const rocblas_int n,
-                             S* DD,
-                             const rocblas_stride strideD,
-                             S* EE,
-                             const rocblas_stride strideE,
-                             S* tmpzA,
-                             S* vecsA,
-                             rocblas_int* splitsA,
-                             const S eps,
-                             const S ssfmin,
-                             const S ssfmax)
+                              const rocblas_int n,
+                              S* DD,
+                              const rocblas_stride strideD,
+                              S* EE,
+                              const rocblas_stride strideE,
+                              S* tmpzA,
+                              S* vecsA,
+                              rocblas_int* splitsA,
+                              const S eps,
+                              const S ssfmin,
+                              const S ssfmax)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -1172,18 +1171,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
 template <bool USEGEMM, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
     stedcx_mergeVectors_kernel(const rocblas_int k,
-                              const rocblas_int n,
-                              S* DD,
-                              const rocblas_stride strideD,
-                              S* EE,
-                              const rocblas_stride strideE,
-                              S* CC,
-                              const rocblas_int shiftC,
-                              const rocblas_int ldc,
-                              const rocblas_stride strideC,
-                              S* tmpzA,
-                              S* vecsA,
-                              rocblas_int* splitsA)
+                               const rocblas_int n,
+                               S* DD,
+                               const rocblas_stride strideD,
+                               S* EE,
+                               const rocblas_stride strideE,
+                               S* CC,
+                               const rocblas_int shiftC,
+                               const rocblas_int ldc,
+                               const rocblas_stride strideC,
+                               S* tmpzA,
+                               S* vecsA,
+                               rocblas_int* splitsA)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -1443,16 +1442,16 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
     stedcx_mergeUpdate_kernel(const rocblas_int k,
-                             const rocblas_int n,
-                             S* DD,
-                             const rocblas_stride strideD,
-                             S* CC,
-                             const rocblas_int shiftC,
-                             const rocblas_int ldc,
-                             const rocblas_stride strideC,
-                             S* tmpzA,
-                             S* vecsA,
-                             rocblas_int* splitsA)
+                              const rocblas_int n,
+                              S* DD,
+                              const rocblas_stride strideD,
+                              S* CC,
+                              const rocblas_int shiftC,
+                              const rocblas_int ldc,
+                              const rocblas_stride strideC,
+                              S* tmpzA,
+                              S* vecsA,
+                              rocblas_int* splitsA)
 {
     // threads and groups indices
     /* --------------------------------------------------- */
@@ -1587,19 +1586,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDCX_BDIM)
     }
 }
 
-
 /** STEDCX_SORT sorts computed eigenvalues and eigenvectors in increasing order **/
 template <typename T, typename S, typename U>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedcx_sort(const rocblas_int n,
-                                                        S* DD,
-                                                        const rocblas_stride strideD,
-                                                        U CC,
-                                                        const rocblas_int shiftC,
-                                                        const rocblas_int ldc,
-                                                        const rocblas_stride strideC,
-                                                        const rocblas_int batch_count,
-                                                        rocblas_int* work,
-                                                        rocblas_int* nev = nullptr)
+                                                         S* DD,
+                                                         const rocblas_stride strideD,
+                                                         U CC,
+                                                         const rocblas_int shiftC,
+                                                         const rocblas_int ldc,
+                                                         const rocblas_stride strideC,
+                                                         const rocblas_int batch_count,
+                                                         rocblas_int* work,
+                                                         rocblas_int* nev = nullptr)
 {
     // -----------------------------------
     // use z-grid dimension as batch index
@@ -1845,15 +1843,15 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
 
     // 1. divide phase
     //-----------------------------
-    ROCSOLVER_LAUNCH_KERNEL((stedcx_divide_kernel<S>),
-                            dim3(batch_count), dim3(STEDCX_BDIM), 0, stream, n, D, strideD, E,
-                            strideE, splits);
+    ROCSOLVER_LAUNCH_KERNEL((stedcx_divide_kernel<S>), dim3(batch_count), dim3(STEDCX_BDIM), 0,
+                            stream, n, D, strideD, E, strideE, splits);
 
     // 2. solve phase
     //-----------------------------
-    ROCSOLVER_LAUNCH_KERNEL((stedcx_solve_kernel<S>), dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count),
-                            dim3(1), 0, stream, n, D, strideD, E, strideE, tempvect, 0, ldt,
-                            strideT, info, work_steqr, splits, eps, ssfmin, ssfmax);
+    ROCSOLVER_LAUNCH_KERNEL((stedcx_solve_kernel<S>),
+                            dim3(maxblks, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(1), 0, stream, n,
+                            D, strideD, E, strideE, tempvect, 0, ldt, strideT, info, work_steqr,
+                            splits, eps, ssfmin, ssfmax);
 
     // 3. merge phase
     //----------------
@@ -1876,27 +1874,27 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
         // a. prepare secular equations
         rocblas_int numgrps2 = 1 << (maxlevs - 1 - k);
         ROCSOLVER_LAUNCH_KERNEL((stedcx_mergePrepare_kernel<S>),
-                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDCX_BDIM),
-                                lmemsize1, stream, k, n, D, strideD, E, strideE, tempvect, 0, ldt,
-                                strideT, tmpz, tempgemm, splits, eps);
+                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count),
+                                dim3(STEDCX_BDIM), lmemsize1, stream, k, n, D, strideD, E, strideE,
+                                tempvect, 0, ldt, strideT, tmpz, tempgemm, splits, eps);
 
         // b. solve to find merged eigen values
         ROCSOLVER_LAUNCH_KERNEL((stedcx_mergeValues_kernel<S>),
-                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDCX_BDIM),
-                                0, stream, k, n, D, strideD, E, strideE, tmpz, tempgemm, splits,
-                                eps, ssfmin, ssfmax);
+                                dim3(numgrps2, STEDC_NUM_SPLIT_BLKS, batch_count),
+                                dim3(STEDCX_BDIM), 0, stream, k, n, D, strideD, E, strideE, tmpz,
+                                tempgemm, splits, eps, ssfmin, ssfmax);
 
         // c. find merged eigen vectors
-        ROCSOLVER_LAUNCH_KERNEL(
-            (stedcx_mergeVectors_kernel<STEDCX_EXTERNAL_GEMM, S>),
-            dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDCX_BDIM), lmemsize3, stream,
-            k, n, D, strideD, E, strideE, tempvect, 0, ldt, strideT, tmpz, tempgemm, splits);
+        ROCSOLVER_LAUNCH_KERNEL((stedcx_mergeVectors_kernel<STEDCX_EXTERNAL_GEMM, S>),
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
+                                dim3(STEDCX_BDIM), lmemsize3, stream, k, n, D, strideD, E, strideE,
+                                tempvect, 0, ldt, strideT, tmpz, tempgemm, splits);
 
         // d. update level
         ROCSOLVER_LAUNCH_KERNEL((stedcx_mergeUpdate_kernel<S>),
-                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count), dim3(STEDCX_BDIM),
-                                lmemsize3, stream, k, n, D, strideD, tempvect, 0, ldt, strideT,
-                                tmpz, tempgemm, splits);
+                                dim3(numgrps3, STEDC_NUM_SPLIT_BLKS, batch_count),
+                                dim3(STEDCX_BDIM), lmemsize3, stream, k, n, D, strideD, tempvect, 0,
+                                ldt, strideT, tmpz, tempgemm, splits);
     }
 
     // 4. update and sort

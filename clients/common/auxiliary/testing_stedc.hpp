@@ -95,7 +95,6 @@ void testing_stedc_bad_arg()
     stedc_checkBadArgs(handle, evect, n, dD.data(), dE.data(), dC.data(), ldc, dInfo.data());
 }
 
-
 template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void stedc_clement_initData(const rocblas_handle handle,
                             const rocblas_evect evect,
@@ -305,21 +304,19 @@ void stedc_wilkinson_initData(const rocblas_handle handle,
     }
 }
 
-
-
 template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void stedc_random_initData(const rocblas_handle handle,
-                    const rocblas_evect evect,
-                    const rocblas_int n,
-                    Sd& dD,
-                    Sd& dE,
-                    Td& dC,
-                    const rocblas_int ldc,
-                    Ud& dInfo,
-                    Sh& hD,
-                    Sh& hE,
-                    Th& hC,
-                    Uh& hInfo)
+                           const rocblas_evect evect,
+                           const rocblas_int n,
+                           Sd& dD,
+                           Sd& dE,
+                           Td& dC,
+                           const rocblas_int ldc,
+                           Ud& dInfo,
+                           Sh& hD,
+                           Sh& hE,
+                           Th& hC,
+                           Uh& hInfo)
 {
     if(CPU)
     {
@@ -328,7 +325,7 @@ void stedc_random_initData(const rocblas_handle handle,
         rocblas_init<S>(hD, true);
         rocblas_init<S>(hE, true);
 
-        for(int i = 0; i < n-1; ++i)
+        for(int i = 0; i < n - 1; ++i)
             hE[0][i] -= 4;
 
         // initialize C to the identity matrix
@@ -535,11 +532,10 @@ void stedc_initData(const rocblas_handle handle,
         stedc_toeplitz_initData<CPU, GPU, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                              hInfo);
     }
-    else if((std::getenv("TEST_RANDOM") != nullptr)
-            || (std::getenv("STEDC_TEST_RANDOM") != nullptr))
+    else if((std::getenv("TEST_RANDOM") != nullptr) || (std::getenv("STEDC_TEST_RANDOM") != nullptr))
     {
         stedc_random_initData<CPU, GPU, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
-                                             hInfo);
+                                           hInfo);
     }
     else
     {
@@ -549,7 +545,6 @@ void stedc_initData(const rocblas_handle handle,
 
     return;
 }
-
 
 template <typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void stedc_getError(const rocblas_handle handle,
