@@ -2501,6 +2501,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         //----------------
         size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
         rocblas_int numgrps3 = ((n - 1) / blks + 1) * blks;
+        char* env_new_merge_values = getenv("MERGE_VALUES_NEW");
+        bool enable_new_merge_values = false;
+        if(env_new_merge_values)
+            enable_new_merge_values = env_new_merge_values[0] == '1';
 
         // launch merge for level k
         for(rocblas_int k = 0; k < levs; ++k)
@@ -2564,7 +2568,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
             // b. solve secular eq to find merged eigenvalues
             rocblas_int max_n_per_merge = (n + numgrps2 - 1) / numgrps2;
-            if(max_n_per_merge <= STEDC_BDIM)
+            if(enable_new_merge_values && max_n_per_merge <= STEDC_BDIM)
             {
                 // compute in one dispatch for small merges
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<S>), dim3(numgrps2, batch_count),
