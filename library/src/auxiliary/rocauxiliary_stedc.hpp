@@ -459,7 +459,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         sz_even = (sz % 2 == 1) ? sz + 1 : sz;
         sz_half = sz_even / 2;
 
-#if 1
+#if 0
         S piv, val;
         for(int i = 0; i < sz; ++i)
         {
@@ -2501,10 +2501,14 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         //----------------
         size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
         rocblas_int numgrps3 = ((n - 1) / blks + 1) * blks;
-        char* env_new_merge_values = getenv("MERGE_VALUES_NEW");
-        bool enable_new_merge_values = false;
+        char* env_new_merge_values  = getenv("MERGE_VALUES_NEW");
+        char* env_new_merge_prepare = getenv("MERGE_PREPARE_NEW");
+        bool enable_new_merge_values  = false;
+        bool enable_new_merge_prepare = true;
         if(env_new_merge_values)
             enable_new_merge_values = env_new_merge_values[0] == '1';
+        if(env_new_merge_prepare)
+            enable_new_merge_prepare = env_new_merge_prepare[0] == '1';
 
         // launch merge for level k
         for(rocblas_int k = 0; k < levs; ++k)
@@ -2516,7 +2520,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     levs, blks, k, n, D + shiftD, strideD,
                                     E + shiftE, strideE, V, 0, ldv, strideV, tmpz, tempgemm, splits,
                                     eps);
-            if(0 || n > 8192) // dbg debug
+            if(n > 8192 || !enable_new_merge_prepare)
             {
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_DeflateRepeated_kernel<S>),
                                         dim3(numgrps2, batch_count), dim3(STEDC_BDIM), 0, stream,
