@@ -2568,15 +2568,9 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
             // b. solve secular eq to find merged eigenvalues
             rocblas_int max_n_per_merge = (n + numgrps2 - 1) / numgrps2;
-            if(enable_new_merge_values && max_n_per_merge <= STEDC_BDIM)
+            
+            if(enable_new_merge_values && max_n_per_merge > STEDC_BDIM)
             {
-                // compute in one dispatch for small merges
-                ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<S>), dim3(numgrps2, batch_count),
-                                        dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
-                                        strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
-                                        ssfmin, ssfmax);
-            }
-            else {
                 // split mergeValues into stages to run seqular eqns solver using more groups
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Sort_kernel<S>), dim3(numgrps2, batch_count),
                                         dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
@@ -2590,6 +2584,13 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
                                         ssfmin, ssfmax, groups_per_merge);
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Rescale_kernel<S>), dim3(numgrps2, batch_count),
+                                        dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
+                                        strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
+                                        ssfmin, ssfmax);
+            }
+            else {
+                // compute in one dispatch for small merges
+                ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_kernel<S>), dim3(numgrps2, batch_count),
                                         dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
                                         strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
                                         ssfmin, ssfmax);
