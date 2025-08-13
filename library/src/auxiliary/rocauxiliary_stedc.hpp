@@ -864,8 +864,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* dbg3   = splits + 15 * n + 2; 
     rocblas_int* dbg4   = splits + 16 * n + 2; 
 
-    __shared__ float ldsD[8192];
-    __shared__ int   cand[8192];
+    constexpr rocblas_int deflate_max_n = 32768 / sizeof(S);
+    __shared__ S   ldsD[deflate_max_n];
+    __shared__ int cand[deflate_max_n];
     constexpr int L_F_BCAND_BIT = 0; // bit indicating base candidate
     constexpr int L_F_TCAND_BIT = 1; // bit indicating top candidate
     constexpr int F_BCAND = 1 << L_F_BCAND_BIT;
@@ -928,7 +929,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     __syncthreads();
 
     // deflate repeated values
-    __shared__ float* lz;
+    __shared__ S*   lz;
     __shared__ int* lmap;
     lz = ldsD;
     lmap = cand;
@@ -2509,6 +2510,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             enable_new_merge_values = env_new_merge_values[0] == '1';
         if(env_new_merge_prepare)
             enable_new_merge_prepare = env_new_merge_prepare[0] == '1';
+        constexpr rocblas_int deflate_max_n = 32768 / sizeof(S);
 
         // launch merge for level k
         for(rocblas_int k = 0; k < levs; ++k)
@@ -2520,7 +2522,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     levs, blks, k, n, D + shiftD, strideD,
                                     E + shiftE, strideE, V, 0, ldv, strideV, tmpz, tempgemm, splits,
                                     eps);
-            if(n > 8192 || !enable_new_merge_prepare)
+            if(n > deflate_max_n || !enable_new_merge_prepare)
             {
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_DeflateRepeated_kernel<S>),
                                         dim3(numgrps2, batch_count), dim3(STEDC_BDIM), 0, stream,
@@ -2537,7 +2539,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream,
                                         levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE,
                                         V, 0, ldv, strideV, tmpz, tempgemm, splits, eps);
-                assert(n <= 8192);
+                assert(n <= deflate_max_n);
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_DeflateApply_kernel<S>),
                                         dim3(1, batch_count), dim3(STEDC_BDIM), 0, stream,
                                         levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE,
