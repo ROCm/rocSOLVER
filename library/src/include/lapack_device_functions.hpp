@@ -1583,7 +1583,38 @@ __device__ I slaed4(I n,
             return x_[j - 1];
         }
 
-    } Z(z), ZZ(zz), DELTA(delta);
+    } Z(z), ZZ(zz);
+
+    struct X_shift_t
+    {
+        S* x_;
+        I n_;
+        S s0_, s1_;
+        __device__ X_shift_t(S* x, I n, S s0, S s1)
+            : x_(x)
+            , n_(n)
+            , s0_(s0)
+            , s1_(s1)
+        {
+        }
+
+        __device__ ~X_shift_t()
+        {
+            if(s0_ != S(0.) || s1_ != S(0.))
+            {
+                for(int j = 0; j < n_; ++j)
+                {
+                    x_[j] = (x_[j] - s0_) - s1_;
+                }
+            }
+        }
+
+        __device__ S operator()(int j) const
+        {
+            return (x_[j - 1] - s0_) - s1_;
+        }
+
+    } DELTA(delta, n, 0., 0.);
 
     S tau, eta = S(0.), dltlb, dltub;
     S psi, dpsi, phi, dphi, rhoinv, midpt;
@@ -1602,7 +1633,9 @@ __device__ I slaed4(I n,
     if(n == 1)
     {
         dlam = d1 + rho * Z(1) * Z(1);
-        DELTA(1) = S(1.);
+        // DELTA(1) = S(1.);
+        DELTA.s0_ = DELTA(1);
+        DELTA.s1_ = S(-1.);
     }
     else if(i == n)
     {
@@ -1617,12 +1650,14 @@ __device__ I slaed4(I n,
         midpt = rho / S(2.);
 
         psi = S(0.);
+        DELTA.s0_ = di;
+        DELTA.s1_ = midpt;
         for(int j = 1; j <= n - 2; ++j)
         {
-            psi = psi + Z(j) * Z(j) / ((DELTA(j) - di) - midpt);
+            psi = psi + Z(j) * Z(j) / DELTA(j);
         }
         c = rhoinv + psi;
-        w = c + Z(ii) * Z(ii) / ((DELTA(ii) - di) - midpt) + Z(n) * Z(n) / ((dn - di) - midpt);
+        w = c + Z(ii) * Z(ii) / DELTA(ii) + Z(n) * Z(n) / ((dn - di) - midpt);
         if(w <= S(0.))
         {
             temp = Z(n - 1) * Z(n - 1) / (dn - dnm1 + rho) + Z(n) * Z(n) / rho;
@@ -1671,10 +1706,8 @@ __device__ I slaed4(I n,
             dltlb = S(0.);
             dltub = midpt;
         }
-        for(int j = 1; j <= n; ++j)
-        {
-            DELTA(j) = (DELTA(j) - di) - tau;
-        }
+        DELTA.s0_ = di;
+        DELTA.s1_ = tau;
         //
         //        Evaluate psi and the derivative dpsi
         //
@@ -1760,10 +1793,7 @@ __device__ I slaed4(I n,
                 eta = (dltlb - tau) / S(2.);
             }
         }
-        for(int j = 1; j <= n; ++j)
-        {
-            DELTA(j) = DELTA(j) - eta;
-        }
+        DELTA.s1_ += eta;
         tau = tau + eta;
         //
         //        Evaluate psi and the derivative dpsi
@@ -1846,10 +1876,7 @@ __device__ I slaed4(I n,
                     eta = (dltlb - tau) / S(2.);
                 }
             }
-            for(int j = 1; j <= n; ++j)
-            {
-                DELTA(j) = DELTA(j) - eta;
-            }
+            DELTA.s1_ += eta;
             tau = tau + eta;
             //
             //           Evaluate psi and the derivative dpsi
@@ -1894,17 +1921,21 @@ __device__ I slaed4(I n,
         del = dip1 - di;
         midpt = del / S(2.);
         psi = S(0.);
+        DELTA.s0_ = di;
+        DELTA.s1_ = midpt;
         for(int j = 1; j <= i - 1; ++j)
         {
-            S dj = (DELTA(j) - di) - midpt;
+            S dj = DELTA(j);
             psi = psi + Z(j) * Z(j) / dj;
         }
         phi = S(0.);
         for(int j = n; j >= i + 2; --j)
         {
-            S dj = (DELTA(j) - di) - midpt;
+            S dj = DELTA(j);
             phi = phi + Z(j) * Z(j) / dj;
         }
+        DELTA.s0_ = S(0.);
+        DELTA.s1_ = S(0.);
         c = rhoinv + psi + phi;
         w = c + Z(i) * Z(i) / (-midpt) + Z(ip1) * Z(ip1) / ((dip1 - di) - midpt);
         if(w > S(0.))
@@ -1963,17 +1994,13 @@ __device__ I slaed4(I n,
         S diip1 = DELTA(iip1);
         if(orgati)
         {
-            for(int j = 1; j <= n; ++j)
-            {
-                DELTA(j) = (DELTA(j) - di) - tau;
-            }
+            DELTA.s0_ = di;
+            DELTA.s1_ = tau;
         }
         else
         {
-            for(int j = 1; j <= n; ++j)
-            {
-                DELTA(j) = (DELTA(j) - dip1) - tau;
-            }
+            DELTA.s0_ = dip1;
+            DELTA.s1_ = tau;
         }
         //
         //        Evaluate psi and the derivative dpsi
@@ -2118,7 +2145,8 @@ __device__ I slaed4(I n,
                 ZZ(3) = Z(iip1) * Z(iip1);
             }
             ZZ(2) = Z(ii) * Z(ii);
-            info = slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, eps, ssfmin, MAXIT);
+            S delta_iim1[3] = {DELTA(iim1), DELTA(iim1 + 1), DELTA(iim1 + 2)};
+            info = slaed6(niter, orgati, c, delta_iim1, ZZ.x_, w, eta, eps, ssfmin, MAXIT);
             if(info != 0)
             {
                 return info;
@@ -2148,10 +2176,7 @@ __device__ I slaed4(I n,
             }
         }
         prew = w;
-        for(int j = 1; j <= n; ++j)
-        {
-            DELTA(j) = DELTA(j) - eta;
-        }
+        DELTA.s1_ += eta;
         //
         //        Evaluate psi and the derivative dpsi
         //
@@ -2323,8 +2348,8 @@ __device__ I slaed4(I n,
                         ZZ(3) = Z(iip1) * Z(iip1);
                     }
                 }
-                info = slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, eps, ssfmin,
-                              MAXIT);
+                S delta_iim1[3] = {DELTA(iim1), DELTA(iim1 + 1), DELTA(iim1 + 2)};
+                info = slaed6(niter, orgati, c, delta_iim1, ZZ.x_, w, eta, eps, ssfmin, MAXIT);
                 if(info != 0)
                 {
                     return info;
@@ -2354,10 +2379,7 @@ __device__ I slaed4(I n,
                 }
             }
             /* * */
-            for(int j = 1; j <= n; ++j)
-            {
-                DELTA(j) = DELTA(j) - eta;
-            }
+            DELTA.s1_ += eta;
             tau = tau + eta;
             prew = w;
             //
