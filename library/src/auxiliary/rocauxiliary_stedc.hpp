@@ -992,7 +992,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int bid = hipBlockIdx_y;
 
     // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * (5 * n + 2);
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
 
     // updated eigenvectors after merges
     S* vecs = vecsA + bid * 2 * (n * n);
