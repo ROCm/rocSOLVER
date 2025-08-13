@@ -2503,7 +2503,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         rocblas_int numgrps3 = ((n - 1) / blks + 1) * blks;
         char* env_new_merge_values  = getenv("MERGE_VALUES_NEW");
         char* env_new_merge_prepare = getenv("MERGE_PREPARE_NEW");
-        bool enable_new_merge_values  = false;
+        bool enable_new_merge_values  = true;
         bool enable_new_merge_prepare = true;
         if(env_new_merge_values)
             enable_new_merge_values = env_new_merge_values[0] == '1';
