@@ -1,5 +1,5 @@
 /************************************************************************
- * Copyright (C) 2024 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (C) 2024-2025 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -473,8 +473,15 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                     static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
                                     workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n, D,
-                            strideD, C, shiftC, ldc, strideC, batch_count, splits_map);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort_eval<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
+                            D, strideD, batch_count, splits_map);
+
+    const auto nblocks = (n - 1) / BS2 + 1;
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort_evec<T>), dim3(nblocks, nblocks, batch_count),
+                            dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
+                            batch_count, splits_map);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_copy_evec<T>), dim3(nblocks, nblocks, batch_count), dim3(BS2, BS2),
+                            0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm, batch_count);
 
     return rocblas_status_success;
 }

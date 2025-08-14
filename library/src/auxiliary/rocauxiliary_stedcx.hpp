@@ -606,8 +606,15 @@ rocblas_status rocsolver_stedcx_template(rocblas_handle handle,
                                     work_stack, 0, ldt, strideT, batch_count, workArr);
 
     // sort eigenvalues and eigenvectors
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n, W,
-                            strideW, C, shiftC, ldc, strideC, batch_count, splits, nev);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort_eval<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
+                            W, strideW, batch_count, splits, nev);
+
+    const auto nblocks = (n - 1) / BS2 + 1;
+    ROCSOLVER_LAUNCH_KERNEL((stedc_sort_evec<T>), dim3(nblocks, nblocks, batch_count),
+                            dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
+                            batch_count, splits, nev);
+    ROCSOLVER_LAUNCH_KERNEL((stedc_copy_evec<T>), dim3(nblocks, nblocks, batch_count), dim3(BS2, BS2),
+                            0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm, batch_count, nev);
 
     return rocblas_status_success;
 }
