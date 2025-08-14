@@ -1536,10 +1536,17 @@ __device__ I slaed6(I kniter,
     return info;
 }
 
+/*
+ * Like slaed4, except that:
+ *   - delta is not modified
+ *   - the return value dlam is the distance from the closest pole,
+ *     so if dlam > 0 or i == n-1, the closest pole is delta[i],
+ *     otherwise, the closest pole is delta[i+1]
+ */
 template <typename S, typename I>
 __device__ I slaed4_optimized(I n,
                               I i,
-                              S* delta,
+                              const S* delta,
                               S* z,
                               S rho,
                               S& dlam,
@@ -1584,29 +1591,13 @@ __device__ I slaed4_optimized(I n,
         }
 
     } Z(z), ZZ(zz);
-
     struct X_shift_t
     {
-        S* x_;
-        I n_;
+        const S* x_;
         S s0_, s1_;
-        __device__ X_shift_t(S* x, I n, S s0, S s1)
-            : x_(x)
-            , n_(n)
-            , s0_(s0)
-            , s1_(s1)
+        __device__ X_shift_t(const S* x, S s0, S s1)
+            : x_(x), s0_(s0), s1_(s1)
         {
-        }
-
-        __device__ ~X_shift_t()
-        {
-            if(s0_ != S(0.) || s1_ != S(0.))
-            {
-                for(int j = 0; j < n_; ++j)
-                {
-                    x_[j] = (x_[j] - s0_) - s1_;
-                }
-            }
         }
 
         __device__ S operator()(int j) const
@@ -1614,7 +1605,7 @@ __device__ I slaed4_optimized(I n,
             return (x_[j - 1] - s0_) - s1_;
         }
 
-    } DELTA(delta, n, 0., 0.);
+    } DELTA(delta, 0., 0.);
 
     S tau, eta = S(0.), dltlb, dltub;
     S psi, dpsi, phi, dphi, rhoinv, midpt;
@@ -1632,10 +1623,9 @@ __device__ I slaed4_optimized(I n,
 
     if(n == 1)
     {
-        dlam = d1 + rho * Z(1) * Z(1);
+        // dlam = d1 + rho * Z(1) * Z(1);
+        dlam = rho * Z(1) * Z(1);
         // DELTA(1) = S(1.);
-        DELTA.s0_ = DELTA(1);
-        DELTA.s1_ = S(-1.);
     }
     else if(i == n)
     {
@@ -1654,9 +1644,11 @@ __device__ I slaed4_optimized(I n,
         DELTA.s1_ = midpt;
         for(int j = 1; j <= n - 2; ++j)
         {
+            //psi = psi + Z(j) * Z(j) / ((DELTA(j) - di) - midpt);
             psi = psi + Z(j) * Z(j) / DELTA(j);
         }
         c = rhoinv + psi;
+        // w = c + Z(ii) * Z(ii) / ((DELTA(ii) - di) - midpt) + Z(n) * Z(n) / ((dn - di) - midpt);
         w = c + Z(ii) * Z(ii) / DELTA(ii) + Z(n) * Z(n) / ((dn - di) - midpt);
         if(w <= S(0.))
         {
@@ -1708,6 +1700,10 @@ __device__ I slaed4_optimized(I n,
         }
         DELTA.s0_ = di;
         DELTA.s1_ = tau;
+        // for(int j = 1; j <= n; ++j)
+        // {
+        //     DELTA(j) = (DELTA(j) - di) - tau;
+        // }
         //
         //        Evaluate psi and the derivative dpsi
         //
@@ -1735,7 +1731,8 @@ __device__ I slaed4_optimized(I n,
         //
         if(lam_abs(w) <= eps * erretm)
         {
-            dlam = di + tau;
+            // dlam = di + tau;
+            dlam = tau;
             return info;
         }
         if(w <= S(0.))
@@ -1794,6 +1791,10 @@ __device__ I slaed4_optimized(I n,
             }
         }
         DELTA.s1_ += eta;
+        // for(int j = 1; j <= n; ++j)
+        // {
+        //     DELTA(j) = DELTA(j) - eta;
+        // }
         tau = tau + eta;
         //
         //        Evaluate psi and the derivative dpsi
@@ -1828,7 +1829,8 @@ __device__ I slaed4_optimized(I n,
             //
             if(lam_abs(w) <= eps * erretm)
             {
-                dlam = di + tau;
+                // dlam = di + tau;
+                dlam = tau;
                 return info;
             }
             if(w <= S(0.))
@@ -1877,6 +1879,10 @@ __device__ I slaed4_optimized(I n,
                 }
             }
             DELTA.s1_ += eta;
+            // for(int j = 1; j <= n; ++j)
+            // {
+            //     DELTA(j) = DELTA(j) - eta;
+            // }
             tau = tau + eta;
             //
             //           Evaluate psi and the derivative dpsi
@@ -1905,7 +1911,8 @@ __device__ I slaed4_optimized(I n,
         //        Return with info = 1, niter = MAXIT and not converged
         //
         info = 1;
-        dlam = di + tau;
+        // dlam = di + tau;
+        dlam = tau;
     }
     else
     {
@@ -1925,12 +1932,14 @@ __device__ I slaed4_optimized(I n,
         DELTA.s1_ = midpt;
         for(int j = 1; j <= i - 1; ++j)
         {
+            // S dj = (DELTA(j) - di) - midpt;
             S dj = DELTA(j);
             psi = psi + Z(j) * Z(j) / dj;
         }
         phi = S(0.);
         for(int j = n; j >= i + 2; --j)
         {
+            // S dj = (DELTA(j) - di) - midpt;
             S dj = DELTA(j);
             phi = phi + Z(j) * Z(j) / dj;
         }
@@ -1996,11 +2005,19 @@ __device__ I slaed4_optimized(I n,
         {
             DELTA.s0_ = di;
             DELTA.s1_ = tau;
+            // for(int j = 1; j <= n; ++j)
+            // {
+            //     DELTA(j) = (DELTA(j) - di) - tau;
+            // }
         }
         else
         {
             DELTA.s0_ = dip1;
             DELTA.s1_ = tau;
+            // for(int j = 1; j <= n; ++j)
+            // {
+            //     DELTA(j) = (DELTA(j) - dip1) - tau;
+            // }
         }
         //
         //        Evaluate psi and the derivative dpsi
@@ -2065,11 +2082,13 @@ __device__ I slaed4_optimized(I n,
         {
             if(orgati)
             {
-                dlam = di + tau;
+                // dlam = di + tau;
+                dlam = tau;
             }
             else
             {
-                dlam = dip1 + tau;
+                // dlam = dip1 + tau;
+                dlam = tau;
             }
 
             return info;
@@ -2145,7 +2164,8 @@ __device__ I slaed4_optimized(I n,
                 ZZ(3) = Z(iip1) * Z(iip1);
             }
             ZZ(2) = Z(ii) * Z(ii);
-            S delta_iim1[3] = {DELTA(iim1), DELTA(iim1 + 1), DELTA(iim1 + 2)};
+            S delta_iim1[3] = {DELTA(iim1), DELTA(iim1+1), DELTA(iim1+2)};
+            // info = slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, eps, ssfmin, MAXIT);
             info = slaed6(niter, orgati, c, delta_iim1, ZZ.x_, w, eta, eps, ssfmin, MAXIT);
             if(info != 0)
             {
@@ -2177,6 +2197,10 @@ __device__ I slaed4_optimized(I n,
         }
         prew = w;
         DELTA.s1_ += eta;
+        // for(int j = 1; j <= n; ++j)
+        // {
+        //     DELTA(j) = DELTA(j) - eta;
+        // }
         //
         //        Evaluate psi and the derivative dpsi
         //
@@ -2238,11 +2262,13 @@ __device__ I slaed4_optimized(I n,
             {
                 if(orgati)
                 {
-                    dlam = di + tau;
+                    // dlam = di + tau;
+                    dlam = tau;
                 }
                 else
                 {
-                    dlam = dip1 + tau;
+                    // dlam = dip1 + tau;
+                    dlam = tau;
                 }
 
                 return info;
@@ -2348,7 +2374,10 @@ __device__ I slaed4_optimized(I n,
                         ZZ(3) = Z(iip1) * Z(iip1);
                     }
                 }
-                S delta_iim1[3] = {DELTA(iim1), DELTA(iim1 + 1), DELTA(iim1 + 2)};
+                // S delta_iim1[3] = {DELTA(iim1-1), DELTA(iim1), DELTA(iim1+1)};
+                S delta_iim1[3] = {DELTA(iim1), DELTA(iim1+1), DELTA(iim1+2)};
+                // info = slaed6(niter, orgati, c, DELTA.x_ + iim1 - 1, ZZ.x_, w, eta, eps, ssfmin,
+                //               MAXIT);
                 info = slaed6(niter, orgati, c, delta_iim1, ZZ.x_, w, eta, eps, ssfmin, MAXIT);
                 if(info != 0)
                 {
@@ -2380,6 +2409,10 @@ __device__ I slaed4_optimized(I n,
             }
             /* * */
             DELTA.s1_ += eta;
+            // for(int j = 1; j <= n; ++j)
+            // {
+            //     DELTA(j) = DELTA(j) - eta;
+            // }
             tau = tau + eta;
             prew = w;
             //
@@ -2425,11 +2458,13 @@ __device__ I slaed4_optimized(I n,
         info = 1;
         if(orgati)
         {
-            dlam = di + tau;
+            // dlam = di + tau;
+            dlam = tau;
         }
         else
         {
-            dlam = dip1 + tau;
+            // dlam = dip1 + tau;
+            dlam = tau;
         }
     }
 
@@ -2447,10 +2482,6 @@ __device__ I slaed4(I n,
                     S ssfmin = std::numeric_limits<S>::min(),
                     I MAXIT = 50)
 {
-#if defined(ROCSOLVER_USE_OPTIMIZED_REFERENCE_SECULAR_EQUATIONS_SOLVER)
-    return slaed4_optimized(n, i, delta, z, rho, dlam, eps, ssfmin, MAXIT);
-#endif
-
     auto lam_abs = [](auto x) -> auto
     {
         return std::abs(x);

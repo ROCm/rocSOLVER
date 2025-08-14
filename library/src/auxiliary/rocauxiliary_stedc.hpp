@@ -580,11 +580,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // eigenvalues (D - lambda_i) are updated while computing each eigenvalue.
         // This will prevent collapses and division by zero when an eigenvalue
         // is too close to a pole.
+#if !defined(ROCSOLVER_USE_OPTIMIZED_REFERENCE_SECULAR_EQUATIONS_SOLVER)
         for(int i = iam; i < dd; i += bdm)
         {
             for(int j = i + n; j < i + sz * n; j += n)
                 tmpd[j] = tmpd[i];
         }
+#endif
 
         // finally copy over all diagonal elements in ev. ev will be overwritten
         // by the new computed eigenvalues of the merged block
@@ -597,7 +599,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // corresponding to non-deflated new eigenvalues of the merged block
         // ----------------------------------------------------------------- 
         // each thread will find a different zero in parallel
-        S a, b;
         for(int j = iam; j < sz; j += bdm)
         {
             if(mask[j] == 1)
@@ -609,7 +610,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 {
                     auto step = count / 2;
                     auto it = cc + step;
+#if defined(ROCSOLVER_USE_OPTIMIZED_REFERENCE_SECULAR_EQUATIONS_SOLVER)
+                    if(tmpd[it] < valf)
+#else
                     if(tmpd[it + j * n] < valf)
+#endif
                     {
                         cc = ++it;
                         count -= step + 1;
@@ -624,7 +629,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 rocblas_int linfo;
 
 #if defined(ROCSOLVER_USE_REFERENCE_SECULAR_EQUATIONS_SOLVER)
+#if defined(ROCSOLVER_USE_OPTIMIZED_REFERENCE_SECULAR_EQUATIONS_SOLVER)
+                mask[j] = -(cc + 1);  // store cc in mask
+                linfo = slaed4_optimized(dd, cc, tmpd, zz, std::abs(p), ev[j]);
+#else
                 linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j]);
+                if(p < 0)
+                    ev[j] *= -1;
+#endif
 #else
                 if(cc == dd - 1)
                     linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps,
@@ -632,12 +644,31 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 else
                     linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps,
                                       ssfmin, ssfmax);
+                if(p < 0)
+                    ev[j] *= -1;
 #endif
+            }
+        }
+        __syncthreads();
+#if defined(ROCSOLVER_USE_OPTIMIZED_REFERENCE_SECULAR_EQUATIONS_SOLVER)
+        for(int j = sz - 1; j >= 0; --j) {
+            auto cc = mask[j];
+            if(!cc) continue;
+            cc = - cc - 1;
+            S dlam = ev[j];
+            S lam0 = (dlam > 0) ? tmpd[cc] : tmpd[cc + 1];
+            __syncthreads();
+            for(int i = iam; i < dd; i += bdm)
+                tmpd[i + j * n] = (tmpd[i] - lam0) - dlam;
+            if(!iam){
+                mask[j] = 1;
+                ev[j] = lam0 + dlam;
                 if(p < 0)
                     ev[j] *= -1;
             }
         }
         __syncthreads();
+#endif
 
         // Re-scale vector Z to avoid bad numerics when an eigenvalue
         // is too close to a pole
