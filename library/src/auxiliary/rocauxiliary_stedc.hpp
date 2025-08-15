@@ -40,6 +40,7 @@
 #include "rocsolver_run_specialized_kernels.hpp"
 
 #include <algorithm>
+#include <rocprim/rocprim.hpp>
 
 ROCSOLVER_BEGIN_NAMESPACE
 
@@ -1994,6 +1995,88 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_prep_sort(const rocblas_int n,
+                                                             const rocblas_int batch_count,
+                                                             S* DD,
+                                                             const rocblas_stride strideD,
+                                                             S* tmpD,
+                                                             rocblas_int* mmap,
+                                                             rocblas_int* offsets)
+{
+    // -----------------------------------
+    // use z-grid dimension as batch index
+    // -----------------------------------
+    rocblas_int bid_start = hipBlockIdx_z;
+    rocblas_int bid_inc = hipGridDim_z;
+
+    int gid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    int dim = hipBlockDim_x * hipGridDim_x;
+
+    rocblas_int* const map = mmap + bid_start * ((int64_t)n);
+
+    for(auto bid = bid_start; bid < batch_count; bid += bid_inc)
+    {
+        // ---------------------------------------------
+        // select batch instance to work with
+        // (avoiding arithmetics with possible nullptrs)
+        // ---------------------------------------------
+
+        // intialize batch offset
+        if(gid == 0)
+        {
+            offsets[bid] = n * bid;
+
+            if(bid == batch_count - 1)
+            {
+                offsets[bid + 1] = n * (bid + 1);
+            }
+        }
+
+        S* D = DD + (bid * strideD);
+
+        // initialize map & tmpD
+        for(auto i = gid; i < n; i += dim)
+        {
+            map[i] = i;
+            tmpD[i + (bid * n)] = D[i];
+        }
+    }
+}
+
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_copy_eval(const rocblas_int n,
+                                                             const rocblas_int batch_count,
+                                                             S* DD,
+                                                             const rocblas_stride strideD,
+                                                             S* tmpD)
+{
+    // -----------------------------------
+    // use z-grid dimension as batch index
+    // -----------------------------------
+    rocblas_int bid_start = hipBlockIdx_z;
+    rocblas_int bid_inc = hipGridDim_z;
+
+    int gid = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+    int dim = hipBlockDim_x * hipGridDim_x;
+
+    for(auto bid = bid_start; bid < batch_count; bid += bid_inc)
+    {
+        // ---------------------------------------------
+        // select batch instance to work with
+        // (avoiding arithmetics with possible nullptrs)
+        // ---------------------------------------------
+
+        S* D = DD + (bid * strideD);
+
+        // copy tmpD to D
+        for(auto i = gid; i < n; i += dim)
+        {
+            D[i] = tmpD[i + (bid * n)];
+        }
+    }
+}
+
 /** STEDC_SORT_EVAL sorts computed eigenvalues increasing order **/
 template <typename T, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(BS1) stedc_sort_eval(const rocblas_int n,
@@ -2392,6 +2475,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         return rocblas_status_success;
 
     auto const splits_map = splits;
+    auto const splits_map_out = splits_map + n * batch_count;
+    auto const sort_offsets = splits_map_out + n * batch_count;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -2568,14 +2653,39 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             HIP_CHECK(hipEventCreate(&sort_events[i]));
 
         HIP_CHECK(hipEventRecord(sort_events[0], stream));
-        ROCSOLVER_LAUNCH_KERNEL((stedc_sort_eval<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream,
-                                n, D + shiftD, strideD, batch_count, splits_map);
+        // ROCSOLVER_LAUNCH_KERNEL((stedc_sort_eval<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream,
+        //                         n, D + shiftD, strideD, batch_count, splits_map);
+
+        ROCSOLVER_LAUNCH_KERNEL((stedc_prep_sort), dim3(((n - 1) / BS1 + 1), 1, batch_count),
+                                dim3(BS1), 0, stream, n, batch_count, D + shiftD, strideD, tmpz,
+                                splits_map, sort_offsets);
+
+        size_t temporary_storage_size_bytes = 0;
+        void* temporary_storage_ptr = nullptr;
+        // Get required size of the temporary storage
+        HIP_CHECK(rocprim::segmented_radix_sort_pairs(
+            temporary_storage_ptr, temporary_storage_size_bytes, tmpz, tmpz + (n * batch_count),
+            splits_map, splits_map_out, n * batch_count, batch_count, sort_offsets,
+            sort_offsets + 1, 0, 8 * sizeof(S), stream, false));
+
+        HIP_CHECK(hipMallocAsync(&temporary_storage_ptr, temporary_storage_size_bytes, stream));
+
+        HIP_CHECK(rocprim::segmented_radix_sort_pairs(
+            temporary_storage_ptr, temporary_storage_size_bytes, tmpz, tmpz + (n * batch_count),
+            splits_map, splits_map_out, n * batch_count, batch_count, sort_offsets,
+            sort_offsets + 1, 0, 8 * sizeof(S), stream, false));
+
+        HIP_CHECK(hipFreeAsync(temporary_storage_ptr, stream));
+
+        ROCSOLVER_LAUNCH_KERNEL((stedc_copy_eval), dim3(((n - 1) / BS1 + 1), 1, batch_count),
+                                dim3(BS1), 0, stream, n, batch_count, D + shiftD, strideD,
+                                tmpz + (n * batch_count));
 
         const auto nblocks = (n - 1) / BS2 + 1;
         HIP_CHECK(hipEventRecord(sort_events[1], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_sort_evec<T>), dim3(nblocks, nblocks, batch_count),
                                 dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
-                                batch_count, splits_map);
+                                batch_count, splits_map_out);
         HIP_CHECK(hipEventRecord(sort_events[2], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_copy_evec<T>), dim3(nblocks, nblocks, batch_count),
                                 dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
