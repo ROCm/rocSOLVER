@@ -2563,16 +2563,38 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         }
 
         // finally sort eigenvalues and eigenvectors
+        hipEvent_t sort_events[4];
+        for(int i = 0; i < 4; i++)
+            HIP_CHECK(hipEventCreate(&sort_events[i]));
+
+        HIP_CHECK(hipEventRecord(sort_events[0], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_sort_eval<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream,
                                 n, D + shiftD, strideD, batch_count, splits_map);
 
         const auto nblocks = (n - 1) / BS2 + 1;
+        HIP_CHECK(hipEventRecord(sort_events[1], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_sort_evec<T>), dim3(nblocks, nblocks, batch_count),
                                 dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
                                 batch_count, splits_map);
+        HIP_CHECK(hipEventRecord(sort_events[2], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_copy_evec<T>), dim3(nblocks, nblocks, batch_count),
                                 dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
                                 batch_count);
+        HIP_CHECK(hipEventRecord(sort_events[3], stream));
+
+        HIP_CHECK(hipStreamSynchronize(stream));
+
+        float elapsed[3];
+        for(int i = 0; i < 3; i++)
+            HIP_CHECK(hipEventElapsedTime(&elapsed[i], sort_events[i], sort_events[i + 1]));
+        for(int i = 0; i < 4; i++)
+            HIP_CHECK(hipEventDestroy(sort_events[i]));
+
+        printf("STEDC Kernel Timings:\n"
+               "\tstedc_sort_eval: %f\n"
+               "\tstedc_sort_evec: %f\n"
+               "\tstedc_copy_evec: %f\n",
+               elapsed[0], elapsed[1], elapsed[2]);
 
         rocblas_set_pointer_mode(handle, old_mode);
     }
