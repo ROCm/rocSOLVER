@@ -74,7 +74,7 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
     // 15    rocblas_int dbg3[n];     //
     // 16    rocblas_int dbg4[n];     //
     // };
-    return 17 * n + 2;
+    return (n + 1) + 1 + 16 * n;
 }
 
 
@@ -647,6 +647,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         mps[id] = p;
         mtols[id] = tol;
         dcount[id] = 0;
+        map[id] = 0;
     }
 }
 
@@ -770,6 +771,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     int pos = lt + eq;
     __shared__ int lds[STEDC_BDIM];
+    // Reduction (sum of pos across all lanes in a workgroup)
+    // on each iteration reduction is done within a subgroup of size of 2*bit
+    // by xoring corresponding bit of an address.
+    // The faster implementation should use dpp + a single trip through lds
+    // but keeping code simple for now.
     int bit = 1;
     while (bit < STEDC_BDIM) {
         lds[hipThreadIdx_x ^ bit] = pos;
@@ -786,8 +792,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 
     __syncthreads();
+    // The NAN fp value is unordered, so it is possible that with computed
+    // new positions it would be silently overwriten with non NAN value.
+    // Make sure we propagate NAN. It is likely to have more NANs in the output
+    // than in the input, but the following computations are doomed anyway.
     if (nan) {
-        md[pos + p] = NAN;
+        md[sid] = NAN;
     }
 }
 
@@ -954,16 +964,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 lartg(f, g, c, s, rr);
                 baseval = rr;
 
-                if (1) {
-                    idd[lmap[top]] = 0;
-                    z[lmap[top]] = 0;
-                    cc[lmap[top]] = c;
-                    ss[lmap[top]] = s;
-                }
+                idd[lmap[top]] = 0;
+                z[lmap[top]] = 0;
+                cc[lmap[top]] = c;
+                ss[lmap[top]] = s;
             }
-            if (1) {
-                z[lmap[base]] = baseval;
-            }
+            z[lmap[base]] = baseval;
         }
     }
 }
