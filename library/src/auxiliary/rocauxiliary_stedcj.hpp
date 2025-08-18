@@ -312,7 +312,7 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
         return;
     }
 
-    size_t s1, s2;
+    size_t s1, s2, s3;
 
     // requirements for solver of small independent blocks
     s1 = sizeof(S) * (n * n + 2) * batch_count;
@@ -328,7 +328,13 @@ void rocsolver_stedcj_getMemorySize(const rocblas_evect evect,
         *size_workArr = sizeof(S*) * batch_count;
     else
         *size_workArr = 0;
-    *size_work_stack = std::max(s1, s2);
+
+    auto status = rocprim::segmented_radix_sort_pairs(
+        nullptr, s3, (S*)nullptr, (S*)nullptr, (rocblas_int*)nullptr, (rocblas_int*)nullptr,
+        n * batch_count, batch_count, (rocblas_int*)nullptr, (rocblas_int*)nullptr, 0,
+        8 * sizeof(S), 0, false);
+
+    *size_work_stack = std::max({s1, s2, s3});
 
     // size for split blocks and sub-blocks positions
     *size_splits_map = sizeof(rocblas_int) * (5 * n + 2) * batch_count;
@@ -369,6 +375,9 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
     // quick return
     if(batch_count == 0)
         return rocblas_status_success;
+
+    auto const splits_map_out = splits_map + n * batch_count;
+    auto const sort_offsets = splits_map_out + n * batch_count;
 
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
@@ -473,13 +482,29 @@ rocblas_status rocsolver_stedcj_template(rocblas_handle handle,
                                     static_cast<S*>(work_stack), 0, ldt, strideT, batch_count,
                                     workArr);
 
-    ROCSOLVER_LAUNCH_KERNEL((stedc_sort_eval<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream, n,
-                            D, strideD, batch_count, splits_map);
+    // finally sort eigenvalues and eigenvectors
+    ROCSOLVER_LAUNCH_KERNEL((stedc_prep_sort), dim3(((n - 1) / BS1 + 1), 1, batch_count), dim3(BS1),
+                            0, stream, n, batch_count, D, strideD, tmpz, splits_map, sort_offsets);
+
+    // Get required size of the temporary storage
+    size_t temporary_storage_size_bytes = 0;
+    HIP_CHECK(rocprim::segmented_radix_sort_pairs(
+        nullptr, temporary_storage_size_bytes, (S*)nullptr, (S*)nullptr, (rocblas_int*)nullptr,
+        (rocblas_int*)nullptr, n * batch_count, batch_count, (rocblas_int*)nullptr,
+        (rocblas_int*)nullptr, 0, 8 * sizeof(S), 0, false));
+
+    HIP_CHECK(rocprim::segmented_radix_sort_pairs(
+        work_stack, temporary_storage_size_bytes, tmpz, tmpz + (n * batch_count), splits_map,
+        splits_map_out, n * batch_count, batch_count, sort_offsets, sort_offsets + 1, 0,
+        8 * sizeof(S), stream, false));
+
+    ROCSOLVER_LAUNCH_KERNEL((stedc_copy_eval), dim3(((n - 1) / BS1 + 1), 1, batch_count), dim3(BS1),
+                            0, stream, n, batch_count, D, strideD, tmpz + (n * batch_count));
 
     const auto nblocks = (n - 1) / BS2 + 1;
     ROCSOLVER_LAUNCH_KERNEL((stedc_sort_evec<T>), dim3(nblocks, nblocks, batch_count),
                             dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
-                            batch_count, splits_map);
+                            batch_count, splits_map_out);
     ROCSOLVER_LAUNCH_KERNEL((stedc_copy_evec<T>), dim3(nblocks, nblocks, batch_count), dim3(BS2, BS2),
                             0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm, batch_count);
 
