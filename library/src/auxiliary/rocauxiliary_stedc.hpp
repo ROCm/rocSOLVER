@@ -2666,7 +2666,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 dim3(BS1), 0, stream, n, batch_count, D + shiftD, strideD, tmpz,
                                 splits_map, sort_offsets);
 
-                                
+
         HIP_CHECK(hipEventRecord(sort_events[1], stream));
         // Get required size of the temporary storage
         size_t temporary_storage_size_bytes = 0;
