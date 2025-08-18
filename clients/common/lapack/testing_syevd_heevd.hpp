@@ -173,7 +173,10 @@ void syevd_heevd_default_initData(const rocblas_handle handle,
                     else
                     {
                         hA[b][i + j * lda] -= 4;
-                        hA[b][j + i * lda] = hA[b][i + j * lda];
+                        if constexpr(rocblas_is_complex<T>)
+                            hA[b][j + i * lda] = std::conj(hA[b][i + j * lda]);
+                        else
+                            hA[b][j + i * lda] = hA[b][i + j * lda];
                     }
                 }
             }
