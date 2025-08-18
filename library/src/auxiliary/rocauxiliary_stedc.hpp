@@ -213,8 +213,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
 
 
 //--------------------------------------------------------------------------------------//
-/** STEDC_MERGEPREPARE_KERNEL performs deflation and prepares the secular equation for
-    every pair of sub-blocks that need to be merged. 
+/** STEDC_MERGEPREPARE_DEFLATEZERO_KERNEL performs deflation of zero values
         - Call this kernel with batch_count groups in y, and as many groups as half of the 
           unmerged sub-blocks in current level in x. Each group works with a merge of a pair
           of sub-blocks. Groups are size STEDC_BDIM **/
@@ -386,6 +385,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEPREPARE_DEFLATEREPEATED_KERNEL performs deflation of repeated values
+        - Call this kernel with batch_count groups in y, and as many groups as half of the 
+          unmerged sub-blocks in current level in x. Each group works with a merge of a pair
+          of sub-blocks. Groups are size STEDC_BDIM **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergePrepare_DeflateRepeated_kernel(const rocblas_int levs,
@@ -567,37 +571,26 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEPREPARE_FILL_KERNEL fills different arrays in splits struct
+        - Call this kernel with batch_count groups in y, and as many groups as half of the 
+          unmerged sub-blocks in current level in x. Each group works with a merge of a pair
+          of sub-blocks. Groups are size STEDC_BDIM **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergePrepare_Fill_kernel(const rocblas_int levs,
                                    const rocblas_int blks,
                                    const rocblas_int k,
                                    const rocblas_int n,
-                                   S* DD,
-                                   const rocblas_stride strideD,
-                                   S* EE,
-                                   const rocblas_stride strideE,
-                                   S* CC,
-                                   const rocblas_int shiftC,
-                                   const rocblas_int ldc,
-                                   const rocblas_stride strideC,
                                    S* tmpzA,
                                    S* vecsA,
-                                   rocblas_int* splitsA,
-                                   const S eps)
+                                   rocblas_int* splitsA)
 {
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
     // merge sub-block id
     rocblas_int sid = hipBlockIdx_x;
-    // thread id
-    rocblas_int tidb = hipThreadIdx_x;
-
-    // select batch instance to work with
-    S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
-    S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
@@ -652,7 +645,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
-
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEPREPARE_SORTD_KERNEL sorts D array and construct map of original positions
+        - Call this kernel with n groups in x and batch_count groups in y. Groups are size STEDC_BDIM **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergePrepare_SortD_kernel(const rocblas_int levs,
@@ -661,29 +656,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                                     const rocblas_int n,
                                     S* DD,
                                     const rocblas_stride strideD,
-                                    S* EE,
-                                    const rocblas_stride strideE,
-                                    S* CC,
-                                    const rocblas_int shiftC,
-                                    const rocblas_int ldc,
-                                    const rocblas_stride strideC,
                                     S* tmpzA,
                                     S* vecsA,
-                                    rocblas_int* splitsA,
-                                    const S eps)
+                                    rocblas_int* splitsA)
 {
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
     // merge sub-block id
     rocblas_int sid = hipBlockIdx_x;
-    // thread id
-    rocblas_int tidb = hipThreadIdx_x;
 
     // select batch instance to work with
-    S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
     S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
@@ -799,6 +783,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEPREPARE_SETCANDFLAGS_KERNEL fills cand[] array with deflation candidate flags
+        - Call this kernel with ((n - 1)/STEDC_BDIM+1) groups in x and batch_count groups in y.
+        Groups are size STEDC_BDIM **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergePrepare_SetCandFlags_kernel(const rocblas_int levs,
@@ -871,6 +859,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEPREPARE_DEFLATECOUNT_KERNEL fills dcount[] array with number of deflations for each base point
+        - Call this kernel with ((n - 1)/STEDC_BDIM+1) groups in x and batch_count groups in y.
+        Groups are size STEDC_BDIM **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergePrepare_DeflateCount_kernel(const rocblas_int levs,
@@ -971,6 +963,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 }
 
+//--------------------------------------------------------------------------------------//
+/** STEDC_MERGEPREPARE_DEFLATEAPPLY_KERNEL applies deflations and saves c/s values used to rotate C vectors
+        - Call this kernel with ((n - 1)/STEDC_BDIM+1) groups in x and batch_count groups in y.
+        Groups are size STEDC_BDIM **/
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergePrepare_DeflateApply_kernel(const rocblas_int levs,
@@ -2626,12 +2622,12 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             {
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_Fill_kernel<S>),
                                         dim3(numgrps2, batch_count), dim3(STEDC_BDIM), 0, stream,
-                                        levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE,
-                                        V, 0, ldv, strideV, tmpz, tempgemm, splits, eps);
+                                        levs, blks, k, n,
+                                        tmpz, tempgemm, splits);
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_SortD_kernel<S>),
                                         dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream,
-                                        levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE,
-                                        V, 0, ldv, strideV, tmpz, tempgemm, splits, eps);
+                                        levs, blks, k, n, D + shiftD, strideD,
+                                        tmpz, tempgemm, splits);
                 rocblas_int numgrps_deflate = (n - 1) / STEDC_BDIM + 1;
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_SetCandFlags_kernel<S>),
                                         dim3(numgrps_deflate, batch_count), dim3(STEDC_BDIM), 0, stream, levs,
