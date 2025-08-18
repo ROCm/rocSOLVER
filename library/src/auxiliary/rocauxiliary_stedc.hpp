@@ -2385,7 +2385,15 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
     else
     {
         // requirements for solver of small independent blocks
-        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, size_work_stack);
+        size_t w1, w2;
+        rocsolver_steqr_getMemorySize<T, S>(evect, n, batch_count, &w1);
+
+        auto status = rocprim::segmented_radix_sort_pairs(
+            nullptr, w2, (S*)nullptr, (S*)nullptr,
+            (rocblas_int*)nullptr, (rocblas_int*)nullptr, n * batch_count, batch_count, (rocblas_int*)nullptr,
+            (rocblas_int*)nullptr, 0, 8 * sizeof(S), 0, false);
+
+        *size_work_stack = std::max(w1, w2);
 
         // extra requirements for original eigenvectors of small independent blocks
         if(evect != rocblas_evect_tridiagonal)
@@ -2648,63 +2656,65 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
         }
 
         // finally sort eigenvalues and eigenvectors
-        hipEvent_t sort_events[4];
-        for(int i = 0; i < 4; i++)
+        hipEvent_t sort_events[6];
+        for(int i = 0; i < 6; i++)
             HIP_CHECK(hipEventCreate(&sort_events[i]));
 
         HIP_CHECK(hipEventRecord(sort_events[0], stream));
-        // ROCSOLVER_LAUNCH_KERNEL((stedc_sort_eval<T>), dim3(1, 1, batch_count), dim3(BS1), 0, stream,
-        //                         n, D + shiftD, strideD, batch_count, splits_map);
 
         ROCSOLVER_LAUNCH_KERNEL((stedc_prep_sort), dim3(((n - 1) / BS1 + 1), 1, batch_count),
                                 dim3(BS1), 0, stream, n, batch_count, D + shiftD, strideD, tmpz,
                                 splits_map, sort_offsets);
 
-        size_t temporary_storage_size_bytes = 0;
-        void* temporary_storage_ptr = nullptr;
+                                
+        HIP_CHECK(hipEventRecord(sort_events[1], stream));
         // Get required size of the temporary storage
+        size_t temporary_storage_size_bytes = 0;
         HIP_CHECK(rocprim::segmented_radix_sort_pairs(
-            temporary_storage_ptr, temporary_storage_size_bytes, tmpz, tmpz + (n * batch_count),
+            nullptr, temporary_storage_size_bytes, (S*)nullptr, (S*)nullptr,
+            (rocblas_int*)nullptr, (rocblas_int*)nullptr, n * batch_count, batch_count, (rocblas_int*)nullptr,
+            (rocblas_int*)nullptr, 0, 8 * sizeof(S), 0, false));
+
+        HIP_CHECK(rocprim::segmented_radix_sort_pairs(
+            work_stack, temporary_storage_size_bytes, tmpz, tmpz + (n * batch_count),
             splits_map, splits_map_out, n * batch_count, batch_count, sort_offsets,
             sort_offsets + 1, 0, 8 * sizeof(S), stream, false));
 
-        HIP_CHECK(hipMallocAsync(&temporary_storage_ptr, temporary_storage_size_bytes, stream));
-
-        HIP_CHECK(rocprim::segmented_radix_sort_pairs(
-            temporary_storage_ptr, temporary_storage_size_bytes, tmpz, tmpz + (n * batch_count),
-            splits_map, splits_map_out, n * batch_count, batch_count, sort_offsets,
-            sort_offsets + 1, 0, 8 * sizeof(S), stream, false));
-
-        HIP_CHECK(hipFreeAsync(temporary_storage_ptr, stream));
-
+        HIP_CHECK(hipEventRecord(sort_events[2], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_copy_eval), dim3(((n - 1) / BS1 + 1), 1, batch_count),
                                 dim3(BS1), 0, stream, n, batch_count, D + shiftD, strideD,
                                 tmpz + (n * batch_count));
 
         const auto nblocks = (n - 1) / BS2 + 1;
-        HIP_CHECK(hipEventRecord(sort_events[1], stream));
+        HIP_CHECK(hipEventRecord(sort_events[3], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_sort_evec<T>), dim3(nblocks, nblocks, batch_count),
                                 dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
                                 batch_count, splits_map_out);
-        HIP_CHECK(hipEventRecord(sort_events[2], stream));
+        HIP_CHECK(hipEventRecord(sort_events[4], stream));
         ROCSOLVER_LAUNCH_KERNEL((stedc_copy_evec<T>), dim3(nblocks, nblocks, batch_count),
                                 dim3(BS2, BS2), 0, stream, n, C, shiftC, ldc, strideC, (T*)tempgemm,
                                 batch_count);
-        HIP_CHECK(hipEventRecord(sort_events[3], stream));
+        HIP_CHECK(hipEventRecord(sort_events[5], stream));
 
         HIP_CHECK(hipStreamSynchronize(stream));
 
-        float elapsed[3];
-        for(int i = 0; i < 3; i++)
-            HIP_CHECK(hipEventElapsedTime(&elapsed[i], sort_events[i], sort_events[i + 1]));
-        for(int i = 0; i < 4; i++)
+        float elapsed[6];
+        HIP_CHECK(hipEventElapsedTime(&elapsed[0], sort_events[0], sort_events[3]));
+        for(int i = 0; i < 5; i++)
+            HIP_CHECK(hipEventElapsedTime(&elapsed[i + 1], sort_events[i], sort_events[i + 1]));
+        for(int i = 0; i < 6; i++)
             HIP_CHECK(hipEventDestroy(sort_events[i]));
 
         printf("STEDC Kernel Timings:\n"
                "\tstedc_sort_eval: %f\n"
+               "\t\tstedc_prep_sort: %f\n"
+               "\t\trocprim sort: %f\n"
+               "\t\tstedc_copy_eval: %f\n"
                "\tstedc_sort_evec: %f\n"
                "\tstedc_copy_evec: %f\n",
-               elapsed[0], elapsed[1], elapsed[2]);
+               elapsed[0], elapsed[1], elapsed[2],
+               elapsed[3], elapsed[4], elapsed[5]
+            );
 
         rocblas_set_pointer_mode(handle, old_mode);
     }
