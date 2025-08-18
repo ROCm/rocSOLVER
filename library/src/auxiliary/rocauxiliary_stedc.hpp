@@ -1017,38 +1017,48 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* cand   = splits + 12 * n; 
     rocblas_int* midd   = splits + 13 * n;
 
-    constexpr rocblas_int deflate_max_n = 32768 / sizeof(S);
-    // deflate repeated values
-    __shared__ S   lz[deflate_max_n];
-    __shared__ int lmap[deflate_max_n];
+    constexpr rocblas_int max_len = 4096;
+    __shared__ S   lz[max_len];
+    __shared__ int lmap[max_len];
 
-    for (int i = hipThreadIdx_x; i < n; i += hipBlockDim_x) {
-        lmap[i] = map[i];
-        lz[i] = z[map[i]];
+    int start   = hipBlockDim_x * hipBlockIdx_x;
+    int base    = start + hipThreadIdx_x;
+    int cnt     = (base < n) ? dcount[base] : 0;
+
+    // cache max_len values of map[] and appropriate z[]
+    for (int i = hipThreadIdx_x; i < max_len; i += hipBlockDim_x) {
+        int x   = start + i;
+        lmap[i] = (x < n) ? map[x]    : 0;
+        lz[i]   = (x < n) ? z[map[x]] : 0;
     }
     __syncthreads();
 
-    for(int i = hipThreadIdx_x; i < n; i += hipBlockDim_x)
-    {
-        int cnt = dcount[i];
-        if (cnt) {
-            int base = i;
-            S baseval = lz[base];
-            for (int j = 0; j < cnt; j++) {
-                int top = base + j + 1;
-                S g = lz[top];
-                S f = baseval;
-                S c, s, rr;
-                lartg(f, g, c, s, rr);
-                baseval = rr;
+    if (cnt) {
+        S baseval = lz[hipThreadIdx_x];
+        for (int j = 0; j < cnt; j++) {
+            int top = base + j + 1;
 
-                idd[lmap[top]] = 0;
-                z[lmap[top]] = 0;
-                cc[lmap[top]] = c;
-                ss[lmap[top]] = s;
-            }
-            z[lmap[base]] = baseval;
+            // first max_len values are prefetched into lds,
+            // access global memory only if need to go beyond that
+            // which is very unlikely
+            int idx = (top - start) < max_len
+                    ? lmap[top - start]
+                    : map[top];
+            S g     = (top - start) < max_len
+                    ? lz[top - start]
+                    : z[idx];
+
+            S f = baseval;
+            S c, s, rr;
+            lartg(f, g, c, s, rr);
+            baseval = rr;
+
+            idd[idx] = 0;
+            z[idx]   = 0;
+            cc[idx]  = c;
+            ss[idx]  = s;
         }
+        z[lmap[hipThreadIdx_x]] = baseval;
     }
 }
 
@@ -2630,7 +2640,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         dim3(numgrps_deflate, batch_count), dim3(STEDC_BDIM), 0, stream, levs,
                                         blks, k, n, D + shiftD, strideD, tmpz, tempgemm, splits);
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_DeflateApply_kernel<S>),
-                                        dim3(1, batch_count), dim3(STEDC_BDIM), 0, stream,
+                                        dim3(numgrps_deflate, batch_count), dim3(STEDC_BDIM), 0, stream,
                                         levs, blks, k, n, D + shiftD, strideD,
                                         tmpz, tempgemm, splits);
 
