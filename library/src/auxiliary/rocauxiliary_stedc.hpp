@@ -45,6 +45,11 @@ ROCSOLVER_BEGIN_NAMESPACE
 
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
 
+// bit indicating base deflation candidate
+#define L_F_BCAND_BIT 0
+// bit indicating top deflation candidate
+#define L_F_TCAND_BIT 1 
+
 // TODO: using macro STEDC_EXTERNAL_GEMM = true for now. In the future we can pass
 // STEDC_EXTERNAL_GEMM at run time to switch between internal vector updates and
 // external gemm-based updates.
@@ -55,7 +60,7 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
 {
     // splits_map layout:
     // struct {
-    // 0     rocblas_int splits[n];   // positions where each block begings
+    // 0     rocblas_int sort_tmp[n]; // temp buffer used for mapping in stedc_sort()
     // 1     rocblas_int ns[n];       // the sub-blocks sizes
     // 2     rocblas_int ps[n];       // the sub-blocks initial positions
     // 3     rocblas_int idd[n];      // if idd[i] = 0, the value in position i has been deflated  (aka mask)
@@ -629,11 +634,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* dcount = splits +  9 * n;
     rocblas_int* mns    = splits + 10 * n;
     rocblas_int* mps    = splits + 11 * n; 
-    rocblas_int* dbg    = splits + 12 * n; 
+    rocblas_int* cand   = splits + 12 * n; 
     rocblas_int* midd   = splits + 13 * n;
-    rocblas_int* dbg2   = splits + 14 * n; 
-    rocblas_int* dbg3   = splits + 15 * n; 
-    rocblas_int* dbg4   = splits + 16 * n;
 
     rocblas_int in = sid << (k + 1);
     rocblas_int sz = szs[in];
@@ -718,11 +720,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* dcount = splits +  9 * n;
     rocblas_int* mns    = splits + 10 * n;
     rocblas_int* mps    = splits + 11 * n; 
-    rocblas_int* dbg    = splits + 12 * n; 
+    rocblas_int* cand   = splits + 12 * n; 
     rocblas_int* midd   = splits + 13 * n;
-    rocblas_int* dbg2   = splits + 14 * n; 
-    rocblas_int* dbg3   = splits + 15 * n; 
-    rocblas_int* dbg4   = splits + 16 * n; 
 
     S d = D[sid];
     rocblas_int sz = mns[sid];
@@ -802,57 +801,26 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
 template <typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedc_mergePrepare_DeflateApply_kernel(const rocblas_int levs,
+    stedc_mergePrepare_SetCandFlags_kernel(const rocblas_int levs,
                                            const rocblas_int blks,
                                            const rocblas_int k,
                                            const rocblas_int n,
                                            S* DD,
                                            const rocblas_stride strideD,
-                                           S* EE,
-                                           const rocblas_stride strideE,
-                                           S* CC,
-                                           const rocblas_int shiftC,
-                                           const rocblas_int ldc,
-                                           const rocblas_stride strideC,
                                            S* tmpzA,
                                            S* vecsA,
-                                           rocblas_int* splitsA,
-                                           const S eps)
+                                           rocblas_int* splitsA)
 {
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
-    // merge sub-block id
-    rocblas_int sid = hipBlockIdx_x;
-    // thread id
-    rocblas_int tidb = hipThreadIdx_x;
 
     // select batch instance to work with
-    S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
     S* D = DD + bid * strideD;
-    S* E = EE + bid * strideE;
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    // the sub-blocks sizes
-    rocblas_int* ns = splits + n;
-    // the sub-blocks initial positions
-    rocblas_int* ps = ns + n;
-    // if idd[i] = 0, the value in position i has been deflated
-    rocblas_int* idd = ps + n;
-    // container of permutations when solving the secular eqns
-    rocblas_int* pers = idd + n;
-    // sizes of the first sub-block in a merge
-    rocblas_int* szfs = pers + n;
-    // sizes of both sub-blocks in a merge
-    rocblas_int* szs = szfs + n;
-    // degrees of secular equation
-    rocblas_int* dds = szs + n;
-    // the rank-1 modification vectors in the merges
     S* z = tmpzA + bid * (2 * n);
-    // temp for tolerance values used in deflation
-    // IMPORTANT: tols maps to the same memory as evs
-    S* tols = z + n;
     // updated eigenvectors after merges
     S* vecs = vecsA + bid * 2 * (n * n);
     // temp values during the merges
@@ -867,17 +835,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* dcount = splits +  9 * n;
     rocblas_int* mns    = splits + 10 * n;
     rocblas_int* mps    = splits + 11 * n; 
-    rocblas_int* dbg    = splits + 12 * n; 
+    rocblas_int* cand   = splits + 12 * n; 
     rocblas_int* midd   = splits + 13 * n;
-    rocblas_int* dbg2   = splits + 14 * n; 
-    rocblas_int* dbg3   = splits + 15 * n; 
-    rocblas_int* dbg4   = splits + 16 * n; 
 
-    constexpr rocblas_int deflate_max_n = 32768 / sizeof(S);
-    __shared__ S   ldsD[deflate_max_n];
-    __shared__ int cand[deflate_max_n];
-    constexpr int L_F_BCAND_BIT = 0; // bit indicating base candidate
-    constexpr int L_F_TCAND_BIT = 1; // bit indicating top candidate
     constexpr int F_BCAND = 1 << L_F_BCAND_BIT;
     constexpr int F_TCAND = 1 << L_F_TCAND_BIT;
 
@@ -893,7 +853,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         rocblas_int p  = mps[i];
         rocblas_int pn = mps[next];
         rocblas_int pp = mps[prev];
-        ldsD[i] = d;
 
         int bcandidate =
             midd[i] && midd[next]       // not yet deflated
@@ -908,6 +867,64 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             && i > 0                    // isn't first
             ;
         cand[i] = (bcandidate << L_F_BCAND_BIT) + (tcandidate << L_F_TCAND_BIT);
+    }
+}
+
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
+    stedc_mergePrepare_DeflateCount_kernel(const rocblas_int levs,
+                                           const rocblas_int blks,
+                                           const rocblas_int k,
+                                           const rocblas_int n,
+                                           S* DD,
+                                           const rocblas_stride strideD,
+                                           S* tmpzA,
+                                           S* vecsA,
+                                           rocblas_int* splitsA)
+{
+    // threads and groups indices
+    // batch instance id
+    rocblas_int bid = hipBlockIdx_y;
+
+    // select batch instance to work with
+    S* D = DD + bid * strideD;
+
+    // temporary arrays in global memory
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
+    // the sub-blocks sizes
+    rocblas_int* ns = splits + n;
+    // the sub-blocks initial positions
+    rocblas_int* ps = ns + n;
+    // if idd[i] = 0, the value in position i has been deflated
+    rocblas_int* idd = ps + n;
+    // the rank-1 modification vectors in the merges
+    S* z = tmpzA + bid * (2 * n);
+    // updated eigenvectors after merges
+    S* vecs = vecsA + bid * 2 * (n * n);
+    // temp values during the merges
+    S* temps = vecs + (n * n);
+
+    S* cc    = vecs + 2 * n;
+    S* ss    = vecs + 3 * n;
+    S* mtols = vecs + 4 * n;
+    S* md    = vecs + 5 * n;
+
+    rocblas_int* map    = splits +  8 * n;
+    rocblas_int* dcount = splits +  9 * n;
+    rocblas_int* mns    = splits + 10 * n;
+    rocblas_int* mps    = splits + 11 * n; 
+    rocblas_int* cand   = splits + 12 * n; 
+    rocblas_int* midd   = splits + 13 * n;
+
+    constexpr rocblas_int deflate_max_n = 32768 / sizeof(S);
+    __shared__ S   ldsD[deflate_max_n];
+    constexpr int F_BCAND = 1 << L_F_BCAND_BIT;
+    constexpr int F_TCAND = 1 << L_F_TCAND_BIT;
+
+    // find deflate candidates
+    for(int i = hipThreadIdx_x; i < n; i += hipBlockDim_x)
+    {
+        ldsD[i] = md[i];
     }
     __syncthreads();
     
@@ -936,12 +953,58 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         }
     }
     __syncthreads();
+}
 
+template <typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
+    stedc_mergePrepare_DeflateApply_kernel(const rocblas_int levs,
+                                           const rocblas_int blks,
+                                           const rocblas_int k,
+                                           const rocblas_int n,
+                                           S* DD,
+                                           const rocblas_stride strideD,
+                                           S* tmpzA,
+                                           S* vecsA,
+                                           rocblas_int* splitsA)
+{
+    // threads and groups indices
+    // batch instance id
+    rocblas_int bid = hipBlockIdx_y;
+
+    // select batch instance to work with
+    S* D = DD + bid * strideD;
+
+    // temporary arrays in global memory
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
+    // the sub-blocks sizes
+    rocblas_int* ns = splits + n;
+    // the sub-blocks initial positions
+    rocblas_int* ps = ns + n;
+    // if idd[i] = 0, the value in position i has been deflated
+    rocblas_int* idd = ps + n;
+    // the rank-1 modification vectors in the merges
+    S* z = tmpzA + bid * (2 * n);
+    // updated eigenvectors after merges
+    S* vecs = vecsA + bid * 2 * (n * n);
+    // temp values during the merges
+    S* temps = vecs + (n * n);
+
+    S* cc    = vecs + 2 * n;
+    S* ss    = vecs + 3 * n;
+    S* mtols = vecs + 4 * n;
+    S* md    = vecs + 5 * n;
+
+    rocblas_int* map    = splits +  8 * n;
+    rocblas_int* dcount = splits +  9 * n;
+    rocblas_int* mns    = splits + 10 * n;
+    rocblas_int* mps    = splits + 11 * n; 
+    rocblas_int* cand   = splits + 12 * n; 
+    rocblas_int* midd   = splits + 13 * n;
+
+    constexpr rocblas_int deflate_max_n = 32768 / sizeof(S);
     // deflate repeated values
-    __shared__ S*   lz;
-    __shared__ int* lmap;
-    lz = ldsD;
-    lmap = cand;
+    __shared__ S   lz[deflate_max_n];
+    __shared__ int lmap[deflate_max_n];
 
     for (int i = hipThreadIdx_x; i < n; i += hipBlockDim_x) {
         lmap[i] = map[i];
@@ -2515,7 +2578,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             enable_new_merge_values = env_new_merge_values[0] == '1';
         if(env_new_merge_prepare)
             enable_new_merge_prepare = env_new_merge_prepare[0] == '1';
-        constexpr rocblas_int deflate_max_n = 32768 / sizeof(S);
 
         // launch merge for level k
         for(rocblas_int k = 0; k < levs; ++k)
@@ -2527,7 +2589,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     levs, blks, k, n, D + shiftD, strideD,
                                     E + shiftE, strideE, V, 0, ldv, strideV, tmpz, tempgemm, splits,
                                     eps);
-            if(n > deflate_max_n || !enable_new_merge_prepare)
+            if(!enable_new_merge_prepare)
             {
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_DeflateRepeated_kernel<S>),
                                         dim3(numgrps2, batch_count), dim3(STEDC_BDIM), 0, stream,
@@ -2544,11 +2606,18 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                         dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream,
                                         levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE,
                                         V, 0, ldv, strideV, tmpz, tempgemm, splits, eps);
-                assert(n <= deflate_max_n);
+                rocblas_int numgrps_deflate = (n - 1) / STEDC_BDIM + 1;
+                ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_SetCandFlags_kernel<S>),
+                                        dim3(1, batch_count), dim3(STEDC_BDIM), 0,
+                                        stream, levs,
+                                        blks, k, n, D + shiftD, strideD, tmpz, tempgemm, splits);
+                ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_DeflateCount_kernel<S>),
+                                        dim3(1, batch_count), dim3(STEDC_BDIM), 0, stream, levs,
+                                        blks, k, n, D + shiftD, strideD, tmpz, tempgemm, splits);
                 ROCSOLVER_LAUNCH_KERNEL((stedc_mergePrepare_DeflateApply_kernel<S>),
                                         dim3(1, batch_count), dim3(STEDC_BDIM), 0, stream,
-                                        levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE,
-                                        V, 0, ldv, strideV, tmpz, tempgemm, splits, eps);
+                                        levs, blks, k, n, D + shiftD, strideD,
+                                        tmpz, tempgemm, splits);
 
                 //hipError_t status = hipStreamSynchronize(stream);
                 //std::cout << "\nk=" << k << std::endl;
