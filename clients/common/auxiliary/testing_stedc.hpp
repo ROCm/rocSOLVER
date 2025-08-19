@@ -374,6 +374,57 @@ void stedc_wilkinson_initData(const rocblas_handle handle,
 }
 
 template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
+void stedc_random_initData(const rocblas_handle handle,
+                           const rocblas_evect evect,
+                           const rocblas_int n,
+                           Sd& dD,
+                           Sd& dE,
+                           Td& dC,
+                           const rocblas_int ldc,
+                           Ud& dInfo,
+                           Sh& hD,
+                           Sh& hE,
+                           Th& hC,
+                           Uh& hInfo)
+{
+    if(CPU)
+    {
+        using S = decltype(std::real(T{}));
+
+        rocblas_init<S>(hD, true);
+        rocblas_init<S>(hE, true);
+
+        for(int i = 0; i < n - 1; ++i)
+            hE[0][i] -= 4;
+
+        // initialize C to the identity matrix
+        if(evect == rocblas_evect_original)
+        {
+            for(rocblas_int j = 0; j < n; j++)
+            {
+                for(rocblas_int i = 0; i < n; i++)
+                {
+                    if(i == j)
+                        hC[0][i + j * ldc] = 1;
+                    else
+                        hC[0][i + j * ldc] = 0;
+                }
+            }
+        }
+    }
+
+    if(GPU)
+    {
+        // now copy to the GPU
+        CHECK_HIP_ERROR(dD.transfer_from(hD));
+        CHECK_HIP_ERROR(dE.transfer_from(hE));
+
+        if(evect == rocblas_evect_original)
+            CHECK_HIP_ERROR(dC.transfer_from(hC));
+    }
+}
+
+template <bool CPU, bool GPU, typename T, typename Sd, typename Td, typename Ud, typename Sh, typename Th, typename Uh>
 void stedc_default_initData(const rocblas_handle handle,
                             const rocblas_evect evect,
                             const rocblas_int n,
@@ -555,6 +606,11 @@ void stedc_initData(const rocblas_handle handle,
     {
         stedc_identity_initData<CPU, GPU, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
                                              hInfo);
+    }
+    else if((std::getenv("TEST_RANDOM") != nullptr) || (std::getenv("STEDC_TEST_RANDOM") != nullptr))
+    {
+        stedc_random_initData<CPU, GPU, T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC,
+                                           hInfo);
     }
     else
     {
@@ -878,7 +934,7 @@ void testing_stedc(Arguments& argus)
                           hInfo, hInfoRes, &max_err, &max_errv);
 
     // collect performance data
-    if(argus.timing)
+    if(argus.timing && hot_calls > 0)
         stedc_getPerfData<T>(handle, evect, n, dD, dE, dC, ldc, dInfo, hD, hE, hC, hInfo,
                              &gpu_time_used, &cpu_time_used, hot_calls, argus.profile,
                              argus.profile_kernels, argus.perf);
