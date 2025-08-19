@@ -302,6 +302,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_update_splits(const ro
     rocblas_int* eps = ptr_eps(n, splits);
     rocblas_int* bsz = ptr_bsz(n, splits);
     rocblas_int* bps = ptr_bps(n, splits);
+    rocblas_int* map = ptr_map(n, splits);
+    rocblas_int* dcount = ptr_dcount(n, splits);
     
 
     rocblas_int n_merges = 1 << (levs - k - 1);
@@ -329,6 +331,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_update_splits(const ro
         int m = em[i] / 2;
         esz[i] = msz[m];
         eps[i] = mps[m];
+        map[i] = 0;
+        dcount[i] = 0;
     }
     __syncthreads();
 
@@ -383,6 +387,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* idd  = ptr_idd(n, splits);
     rocblas_int* szs  = ptr_szs(n, splits);
     rocblas_int* mps = ptr_mps(n, splits);
+    rocblas_int* msz = ptr_msz(n, splits);
     rocblas_int* bsz = ptr_bsz(n, splits);
 
 
@@ -416,7 +421,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // ----------------------------------------------------------------
         // Threads with iam = 0 work with components below the merge point;
         // threads with iam = 1 work above the merge point
-        //r1p[tid] = (iam == 0) ? (p2 - 1 + sz) : (p2 - 1);
         // with this, all threads involved in a merge
         // will point to the same row of C and the same off-diag element
         // position of a rank-1 modification component
@@ -480,6 +484,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         for(int i = 1; i < bdm; ++i)
             sz += ns[in + i];
         szs[in] = sz;
+        sz = msz[sid];
         tolsD[in] = tol;
         tolsZ[in] = tol;
         in = ps[in];
@@ -523,8 +528,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
     rocblas_int* ps     = ptr_ps(n, splits);
     rocblas_int* szs    = ptr_szs(n, splits);
-    rocblas_int* map    = ptr_map(n, splits);
-    rocblas_int* dcount = ptr_dcount(n, splits);
 
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* tolsD = ptr_tolsD(n, tmpz);
@@ -539,8 +542,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         int id = p + i;
         tolsD[id] = tol;
         tolsZ[id] = tol;
-        dcount[id] = 0;
-        map[id] = 0;
     }
 }
 
@@ -1016,10 +1017,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* ps   = ptr_ps(n, splits);
     rocblas_int* idd  = ptr_idd(n, splits);
     rocblas_int* pers = ptr_pers(n, splits);
-    rocblas_int* szs  = ptr_szs(n, splits);
+    rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
     rocblas_int* mps = ptr_mps(n, splits);
     rocblas_int* bsz = ptr_bsz(n, splits);
@@ -1047,8 +1047,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // determine boundaries of what would be the new merged sub-block
         // 'in' will be its initial position.
         // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-        rocblas_int sz = szs[sid * bdm];
-        rocblas_int in = ps[sid * bdm];
+        rocblas_int sz = msz[sid];
+        rocblas_int in = mps[sid];
 
         // 4. Organize data with non-deflated values to prepare secular equation
         // ------------------------------------------------------------------------ 
@@ -1217,10 +1217,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* ps   = ptr_ps(n, splits);
+    rocblas_int* mps  = ptr_mps(n, splits);
     rocblas_int* idd  = ptr_idd(n, splits);
     rocblas_int* pers = ptr_pers(n, splits);
-    rocblas_int* szs  = ptr_szs(n, splits);
+    rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
     
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
@@ -1239,8 +1239,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // determine boundaries of what would be the new merged sub-block
         // 'in' will be its initial position.
         // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-        rocblas_int sz = szs[sid * bdm];
-        rocblas_int in = ps[sid * bdm];
+        rocblas_int sz = msz[sid];
+        rocblas_int in = mps[sid];
 
 
         // 1. Organize data with non-deflated values to prepare secular equation
@@ -1329,10 +1329,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* ps   = ptr_ps(n, splits);
     rocblas_int* idd  = ptr_idd(n, splits);
     rocblas_int* pers = ptr_pers(n, splits);
-    rocblas_int* szs  = ptr_szs(n, splits);
+    rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
     rocblas_int* mps  = ptr_mps(n, splits);
     rocblas_int* bsz  = ptr_bsz(n, splits);
@@ -1345,8 +1344,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // temp values during the merges
     S* temps = vecs + (n * n);
 
-    rocblas_int bdm = 1 << (k + 1);
-
     // Work with merges on level k. A thread-group works with two leaves in the merge tree;
     // all threads work together to solve the secular equation.
     {
@@ -1357,15 +1354,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // determine boundaries of what would be the new merged sub-block
         // 'in' will be its initial position.
         // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-        rocblas_int sz = szs[sid * bdm];
-        rocblas_int in = ps[sid * bdm];
+        rocblas_int sz = msz[sid];
+        rocblas_int in = mps[sid];
 
         // 1. Organize data with non-deflated values to prepare secular equation
         // -----------------------------------------------------------------
         // All threads of the group participating in the merge will work together
         // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
         rocblas_int iam = tidb;
-        bdm = hipBlockDim_x * groups_per_merge;
+        rocblas_int bdm = hipBlockDim_x * groups_per_merge;
 
         // define shifted arrays
         S* tmpd = temps + in * n;
@@ -1414,10 +1411,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* ps   = ptr_ps(n, splits);
+    rocblas_int* mps  = ptr_mps(n, splits);
     rocblas_int* idd  = ptr_idd(n, splits);
     rocblas_int* pers = ptr_pers(n, splits);
-    rocblas_int* szs  = ptr_szs(n, splits);
+    rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
     
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
@@ -1428,16 +1425,14 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // temp values during the merges
     S* temps = vecs + (n * n);
 
-    rocblas_int bdm = 1 << (k + 1);
-
     // Work with merges on level k. A thread-group works with two leaves in the merge tree;
     // all threads work together to solve the secular equation.
     {
         // determine boundaries of what would be the new merged sub-block
         // 'in' will be its initial position.
         // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-        rocblas_int sz = szs[sid * bdm];
-        rocblas_int in = ps[sid * bdm];
+        rocblas_int sz = msz[sid];
+        rocblas_int in = mps[sid];
 
 
         // 1. Organize data with non-deflated values to prepare secular equation
@@ -1445,7 +1440,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // All threads of the group participating in the merge will work together
         // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
         rocblas_int iam = tidb;
-        bdm = hipBlockDim_x;
+        rocblas_int bdm = hipBlockDim_x;
 
         // define shifted arrays
         S* tmpd = temps + in * n;
