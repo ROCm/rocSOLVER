@@ -1181,7 +1181,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         rocblas_int p1 = mps[sid];
 
         // define shifted arrays
-        S* tmpd = temps + p1 * n;
+        S* etmpd = temps;
         S* zz = z + p1;
 
         // find degree of secular equation
@@ -1193,8 +1193,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // corresponding to non-deflated new eigenvalues of the merged block
         /* ----------------------------------------------------------------- */
         // each thread will find a different zero in parallel
-        S a, b;
-        int j = i - p1;
         if(idd[i] == 1)
         {
             // find position in the ordered array
@@ -1204,7 +1202,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             {
                 auto step = count / 2;
                 auto it = cc + step;
-                if(tmpd[it + j * n] < valf)
+                if(etmpd[it + i * n] < valf)
                 {
                     cc = ++it;
                     count -= step + 1;
@@ -1219,13 +1217,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             rocblas_int linfo;
 
 #if defined(ROCSOLVER_USE_REFERENCE_SECULAR_EQUATIONS_SOLVER)
-            linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), evs[i]);
+            linfo = slaed4(dd, cc, etmpd + i * n, zz, std::abs(p), evs[i]);
 #else
             if(cc == dd - 1)
-                linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), evs + i, eps,
+                linfo = seq_solve_ext(dd, etmpd + i * n, zz, (p < 0 ? -p : p), evs + i, eps,
                                         ssfmin, ssfmax);
             else
-                linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, evs + i, eps,
+                linfo = seq_solve(dd, etmpd + i * n, zz, (p < 0 ? -p : p), cc, evs + i, eps,
                                     ssfmin, ssfmax);
 #endif
 
