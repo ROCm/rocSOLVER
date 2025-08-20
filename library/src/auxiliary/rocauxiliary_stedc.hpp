@@ -1136,17 +1136,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                                    rocblas_int* splitsA,
                                    const S eps,
                                    const S ssfmin,
-                                   const S ssfmax,
-                                   const rocblas_int groups_per_merge)
+                                   const S ssfmax)
 {
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
-    // merge sub-block id
-    rocblas_int sid = hipBlockIdx_x / groups_per_merge;
-    // thread id
-    rocblas_int group_in_subblock = hipBlockIdx_x % groups_per_merge;
-    rocblas_int tidb = hipThreadIdx_x + group_in_subblock * hipBlockDim_x;
 
     // select batch instance to work with
     S* D = DD + bid * strideD;
@@ -1159,6 +1153,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* dds = ptr_dds(n, splits);
     rocblas_int* mps = ptr_mps(n, splits);
     rocblas_int* bps = ptr_bps(n, splits);
+    rocblas_int* em  = ptr_em(n, splits);
     
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* z   = ptr_z(n, tmpz);
@@ -1168,9 +1163,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // temp values during the merges
     S* temps = vecs + (n * n);
 
-    // Work with merges on level k. A thread-group works with two leaves in the merge tree;
-    // all threads work together to solve the secular equation.
+    int i = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
+    if(i < n)
     {
+        // merge block id
+        rocblas_int sid = em[i];
+
         // Find off-diagonal element of the merge
         // rank-1 modification component p correspond to the last element in the first sub-block
         rocblas_int p2 = bps[sid * 2 + 1];
@@ -1182,17 +1180,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         rocblas_int sz = msz[sid];
         rocblas_int p1 = mps[sid];
 
-        // 1. Organize data with non-deflated values to prepare secular equation
-        // -----------------------------------------------------------------
-        // All threads of the group participating p1 the merge will work together
-        // to solve the correspondinbg secular eqn.
-        rocblas_int bdm = hipBlockDim_x * groups_per_merge;
-
         // define shifted arrays
         S* tmpd = temps + p1 * n;
-        S* ev = evs + p1;
-        S* diag = D + p1;
-        rocblas_int* mask = idd + p1;
         S* zz = z + p1;
 
         // find degree of secular equation
@@ -1205,45 +1194,43 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         /* ----------------------------------------------------------------- */
         // each thread will find a different zero in parallel
         S a, b;
-        for(int j = tidb; j < sz; j += bdm)
+        int j = i - p1;
+        if(idd[i] == 1)
         {
-            if(mask[j] == 1)
+            // find position in the ordered array
+            S valf = p < 0 ? -evs[i] : evs[i];
+            int count = dd, cc = 0;
+            while(count > 0)
             {
-                // find position in the ordered array
-                S valf = p < 0 ? -ev[j] : ev[j];
-                int count = dd, cc = 0;
-                while(count > 0)
+                auto step = count / 2;
+                auto it = cc + step;
+                if(tmpd[it + j * n] < valf)
                 {
-                    auto step = count / 2;
-                    auto it = cc + step;
-                    if(tmpd[it + j * n] < valf)
-                    {
-                        cc = ++it;
-                        count -= step + 1;
-                    }
-                    else
-                        count = step;
+                    cc = ++it;
+                    count -= step + 1;
                 }
+                else
+                    count = step;
+            }
 
-                // computed zero will overwrite 'ev' at the corresponding position.
-                // 'tmpd' will be updated with the distances D - lambda_i.
-                // deflated values are not changed.
-                rocblas_int linfo;
+            // computed zero will overwrite 'ev' at the corresponding position.
+            // 'tmpd' will be updated with the distances D - lambda_i.
+            // deflated values are not changed.
+            rocblas_int linfo;
 
 #if defined(ROCSOLVER_USE_REFERENCE_SECULAR_EQUATIONS_SOLVER)
-                linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), ev[j]);
+            linfo = slaed4(dd, cc, tmpd + j * n, zz, std::abs(p), evs[i]);
 #else
-                if(cc == dd - 1)
-                    linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), ev + j, eps,
-                                          ssfmin, ssfmax);
-                else
-                    linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, ev + j, eps,
-                                      ssfmin, ssfmax);
+            if(cc == dd - 1)
+                linfo = seq_solve_ext(dd, tmpd + j * n, zz, (p < 0 ? -p : p), evs + i, eps,
+                                        ssfmin, ssfmax);
+            else
+                linfo = seq_solve(dd, tmpd + j * n, zz, (p < 0 ? -p : p), cc, evs + i, eps,
+                                    ssfmin, ssfmax);
 #endif
 
-                if(p < 0)
-                    ev[j] *= -1;
-            }
+            if(p < 0)
+                evs[i] *= -1;
         }
     }
 }
@@ -2158,13 +2145,12 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
                                     ssfmin, ssfmax);
 
-            rocblas_int max_n_per_merge  = (n + n_merges - 1) / n_merges;
-            rocblas_int groups_per_merge = (max_n_per_merge + STEDC_BDIM - 1) / STEDC_BDIM;
+            rocblas_int numgrps_solve = (n - 1) / STEDC_BDIM + 1;
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Solve_kernel<S>),
-                                    dim3(n_merges * groups_per_merge, batch_count),
+                                    dim3(numgrps_solve, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
                                     strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
-                                    ssfmin, ssfmax, groups_per_merge);
+                                    ssfmin, ssfmax);
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Rescale_kernel<S>),
                                     dim3(n_merges, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
