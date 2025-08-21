@@ -693,6 +693,21 @@ void stedc_getError(const rocblas_handle handle,
     // CPU lapack
     cpu_stedc(evect, n, hD[0], hE[0], hC[0], ldc, work.data(), lwork, rwork.data(), lrwork,
               iwork.data(), liwork, hInfo[0]);
+
+    // Depending on `evect`, stedc can return the eigenvectors of the original
+    // matrix (A) or the eigenvectors of the tridiagonal matrix (T).  Thus,
+    // given a pair U, D of eigenvectors and eigenvalues computed by stedc the
+    // reconstructed matrix
+    //
+    // U * D * adjoint(U)
+    //
+    // can be either A or T.  The following code uses lapack to compute
+    //
+    // AorT = U * D * adjoint(U),
+    //
+    // which will be later used to compare with the eigenvectors and
+    // eigenvalues computed by rocSOLVER.
+    //
     auto AorT = HMatT::Empty();
     if((evect != rocblas_evect_none) && (n > 0))
     {
@@ -723,40 +738,22 @@ void stedc_getError(const rocblas_handle handle,
         // check eigenvectors if required
         if(evect != rocblas_evect_none)
         {
-            // New matrix initialization
+            // Input matrix
             auto C = HMatT::Wrap(hCRes[0], ldc, n)->block(BDescT().nrows(n).ncols(n));
+            // Computed eigenvalues
             auto d = HMatT::Convert(hDRes[0], 1, n)->block(BDescT().nrows(1).ncols(n));
+            // Diagonal matrix of size n by n with computed eigenvalues
             auto D = HMatT::Zeros(n, n).diag(d);
-            /* std::cout << "--- Computed eigenvalues: " << std::endl; */
-            /* d.print(); */
 
+            // Orthogonal error
             auto OE = C * adjoint(C) - HMatT::Eye(n, n);
             err = OE.max_col_norm();
-            /* std::cout << "--- Orthogonal error: " << err << std::endl; */
             *max_errv = err > *max_err ? err : *max_err;
 
-            auto AE = AorT - C * D * adjoint(C);
-            /* std::cout << "--- Residual error: " << err << std::endl; */
-            err = AE.norm() / AorT.norm();
+            // Residual error
+            auto RE = AorT - C * D * adjoint(C);
+            err = RE.norm() / AorT.norm();
             *max_err = err > *max_err ? err : *max_err;
-
-            /* // both eigenvalues and eigenvectors needed; need to implicitly test */
-            /* // eigenvectors due to non-uniqueness of eigenvectors under scaling */
-
-            /* // multiply A with each of the n eigenvectors and divide by corresponding */
-            /* // eigenvalues */
-            /* T alpha; */
-            /* T beta = 0; */
-            /* for(int j = 0; j < n; j++) */
-            /* { */
-            /*     alpha = T(1) / hDRes[0][j]; */
-            /*     cpu_symv_hemv(rocblas_fill_upper, n, alpha, hA[0], lda, hCRes[0] + j * ldc, 1, beta, */
-            /*                   hC[0] + j * ldc, 1); */
-            /* } */
-
-            /* // error is ||hC - hCRes|| / ||hC|| */
-            /* // using frobenius norm */
-            /* *max_errv = norm_error('F', n, n, ldc, hCRes[0], hC[0]); */
         }
     }
 }
