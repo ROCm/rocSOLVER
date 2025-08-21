@@ -982,27 +982,23 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // 4. Organize data with non-deflated values to prepare secular equation
         // ------------------------------------------------------------------------ 
         // define shifted arrays
-        S* tmpd = temps + p1 * n;
-        S* diag = D + p1;
-        rocblas_int* mask = idd + p1;
-        S* zz = z + p1;
-        rocblas_int* per = pers + p1;
+        S* etmpd = temps;
 
         // find degree and components of secular equation
-        // tmpd contains the non-deflated diagonal elements (ie. poles of the
+        // etmpd contains the non-deflated diagonal elements (ie. poles of the
         // secular eqn) zz contains the corresponding non-zero elements of the
         // rank-1 modif vector
         rocblas_int dd = 0;
         for(int i = 0; i < sz; ++i)
         {
-            if(mask[i] == 1)
+            if(idd[p1 + i] == 1)
             {
                 if(hipThreadIdx_x == 0)
                 {
-                    per[dd] = i;
-                    tmpd[dd] = p < 0 ? -diag[i] : diag[i];
+                    pers[p1 + dd] = i;
+                    etmpd[p1 * n + dd] = p < 0 ? -D[p1 + i] : D[p1 + i];
                     if(dd != i)
-                        zz[dd] = zz[i];
+                        z[p1 + dd] = z[p1 + i];
                 }
                 dd++;
             }
@@ -1077,9 +1073,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // to solve the correspondinbg secular eqn. Now 'iam' indexes those threads
 
         // define shifted arrays
-        S* tmpd = temps + p1 * n;
-        S* ev = evs + p1;
-        S* diag = D + p1;
+        S* etmpd = temps;
         rocblas_int* mask = idd + p1;
         S* zz = z + p1;
         rocblas_int* per = pers + p1;
@@ -1087,15 +1081,15 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // find degree of secular equation
         rocblas_int dd = dds[p1];
 
-        // Order the elements in tmpd and zz using a simple parallel selection/bubble sort.
+        // Order the elements in etmpd and zz using a simple parallel selection/bubble sort.
         // This will allow us to find initial intervals for eigenvalue guesses
         for(int i = 0; i < dd; i++)
         {
             for(int j = 2 * hipThreadIdx_x + i % 2; j < dd - 1; j += 2 * hipBlockDim_x)
             {
-                if(tmpd[j] > tmpd[j + 1])
+                if(etmpd[p1 * n + j] > etmpd[p1 * n + j + 1])
                 {
-                    swap(tmpd[j], tmpd[j + 1]);
+                    swap(etmpd[p1 * n + j], etmpd[p1 * n + j + 1]);
                     swap(zz[j], zz[j + 1]);
                     swap(per[j], per[j + 1]);
                 }
@@ -1111,13 +1105,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         for(int i = hipThreadIdx_x; i < dd; i += hipBlockDim_x)
         {
             for(int j = i + n; j < i + sz * n; j += n)
-                tmpd[j] = tmpd[i];
+                etmpd[p1 * n + j] = etmpd[p1 * n + i];
         }
 
         // finally copy over all diagonal elements in ev. ev will be overwritten
         // by the new computed eigenvalues of the merged block
         for(int i = hipThreadIdx_x; i < sz; i += hipBlockDim_x)
-            ev[i] = diag[i];
+            evs[p1 + i] = D[p1 + i];
     }
 }
 
@@ -1212,7 +1206,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             }
 
             // computed zero will overwrite 'ev' at the corresponding position.
-            // 'tmpd' will be updated with the distances D - lambda_i.
+            // 'etmpd' will be updated with the distances D - lambda_i.
             // deflated values are not changed.
             rocblas_int linfo;
 
@@ -1292,11 +1286,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // to solve the correspondinbg secular eqn.
 
         // define shifted arrays
-        S* tmpd = temps + p1 * n;
-        S* ev = evs + p1;
-        S* diag = D + p1;
+        S* etmpd = temps;
         rocblas_int* mask = idd + p1;
-        S* zz = z + p1;
         rocblas_int* per = pers + p1;
 
         // find degree of secular equation
@@ -1311,12 +1302,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             {
                 if(mask[j] == 1)
                 {
-                    S valg = tmpd[i + j * n];
-                    valf *= (per[i] == j) ? valg : valg / (diag[per[i]] - diag[j]);
+                    S valg = etmpd[(p1 + j) * n + i];
+                    valf *= (per[i] == j) ? valg : valg / (D[p1 + per[i]] - D[p1 + j]);
                 }
             }
             valf = sqrt(std::abs(valf));
-            zz[i] = zz[i] < 0 ? -valf : valf;
+            z[p1 + i] = z[p1 + i] < 0 ? -valf : valf;
         }
     }
 }
@@ -1411,7 +1402,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             sz += ns[tid + i];
 
         // define shifted arrays
-        S* tmpd = temps + in * n;
         S* diag = D + in;
         rocblas_int* mask = idd + in;
         S* zz = z + in;
