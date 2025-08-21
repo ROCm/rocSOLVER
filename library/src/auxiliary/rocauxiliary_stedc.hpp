@@ -508,8 +508,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
-    // merge sub-block id
-    rocblas_int sid = hipBlockIdx_x;
+    // group id
+    rocblas_int gid = hipBlockIdx_x;
 
     // select batch instance to work with
     S* D = DD + bid * strideD;
@@ -526,10 +526,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* md    = ptr_md(n, tmpz);
 
 
-    S d = D[sid];
-    rocblas_int sz = esz[sid];
-    rocblas_int p1 = eps[sid];
-    rocblas_int def = idd[sid];
+    S d = D[gid];
+    rocblas_int sz = esz[gid];
+    rocblas_int p1 = eps[gid];
+    rocblas_int def = idd[gid];
 
     constexpr int regs = 8;
     const int chunk_width = regs * hipBlockDim_x;
@@ -565,7 +565,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 // so we order any deflated value > any non-deflated value
                 // def == 0 - current is deflated, def[i] == 1 - other value is not deflated
                 lt += (def < iddval[i]) || (def == iddval[i] && bval[i] < d);
-                eq += (def == iddval[i]) && (bval[i] == d && (p1 + x) < sid);
+                eq += (def == iddval[i]) && (bval[i] == d && (p1 + x) < gid);
             }
         }
     }
@@ -587,7 +587,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 
     if (hipThreadIdx_x == 0) {
-        map [pos+p1] = sid;
+        map [pos+p1] = gid;
         md  [pos+p1] = d;
         sidd[pos+p1] = def;
     }
@@ -598,7 +598,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // Make sure we propagate NAN. It is likely to have more NANs in the output
     // than in the input, but the following computations are doomed anyway.
     if (nan) {
-        md[sid] = NAN;
+        md[gid] = NAN;
     }
 }
 
@@ -1138,8 +1138,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
-    // merge sub-block id
-    rocblas_int sid = hipBlockIdx_x;
+    // group id
+    rocblas_int gid = hipBlockIdx_x;
 
     // select batch instance to work with
     S* D = DD + bid * strideD;
@@ -1158,11 +1158,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* cz    = ptr_cz(n, tmpz);
 
 
-    S d_ = D[sid];
-    S z_ = z[sid];
-    rocblas_int sz = esz[sid];
-    rocblas_int p1 = eps[sid];
-    rocblas_int def = idd[sid];
+    S d_ = D[gid];
+    S z_ = z[gid];
+    rocblas_int sz = esz[gid];
+    rocblas_int p1 = eps[gid];
+    rocblas_int def = idd[gid];
 
     constexpr int regs = 8;
     const int chunk_width = regs * hipBlockDim_x;
@@ -1198,7 +1198,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 // so we order any deflated value > any non-deflated value
                 // def == 0 - current is deflated, def[i] == 1 - other value is not deflated
                 lt += (def < iddval[i]) || (def == iddval[i] && bval[i] < d_);
-                eq += (def == iddval[i]) && (bval[i] == d_ && (p1 + x) < sid);
+                eq += (def == iddval[i]) && (bval[i] == d_ && (p1 + x) < gid);
             }
         }
     }
@@ -1220,7 +1220,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 
     if (hipThreadIdx_x == 0) {
-        map [pos+p1] = sid - p1;
+        map [pos+p1] = gid - p1;
         cd  [pos+p1] = d_;
         cz  [pos+p1] = z_;
         sidd[pos+p1] = def;
@@ -1232,7 +1232,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // Make sure we propagate NAN. It is likely to have more NANs in the output
     // than in the input, but the following computations are doomed anyway.
     if (nan) {
-        cd[sid] = NAN;
+        cd[gid] = NAN;
     }
 }
 
