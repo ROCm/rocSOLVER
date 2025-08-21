@@ -281,11 +281,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_init_splits(const rocb
     for(int i = hipThreadIdx_x; i < n_blocks; i+=hipBlockDim_x)
     {
         rocblas_int sz = ns[i];
-        rocblas_int p = ps[i];
+        rocblas_int p1 = ps[i];
         msz[i] = sz;
-        mps[i] = p;
+        mps[i] = p1;
         for (int j = 0; j < sz; j++) {
-            em[p + j] = i;
+            em[p1 + j] = i;
         }
     }
 }
@@ -326,9 +326,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_update_splits(const ro
     {
         rocblas_int sz1 = bsz[i * 2 + 0];
         rocblas_int sz2 = bsz[i * 2 + 1];
-        rocblas_int p   = bps[i * 2];
+        rocblas_int p1  = bps[i * 2];
         msz[i] = sz1 + sz2;
-        mps[i] = p;
+        mps[i] = p1;
     }
     __syncthreads();
 
@@ -522,7 +522,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     S d = D[sid];
     rocblas_int sz = esz[sid];
-    rocblas_int p  = eps[sid];
+    rocblas_int p1 = eps[sid];
     rocblas_int def = idd[sid];
 
     constexpr int regs = 8;
@@ -543,8 +543,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             int x = chunk * chunk_width + i * hipBlockDim_x + hipThreadIdx_x;
             if(x < sz)
             {
-                bval[i] = D[p + x];
-                iddval[i]  = idd[p + x];
+                bval[i] = D[p1 + x];
+                iddval[i]  = idd[p1 + x];
             }
         }
         for(int i = 0; i < regs; i++)
@@ -559,7 +559,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 // so we order any deflated value > any non-deflated value
                 // def == 0 - current is deflated, def[i] == 1 - other value is not deflated
                 lt += (def < iddval[i]) || (def == iddval[i] && bval[i] < d);
-                eq += (def == iddval[i]) && (bval[i] == d && (p + x) < sid);
+                eq += (def == iddval[i]) && (bval[i] == d && (p1 + x) < sid);
             }
         }
     }
@@ -581,9 +581,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     }
 
     if (hipThreadIdx_x == 0) {
-        map [pos+p] = sid;
-        md  [pos+p] = d;
-        sidd[pos+p] = def;
+        map [pos+p1] = sid;
+        md  [pos+p1] = d;
+        sidd[pos+p1] = def;
     }
 
     __syncthreads();
@@ -643,19 +643,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         S d   = md[i];
         S dn  = md[next];
         S dp  = md[prev];
-        rocblas_int p  = eps[i];
+        rocblas_int p1 = eps[i];
         rocblas_int pn = eps[next];
         rocblas_int pp = eps[prev];
 
         int bcandidate =
             sidd[i] && sidd[next]       // not yet deflated
-            && p == pn                  // in the same merge block
+            && p1 == pn                 // in the same merge block
             && std::abs(d - dn) <= tol  // within tolerance
             && i != (n-1)               // isn't last 
             ;
         int tcandidate =
             sidd[i] && sidd[prev]       // not yet deflated
-            && p == pp                  // in the same merge block
+            && p1 == pp                 // in the same merge block
             && std::abs(d - dp) <= tol  // within tolerance
             && i > 0                    // isn't first
             ;
