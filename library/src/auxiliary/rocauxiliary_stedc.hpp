@@ -1601,7 +1601,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* evs = ptr_evs(n, tmpz);
     // updated eigenvectors after merges
-    S* vecs = tempgemmA + bid * get_tempgemm_size(n);
+    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
+    S* vecs = ptr_vecs(n, tempgemm);
 
     // tn is max number of vectors in each sub-block
     rocblas_int bdm = 1 << (k + 1);
@@ -2209,8 +2210,9 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // STEDC_EXTERNAL_GEMM at run time to switch between internal vector updates and
                 // external gemm based updates.
                 rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n,
-                               &one, V, 0, ldv, strideV, tempgemm, n * n, n, 2 * n * n, &zero,
-                               tempgemm, 0, n, 2 * n * n, batch_count, workArr);
+                               &one, V, 0, ldv, strideV,
+                               ptr_etmpd(n, tempgemm), 0, n, get_tempgemm_size(n), &zero,
+                               ptr_vecs(n, tempgemm),  0, n, get_tempgemm_size(n), batch_count, workArr);
             }
 
             // d. update level
