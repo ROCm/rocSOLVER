@@ -84,7 +84,7 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
     // 18    rocblas_int bps[2*m], _[n-2*m];  // starting position of each block
     // 19    rocblas_int dbg4[n];             //
     // };
-    return 20 * n;
+    return 20 * n + 64*64;
 }
 
 template <typename S> __host__ __device__ inline S* ptr_ns    (rocblas_int n, S* splits) { return splits +  1 * n; }
@@ -105,7 +105,27 @@ template <typename S> __host__ __device__ inline S* ptr_msz   (rocblas_int n, S*
 template <typename S> __host__ __device__ inline S* ptr_mps   (rocblas_int n, S* splits) { return splits + 16 * n; }
 template <typename S> __host__ __device__ inline S* ptr_bsz   (rocblas_int n, S* splits) { return splits + 17 * n; }
 template <typename S> __host__ __device__ inline S* ptr_bps   (rocblas_int n, S* splits) { return splits + 18 * n; }
-template <typename S> __host__ __device__ inline S* ptr_dbg   (rocblas_int n, S* splits) { return splits + 19 * n; }
+template <typename S> __host__ __device__ inline S* ptr_dbg   (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 0; }
+template <typename S> __host__ __device__ inline S* ptr_dbg1  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 1; }
+template <typename S> __host__ __device__ inline S* ptr_dbg2  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 2; }
+template <typename S> __host__ __device__ inline S* ptr_dbg3  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 3; }
+template <typename S> __host__ __device__ inline S* ptr_dbg4  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 4; }
+template <typename S> __host__ __device__ inline S* ptr_dbg5  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 5; }
+template <typename S> __host__ __device__ inline S* ptr_dbg6  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 6; }
+template <typename S> __host__ __device__ inline S* ptr_dbg7  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 7; }
+template <typename S> __host__ __device__ inline S* ptr_dbg8  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 8; }
+template <typename S> __host__ __device__ inline S* ptr_dbg9  (rocblas_int n, S* splits) { return splits + 19 * n + 64 * 9; }
+template <typename S> __host__ __device__ inline S* ptr_dbg10 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *10; }
+template <typename S> __host__ __device__ inline S* ptr_dbg11 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *11; }
+template <typename S> __host__ __device__ inline S* ptr_dbg12 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *12; }
+template <typename S> __host__ __device__ inline S* ptr_dbg13 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *13; }
+template <typename S> __host__ __device__ inline S* ptr_dbg14 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *14; }
+template <typename S> __host__ __device__ inline S* ptr_dbg15 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *15; }
+template <typename S> __host__ __device__ inline S* ptr_dbg16 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *16; }
+template <typename S> __host__ __device__ inline S* ptr_dbg17 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *17; }
+template <typename S> __host__ __device__ inline S* ptr_dbg18 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *18; }
+template <typename S> __host__ __device__ inline S* ptr_dbg19 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *19; }
+template <typename S> __host__ __device__ inline S* ptr_dbg20 (rocblas_int n, S* splits) { return splits + 19 * n + 64 *20; }
 
 __host__ __device__ inline rocblas_int get_tmpz_size(const rocblas_int n)
 {
@@ -1401,7 +1421,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // thread id
     rocblas_int tidb = hipThreadIdx_x;
     rocblas_int dim = hipBlockDim_x;
-    rocblas_int tid, vidb;
 
     // select batch instance to work with
     S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
@@ -1412,10 +1431,35 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* ns   = ptr_ns(n, splits);
     rocblas_int* ps   = ptr_ps(n, splits);
     rocblas_int* idd  = ptr_idd(n, splits);
+    rocblas_int* msz  = ptr_msz(n, splits);
+    rocblas_int* mps  = ptr_mps(n, splits);
+    rocblas_int* dds  = ptr_dds(n, splits);
     rocblas_int* pers = ptr_map(n, splits);
 
+    rocblas_int* dbg  = ptr_dbg(n, splits);
+    rocblas_int* dbg1  = ptr_dbg1(n, splits);
+    rocblas_int* dbg2  = ptr_dbg2(n, splits);
+    rocblas_int* dbg3  = ptr_dbg3(n, splits);
+    rocblas_int* dbg4  = ptr_dbg4(n, splits);
+    rocblas_int* dbg5  = ptr_dbg5(n, splits);
+    rocblas_int* dbg6  = ptr_dbg6(n, splits);
+    rocblas_int* dbg7  = ptr_dbg7(n, splits);
+    rocblas_int* dbg8  = ptr_dbg8(n, splits);
+    rocblas_int* dbg9  = ptr_dbg9(n, splits);
+    rocblas_int* dbg10 = ptr_dbg10(n, splits);
+    rocblas_int* dbg11 = ptr_dbg11(n, splits);
+    rocblas_int* dbg12 = ptr_dbg12(n, splits);
+    rocblas_int* dbg13 = ptr_dbg13(n, splits);
+    rocblas_int* dbg14 = ptr_dbg14(n, splits);
+    rocblas_int* dbg15 = ptr_dbg15(n, splits);
+    rocblas_int* dbg16 = ptr_dbg16(n, splits);
+    rocblas_int* dbg17 = ptr_dbg17(n, splits);
+    rocblas_int* dbg18 = ptr_dbg18(n, splits);
+    rocblas_int* dbg19 = ptr_dbg19(n, splits);
+    rocblas_int* dbg20 = ptr_dbg20(n, splits);
+
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
-    S* z   = ptr_cz(n, tmpz);
+    S* z    = ptr_cz(n, tmpz);
     // updated eigenvectors after merges
     S* vecs = vecsA + bid * 2 * (n * n);
     // temp values during the merges
@@ -1423,71 +1467,54 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in shared memory
     // used to store temp values during the different reductions
-    extern __shared__ rocblas_int lsmem[];
-    S* inrms = reinterpret_cast<S*>(lsmem);
+    __shared__ S inrms[STEDC_BDIM];
 
     // tn is max number of vectors in each sub-block
     rocblas_int bdm = 1 << (k + 1);
     rocblas_int tn = (n - 1) / blks + 1;
 
     // Work with merges on level k. Each thread-group works with one vector.
-    if(sid < tn * blks)
+    //if(sid < tn * blks)
     {
-        rocblas_int iam, sz, p2;
-        S valf, valg;
-
         // tid indexes the sub-blocks in the entire split block
-        tid = sid / tn;
-        p2 = ps[tid];
+        rocblas_int tid = sid / tn;
+        rocblas_int p2 = ps[tid];
         // vidb indexes the vectors associated with each sub-block
-        vidb = sid % tn;
-        // iam indexes the sub-blocks in the context of the merge
-        // (according to its level in the merge tree)
-        iam = tid % bdm;
+        rocblas_int vidb = sid % tn;
+
+        rocblas_int merge_id = tid / bdm;
+        rocblas_int eid = vidb + p2;
 
         // determine boundaries of what would be the new merged sub-block
-        // 'in' will be its initial position
-        rocblas_int in = ps[tid - iam];
-        // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-        sz = ns[tid];
-        for(int i = iam; i > 0; --i)
-            sz += ns[tid - i];
-        for(int i = bdm - 1 - iam; i > 0; --i)
-            sz += ns[tid + i];
+        rocblas_int p1 = mps[merge_id];
+        rocblas_int sz = msz[merge_id];
+        rocblas_int dd = dds[merge_id];
 
         // define shifted arrays
-        S* diag = D + in;
-        rocblas_int* mask = idd + in;
-        S* zz = z + in;
-        rocblas_int* per = pers + in;
+        S* diag = D + p1;
+        rocblas_int* mask = idd + p1;
+        S* zz = z + p1;
+        rocblas_int* per = pers + p1;
 
-        // find degree of secular equation
-        rocblas_int dd = 0;
-        for(int i = 0; i < sz; ++i)
-        {
-            if(mask[i] == 1)
-                dd++;
-        }
         __syncthreads();
 
 
         // Prepare vectors corresponding to non-deflated values
         S temp, nrm;
-        rocblas_int j = vidb;
-        bool go = (j < ns[tid]);
+        bool go = (vidb < ns[tid]);
         S* putvec = USEGEMM ? vecs : temps;
 
         if(go)
         {
-            if(idd[p2 + j] == 1)
+            if(idd[eid] == 1)
             {
                 // compute vectors of rank-1 perturbed system and their norms
                 nrm = 0;
                 for(int i = tidb; i < dd; i += dim)
                 {
-                    valf = zz[i] / temps[i + (p2 + j) * n];
+                    S valf = zz[i] / temps[i + eid*n];
                     nrm += valf * valf;
-                    putvec[i + (p2 + j) * n] = valf;
+                    putvec[i + eid*n] = valf;
                 }
                 inrms[tidb] = nrm;
                 __syncthreads();
@@ -1510,21 +1537,21 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 // when using external gemms for the update, we need to
                 // put vectors in padded matrix 'temps'
                 // (this is to compute 'vecs = C * temps' using external gemm call)
-                for(int i = tidb; i < in + sz; i += dim)
+                for(int i = tidb; i < p1 + sz; i += dim)
                 {
-                    if(i >= in && idd[p2 + j] == 1 && idd[i] == 1)
+                    if(i >= p1 && idd[eid] == 1 && idd[i] == 1)
                     {
                         dd = 0;
-                        for(int k = in; k < i; ++k)
+                        for(int k = p1; k < i; ++k)
                         {
                             if(idd[k] == 0)
                                 dd++;
                         }
-                        temps[pers[i - dd] + in + (p2 + j) * n]
-                            = vecs[i - dd - in + (p2 + j) * n] / nrm;
+                        temps[pers[i - dd] + p1 + eid * n]
+                            = vecs[i - dd - p1 + eid * n] / nrm;
                     }
                     else
-                        temps[i + (p2 + j) * n] = 0;
+                        temps[i + eid * n] = 0;
                 }
             }
             else
@@ -1533,18 +1560,18 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 // multiply by C (row by row)
                 rocblas_int tsz = 1 << (levs - 1 - k);
                 tsz = (n - 1) / tsz + 1;
-                if(idd[p2 + j] == 1)
+                if(idd[eid] == 1)
                 {
                     for(int ii = 0; ii < tsz; ++ii)
                     {
-                        rocblas_int i = in + ii;
+                        rocblas_int i = p1 + ii;
 
                         // inner products
                         temp = 0;
                         if(ii < sz)
                         {
                             for(int kk = tidb; kk < dd; kk += dim)
-                                temp += C[i + (per[kk] + in) * ldc] * temps[kk + (p2 + j) * n];
+                                temp += C[i + (per[kk] + p1) * ldc] * temps[kk + eid * n];
                         }
                         inrms[tidb] = temp;
                         __syncthreads();
@@ -1562,7 +1589,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
                         // result
                         if(ii < sz && tidb == 0)
-                            vecs[i + (p2 + j) * n] = temp / nrm;
+                            vecs[i + eid * n] = temp / nrm;
                         __syncthreads();
                     }
                 }
@@ -2117,8 +2144,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         // 3. merge phase
         //----------------
-        size_t lmemsize3 = sizeof(S) * STEDC_BDIM;
-
         // launch merge for level k
         for(rocblas_int k = 0; k < levs; ++k)
         {
@@ -2162,32 +2187,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
                                     strideD, tmpz, tempgemm, splits);//*/
 
-#if DEBUG_OUTPUT
-            //hipError_t status = hipStreamSynchronize(stream);
-            if(env_levs && global_cnt == 1)
-            {
-                //std::cout << "\nk=" << k << std::endl;
-                print_device_matrix(std::cout, "msz", 1, n_merges, ptr_msz(n, splits), 1);
-                print_device_matrix(std::cout, "mps", 1, n_merges, ptr_mps(n, splits), 1);
-                print_device_matrix(std::cout, "dds", 1, n_merges, ptr_dds(n, splits), 1);
-                print_device_matrix(std::cout, "em", 1, n, ptr_em(n, splits), 1);
-                print_device_matrix(std::cout, "idd", 1, n, ptr_idd(n, splits), 1);
-                print_device_matrix(std::cout, "sidd", 1, n, ptr_sidd(n, splits), 1);
-                print_device_matrix(std::cout, "map", 1, n, ptr_map(n, splits), 1);
-                print_device_matrix(std::cout, "pers", 1, n, ptr_pers(n, splits), 1);
-                print_device_matrix(std::cout, "D", 1, n, D, 1);
-                print_device_matrix(std::cout, "cd", 1, n, ptr_cd(n, tmpz), 1);
-                print_device_matrix(std::cout, "etmpd", n, n, tempgemm +n*n, n);
-                
-                //print_device_matrix(std::cout, "dbg", 1, n, ptr_dbg(n, splits), 1);
-
-                //print_device_matrix(std::cout, "D", 1, n, D, 1);
-                //print_device_matrix(std::cout, "mtols", 1, n, tempgemm + n * 4, 1);
-                //print_device_matrix(std::cout, "mD", 1, n, tempgemm + n * 5, 1);
-
-                //std::exit(0);
-            }
-#endif
 
             rocblas_int numgrps_solve = (n - 1) / STEDC_BDIM + 1;
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Solve_kernel<S>),
@@ -2201,14 +2200,50 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE,
                                     tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
-            // c. find merged eigenvectors
             rocblas_int numgrps3 = ((n - 1) / blks + 1) * blks;
+            // c. find merged eigenvectors
             ROCSOLVER_LAUNCH_KERNEL(
                 (stedc_mergeVectors_kernel<STEDC_EXTERNAL_GEMM, S>),
-                dim3(numgrps3, batch_count), dim3(STEDC_BDIM), lmemsize3, stream, 
+                dim3(numgrps3, batch_count), dim3(STEDC_BDIM), 0, stream, 
                 levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE, V, 0, ldv, strideV, 
                 tmpz, tempgemm, splits);
 
+#if DEBUG_OUTPUT
+            //hipError_t status = hipStreamSynchronize(stream);
+            if(env_levs && global_cnt == 1)
+            {
+                std::cout << "\nk=" << k << std::endl;
+                std::cout << "numgrps3=" << numgrps3 << "\tblks=" << blks << std::endl;
+                print_device_matrix(std::cout, "msz", 1, n_merges, ptr_msz(n, splits), 1);
+                print_device_matrix(std::cout, "mps", 1, n_merges, ptr_mps(n, splits), 1);
+                print_device_matrix(std::cout, "esz", 1, n, ptr_esz(n, splits), 1);
+                print_device_matrix(std::cout, "eps", 1, n, ptr_eps(n, splits), 1);
+                //print_device_matrix(std::cout, "dds", 1, n_merges, ptr_dds(n, splits), 1);
+                print_device_matrix(std::cout, "ns", 1, blks, ptr_ns(n, splits), 1);
+                print_device_matrix(std::cout, "ps", 1, blks, ptr_ps(n, splits), 1);
+                print_device_matrix(std::cout, "sid          ", 1, numgrps3, ptr_dbg(n, splits), 1);
+                print_device_matrix(std::cout, "tid", 1, numgrps3, ptr_dbg1(n, splits), 1);
+                print_device_matrix(std::cout, "iam", 1, numgrps3, ptr_dbg2(n, splits), 1);
+                print_device_matrix(std::cout, "tid - iam", 1, numgrps3, ptr_dbg3(n, splits), 1);
+                print_device_matrix(std::cout, "merge_id", 1, numgrps3, ptr_dbg4(n, splits), 1);
+                print_device_matrix(std::cout, "mps[merge_id]", 1, numgrps3, ptr_dbg5(n, splits), 1);
+                print_device_matrix(std::cout, "ps[tid-iam]", 1, numgrps3, ptr_dbg6(n, splits), 1);
+                //print_device_matrix(std::cout, "em", 1, n, ptr_em(n, splits), 1);
+                //print_device_matrix(std::cout, "idd", 1, n, ptr_idd(n, splits), 1);
+                //print_device_matrix(std::cout, "sidd", 1, n, ptr_sidd(n, splits), 1);
+                //print_device_matrix(std::cout, "map", 1, n, ptr_map(n, splits), 1);
+                //print_device_matrix(std::cout, "pers", 1, n, ptr_pers(n, splits), 1);
+                //print_device_matrix(std::cout, "D", 1, n, D, 1);
+                //print_device_matrix(std::cout, "cd", 1, n, ptr_cd(n, tmpz), 1);
+                //print_device_matrix(std::cout, "etmpd", n, n, tempgemm +n*n, n);
+                
+                //print_device_matrix(std::cout, "dbg", 1, n, ptr_dbg(n, splits), 1);
+
+                //print_device_matrix(std::cout, "D", 1, n, D, 1);
+
+                //std::exit(0);
+            }
+#endif
             if(STEDC_EXTERNAL_GEMM)
             {
                 // using external gemms with padded matrices to do the vector update
