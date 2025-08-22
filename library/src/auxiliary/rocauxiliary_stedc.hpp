@@ -143,8 +143,10 @@ __host__ __device__ inline rocblas_int get_tmpz_size(const rocblas_int n)
     // 7    S cd[n];             // sorted and compacted d values
     // 8    S cz[n];             // sorted and compacted z values
     // 9    S r1p[m], _[n-m];    // p component of the rank-1 modification
-    // 10   S sdbg[n];           //
-    return 11 * n;
+    // 10   S nrms[n];           // norms of vectors
+    // 11   S sdbg[n];           //
+    // };
+    return 12 * n;
 }
 
 template <typename S> __host__ __device__ inline S* ptr_z    (rocblas_int n, S* tmpz) { return tmpz +  0 * n; }
@@ -157,7 +159,22 @@ template <typename S> __host__ __device__ inline S* ptr_md   (rocblas_int n, S* 
 template <typename S> __host__ __device__ inline S* ptr_cd   (rocblas_int n, S* tmpz) { return tmpz +  7 * n; }
 template <typename S> __host__ __device__ inline S* ptr_cz   (rocblas_int n, S* tmpz) { return tmpz +  8 * n; }
 template <typename S> __host__ __device__ inline S* ptr_r1p  (rocblas_int n, S* tmpz) { return tmpz +  9 * n; }
-template <typename S> __host__ __device__ inline S* ptr_sdbg (rocblas_int n, S* tmpz) { return tmpz + 10 * n; }
+template <typename S> __host__ __device__ inline S* ptr_nrms (rocblas_int n, S* tmpz) { return tmpz + 10 * n; }
+template <typename S> __host__ __device__ inline S* ptr_sdbg (rocblas_int n, S* tmpz) { return tmpz + 11 * n; }
+
+
+__host__ __device__ inline rocblas_int get_tempgemm_size(const rocblas_int n)
+{
+    // tempgemm layout:
+    // struct {
+    // 0    S vecs[n*n];      // 
+    // 1    S etmpd[n*n];     // temp deltas used in solving secular equations
+    // };
+    return 2 * n * n;
+}
+
+template <typename S> __host__ __device__ inline S* ptr_vecs (rocblas_int n, S* tempgemm) { return tempgemm +  0 * n * n; }
+template <typename S> __host__ __device__ inline S* ptr_etmpd(rocblas_int n, S* tempgemm) { return tempgemm +  1 * n * n; }
 
 
 /*************** Main kernels *********************************************************/
@@ -1085,7 +1102,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                                    S* DD,
                                    const rocblas_stride strideD,
                                    S* tmpzA,
-                                   S* vecsA,
+                                   S* tempgemmA,
                                    rocblas_int* splitsA)
 {
     // threads and groups indices
@@ -1105,9 +1122,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* evs = ptr_evs(n, tmpz);
     S* cd  = ptr_cd(n, tmpz);
 
-    S* vecs = vecsA + bid * 2 * (n * n);
-    S* temps = vecs + (n * n);
-    S* etmpd = temps;
+    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
+    S* etmpd = ptr_etmpd(n, tempgemm);
 
     rocblas_int dd = dds[sid];
     rocblas_int p1 = mps[sid];
@@ -1202,7 +1218,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                                    S* EE,
                                    const rocblas_stride strideE,
                                    S* tmpzA,
-                                   S* vecsA,
+                                   S* tempgemmA,
                                    rocblas_int* splitsA,
                                    const S eps,
                                    const S ssfmin,
@@ -1228,10 +1244,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* r1p = ptr_r1p(n, tmpz);
     S* evs = ptr_evs(n, tmpz);
     // updated eigenvectors after merges
-    S* vecs = vecsA + bid * 2 * (n * n);
-    // temp values during the merges
-    S* temps = vecs + (n * n);
-    S* etmpd = temps;
+    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
+    S* etmpd = ptr_etmpd(n, tempgemm);
 
     int i = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
     if(i < n)
@@ -1312,7 +1326,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                                      S* EE,
                                      const rocblas_stride strideE,
                                      S* tmpzA,
-                                     S* vecsA,
+                                     S* tempgemmA,
                                      rocblas_int* splitsA,
                                      const S eps,
                                      const S ssfmin,
@@ -1339,10 +1353,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* z = ptr_cz(n, tmpz);
     // updated eigenvectors after merges
-    S* vecs = vecsA + bid * 2 * (n * n);
-    // temp values during the merges
-    S* temps = vecs + (n * n);
-    S* etmpd = temps;
+    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
+    S* etmpd = ptr_etmpd(n, tempgemm);
 
     rocblas_int sid = em[eid];
     rocblas_int sz = msz[sid];
@@ -1400,16 +1412,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                               const rocblas_int blks,
                               const rocblas_int k,
                               const rocblas_int n,
-                              S* DD,
-                              const rocblas_stride strideD,
-                              S* EE,
-                              const rocblas_stride strideE,
                               S* CC,
                               const rocblas_int shiftC,
                               const rocblas_int ldc,
                               const rocblas_stride strideC,
                               S* tmpzA,
-                              S* vecsA,
+                              S* tempgemmA,
                               rocblas_int* splitsA)
 {
     // threads and groups indices
@@ -1423,7 +1431,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // select batch instance to work with
     S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
-    S* D = DD + bid * strideD;
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
@@ -1437,13 +1444,9 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* z    = ptr_cz(n, tmpz);
     // updated eigenvectors after merges
-    S* vecs = vecsA + bid * 2 * (n * n);
-    // temp values during the merges
-    S* temps = vecs + (n * n);
-
-    // temporary arrays in shared memory
-    // used to store temp values during the different reductions
-    __shared__ S inrms[STEDC_BDIM];
+    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
+    S* vecs  = ptr_vecs(n, tempgemm);
+    S* etmpd = ptr_etmpd(n, tempgemm);
 
     // Work with merges on level k. Each thread-group works with one vector.
     // determine boundaries of what would be the new merged sub-block
@@ -1454,10 +1457,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     __syncthreads();
 
+    // temporary arrays in shared memory
+    // used to store temp values during the different reductions
+    __shared__ S inrms[STEDC_BDIM];
 
     // Prepare vectors corresponding to non-deflated values
     S nrm;
-    S* putvec = USEGEMM ? vecs : temps;
+    S* putvec = USEGEMM ? vecs : etmpd;
 
     if(idd[eid] == 1)
     {
@@ -1465,7 +1471,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         nrm = 0;
         for(int i = tidb; i < dd; i += dim)
         {
-            S valf = z[p1 + i] / temps[i + eid*n];
+            S valf = z[p1 + i] / etmpd[i + eid*n];
             nrm += valf * valf;
             putvec[i + eid*n] = valf;
         }
@@ -1488,8 +1494,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     if(USEGEMM)
     {
         // when using external gemms for the update, we need to
-        // put vectors in padded matrix 'temps'
-        // (this is to compute 'vecs = C * temps' using external gemm call)
+        // put vectors in padded matrix 'etmpd'
+        // (this is to compute 'vecs = C * etmpd' using external gemm call)
         for(int i = tidb; i < p1 + sz; i += dim)
         {
             if(i >= p1 && idd[eid] == 1 && idd[i] == 1)
@@ -1500,11 +1506,11 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     if(idd[k] == 0)
                         dd++;
                 }
-                temps[pers[i - dd] + p1 + eid * n]
+                etmpd[pers[i - dd] + p1 + eid * n]
                     = vecs[i - dd - p1 + eid * n] / nrm;
             }
             else
-                temps[i + eid * n] = 0;
+                etmpd[i + eid * n] = 0;
         }
     }
     else
@@ -1524,7 +1530,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 if(ii < sz)
                 {
                     for(int kk = tidb; kk < dd; kk += dim)
-                        temp += C[i + (pers[p1 + kk] + p1) * ldc] * temps[kk + eid * n];
+                        temp += C[i + (pers[p1 + kk] + p1) * ldc] * etmpd[kk + eid * n];
                 }
                 inrms[tidb] = temp;
                 __syncthreads();
@@ -1569,7 +1575,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                              const rocblas_int ldc,
                              const rocblas_stride strideC,
                              S* tmpzA,
-                             S* vecsA,
+                             S* tempgemmA,
                              rocblas_int* splitsA)
 {
     // threads and groups indices
@@ -1595,7 +1601,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* evs = ptr_evs(n, tmpz);
     // updated eigenvectors after merges
-    S* vecs = vecsA + bid * 2 * (n * n);
+    S* vecs = tempgemmA + bid * get_tempgemm_size(n);
 
     // tn is max number of vectors in each sub-block
     rocblas_int bdm = 1 << (k + 1);
@@ -1908,7 +1914,7 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
             *size_tempvect = sizeof(S) * (n * n) * batch_count;
         else
             *size_tempvect = 0;
-        *size_tempgemm = sizeof(S) * 2 * (n * n) * batch_count;
+        *size_tempgemm = sizeof(S) * get_tempgemm_size(n) * batch_count;
         if(BATCHED && !COMPLEX)
             *size_workArr = sizeof(S*) * batch_count;
         else
@@ -2033,7 +2039,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     else
     {
         // initialize temporary array for vector updates
-        size_t size_tempgemm = sizeof(S) * 2 * n * n * batch_count;
+        size_t size_tempgemm = sizeof(S) * get_tempgemm_size(n) * batch_count;
         HIP_CHECK(hipMemsetAsync((void*)tempgemm, 0, size_tempgemm, stream));
 
         // everything must be executed with scalars on the host
@@ -2156,7 +2162,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL(
                 (stedc_mergeVectors_kernel<STEDC_EXTERNAL_GEMM, S>),
                 dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE, V, 0, ldv, strideV, 
+                levs, blks, k, n, V, 0, ldv, strideV, 
                 tmpz, tempgemm, splits);
 
 #if DEBUG_OUTPUT
