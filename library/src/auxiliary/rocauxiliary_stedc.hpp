@@ -1231,6 +1231,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     S* vecs = vecsA + bid * 2 * (n * n);
     // temp values during the merges
     S* temps = vecs + (n * n);
+    S* etmpd = temps;
 
     int i = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
     if(i < n)
@@ -1249,7 +1250,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         rocblas_int p1 = mps[sid];
 
         // define shifted arrays
-        S* etmpd = temps;
         S* zz = z + p1;
 
         // find degree of secular equation
@@ -1391,8 +1391,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 //--------------------------------------------------------------------------------------//
 /** STEDC_MERGEVECTORS_KERNEL prepares vectors from the secular equation for
     every pair of sub-blocks that need to be merged.
-        - Call this kernel with batch_count groups in y, and as many groups as columns would 
-          be in the matrix if its size is exact multiple of the number of sub-blocks 'blks'.
+        - Call this kernel with batch_count groups in y, and n groups in x.
           Each group works with a column. Groups are size STEDC_BDIM.
         - If a group has an id larger than the actual number of columns it will do nothing. **/
 template <bool USEGEMM, typename S>
@@ -1417,7 +1416,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
     // merge sub-block id
-    rocblas_int sid = hipBlockIdx_x;
+    rocblas_int eid = hipBlockIdx_x;
     // thread id
     rocblas_int tidb = hipThreadIdx_x;
     rocblas_int dim = hipBlockDim_x;
@@ -1428,35 +1427,12 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* ns   = ptr_ns(n, splits);
-    rocblas_int* ps   = ptr_ps(n, splits);
+    rocblas_int* em   = ptr_em(n, splits);
     rocblas_int* idd  = ptr_idd(n, splits);
     rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* mps  = ptr_mps(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
     rocblas_int* pers = ptr_map(n, splits);
-
-    rocblas_int* dbg  = ptr_dbg(n, splits);
-    rocblas_int* dbg1  = ptr_dbg1(n, splits);
-    rocblas_int* dbg2  = ptr_dbg2(n, splits);
-    rocblas_int* dbg3  = ptr_dbg3(n, splits);
-    rocblas_int* dbg4  = ptr_dbg4(n, splits);
-    rocblas_int* dbg5  = ptr_dbg5(n, splits);
-    rocblas_int* dbg6  = ptr_dbg6(n, splits);
-    rocblas_int* dbg7  = ptr_dbg7(n, splits);
-    rocblas_int* dbg8  = ptr_dbg8(n, splits);
-    rocblas_int* dbg9  = ptr_dbg9(n, splits);
-    rocblas_int* dbg10 = ptr_dbg10(n, splits);
-    rocblas_int* dbg11 = ptr_dbg11(n, splits);
-    rocblas_int* dbg12 = ptr_dbg12(n, splits);
-    rocblas_int* dbg13 = ptr_dbg13(n, splits);
-    rocblas_int* dbg14 = ptr_dbg14(n, splits);
-    rocblas_int* dbg15 = ptr_dbg15(n, splits);
-    rocblas_int* dbg16 = ptr_dbg16(n, splits);
-    rocblas_int* dbg17 = ptr_dbg17(n, splits);
-    rocblas_int* dbg18 = ptr_dbg18(n, splits);
-    rocblas_int* dbg19 = ptr_dbg19(n, splits);
-    rocblas_int* dbg20 = ptr_dbg20(n, splits);
 
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* z    = ptr_cz(n, tmpz);
@@ -1469,130 +1445,105 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // used to store temp values during the different reductions
     __shared__ S inrms[STEDC_BDIM];
 
-    // tn is max number of vectors in each sub-block
-    rocblas_int bdm = 1 << (k + 1);
-    rocblas_int tn = (n - 1) / blks + 1;
-
     // Work with merges on level k. Each thread-group works with one vector.
-    //if(sid < tn * blks)
+    // determine boundaries of what would be the new merged sub-block
+    rocblas_int merge_id = em[eid];
+    rocblas_int p1 = mps[merge_id];
+    rocblas_int sz = msz[merge_id];
+    rocblas_int dd = dds[merge_id];
+
+    __syncthreads();
+
+
+    // Prepare vectors corresponding to non-deflated values
+    S nrm;
+    S* putvec = USEGEMM ? vecs : temps;
+
+    if(idd[eid] == 1)
     {
-        // tid indexes the sub-blocks in the entire split block
-        rocblas_int tid = sid / tn;
-        rocblas_int p2 = ps[tid];
-        // vidb indexes the vectors associated with each sub-block
-        rocblas_int vidb = sid % tn;
-
-        rocblas_int merge_id = tid / bdm;
-        rocblas_int eid = vidb + p2;
-
-        // determine boundaries of what would be the new merged sub-block
-        rocblas_int p1 = mps[merge_id];
-        rocblas_int sz = msz[merge_id];
-        rocblas_int dd = dds[merge_id];
-
-        // define shifted arrays
-        S* diag = D + p1;
-        rocblas_int* mask = idd + p1;
-        S* zz = z + p1;
-        rocblas_int* per = pers + p1;
-
+        // compute vectors of rank-1 perturbed system and their norms
+        nrm = 0;
+        for(int i = tidb; i < dd; i += dim)
+        {
+            S valf = z[p1 + i] / temps[i + eid*n];
+            nrm += valf * valf;
+            putvec[i + eid*n] = valf;
+        }
+        inrms[tidb] = nrm;
         __syncthreads();
 
-
-        // Prepare vectors corresponding to non-deflated values
-        S temp, nrm;
-        bool go = (vidb < ns[tid]);
-        S* putvec = USEGEMM ? vecs : temps;
-
-        if(go)
+        // reduction (for the norms)
+        for(int r = dim / 2; r > 0; r /= 2)
         {
-            if(idd[eid] == 1)
+            if(tidb < r)
             {
-                // compute vectors of rank-1 perturbed system and their norms
-                nrm = 0;
-                for(int i = tidb; i < dd; i += dim)
-                {
-                    S valf = zz[i] / temps[i + eid*n];
-                    nrm += valf * valf;
-                    putvec[i + eid*n] = valf;
-                }
+                nrm += inrms[tidb + r];
                 inrms[tidb] = nrm;
+            }
+            __syncthreads();
+        }
+        nrm = sqrt(inrms[0]);
+    }
+
+    if(USEGEMM)
+    {
+        // when using external gemms for the update, we need to
+        // put vectors in padded matrix 'temps'
+        // (this is to compute 'vecs = C * temps' using external gemm call)
+        for(int i = tidb; i < p1 + sz; i += dim)
+        {
+            if(i >= p1 && idd[eid] == 1 && idd[i] == 1)
+            {
+                dd = 0;
+                for(int k = p1; k < i; ++k)
+                {
+                    if(idd[k] == 0)
+                        dd++;
+                }
+                temps[pers[i - dd] + p1 + eid * n]
+                    = vecs[i - dd - p1 + eid * n] / nrm;
+            }
+            else
+                temps[i + eid * n] = 0;
+        }
+    }
+    else
+    {
+        // otherwise, use internal gemm-like procedure to
+        // multiply by C (row by row)
+        rocblas_int tsz = 1 << (levs - 1 - k);
+        tsz = (n - 1) / tsz + 1;
+        if(idd[eid] == 1)
+        {
+            for(int ii = 0; ii < tsz; ++ii)
+            {
+                rocblas_int i = p1 + ii;
+
+                // inner products
+                S temp = 0;
+                if(ii < sz)
+                {
+                    for(int kk = tidb; kk < dd; kk += dim)
+                        temp += C[i + (pers[p1 + kk] + p1) * ldc] * temps[kk + eid * n];
+                }
+                inrms[tidb] = temp;
                 __syncthreads();
 
-                // reduction (for the norms)
+                // reduction
                 for(int r = dim / 2; r > 0; r /= 2)
                 {
-                    if(tidb < r)
+                    if(ii < sz && tidb < r)
                     {
-                        nrm += inrms[tidb + r];
-                        inrms[tidb] = nrm;
+                        temp += inrms[tidb + r];
+                        inrms[tidb] = temp;
                     }
                     __syncthreads();
                 }
-                nrm = sqrt(inrms[0]);
-            }
 
-            if(USEGEMM)
-            {
-                // when using external gemms for the update, we need to
-                // put vectors in padded matrix 'temps'
-                // (this is to compute 'vecs = C * temps' using external gemm call)
-                for(int i = tidb; i < p1 + sz; i += dim)
-                {
-                    if(i >= p1 && idd[eid] == 1 && idd[i] == 1)
-                    {
-                        dd = 0;
-                        for(int k = p1; k < i; ++k)
-                        {
-                            if(idd[k] == 0)
-                                dd++;
-                        }
-                        temps[pers[i - dd] + p1 + eid * n]
-                            = vecs[i - dd - p1 + eid * n] / nrm;
-                    }
-                    else
-                        temps[i + eid * n] = 0;
-                }
-            }
-            else
-            {
-                // otherwise, use internal gemm-like procedure to
-                // multiply by C (row by row)
-                rocblas_int tsz = 1 << (levs - 1 - k);
-                tsz = (n - 1) / tsz + 1;
-                if(idd[eid] == 1)
-                {
-                    for(int ii = 0; ii < tsz; ++ii)
-                    {
-                        rocblas_int i = p1 + ii;
-
-                        // inner products
-                        temp = 0;
-                        if(ii < sz)
-                        {
-                            for(int kk = tidb; kk < dd; kk += dim)
-                                temp += C[i + (per[kk] + p1) * ldc] * temps[kk + eid * n];
-                        }
-                        inrms[tidb] = temp;
-                        __syncthreads();
-
-                        // reduction
-                        for(int r = dim / 2; r > 0; r /= 2)
-                        {
-                            if(ii < sz && tidb < r)
-                            {
-                                temp += inrms[tidb + r];
-                                inrms[tidb] = temp;
-                            }
-                            __syncthreads();
-                        }
-
-                        // result
-                        if(ii < sz && tidb == 0)
-                            vecs[i + eid * n] = temp / nrm;
-                        __syncthreads();
-                    }
-                }
+                // result
+                if(ii < sz && tidb == 0)
+                    vecs[i + eid * n] = temp / nrm;
+                __syncthreads();
             }
         }
     }
@@ -2204,7 +2155,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             // c. find merged eigenvectors
             ROCSOLVER_LAUNCH_KERNEL(
                 (stedc_mergeVectors_kernel<STEDC_EXTERNAL_GEMM, S>),
-                dim3(numgrps3, batch_count), dim3(STEDC_BDIM), 0, stream, 
+                dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
                 levs, blks, k, n, D + shiftD, strideD, E + shiftE, strideE, V, 0, ldv, strideV, 
                 tmpz, tempgemm, splits);
 
