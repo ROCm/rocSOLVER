@@ -1382,8 +1382,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         - If a group has an id larger than the actual number of columns it will do nothing. **/
 template <bool USEGEMM, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedc_mergeVectors_kernel(const rocblas_int levs,
-                              const rocblas_int k,
+    stedc_mergeVectors_kernel(const rocblas_int k,
                               const rocblas_int n,
                               S* CC,
                               const rocblas_int shiftC,
@@ -1490,28 +1489,23 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     {
         // otherwise, use internal gemm-like procedure to
         // multiply by C (row by row)
-        rocblas_int tsz = 1 << (levs - 1 - k);
-        tsz = (n - 1) / tsz + 1;
         if(idd[eid] == 1)
         {
-            for(int ii = 0; ii < tsz; ++ii)
+            for(int ii = 0; ii < sz; ++ii)
             {
                 rocblas_int i = p1 + ii;
 
                 // inner products
                 S temp = 0;
-                if(ii < sz)
-                {
-                    for(int kk = tidb; kk < dd; kk += dim)
-                        temp += C[i + map[p1 + kk] * ldc] * etmpd[kk + eid * n];
-                }
+                for(int kk = tidb; kk < dd; kk += dim)
+                    temp += C[i + map[p1 + kk] * ldc] * etmpd[kk + eid * n];
                 inrms[tidb] = temp;
                 __syncthreads();
 
                 // reduction
                 for(int r = dim / 2; r > 0; r /= 2)
                 {
-                    if(ii < sz && tidb < r)
+                    if(tidb < r)
                     {
                         temp += inrms[tidb + r];
                         inrms[tidb] = temp;
@@ -1520,7 +1514,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 }
 
                 // result
-                if(ii < sz && tidb == 0)
+                if(tidb == 0)
                     vecs[i + eid * n] = temp / nrm;
                 __syncthreads();
             }
@@ -1643,8 +1637,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
 template <bool USEGEMM, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedc_mergeVectors_ApplyNorms_kernel(const rocblas_int levs,
-                                         const rocblas_int k,
+    stedc_mergeVectors_ApplyNorms_kernel(const rocblas_int k,
                                          const rocblas_int n,
                                          S* CC,
                                          const rocblas_int shiftC,
@@ -1724,28 +1717,23 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     {
         // otherwise, use internal gemm-like procedure to
         // multiply by C (row by row)
-        rocblas_int tsz = 1 << (levs - 1 - k);
-        tsz = (n - 1) / tsz + 1;
         if(idd[eid] == 1)
         {
-            for(int ii = 0; ii < tsz; ++ii)
+            for(int ii = 0; ii < sz; ++ii)
             {
                 rocblas_int i = p1 + ii;
 
                 // inner products
                 S temp = 0;
-                if(ii < sz)
-                {
-                    for(int kk = tidb; kk < dd; kk += dim)
-                        temp += C[i + map[p1 + kk] * ldc] * etmpd[kk + eid * n];
-                }
+                for(int kk = tidb; kk < dd; kk += dim)
+                    temp += C[i + map[p1 + kk] * ldc] * etmpd[kk + eid * n];
                 inrms[tidb] = temp;
                 __syncthreads();
 
                 // reduction
                 for(int r = dim / 2; r > 0; r /= 2)
                 {
-                    if(ii < sz && tidb < r)
+                    if(tidb < r)
                     {
                         temp += inrms[tidb + r];
                         inrms[tidb] = temp;
@@ -1754,7 +1742,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 }
 
                 // result
-                if(ii < sz && tidb == 0)
+                if(tidb == 0)
                     vecs[i + eid * n] = temp / nrm;
                 __syncthreads();
             }
@@ -2373,7 +2361,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 ROCSOLVER_LAUNCH_KERNEL(
                     (stedc_mergeVectors_ApplyNorms_kernel<STEDC_EXTERNAL_GEMM, S>),
                     dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                    levs, k, n, V, 0, ldv, strideV, 
+                    k, n, V, 0, ldv, strideV, 
                     tmpz, tempgemm, splits);
             }
             else
@@ -2381,7 +2369,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 ROCSOLVER_LAUNCH_KERNEL(
                     (stedc_mergeVectors_kernel<STEDC_EXTERNAL_GEMM, S>),
                     dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                    levs, k, n, V, 0, ldv, strideV, 
+                    k, n, V, 0, ldv, strideV, 
                     tmpz, tempgemm, splits);
             }
 
