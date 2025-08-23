@@ -1155,7 +1155,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* msz = ptr_msz(n, splits);
     rocblas_int* dds = ptr_dds(n, splits);
     rocblas_int* mps = ptr_mps(n, splits);
     rocblas_int* em  = ptr_em(n, splits);
@@ -1178,16 +1177,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // rank-1 modification component p correspond to the last element in the first sub-block
         S p = r1p[sid];
 
-        // determine boundaries of what would be the new merged sub-block
-        // 'p1' will be its initial position.
-        // 'sz' will be its size (i.e. the sum of the sizes of all merging sub-blocks)
-        rocblas_int sz = msz[sid];
         rocblas_int p1 = mps[sid];
-
-        // define shifted arrays
-        S* zz = z + p1;
-
-        // find degree of secular equation
         rocblas_int dd = dds[sid];
 
         /* ----------------------------------------------------------------- */
@@ -1198,21 +1188,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
         // each thread will find a different zero in parallel
         if((i-p1) < dd)
         {
-            // find position in the ordered array
-            S valf = p < 0 ? -evs[i] : evs[i];
-            int count = dd, cc = 0;
-            while(count > 0)
-            {
-                auto step = count / 2;
-                auto it = cc + step;
-                if(etmpd[it + i * n] < valf)
-                {
-                    cc = ++it;
-                    count -= step + 1;
-                }
-                else
-                    count = step;
-            }
+            int cc = i - p1;
 
             // computed zero will overwrite 'ev' at the corresponding position.
             // 'etmpd' will be updated with the distances D - lambda_i.
@@ -1220,13 +1196,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             rocblas_int linfo;
 
 #if defined(ROCSOLVER_USE_REFERENCE_SECULAR_EQUATIONS_SOLVER)
-            linfo = slaed4(dd, cc, etmpd + i * n, zz, std::abs(p), evs[i]);
+            linfo = slaed4(dd, cc, etmpd + i * n, z + p1, std::abs(p), evs[i]);
 #else
             if(cc == dd - 1)
-                linfo = seq_solve_ext(dd, etmpd + i * n, zz, (p < 0 ? -p : p), evs + i, eps,
+                linfo = seq_solve_ext(dd, etmpd + i * n, z + p1, std::abs(p), evs + i, eps,
                                         ssfmin, ssfmax);
             else
-                linfo = seq_solve(dd, etmpd + i * n, zz, (p < 0 ? -p : p), cc, evs + i, eps,
+                linfo = seq_solve(dd, etmpd + i * n, z + p1, std::abs(p), cc, evs + i, eps,
                                     ssfmin, ssfmax);
 #endif
 
@@ -2077,32 +2053,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     V, 0, ldv, strideV,
                                     splits);
 
-
-#if DEBUG_OUTPUT
-            //hipError_t status = hipStreamSynchronize(stream);
-            if(env_levs && global_cnt == 1)
-            {
-                std::cout << "\nk=" << k << std::endl;
-                print_device_matrix(std::cout, "msz", 1, n_merges, ptr_msz(n, splits), 1);
-                print_device_matrix(std::cout, "mps", 1, n_merges, ptr_mps(n, splits), 1);
-                print_device_matrix(std::cout, "esz", 1, n, ptr_esz(n, splits), 1);
-                print_device_matrix(std::cout, "eps", 1, n, ptr_eps(n, splits), 1);
-                //print_device_matrix(std::cout, "dds", 1, n_merges, ptr_dds(n, splits), 1);
-                //print_device_matrix(std::cout, "em", 1, n, ptr_em(n, splits), 1);
-                print_device_matrix(std::cout, "idd", 1, n, ptr_idd(n, splits), 1);
-                print_device_matrix(std::cout, "map", 1, n, ptr_map(n, splits), 1);
-                print_device_matrix(std::cout, "D", 1, n, D, 1);
-                print_device_matrix(std::cout, "cd", 1, n, ptr_cd(n, tmpz), 1);
-                //print_device_matrix(std::cout, "etmpd", n, n, tempgemm +n*n, n);
-
-                //print_device_matrix(std::cout, "dbg", 1, n, ptr_dbg(n, splits), 1);
-
-                //print_device_matrix(std::cout, "D", 1, n, D, 1);
-
-                //std::exit(0);
-            }
-#endif
-
 #if DEBUG_OUTPUT
             if(k == levs - 1)
             {
@@ -2119,6 +2069,30 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             if(k == levs - 1)
             {
                 HIP_CHECK(hipEventRecord(solve_end, stream));
+            }
+#endif
+
+#if DEBUG_OUTPUT
+            //hipError_t status = hipStreamSynchronize(stream);
+            if(env_levs && global_cnt == 1)
+            {
+                std::cout << "\nk=" << k << std::endl;
+                print_device_matrix(std::cout, "msz", 1, n_merges, ptr_msz(n, splits), 1);
+                print_device_matrix(std::cout, "mps", 1, n_merges, ptr_mps(n, splits), 1);
+                print_device_matrix(std::cout, "dds", 1, n_merges, ptr_dds(n, splits), 1);
+                print_device_matrix(std::cout, "esz", 1, n, ptr_esz(n, splits), 1);
+                print_device_matrix(std::cout, "eps", 1, n, ptr_eps(n, splits), 1);
+                //print_device_matrix(std::cout, "em", 1, n, ptr_em(n, splits), 1);
+                print_device_matrix(std::cout, "idd", 1, n, ptr_idd(n, splits), 1);
+                print_device_matrix(std::cout, "dbg", 1, n, ptr_dbg(n, splits), 1);
+                //print_device_matrix(std::cout, "map", 1, n, ptr_map(n, splits), 1);
+                print_device_matrix(std::cout, "D", 1, n, D, 1);
+                print_device_matrix(std::cout, "cd", 1, n, ptr_cd(n, tmpz), 1);
+                //print_device_matrix(std::cout, "etmpd", n, n, tempgemm +n*n, n);
+
+                //print_device_matrix(std::cout, "D", 1, n, D, 1);
+
+                //std::exit(0);
             }
 #endif
 
