@@ -67,7 +67,7 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
     // 1     rocblas_int      ;               //
     // 2     rocblas_int      ;               //
     // 3     rocblas_int idd[n];              // if idd[i] = 0, the value in position i has been deflated  (aka mask)
-    // 4     rocblas_int pers[n];             // container of permutations when solving the secular eqns
+    // 4     rocblas_int ;             //
     // 5     rocblas_int ;      //
     // 6     rocblas_int ;      //
     // 7     rocblas_int dds[m], _[n-m];      // degrees of secular equation
@@ -82,7 +82,7 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
     // 16    rocblas_int mps[m], _[n-m];      // starting position of each merge
     // 17    rocblas_int bsz[2*m], _[n-2*m];  // size of each block
     // 18    rocblas_int bps[2*m], _[n-2*m];  // starting position of each block
-    // 19    rocblas_int dbg4[n];             //
+    // 19    rocblas_int dbg[n];              //
     // };
     return 20 * n + 64*64;
 }
@@ -90,7 +90,7 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
 template <typename S> __host__ __device__ inline S* ptr___    (rocblas_int n, S* splits) { return splits +  1 * n; }
 template <typename S> __host__ __device__ inline S* ptr____   (rocblas_int n, S* splits) { return splits +  2 * n; }
 template <typename S> __host__ __device__ inline S* ptr_idd   (rocblas_int n, S* splits) { return splits +  3 * n; }
-template <typename S> __host__ __device__ inline S* ptr_pers  (rocblas_int n, S* splits) { return splits +  4 * n; }
+template <typename S> __host__ __device__ inline S* ptr_____  (rocblas_int n, S* splits) { return splits +  4 * n; }
 template <typename S> __host__ __device__ inline S* ptr_      (rocblas_int n, S* splits) { return splits +  5 * n; }
 template <typename S> __host__ __device__ inline S* ptr__     (rocblas_int n, S* splits) { return splits +  6 * n; }
 template <typename S> __host__ __device__ inline S* ptr_dds   (rocblas_int n, S* splits) { return splits +  7 * n; }
@@ -371,7 +371,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_update_splits(const ro
 
     for (int i = hipThreadIdx_x; i < n; i += hipBlockDim_x)
     {
-        int m = em[i] / 2;
+        rocblas_int m = em[i] / 2;
         esz[i] = msz[m];
         eps[i] = mps[m];
         map[i] = 0;
@@ -1073,7 +1073,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     if (hipThreadIdx_x == 0) {
         dds[sid] = dd;
-        map [pos+p1] = gid - p1;
+        map [pos+p1] = gid;
         cd  [pos+p1] = d_;
         cz  [pos+p1] = z_;
         sidd[pos+p1] = def;
@@ -1342,7 +1342,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* em   = ptr_em(n, splits);
     rocblas_int* mps  = ptr_mps(n, splits);
     rocblas_int* idd  = ptr_idd(n, splits);
-    rocblas_int* pers = ptr_map(n, splits);
+    rocblas_int* map  = ptr_map(n, splits);
     rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
 
@@ -1368,7 +1368,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             if(idd[p1 + j] == 1)
             {
                 S valg = etmpd[(p1 + j) * n + i];
-                valf *= (pers[p1 + i] == j) ? valg : valg / (D[p1 + pers[p1 + i]] - D[p1 + j]);
+                valf *= (map[p1 + i] == (p1 + j)) ? valg : valg / (D[map[p1 + i]] - D[p1 + j]);
             }
         }
         __shared__ S lds[STEDC_BDIM];
@@ -1435,7 +1435,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* mps  = ptr_mps(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
-    rocblas_int* pers = ptr_map(n, splits);
+    rocblas_int* map  = ptr_map(n, splits);
 
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* z    = ptr_cz(n, tmpz);
@@ -1502,7 +1502,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                     if(idd[k] == 0)
                         dd++;
                 }
-                etmpd[pers[i - dd] + p1 + eid * n]
+                etmpd[map[i - dd] + eid * n]
                     = vecs[i - dd - p1 + eid * n] / nrm;
             }
             else
@@ -1526,7 +1526,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 if(ii < sz)
                 {
                     for(int kk = tidb; kk < dd; kk += dim)
-                        temp += C[i + (pers[p1 + kk] + p1) * ldc] * etmpd[kk + eid * n];
+                        temp += C[i + map[p1 + kk] * ldc] * etmpd[kk + eid * n];
                 }
                 inrms[tidb] = temp;
                 __syncthreads();
@@ -1658,15 +1658,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int row = hipBlockIdx_x;
 
-    // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* em = ptr_em(n, splits);
-    rocblas_int* idd = ptr_idd(n, splits);
-    rocblas_int* msz = ptr_msz(n, splits);
-    rocblas_int* mps = ptr_mps(n, splits);
-    rocblas_int* dds = ptr_dds(n, splits);
-    rocblas_int* pers = ptr_map(n, splits);
-
     S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
     S* etmpd = ptr_etmpd(n, tempgemm);
 
@@ -1710,7 +1701,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int* msz  = ptr_msz(n, splits);
     rocblas_int* mps  = ptr_mps(n, splits);
     rocblas_int* dds  = ptr_dds(n, splits);
-    rocblas_int* pers = ptr_map(n, splits);
+    rocblas_int* map  = ptr_map(n, splits);
 
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
     S* nrms = ptr_nrms(n, tmpz);
@@ -1751,7 +1742,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                         if(idd[p1 + k] == 0)
                             dd++;
                     }
-                    etmpd[pers[p1 + i - dd] + p1 + eid * n]
+                    etmpd[map[p1 + i - dd] + eid * n]
                         = vecs[p1 + i - dd - p1 + eid * n] / nrm;
                 }
             }
@@ -1774,7 +1765,7 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 if(ii < sz)
                 {
                     for(int kk = tidb; kk < dd; kk += dim)
-                        temp += C[i + (pers[p1 + kk] + p1) * ldc] * etmpd[kk + eid * n];
+                        temp += C[i + map[p1 + kk] * ldc] * etmpd[kk + eid * n];
                 }
                 inrms[tidb] = temp;
                 __syncthreads();
@@ -2355,7 +2346,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_copyD_kernel<S>),
                                     dim3(n_merges, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
-                                    strideD, tmpz, tempgemm, splits);//*/
+                                    strideD, tmpz, tempgemm, splits);
+
 #if DEBUG_OUTPUT
             //hipError_t status = hipStreamSynchronize(stream);
             if(env_levs && global_cnt == 1)
@@ -2370,7 +2362,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 print_device_matrix(std::cout, "idd", 1, n, ptr_idd(n, splits), 1);
                 print_device_matrix(std::cout, "sidd", 1, n, ptr_sidd(n, splits), 1);
                 print_device_matrix(std::cout, "map", 1, n, ptr_map(n, splits), 1);
-                //print_device_matrix(std::cout, "pers", 1, n, ptr_pers(n, splits), 1);
                 print_device_matrix(std::cout, "D", 1, n, D, 1);
                 print_device_matrix(std::cout, "cd", 1, n, ptr_cd(n, tmpz), 1);
                 //print_device_matrix(std::cout, "etmpd", n, n, tempgemm +n*n, n);
