@@ -1089,96 +1089,45 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     // threads and groups indices
     // batch instance id
     rocblas_int bid = hipBlockIdx_y;
-    rocblas_int sid = hipBlockIdx_x;
+    rocblas_int eid = hipBlockIdx_x;
 
     // select batch instance to work with
-    S* D = DD + bid * strideD; //trololo
+    S* D = DD + bid * strideD;
 
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
     rocblas_int* dds = ptr_dds(n, splits);
+    rocblas_int* em  = ptr_em(n, splits);
     rocblas_int* mps = ptr_mps(n, splits);
-    rocblas_int* msz = ptr_msz(n, splits);
 
     S* tmpz = tmpzA + bid * get_tmpz_size(n);
-    S* evs = ptr_evs(n, tmpz); //trololo
+    S* evs = ptr_evs(n, tmpz);
     S* cd  = ptr_cd(n, tmpz);
 
     S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
     S* etmpd = ptr_etmpd(n, tempgemm);
 
-    rocblas_int dd = dds[sid];
-    rocblas_int p1 = mps[sid];
-    rocblas_int sz = msz[sid];
+    rocblas_int merge_id = em[eid];
+    rocblas_int dd = dds[merge_id];
+    rocblas_int p1 = mps[merge_id];
 
 
     // copy sorted values back to D
-    for(int i = hipThreadIdx_x; i < sz; i += hipBlockDim_x)
+    int x = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
+    if(x < n)
     {
-        D[p1 + i] = evs[p1 + i];
+        D[x] = evs[x];
     }
 
 
-    // make dd copies of the non-deflated ordered diagonal elements
+    // make copies of the non-deflated ordered diagonal elements
     // (i.e. the poles of the secular eqn) so that the distances to the
     // eigenvalues (D - lambda_i) are updated while computing each eigenvalue.
     // This will prevent collapses and division by zero when an eigenvalue
     // is too close to a pole.
-#if TRANSPOSED_TMPD
-    constexpr int max_pref = 8;
-    constexpr int chunk_width = max_pref * STEDC_BDIM;
-    int n_chunks = (dd - 1) / chunk_width + 1;
-    __shared__ S lds[chunk_width];
-    
-    for (int chunk = 0; chunk < n_chunks; chunk++) {
-        // prefetch current chunk of d values into lds
-        for (int i = hipThreadIdx_x; i < chunk_width; i += hipBlockDim_x) {
-            int x = chunk * chunk_width + i;
-            if (x < dd) {
-                lds[i] = cd[p1 + x];
-            }
-        }
-        __syncthreads();
-
-        int values_left = dd - chunk * chunk_width;
-        int max_cnt = std::min(values_left, chunk_width);
-        for (int j = 0; j < max_cnt; j++) {
-            S d = lds[j];
-            int row = chunk * chunk_width + j;
-            // TODO: check if that should be dd or sz
-            //for (int i = hipThreadIdx_x; i < dd; i += hipBlockDim_x) {
-            for (int i = hipThreadIdx_x; i < sz; i += hipBlockDim_x) {
-                etmpd[row * n + p1 + i] = d;
-            }
-        }
+    for (int i = hipThreadIdx_x; i < dd; i += hipBlockDim_x)
+    {
+        etmpd[eid * n + i] = cd[p1 + i];
     }
-#else
-    constexpr int regs = 16;
-    constexpr int chunk_width = regs * STEDC_BDIM;
-    int n_chunks = (dd - 1) / chunk_width + 1;
-    S bval[regs];
-
-    for(int chunk = 0; chunk < n_chunks; chunk++) {
-        for (int i = 0; i < regs; i++) {
-            int x = chunk * chunk_width + i * hipBlockDim_x + hipThreadIdx_x;
-            if(x < dd) {
-                bval[i] = cd[p1 + x];
-            }
-        }
-
-        // TODO: check if that should be dd or sz
-        // for (int j = 0; j < dd; j++) {
-        for (int j = 0; j < sz; j++) {
-            __syncthreads();
-            for(int i = 0; i < regs; i++) {
-                int x = chunk * chunk_width + i * hipBlockDim_x + hipThreadIdx_x;
-                if(x < dd) {
-                    etmpd[(p1 + j) * n + x] = bval[i];
-                }
-            }
-        }
-
-    }
-#endif
 }
 
 //--------------------------------------------------------------------------------------//
@@ -2183,6 +2132,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 #if DEBUG_OUTPUT
     static int global_cnt = 0;
     global_cnt++;
+    hipEvent_t solve_begin;
+    hipEvent_t solve_end;
+    HIP_CHECK(hipEventCreate(&solve_begin));
+    HIP_CHECK(hipEventCreate(&solve_end));
 #endif
 
     // quick return
@@ -2327,7 +2280,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     dim3(STEDC_BDIM), 0, stream, k, n, D + shiftD,
                                     strideD, tmpz, splits);
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_copyD_kernel<S>),
-                                    dim3(n_merges, batch_count),
+                                    dim3(n, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, k, n, D + shiftD,
                                     strideD, tmpz, tempgemm, splits);
 
@@ -2367,12 +2320,24 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             }
 #endif
 
+#if DEBUG_OUTPUT
+            if(k == levs - 1)
+            {
+                HIP_CHECK(hipEventRecord(solve_begin, stream));
+            }
+#endif
             rocblas_int numgrps_solve = (n - 1) / STEDC_BDIM + 1;
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Solve_kernel<S>),
                                     dim3(numgrps_solve, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, k, n, D + shiftD,
                                     strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
                                     ssfmin, ssfmax);
+#if DEBUG_OUTPUT
+            if(k == levs - 1)
+            {
+                HIP_CHECK(hipEventRecord(solve_end, stream));
+            }
+#endif
 
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Rescale_kernel<S>),
                                     dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream,
@@ -2380,7 +2345,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
             // c. find merged eigenvectors
-            if (1) {
+            if (0) {
                 ROCSOLVER_LAUNCH_KERNEL(
                     (stedc_mergeVectors_ComputeNorms_kernel<STEDC_EXTERNAL_GEMM, S>),
                     dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
@@ -2468,6 +2433,20 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 
         rocblas_set_pointer_mode(handle, old_mode);
     }
+
+#if DEBUG_OUTPUT
+    HIP_CHECK(hipStreamSynchronize(stream));
+    float elapsed_solve;
+    HIP_CHECK(hipEventElapsedTime(&elapsed_solve, solve_begin, solve_end));
+    HIP_CHECK(hipEventDestroy(solve_begin));
+    HIP_CHECK(hipEventDestroy(solve_end));
+
+    char* show_time = std::getenv("ST");
+    if(global_cnt==2 && show_time && show_time[0] == '1')
+    {
+        std::cout << elapsed_solve << "\t";
+    }
+#endif
 
     return rocblas_status_success;
 }
