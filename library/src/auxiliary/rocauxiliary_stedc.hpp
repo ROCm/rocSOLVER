@@ -45,6 +45,7 @@
 ROCSOLVER_BEGIN_NAMESPACE
 
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
+#define STEDC_SOLVE_BDIM 4  // Number of threads per thread-block used in solver kernel
 
 // bit indicating base deflation candidate
 #define L_F_BCAND_BIT 0
@@ -1132,10 +1133,10 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 /** STEDC_MERGEVALUES_KERNEL solves the secular equation for every pair of sub-blocks 
     that need to be merged. 
         - Call this kernel with batch_count groups in y, and as many groups in x as needed 
-          to cover n (i.e. n_groups_x * groups_size_x >= n). Groups are size STEDC_BDIM **/
+          to cover n (i.e. n_groups_x * groups_size_x >= n). Groups are size STEDC_SOLVE_BDIM **/
 
 template <typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_SOLVE_BDIM)
     stedc_mergeValues_Solve_kernel(const rocblas_int k,
                                    const rocblas_int n,
                                    S* DD,
@@ -2059,10 +2060,10 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 HIP_CHECK(hipEventRecord(solve_begin, stream));
             }
 #endif
-            rocblas_int numgrps_solve = (n - 1) / STEDC_BDIM + 1;
+            rocblas_int numgrps_solve = (n - 1) / STEDC_SOLVE_BDIM + 1;
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Solve_kernel<S>),
-                                    dim3(numgrps_solve, batch_count),
-                                    dim3(STEDC_BDIM), 0, stream, k, n, D + shiftD,
+                                    dim3(numgrps_solve, batch_count), dim3(STEDC_SOLVE_BDIM),
+                                    0, stream, k, n, D + shiftD,
                                     strideD, E + shiftE, strideE, tmpz, tempgemm, splits, eps,
                                     ssfmin, ssfmax);
 #if DEBUG_OUTPUT
