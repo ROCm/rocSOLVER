@@ -143,10 +143,9 @@ __host__ __device__ inline rocblas_int get_tmpz_size(const rocblas_int n)
     // 7    S cd[n];             // sorted and compacted d values
     // 8    S cz[n];             // sorted and compacted z values
     // 9    S r1p[m], _[n-m];    // p component of the rank-1 modification
-    // 10   S nrms[n];           // norms of vectors
-    // 11   S sdbg[n];           //
+    // 10   S sdbg[n];           //
     // };
-    return 12 * n;
+    return 11 * n;
 }
 
 template <typename S> __host__ __device__ inline S* ptr_z    (rocblas_int n, S* tmpz) { return tmpz +  0 * n; }
@@ -159,8 +158,7 @@ template <typename S> __host__ __device__ inline S* ptr_md   (rocblas_int n, S* 
 template <typename S> __host__ __device__ inline S* ptr_cd   (rocblas_int n, S* tmpz) { return tmpz +  7 * n; }
 template <typename S> __host__ __device__ inline S* ptr_cz   (rocblas_int n, S* tmpz) { return tmpz +  8 * n; }
 template <typename S> __host__ __device__ inline S* ptr_r1p  (rocblas_int n, S* tmpz) { return tmpz +  9 * n; }
-template <typename S> __host__ __device__ inline S* ptr_nrms (rocblas_int n, S* tmpz) { return tmpz + 10 * n; }
-template <typename S> __host__ __device__ inline S* ptr_sdbg (rocblas_int n, S* tmpz) { return tmpz + 11 * n; }
+template <typename S> __host__ __device__ inline S* ptr_sdbg (rocblas_int n, S* tmpz) { return tmpz + 10 * n; }
 
 
 __host__ __device__ inline rocblas_int get_tempgemm_size(const rocblas_int n)
@@ -1457,221 +1455,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 }
 
 
-template <bool USEGEMM, typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedc_mergeVectors_ComputeNorms_kernel(const rocblas_int k,
-                                           const rocblas_int n,
-                                           S* CC,
-                                           const rocblas_int shiftC,
-                                           const rocblas_int ldc,
-                                           const rocblas_stride strideC,
-                                           S* tmpzA,
-                                           S* tempgemmA,
-                                           rocblas_int* splitsA)
-{
-    // threads and groups indices
-    // batch instance id
-    rocblas_int bid = hipBlockIdx_y;
-    // eigenvalue id
-    rocblas_int eid = hipBlockIdx_x;
-    // thread id
-    rocblas_int tidb = hipThreadIdx_x;
-    rocblas_int dim = hipBlockDim_x;
-
-    // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* em   = ptr_em(n, splits);
-    rocblas_int* msz  = ptr_msz(n, splits);
-    rocblas_int* mps  = ptr_mps(n, splits);
-    rocblas_int* dds  = ptr_dds(n, splits);
-
-    S* tmpz = tmpzA + bid * get_tmpz_size(n);
-    S* z    = ptr_cz(n, tmpz);
-    S* nrms = ptr_nrms(n, tmpz);
-    // updated eigenvectors after merges
-    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
-    S* vecs  = ptr_vecs(n, tempgemm);
-    S* etmpd = ptr_etmpd(n, tempgemm);
-
-    // Work with merges on level k. Each thread-group works with one vector.
-    // determine boundaries of what would be the new merged sub-block
-    rocblas_int merge_id = em[eid];
-    rocblas_int p1 = mps[merge_id];
-    rocblas_int sz = msz[merge_id];
-    rocblas_int dd = dds[merge_id];
-
-    __syncthreads();
-
-    // temporary arrays in shared memory
-    // used to store temp values during the different reductions
-    __shared__ S inrms[STEDC_BDIM];
-
-    // Prepare vectors corresponding to non-deflated values
-    S nrm;
-    S* putvec = USEGEMM ? vecs : etmpd;
-
-    if(eid - p1 < dd)
-    {
-        // compute vectors of rank-1 perturbed system and their norms
-        nrm = 0;
-        for(int i = tidb; i < dd; i += dim)
-        {
-            S valf = z[p1 + i] / etmpd[i + eid*n];
-            nrm += valf * valf;
-            putvec[i + eid*n] = valf;
-        }
-        inrms[tidb] = nrm;
-        __syncthreads();
-
-        // reduction (for the norms)
-        for(int r = dim / 2; r > 0; r /= 2)
-        {
-            if(tidb < r)
-            {
-                nrm += inrms[tidb + r];
-                inrms[tidb] = nrm;
-            }
-            __syncthreads();
-        }
-
-        if (tidb == 0) {
-            nrms[eid] = sqrt(nrm);
-        }
-    }
-}
-
-
-template <bool USEGEMM, typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedc_mergeVectors_ZeroEtmpd_kernel(const rocblas_int k,
-                                        const rocblas_int n,
-                                        S* CC,
-                                        const rocblas_int shiftC,
-                                        const rocblas_int ldc,
-                                        const rocblas_stride strideC,
-                                        S* tmpzA,
-                                        S* tempgemmA,
-                                        rocblas_int* splitsA)
-{
-    // threads and groups indices
-    // batch instance id
-    rocblas_int bid = hipBlockIdx_y;
-    rocblas_int row = hipBlockIdx_x;
-
-    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
-    S* etmpd = ptr_etmpd(n, tempgemm);
-
-    for(int i = hipThreadIdx_x; i < n; i += hipBlockDim_x)
-    {
-        etmpd[row*n + i] = 0;
-    }
-}
-
-
-template <bool USEGEMM, typename S>
-ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
-    stedc_mergeVectors_ApplyNorms_kernel(const rocblas_int k,
-                                         const rocblas_int n,
-                                         S* CC,
-                                         const rocblas_int shiftC,
-                                         const rocblas_int ldc,
-                                         const rocblas_stride strideC,
-                                         S* tmpzA,
-                                         S* tempgemmA,
-                                         rocblas_int* splitsA)
-{
-    // threads and groups indices
-    // batch instance id
-    rocblas_int bid = hipBlockIdx_y;
-    // eigenvalue id
-    rocblas_int eid = hipBlockIdx_x;
-    // thread id
-    rocblas_int tidb = hipThreadIdx_x;
-    rocblas_int dim = hipBlockDim_x;
-
-    // select batch instance to work with
-    S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
-
-    // temporary arrays in global memory
-    rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* em   = ptr_em(n, splits);
-    rocblas_int* msz  = ptr_msz(n, splits);
-    rocblas_int* mps  = ptr_mps(n, splits);
-    rocblas_int* dds  = ptr_dds(n, splits);
-
-    S* tmpz = tmpzA + bid * get_tmpz_size(n);
-    S* nrms = ptr_nrms(n, tmpz);
-    // updated eigenvectors after merges
-    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
-    S* vecs  = ptr_vecs(n, tempgemm);
-    S* etmpd = ptr_etmpd(n, tempgemm);
-
-    // Work with merges on level k. Each thread-group works with one vector.
-    // determine boundaries of what would be the new merged sub-block
-    rocblas_int merge_id = em[eid];
-    rocblas_int p1 = mps[merge_id];
-    rocblas_int sz = msz[merge_id];
-    rocblas_int dd = dds[merge_id];
-
-    __syncthreads();
-
-    // temporary arrays in shared memory
-    // used to store temp values during the different reductions
-    __shared__ S inrms[STEDC_BDIM];
-
-    // Prepare vectors corresponding to non-deflated values
-    S nrm = nrms[eid];
-
-    if(USEGEMM)
-    {
-        // when using external gemms for the update, we need to
-        // put vectors in padded matrix 'etmpd'
-        // (this is to compute 'vecs = C * etmpd' using external gemm call)
-        if(eid - p1 < dd) {
-            for(int i = tidb; i < dd; i += dim)
-            {
-                etmpd[p1 + i + eid * n]
-                    = vecs[i + eid * n] / nrm;
-            }
-        }
-    }
-    else
-    {
-        // otherwise, use internal gemm-like procedure to
-        // multiply by C (row by row)
-        if(eid - p1 < dd)
-        {
-            for(int ii = 0; ii < sz; ++ii)
-            {
-                rocblas_int i = p1 + ii;
-
-                // inner products
-                S temp = 0;
-                for(int kk = tidb; kk < dd; kk += dim)
-                    temp += C[i + (p1 + kk) * ldc] * etmpd[kk + eid * n];
-                inrms[tidb] = temp;
-                __syncthreads();
-
-                // reduction
-                for(int r = dim / 2; r > 0; r /= 2)
-                {
-                    if(tidb < r)
-                    {
-                        temp += inrms[tidb + r];
-                        inrms[tidb] = temp;
-                    }
-                    __syncthreads();
-                }
-
-                // result
-                if(tidb == 0)
-                    vecs[i + eid * n] = temp / nrm;
-                __syncthreads();
-            }
-        }
-    }
-}
-
 
 //--------------------------------------------------------------------------------------//
 /** STEDC_MERGEUPDATE_KERNEL updates vectors and values after a merge is done. 
@@ -2345,33 +2128,11 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     tmpz, tempgemm, splits, eps, ssfmin, ssfmax);
 
             // c. find merged eigenvectors
-            if (0) {
-                ROCSOLVER_LAUNCH_KERNEL(
-                    (stedc_mergeVectors_ComputeNorms_kernel<STEDC_EXTERNAL_GEMM, S>),
-                    dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                    k, n, V, 0, ldv, strideV, 
-                    tmpz, tempgemm, splits);
-#if STEDC_EXTERNAL_GEMM
-                ROCSOLVER_LAUNCH_KERNEL(
-                    (stedc_mergeVectors_ZeroEtmpd_kernel<STEDC_EXTERNAL_GEMM, S>),
-                    dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                    k, n, V, 0, ldv, strideV, 
-                    tmpz, tempgemm, splits);
-#endif
-                ROCSOLVER_LAUNCH_KERNEL(
-                    (stedc_mergeVectors_ApplyNorms_kernel<STEDC_EXTERNAL_GEMM, S>),
-                    dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                    k, n, V, 0, ldv, strideV, 
-                    tmpz, tempgemm, splits);
-            }
-            else
-            {
-                ROCSOLVER_LAUNCH_KERNEL(
-                    (stedc_mergeVectors_kernel<STEDC_EXTERNAL_GEMM, S>),
-                    dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
-                    k, n, V, 0, ldv, strideV, 
-                    tmpz, tempgemm, splits);
-            }
+            ROCSOLVER_LAUNCH_KERNEL(
+                (stedc_mergeVectors_kernel<STEDC_EXTERNAL_GEMM, S>),
+                dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
+                k, n, V, 0, ldv, strideV, 
+                tmpz, tempgemm, splits);
 
             if(STEDC_EXTERNAL_GEMM)
             {
