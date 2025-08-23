@@ -1575,9 +1575,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     rocblas_int tidb = hipThreadIdx_x;
     rocblas_int dim = hipBlockDim_x;
 
-    // select batch instance to work with
-    S* C = load_ptr_batch<S>(CC, bid, shiftC, strideC);
-
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
     rocblas_int* em   = ptr_em(n, splits);
@@ -1644,6 +1641,44 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
 template <bool USEGEMM, typename S>
 ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
+    stedc_mergeVectors_ZeroEtmpd_kernel(const rocblas_int levs,
+                                        const rocblas_int blks,
+                                        const rocblas_int k,
+                                        const rocblas_int n,
+                                        S* CC,
+                                        const rocblas_int shiftC,
+                                        const rocblas_int ldc,
+                                        const rocblas_stride strideC,
+                                        S* tmpzA,
+                                        S* tempgemmA,
+                                        rocblas_int* splitsA)
+{
+    // threads and groups indices
+    // batch instance id
+    rocblas_int bid = hipBlockIdx_y;
+    rocblas_int row = hipBlockIdx_x;
+
+    // temporary arrays in global memory
+    rocblas_int* splits = splitsA + bid * get_splits_size(n);
+    rocblas_int* em = ptr_em(n, splits);
+    rocblas_int* idd = ptr_idd(n, splits);
+    rocblas_int* msz = ptr_msz(n, splits);
+    rocblas_int* mps = ptr_mps(n, splits);
+    rocblas_int* dds = ptr_dds(n, splits);
+    rocblas_int* pers = ptr_map(n, splits);
+
+    S* tempgemm = tempgemmA + bid * get_tempgemm_size(n);
+    S* etmpd = ptr_etmpd(n, tempgemm);
+
+    for(int i = hipThreadIdx_x; i < n; i += hipBlockDim_x)
+    {
+        etmpd[row*n + i] = 0;
+    }
+}
+
+
+template <bool USEGEMM, typename S>
+ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     stedc_mergeVectors_ApplyNorms_kernel(const rocblas_int levs,
                                          const rocblas_int blks,
                                          const rocblas_int k,
@@ -1699,28 +1734,27 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
 
     // Prepare vectors corresponding to non-deflated values
     S nrm = nrms[eid];
-    S* putvec = USEGEMM ? vecs : etmpd;
 
     if(USEGEMM)
     {
         // when using external gemms for the update, we need to
         // put vectors in padded matrix 'etmpd'
         // (this is to compute 'vecs = C * etmpd' using external gemm call)
-        for(int i = tidb; i < p1 + sz; i += dim)
-        {
-            if(i >= p1 && idd[eid] == 1 && idd[i] == 1)
+        if(idd[eid] == 1) {
+            for(int i = tidb; i < sz; i += dim)
             {
-                dd = 0;
-                for(int k = p1; k < i; ++k)
+                if(idd[p1 + i] == 1)
                 {
-                    if(idd[k] == 0)
-                        dd++;
+                    dd = 0;
+                    for(int k = 0; k < i; ++k)
+                    {
+                        if(idd[p1 + k] == 0)
+                            dd++;
+                    }
+                    etmpd[pers[p1 + i - dd] + p1 + eid * n]
+                        = vecs[p1 + i - dd - p1 + eid * n] / nrm;
                 }
-                etmpd[pers[i - dd] + p1 + eid * n]
-                    = vecs[i - dd - p1 + eid * n] / nrm;
             }
-            else
-                etmpd[i + eid * n] = 0;
         }
     }
     else
@@ -2322,7 +2356,32 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                     dim3(n_merges, batch_count),
                                     dim3(STEDC_BDIM), 0, stream, levs, blks, k, n, D + shiftD,
                                     strideD, tmpz, tempgemm, splits);//*/
+#if DEBUG_OUTPUT
+            //hipError_t status = hipStreamSynchronize(stream);
+            if(env_levs && global_cnt == 1)
+            {
+                std::cout << "\nk=" << k << std::endl;
+                print_device_matrix(std::cout, "msz", 1, n_merges, ptr_msz(n, splits), 1);
+                print_device_matrix(std::cout, "mps", 1, n_merges, ptr_mps(n, splits), 1);
+                print_device_matrix(std::cout, "esz", 1, n, ptr_esz(n, splits), 1);
+                print_device_matrix(std::cout, "eps", 1, n, ptr_eps(n, splits), 1);
+                //print_device_matrix(std::cout, "dds", 1, n_merges, ptr_dds(n, splits), 1);
+                //print_device_matrix(std::cout, "em", 1, n, ptr_em(n, splits), 1);
+                print_device_matrix(std::cout, "idd", 1, n, ptr_idd(n, splits), 1);
+                print_device_matrix(std::cout, "sidd", 1, n, ptr_sidd(n, splits), 1);
+                print_device_matrix(std::cout, "map", 1, n, ptr_map(n, splits), 1);
+                //print_device_matrix(std::cout, "pers", 1, n, ptr_pers(n, splits), 1);
+                print_device_matrix(std::cout, "D", 1, n, D, 1);
+                print_device_matrix(std::cout, "cd", 1, n, ptr_cd(n, tmpz), 1);
+                //print_device_matrix(std::cout, "etmpd", n, n, tempgemm +n*n, n);
 
+                //print_device_matrix(std::cout, "dbg", 1, n, ptr_dbg(n, splits), 1);
+
+                //print_device_matrix(std::cout, "D", 1, n, D, 1);
+
+                //std::exit(0);
+            }
+#endif
 
             rocblas_int numgrps_solve = (n - 1) / STEDC_BDIM + 1;
             ROCSOLVER_LAUNCH_KERNEL((stedc_mergeValues_Solve_kernel<S>),
@@ -2344,6 +2403,11 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                     levs, blks, k, n, V, 0, ldv, strideV, 
                     tmpz, tempgemm, splits);
                 ROCSOLVER_LAUNCH_KERNEL(
+                    (stedc_mergeVectors_ZeroEtmpd_kernel<STEDC_EXTERNAL_GEMM, S>),
+                    dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
+                    levs, blks, k, n, V, 0, ldv, strideV, 
+                    tmpz, tempgemm, splits);
+                ROCSOLVER_LAUNCH_KERNEL(
                     (stedc_mergeVectors_ApplyNorms_kernel<STEDC_EXTERNAL_GEMM, S>),
                     dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, 
                     levs, blks, k, n, V, 0, ldv, strideV, 
@@ -2358,41 +2422,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                     tmpz, tempgemm, splits);
             }
 
-#if DEBUG_OUTPUT
-            rocblas_int numgrps3 = ((n - 1) / blks + 1) * blks;
-            //hipError_t status = hipStreamSynchronize(stream);
-            if(env_levs && global_cnt == 1)
-            {
-                std::cout << "\nk=" << k << std::endl;
-                std::cout << "numgrps3=" << numgrps3 << "\tblks=" << blks << std::endl;
-                print_device_matrix(std::cout, "msz", 1, n_merges, ptr_msz(n, splits), 1);
-                print_device_matrix(std::cout, "mps", 1, n_merges, ptr_mps(n, splits), 1);
-                print_device_matrix(std::cout, "esz", 1, n, ptr_esz(n, splits), 1);
-                print_device_matrix(std::cout, "eps", 1, n, ptr_eps(n, splits), 1);
-                //print_device_matrix(std::cout, "dds", 1, n_merges, ptr_dds(n, splits), 1);
-                print_device_matrix(std::cout, "sid          ", 1, numgrps3, ptr_dbg(n, splits), 1);
-                print_device_matrix(std::cout, "tid", 1, numgrps3, ptr_dbg1(n, splits), 1);
-                print_device_matrix(std::cout, "iam", 1, numgrps3, ptr_dbg2(n, splits), 1);
-                print_device_matrix(std::cout, "tid - iam", 1, numgrps3, ptr_dbg3(n, splits), 1);
-                print_device_matrix(std::cout, "merge_id", 1, numgrps3, ptr_dbg4(n, splits), 1);
-                print_device_matrix(std::cout, "mps[merge_id]", 1, numgrps3, ptr_dbg5(n, splits), 1);
-                print_device_matrix(std::cout, "ps[tid-iam]", 1, numgrps3, ptr_dbg6(n, splits), 1);
-                //print_device_matrix(std::cout, "em", 1, n, ptr_em(n, splits), 1);
-                //print_device_matrix(std::cout, "idd", 1, n, ptr_idd(n, splits), 1);
-                //print_device_matrix(std::cout, "sidd", 1, n, ptr_sidd(n, splits), 1);
-                //print_device_matrix(std::cout, "map", 1, n, ptr_map(n, splits), 1);
-                //print_device_matrix(std::cout, "pers", 1, n, ptr_pers(n, splits), 1);
-                //print_device_matrix(std::cout, "D", 1, n, D, 1);
-                //print_device_matrix(std::cout, "cd", 1, n, ptr_cd(n, tmpz), 1);
-                //print_device_matrix(std::cout, "etmpd", n, n, tempgemm +n*n, n);
-                
-                //print_device_matrix(std::cout, "dbg", 1, n, ptr_dbg(n, splits), 1);
-
-                //print_device_matrix(std::cout, "D", 1, n, D, 1);
-
-                //std::exit(0);
-            }
-#endif
             if(STEDC_EXTERNAL_GEMM)
             {
                 // using external gemms with padded matrices to do the vector update
