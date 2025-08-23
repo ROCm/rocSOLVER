@@ -64,8 +64,8 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
     // m - number of merges on a current level
     // struct {
     // 0     rocblas_int sort_tmp[n];         // temp buffer used for mapping in stedc_sort()
-    // 1     rocblas_int ns[n];               // the sub-blocks sizes
-    // 2     rocblas_int ps[n];               // the sub-blocks initial positions
+    // 1     rocblas_int      ;               //
+    // 2     rocblas_int      ;               //
     // 3     rocblas_int idd[n];              // if idd[i] = 0, the value in position i has been deflated  (aka mask)
     // 4     rocblas_int pers[n];             // container of permutations when solving the secular eqns
     // 5     rocblas_int ;      //
@@ -87,8 +87,8 @@ __host__ __device__ inline rocblas_int get_splits_size(const rocblas_int n)
     return 20 * n + 64*64;
 }
 
-template <typename S> __host__ __device__ inline S* ptr_ns    (rocblas_int n, S* splits) { return splits +  1 * n; }
-template <typename S> __host__ __device__ inline S* ptr_ps    (rocblas_int n, S* splits) { return splits +  2 * n; }
+template <typename S> __host__ __device__ inline S* ptr___    (rocblas_int n, S* splits) { return splits +  1 * n; }
+template <typename S> __host__ __device__ inline S* ptr____   (rocblas_int n, S* splits) { return splits +  2 * n; }
 template <typename S> __host__ __device__ inline S* ptr_idd   (rocblas_int n, S* splits) { return splits +  3 * n; }
 template <typename S> __host__ __device__ inline S* ptr_pers  (rocblas_int n, S* splits) { return splits +  4 * n; }
 template <typename S> __host__ __device__ inline S* ptr_      (rocblas_int n, S* splits) { return splits +  5 * n; }
@@ -209,30 +209,30 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
 
         // temporary arrays in global memory
         rocblas_int* splits = splitsA + bid * get_splits_size(n);
-        rocblas_int* ns = ptr_ns(n, splits);
-        rocblas_int* ps = ptr_ps(n, splits);
+        rocblas_int* msz = ptr_msz(n, splits);
+        rocblas_int* mps = ptr_mps(n, splits);
 
         // find sizes of sub-blocks
-        ns[0] = n;
+        msz[0] = n;
         rocblas_int t, t2;
         for(int i = 0; i < levs; ++i)
         {
             for(int j = (1 << i); j > 0; --j)
             {
-                t = ns[j - 1];
+                t = msz[j - 1];
                 t2 = t / 2;
-                ns[j * 2 - 1] = (2 * t2 < t) ? t2 + 1 : t2;
-                ns[j * 2 - 2] = t2;
+                msz[j * 2 - 1] = (2 * t2 < t) ? t2 + 1 : t2;
+                msz[j * 2 - 2] = t2;
             }
         }
 
         // find beginning of sub-blocks and update elements in D
         rocblas_int p2 = 0;
-        ps[0] = p2;
+        mps[0] = p2;
         for(int i = 1; i < blks; ++i)
         {
-            p2 += ns[i - 1];
-            ps[i] = p2;
+            p2 += msz[i - 1];
+            mps[i] = p2;
 
             // perform sub-block division
             S p = E[p2 - 1];
@@ -284,19 +284,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_solve_kernel(const roc
 
     // temporary arrays in global memory
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* ns = ptr_ns(n, splits);
-    rocblas_int* ps = ptr_ps(n, splits);
+    rocblas_int* msz = ptr_msz(n, splits);
+    rocblas_int* mps = ptr_mps(n, splits);
     // workspace for solvers
     S* W = WA + bid * 2 * n;
 
     // Solve the blks sub-blocks in parallel (using classic QR iteration).
     if(sid < blks)
     {
-        rocblas_int sbs = ns[sid];  // size of sub-block
-        rocblas_int p2 = ps[sid];   // start position of sub-block
+        rocblas_int sz = msz[sid];  // size of sub-block
+        rocblas_int p2 = mps[sid];  // start position of sub-block
 
-        run_steqr(tidb, tidb_inc, sbs, D + p2, E + p2, C + p2 + p2 * ldc, ldc, info, W + p2 * 2,
-                  30 * sbs, eps, ssfmin, ssfmax, false);
+        run_steqr(tidb, tidb_inc, sz, D + p2, E + p2, C + p2 + p2 * ldc, ldc, info, W + p2 * 2,
+                  30 * sz, eps, ssfmin, ssfmax, false);
     }
 }
 
@@ -311,8 +311,6 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_init_splits(const rocb
 {
     rocblas_int bid = hipBlockIdx_y;
     rocblas_int* splits = splitsA + bid * get_splits_size(n);
-    rocblas_int* ns  = ptr_ns(n, splits);
-    rocblas_int* ps  = ptr_ps(n, splits);
     rocblas_int* em  = ptr_em(n, splits);
     rocblas_int* msz = ptr_msz(n, splits);
     rocblas_int* mps = ptr_mps(n, splits);
@@ -321,10 +319,8 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_init_splits(const rocb
 
     for(int i = hipThreadIdx_x; i < n_blocks; i+=hipBlockDim_x)
     {
-        rocblas_int sz = ns[i];
-        rocblas_int p1 = ps[i];
-        msz[i] = sz;
-        mps[i] = p1;
+        rocblas_int sz = msz[i];
+        rocblas_int p1 = mps[i];
         for (int j = 0; j < sz; j++) {
             em[p1 + j] = i;
         }
@@ -2145,8 +2141,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 print_device_matrix(std::cout, "esz", 1, n, ptr_esz(n, splits), 1);
                 print_device_matrix(std::cout, "eps", 1, n, ptr_eps(n, splits), 1);
                 //print_device_matrix(std::cout, "dds", 1, n_merges, ptr_dds(n, splits), 1);
-                print_device_matrix(std::cout, "ns", 1, blks, ptr_ns(n, splits), 1);
-                print_device_matrix(std::cout, "ps", 1, blks, ptr_ps(n, splits), 1);
                 print_device_matrix(std::cout, "sid          ", 1, numgrps3, ptr_dbg(n, splits), 1);
                 print_device_matrix(std::cout, "tid", 1, numgrps3, ptr_dbg1(n, splits), 1);
                 print_device_matrix(std::cout, "iam", 1, numgrps3, ptr_dbg2(n, splits), 1);
