@@ -44,6 +44,8 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
+#define DEBUG_OUTPUT 1
+
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
 #define STEDC_SOLVE_BDIM 4  // Number of threads per thread-block used in solver kernel
 
@@ -558,20 +560,20 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
     int pos = lt + eq;
     __shared__ int lpos[STEDC_BDIM];
     __shared__ int ldd[STEDC_BDIM];
-    // Reduction (sum of pos across all lanes in a workgroup)
-    // on each iteration reduction is done within a subgroup of size of 2*bit
-    // by xoring corresponding bit of an address.
-    // The faster implementation should use dpp + a single trip through lds
-    // but keeping code simple for now.
-    int bit = 1;
-    while (bit < STEDC_BDIM) {
-        lpos[hipThreadIdx_x ^ bit] = pos;
-        ldd[hipThreadIdx_x ^ bit] = dd;
+
+    // reduction
+    lpos[hipThreadIdx_x] = pos;
+    ldd[hipThreadIdx_x] = dd;
+    for(int r = hipBlockDim_x / 2; r > 0; r /= 2)
+    {
         __syncthreads();
-        pos += lpos[hipThreadIdx_x];
-        dd += ldd[hipThreadIdx_x];
-        __syncthreads();
-        bit *= 2;
+        if(hipThreadIdx_x < r)
+        {
+            pos += lpos[hipThreadIdx_x + r];
+            dd += ldd[hipThreadIdx_x + r];
+            lpos[hipThreadIdx_x] = pos;
+            ldd[hipThreadIdx_x] = dd;
+        }
     }
 
     if (hipThreadIdx_x == 0) {
@@ -1309,19 +1311,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
             nrm += valf * valf;
             putvec[i + eid*n] = valf;
         }
-        inrms[tidb] = nrm;
-        __syncthreads();
 
         // reduction (for the norms)
+        inrms[tidb] = nrm;
         for(int r = dim / 2; r > 0; r /= 2)
         {
+            __syncthreads();
             if(tidb < r)
             {
                 nrm += inrms[tidb + r];
                 inrms[tidb] = nrm;
             }
-            __syncthreads();
         }
+        __syncthreads();
         nrm = sqrt(inrms[0]);
     }
 
@@ -1355,19 +1357,19 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM)
                 S temp = 0;
                 for(int kk = tidb; kk < dd; kk += dim)
                     temp += C[i + (p1 + kk) * ldc] * etmpd[kk + eid * n];
-                inrms[tidb] = temp;
-                __syncthreads();
 
                 // reduction
+                inrms[tidb] = temp;
                 for(int r = dim / 2; r > 0; r /= 2)
                 {
+                    __syncthreads();
                     if(tidb < r)
                     {
                         temp += inrms[tidb + r];
                         inrms[tidb] = temp;
                     }
-                    __syncthreads();
                 }
+                __syncthreads();
 
                 // result
                 if(tidb == 0)
@@ -1623,27 +1625,27 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_sort(const rocblas_int
         }
     }
 
+
     int pos = lt + eq;
-    __shared__ int lds[STEDC_BDIM];
-    // Reduction (sum of pos across all lanes in a workgroup)
-    // on each iteration reduction is done within a subgroup of size of 2*bit
-    // by xoring corresponding bit of an address.
-    // The faster implementation should use dpp + a single trip through lds
-    // but keeping code simple for now.
-    int bit = 1;
-    while(bit < STEDC_BDIM) {
-        lds[hipThreadIdx_x ^ bit] = pos;
+    // reduction
+    __shared__ int lpos[STEDC_BDIM];
+    lpos[hipThreadIdx_x] = pos;
+    for(int r = hipBlockDim_x / 2; r > 0; r /= 2)
+    {
         __syncthreads();
-        pos += lds[hipThreadIdx_x];
-        __syncthreads();
-        bit *= 2;
+        if(hipThreadIdx_x < r)
+        {
+            pos += lpos[hipThreadIdx_x + r];
+            lpos[hipThreadIdx_x] = pos;
+        }
     }
+    __syncthreads();
+    pos = lpos[0];
 
     if (hipThreadIdx_x == 0) {
         Dout[pos] = d;
     }
 
-    __syncthreads();
     // The NAN fp value is unordered, so it is possible that with computed
     // new positions it would be silently overwriten with non NAN value.
     // Make sure we propagate NAN. It is likely to have more NANs in the output
@@ -1690,11 +1692,13 @@ inline rocblas_int stedc_num_levels(const rocblas_int n)
     else
         levels = std::ceil(std::log2(n)) - 4;
 
+#if DEBUG_OUTPUT
     char* env_levs = std::getenv("LEVS");
     if(env_levs)
     {
         levels = std::atoi(env_levs);
     }
+#endif
 
     return levels;
 }
@@ -1837,7 +1841,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     ROCSOLVER_ENTER("stedc", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
 
-#define DEBUG_OUTPUT 1
 #if DEBUG_OUTPUT
     static int global_cnt = 0;
     global_cnt++;
