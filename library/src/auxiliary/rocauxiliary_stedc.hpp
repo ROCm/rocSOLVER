@@ -180,15 +180,13 @@ ROCSOLVER_KERNEL void __launch_bounds__(STEDC_BDIM) stedc_divide_kernel(const ro
 
         // find sizes of sub-blocks
         msz[0] = n;
-        rocblas_int t, t2;
         for(int i = 0; i < levs; ++i)
         {
             for(int j = (1 << i); j > 0; --j)
             {
-                t = msz[j - 1];
-                t2 = t / 2;
-                msz[j * 2 - 1] = (2 * t2 < t) ? t2 + 1 : t2;
-                msz[j * 2 - 2] = t2;
+                rocblas_int t = msz[j - 1];
+                msz[j * 2 - 1] = t / 2 + (t & 1);
+                msz[j * 2 - 2] = t / 2;
             }
         }
 
@@ -1764,10 +1762,9 @@ void rocsolver_stedc_getMemorySize(const rocblas_evect evect,
         else
             *size_tempvect = 0;
         *size_tempgemm = sizeof(S) * get_tempgemm_size(n) * batch_count;
-        if(BATCHED && !COMPLEX)
-            *size_workArr = sizeof(S*) * batch_count;
-        else
-            *size_workArr = 0;
+        // blocks for batched GEMM are at least 8 x 8
+        auto max_n_merges = 1 << (stedc_num_levels(n) - 1);
+        *size_workArr = sizeof(S*) * std::max(max_n_merges * 3, batch_count);
 
         // size for split blocks and sub-blocks positions
         *size_splits_map = sizeof(rocblas_int) * get_splits_size(n) * batch_count;
@@ -1913,6 +1910,11 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
     static int global_cnt = 0;
     global_cnt++;
     char* env_levs = std::getenv("LEVS");
+    char* env_gemm = std::getenv("OLD_GEMM");
+    bool old_gemm = false;
+    if (env_gemm) {
+        old_gemm = env_gemm[0] == '1';
+    }
 #endif
 
     // quick return
@@ -2112,10 +2114,68 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // TODO: using macro STEDC_EXTERNAL_GEMM = true for now. In the future we can pass
                 // STEDC_EXTERNAL_GEMM at run time to switch between internal vector updates and
                 // external gemm based updates.
-                rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n,
-                               &one, V, 0, ldv, strideV,
-                               ptr_etmpd(n, tempgemm), 0, n, get_tempgemm_size(n), &zero,
-                               ptr_vecs(n, tempgemm),  0, n, get_tempgemm_size(n), batch_count, workArr);
+                if(old_gemm || n <= 1024 || batch_count > 1)
+                {
+                    rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n,
+                                   &one, V, 0, ldv, strideV,
+                                   ptr_etmpd(n, tempgemm), 0, n, get_tempgemm_size(n), &zero,
+                                   ptr_vecs(n, tempgemm),  0, n, get_tempgemm_size(n), batch_count, workArr);
+                }
+                else {
+                    HIP_CHECK(hipMemsetAsync((void*)tempgemm, 0, n * n * sizeof(S), stream));
+
+                    if(n % n_merges == 0)
+                    {
+                        int sz = n / n_merges;
+                        rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none,
+                                       sz, sz, sz, &one,
+                                       V,                      0, ldv, sz * ldv + sz,
+                                       ptr_etmpd(n, tempgemm), 0,   n, sz * n + sz, &zero,
+                                       ptr_vecs(n, tempgemm),  0,   n, sz * n + sz, n_merges,
+                                       workArr);
+                    }
+                    else
+                    {
+                        rocblas_int lvl = levs - k - 1;
+                        std::vector<rocblas_int> ns(n_merges);
+                        ns[0] = n;
+                        for(int i = 0; i < lvl; ++i)
+                        {
+                            for(int j = (1 << i); j > 0; --j)
+                            {
+                                auto t = ns[j - 1];
+                                ns[j * 2 - 1] = t / 2 + (t & 1);
+                                ns[j * 2 - 2] = t / 2;
+                            }
+                        }
+                        // there can only be 2 block sizes: ns[0] and ns[0]+1
+                        std::array<std::vector<rocblas_int>, 2> uniform_batch;
+                        uniform_batch[0].reserve(n_merges);
+                        uniform_batch[1].reserve(n_merges);
+                        for(rocblas_int i = 0, ps = 0; i < n_merges; ps += ns[i++])
+                            uniform_batch[ns[i] != ns[0]].push_back(ps);
+                        for(rocblas_int i = 0, nsb = ns[0]; i < 2; ++i, ++nsb)
+                        {
+                            auto& b = uniform_batch[i];
+                            auto nbb = b.size();
+                            std::vector<S*> hABC(nbb * 3);
+                            for(size_t j = 0; j < nbb; ++j)
+                            {
+                                auto ps = b[j];
+                                hABC[j + 0 * nbb] = ps + ps * ldv + V;
+                                hABC[j + 1 * nbb] = ps + ps * n + ptr_etmpd(n, tempgemm);
+                                hABC[j + 2 * nbb] = ps + ps * n + ptr_vecs(n, tempgemm);
+                            }
+                            HIP_CHECK(hipMemcpy(workArr, hABC.data(), 3 * nbb * sizeof(S*),
+                                                hipMemcpyHostToDevice));
+                            rocsolver_gemm<S, rocblas_int, S* const*, S* const*, S* const*>(
+                                handle, rocblas_operation_none, rocblas_operation_none, nsb, nsb,
+                                nsb, &one, workArr, 0, ldv, 0, workArr + nbb, 0, n, 0, &zero,
+                                workArr + 2 * nbb, 0, n, 0, nbb, nullptr);
+                        }
+                    }
+                }
+
             }
 
             // d. update level
