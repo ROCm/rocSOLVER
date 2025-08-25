@@ -1813,6 +1813,74 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
+#if DEBUG_OUTPUT
+template <typename S, typename I>
+void print_block_map(const char* tag, bool show_pres, bool show_cnt, int n, int n_merges, I* bsz, I* bps, S* matr)
+{
+    int n_blocks = n_merges * 2;
+    std::vector<I> sz(n_blocks);
+    std::vector<I> ps(n_blocks);
+    std::vector<S> m(n * n);
+    std::vector<I> cnt(n_blocks * n_blocks);
+
+    THROW_IF_HIP_ERROR(hipMemcpy(sz.data(), bsz, sizeof(I) * sz.size(), hipMemcpyDeviceToHost));
+    THROW_IF_HIP_ERROR(hipMemcpy(ps.data(), bps, sizeof(I) * ps.size(), hipMemcpyDeviceToHost));
+    THROW_IF_HIP_ERROR(hipMemcpy(m.data(), matr, sizeof(S) * m.size(), hipMemcpyDeviceToHost));
+
+    int s = 0;
+    for(int i = 0; i < n_blocks; i++)
+    {
+        s += sz[i];
+    }
+    if (s != n) {
+        std::cout << "ERROR: n("<< n <<") != s("<< s <<")\n";
+        std::exit(0);
+    }
+
+    bool is_blk_diag = true;
+    for(int jb = 0; jb < n_blocks; jb++) {
+        for (int jp = 0; jp < sz[jb]; jp++) {
+            for(int ib = 0; ib < n_blocks; ib++) {
+                for(int ip = 0; ip < sz[ib]; ip++) {
+                    {
+                        int j = ps[jb] + jp;
+                        int i = ps[ib] + ip;
+                        bool non_zero = m[j * n + i] != 0;
+                        cnt[jb * n_blocks + ib] += non_zero;
+                        if((jb / 2 != ib / 2) && non_zero)
+                            is_blk_diag = false;
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << (is_blk_diag ? "block diag matrix ("
+        : "matrix has off-blockdiag non-zeros (") << tag << ")\n";
+
+    if (show_pres) {
+        std::cout << tag << " present map " << n_blocks << "x" << n_blocks << ":\n";
+        for(int j = 0; j < n_blocks; j++) {
+            for(int i = 0; i < n_blocks; i++) {
+                std::cout << (cnt[j * n_blocks + i] ? " X" : " .");
+            }
+            std::cout << "\n";
+        }
+    }
+
+    if (show_cnt) {
+        std::cout << tag << " cnt map " << n_blocks << "x" << n_blocks << ":\n";
+        for(int j = 0; j < n_blocks; j++) {
+            for(int i = 0; i < n_blocks; i++) {
+                std::cout << "\t" << cnt[j * n_blocks + i];
+            }
+            std::cout << "\n";
+        }
+    }
+}
+#endif
+
+
 //--------------------------------------------------------------------------------------//
 /** STEDC templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
@@ -1989,7 +2057,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
             ROCSOLVER_LAUNCH_KERNEL(stedc_copyC, dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, n,
                                     V, 0, ldv, strideV,
                                     ptr_vecs(n, tempgemm), 0, n, get_tempgemm_size(n));
-
+                                    
             ROCSOLVER_LAUNCH_KERNEL(stedc_reshuffleC, dim3(n, batch_count), dim3(STEDC_BDIM), 0, stream, n,
                                     ptr_vecs(n, tempgemm), 0, n, get_tempgemm_size(n),
                                     V, 0, ldv, strideV,
