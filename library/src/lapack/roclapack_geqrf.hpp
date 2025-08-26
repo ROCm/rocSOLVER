@@ -301,6 +301,18 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
     hipStream_t stream;
     rocblas_get_stream(handle, &stream);
 
+    // enable graph capture
+    rocsolver_alg_mode alg_mode;
+    ROCBLAS_CHECK(rocsolver_get_alg_mode(handle, rocsolver_function_geqrf, &alg_mode));
+
+    hipStream_t graph_stream;
+    if(alg_mode == rocsolver_alg_mode_graph)
+    {
+        HIP_CHECK(hipStreamCreate(&graph_stream));
+        rocblas_set_stream(handle, graph_stream);
+        HIP_CHECK(hipStreamBeginCapture(graph_stream, hipStreamCaptureModeGlobal));
+    }
+
     // if the matrix is small, use the unblocked (BLAS-levelII) variant of the
     // algorithm
     if(m <= GEQxF_GEQx2_SWITCHSIZE || n <= GEQxF_GEQx2_SWITCHSIZE)
@@ -342,6 +354,20 @@ rocblas_status rocsolver_geqrf_template(rocblas_handle handle,
                 work_workArr_work1, work2, work3, work4, workArr, optim_mem);
         }
         j += nb;
+    }
+
+    if(alg_mode == rocsolver_alg_mode_graph)
+    {
+        hipGraph_t graph;
+        HIP_CHECK(hipStreamEndCapture(graph_stream, &graph));
+        rocblas_set_stream(handle, stream);
+
+        hipGraphExec_t exec;
+        HIP_CHECK(hipGraphInstantiate(&exec, graph, nullptr, nullptr, 0));
+        HIP_CHECK(hipGraphDestroy(graph));
+        HIP_CHECK(hipGraphLaunch(exec, stream));
+        HIP_CHECK(hipGraphExecDestroy(exec));
+        HIP_CHECK(hipStreamDestroy(graph_stream));
     }
 
     // factor last block
