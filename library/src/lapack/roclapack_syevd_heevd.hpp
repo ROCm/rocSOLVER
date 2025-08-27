@@ -90,8 +90,9 @@ void rocsolver_syevd_heevd_getMemorySize(rocblas_handle handle,
     if(alg_mode != rocsolver_alg_mode_hybrid || evect == rocblas_evect_original)
     {
         // extra requirements for computing eigenvalues and vectors (stedc)
-        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count, &w31,
-                                                     &w22, &w12, size_tmpz, size_splits, size_workArr);
+        rocsolver_stedc_getMemorySize<BATCHED, T, S>(rocblas_evect_tridiagonal, n, batch_count,
+                                                     &w31, &w22, &w12, size_tmpz, size_splits,
+                                                     size_workArr);
     }
     else
     {
