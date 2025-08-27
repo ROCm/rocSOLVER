@@ -432,7 +432,8 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
 
         rocsolver_syevd_heevd_getMemorySize<BATCHED, STRIDED, T, S>(
             handle, evect, uplo, n, batch_count, &size_scalars, &size_work1, &size_work2,
-            &size_work3, &size_work4, &size_tmpz, &size_splits, &size_tmptau_W, &size_tau, &size_workArr, &optim_mem);
+            &size_work3, &size_work4, &size_tmpz, &size_splits, &size_tmptau_W, &size_tau,
+            &size_workArr, &optim_mem);
 
         // Memory in `scalars` has already been initialized at this point
         HIP_CHECK(hipMemsetAsync((void*)work1, 0, size_work1, stream));
@@ -463,8 +464,8 @@ rocblas_status rocsolver_syevd_heevd_template(rocblas_handle handle,
     // quick return for n = 1 (scalar case)
     if(n == 1)
     {
-        ROCSOLVER_LAUNCH_KERNEL(scalar_case<T>, gridReset, threads, 0, stream, evect, A, strideA, D,
-                                strideD, batch_count);
+        ROCSOLVER_LAUNCH_KERNEL(syev_scalar_case<T>, gridReset, threads, 0, stream, evect, A,
+                                strideA, D, strideD, batch_count);
         return rocblas_status_success;
     }
 
