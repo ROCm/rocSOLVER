@@ -44,8 +44,6 @@
 
 ROCSOLVER_BEGIN_NAMESPACE
 
-#define DEBUG_OUTPUT 1
-
 #define STEDC_BDIM 512 // Number of threads per thread-block used in main stedc kernels
 #define STEDC_SOLVE_BDIM 4 // Number of threads per thread-block used in solver kernel
 
@@ -1787,14 +1785,6 @@ inline rocblas_int stedc_num_levels(const rocblas_int n)
     else
         levels = std::ceil(std::log2(n)) - 4;
 
-#if DEBUG_OUTPUT
-    char* env_levs = std::getenv("LEVS");
-    if(env_levs)
-    {
-        levels = std::atoi(env_levs);
-    }
-#endif
-
     return levels;
 }
 
@@ -1907,91 +1897,6 @@ rocblas_status rocsolver_stedc_argCheck(rocblas_handle handle,
     return rocblas_status_continue;
 }
 
-#if DEBUG_OUTPUT
-template <typename S, typename I>
-void print_block_map(const char* tag,
-                     bool show_pres,
-                     bool show_cnt,
-                     int n,
-                     int n_merges,
-                     I* bsz,
-                     I* bps,
-                     S* matr)
-{
-    int n_blocks = n_merges * 2;
-    std::vector<I> sz(n_blocks);
-    std::vector<I> ps(n_blocks);
-    std::vector<S> m(n * n);
-    std::vector<I> cnt(n_blocks * n_blocks);
-
-    THROW_IF_HIP_ERROR(hipMemcpy(sz.data(), bsz, sizeof(I) * sz.size(), hipMemcpyDeviceToHost));
-    THROW_IF_HIP_ERROR(hipMemcpy(ps.data(), bps, sizeof(I) * ps.size(), hipMemcpyDeviceToHost));
-    THROW_IF_HIP_ERROR(hipMemcpy(m.data(), matr, sizeof(S) * m.size(), hipMemcpyDeviceToHost));
-
-    int s = 0;
-    for(int i = 0; i < n_blocks; i++)
-    {
-        s += sz[i];
-    }
-    if(s != n)
-    {
-        std::cout << "ERROR: n(" << n << ") != s(" << s << ")\n";
-        std::exit(0);
-    }
-
-    bool is_blk_diag = true;
-    for(int jb = 0; jb < n_blocks; jb++)
-    {
-        for(int jp = 0; jp < sz[jb]; jp++)
-        {
-            for(int ib = 0; ib < n_blocks; ib++)
-            {
-                for(int ip = 0; ip < sz[ib]; ip++)
-                {
-                    {
-                        int j = ps[jb] + jp;
-                        int i = ps[ib] + ip;
-                        bool non_zero = m[j * n + i] != 0;
-                        cnt[jb * n_blocks + ib] += non_zero;
-                        if((jb / 2 != ib / 2) && non_zero)
-                            is_blk_diag = false;
-                    }
-                }
-            }
-        }
-    }
-
-    std::cout << (is_blk_diag ? "block diag matrix (" : "matrix has off-blockdiag non-zeros (")
-              << tag << ")\n";
-
-    if(show_pres)
-    {
-        std::cout << tag << " present map " << n_blocks << "x" << n_blocks << ":\n";
-        for(int j = 0; j < n_blocks; j++)
-        {
-            for(int i = 0; i < n_blocks; i++)
-            {
-                std::cout << (cnt[j * n_blocks + i] ? " X" : " .");
-            }
-            std::cout << "\n";
-        }
-    }
-
-    if(show_cnt)
-    {
-        std::cout << tag << " cnt map " << n_blocks << "x" << n_blocks << ":\n";
-        for(int j = 0; j < n_blocks; j++)
-        {
-            for(int i = 0; i < n_blocks; i++)
-            {
-                std::cout << "\t" << cnt[j * n_blocks + i];
-            }
-            std::cout << "\n";
-        }
-    }
-}
-#endif
-
 //--------------------------------------------------------------------------------------//
 /** STEDC templated function **/
 template <bool BATCHED, bool STRIDED, typename T, typename S, typename U>
@@ -2019,18 +1924,6 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
 {
     ROCSOLVER_ENTER("stedc", "evect:", evect, "n:", n, "shiftD:", shiftD, "shiftE:", shiftE,
                     "shiftC:", shiftC, "ldc:", ldc, "bc:", batch_count);
-
-#if DEBUG_OUTPUT
-    static int global_cnt = 0;
-    global_cnt++;
-    char* env_levs = std::getenv("LEVS");
-    char* env_gemm = std::getenv("OLD_GEMM");
-    bool old_gemm = false;
-    if(env_gemm)
-    {
-        old_gemm = env_gemm[0] == '1';
-    }
-#endif
 
     // quick return
     if(batch_count == 0)
@@ -2193,7 +2086,7 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                 // TODO: using macro STEDC_EXTERNAL_GEMM = true for now. In the future we can pass
                 // STEDC_EXTERNAL_GEMM at run time to switch between internal vector updates and
                 // external gemm based updates.
-                if(old_gemm || n <= 1024 || batch_count > 1)
+                if(n <= 1024 || batch_count > 1)
                 {
                     rocsolver_gemm(handle, rocblas_operation_none, rocblas_operation_none, n, n, n,
                                    &one, V, 0, ldv, strideV, ptr_etmpd(n, tempgemm), 0, n,
@@ -2244,8 +2137,8 @@ rocblas_status rocsolver_stedc_template(rocblas_handle handle,
                                 hABC[j + 1 * nbb] = ps + ps * n + ptr_etmpd(n, tempgemm);
                                 hABC[j + 2 * nbb] = ps + ps * n + ptr_vecs(n, tempgemm);
                             }
-                            HIP_CHECK(hipMemcpy(workArr, hABC.data(), 3 * nbb * sizeof(S*),
-                                                hipMemcpyHostToDevice));
+                            HIP_CHECK(hipMemcpyAsync(workArr, hABC.data(), 3 * nbb * sizeof(S*),
+                                                     hipMemcpyHostToDevice, stream));
                             rocsolver_gemm<S, rocblas_int, S* const*, S* const*, S* const*>(
                                 handle, rocblas_operation_none, rocblas_operation_none, nsb, nsb,
                                 nsb, &one, workArr, 0, ldv, 0, workArr + nbb, 0, n, 0, &zero,
