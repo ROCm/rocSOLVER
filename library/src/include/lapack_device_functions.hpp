@@ -895,7 +895,7 @@ __device__ void dot(const rocblas_int tid,
         return;
     }
 
-        /** <========= Next do the reduction on the shared memory array =========> **/
+    /** <========= Next do the reduction on the shared memory array =========> **/
 
     val += shift_left(val, 1);
     val += shift_left(val, 2);
