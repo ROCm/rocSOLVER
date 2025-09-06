@@ -95,14 +95,6 @@ template <> constexpr char rocblas_precision_string<rocblas_bf8           >[] = 
 #endif
 #endif
 
-template <>
-constexpr char rocblas2char_precision<float> = 's';
-template <>
-constexpr char rocblas2char_precision<double> = 'd';
-template <>
-constexpr char rocblas2char_precision<rocblas_float_complex> = 'c';
-template <>
-constexpr char rocblas2char_precision<rocblas_double_complex> = 'z';
 
 /***********************************************************************
  * timing functions                                                    *
