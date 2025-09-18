@@ -1,5 +1,8 @@
 # rocSOLVER
 
+> [!CAUTION]
+> The rocSOLVER repository is retired, please use the [ROCm/rocm-libraries](https://github.com/ROCm/rocm-libraries) repository
+
 rocSOLVER is a work-in-progress implementation of a subset of [LAPACK][1]
 functionality on the [ROCm platform][2].
 
